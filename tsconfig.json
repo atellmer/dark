@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"target": "es5",
+		"moduleResolution": "node",
+		"module": "commonjs",
+		"outDir": "./lib/",
+		"sourceMap": true,
+		"noImplicitAny": false,
+		"removeComments": false,
+		"downlevelIteration": true,
+		"allowJs": true,
+		"lib": [
+			"es6",
+			"es7",
+			"dom"
+		],
+	},
+	"baseUrl": "./src",
+	"paths": {
+		"@core/*": ["core/*"],
+		"@platform/*": ["platform/*"],
+	},
+	"include": [
+		"./src/**/*"
+	]
+}

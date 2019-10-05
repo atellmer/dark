@@ -1,0 +1,33 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "interface-over-type-literal": false,
+    "semicolon": false,
+    "no-unused-expression": false,
+    "array-type": false,
+    "no-empty": false,
+    "ordered-imports": true,
+    "cyclomatic-complexity": {
+      "options": [
+        60
+      ]
+    },
+    "no-shadowed-variable": false,
+    "max-line-length": false,
+    "new-parens": true,
+    "no-arg": true,
+    "no-bitwise": true,
+    "no-conditional-assignment": true,
+    "no-consecutive-blank-lines": false,
+    "no-console": false,
+    "quotemark": {
+      "options": "single"
+    },
+    "arrow-parens": false,
+    "curly": false,
+    "object-literal-sort-keys": false,
+    "ban-types": false,
+    "no-default-export": true,
+    "indent": false
+  }
+}
