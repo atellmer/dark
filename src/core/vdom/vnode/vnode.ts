@@ -79,4 +79,5 @@ export {
   Text,
   Comment,
   View,
+  EMPTY_NODE,
 }

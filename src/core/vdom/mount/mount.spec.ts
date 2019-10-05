@@ -1,5 +1,5 @@
 import { createComponent } from '@core/component';
-import { Text, View, VirtualNode } from '../vnode';
+import { Text, View, VirtualNode, EMPTY_NODE } from '../vnode';
 import { mount } from './mount';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -20,7 +20,7 @@ test('[mount vdom]: mount children correctly', () => {
     });
   });
 
-  const vdom = mount(App({ color: 'red' })) as VirtualNode;
+  const vdom = mount(App()) as VirtualNode;
 
   expect(vdom.children.length).toBe(5);
 });
@@ -55,4 +55,14 @@ describe('[mount vdom]: mount children correctly with arrays', () => {
   test('mounting components recursively', () => {
     expect(vdom.children.every(vNode => vNode.isVirtualNode === true)).toBe(true);
   });
+});
+
+test('[mount vdom]: mount empty result', () => {
+  const App = createComponent(() => {
+    return null;
+  });
+
+  const vdom = mount(App()) as VirtualNode;
+
+  expect(vdom.text).toBe(EMPTY_NODE);
 });
