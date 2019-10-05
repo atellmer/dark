@@ -1,14 +1,13 @@
 const path = require('path');
 
+const { alias } = require('./webpack.alias');
+
 const config = {
   mode: 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts'],
-    alias: {
-      core: path.resolve(__dirname, './src/core'),
-      platform: path.resolve(__dirname, './src/platform'),
-    },
+    alias,
   },
   devtool: 'source-map',
   entry: path.resolve(__dirname, 'app/index.ts'),

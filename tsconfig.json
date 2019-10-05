@@ -13,12 +13,11 @@
 			"es6",
 			"es7",
 			"dom"
-		],
-	},
-	"baseUrl": "./src",
-	"paths": {
-		"@core/*": ["core/*"],
-		"@platform/*": ["platform/*"],
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@helpers": ["src/helpers"]
+    }
 	},
 	"include": [
 		"./src/**/*"
