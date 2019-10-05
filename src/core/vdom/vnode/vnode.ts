@@ -9,7 +9,6 @@ export type VirtualNode = {
   attrs?: Record<string, string>;
   text?: string;
   children: Array<VirtualNode>;
-  props?: any;
   route: Array<number>;
 };
 
@@ -31,7 +30,6 @@ function createVirtualNode(type: VirtualNodeType, config: Partial<VirtualNode> =
     attrs: {},
     text: '',
     children: [],
-    props: {},
     route: [],
     ...config,
     type,

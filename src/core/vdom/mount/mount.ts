@@ -1,6 +1,6 @@
 import { flatten, isArray } from '@helpers';
-import { getIsStatelessComponentFactory, StatelessComponentFactoryType } from '../component';
-import { createVirtualEmptyNode, VirtualNode } from './vnode';
+import { getIsStatelessComponentFactory, StatelessComponentFactoryType } from '../../component';
+import { createVirtualEmptyNode, VirtualNode } from '../vnode/vnode';
 
 function mount(
   element: VirtualNode | StatelessComponentFactoryType | null | undefined,
@@ -34,4 +34,6 @@ function mount(
   return vNode;
 }
 
-export { mount };
+export {
+  mount, //
+};
