@@ -2,7 +2,7 @@ const isFunction = o => typeof o === 'function';
 const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
 const isObject = o => typeof o === 'object';
-const isArray = o => Array.isArray(o);
+const isArray = Array.isArray;
 const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
 const isDOMElement = element => element instanceof Element || element instanceof HTMLDocument;

@@ -1,4 +1,5 @@
 import { isFunction, isObject, sanitize } from '@helpers';
+import { VirtualNode } from '../vdom';
 
 type ComponentDefinition = (props) => any | {};
 
@@ -7,9 +8,9 @@ type ComponentOptions = {
   defaultProps?: any;
 };
 
-type StatelessComponentFactoryType = {
+export type StatelessComponentFactoryType = {
   displayName: string;
-  createElement: () => any;
+  createElement: () => VirtualNode | Array<VirtualNode> | null;
   props: {
     key?: any;
   };
@@ -33,9 +34,9 @@ function createComponent(def: ComponentDefinition, options: ComponentOptions = n
   };
 }
 
-const isStatelessComponentFactory = f => f && isObject(f) && f[$$statelessComponentFactory] === true;
+const getIsStatelessComponentFactory = f => f && isObject(f) && f[$$statelessComponentFactory] === true;
 
 export {
   createComponent, //
-  isStatelessComponentFactory,
+  getIsStatelessComponentFactory,
 };
