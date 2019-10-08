@@ -1,3 +1,6 @@
+import { isEmpty } from '@helpers';
+import { ATTR_KEY } from '../../constants';
+
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
 
 export type VirtualNode = {
@@ -10,6 +13,7 @@ export type VirtualNode = {
   text?: string;
   children: Array<VirtualNode>;
   route: Array<number>;
+  processed: boolean;
 };
 
 export type ViewDefinition = {
@@ -31,6 +35,7 @@ function createVirtualNode(type: VirtualNodeType, config: Partial<VirtualNode> =
     text: '',
     children: [],
     route: [],
+    processed: false,
     ...config,
     type,
   };
@@ -67,17 +72,50 @@ const View = (def: ViewDefinition) => {
     name: as,
     isVoid,
     attrs: { ...rest },
-    children: isVoid ? [] : (children || []),
+    children: isVoid ? [] : children || [],
   });
+};
+
+function isTagVirtualNode(vNode: VirtualNode): boolean {
+  return vNode.type === 'TAG';
 }
+
+function createAttribute(name: string, value: string | number | boolean) {
+  return { [name]: value };
+}
+
+function getAttribute(vNode: VirtualNode, attrName: string): any {
+  return vNode && vNode.type === 'TAG' && !isEmpty(vNode.attrs[attrName])
+    ? vNode.attrs[attrName]
+    : undefined;
+}
+
+function setAttribute(vNode: VirtualNode, name: string, value: any) {
+  vNode.type === 'TAG' && (vNode.attrs[name] = value);
+}
+
+function removeAttribute(vNode: VirtualNode, name: string) {
+  vNode.type === 'TAG' && delete vNode.attrs[name];
+}
+
+function getNodeKey(vNode: VirtualNode): string {
+  return getAttribute(vNode, ATTR_KEY);
+}
+
 
 export {
   createVirtualNode,
   createVirtualTextNode,
-  createVirtualEmptyNode,
   createVirtualCommentNode,
+  createVirtualEmptyNode,
   Text,
   Comment,
   View,
   EMPTY_NODE,
-}
+  isTagVirtualNode,
+  createAttribute,
+  getAttribute,
+  setAttribute,
+  removeAttribute,
+  getNodeKey,
+};
