@@ -9,7 +9,6 @@ import {
 } from '@core/vdom';
 import { isArray, isNull, isUndefined } from '../../../helpers';
 import { mountDOM, processDOM } from '../dom/dom';
-import { makeEvents } from '../events/events';
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
@@ -62,12 +61,11 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     vNode = mountVirtualDOM(source);
     vNode = createRootVirtualNode(vNode);
     vNode = buildVirtualNodeWithRoutes(vNode);
-    app.queue.push(() => makeEvents(vNode as VirtualNode, zoneId));
     app.vdom = vNode;
-    Array.from(mountDOM(vNode).childNodes).forEach(node => container.appendChild(node));
+    Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
+    console.log('vNode: ', vNode);
     app.queue.forEach(fn => fn());
     app.queue = [];
-    console.log('vNode: ', vNode);
   } else {
     const vNode = getVirtualDOM(zoneId);
     let nextVNode: VirtualNode | Array<VirtualNode> = null;

@@ -1,6 +1,7 @@
 import {
   ADD_ATTRIBUTE,
   ADD_NODE,
+  getAttribute,
   getVirtualDOMDiff,
   isTagVirtualNode,
   REMOVE_ATTRIBUTE,
@@ -9,11 +10,10 @@ import {
   REPLACE_NODE,
   VirtualDOMDiff,
   VirtualNode,
-  getAttribute,
 } from '@core/vdom';
 import { isArray, isFunction, isUndefined } from '@helpers';
 import { getAppUid, getRegistery } from '../../../core/scope/scope';
-import { makeEvents } from '../events/events';
+import { delegateEvent } from '../events/events';
 
 type ProcessDOMOptions = {
   vNode: VirtualNode;
@@ -21,8 +21,13 @@ type ProcessDOMOptions = {
   container?: HTMLElement;
 };
 
-function mountDOM(vdom: VirtualNode | VirtualNode[], parentNode: HTMLElement = null): HTMLElement | Text | Comment {
+function mountDOM(
+  vdom: VirtualNode | VirtualNode[],
+  rootNode: HTMLElement,
+  parentNode: HTMLElement = null): HTMLElement | Text | Comment {
   let container: HTMLElement | Text | Comment | null = parentNode || null;
+  const uid = getAppUid();
+  const app = getRegistery().get(uid);
   const mapVDOM = (vNode: VirtualNode) => {
     if (!vNode) return;
 
@@ -30,20 +35,26 @@ function mountDOM(vdom: VirtualNode | VirtualNode[], parentNode: HTMLElement = n
 
     if (vNode.type === 'TAG') {
       const DOMElement = document.createElement(vNode.name);
-      const mapAttrs = (attrName: string) =>
-        !isFunction(getAttribute(vNode, attrName)) &&
-        DOMElement.setAttribute(attrName, vNode.attrs[attrName]);
+      const mapAttrs = (attrName: string) =>  {
+        !isFunction(getAttribute(vNode, attrName)) && DOMElement.setAttribute(attrName, vNode.attrs[attrName]);
+        if (/^on/.test(attrName)) {
+          const eventName = attrName.slice(2, attrName.length).toLowerCase();
+          const handler = getAttribute(vNode, attrName);
+
+          app.queue.push(() => delegateEvent(uid, rootNode, DOMElement, eventName, handler));
+        }
+      };
 
       Object.keys(vNode.attrs).forEach(mapAttrs);
 
       if (isContainerExists) {
         container.appendChild(DOMElement);
         if (!vNode.isVoid) {
-          const node = mountDOM(vNode.children, DOMElement) as HTMLElement;
+          const node = mountDOM(vNode.children, rootNode, DOMElement) as HTMLElement;
           container.appendChild(node);
         }
       } else {
-        const node = mountDOM(vNode.children, DOMElement) as HTMLElement;
+        const node = mountDOM(vNode.children, rootNode, DOMElement) as HTMLElement;
         container = node;
       }
     } else if (vNode.type === 'TEXT') {
@@ -151,23 +162,23 @@ function getDOMElementByRoute(parentNode: HTMLElement, route: number[] = []): HT
   return node;
 }
 
-function patchDOM(diff: VirtualDOMDiff[], container: HTMLElement) {
+function patchDOM(diff: VirtualDOMDiff[], rootElement: HTMLElement) {
   const mapDiff = (diffElement: VirtualDOMDiff) => {
-    const node = getNodeByDiffElement(container, diffElement);
+    const node = getNodeByDiffElement(rootElement, diffElement);
 
     if (diffElement.action === ADD_NODE) {
-      const newNode = mountDOM(diffElement.nextValue as VirtualNode);
+      const newNode = mountDOM(diffElement.nextValue as VirtualNode, rootElement);
       node.appendChild(newNode);
     } else if (diffElement.action === REMOVE_NODE) {
       node.parentNode.removeChild(node);
     } else if (diffElement.action === REPLACE_NODE) {
-      const newNode = mountDOM(diffElement.nextValue as VirtualNode);
+      const newNode = mountDOM(diffElement.nextValue as VirtualNode, rootElement);
       node.replaceWith(newNode);
     } else if (diffElement.action === ADD_ATTRIBUTE) {
       const attrValueBlackList = [];
       const mapAttrs = (attrName: string) =>
-        !attrValueBlackList.includes(diffElement.nextValue[attrName])
-        && node.setAttribute(attrName, diffElement.nextValue[attrName]);
+        !attrValueBlackList.includes(diffElement.nextValue[attrName]) &&
+        node.setAttribute(attrName, diffElement.nextValue[attrName]);
       Object.keys(diffElement.nextValue).forEach(mapAttrs);
     } else if (diffElement.action === REMOVE_ATTRIBUTE) {
       const mapAttrs = (attrName: string) => node.removeAttribute(attrName);
@@ -204,12 +215,12 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
   const DOMElement = getDOMElement();
   let diff = [];
 
-  app.queue.push(() => makeEvents(nextVNode, uid));
   diff = getVirtualDOMDiff(vNode, nextVNode);
   patchDOM(diff, DOMElement);
   app.queue.forEach(fn => fn());
   app.queue = [];
   app.vdom = nextVNode;
+  console.log('app.eventHandlers: ', app.eventHandlers)
 }
 
 export {

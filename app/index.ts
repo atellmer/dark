@@ -4,38 +4,48 @@ import { renderComponent } from '../src/platform/browser';
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
 
+
+const list = [...Array(10).fill(0)];
+
 const Component = createComponent(({ text }) => {
-  return div({
-    children: [
-      button({
-        onClick: () => {
-          console.log(text);
-          renderComponent(App({ isOpen: true, count: text }), document.getElementById('app'));
-        },
-        children: [
-          Text(text),
-        ],
-      }),
-    ],
-  })
+  return (
+    div({
+      children: [
+        button({
+          onClick: () => {
+            list.pop();
+            console.log('text: ', text)
+            renderComponent(App({ isOpen: true, count: text, list }), document.getElementById('app'));
+          },
+          children: [
+            Text(text),
+          ],
+        }),
+      ],
+    })
+  )
 });
 
-const App = createComponent(({ isOpen, count = 0 }) => {
+const App = createComponent(({ isOpen, list, count = 0 }) => {
   const renderList = () => [
-    ...Array(1000)
-      .fill(0)
-      .map((_, idx) => Component({ text: idx })),
+    ...list.map((_, idx) => Component({ text: idx })),
   ];
-
-  // renderComponent(Component({ text: isOpen ? 'on' : 'off' }), document.getElementById('app2'));
 
   return [
     Text(`current: ${count}`),
+    button({
+      style: 'color: red',
+      onClick: () => {
+        console.log('click');
+        renderComponent(App({ isOpen: true, count: 'text', list }), document.getElementById('app'));
+      },
+      children: [Text('click me')],
+    }),
     renderList(),
   ]
 });
 
-renderComponent(App({ isOpen: true }), document.getElementById('app'));
+renderComponent(App({ isOpen: true, list }), document.getElementById('app'));
 
 // setTimeout(() => {
 //   renderComponent(App({ isOpen: false }), document.getElementById('app'));

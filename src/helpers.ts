@@ -54,19 +54,18 @@ function deepClone(obj: any) {
   return copyObj;
 }
 
-function flatten(arr: Array<any>): Array<any> {
-  const mapElement = (acc, el) => {
+function flatten(list: Array<any>): Array<any> {
+  let flatList = [];
+
+  for (const el of list) {
     if (isArray(el)) {
-      acc.push(...(el as any));
+      flatList = flatList.concat(el);
     } else {
-      acc.push(el);
+      flatList.push(el);
     }
+  }
 
-    return acc;
-  };
-  const list = arr.reduce(mapElement, []);
-
-  return list;
+  return flatList;
 }
 
 export {
