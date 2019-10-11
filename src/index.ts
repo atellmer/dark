@@ -3,4 +3,5 @@ export {
   Text,
   Comment,
   View,
+  h,
 } from './core';

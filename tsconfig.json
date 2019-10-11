@@ -2,13 +2,15 @@
 	"compilerOptions": {
 		"target": "es5",
 		"moduleResolution": "node",
-		"module": "commonjs",
+		"module": "esnext",
 		"outDir": "./lib/",
 		"sourceMap": true,
 		"noImplicitAny": false,
 		"removeComments": false,
 		"downlevelIteration": true,
-		"allowJs": true,
+    "allowJs": true,
+    "jsx": "react",
+    "jsxFactory": "h",
 		"lib": [
 			"es6",
 			"es7",

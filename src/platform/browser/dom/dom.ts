@@ -24,7 +24,8 @@ type ProcessDOMOptions = {
 function mountDOM(
   vdom: VirtualNode | VirtualNode[],
   rootNode: HTMLElement,
-  parentNode: HTMLElement = null): HTMLElement | Text | Comment {
+  parentNode: HTMLElement = null,
+): HTMLElement | Text | Comment {
   let container: HTMLElement | Text | Comment | null = parentNode || null;
   const uid = getAppUid();
   const app = getRegistery().get(uid);
@@ -35,7 +36,7 @@ function mountDOM(
 
     if (vNode.type === 'TAG') {
       const DOMElement = document.createElement(vNode.name);
-      const mapAttrs = (attrName: string) =>  {
+      const mapAttrs = (attrName: string) => {
         !isFunction(getAttribute(vNode, attrName)) && DOMElement.setAttribute(attrName, vNode.attrs[attrName]);
         if (/^on/.test(attrName)) {
           const eventName = attrName.slice(2, attrName.length).toLowerCase();
@@ -185,7 +186,7 @@ function patchDOM(diff: VirtualDOMDiff[], rootElement: HTMLElement) {
       Object.keys(diffElement.oldValue).forEach(mapAttrs);
     } else if (diffElement.action === REPLACE_ATTRIBUTE) {
       const mapAttrs = (attrName: string) => {
-        const value = getAttribute(diffElement.nextValue as VirtualNode, attrName);
+        const value = diffElement.nextValue[attrName];
 
         !isFunction(value) && !isUndefined(value) && node.setAttribute(attrName, value);
 
@@ -211,16 +212,16 @@ function patchDOM(diff: VirtualDOMDiff[], rootElement: HTMLElement) {
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
   const uid = getAppUid();
   const app = getRegistery().get(uid);
-  const getDOMElement = () => (Boolean(container) ? container : (app.nativeElement as HTMLElement));
+  const getDOMElement = () => container || app.nativeElement;
   const DOMElement = getDOMElement();
   let diff = [];
 
   diff = getVirtualDOMDiff(vNode, nextVNode);
   patchDOM(diff, DOMElement);
+
   app.queue.forEach(fn => fn());
   app.queue = [];
   app.vdom = nextVNode;
-  console.log('app.eventHandlers: ', app.eventHandlers)
 }
 
 export {

@@ -6,11 +6,11 @@ const config = {
   mode: 'development',
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.js', '.ts'],
+    extensions: ['.js', '.ts', 'tsx'],
     alias,
   },
   devtool: 'source-map',
-  entry: path.resolve(__dirname, 'app/index.ts'),
+  entry: path.resolve(__dirname, 'app/index.tsx'),
   output: {
     path: path.resolve(__dirname, 'app'),
     filename: 'build.js',
@@ -23,7 +23,7 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.(ts|tsx)$/,
         loader: 'ts-loader',
         options: {
           transpileOnly: true,
