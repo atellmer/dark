@@ -1,57 +1,55 @@
-import { createComponent, h, Text, View } from '../src/core';
+import { createComponent, Fragment, h, Text, View } from '../src/core';
 import { renderComponent } from '../src/platform/browser';
+
+const domElement = document.getElementById('app');
+const domElement2 = document.getElementById('app2');
+const domElement3 = document.getElementById('app3');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
 const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
-const list = [...Array(100).fill(0)];
+type ContainerProp = {
+  value: string;
+};
 
-const Component = createComponent(({ text }) => {
-  return div({
-    children: [
-      button({
-        onClick: () => {
-          list.pop();
-          renderComponent(App({ isOpen: true, count: text }), document.getElementById('app'));
-        },
-        children: [Text(text)],
-      }),
-    ],
-  });
-});
-
-const Portal = createComponent(({ value = '' }) => {
-  return [Text(`portal: ${value}`)];
-});
-
-const domElement = document.getElementById('app');
-const domElement2 = document.getElementById('app2');
-
-const Container = createComponent(({ slot }) => {
+const Container = createComponent<ContainerProp>(({ slot, value }) => {
   // return div({
   //   style: 'color: red',
   //   slot: slot(5)
   // });
 
   return (
-    <div style='color: red'>
-      {slot(5)}
+    <div style='color: green'>
+      {typeof slot === 'function' && slot('render props pattern')}
+      value: {value}
     </div>
   );
-})
+});
 
-const App = createComponent(({ value = '' }) => {
-  // const renderInput = () => {
-  //   return (
-  //     <input
-  //       value={value}
-  //       onInput={(e) => renderComponent(App({ value: e.target.value }), domElement)}
-  //     />
-  //   );
-  // };
+type ButtonProps = {
+  fullWidth?: boolean;
+  onClick: (e) => void;
+};
 
-  //renderComponent(Portal({ value }), domElement2);  
+const Button = createComponent<ButtonProps>(({ slot, fullWidth, onClick }) => {
+  return (
+    <button data-test='xxxxx' style={`width: ${fullWidth ? '100%' : 'auto'}`} onClick={onClick}>
+      {slot}
+    </button>
+  );
+});
+
+type AppProps = {
+  isOpen?: boolean;
+  value: string;
+};
+
+const App = createComponent<AppProps>(({ value }) => {
+  const isOpen = value === 'open';
+  const renderInput = () => {
+    return <input value={value || ''} onInput={e => renderComponent(App({ value: e.target.value }), domElement)} />;
+  };
 
   // return (
   //   Container({
@@ -59,22 +57,20 @@ const App = createComponent(({ value = '' }) => {
   //   })
   // );
 
-  return [
-    <Container>
-      {(v) => <div>{v}</div>}
-    </Container>,
-    <Container>
-      {(v) => <div>{v}</div>}
-    </Container>
-  ];
+  return (
+    <div>
+      {
+        isOpen &&
+        <Fragment>
+          <div>1</div>
+          <div>2</div>
+          <div>3</div>
+        </Fragment>
+      }
+      {renderInput()}
+      <Container value={value}>{v => <div>{v}</div>}</Container>
+    </div>
+  );
 });
 
 renderComponent(App(), domElement);
-
-// setTimeout(() => {
-//   renderComponent(App({ isOpen: false }), document.getElementById('app'));
-// }, 2000)
-
-// setTimeout(() => {
-//   renderComponent(App({ isOpen: true }), document.getElementById('app'));
-// }, 4000)

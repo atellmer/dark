@@ -30,7 +30,7 @@ test('[Component]: createElement returns virtual node', () => {
 });
 
 test('[Component]: pass props to component correctly', () => {
-  const Component = createComponent(({ one, two }) => {
+  const Component = createComponent<any>(({ one, two }) => {
     expect(one).toBe('hello');
     expect(two).toBe('world');
     return div();

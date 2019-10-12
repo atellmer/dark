@@ -63,3 +63,21 @@ test('[mount vdom]: mount empty result', () => {
 
   expect(vdom.text).toBe(EMPTY_NODE);
 });
+
+test('[mount vdom]: mount componwnt from component', () => {
+  const Component = createComponent(({ slot }) => {
+    return div({
+      slot,
+    });
+  });
+
+  const App = createComponent(() => {
+    return Component({
+      slot: Component(),
+    });
+  });
+
+  const vdom = mountVirtualDOM(App()) as VirtualNode;
+
+  expect(vdom.children.length).toBe(1);
+});

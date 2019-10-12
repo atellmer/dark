@@ -1,4 +1,4 @@
-import { isEmpty, isArray } from '@helpers';
+import { isArray, isEmpty } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
@@ -15,6 +15,8 @@ export type VirtualNode = {
   route: Array<number>;
   processed: boolean;
 };
+
+export type VirtualDOM = VirtualNode | Array<VirtualNode>;
 
 export type ViewDefinition = {
   as: string;
@@ -72,11 +74,7 @@ const View = (def: ViewDefinition) => {
     name: as,
     isVoid,
     attrs: { ...rest },
-    children: isVoid
-      ? []
-      : isArray(slot)
-        ? slot
-        : [slot],
+    children: isVoid ? [] : isArray(slot) ? slot : [slot],
   });
 };
 
@@ -89,9 +87,7 @@ function createAttribute(name: string, value: string | number | boolean) {
 }
 
 function getAttribute(vNode: VirtualNode, attrName: string): any {
-  return vNode && vNode.type === 'TAG' && !isEmpty(vNode.attrs[attrName])
-    ? vNode.attrs[attrName]
-    : undefined;
+  return vNode && vNode.type === 'TAG' && !isEmpty(vNode.attrs[attrName]) ? vNode.attrs[attrName] : undefined;
 }
 
 function setAttribute(vNode: VirtualNode, name: string, value: any) {
@@ -105,7 +101,6 @@ function removeAttribute(vNode: VirtualNode, name: string) {
 function getNodeKey(vNode: VirtualNode): string {
   return getAttribute(vNode, ATTR_KEY);
 }
-
 
 export {
   createVirtualNode,
