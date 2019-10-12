@@ -28,36 +28,45 @@ const Portal = createComponent(({ value = '' }) => {
 const domElement = document.getElementById('app');
 const domElement2 = document.getElementById('app2');
 
-const Container = createComponent(({ children }) => {
+const Container = createComponent(({ slot }) => {
+  // return div({
+  //   style: 'color: red',
+  //   slot: slot(5)
+  // });
+
   return (
     <div style='color: red'>
-      {children}
+      {slot(5)}
     </div>
-  )
+  );
 })
 
 const App = createComponent(({ value = '' }) => {
-  const renderInput = () => {
-    return (
-      <input
-        value={value}
-        onInput={(e) => renderComponent(App({ value: e.target.value }), domElement)}
-      />
-    );
-  };
+  // const renderInput = () => {
+  //   return (
+  //     <input
+  //       value={value}
+  //       onInput={(e) => renderComponent(App({ value: e.target.value }), domElement)}
+  //     />
+  //   );
+  // };
 
-  renderComponent(Portal({ value }), domElement2);
+  //renderComponent(Portal({ value }), domElement2);  
 
-  return (
-    <div>
-      {renderInput()}
-      <br />
-      value: {value}
-      <Container>
-        {value === 'red' && <Container>zzzz</Container>}
-      </Container>
-    </div>
-  );
+  // return (
+  //   Container({
+  //     slot: (v) => div({ slot: Text(v) }),
+  //   })
+  // );
+
+  return [
+    <Container>
+      {(v) => <div>{v}</div>}
+    </Container>,
+    <Container>
+      {(v) => <div>{v}</div>}
+    </Container>
+  ];
 });
 
 renderComponent(App(), domElement);

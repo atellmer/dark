@@ -24,19 +24,12 @@ export type VirtualDOMDiff = {
   nextValue: VirtualNode | Record<string, number | string | boolean>;
 };
 
-function createDiffAction(
-  action: VirtualDOMActions,
-  route: Array<number> = [],
-  oldValue: any,
-  nextValue: any,
-): VirtualDOMDiff {
-  return {
-    action,
-    route,
-    oldValue,
-    nextValue,
-  };
-}
+const createDiffAction = (action: VirtualDOMActions, route: Array<number> = [], oldValue: any, nextValue: any): VirtualDOMDiff => ({
+  action,
+  route,
+  oldValue,
+  nextValue,
+});
 
 function getVirtualDOMDiff(
   vdom: VirtualNode,

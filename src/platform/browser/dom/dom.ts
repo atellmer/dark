@@ -214,12 +214,13 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
   const app = getRegistery().get(uid);
   const getDOMElement = () => container || app.nativeElement;
   const DOMElement = getDOMElement();
+  const mapFn = fn => fn();
   let diff = [];
 
   diff = getVirtualDOMDiff(vNode, nextVNode);
   patchDOM(diff, DOMElement);
 
-  app.queue.forEach(fn => fn());
+  app.queue.forEach(mapFn);
   app.queue = [];
   app.vdom = nextVNode;
 }

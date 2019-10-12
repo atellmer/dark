@@ -1,33 +1,12 @@
 const isFunction = o => typeof o === 'function';
 const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
+const isString = o => typeof o === 'string';
 const isObject = o => typeof o === 'object';
 const isArray = Array.isArray;
 const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
 const isDOMElement = element => element instanceof Element || element instanceof HTMLDocument;
-
-function escapeTags(str: string) {
-  const map = {};
-
-  return str.replace(/(.)/gm, (char: string) => map[char] || char);
-}
-
-function sanitize(o = {}) {
-  if (typeof o === 'string') {
-    return escapeTags(o);
-  } else if (typeof o === 'object' && o !== null) {
-    Object.keys(o).forEach(key => {
-      if (typeof o[key] === 'string') {
-        o[key] = escapeTags(o[key]);
-      } else if (typeof o[key] === 'object') {
-        sanitize(o[key]);
-      }
-    });
-  }
-
-  return o;
-}
 
 function error(errStr) {
   throw new Error(errStr);
@@ -72,12 +51,11 @@ export {
   isFunction,
   isUndefined,
   isNumber,
+  isString,
   isObject,
   isArray,
   isNull,
   isEmpty,
-  escapeTags,
-  sanitize,
   error,
   isDOMElement,
   deepClone,

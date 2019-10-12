@@ -1,4 +1,4 @@
-import { isFunction, isObject, sanitize } from '@helpers';
+import { isFunction, isObject } from '@helpers';
 import { VirtualNode } from '../vdom';
 
 type ComponentDefinition = (props) => any | {};
@@ -22,8 +22,8 @@ function createComponent(def: ComponentDefinition, options: ComponentOptions = n
   return (props = {}) => {
     const isStateless = isFunction(def);
     const displayName = options ? options.displayName : '';
-    const defaultProps = isStateless ? (options && options.defaultProps ? sanitize(options.defaultProps) : {}) : {};
-    const computedProps = { ...defaultProps, ...sanitize(props) };
+    const defaultProps = isStateless ? (options && options.defaultProps || {}) : {};
+    const computedProps = { ...defaultProps, ...props };
 
     return {
       [$$statelessComponentFactory]: true,

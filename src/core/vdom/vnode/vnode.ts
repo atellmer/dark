@@ -1,4 +1,4 @@
-import { isEmpty } from '@helpers';
+import { isEmpty, isArray } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
@@ -18,7 +18,7 @@ export type VirtualNode = {
 
 export type ViewDefinition = {
   as: string;
-  children?: Array<any>;
+  slot?: VirtualNode | Array<VirtualNode>;
   isVoid?: boolean;
   [prop: string]: any;
 };
@@ -66,13 +66,17 @@ function createVirtualEmptyNode(): VirtualNode {
 const Text = (str: string) => createVirtualTextNode(str);
 const Comment = (str: string) => createVirtualCommentNode(str);
 const View = (def: ViewDefinition) => {
-  const { as, children, isVoid = false, ...rest } = def;
+  const { as, slot, isVoid = false, ...rest } = def;
 
   return createVirtualTagNode({
     name: as,
     isVoid,
     attrs: { ...rest },
-    children: isVoid ? [] : children || [],
+    children: isVoid
+      ? []
+      : isArray(slot)
+        ? slot
+        : [slot],
   });
 };
 

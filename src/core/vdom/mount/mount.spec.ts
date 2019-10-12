@@ -11,7 +11,7 @@ test('[mount vdom]: mount children correctly', () => {
 
   const App = createComponent(() => {
     return div({
-      children: [
+      slot: [
         Text('hello'),
         ...Array(4)
           .fill(0)
@@ -40,7 +40,7 @@ describe('[mount vdom]: mount children correctly with arrays', () => {
 
   const App = createComponent(() => {
     return div({
-      children: [ListOne(), ListOne()],
+      slot: [ListOne(), ListOne()],
     });
   });
 

@@ -58,15 +58,16 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
 
     container.innerHTML = '';
     registry.set(zoneId, app);
-    
+
     vNode = mountVirtualDOM(source);
     vNode = createRootVirtualNode(vNode);
     vNode = buildVirtualNodeWithRoutes(vNode);
     app.vdom = vNode;
     Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
-    //console.log('vNode: ', vNode);
+    // console.log('vNode: ', vNode);
     app.queue.forEach(fn => fn());
     app.queue = [];
+    typeof onRender === 'function' && onRender();
   } else {
     const vNode = getVirtualDOM(zoneId);
     let nextVNode: VirtualNode | Array<VirtualNode> = null;
@@ -74,8 +75,9 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     nextVNode = mountVirtualDOM(source);
     nextVNode = createRootVirtualNode(nextVNode);
     nextVNode = buildVirtualNodeWithRoutes(nextVNode);
-    //console.log('nextVNode: ', nextVNode);
+    // console.log('nextVNode: ', nextVNode);
     processDOM({ vNode, nextVNode });
+    typeof onRender === 'function' && onRender();
   }
 
   if (!isInternalRenderCall) {
