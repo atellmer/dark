@@ -1,4 +1,5 @@
 import { isArray, isEmpty } from '@helpers';
+import { StatelessComponentFactory } from '../../component';
 import { ATTR_KEY } from '../../constants';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
@@ -18,9 +19,11 @@ export type VirtualNode = {
 
 export type VirtualDOM = VirtualNode | Array<VirtualNode>;
 
+export type RenderProps = (...args: any) => VirtualDOM;
+
 export type ViewDefinition = {
   as: string;
-  slot?: VirtualNode | Array<VirtualNode>;
+  slot?: VirtualDOM | Array<StatelessComponentFactory> | Array<RenderProps>;
   isVoid?: boolean;
   [prop: string]: any;
 };
@@ -74,7 +77,7 @@ const View = (def: ViewDefinition) => {
     name: as,
     isVoid,
     attrs: { ...rest },
-    children: isVoid ? [] : isArray(slot) ? slot : [slot],
+    children: (isVoid ? [] : isArray(slot) ? slot : [slot]) as Array<VirtualNode>,
   });
 };
 

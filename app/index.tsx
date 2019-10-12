@@ -53,6 +53,7 @@ const App = createComponent<AppProps>(({ value }) => {
 
   // return (
   //   Container({
+  //     value,
   //     slot: (v) => div({ slot: Text(v) }),
   //   })
   // );

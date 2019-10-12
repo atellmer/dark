@@ -2,33 +2,16 @@ import { StatelessComponentFactory } from '@core/component';
 import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid, setMountedRoute } from '@core/scope';
 import {
   buildVirtualNodeWithRoutes,
-  createVirtualEmptyNode,
-  createVirtualNode,
   mountVirtualDOM,
   VirtualNode,
 } from '@core/vdom';
-import { isArray, isNull, isUndefined } from '../../../helpers';
+import { isUndefined } from '../../../helpers';
 import { mountDOM, processDOM } from '../dom/dom';
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
 let isInternalRenderCall = false;
 let zoneCount = 0;
-
-function createRootVirtualNode(sourceVNode: VirtualNode | Array<VirtualNode> | null): VirtualNode {
-  let vNode = null;
-
-  if (isNull(sourceVNode)) {
-    sourceVNode = createVirtualEmptyNode();
-  }
-
-  vNode = createVirtualNode('TAG', {
-    name: 'root',
-    children: isArray(sourceVNode) ? [...sourceVNode] : [sourceVNode],
-  });
-
-  return vNode;
-}
 
 function renderComponent(source: VirtualNode | StatelessComponentFactory, container: HTMLElement, onRender?: Function) {
   const isMounted = !isUndefined(zoneIdByRootNodeMap.get(container));
@@ -52,29 +35,27 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
   setAppUid(zoneId);
 
   if (!isMounted) {
-    let vNode: VirtualNode | Array<VirtualNode> = null;
+    let vNode: VirtualNode = null;
     const registry = getRegistery();
     const app = createApp(container);
 
     container.innerHTML = '';
     registry.set(zoneId, app);
 
-    vNode = mountVirtualDOM(source);
-    vNode = createRootVirtualNode(vNode);
-    vNode = buildVirtualNodeWithRoutes(vNode);
+    vNode = mountVirtualDOM(source, true) as VirtualNode;
+    // vNode = buildVirtualNodeWithRoutes(vNode);
+    console.log('vNode: ', vNode);
     app.vdom = vNode;
     Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
-    // console.log('vNode: ', vNode);
     app.queue.forEach(fn => fn());
     app.queue = [];
     typeof onRender === 'function' && onRender();
   } else {
     const vNode = getVirtualDOM(zoneId);
-    let nextVNode: VirtualNode | Array<VirtualNode> = null;
+    let nextVNode: VirtualNode = null;
 
-    nextVNode = mountVirtualDOM(source);
-    nextVNode = createRootVirtualNode(nextVNode);
-    nextVNode = buildVirtualNodeWithRoutes(nextVNode);
+    nextVNode = mountVirtualDOM(source, true) as VirtualNode;
+    // nextVNode = buildVirtualNodeWithRoutes(nextVNode);
     // console.log('nextVNode: ', nextVNode);
     processDOM({ vNode, nextVNode });
     typeof onRender === 'function' && onRender();

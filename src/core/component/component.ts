@@ -16,7 +16,7 @@ export type StatelessComponentFactory = {
   };
 };
 
-type RenderProps = (...args: any) => VirtualDOM;
+export type RenderProps = (...args: any) => VirtualDOM;
 
 type StandardComponentProps = {
   slot?: VirtualDOM | RenderProps;
