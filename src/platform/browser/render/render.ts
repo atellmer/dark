@@ -1,7 +1,6 @@
 import { StatelessComponentFactory } from '@core/component';
-import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid, setMountedRoute } from '@core/scope';
+import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid, setMountedRoute, getMountedRoute } from '@core/scope';
 import {
-  buildVirtualNodeWithRoutes,
   mountVirtualDOM,
   VirtualNode,
 } from '@core/vdom';
@@ -42,8 +41,7 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     container.innerHTML = '';
     registry.set(zoneId, app);
 
-    vNode = mountVirtualDOM(source, true) as VirtualNode;
-    // vNode = buildVirtualNodeWithRoutes(vNode);
+    vNode = mountVirtualDOM(source, getMountedRoute(), true) as VirtualNode;
     console.log('vNode: ', vNode);
     app.vdom = vNode;
     Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
@@ -54,9 +52,8 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     const vNode = getVirtualDOM(zoneId);
     let nextVNode: VirtualNode = null;
 
-    nextVNode = mountVirtualDOM(source, true) as VirtualNode;
-    // nextVNode = buildVirtualNodeWithRoutes(nextVNode);
-    // console.log('nextVNode: ', nextVNode);
+    nextVNode = mountVirtualDOM(source, getMountedRoute(), true) as VirtualNode;
+    //console.log('nextVNode: ', nextVNode);
     processDOM({ vNode, nextVNode });
     typeof onRender === 'function' && onRender();
   }

@@ -45,33 +45,71 @@ type AppProps = {
   value: string;
 };
 
-const App = createComponent<AppProps>(({ value }) => {
-  const isOpen = value === 'open';
-  const renderInput = () => {
-    return <input value={value || ''} onInput={e => renderComponent(App({ value: e.target.value }), domElement)} />;
-  };
+// const App = createComponent<AppProps>(({ value = 'open' }) => {
+//   const isOpen = value === 'open';
+//   const renderInput = () => {
+//     return <input value={value || ''} onInput={e => renderComponent(App({ value: e.target.value }), domElement)} />;
+//   };
 
-  // return (
-  //   Container({
-  //     value,
-  //     slot: (v) => div({ slot: Text(v) }),
-  //   })
-  // );
+//   // return (
+//   //   Container({
+//   //     value,
+//   //     slot: (v) => div({ slot: Text(v) }),
+//   //   })
+//   // );
 
-  return (
-    <div>
-      {
-        isOpen &&
-        <Fragment>
-          <div>1</div>
-          <div>2</div>
-          <div>3</div>
-        </Fragment>
-      }
-      {renderInput()}
-      <Container value={value}>{v => <div>{v}</div>}</Container>
-    </div>
-  );
+//   // return (
+//   //   <div>
+//   //     <div>1</div>
+//   //     <div>2</div>
+//   //     <div>3</div>
+//   //   </div>
+//   // )
+
+//   return (
+//     <div>
+//       <Fragment>
+//         <div>1</div>
+//         <div>2</div>
+//         <div>3</div>
+//       </Fragment>
+//       <div>xxx</div>
+//       {
+//         isOpen &&
+//         [
+//           <div>1</div>,
+//           <div>2</div>,
+//           <div>3</div>,
+//         ]
+//       }
+//       {renderInput()}
+//       <Container value={value}>{v => <div>{v}</div>}</Container>
+//     </div>
+//   );
+// });
+
+const Component = createComponent(() => {
+  return [
+    div({ slot: Text('1') }),
+    div({ slot: Text('2') }),
+    div({ slot: Text('3') }),
+  ]
+})
+const App = createComponent(() => {
+  return div({
+    slot: [
+      [
+        Component(),
+        Component(),
+        Component(),
+      ],
+      [
+        Component(),
+      ],
+      Text('xxx'),
+      Text('zzz'),
+    ],
+  })
 });
 
 renderComponent(App(), domElement);

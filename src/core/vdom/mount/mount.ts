@@ -1,9 +1,11 @@
-import { flatten, isArray, isNull } from '@helpers';
+import { deepClone, flatten, isArray, isNull } from '@helpers';
 import { getIsStatelessComponentFactory, StatelessComponentFactory } from '../../component';
-import { createVirtualEmptyNode, createVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
+import { isFragment } from '../../fragment';
+import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
 
 function wrapWithRoot(
   sourceVNode: VirtualNode | Array<VirtualNode> | StatelessComponentFactory | null | undefined,
+  currRoute: Array<number>,
 ): VirtualNode {
   let vNode = null;
 
@@ -11,35 +13,63 @@ function wrapWithRoot(
     sourceVNode = createVirtualEmptyNode();
   }
 
-  const mountedVDOM = mountVirtualDOM(sourceVNode);
+  const mountedVDOM = mountVirtualDOM(sourceVNode, [...currRoute, 0]);
 
   vNode = createVirtualNode('TAG', {
     name: 'root',
+    route: [...currRoute],
     children: isArray(mountedVDOM) ? mountedVDOM : [mountedVDOM],
   });
 
   return vNode;
 }
 
-function flatVirtualDOM(
-  vNode: VirtualDOM,
-  mount: (element: VirtualNode | StatelessComponentFactory | null | undefined) => VirtualDOM,
-): VirtualDOM {
-  let flatVNode = vNode;
+function flatVirtualDOM(element: VirtualDOM, currRoute: Array<number>): VirtualDOM {
+  let vNode = element;
 
-  if (isArray(flatVNode)) {
-    flatVNode = flatten(flatVNode.map(mount));
-  } else if (getIsStatelessComponentFactory(flatVNode)) {
-    flatVNode = mount(flatVNode);
-  } else if (Boolean(flatVNode)) {
-    flatVNode.children = flatten(flatVNode.children.map(mount));
+  if (isArray(vNode)) {
+    let shift = 0;
+    const last = currRoute.slice(-1)[0];
+    const list = vNode.map((n, idx) => {
+      const route = [...currRoute.slice(0, -1), last + shift + idx];
+      const mounted = mountVirtualDOM(n, route);
+
+      if (isArray(mounted)) {
+        shift += flatten(mounted).length - 1;
+      }
+
+      return mounted;
+    });
+
+    vNode = flatten(list);
+  } else if (getIsStatelessComponentFactory(vNode)) {
+    vNode = mountVirtualDOM(vNode, currRoute);
+  } else if (Boolean(vNode)) {
+    if (isVirtualNode(vNode)) {
+      vNode.route = [...currRoute];
+    }
+
+    let shift = 0;
+    const list = vNode.children.map((n, idx) => {
+      const route = [...currRoute, shift + idx];
+      const mounted = mountVirtualDOM(n, route);
+
+      if (isArray(mounted)) {
+        shift += flatten(mounted).length - 1;
+      }
+
+      return mounted;
+    });
+
+    vNode.children = flatten(list);
   }
 
-  return flatVNode;
+  return vNode;
 }
 
 function mountVirtualDOM(
-  element: VirtualNode | Array<VirtualNode> | StatelessComponentFactory | null | undefined,
+  element: VirtualDOM | StatelessComponentFactory | null | undefined,
+  currRoute: Array<number>,
   fromRoot: boolean = false,
 ): VirtualDOM {
   const isStatelessComponentFactory = getIsStatelessComponentFactory(element);
@@ -47,17 +77,18 @@ function mountVirtualDOM(
   let vNode = null;
 
   if (fromRoot) {
-    vNode = wrapWithRoot(element);
+    vNode = wrapWithRoot(element, currRoute);
   } else if (isStatelessComponentFactory) {
     vNode = statelessFactory.createElement();
-    vNode = flatVirtualDOM(vNode, el => mountVirtualDOM(el));
+    vNode = flatVirtualDOM(vNode, currRoute);
   } else if (Boolean(element)) {
     vNode = element;
-    vNode = flatVirtualDOM(vNode, el => mountVirtualDOM(el));
+    vNode = flatVirtualDOM(vNode, currRoute);
   }
 
   if (!vNode) {
     vNode = createVirtualEmptyNode();
+    vNode.route = currRoute;
   }
 
   return vNode;
