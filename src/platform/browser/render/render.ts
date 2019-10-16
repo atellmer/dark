@@ -33,6 +33,8 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
   setMountedRoute([0]);
   setAppUid(zoneId);
 
+  const route = getMountedRoute();
+
   if (!isMounted) {
     let vNode: VirtualNode = null;
     const registry = getRegistery();
@@ -41,7 +43,7 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     container.innerHTML = '';
     registry.set(zoneId, app);
 
-    vNode = mountVirtualDOM(source, getMountedRoute(), true) as VirtualNode;
+    vNode = mountVirtualDOM(source, route, route, true) as VirtualNode;
     console.log('vNode: ', vNode);
     app.vdom = vNode;
     Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
@@ -50,10 +52,8 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     typeof onRender === 'function' && onRender();
   } else {
     const vNode = getVirtualDOM(zoneId);
-    let nextVNode: VirtualNode = null;
-
-    nextVNode = mountVirtualDOM(source, getMountedRoute(), true) as VirtualNode;
-    //console.log('nextVNode: ', nextVNode);
+    const nextVNode: VirtualNode = mountVirtualDOM(source, route, route, true) as VirtualNode;
+    // console.log('nextVNode: ', nextVNode);
     processDOM({ vNode, nextVNode });
     typeof onRender === 'function' && onRender();
   }

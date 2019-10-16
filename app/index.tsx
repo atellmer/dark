@@ -14,29 +14,11 @@ type ContainerProp = {
 };
 
 const Container = createComponent<ContainerProp>(({ slot, value }) => {
-  // return div({
-  //   style: 'color: red',
-  //   slot: slot(5)
-  // });
-
   return (
     <div style='color: green'>
       {typeof slot === 'function' && slot('render props pattern')}
       value: {value}
     </div>
-  );
-});
-
-type ButtonProps = {
-  fullWidth?: boolean;
-  onClick: (e) => void;
-};
-
-const Button = createComponent<ButtonProps>(({ slot, fullWidth, onClick }) => {
-  return (
-    <button data-test='xxxxx' style={`width: ${fullWidth ? '100%' : 'auto'}`} onClick={onClick}>
-      {slot}
-    </button>
   );
 });
 
@@ -88,28 +70,32 @@ type AppProps = {
 //   );
 // });
 
+const Item = createComponent(() => {
+  return [
+    Text('Item 1'),
+    Text('Item 2'),
+  ]
+},{ displayName:'Item' })
+
 const Component = createComponent(() => {
   return [
-    div({ slot: Text('1') }),
-    div({ slot: Text('2') }),
-    div({ slot: Text('3') }),
+    div({ slot: Text('Component 1') }),
+    Item(),
   ]
-})
+}, { displayName:'Component' })
 const App = createComponent(() => {
-  return div({
+  return [div({
     slot: [
+      Text('text 1'),
+      Text('text 2'),
       [
         Component(),
-        Component(),
-        Component(),
-      ],
-      [
         Component(),
       ],
       Text('xxx'),
       Text('zzz'),
     ],
-  })
-});
+  }), Text('xxx')]
+}, { displayName:'App' });
 
 renderComponent(App(), domElement);
