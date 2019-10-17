@@ -1,6 +1,5 @@
-import { deepClone, flatten, isArray, isNull } from '@helpers';
+import { flatten, isArray, isNull } from '@helpers';
 import { getIsStatelessComponentFactory, StatelessComponentFactory } from '../../component';
-import { isFragment } from '../../fragment';
 import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
 
 function wrapWithRoot(
@@ -14,11 +13,15 @@ function wrapWithRoot(
     sourceVNode = createVirtualEmptyNode();
   }
 
-  const mountedVDOM = mountVirtualDOM(sourceVNode, [...mountedNodeRoute, 0], [...mountedComponentRoute, 0]);
+  const mountedVDOM = mountVirtualDOM({
+    element: sourceVNode,
+    mountedNodeRoute: [...mountedNodeRoute, 0],
+    mountedComponentRoute: [...mountedComponentRoute, 0],
+  });
 
   vNode = createVirtualNode('TAG', {
     name: 'root',
-    route: [...mountedNodeRoute],
+    nodeRoute: [...mountedNodeRoute],
     componentRoute: [...mountedComponentRoute],
     children: isArray(mountedVDOM) ? mountedVDOM : [mountedVDOM],
   });
@@ -31,15 +34,16 @@ function flatVirtualDOM(element: VirtualDOM, mountedNodeRoute: Array<number>, mo
 
   if (isArray(vNode)) {
     let shift = 0;
-    let cmpShift = 0;
     const last = mountedNodeRoute.slice(-1)[0];
-    const cmpLast = mountedComponentRoute.slice(-1)[0];
-    const list = vNode.map((n, idx) => {
-      const route = [...mountedNodeRoute.slice(0, -1), last + shift + idx];
-      const componentRoute = [...mountedComponentRoute.slice(0, -1), cmpLast + cmpShift, idx];
-      const mounted = mountVirtualDOM(n, route, componentRoute);
+    const list = vNode.map((element, idx) => {
+      const nodeRoute = [...mountedNodeRoute.slice(0, -1), last + shift + idx];
+      const componentRoute = [...mountedComponentRoute, idx];
+      const mounted = mountVirtualDOM({
+        element,
+        mountedNodeRoute: nodeRoute,
+        mountedComponentRoute: componentRoute,
+      });
 
-      cmpShift = getIsStatelessComponentFactory(vNode[idx + 1]) ? cmpShift + 1 : cmpShift;
       if (isArray(mounted)) {
         shift += flatten(mounted).length - 1;
       }
@@ -49,25 +53,22 @@ function flatVirtualDOM(element: VirtualDOM, mountedNodeRoute: Array<number>, mo
 
     vNode = flatten(list);
   } else if (getIsStatelessComponentFactory(vNode)) {
-    vNode = mountVirtualDOM(vNode, mountedNodeRoute, mountedComponentRoute);
+    vNode = mountVirtualDOM({ element: vNode, mountedNodeRoute, mountedComponentRoute });
   } else if (Boolean(vNode)) {
     if (isVirtualNode(vNode)) {
-      vNode.route = [...mountedNodeRoute];
+      vNode.nodeRoute = [...mountedNodeRoute];
       vNode.componentRoute = [...mountedComponentRoute];
-      vNode.id = '';
     }
 
     let shift = 0;
-    let cmpShift = 0;
-    const list = vNode.children.map((n, idx) => {
-      const route = [...mountedNodeRoute, shift + idx];
-      const componentRoute = [...mountedComponentRoute, cmpShift + idx];
-      const mounted = mountVirtualDOM(n, route, componentRoute);
-
-      if (isArray(n)) {
-        const length = flatten(n.filter(n => getIsStatelessComponentFactory(n))).length;
-        cmpShift += (length > 0 ? length - 1 : 0);
-      }
+    const list = vNode.children.map((element, idx) => {
+      const nodeRoute = [...mountedNodeRoute, shift + idx];
+      const componentRoute = [...mountedComponentRoute, idx];
+      const mounted = mountVirtualDOM({
+        element,
+        mountedNodeRoute: nodeRoute,
+        mountedComponentRoute: componentRoute,
+      });
 
       if (isArray(mounted)) {
         shift += flatten(mounted).length - 1;
@@ -82,12 +83,15 @@ function flatVirtualDOM(element: VirtualDOM, mountedNodeRoute: Array<number>, mo
   return vNode;
 }
 
-function mountVirtualDOM(
-  element: VirtualDOM | StatelessComponentFactory | null | undefined,
-  mountedNodeRoute: Array<number>,
-  mountedComponentRoute: Array<number>,
-  fromRoot: boolean = false,
-): VirtualDOM {
+type MountVirtualDOMOptions = {
+  element: VirtualDOM | StatelessComponentFactory | null | undefined;
+  mountedNodeRoute?: Array<number>;
+  mountedComponentRoute?: Array<number>;
+  fromRoot?: boolean;
+}
+
+function mountVirtualDOM({
+  element, mountedNodeRoute = [0], mountedComponentRoute = [0], fromRoot = false }: MountVirtualDOMOptions): VirtualDOM {
   const isStatelessComponentFactory = getIsStatelessComponentFactory(element);
   const statelessFactory = element as StatelessComponentFactory;
   let vNode = null;
@@ -95,10 +99,7 @@ function mountVirtualDOM(
   if (fromRoot) {
     vNode = wrapWithRoot(element, mountedNodeRoute, mountedComponentRoute);
   } else if (isStatelessComponentFactory) {
-    const componentRoute = [...mountedComponentRoute, 0];
-    // console.log('componentRoute', componentRoute);
-    // console.log('fc', statelessFactory);
-    
+    const componentRoute = [...mountedComponentRoute, -1];
     vNode = statelessFactory.createElement();
     vNode = flatVirtualDOM(vNode, mountedNodeRoute, componentRoute);
   } else if (Boolean(element)) {

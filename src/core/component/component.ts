@@ -1,5 +1,5 @@
 import { isFunction, isObject } from '@helpers';
-import { VirtualDOM, VirtualNode } from '../vdom';
+import { VirtualDOM } from '../vdom';
 
 type ComponentDefinition<P> = (props: P) => any | {};
 

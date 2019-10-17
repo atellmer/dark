@@ -1,9 +1,6 @@
 import { StatelessComponentFactory } from '@core/component';
-import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid, setMountedRoute, getMountedRoute } from '@core/scope';
-import {
-  mountVirtualDOM,
-  VirtualNode,
-} from '@core/vdom';
+import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@core/scope';
+import { mountVirtualDOM, VirtualNode } from '@core/vdom';
 import { isUndefined } from '../../../helpers';
 import { mountDOM, processDOM } from '../dom/dom';
 
@@ -30,10 +27,7 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
 
   zoneId = zoneIdByRootNodeMap.get(container);
 
-  setMountedRoute([0]);
   setAppUid(zoneId);
-
-  const route = getMountedRoute();
 
   if (!isMounted) {
     let vNode: VirtualNode = null;
@@ -43,19 +37,17 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     container.innerHTML = '';
     registry.set(zoneId, app);
 
-    vNode = mountVirtualDOM(source, route, route, true) as VirtualNode;
+    vNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;
     console.log('vNode: ', vNode);
     app.vdom = vNode;
     Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
     app.queue.forEach(fn => fn());
     app.queue = [];
-    typeof onRender === 'function' && onRender();
   } else {
     const vNode = getVirtualDOM(zoneId);
-    const nextVNode: VirtualNode = mountVirtualDOM(source, route, route, true) as VirtualNode;
-    // console.log('nextVNode: ', nextVNode);
+    const nextVNode: VirtualNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;
+    console.log('nextVNode: ', nextVNode);
     processDOM({ vNode, nextVNode });
-    typeof onRender === 'function' && onRender();
   }
 
   if (!isInternalRenderCall) {
@@ -64,6 +56,8 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     isInternalRenderCall = false;
     setAppUid(prevZoneId);
   }
+
+  typeof onRender === 'function' && onRender();
 }
 
 export {

@@ -72,30 +72,32 @@ type AppProps = {
 
 const Item = createComponent(() => {
   return [
-    Text('Item 1'),
-    Text('Item 2'),
+    Text('666'),
   ]
 },{ displayName:'Item' })
 
 const Component = createComponent(() => {
   return [
-    div({ slot: Text('Component 1') }),
     Item(),
+    div({ slot: Text('Component 1') }),
   ]
 }, { displayName:'Component' })
-const App = createComponent(() => {
-  return [div({
+const App = createComponent(({ isOpen }) => {
+  return div({
     slot: [
       Text('text 1'),
       Text('text 2'),
-      [
+      isOpen && [
         Component(),
         Component(),
       ],
       Text('xxx'),
       Text('zzz'),
     ],
-  }), Text('xxx')]
+  })
 }, { displayName:'App' });
 
-renderComponent(App(), domElement);
+renderComponent(App({ isOpen: true }), domElement);
+
+// setTimeout(() => renderComponent(App({ isOpen: false }), domElement), 2000)
+// setTimeout(() => renderComponent(App({ isOpen: true }), domElement), 4000)

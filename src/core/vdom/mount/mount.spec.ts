@@ -21,7 +21,7 @@ test('[mount vdom]: mount children correctly', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
+  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
 
   expect(vdom.children.length).toBe(5);
 });
@@ -45,7 +45,7 @@ describe('[mount vdom]: mount children correctly with arrays', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
+  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
 
   test('right numbers of children', () => {
     expect(vdom.children.length).toBe(12);
@@ -60,7 +60,7 @@ test('[mount vdom]: mount empty result', () => {
     return null;
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
+  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
 
   expect(vdom.text).toBe(EMPTY_NODE);
 });
@@ -78,7 +78,7 @@ test('[mount vdom]: mount component from component', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
+  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
 
   expect(vdom.children.length).toBe(1);
 });
@@ -90,21 +90,19 @@ test('[mount vdom]: calculate node routes correctly 1', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
-  const nodeRoutes = vdom.children.map(n => n.route);
+  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
+  const nodeRoutes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
   expect(nodeRoutes).toEqual([[0, 0], [0, 1], [0, 2]]);
-  expect(cmpRoutes).toEqual([[0, 0, 0], [0, 0, 1], [0, 0, 2]]);
+  expect(cmpRoutes).toEqual([[0, -1, 0], [0, -1, 1], [0, -1, 2]]);
 });
 
 test('[mount vdom]: calculate node routes correctly 2', () => {
-  const vdom = mountVirtualDOM(
-    [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
-    [0],
-    [0],
-  ) as Array<VirtualNode>;
-  const routes = vdom.map(n => n.route);
+  const vdom = mountVirtualDOM({
+    element: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
+  }) as Array<VirtualNode>;
+  const routes = vdom.map(n => n.nodeRoute);
   const cmpRoutes = vdom.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0], [1], [2]]);
@@ -112,18 +110,16 @@ test('[mount vdom]: calculate node routes correctly 2', () => {
 });
 
 test('[mount vdom]: calculate node routes correctly 3', () => {
-  const vdom = mountVirtualDOM(
-    Fragment({
+  const vdom = mountVirtualDOM({
+    element: Fragment({
       slot: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
     }),
-    [0],
-    [0],
-  ) as Array<VirtualNode>;
-  const routes = vdom.map(n => n.route);
+  }) as Array<VirtualNode>;
+  const routes = vdom.map(n => n.nodeRoute);
   const cmpRoutes = vdom.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0], [1], [2]]);
-  expect(cmpRoutes).toEqual([[0, 0, 0], [0, 0, 1], [0, 0, 2]]);
+  expect(cmpRoutes).toEqual([[0, -1, 0], [0, -1, 1], [0, -1, 2]]);
 });
 
 test('[mount vdom]: calculate node routes correctly 4', () => {
@@ -138,12 +134,12 @@ test('[mount vdom]: calculate node routes correctly 4', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
-  const routes = vdom.children.map(n => n.route);
+  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5]]);
-  expect(cmpRoutes).toEqual([[0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 1], [0, 0, 1, 2], [0, 0, 2], [0, 0, 3]]);
+  expect(cmpRoutes).toEqual([[0, -1, 0], [0, -1, 1, 0], [0, -1, 1, 1], [0, -1, 1, 2], [0, -1, 2], [0, -1, 3]]);
 });
 
 test('[mount vdom]: calculate node routes correctly 4', () => {
@@ -162,22 +158,22 @@ test('[mount vdom]: calculate node routes correctly 4', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
-  const routes = vdom.children.map(n => n.route);
+  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9]]);
   expect(cmpRoutes).toEqual([
-    [0, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 1, 1],
-    [0, 0, 1, 2],
-    [0, 0, 2, 0, 0],
-    [0, 0, 2, 0, 1],
-    [0, 0, 2, 0, 2],
-    [0, 0, 3],
-    [0, 0, 4],
-    [0, 0, 5],
+    [0, -1, 0],
+    [0, -1, 1, 0],
+    [0, -1, 1, 1],
+    [0, -1, 1, 2],
+    [0, -1, 2, -1, 0],
+    [0, -1, 2, -1, 1],
+    [0, -1, 2, -1, 2],
+    [0, -1, 3],
+    [0, -1, 4],
+    [0, -1, 5],
   ]);
 });
 
@@ -191,23 +187,23 @@ test('[mount vdom]: calculate node routes correctly 5', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
-  const routes = vdom.children.map(n => n.route);
+  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10]]);
   expect(cmpRoutes).toEqual([
-    [0, 0, 0],
-    [0, 0, 1, 0, 0, 0],
-    [0, 0, 1, 0, 0, 1],
-    [0, 0, 1, 0, 0, 2],
-    [0, 0, 2, 1, 0, 0],
-    [0, 0, 2, 1, 0, 1],
-    [0, 0, 2, 1, 0, 2],
-    [0, 0, 3, 2, 0, 0],
-    [0, 0, 3, 2, 0, 1],
-    [0, 0, 3, 2, 0, 2],
-    [0, 0, 4],
+    [0, -1, 0],
+    [0, -1, 1, 0, -1, 0],
+    [0, -1, 1, 0, -1, 1],
+    [0, -1, 1, 0, -1, 2],
+    [0, -1, 1, 1, -1, 0],
+    [0, -1, 1, 1, -1, 1],
+    [0, -1, 1, 1, -1, 2],
+    [0, -1, 1, 2, -1, 0],
+    [0, -1, 1, 2, -1, 1],
+    [0, -1, 1, 2, -1, 2],
+    [0, -1, 2],
   ]);
 });
 
@@ -224,67 +220,55 @@ test('[mount vdom]: calculate node routes correctly 6', () => {
     });
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as VirtualNode;
-  const routes = vdom.children.map(n => n.route);
+  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7]]);
   expect(cmpRoutes).toEqual([
-    [0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0],
-    [0, 0, 1, 0, 1, 1, 0],
-    [0, 0, 1, 0, 1, 2],
-    [0, 0, 2, 1, 0, 0, 0],
-    [0, 0, 2, 1, 1, 1, 0],
-    [0, 0, 2, 1, 1, 2],
-    [0, 0, 3]
+    [0, -1, 0],
+    [0, -1, 1, 0, -1, 0, -1],
+    [0, -1, 1, 0, -1, 1, -1],
+    [0, -1, 1, 0, -1, 2],
+    [0, -1, 1, 1, -1, 0, -1],
+    [0, -1, 1, 1, -1, 1, -1],
+    [0, -1, 1, 1, -1, 2],
+    [0, -1, 2],
   ]);
 });
 
 test('[mount vdom]: calculate node routes correctly 7', () => {
   const Item = createComponent(() => {
-    return [
-      Text('text'),
-      Text('text'),
-    ]
-  })
-  
-  const Component = createComponent(() => {
-    return [
-      div({ slot: Text('text') }),
-      Item(),
-    ]
-  })
-  const App = createComponent(() => {
-    return [div({
-      slot: [
-        Text('text'),
-        Text('text'),
-        [
-          Component(),
-          Component(),
-        ],
-        Text('text'),
-        Text('text'),
-      ],
-    }), Text('text')]
+    return [Text('text'), Text('text')];
   });
 
-  const vdom = mountVirtualDOM(App(), [0], [0]) as Array<VirtualNode>;
-  const routes = vdom[0].children.map(n => n.route);
+  const Component = createComponent(() => {
+    return [div({ slot: Text('text') }), Item()];
+  });
+  const App = createComponent(() => {
+    return [
+      div({
+        slot: [Text('text'), Text('text'), [Component(), Component()], Text('text'), Text('text')],
+      }),
+      Text('text'),
+    ];
+  });
+
+  const vdom = mountVirtualDOM({element: App() }) as Array<VirtualNode>;
+  const routes = vdom[0].children.map(n => n.nodeRoute);
   const cmpRoutes = vdom[0].children.map(n => n.componentRoute);
 
   expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9]]);
   expect(cmpRoutes).toEqual([
-    [0, 0, 0, 0],
-    [0, 0, 0, 1],
-    [0, 0, 0, 2, 0, 0, 0],
-    [0, 0, 0, 2, 0, 1, 1, 0, 0],
-    [0, 0, 0, 2, 0, 1, 1, 0, 1],
-    [0, 0, 0, 3, 1, 0, 0],
-    [0, 0, 0, 3, 1, 1, 1, 0, 0],
-    [0, 0, 0, 3, 1, 1, 1, 0, 1],
-    [0, 0, 0, 4],
-    [0, 0, 0, 5],
+    [0, -1, 0, 0],
+    [0, -1, 0, 1],
+    [0, -1, 0, 2, 0, -1, 0],
+    [0, -1, 0, 2, 0, -1, 1, -1, 0],
+    [0, -1, 0, 2, 0, -1, 1, -1, 1],
+    [0, -1, 0, 2, 1, -1, 0],
+    [0, -1, 0, 2, 1, -1, 1, -1, 0],
+    [0, -1, 0, 2, 1, -1, 1, -1, 1],
+    [0, -1, 0, 3],
+    [0, -1, 0, 4],
   ]);
 });
