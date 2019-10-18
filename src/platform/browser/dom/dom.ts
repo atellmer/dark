@@ -1,16 +1,16 @@
 import {
   ADD_ATTRIBUTE,
   ADD_NODE,
+  Diff,
   getAttribute,
-  getVirtualDOMDiff,
   isTagVirtualNode,
   REMOVE_ATTRIBUTE,
   REMOVE_NODE,
   REPLACE_ATTRIBUTE,
   REPLACE_NODE,
-  VirtualDOMDiff,
   VirtualNode,
 } from '@core/vdom';
+import { getDiff } from '@core/vdom/diff';
 import { isArray, isFunction, isUndefined } from '@helpers';
 import { getAppUid, getRegistery } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
@@ -117,7 +117,7 @@ function getDOMElementRoute(
   return [route, stop];
 }
 
-function getNodeByDiffElement(parentNode: HTMLElement, diffElement: VirtualDOMDiff) {
+function getNodeByDiffElement(parentNode: HTMLElement, diffElement: Diff) {
   let node = parentNode;
   const { action, route, oldValue, nextValue } = diffElement;
   const isRoot = route.length === 1;
@@ -163,8 +163,8 @@ function getDOMElementByRoute(parentNode: HTMLElement, route: number[] = []): HT
   return node;
 }
 
-function patchDOM(diff: VirtualDOMDiff[], rootElement: HTMLElement) {
-  const mapDiff = (diffElement: VirtualDOMDiff) => {
+function patchDOM(diff: Diff[], rootElement: HTMLElement) {
+  const mapDiff = (diffElement: Diff) => {
     const node = getNodeByDiffElement(rootElement, diffElement);
 
     if (diffElement.action === ADD_NODE) {
@@ -212,14 +212,13 @@ function patchDOM(diff: VirtualDOMDiff[], rootElement: HTMLElement) {
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
   const uid = getAppUid();
   const app = getRegistery().get(uid);
-  const getDOMElement = () => container || app.nativeElement;
-  const DOMElement = getDOMElement();
+  const domElement = container || app.nativeElement;
   const mapFn = fn => fn();
   let diff = [];
 
-  diff = getVirtualDOMDiff(vNode, nextVNode);
-  patchDOM(diff, DOMElement);
-
+  diff = getDiff(vNode, nextVNode);
+  console.log('diff:', diff);
+  patchDOM(diff, domElement);
   app.queue.forEach(mapFn);
   app.queue = [];
   app.vdom = nextVNode;
