@@ -83,23 +83,26 @@ type WithListProp = {
   list: Array<{id: number, name: string}>;
 }
 
+const state = {
+  list: buildData(10000),
+}
+
 const List = createComponent<WithListProp & { onRemove }>(({ list, onRemove }) => {
   return list.map((x, idx) => {
     return div({
       key: x.id,
       slot: [
         Text(x.name),
-        button({
-          onClick: () => onRemove(x),
-          slot: Text('remove ' + x.id),
-        })
+        // button({
+        //   onClick: () => onRemove(x),
+        //   slot: Text('remove ' + x.id),
+        // })
       ],
     })
   })
 })
 
 const Header = createComponent<{onAdd: Function; onUpdateAll: Function; onSwap: Function}>(({ onAdd, onUpdateAll, onSwap }) => {
-
   return [
     div({
       style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
@@ -120,32 +123,32 @@ const Header = createComponent<{onAdd: Function; onUpdateAll: Function; onSwap: 
     }),
   ]
 })
-const App = createComponent<WithListProp>(({ list }) => {
+const App = createComponent(() => {
   const handleAdd = () => {
     console.time('add')
-    list = [...buildData(1000, '!!!'), ...list];
-    renderComponent(App({ list }), domElement);
+    state.list = [...buildData(1000, '!!!'), ...state.list];
+    renderComponent(App(), domElement);
     console.timeEnd('add')
   };
   const handleUpdateAll = () => {
     console.time('update all')
-    list = list.map(x => ({...x, name: x.name + '!!!'}));
-    renderComponent(App({ list }), domElement);
+    state.list = state.list.map(x => ({...x, name: x.name + '!!!'}));
+    renderComponent(App(), domElement);
     console.timeEnd('update all')
   };
   const handleRemove = (x) => {
-    const idx = list.findIndex(z => z.id === x.id);
-    list.splice(idx, 1);
-    renderComponent(App({ list }), domElement);
+    const idx = state.list.findIndex(z => z.id === x.id);
+    state.list.splice(idx, 1);
+    renderComponent(App(), domElement);
   };
   const handleSwap = () => {
-    if (list.length > 998) {
-      const temp = list[1];
-      list[1] = list[998];
-      list[998] = temp;
+    if (state.list.length > 998) {
+      const temp = state.list[1];
+      state.list[1] = state.list[998];
+      state.list[998] = temp;
     }
     console.time('swap')
-    renderComponent(App({ list }), domElement);
+    renderComponent(App(), domElement);
     console.timeEnd('swap')
   };
 
@@ -156,15 +159,14 @@ const App = createComponent<WithListProp>(({ list }) => {
         onUpdateAll: handleUpdateAll,
         onSwap: handleSwap,
       }),
-      List({ list, onRemove: handleRemove }),
+      List({ list: state.list, onRemove: handleRemove }),
     ],
   })
 });
 
 
-const initialList = buildData(10000);
 console.time('add')
-renderComponent(App({ list: initialList }), domElement);
+renderComponent(App(), domElement);
 console.timeEnd('add')
 
 // setTimeout(() => renderComponent(App({ isOpen: false }), domElement), 2000)

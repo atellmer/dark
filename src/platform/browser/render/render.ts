@@ -46,7 +46,6 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
   } else {
     const vNode = getVirtualDOM(zoneId);
     const nextVNode: VirtualNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;
-    // console.log('nextVNode: ', nextVNode);
     processDOM({ vNode, nextVNode });
   }
 
