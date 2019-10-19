@@ -5,3 +5,4 @@ export {
   View,
   h,
 } from './core';
+export { renderComponent } from './platform/browser';

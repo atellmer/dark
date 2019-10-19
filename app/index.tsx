@@ -8,6 +8,10 @@ const domElement3 = document.getElementById('app3');
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
 const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
+const table =  (props = {}) => View({ ...props, as: 'table' });
+const tbody =  (props = {}) => View({ ...props, as: 'tbody' });
+const tr =  (props = {}) => View({ ...props, as: 'tr' });
+const td =  (props = {}) => View({ ...props, as: 'td' });
 
 // type ContainerProp = {
 //   value: string;
@@ -84,72 +88,108 @@ type WithListProp = {
 }
 
 const state = {
-  list: buildData(10),
+  list: buildData(1000),
+};
+
+
+type HeaderProps = {
+  onAdd: Function;
+  onUpdateAll: Function;
+  onSwap: Function;
+  onClear: Function;
 }
 
-const List = createComponent<WithListProp & { onRemove }>(({ list, onRemove }) => {
-  return list.map((x, idx) => {
-    return div({
-      key: x.id,
-      slot: [
-        Text(x.name),
-        button({
-          onClick: () => onRemove(x),
-          slot: Text('remove ' + x.id),
-        })
-      ],
-    })
-  })
-})
+const Header = createComponent<HeaderProps>(({ onAdd, onUpdateAll, onSwap, onClear }) => {
+  return div({
+    style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
+    slot: [
+      button({
+        slot: Text('Add 1000 rows'),
+        onClick: onAdd,
+      }),
+      button({
+        slot: Text('update all rows'),
+        onClick: onUpdateAll,
+      }),
+      button({
+        slot: Text('swap rows'),
+        onClick: onSwap,
+      }),
+      button({
+        slot: Text('clear rows'),
+        onClick: onClear,
+      }),
+    ],
+  });
+});
 
-const Header = createComponent<{onAdd: Function; onUpdateAll: Function; onSwap: Function}>(({ onAdd, onUpdateAll, onSwap }) => {
-  return [
-    div({
-      style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
-      slot: [
-        button({
-          onClick: onAdd,
-          slot: Text('Add 1000 rows'),
-        }),
-        button({
-          onClick: onUpdateAll,
-          slot: Text('update all rows'),
-        }),
-        button({
-          onClick: onSwap,
-          slot: Text('swap rows'),
-        }),
-      ],
+type ListProps = {
+  items: Array<{id: number, name: string}>;
+  onRemove: Function;
+}
+
+const List = createComponent<ListProps>(({ items, onRemove }) => {
+  const cellStyle = 'border: 1px solid pink;';
+  return table({
+    style: 'width: 100%; border-collapse: collapse;',
+    slot: tbody({
+      slot: items.map((x) => {
+        return tr({
+          key: x.id,
+          slot: [
+            td({ style: cellStyle, slot: Text(x.name) }),
+            td({ style: cellStyle, slot: Text('1') }),
+            td({ style: cellStyle, slot: Text('2') }),
+            td({
+              style: cellStyle,
+              slot: button({
+                slot: Text('remove'),
+                onClick: () => onRemove(x),
+              }),
+            }),
+          ],
+        })
+      }),
     }),
-  ]
-})
+  });
+});
+
 const App = createComponent(() => {
   const handleAdd = () => {
     console.time('add')
-    state.list = [...buildData(4, '!!!'), ...state.list];
-    renderComponent(App(), domElement);
+    state.list = [...buildData(1000, '!!!'), ...state.list];
+    forceUpdate();
     console.timeEnd('add')
   };
   const handleUpdateAll = () => {
     console.time('update all')
     state.list = state.list.map(x => ({...x, name: x.name + '!!!'}));
-    renderComponent(App(), domElement);
+    forceUpdate();
     console.timeEnd('update all')
   };
   const handleRemove = (x) => {
+    console.time('remove');
     const idx = state.list.findIndex(z => z.id === x.id);
     state.list.splice(idx, 1);
-    renderComponent(App(), domElement);
+    forceUpdate();
+    console.timeEnd('remove');
   };
   const handleSwap = () => {
+    console.time('swap')
     if (state.list.length > 998) {
       const temp = state.list[1];
       state.list[1] = state.list[998];
       state.list[998] = temp;
     }
-    console.time('swap')
-    renderComponent(App(), domElement);
+    forceUpdate();
     console.timeEnd('swap')
+  };
+
+  const handleClear = () => {
+    console.time('clear');
+    state.list = [];
+    forceUpdate();
+    console.timeEnd('clear');
   };
 
   return div({
@@ -158,8 +198,9 @@ const App = createComponent(() => {
         onAdd: handleAdd,
         onUpdateAll: handleUpdateAll,
         onSwap: handleSwap,
+        onClear: handleClear,
       }),
-      List({ list: state.list, onRemove: handleRemove }),
+      List({ items: state.list, onRemove: handleRemove }),
     ],
   })
 });
@@ -168,6 +209,10 @@ const App = createComponent(() => {
 console.time('add')
 renderComponent(App(), domElement);
 console.timeEnd('add')
+
+function forceUpdate() {
+  renderComponent(App(), domElement);
+}
 
 // setTimeout(() => renderComponent(App({ isOpen: false }), domElement), 2000)
 // setTimeout(() => renderComponent(App({ isOpen: true }), domElement), 4000)
