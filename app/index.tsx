@@ -157,7 +157,7 @@ const List = createComponent<ListProps>(({ items, onRemove }) => {
 const App = createComponent(() => {
   const handleAdd = () => {
     console.time('add')
-    state.list = [...buildData(1000, '!!!'), ...state.list];
+    state.list = [...buildData(100, '!!!'), ...state.list];
     forceUpdate();
     console.timeEnd('add')
   };
@@ -176,11 +176,9 @@ const App = createComponent(() => {
   };
   const handleSwap = () => {
     console.time('swap')
-    if (state.list.length > 998) {
-      const temp = state.list[1];
-      state.list[1] = state.list[998];
-      state.list[998] = temp;
-    }
+    const temp = state.list[1];
+    state.list[1] = state.list[state.list.length - 2];
+    state.list[state.list.length - 2] = temp;
     forceUpdate();
     console.timeEnd('swap')
   };
@@ -206,9 +204,9 @@ const App = createComponent(() => {
 });
 
 
-console.time('add')
+console.time('create')
 renderComponent(App(), domElement);
-console.timeEnd('add')
+console.timeEnd('create')
 
 function forceUpdate() {
   renderComponent(App(), domElement);

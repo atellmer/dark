@@ -10,7 +10,7 @@ type AppType = {
   vdom: VirtualNode;
   eventHandlers: Map<
     string,
-    Array<Function>
+    WeakMap<any, Function>
   >;
   refs: Array<Function>;
   queue: Array<Function>;

@@ -3,24 +3,24 @@ import { getRegistery } from '@core/scope';
 
 function delegateEvent(
   uid: number,
-  rootDOMElement: HTMLElement,
-  node: HTMLElement,
+  root: HTMLElement,
+  domElement: HTMLElement,
   eventName: string,
   handler: (e: Event) => void,
 ) {
   const app = getRegistery().get(uid);
-  const eventHandler = (e: Event, idx: number) => {
-    node === e.target && handler(e);
-    !document.documentElement.contains(node) && app.eventHandlers.get(eventName).splice(idx, 1);
-  };
+  const eventStore = app.eventHandlers.get(eventName);
 
-  if (!app.eventHandlers.get(eventName)) {
-    const mapHandlers = (e: Event) => app.eventHandlers.get(eventName).forEach((fn, idx) => fn(e, idx));
+  if (!eventStore) {
+    const rootEventHandler = (e: Event) => {
+      const fireEvent = app.eventHandlers.get(eventName).get(e.target);
+      typeof fireEvent === 'function' && fireEvent(e);
+    };
 
-    app.eventHandlers.set(eventName, [eventHandler]);
-    rootDOMElement.addEventListener(eventName, mapHandlers);
+    app.eventHandlers.set(eventName, new WeakMap([[domElement, handler]]));
+    root.addEventListener(eventName, rootEventHandler);
   } else {
-    app.eventHandlers.get(eventName).push(eventHandler);
+    eventStore.set(domElement, handler);
   }
 }
 

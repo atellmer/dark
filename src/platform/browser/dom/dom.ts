@@ -38,29 +38,28 @@ function mountDOM(
     const isContainerExists = Boolean(container) && container.nodeType === Node.ELEMENT_NODE;
 
     if (vNode.type === 'TAG') {
-      const DOMElement = document.createElement(vNode.name);
+      const domElement = document.createElement(vNode.name);
       const mapAttrs = (attrName: string) => {
         !isFunction(getAttribute(vNode, attrName)) &&
           !attrValueBlackList.includes(attrName) &&
-          DOMElement.setAttribute(attrName, vNode.attrs[attrName]);
+          domElement.setAttribute(attrName, vNode.attrs[attrName]);
         if (/^on/.test(attrName)) {
           const eventName = attrName.slice(2, attrName.length).toLowerCase();
           const handler = getAttribute(vNode, attrName);
-
-          app.queue.push(() => delegateEvent(uid, rootNode, DOMElement, eventName, handler));
+          app.queue.push(() => delegateEvent(uid, rootNode, domElement, eventName, handler));
         }
       };
 
       Object.keys(vNode.attrs).forEach(mapAttrs);
 
       if (isContainerExists) {
-        container.appendChild(DOMElement);
+        container.appendChild(domElement);
         if (!vNode.isVoid) {
-          const node = mountDOM(vNode.children, rootNode, DOMElement) as HTMLElement;
+          const node = mountDOM(vNode.children, rootNode, domElement) as HTMLElement;
           container.appendChild(node);
         }
       } else {
-        const node = mountDOM(vNode.children, rootNode, DOMElement) as HTMLElement;
+        const node = mountDOM(vNode.children, rootNode, domElement) as HTMLElement;
         container = node;
       }
     } else if (vNode.type === 'TEXT') {
@@ -90,29 +89,29 @@ function mountDOM(
   return container;
 }
 
-function getDOMElementRoute(
-  sourceDOMElement: HTMLElement,
-  targetDOMElement: HTMLElement,
+function getdomElementRoute(
+  sourcedomElement: HTMLElement,
+  targetdomElement: HTMLElement,
   prevRoute: number[] = [],
   level: number = 0,
   idx: number = 0,
   stop: boolean = false,
 ): [number[], boolean] {
-  const children = Array.from(sourceDOMElement.childNodes);
+  const children = Array.from(sourcedomElement.childNodes);
   let route = [...prevRoute];
 
   route[level] = idx;
   level++;
 
-  if (targetDOMElement === sourceDOMElement) {
+  if (targetdomElement === sourcedomElement) {
     route = route.slice(0, level);
 
     return [route, true];
   }
 
   for (let i = 0; i < children.length; i++) {
-    const childSourceDOMElement = sourceDOMElement.childNodes[i] as HTMLElement;
-    const [nextRoute, nextStop] = getDOMElementRoute(childSourceDOMElement, targetDOMElement, route, level, i, stop);
+    const childSourcedomElement = sourcedomElement.childNodes[i] as HTMLElement;
+    const [nextRoute, nextStop] = getdomElementRoute(childSourcedomElement, targetdomElement, route, level, i, stop);
 
     if (nextStop) {
       return [nextRoute, nextStop];
@@ -158,7 +157,7 @@ function getNodeByCommit(parentNode: HTMLElement, commit: Commit) {
   return node;
 }
 
-function getDOMElementByRoute(parentNode: HTMLElement, route: number[] = []): HTMLElement {
+function getdomElementByRoute(parentNode: HTMLElement, route: number[] = []): HTMLElement {
   let node = parentNode;
   const mapRoute = (cIdx: number, idx: number) =>
     idx === 0 ? node : (node = node ? (node.childNodes[cIdx] as HTMLElement) : node);
@@ -243,8 +242,8 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
 
 export {
   mountDOM, //
-  getDOMElementRoute,
-  getDOMElementByRoute,
+  getdomElementRoute,
+  getdomElementByRoute,
   patchDOM,
   processDOM,
 };
