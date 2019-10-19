@@ -1,4 +1,4 @@
-import { isEmpty, isFunction } from '@helpers';
+import { isEmpty, isFunction, deepClone } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 import { createAttribute, getNodeKey, isTagVirtualNode, VirtualNode } from '../vnode';
 
@@ -71,6 +71,7 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
   const insertingSize = nextVNode.children.length - vNode.children.length;
   let nextVNodeShift = 0;
   let vNodeShift = 0;
+  let sameRemoveCommitsSize = commits.length;
 
   for (let i = 0; i < iterations; i++) {
     const childVNode = vNode.children[i - vNodeShift];
@@ -80,8 +81,18 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
     const isDifferentKeys = !isEmpty(key) && !isEmpty(nextKey) && key !== nextKey;
     const isRemovingNodeByKey = nextVNodeShift < removingSize && isDifferentKeys;
     const isInsertingNodeByKey = vNodeShift < insertingSize && isDifferentKeys;
+    const prevCommit = commits[commits.length - 1];
 
     commits = getDiff(childVNode, childNextVNode, commits, isRemovingNodeByKey, isInsertingNodeByKey);
+
+    if (prevCommit && prevCommit.action === 'REMOVE_NODE' && sameRemoveCommitsSize !== commits.length) {
+      const commit = commits[commits.length - 1];
+      if (commit && commit.action === 'REMOVE_NODE') {
+        const last = prevCommit.route[prevCommit.route.length - 1];
+        commit.route = [...commit.route.slice(0, -1), last];
+        sameRemoveCommitsSize = commits.length;
+      }
+    }
 
     if (isRemovingNodeByKey) {
       nextVNodeShift++;

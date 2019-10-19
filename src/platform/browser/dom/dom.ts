@@ -183,46 +183,46 @@ const patchAttributes = (name: string, value: any, node: HTMLElement) => {
   }
 };
 
-function patchDOM(commits: Commit[], rootElement: HTMLElement) {
-  const attrBlackList = [ATTR_KEY];
-  const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name);
-  const applyCommit = (commit: Commit) => {
-    const { action, nextValue, oldValue } = commit;
-    const node = getNodeByCommit(rootElement, commit);
-    const nexVNode = nextValue as VirtualNode;
+const applyCommit = (commit: Commit, root: HTMLElement) => {
+  const { action, nextValue, oldValue } = commit;
+  const node = getNodeByCommit(root, commit);
+  const nexVNode = nextValue as VirtualNode;
 
-    if (action === ADD_NODE) {
-      const mountedNode = mountDOM(nexVNode, rootElement);
-      node.appendChild(mountedNode);
-    } else if (action === REMOVE_NODE) {
-      node.parentNode.removeChild(node);
-    } else if (action === REPLACE_NODE) {
-      const mountedNode = mountDOM(nexVNode, rootElement);
-      node.replaceWith(mountedNode);
-    } else if (action === INSERT_NODE) {
-      const mountedNode = mountDOM(nexVNode, rootElement);
-      node.parentNode.insertBefore(mountedNode, node);
-    } else if (action === ADD_ATTRIBUTE) {
-      const attrNames = Object.keys(nextValue).filter(filterAttrNamesFn);
-      for (const attrName of attrNames) {
-        node.setAttribute(attrName, nextValue[attrName]);
-      }
-    } else if (action === REMOVE_ATTRIBUTE) {
-      const attrNames = Object.keys(oldValue);
-      for (const attrName of attrNames) {
-        node.removeAttribute(attrName);
-      }
-    } else if (action === REPLACE_ATTRIBUTE) {
-      const attrNames = Object.keys(nextValue);
-
-      for (const attrName of attrNames) {
-        patchAttributes(attrName, nextValue[attrName], node);
-      }
+  if (action === ADD_NODE) {
+    const mountedNode = mountDOM(nexVNode, root);
+    node.appendChild(mountedNode);
+  } else if (action === REMOVE_NODE) {
+    node.parentNode.removeChild(node);
+  } else if (action === REPLACE_NODE) {
+    const mountedNode = mountDOM(nexVNode, root);
+    node.replaceWith(mountedNode);
+  } else if (action === INSERT_NODE) {
+    const mountedNode = mountDOM(nexVNode, root);
+    node.parentNode.insertBefore(mountedNode, node);
+  } else if (action === ADD_ATTRIBUTE) {
+    const attrBlackList = [ATTR_KEY];
+    const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name);
+    const attrNames = Object.keys(nextValue).filter(filterAttrNamesFn);
+    for (const attrName of attrNames) {
+      node.setAttribute(attrName, nextValue[attrName]);
     }
-  };
+  } else if (action === REMOVE_ATTRIBUTE) {
+    const attrNames = Object.keys(oldValue);
+    for (const attrName of attrNames) {
+      node.removeAttribute(attrName);
+    }
+  } else if (action === REPLACE_ATTRIBUTE) {
+    const attrNames = Object.keys(nextValue);
 
+    for (const attrName of attrNames) {
+      patchAttributes(attrName, nextValue[attrName], node);
+    }
+  }
+};
+
+function patchDOM(commits: Commit[], root: HTMLElement) {
   for (const commit of commits) {
-    applyCommit(commit);
+    applyCommit(commit, root);
   }
 }
 

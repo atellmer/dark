@@ -84,7 +84,7 @@ type WithListProp = {
 }
 
 const state = {
-  list: buildData(10000),
+  list: buildData(10),
 }
 
 const List = createComponent<WithListProp & { onRemove }>(({ list, onRemove }) => {
@@ -93,10 +93,10 @@ const List = createComponent<WithListProp & { onRemove }>(({ list, onRemove }) =
       key: x.id,
       slot: [
         Text(x.name),
-        // button({
-        //   onClick: () => onRemove(x),
-        //   slot: Text('remove ' + x.id),
-        // })
+        button({
+          onClick: () => onRemove(x),
+          slot: Text('remove ' + x.id),
+        })
       ],
     })
   })
@@ -126,7 +126,7 @@ const Header = createComponent<{onAdd: Function; onUpdateAll: Function; onSwap: 
 const App = createComponent(() => {
   const handleAdd = () => {
     console.time('add')
-    state.list = [...buildData(1000, '!!!'), ...state.list];
+    state.list = [...buildData(4, '!!!'), ...state.list];
     renderComponent(App(), domElement);
     console.timeEnd('add')
   };
