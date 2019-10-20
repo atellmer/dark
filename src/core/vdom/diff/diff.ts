@@ -1,6 +1,6 @@
-import { isEmpty, isFunction, deepClone } from '@helpers';
-import { ATTR_KEY } from '../../constants';
-import { createAttribute, getNodeKey, isTagVirtualNode, VirtualNode } from '../vnode';
+import { isEmpty, isFunction } from '@helpers';
+import { ATTR_KEY, ATTR_SKIP } from '../../constants';
+import { createAttribute, getAttribute, getNodeKey, isTagVirtualNode, VirtualNode } from '../vnode';
 
 const ADD_NODE = 'ADD_NODE';
 const INSERT_NODE = 'INSERT_NODE';
@@ -26,12 +26,7 @@ export type Commit = {
   nextValue: VirtualNode | Record<string, number | string | boolean>;
 };
 
-const createCommit = (
-  action: VirtualDOMActions,
-  route: Array<number> = [],
-  oldValue: any,
-  nextValue: any,
-): Commit => ({
+const createCommit = (action: VirtualDOMActions, route: Array<number> = [], oldValue: any, nextValue: any): Commit => ({
   action,
   route,
   oldValue,
@@ -154,7 +149,9 @@ function getDiff(
     }
   }
 
-  commits = iterateNodes(vNode, nextVNode, commits);
+  if (!getAttribute(nextVNode, ATTR_SKIP)) {
+    commits = iterateNodes(vNode, nextVNode, commits);
+  }
 
   return commits;
 }

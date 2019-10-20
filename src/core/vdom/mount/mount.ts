@@ -92,16 +92,16 @@ type MountVirtualDOMOptions = {
 
 function mountVirtualDOM({
   element, mountedNodeRoute = [0], mountedComponentRoute = [0], fromRoot = false }: MountVirtualDOMOptions): VirtualDOM {
-  const isStatelessComponentFactory = getIsStatelessComponentFactory(element);
-  const statelessFactory = element as StatelessComponentFactory;
+  const isComponentFactory = getIsStatelessComponentFactory(element);
+  const componentFactory = element as StatelessComponentFactory;
   let vNode = null;
 
   if (fromRoot) {
     vNode = wrapWithRoot(element, mountedNodeRoute, mountedComponentRoute);
-  } else if (isStatelessComponentFactory) {
-    const componentRoute = [...mountedComponentRoute, -1];
-    vNode = statelessFactory.createElement();
-    vNode = flatVirtualDOM(vNode, mountedNodeRoute, componentRoute);
+  } else if (isComponentFactory) {
+    mountedComponentRoute.push(-1);
+    vNode = componentFactory.createElement();
+    vNode = flatVirtualDOM(vNode, mountedNodeRoute, mountedComponentRoute);
   } else if (Boolean(element)) {
     vNode = element;
     vNode = flatVirtualDOM(vNode, mountedNodeRoute, mountedComponentRoute);

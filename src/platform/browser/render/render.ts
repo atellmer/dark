@@ -1,8 +1,8 @@
 import { StatelessComponentFactory } from '@core/component';
 import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@core/scope';
 import { mountVirtualDOM, VirtualNode } from '@core/vdom';
-import { deepClone, isUndefined } from '../../../helpers';
-import { mountDOM, processDOM } from '../dom/dom';
+import { isUndefined } from '../../../helpers';
+import { mountRealDOM, processDOM } from '../dom/dom';
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
@@ -40,9 +40,10 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     vNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;
     // console.log('vNode: ', vNode);
     app.vdom = vNode;
-    Array.from(mountDOM(vNode, app.nativeElement).childNodes).forEach(node => container.appendChild(node));
-    app.queue.forEach(fn => fn());
-    app.queue = [];
+    const nodes = Array.from(mountRealDOM(vNode, app.nativeElement).childNodes);
+    for (const node of nodes) {
+      container.appendChild(node);
+    }
   } else {
     const vNode = getVirtualDOM(zoneId);
     const nextVNode: VirtualNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;

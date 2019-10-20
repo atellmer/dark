@@ -6,7 +6,7 @@ const config = {
   mode: 'development',
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.js', '.ts', 'tsx'],
+    extensions: ['.js', '.ts', '.tsx'],
     alias,
   },
   devtool: 'source-map',

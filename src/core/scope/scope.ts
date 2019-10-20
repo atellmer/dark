@@ -8,12 +8,10 @@ type ScopeType = {
 type AppType = {
   nativeElement: HTMLElement;
   vdom: VirtualNode;
-  eventHandlers: Map<
+  eventStore: Map<
     string,
     WeakMap<any, Function>
   >;
-  refs: Array<Function>;
-  queue: Array<Function>;
 };
 
 const scope = createScope();
@@ -34,9 +32,7 @@ function createApp(nativeElement: HTMLElement): AppType {
   return {
     nativeElement,
     vdom: null,
-    eventHandlers: new Map(),
-    refs: [],
-    queue: [],
+    eventStore: new Map(),
   };
 }
 

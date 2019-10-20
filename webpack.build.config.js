@@ -12,7 +12,7 @@ const config = env => ({
   },
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.js', '.ts', 'tsx'],
+    extensions: ['.js', '.ts', '.tsx'],
     alias,
   },
   entry: path.resolve(__dirname, 'src/index.ts'),

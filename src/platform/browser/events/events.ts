@@ -9,16 +9,16 @@ function delegateEvent(
   handler: (e: Event) => void,
 ) {
   const app = getRegistery().get(uid);
-  const eventStore = app.eventHandlers.get(eventName);
+  const eventStore = app.eventStore.get(eventName);
 
   if (!eventStore) {
-    const rootEventHandler = (e: Event) => {
-      const fireEvent = app.eventHandlers.get(eventName).get(e.target);
+    const rootHandler = (e: Event) => {
+      const fireEvent = app.eventStore.get(eventName).get(e.target);
       typeof fireEvent === 'function' && fireEvent(e);
     };
 
-    app.eventHandlers.set(eventName, new WeakMap([[domElement, handler]]));
-    root.addEventListener(eventName, rootEventHandler);
+    app.eventStore.set(eventName, new WeakMap([[domElement, handler]]));
+    root.addEventListener(eventName, rootHandler);
   } else {
     eventStore.set(domElement, handler);
   }

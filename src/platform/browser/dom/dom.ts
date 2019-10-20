@@ -1,4 +1,4 @@
-import { ATTR_KEY } from '@core/constants';
+import { ATTR_KEY, ATTR_SKIP } from '@core/constants';
 import {
   ADD_ATTRIBUTE,
   ADD_NODE,
@@ -10,6 +10,7 @@ import {
   REMOVE_NODE,
   REPLACE_ATTRIBUTE,
   REPLACE_NODE,
+  VirtualDOM,
   VirtualNode,
 } from '@core/vdom';
 import { getDiff } from '@core/vdom/diff';
@@ -23,95 +24,102 @@ type ProcessDOMOptions = {
   container?: HTMLElement;
 };
 
-function mountDOM(
-  vdom: VirtualNode | VirtualNode[],
-  rootNode: HTMLElement,
+const attrBlackList = [ATTR_KEY, ATTR_SKIP];
+
+function mountRealNode(
+  uid: number,
+  vNode: VirtualNode,
+  root: HTMLElement,
   parentNode: HTMLElement = null,
-): HTMLElement | Text | Comment {
+) {
+  if (!vNode) return;
   let container: HTMLElement | Text | Comment | null = parentNode || null;
-  const uid = getAppUid();
-  const app = getRegistery().get(uid);
-  const attrValueBlackList = [ATTR_KEY];
-  const mapVDOM = (vNode: VirtualNode) => {
-    if (!vNode) return;
+  const hasMountPoint = Boolean(container && container.nodeType === Node.ELEMENT_NODE);
 
-    const isContainerExists = Boolean(container) && container.nodeType === Node.ELEMENT_NODE;
+  if (vNode.type === 'TAG') {
+    const domElement = document.createElement(vNode.name);
+    const attrNames = Object.keys(vNode.attrs);
 
-    if (vNode.type === 'TAG') {
-      const domElement = document.createElement(vNode.name);
-      const mapAttrs = (attrName: string) => {
-        !isFunction(getAttribute(vNode, attrName)) &&
-          !attrValueBlackList.includes(attrName) &&
-          domElement.setAttribute(attrName, vNode.attrs[attrName]);
-        if (/^on/.test(attrName)) {
-          const eventName = attrName.slice(2, attrName.length).toLowerCase();
-          const handler = getAttribute(vNode, attrName);
-          app.queue.push(() => delegateEvent(uid, rootNode, domElement, eventName, handler));
-        }
-      };
+    for (const attrName of attrNames) {
+      const attrValue = getAttribute(vNode, attrName);
 
-      Object.keys(vNode.attrs).forEach(mapAttrs);
-
-      if (isContainerExists) {
-        container.appendChild(domElement);
-        if (!vNode.isVoid) {
-          const node = mountDOM(vNode.children, rootNode, domElement) as HTMLElement;
-          container.appendChild(node);
-        }
-      } else {
-        const node = mountDOM(vNode.children, rootNode, domElement) as HTMLElement;
-        container = node;
+      if (Boolean(attrValue) && !isFunction(attrValue) && !attrBlackList.includes(attrName)) {
+        domElement.setAttribute(attrName, attrValue);
       }
-    } else if (vNode.type === 'TEXT') {
-      const textNode = document.createTextNode(vNode.text);
-      if (isContainerExists) {
-        container.appendChild(textNode);
-      } else {
-        container = textNode;
-      }
-    } else if (vNode.type === 'COMMENT') {
-      const commentNode = document.createComment(vNode.text);
-      if (isContainerExists) {
-        container.appendChild(commentNode);
-      } else {
-        container = commentNode;
+
+      if (isFunction(attrValue) && /^on/.test(attrName)) {
+        const eventName = attrName.slice(2, attrName.length).toLowerCase();
+        delegateEvent(uid, root, domElement, eventName, attrValue);
       }
     }
-  };
-  const mapVNodeFn = (vNode: VirtualNode) => mapVDOM(vNode);
 
-  if (isArray(vdom)) {
-    (vdom as Array<VirtualNode>).forEach(mapVNodeFn);
-  } else {
-    mapVDOM(vdom as VirtualNode);
+    if (hasMountPoint) {
+      container.appendChild(domElement);
+      if (!vNode.isVoid) {
+        const node = mountRealDOM(vNode.children, root, domElement) as HTMLElement;
+        container.appendChild(node);
+      }
+    } else {
+      const node = mountRealDOM(vNode.children, root, domElement) as HTMLElement;
+      container = node;
+    }
+  } else if (vNode.type === 'TEXT') {
+    const textNode = document.createTextNode(vNode.text);
+    if (hasMountPoint) {
+      container.appendChild(textNode);
+    } else {
+      container = textNode;
+    }
+  } else if (vNode.type === 'COMMENT') {
+    const commentNode = document.createComment(vNode.text);
+    if (hasMountPoint) {
+      container.appendChild(commentNode);
+    } else {
+      container = commentNode;
+    }
   }
 
   return container;
 }
 
-function getdomElementRoute(
-  sourcedomElement: HTMLElement,
-  targetdomElement: HTMLElement,
+function mountRealDOM(
+  vdom: VirtualDOM,
+  root: HTMLElement,
+  parentNode: HTMLElement = null,
+): HTMLElement | Text | Comment {
+  const uid = getAppUid();
+  const vNodes = isArray(vdom) ? vdom : [vdom];
+  let node = null;
+
+  for (const vNode of vNodes) {
+    node = mountRealNode(uid, vNode, root, parentNode);
+  }
+
+  return node;
+}
+
+function getDomElementRoute(
+  sourceDomElement: HTMLElement,
+  targetDomElement: HTMLElement,
   prevRoute: number[] = [],
   level: number = 0,
   idx: number = 0,
   stop: boolean = false,
 ): [number[], boolean] {
-  const children = Array.from(sourcedomElement.childNodes);
+  const children = Array.from(sourceDomElement.childNodes);
   let route = [...prevRoute];
 
   route[level] = idx;
   level++;
 
-  if (targetdomElement === sourcedomElement) {
+  if (targetDomElement === sourceDomElement) {
     route = route.slice(0, level);
-
     return [route, true];
   }
 
   for (let i = 0; i < children.length; i++) {
-    const childSourcedomElement = sourcedomElement.childNodes[i] as HTMLElement;
-    const [nextRoute, nextStop] = getdomElementRoute(childSourcedomElement, targetdomElement, route, level, i, stop);
+    const childSourceDomElement = sourceDomElement.childNodes[i] as HTMLElement;
+    const [nextRoute, nextStop] = getDomElementRoute(childSourceDomElement, targetDomElement, route, level, i, stop);
 
     if (nextStop) {
       return [nextRoute, nextStop];
@@ -157,12 +165,14 @@ function getNodeByCommit(parentNode: HTMLElement, commit: Commit) {
   return node;
 }
 
-function getdomElementByRoute(parentNode: HTMLElement, route: number[] = []): HTMLElement {
+function getDomElementByRoute(parentNode: HTMLElement, route: number[] = []): HTMLElement {
   let node = parentNode;
-  const mapRoute = (cIdx: number, idx: number) =>
-    idx === 0 ? node : (node = node ? (node.childNodes[cIdx] as HTMLElement) : node);
+  let idx = 0;
 
-  route.forEach(mapRoute);
+  for (const routeIdx of route) {
+    idx === 0 ? node : (node = node ? (node.childNodes[routeIdx] as HTMLElement) : node);
+    idx++;
+  }
 
   return node;
 }
@@ -188,18 +198,17 @@ const applyCommit = (commit: Commit, root: HTMLElement) => {
   const nexVNode = nextValue as VirtualNode;
 
   if (action === ADD_NODE) {
-    const mountedNode = mountDOM(nexVNode, root);
+    const mountedNode = mountRealDOM(nexVNode, root);
     node.appendChild(mountedNode);
   } else if (action === REMOVE_NODE) {
     node.parentNode.removeChild(node);
   } else if (action === REPLACE_NODE) {
-    const mountedNode = mountDOM(nexVNode, root);
+    const mountedNode = mountRealDOM(nexVNode, root);
     node.replaceWith(mountedNode);
   } else if (action === INSERT_NODE) {
-    const mountedNode = mountDOM(nexVNode, root);
+    const mountedNode = mountRealDOM(nexVNode, root);
     node.parentNode.insertBefore(mountedNode, node);
   } else if (action === ADD_ATTRIBUTE) {
-    const attrBlackList = [ATTR_KEY];
     const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name);
     const attrNames = Object.keys(nextValue).filter(filterAttrNamesFn);
     for (const attrName of attrNames) {
@@ -229,21 +238,18 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
   const uid = getAppUid();
   const app = getRegistery().get(uid);
   const domElement = container || app.nativeElement;
-  const mapFn = fn => fn();
   let commits = [];
 
   commits = getDiff(vNode, nextVNode);
-  console.log('commits:', commits);
+  //console.log('commits:', commits);
   patchDOM(commits, domElement);
-  app.queue.forEach(mapFn);
-  app.queue = [];
   app.vdom = nextVNode;
 }
 
 export {
-  mountDOM, //
-  getdomElementRoute,
-  getdomElementByRoute,
+  mountRealDOM, //
+  getDomElementRoute,
+  getDomElementByRoute,
   patchDOM,
   processDOM,
 };

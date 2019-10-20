@@ -7,6 +7,7 @@
     "object-literal-sort-keys": false
   },
   "rules": {
+    "no-default-export": false,
     "interface-over-type-literal": false,
     "semicolon": false,
     "no-unused-expression": false,
@@ -33,7 +34,6 @@
     "curly": false,
     "object-literal-sort-keys": false,
     "ban-types": false,
-    "no-default-export": true,
     "indent": false
   }
 }
