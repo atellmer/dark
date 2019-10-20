@@ -1,4 +1,4 @@
-import { createComponent, h, Text, View } from '../src/core';
+import { createComponent, Text, View } from '../src/core';
 import { renderComponent } from '../src/platform/browser';
 
 const domElement = document.getElementById('app');

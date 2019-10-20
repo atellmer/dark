@@ -241,7 +241,7 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
   let commits = [];
 
   commits = getDiff(vNode, nextVNode);
-  //console.log('commits:', commits);
+  console.log('commits:', commits);
   patchDOM(commits, domElement);
   app.vdom = nextVNode;
 }
