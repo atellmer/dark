@@ -1,5 +1,4 @@
-import runBench from './benchmark';
-
+import runBench from './benchmark/dark';
 
 runBench();
 

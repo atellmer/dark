@@ -34,6 +34,7 @@
     "curly": false,
     "object-literal-sort-keys": false,
     "ban-types": false,
-    "indent": false
+    "indent": false,
+    "max-classes-per-file": false,
   }
 }

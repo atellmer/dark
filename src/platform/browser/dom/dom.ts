@@ -57,7 +57,7 @@ function mountRealNode(
       container.appendChild(domElement);
       if (!vNode.isVoid) {
         const node = mountRealDOM(vNode.children, root, domElement) as HTMLElement;
-        container.appendChild(node);
+        node && container.appendChild(node);
       }
     } else {
       const node = mountRealDOM(vNode.children, root, domElement) as HTMLElement;
@@ -241,7 +241,7 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
   let commits = [];
 
   commits = getDiff(vNode, nextVNode);
-  console.log('commits:', commits);
+  //console.log('commits:', commits);
   patchDOM(commits, domElement);
   app.vdom = nextVNode;
 }

@@ -1,5 +1,5 @@
-import { createComponent, Text, View } from '../src/core';
-import { renderComponent } from '../src/platform/browser';
+import { createComponent, Text, View } from '../../src/core';
+import { renderComponent } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
 
@@ -20,27 +20,31 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: buildData(1000),
+  list: [],
 };
 
-
 type HeaderProps = {
+  onCreate: Function;
   onAdd: Function;
   onUpdateAll: Function;
   onSwap: Function;
   onClear: Function;
 }
 
-const Header = createComponent<HeaderProps>(({ onAdd, onUpdateAll, onSwap, onClear }) => {
+const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
+      button({
+        slot: Text('create 10000 rows'),
+        onClick: onCreate,
+      }),
       button({
         slot: Text('Add 1000 rows'),
         onClick: onAdd,
       }),
       button({
-        slot: Text('update all rows'),
+        slot: Text('update every 10th row'),
         onClick: onUpdateAll,
       }),
       button({
@@ -95,17 +99,23 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 });
 
 const App = createComponent(() => {
+  const handleCreate = () => {
+    console.time('create')
+    state.list = buildData(10000);
+    forceUpdate();
+    console.timeEnd('create')
+  };
   const handleAdd = () => {
     console.time('add')
-    state.list = [...buildData(1000, '!!!'), ...state.list];
+    state.list.push( ...buildData(1000, '!!!'));
     forceUpdate();
     console.timeEnd('add')
   };
   const handleUpdateAll = () => {
-    console.time('update all')
-    state.list = state.list.map(x => ({...x, name: x.name + '!!!'}));
+    console.time('update every 10th')
+    state.list = state.list.map((x, idx) => ({...x, name: idx % 10 === 0 ? x.name + '!!!' : x.name}));
     forceUpdate();
-    console.timeEnd('update all')
+    console.timeEnd('update every 10th')
   };
   const handleRemove = (x) => {
     console.time('remove');
@@ -139,6 +149,7 @@ const App = createComponent(() => {
   return div({
     slot: [
       Header({
+        onCreate: handleCreate,
         onAdd: handleAdd,
         onUpdateAll: handleUpdateAll,
         onSwap: handleSwap,
@@ -150,9 +161,7 @@ const App = createComponent(() => {
 });
 
 function runBench() {
-  console.time('create')
   renderComponent(App(), domElement);
-  console.timeEnd('create')
 }
 
 function forceUpdate() {
