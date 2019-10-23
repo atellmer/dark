@@ -47,6 +47,10 @@ function flatten(list: Array<any>): Array<any> {
   return flatList;
 }
 
+function getTime() {
+  return performance.now();
+}
+
 export {
   isFunction,
   isUndefined,
@@ -60,4 +64,5 @@ export {
   isDOMElement,
   deepClone,
   flatten,
+  getTime,
 };

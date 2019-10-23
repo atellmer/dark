@@ -1,5 +1,5 @@
-import { flatten, isArray, isNull } from '@helpers';
-import { getIsStatelessComponentFactory, StatelessComponentFactory } from '../../component';
+import { flatten, isArray, isNull, isFunction } from '@helpers';
+import { getIsStatelessComponentFactory, StatelessComponentFactory, $$renderHook, $$nodeRouteHook } from '../../component';
 import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
 
 function wrapWithRoot(
@@ -101,7 +101,16 @@ function mountVirtualDOM({
   } else if (isComponentFactory) {
     mountedComponentRoute.push(-1);
     vNode = componentFactory.createElement();
-    vNode = flatVirtualDOM(vNode, mountedNodeRoute, mountedComponentRoute);
+    const nodeRoute = isFunction(componentFactory.props[$$nodeRouteHook])
+      ? componentFactory.props[$$nodeRouteHook](mountedNodeRoute)
+      : mountedNodeRoute;
+    vNode = flatVirtualDOM(vNode, nodeRoute, mountedComponentRoute);
+    if (isFunction(componentFactory.props[$$renderHook])) {
+      const skipMount = componentFactory.props[$$renderHook](vNode);
+      if (skipMount) {
+        vNode = null;
+      }
+    }
   } else if (Boolean(element)) {
     vNode = element;
     vNode = flatVirtualDOM(vNode, mountedNodeRoute, mountedComponentRoute);

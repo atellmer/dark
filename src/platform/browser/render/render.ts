@@ -1,7 +1,7 @@
 import { StatelessComponentFactory } from '@core/component';
 import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@core/scope';
 import { mountVirtualDOM, VirtualNode } from '@core/vdom';
-import { isUndefined } from '../../../helpers';
+import { isUndefined, getTime } from '../../../helpers';
 import { mountRealDOM, processDOM } from '../dom/dom';
 
 const zoneIdByRootNodeMap = new WeakMap();
@@ -10,6 +10,7 @@ let isInternalRenderCall = false;
 let zoneCount = 0;
 
 function renderComponent(source: VirtualNode | StatelessComponentFactory, container: HTMLElement, onRender?: Function) {
+  const time = getTime();
   const isMounted = !isUndefined(zoneIdByRootNodeMap.get(container));
   const prevZoneId = getAppUid();
   let zoneId = 0;
@@ -28,10 +29,10 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
   zoneId = zoneIdByRootNodeMap.get(container);
 
   setAppUid(zoneId);
+  const registry = getRegistery();
 
   if (!isMounted) {
     let vNode: VirtualNode = null;
-    const registry = getRegistery();
     const app = createApp(container);
 
     container.innerHTML = '';
@@ -45,9 +46,19 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
       container.appendChild(node);
     }
   } else {
+    const app = registry.get(zoneId)
     const vNode = getVirtualDOM(zoneId);
     const nextVNode: VirtualNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;
+
     processDOM({ vNode, nextVNode });
+
+    const portalsKeys = Object.keys(app.portals);
+    for(const key of portalsKeys) {
+      if (time > app.portals[key].time) {
+        app.portals[key].unmountContainer();
+        delete app.portals[key];
+      }
+    }
   }
 
   if (!isInternalRenderCall) {

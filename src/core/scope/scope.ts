@@ -12,6 +12,11 @@ type AppType = {
     string,
     WeakMap<any, Function>
   >;
+  portals: Record<string, {
+    vNode: VirtualNode,
+    unmountContainer: Function;
+    time: number;
+  }>
 };
 
 const scope = createScope();
@@ -33,6 +38,7 @@ function createApp(nativeElement: HTMLElement): AppType {
     nativeElement,
     vdom: null,
     eventStore: new Map(),
+    portals: {},
   };
 }
 

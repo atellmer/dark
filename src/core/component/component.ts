@@ -14,15 +14,19 @@ export type StatelessComponentFactory = {
   createElement: () => VirtualDOM | null;
   props: {
     key?: any;
+    renderHook?: (vNode: VirtualDOM) => boolean;
   };
   elementToken: any;
 };
 
 export type RenderProps = (...args: any) => VirtualDOM;
 
+const $$renderHook = Symbol('renderHook');
+const $$nodeRouteHook = Symbol('nodeRouteHook');
+
 type StandardComponentProps = {
   slot?: VirtualDOM | StatelessComponentFactory | Array<StatelessComponentFactory> | RenderProps;
-};
+} & { [key: string]: any };
 
 const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
 const $$statelessComponentFactory = Symbol('statelessComponentFactory');
@@ -51,5 +55,7 @@ const getIsStatelessComponentFactory = f => f && isObject(f) && f[$$statelessCom
 
 export {
   createComponent, //
+  $$renderHook,
+  $$nodeRouteHook,
   getIsStatelessComponentFactory,
 };
