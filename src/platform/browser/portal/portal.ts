@@ -20,6 +20,8 @@ function createPortal(source: Source, container: HTMLElement) {
     const componentRoute = vDOM[0].componentRoute.slice(0, -1);
     const componentId = componentRoute.join('.');
     let portal = null;
+    let vNode = null;
+    let nextVNode = null;
 
     if (!app.portals[componentId]) {
       app.portals[componentId] = {
@@ -30,9 +32,8 @@ function createPortal(source: Source, container: HTMLElement) {
     }
 
     portal = app.portals[componentId];
-
-    const vNode = portal.vNode;
-    const nextVNode = createVirtualNode('TAG', {
+    vNode = portal.vNode;
+    nextVNode = createVirtualNode('TAG', {
       name: 'root',
       componentRoute,
       nodeRoute: [0],

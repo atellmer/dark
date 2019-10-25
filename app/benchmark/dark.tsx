@@ -1,4 +1,4 @@
-import { createComponent, Text, View } from '../../src/core';
+import { createComponent, Text, View, memo } from '../../src/core';
 import { renderComponent } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -65,33 +65,46 @@ type ListProps = {
   onHighlight: Function;
 }
 
+const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
+  const cellStyle = `border: 1px solid pink;`;
+  return tr({
+    key,
+    style: `${selected ? 'background-color: green;' : ''}`,
+    slot: [
+      td({ style: cellStyle, slot: Text(name) }),
+      td({ style: cellStyle, slot: Text('1') }),
+      td({ style: cellStyle, slot: Text('2') }),
+      td({
+        style: cellStyle,
+        slot: [
+          button({
+            slot: Text('remove'),
+            onClick: () => onRemove(id),
+          }),
+          button({
+            slot: Text('highlight'),
+            onClick: () => onHighlight(id),
+          }),
+        ],
+      }),
+    ],
+  })
+});
+
+const MemoizedRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
+
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return table({
     style: 'width: 100%; border-collapse: collapse;',
     slot: tbody({
       slot: items.map((x) => {
-        const cellStyle = `border: 1px solid pink; ${x.select ? 'background-color: green;' : ''}`;
-        return tr({
+        return MemoizedRow({
           key: x.id,
-          slot: [
-            td({ style: cellStyle, slot: Text(x.name) }),
-            td({ style: cellStyle, skip: true, slot: Text('1') }),
-            td({ style: cellStyle, skip: true, slot: Text('2') }),
-            td({
-              style: cellStyle,
-              skip: true,
-              slot: [
-                button({
-                  slot: Text('remove'),
-                  onClick: () => onRemove(x),
-                }),
-                button({
-                  slot: Text('highlight'),
-                  onClick: () => onHighlight(x),
-                }),
-              ],
-            }),
-          ],
+          id: x.id,
+          name: x.name,
+          selected: x.select,
+          onRemove,
+          onHighlight
         })
       }),
     }),
@@ -100,48 +113,47 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const App = createComponent(() => {
   const handleCreate = () => {
+    state.list = buildData(10);
     console.time('create')
-    state.list = buildData(10000);
     forceUpdate();
     console.timeEnd('create')
   };
   const handleAdd = () => {
+    state.list.unshift( ...buildData(1, '!!!'));
     console.time('add')
-    state.list.push( ...buildData(1000, '!!!'));
     forceUpdate();
     console.timeEnd('add')
   };
   const handleUpdateAll = () => {
+    state.list = state.list.map((x, idx) => ({...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name}));
     console.time('update every 10th')
-    state.list = state.list.map((x, idx) => ({...x, name: idx % 10 === 0 ? x.name + '!!!' : x.name}));
     forceUpdate();
     console.timeEnd('update every 10th')
   };
-  const handleRemove = (x) => {
+  const handleRemove = (id) => {
+    state.list = state.list.filter((z) => z.id !== id);
     console.time('remove');
-    const idx = state.list.findIndex(z => z.id === x.id);
-    state.list.splice(idx, 1);
     forceUpdate();
     console.timeEnd('remove');
   };
-  const handleHightlight = (x) => {
-    console.time('highlight');
-    const idx = state.list.findIndex(z => z.id === x.id);
+  const handleHightlight = (id) => {
+    const idx = state.list.findIndex(z => z.id === id);
     state.list[idx].select = !state.list[idx].select;
+    console.time('highlight');
     forceUpdate();
     console.timeEnd('highlight');
   };
   const handleSwap = () => {
-    console.time('swap')
     const temp = state.list[1];
     state.list[1] = state.list[state.list.length - 2];
     state.list[state.list.length - 2] = temp;
+    console.time('swap')
     forceUpdate();
     console.timeEnd('swap')
   };
   const handleClear = () => {
-    console.time('clear');
     state.list = [];
+    console.time('clear');
     forceUpdate();
     console.timeEnd('clear');
   };

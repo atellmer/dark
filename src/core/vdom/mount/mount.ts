@@ -118,7 +118,7 @@ function mountVirtualDOM({
 
   if (!vNode) {
     vNode = createVirtualEmptyNode();
-    vNode.route = mountedNodeRoute;
+    vNode.nodeRoute = mountedNodeRoute;
     vNode.componentRoute = mountedComponentRoute;
   }
 

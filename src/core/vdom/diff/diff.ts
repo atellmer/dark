@@ -1,4 +1,4 @@
-import { isEmpty, isFunction } from '@helpers';
+import { isEmpty, isFunction, isUndefined, error } from '@helpers';
 import { ATTR_KEY, ATTR_SKIP } from '../../constants';
 import { createAttribute, getAttribute, getNodeKey, isTagVirtualNode, VirtualNode } from '../vnode';
 
@@ -25,6 +25,11 @@ export type Commit = {
   oldValue: VirtualNode | Record<string, number | string | boolean>;
   nextValue: VirtualNode | Record<string, number | string | boolean>;
 };
+
+const UNIQ_KEY_ERROR = `
+  [Dark]: The node must have a unique key (string or number, but not array index), 
+  otherwise the comparison algorithm will not work optimally or even will work incorrectly!
+`;
 
 const createCommit = (action: VirtualDOMActions, route: Array<number> = [], oldValue: any, nextValue: any): Commit => ({
   action,
@@ -69,8 +74,11 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
   let sameRemoveCommitsSize = commits.length;
 
   for (let i = 0; i < iterations; i++) {
-    const childVNode = vNode.children[i - vNodeShift];
     const childNextVNode = nextVNode.children[i - nextVNodeShift];
+
+    if (getAttribute(childNextVNode, ATTR_SKIP)) continue;
+
+    const childVNode = vNode.children[i - vNodeShift];
     const key = getNodeKey(childVNode);
     const nextKey = getNodeKey(childNextVNode);
     const isDifferentKeys = !isEmpty(key) && !isEmpty(nextKey) && key !== nextKey;
@@ -108,16 +116,24 @@ function getDiff(
   isInsertingNodeByKey = false,
 ): Array<Commit> {
   if (!vNode && !nextVNode) return commits;
+  if (getAttribute(nextVNode, ATTR_SKIP)) return commits;
+
   const key = getNodeKey(vNode);
   const nextKey = getNodeKey(nextVNode);
 
   if (!vNode) {
     commits.push(createCommit(ADD_NODE, nextVNode.nodeRoute, null, nextVNode));
+    if (isUndefined(nextKey)) {
+      error(UNIQ_KEY_ERROR);
+    }
     return commits;
   }
 
   if (!nextVNode || isRemovingNodeByKey) {
     commits.push(createCommit(REMOVE_NODE, vNode.nodeRoute, vNode, null));
+    if (isUndefined(key)) {
+      error(UNIQ_KEY_ERROR);
+    }
     return commits;
   }
 
@@ -137,8 +153,8 @@ function getDiff(
   }
 
   if (isTagVirtualNode(vNode)) {
-    const prevAttrs = Object.keys(vNode.attrs);
-    const newAttrs = Object.keys(nextVNode.attrs);
+    const prevAttrs = Object.keys(vNode.attrs).filter(attrName => attrName !== ATTR_SKIP);
+    const newAttrs = Object.keys(nextVNode.attrs).filter(attrName => attrName !== ATTR_SKIP);
 
     for (const attrName of prevAttrs) {
       mapPrevAttributes(attrName, vNode, nextVNode, commits);
@@ -148,9 +164,7 @@ function getDiff(
     }
   }
 
-  if (!getAttribute(nextVNode, ATTR_SKIP)) {
-    commits = iterateNodes(vNode, nextVNode, commits);
-  }
+  commits = iterateNodes(vNode, nextVNode, commits);
 
   return commits;
 }

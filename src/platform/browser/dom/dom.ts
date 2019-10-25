@@ -192,21 +192,21 @@ const patchAttributes = (name: string, value: any, node: HTMLElement) => {
   }
 };
 
-const applyCommit = (commit: Commit, root: HTMLElement) => {
+const applyCommit = (commit: Commit, domElement: HTMLElement) => {
   const { action, nextValue, oldValue } = commit;
-  const node = getNodeByCommit(root, commit);
+  const node = getNodeByCommit(domElement, commit);
   const nexVNode = nextValue as VirtualNode;
 
   if (action === ADD_NODE) {
-    const mountedNode = mountRealDOM(nexVNode, root);
+    const mountedNode = mountRealDOM(nexVNode, domElement);
     node.appendChild(mountedNode);
   } else if (action === REMOVE_NODE) {
     node.parentNode.removeChild(node);
   } else if (action === REPLACE_NODE) {
-    const mountedNode = mountRealDOM(nexVNode, root);
+    const mountedNode = mountRealDOM(nexVNode, domElement);
     node.replaceWith(mountedNode);
   } else if (action === INSERT_NODE) {
-    const mountedNode = mountRealDOM(nexVNode, root);
+    const mountedNode = mountRealDOM(nexVNode, domElement);
     node.parentNode.insertBefore(mountedNode, node);
   } else if (action === ADD_ATTRIBUTE) {
     const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name);
@@ -228,16 +228,16 @@ const applyCommit = (commit: Commit, root: HTMLElement) => {
   }
 };
 
-function patchDOM(commits: Commit[], root: HTMLElement) {
+function patchDOM(commits: Commit[], domElement: HTMLElement) {
   for (const commit of commits) {
-    applyCommit(commit, root);
+    applyCommit(commit, domElement);
   }
 }
 
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
   const uid = getAppUid();
   const app = getRegistery().get(uid);
-  const domElement = container || app.nativeElement;
+  const domElement = (container || app.nativeElement) as HTMLElement;
   let commits = [];
 
   commits = getDiff(vNode, nextVNode);

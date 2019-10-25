@@ -41,7 +41,7 @@ function renderComponent(source: VirtualNode | StatelessComponentFactory, contai
     vNode = mountVirtualDOM({ element: source, fromRoot: true }) as VirtualNode;
     // console.log('vNode: ', vNode);
     app.vdom = vNode;
-    const nodes = Array.from(mountRealDOM(vNode, app.nativeElement).childNodes);
+    const nodes = Array.from(mountRealDOM(vNode, app.nativeElement as HTMLElement).childNodes);
     for (const node of nodes) {
       container.appendChild(node);
     }

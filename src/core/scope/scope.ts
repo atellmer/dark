@@ -6,7 +6,7 @@ type ScopeType = {
 };
 
 type AppType = {
-  nativeElement: HTMLElement;
+  nativeElement: unknown;
   vdom: VirtualNode;
   eventStore: Map<
     string,
@@ -16,7 +16,10 @@ type AppType = {
     vNode: VirtualNode,
     unmountContainer: Function;
     time: number;
-  }>
+  }>;
+  memoStore: Record<string, {
+    props: any;
+  }>;
 };
 
 const scope = createScope();
@@ -33,12 +36,13 @@ function createScope(): ScopeType {
   };
 }
 
-function createApp(nativeElement: HTMLElement): AppType {
+function createApp(nativeElement: unknown): AppType {
   return {
     nativeElement,
     vdom: null,
     eventStore: new Map(),
     portals: {},
+    memoStore: {},
   };
 }
 
