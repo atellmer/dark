@@ -21,7 +21,7 @@ test('[mount vdom]: mount children correctly', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
 
   expect(vdom.children.length).toBe(5);
 });
@@ -45,7 +45,7 @@ describe('[mount vdom]: mount children correctly with arrays', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
 
   test('right numbers of children', () => {
     expect(vdom.children.length).toBe(12);
@@ -60,7 +60,7 @@ test('[mount vdom]: mount empty result', () => {
     return null;
   });
 
-  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
 
   expect(vdom.text).toBe(EMPTY_NODE);
 });
@@ -78,7 +78,7 @@ test('[mount vdom]: mount component from component', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
 
   expect(vdom.children.length).toBe(1);
 });
@@ -90,7 +90,7 @@ test('[mount vdom]: calculate node routes correctly 1', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({ element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
   const nodeRoutes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
@@ -100,7 +100,7 @@ test('[mount vdom]: calculate node routes correctly 1', () => {
 
 test('[mount vdom]: calculate node routes correctly 2', () => {
   const vdom = mountVirtualDOM({
-    element: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
+    mountedSource: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
   }) as Array<VirtualNode>;
   const routes = vdom.map(n => n.nodeRoute);
   const cmpRoutes = vdom.map(n => n.componentRoute);
@@ -111,7 +111,7 @@ test('[mount vdom]: calculate node routes correctly 2', () => {
 
 test('[mount vdom]: calculate node routes correctly 3', () => {
   const vdom = mountVirtualDOM({
-    element: Fragment({
+    mountedSource: Fragment({
       slot: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
     }),
   }) as Array<VirtualNode>;
@@ -134,7 +134,7 @@ test('[mount vdom]: calculate node routes correctly 4', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
   const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
@@ -158,7 +158,7 @@ test('[mount vdom]: calculate node routes correctly 4', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
   const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
@@ -187,7 +187,7 @@ test('[mount vdom]: calculate node routes correctly 5', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
   const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
@@ -220,7 +220,7 @@ test('[mount vdom]: calculate node routes correctly 6', () => {
     });
   });
 
-  const vdom = mountVirtualDOM({element: App() }) as VirtualNode;
+  const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
   const routes = vdom.children.map(n => n.nodeRoute);
   const cmpRoutes = vdom.children.map(n => n.componentRoute);
 
@@ -254,7 +254,7 @@ test('[mount vdom]: calculate node routes correctly 7', () => {
     ];
   });
 
-  const vdom = mountVirtualDOM({element: App() }) as Array<VirtualNode>;
+  const vdom = mountVirtualDOM({mountedSource: App() }) as Array<VirtualNode>;
   const routes = vdom[0].children.map(n => n.nodeRoute);
   const cmpRoutes = vdom[0].children.map(n => n.componentRoute);
 

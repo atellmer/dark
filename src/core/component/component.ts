@@ -9,7 +9,7 @@ type ComponentOptions<P> = {
   elementToken?: any;
 };
 
-export type StatelessComponentFactory = {
+export type ComponentFactory = {
   displayName: string;
   createElement: () => VirtualDOM | null;
   props: {
@@ -17,45 +17,44 @@ export type StatelessComponentFactory = {
     renderHook?: (vNode: VirtualDOM) => boolean;
   };
   elementToken: any;
-};
+} & { [key: string]: any };
+
+type StandardComponentProps = {
+  slot?: VirtualDOM | ComponentFactory | Array<ComponentFactory> | RenderProps;
+} & { [key: string]: any };
 
 export type RenderProps = (...args: any) => VirtualDOM;
 
+const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
+const $$componentFactory = Symbol('componentFactory');
 const $$renderHook = Symbol('renderHook');
 const $$nodeRouteHook = Symbol('nodeRouteHook');
-
-type StandardComponentProps = {
-  slot?: VirtualDOM | StatelessComponentFactory | Array<StatelessComponentFactory> | RenderProps;
-} & { [key: string]: any };
-
-const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
-const $$statelessComponentFactory = Symbol('statelessComponentFactory');
 
 function createComponent<P>(
   def: ComponentDefinition<P & StandardComponentProps>,
   options: ComponentOptions<P & StandardComponentProps> = null,
 ) {
-  return (props = {} as P & StandardComponentProps) => {
+  return (props = {} as P & StandardComponentProps): ComponentFactory => {
     const isStateless = isFunction(def);
     const displayName = options ? options.displayName : '';
     const defaultProps = isStateless ? (options && options.defaultProps) || {} : {};
     const computedProps = { ...defaultProps, ...props } as P;
 
     return {
-      [$$statelessComponentFactory]: true,
+      [$$componentFactory]: true,
       createElement: () => def({ ...computedProps }),
       displayName,
       props: computedProps,
       elementToken: (options && options.elementToken) || $$defaultFunctionalComponent,
-    } as StatelessComponentFactory;
+    };
   };
 }
 
-const getIsStatelessComponentFactory = f => f && isObject(f) && f[$$statelessComponentFactory] === true;
+const getIsComponentFactory = (o: any): o is ComponentFactory => o && isObject(o) && o[$$componentFactory] === true;
 
 export {
   createComponent, //
   $$renderHook,
   $$nodeRouteHook,
-  getIsStatelessComponentFactory,
+  getIsComponentFactory,
 };

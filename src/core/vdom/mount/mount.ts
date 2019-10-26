@@ -1,20 +1,22 @@
 import { flatten, isArray, isNull, isFunction } from '@helpers';
-import { getIsStatelessComponentFactory, StatelessComponentFactory, $$renderHook, $$nodeRouteHook } from '../../component';
+import { getIsComponentFactory, ComponentFactory, $$renderHook, $$nodeRouteHook } from '../../component';
 import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
 
+export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
+
 function wrapWithRoot(
-  sourceVNode: VirtualNode | Array<VirtualNode> | StatelessComponentFactory | null | undefined,
+  mountedSource: MountedSource,
   mountedNodeRoute: Array<number>,
   mountedComponentRoute: Array<number>,
 ): VirtualNode {
   let vNode = null;
 
-  if (isNull(sourceVNode)) {
-    sourceVNode = createVirtualEmptyNode();
+  if (isNull(mountedSource)) {
+    mountedSource = createVirtualEmptyNode();
   }
 
   const mountedVDOM = mountVirtualDOM({
-    element: sourceVNode,
+    mountedSource,
     mountedNodeRoute: [...mountedNodeRoute, 0],
     mountedComponentRoute: [...mountedComponentRoute, 0],
   });
@@ -29,17 +31,17 @@ function wrapWithRoot(
   return vNode;
 }
 
-function flatVirtualDOM(element: VirtualDOM, mountedNodeRoute: Array<number>, mountedComponentRoute: Array<number>): VirtualDOM {
-  let vNode = element;
+function flatVirtualDOM(mountedSource: MountedSource, mountedNodeRoute: Array<number>, mountedComponentRoute: Array<number>): VirtualDOM {
+  let vNode: VirtualDOM = null;
 
-  if (isArray(vNode)) {
+  if (isArray(mountedSource)) {
     let shift = 0;
     const last = mountedNodeRoute.slice(-1)[0];
-    const list = vNode.map((element, idx) => {
+    const list = (mountedSource as Array<MountedSource>).map((source, idx) => {
       const nodeRoute = [...mountedNodeRoute.slice(0, -1), last + shift + idx];
       const componentRoute = [...mountedComponentRoute, idx];
       const mounted = mountVirtualDOM({
-        element,
+        mountedSource: source,
         mountedNodeRoute: nodeRoute,
         mountedComponentRoute: componentRoute,
       });
@@ -52,20 +54,19 @@ function flatVirtualDOM(element: VirtualDOM, mountedNodeRoute: Array<number>, mo
     });
 
     vNode = flatten(list);
-  } else if (getIsStatelessComponentFactory(vNode)) {
-    vNode = mountVirtualDOM({ element: vNode, mountedNodeRoute, mountedComponentRoute });
-  } else if (Boolean(vNode)) {
-    if (isVirtualNode(vNode)) {
-      vNode.nodeRoute = [...mountedNodeRoute];
-      vNode.componentRoute = [...mountedComponentRoute];
-    }
+  } else if (getIsComponentFactory(mountedSource)) {
+    vNode = mountVirtualDOM({ mountedSource, mountedNodeRoute, mountedComponentRoute });
+  } else if (Boolean(mountedSource) && isVirtualNode(mountedSource)) {
+    vNode = mountedSource;
+    vNode.nodeRoute = [...mountedNodeRoute];
+    vNode.componentRoute = [...mountedComponentRoute];
 
     let shift = 0;
-    const list = vNode.children.map((element, idx) => {
+    const list = (vNode.children as Array<MountedSource>).map((source, idx) => {
       const nodeRoute = [...mountedNodeRoute, shift + idx];
       const componentRoute = [...mountedComponentRoute, idx];
       const mounted = mountVirtualDOM({
-        element,
+        mountedSource: source,
         mountedNodeRoute: nodeRoute,
         mountedComponentRoute: componentRoute,
       });
@@ -84,20 +85,20 @@ function flatVirtualDOM(element: VirtualDOM, mountedNodeRoute: Array<number>, mo
 }
 
 type MountVirtualDOMOptions = {
-  element: VirtualDOM | StatelessComponentFactory | null | undefined;
+  mountedSource: MountedSource;
   mountedNodeRoute?: Array<number>;
   mountedComponentRoute?: Array<number>;
   fromRoot?: boolean;
 }
 
 function mountVirtualDOM({
-  element, mountedNodeRoute = [0], mountedComponentRoute = [0], fromRoot = false }: MountVirtualDOMOptions): VirtualDOM {
-  const isComponentFactory = getIsStatelessComponentFactory(element);
-  const componentFactory = element as StatelessComponentFactory;
-  let vNode = null;
+  mountedSource, mountedNodeRoute = [0], mountedComponentRoute = [0], fromRoot = false }: MountVirtualDOMOptions): VirtualDOM {
+  const isComponentFactory = getIsComponentFactory(mountedSource);
+  const componentFactory = mountedSource as ComponentFactory;
+  let vNode: VirtualDOM = null;
 
   if (fromRoot) {
-    vNode = wrapWithRoot(element, mountedNodeRoute, mountedComponentRoute);
+    vNode = wrapWithRoot(mountedSource, mountedNodeRoute, mountedComponentRoute);
   } else if (isComponentFactory) {
     mountedComponentRoute.push(-1);
     vNode = componentFactory.createElement();
@@ -111,9 +112,8 @@ function mountVirtualDOM({
         vNode = null;
       }
     }
-  } else if (Boolean(element)) {
-    vNode = element;
-    vNode = flatVirtualDOM(vNode, mountedNodeRoute, mountedComponentRoute);
+  } else if (Boolean(mountedSource)) {
+    vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
   }
 
   if (!vNode) {

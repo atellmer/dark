@@ -1,6 +1,6 @@
 import { isArray, isEmpty } from '@helpers';
-import { StatelessComponentFactory } from '../../component';
 import { ATTR_KEY } from '../../constants';
+import { MountedSource } from '../mount';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
 
@@ -22,7 +22,7 @@ export type RenderProps = (...args: any) => VirtualDOM;
 
 export type ViewDefinition = {
   as: string;
-  slot?: VirtualDOM | StatelessComponentFactory | Array<StatelessComponentFactory> | RenderProps;
+  slot?: MountedSource | RenderProps;
   isVoid?: boolean;
   [prop: string]: any;
 };
@@ -79,7 +79,7 @@ const View = (def: ViewDefinition) => {
   });
 };
 
-function isVirtualNode(o: any): boolean {
+function isVirtualNode(o: any): o is VirtualNode {
   return o && o.isVirtualNode === true;
 }
 

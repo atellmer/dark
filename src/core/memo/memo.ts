@@ -1,10 +1,10 @@
 import { VirtualDOM, setAttribute } from '@core/vdom';
-import { StatelessComponentFactory, createComponent, $$renderHook } from '@core/component';
+import { ComponentFactory, createComponent, $$renderHook } from '@core/component';
 import { isArray } from '@helpers';
 import { getAppUid, getRegistery } from '@core/scope';
 import { ATTR_SKIP } from '../constants';
 
-type GetComponentFactory = (props: {}) => StatelessComponentFactory;
+type GetComponentFactoryType = (props: {}) => ComponentFactory;
 type ShouldUpdate = (props, nextProps) => boolean;
 
 const $$memo = Symbol('memo');
@@ -20,7 +20,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   return false;
 } 
 
-function memo(getComponentFactory: GetComponentFactory, shouldUpdate: ShouldUpdate = defaultShouldUpdate) {
+function memo(getComponentFactory: GetComponentFactoryType, shouldUpdate: ShouldUpdate = defaultShouldUpdate) {
   const Memo = createComponent((props: {}) => {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
