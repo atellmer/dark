@@ -75,9 +75,6 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
 
   for (let i = 0; i < iterations; i++) {
     const childNextVNode = nextVNode.children[i - nextVNodeShift];
-
-    if (getAttribute(childNextVNode, ATTR_SKIP)) continue;
-
     const childVNode = vNode.children[i - vNodeShift];
     const key = getNodeKey(childVNode);
     const nextKey = getNodeKey(childNextVNode);
@@ -116,7 +113,6 @@ function getDiff(
   isInsertingNodeByKey = false,
 ): Array<Commit> {
   if (!vNode && !nextVNode) return commits;
-  if (getAttribute(nextVNode, ATTR_SKIP)) return commits;
 
   const key = getNodeKey(vNode);
   const nextKey = getNodeKey(nextVNode);
@@ -164,7 +160,9 @@ function getDiff(
     }
   }
 
-  commits = iterateNodes(vNode, nextVNode, commits);
+  if (!getAttribute(nextVNode, ATTR_SKIP)) {
+    commits = iterateNodes(vNode, nextVNode, commits);
+  };
 
   return commits;
 }

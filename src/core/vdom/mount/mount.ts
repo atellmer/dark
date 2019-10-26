@@ -1,13 +1,14 @@
-import { flatten, isArray, isNull, isFunction } from '@helpers';
+import { flatten, isArray, isNull, isFunction, isEmpty } from '@helpers';
 import { getIsComponentFactory, ComponentFactory, $$renderHook, $$nodeRouteHook } from '../../component';
-import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
+import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode, getAttribute } from '../vnode/vnode';
+import { ATTR_KEY } from '../../constants';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
 function wrapWithRoot(
   mountedSource: MountedSource,
   mountedNodeRoute: Array<number>,
-  mountedComponentRoute: Array<number>,
+  mountedComponentRoute: Array<number | string>,
 ): VirtualNode {
   let vNode = null;
 
@@ -31,7 +32,15 @@ function wrapWithRoot(
   return vNode;
 }
 
-function flatVirtualDOM(mountedSource: MountedSource, mountedNodeRoute: Array<number>, mountedComponentRoute: Array<number>): VirtualDOM {
+function generateComponentRouteKey(source: MountedSource, fallback: number): number | string {
+  const key = getIsComponentFactory(source) && source.props.key || null;
+  const formattedKey = !isEmpty(key) ? `[${key}]` : fallback;
+
+  return formattedKey;
+}
+
+function flatVirtualDOM(
+  mountedSource: MountedSource, mountedNodeRoute: Array<number>, mountedComponentRoute: Array<number | string>): VirtualDOM {
   let vNode: VirtualDOM = null;
 
   if (isArray(mountedSource)) {
@@ -39,7 +48,8 @@ function flatVirtualDOM(mountedSource: MountedSource, mountedNodeRoute: Array<nu
     const last = mountedNodeRoute.slice(-1)[0];
     const list = (mountedSource as Array<MountedSource>).map((source, idx) => {
       const nodeRoute = [...mountedNodeRoute.slice(0, -1), last + shift + idx];
-      const componentRoute = [...mountedComponentRoute, idx];
+      const componentRouteKey = generateComponentRouteKey(source, idx);
+      const componentRoute = [...mountedComponentRoute, componentRouteKey];
       const mounted = mountVirtualDOM({
         mountedSource: source,
         mountedNodeRoute: nodeRoute,
@@ -64,7 +74,8 @@ function flatVirtualDOM(mountedSource: MountedSource, mountedNodeRoute: Array<nu
     let shift = 0;
     const list = (vNode.children as Array<MountedSource>).map((source, idx) => {
       const nodeRoute = [...mountedNodeRoute, shift + idx];
-      const componentRoute = [...mountedComponentRoute, idx];
+      const componentRouteKey = generateComponentRouteKey(source, idx);
+      const componentRoute = [...mountedComponentRoute, componentRouteKey];
       const mounted = mountVirtualDOM({
         mountedSource: source,
         mountedNodeRoute: nodeRoute,
@@ -87,7 +98,7 @@ function flatVirtualDOM(mountedSource: MountedSource, mountedNodeRoute: Array<nu
 type MountVirtualDOMOptions = {
   mountedSource: MountedSource;
   mountedNodeRoute?: Array<number>;
-  mountedComponentRoute?: Array<number>;
+  mountedComponentRoute?: Array<number | string>;
   fromRoot?: boolean;
 }
 

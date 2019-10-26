@@ -13,7 +13,7 @@ export type VirtualNode = {
   text?: string;
   children: Array<VirtualNode>;
   nodeRoute: Array<number>;
-  componentRoute: Array<number>;
+  componentRoute: Array<number | string>;
 };
 
 export type VirtualDOM = VirtualNode | Array<VirtualNode>;

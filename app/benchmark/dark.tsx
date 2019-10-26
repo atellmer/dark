@@ -119,7 +119,7 @@ const App = createComponent(() => {
     console.timeEnd('create')
   };
   const handleAdd = () => {
-    state.list.unshift( ...buildData(1, '!!!'));
+    state.list.push( ...buildData(1, '!!!'));
     console.time('add')
     forceUpdate();
     console.timeEnd('add')

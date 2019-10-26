@@ -98,37 +98,6 @@ function mountRealDOM(
   return node;
 }
 
-function getDomElementRoute(
-  sourceDomElement: HTMLElement,
-  targetDomElement: HTMLElement,
-  prevRoute: number[] = [],
-  level: number = 0,
-  idx: number = 0,
-  stop: boolean = false,
-): [number[], boolean] {
-  const children = Array.from(sourceDomElement.childNodes);
-  let route = [...prevRoute];
-
-  route[level] = idx;
-  level++;
-
-  if (targetDomElement === sourceDomElement) {
-    route = route.slice(0, level);
-    return [route, true];
-  }
-
-  for (let i = 0; i < children.length; i++) {
-    const childSourceDomElement = sourceDomElement.childNodes[i] as HTMLElement;
-    const [nextRoute, nextStop] = getDomElementRoute(childSourceDomElement, targetDomElement, route, level, i, stop);
-
-    if (nextStop) {
-      return [nextRoute, nextStop];
-    }
-  }
-
-  return [route, stop];
-}
-
 function getNodeByCommit(parentNode: HTMLElement, commit: Commit) {
   let node = parentNode;
   const { action, route, oldValue, nextValue } = commit;
@@ -241,14 +210,13 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
   let commits = [];
 
   commits = getDiff(vNode, nextVNode);
-  // console.log('commits:', commits);
+  console.log('commits:', commits);
   patchDOM(commits, domElement);
   app.vdom = nextVNode;
 }
 
 export {
   mountRealDOM, //
-  getDomElementRoute,
   getDomElementByRoute,
   patchDOM,
   processDOM,

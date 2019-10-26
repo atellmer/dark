@@ -51,6 +51,8 @@ function renderComponent(source: MountedSource, container: HTMLElement, onRender
 
     processDOM({ vNode, nextVNode });
 
+    console.log('nextVNode: ', nextVNode);
+
     const portalsKeys = Object.keys(app.portals);
     for(const key of portalsKeys) {
       if (time > app.portals[key].time) {
