@@ -27,8 +27,7 @@ export type RenderProps = (...args: any) => VirtualDOM;
 
 const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
 const $$componentFactory = Symbol('componentFactory');
-const $$renderHook = Symbol('renderHook');
-const $$nodeRouteHook = Symbol('nodeRouteHook');
+
 
 function createComponent<P>(
   def: ComponentDefinition<P & StandardComponentProps>,
@@ -54,7 +53,5 @@ const getIsComponentFactory = (o: any): o is ComponentFactory => o && isObject(o
 
 export {
   createComponent, //
-  $$renderHook,
-  $$nodeRouteHook,
   getIsComponentFactory,
 };

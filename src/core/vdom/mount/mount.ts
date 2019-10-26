@@ -1,9 +1,13 @@
 import { flatten, isArray, isNull, isFunction, isEmpty } from '@helpers';
-import { getIsComponentFactory, ComponentFactory, $$renderHook, $$nodeRouteHook } from '../../component';
+import { getIsComponentFactory, ComponentFactory } from '../../component';
 import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode, getAttribute } from '../vnode/vnode';
-import { ATTR_KEY } from '../../constants';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
+
+const $$replaceNodeBeforeMountHook = Symbol('replaceNodeBeforeMountHook');
+const $$replaceNodeAfterMountHook = Symbol('replaceNodeAfterMountHook');
+const $$nodeRouteHook = Symbol('nodeRouteHook');
+const $$skipNodeMountHook = Symbol('skipNodeMountHook');
 
 function wrapWithRoot(
   mountedSource: MountedSource,
@@ -113,16 +117,20 @@ function mountVirtualDOM({
   } else if (isComponentFactory) {
     mountedComponentRoute.push(-1);
     vNode = componentFactory.createElement();
+    const componentId = mountedComponentRoute.join('.');
     const nodeRoute = isFunction(componentFactory.props[$$nodeRouteHook])
       ? componentFactory.props[$$nodeRouteHook](mountedNodeRoute)
       : mountedNodeRoute;
-    vNode = flatVirtualDOM(vNode, nodeRoute, mountedComponentRoute);
-    if (isFunction(componentFactory.props[$$renderHook])) {
-      const skipMount = componentFactory.props[$$renderHook](vNode);
-      if (skipMount) {
-        vNode = null;
-      }
-    }
+    const skipMount = isFunction(componentFactory.props[$$skipNodeMountHook])
+      ? componentFactory.props[$$skipNodeMountHook](componentId)
+      : false;
+    vNode = isFunction(componentFactory.props[$$replaceNodeBeforeMountHook])
+      ? componentFactory.props[$$replaceNodeBeforeMountHook](vNode, componentId, mountedNodeRoute, skipMount)
+      : vNode;
+    vNode = !skipMount ? flatVirtualDOM(vNode, nodeRoute, mountedComponentRoute) : vNode;
+    vNode = isFunction(componentFactory.props[$$replaceNodeAfterMountHook])
+      ? componentFactory.props[$$replaceNodeAfterMountHook](vNode, componentId)
+      : vNode;
   } else if (Boolean(mountedSource)) {
     vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
   }
@@ -138,4 +146,8 @@ function mountVirtualDOM({
 
 export {
   mountVirtualDOM, //
+  $$replaceNodeBeforeMountHook,
+  $$replaceNodeAfterMountHook,
+  $$skipNodeMountHook,
+  $$nodeRouteHook,
 };

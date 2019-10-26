@@ -112,7 +112,7 @@ function getDiff(
   isRemovingNodeByKey = false,
   isInsertingNodeByKey = false,
 ): Array<Commit> {
-  if (!vNode && !nextVNode) return commits;
+  if (!vNode && !nextVNode || getAttribute(nextVNode, ATTR_SKIP)) return commits;
 
   const key = getNodeKey(vNode);
   const nextKey = getNodeKey(nextVNode);
@@ -160,9 +160,7 @@ function getDiff(
     }
   }
 
-  if (!getAttribute(nextVNode, ATTR_SKIP)) {
-    commits = iterateNodes(vNode, nextVNode, commits);
-  };
+  commits = iterateNodes(vNode, nextVNode, commits);
 
   return commits;
 }

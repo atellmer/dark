@@ -1,5 +1,6 @@
 import { VirtualDOM, setAttribute } from '@core/vdom';
-import { ComponentFactory, createComponent, $$renderHook } from '@core/component';
+import { $$skipNodeMountHook, $$replaceNodeBeforeMountHook } from '@core/vdom/mount';
+import { ComponentFactory, createComponent } from '@core/component';
 import { isArray } from '@helpers';
 import { getAppUid, getRegistery } from '@core/scope';
 import { ATTR_SKIP } from '../constants';
@@ -11,7 +12,7 @@ const $$memo = Symbol('memo');
 const isMemo = (o) => o && o.elementToken === $$memo;
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
-  const keys = Object.keys(nextProps);
+  const keys = Object.keys(nextProps).filter(String);
 
   for (const key of keys) {
     if (nextProps[key] !== props[key]) return true;
@@ -24,34 +25,64 @@ function memo(getComponentFactory: GetComponentFactoryType, shouldUpdate: Should
   const Memo = createComponent((props: {}) => {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
-    const renderHook = (mountedVNode: VirtualDOM) => {
+    const skipMountHook = (componentId: string): boolean => {
+      if (Boolean(app.memoStore[componentId])) {
+        const memoStoreItem = app.memoStore[componentId];
+        const needUpdate = shouldUpdate(memoStoreItem.props, props);
+
+        return !needUpdate;
+      }
+
+      return false;
+    };
+    const replaceNodeBeforeMountHook = (
+      mountedVNode: VirtualDOM, componentId: string, nodeRoute: Array<number>, skipMount: boolean): VirtualDOM => {
       const vDOM = isArray(mountedVNode) ? mountedVNode : [mountedVNode];
-      const componentRoute = vDOM[0].componentRoute;
-      const componentId = componentRoute.join('.');
-      let needUpdate = true;
+      let vNode: VirtualDOM = mountedVNode;
 
       if (!app.memoStore[componentId]) {
         app.memoStore[componentId] = {
+          vNode: mountedVNode,
           props,
         };
       } else {
-        needUpdate = shouldUpdate(app.memoStore[componentId].props, props);
+        vNode = mountedVNode;
+        if (skipMount) {
+          vNode = app.memoStore[componentId].vNode;
+          const patchIdx = nodeRoute.length - 1;
+          const patchRouteId = nodeRoute[patchIdx];
+
+          patchNodeRoutes(vNode, patchIdx, patchRouteId);
+
+          for (const vNode of vDOM) {
+            setAttribute(vNode, ATTR_SKIP, true);
+          }    
+        }
+        app.memoStore[componentId].vNode = vNode;
         app.memoStore[componentId].props = props;
       }
 
-      for (const vNode of vDOM) {
-        setAttribute(vNode, ATTR_SKIP, !needUpdate);
-      }
-      
-      return false;
+      return vNode;
     };
 
-    props[$$renderHook] = renderHook;
+    props[$$skipNodeMountHook] = skipMountHook;
+    props[$$replaceNodeBeforeMountHook] = replaceNodeBeforeMountHook;
 
     return getComponentFactory(props);
   }, { displayName: 'Memo', elementToken: $$memo });
 
   return Memo;
+}
+
+function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number) {
+  const vDOM = isArray(vNode) ? vNode : [vNode];
+  
+  for (const vNode of vDOM) {
+    vNode.nodeRoute[idx] = routeId;
+    if (vNode.children.length > 0) {
+      patchNodeRoutes(vNode.children, idx, routeId);
+    }
+  }
 }
 
 export { isMemo };

@@ -59,6 +59,8 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
   });
 });
 
+const MemoHeader = memo(Header);
+
 type ListProps = {
   items: Array<{id: number, name: string; select: boolean}>;
   onRemove: Function;
@@ -91,14 +93,14 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
   })
 });
 
-const MemoizedRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
+const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return table({
     style: 'width: 100%; border-collapse: collapse;',
     slot: tbody({
       slot: items.map((x) => {
-        return MemoizedRow({
+        return MemoRow({
           key: x.id,
           id: x.id,
           name: x.name,
@@ -113,13 +115,13 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const App = createComponent(() => {
   const handleCreate = () => {
-    state.list = buildData(10);
+    state.list = buildData(1000);
     console.time('create')
     forceUpdate();
     console.timeEnd('create')
   };
   const handleAdd = () => {
-    state.list.push( ...buildData(1, '!!!'));
+    state.list.push( ...buildData(100, '!!!'));
     console.time('add')
     forceUpdate();
     console.timeEnd('add')
@@ -160,7 +162,7 @@ const App = createComponent(() => {
 
   return div({
     slot: [
-      Header({
+      MemoHeader({
         onCreate: handleCreate,
         onAdd: handleAdd,
         onUpdateAll: handleUpdateAll,

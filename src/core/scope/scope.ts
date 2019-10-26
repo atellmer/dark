@@ -1,4 +1,4 @@
-import { VirtualNode } from '../vdom';
+import { VirtualNode, VirtualDOM } from '../vdom';
 
 type ScopeType = {
   registery: Map<number, AppType>;
@@ -12,12 +12,13 @@ type AppType = {
     string,
     WeakMap<any, Function>
   >;
-  portals: Record<string, {
-    vNode: VirtualNode,
+  portalStore: Record<string, {
+    vNode: VirtualNode;
     unmountContainer: Function;
     time: number;
   }>;
   memoStore: Record<string, {
+    vNode: VirtualDOM;
     props: any;
   }>;
 };
@@ -41,7 +42,7 @@ function createApp(nativeElement: unknown): AppType {
     nativeElement,
     vdom: null,
     eventStore: new Map(),
-    portals: {},
+    portalStore: {},
     memoStore: {},
   };
 }

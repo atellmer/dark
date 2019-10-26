@@ -2,6 +2,7 @@ import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@c
 import { mountVirtualDOM, VirtualNode, MountedSource } from '@core/vdom';
 import { isUndefined, getTime, isFunction } from '../../../helpers';
 import { mountRealDOM, processDOM } from '../dom/dom';
+import { clearUnmountedPortalContainers } from '../portal';
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
@@ -28,10 +29,10 @@ function renderComponent(source: MountedSource, container: HTMLElement, onRender
   zoneId = zoneIdByRootNodeMap.get(container);
 
   setAppUid(zoneId);
-  const registry = getRegistery();
 
   if (!isMounted) {
     let vNode: VirtualNode = null;
+    const registry = getRegistery();
     const app = createApp(container);
 
     container.innerHTML = '';
@@ -45,21 +46,12 @@ function renderComponent(source: MountedSource, container: HTMLElement, onRender
       container.appendChild(node);
     }
   } else {
-    const app = registry.get(zoneId)
     const vNode = getVirtualDOM(zoneId);
     const nextVNode: VirtualNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
 
     processDOM({ vNode, nextVNode });
-
-    console.log('nextVNode: ', nextVNode);
-
-    const portalsKeys = Object.keys(app.portals);
-    for(const key of portalsKeys) {
-      if (time > app.portals[key].time) {
-        app.portals[key].unmountContainer();
-        delete app.portals[key];
-      }
-    }
+    clearUnmountedPortalContainers(zoneId, time);
+    //console.log('nextVNode: ', nextVNode);
   }
 
   if (!isInternalRenderCall) {
