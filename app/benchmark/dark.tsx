@@ -113,53 +113,55 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   });
 });
 
-const App = createComponent(() => {
-  const handleCreate = () => {
-    state.list = buildData(1000);
-    console.time('create')
-    forceUpdate();
-    console.timeEnd('create')
-  };
-  const handleAdd = () => {
-    state.list.push( ...buildData(100, '!!!'));
-    console.time('add')
-    forceUpdate();
-    console.timeEnd('add')
-  };
-  const handleUpdateAll = () => {
-    state.list = state.list.map((x, idx) => ({...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name}));
-    console.time('update every 10th')
-    forceUpdate();
-    console.timeEnd('update every 10th')
-  };
-  const handleRemove = (id) => {
-    state.list = state.list.filter((z) => z.id !== id);
-    console.time('remove');
-    forceUpdate();
-    console.timeEnd('remove');
-  };
-  const handleHightlight = (id) => {
-    const idx = state.list.findIndex(z => z.id === id);
-    state.list[idx].select = !state.list[idx].select;
-    console.time('highlight');
-    forceUpdate();
-    console.timeEnd('highlight');
-  };
-  const handleSwap = () => {
-    const temp = state.list[1];
-    state.list[1] = state.list[state.list.length - 2];
-    state.list[state.list.length - 2] = temp;
-    console.time('swap')
-    forceUpdate();
-    console.timeEnd('swap')
-  };
-  const handleClear = () => {
-    state.list = [];
-    console.time('clear');
-    forceUpdate();
-    console.timeEnd('clear');
-  };
+const MemoList = memo(List);
 
+const handleCreate = () => {
+  state.list = buildData(10000);
+  console.time('create')
+  forceUpdate();
+  console.timeEnd('create')
+};
+const handleAdd = () => {
+  state.list.push( ...buildData(1000, '!!!'));
+  console.time('add')
+  forceUpdate();
+  console.timeEnd('add')
+};
+const handleUpdateAll = () => {
+  state.list = state.list.map((x, idx) => ({...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name}));
+  console.time('update every 10th')
+  forceUpdate();
+  console.timeEnd('update every 10th')
+};
+const handleRemove = (id) => {
+  state.list = state.list.filter((z) => z.id !== id);
+  console.time('remove');
+  forceUpdate();
+  console.timeEnd('remove');
+};
+const handleHightlight = (id) => {
+  //state.list.unshift( ...buildData(1, '!!!'));
+  const idx = state.list.findIndex(z => z.id === id);
+  state.list[idx].select = !state.list[idx].select;
+  console.time('highlight');
+  forceUpdate();
+  console.timeEnd('highlight');
+};
+const handleSwap = () => {
+  const temp = state.list[1];
+  state.list[1] = state.list[state.list.length - 2];
+  state.list[state.list.length - 2] = temp;
+  console.time('swap')
+  forceUpdate();
+  console.timeEnd('swap')
+};
+const handleClear = () => {
+  state.list = [];
+  console.time('clear');
+  forceUpdate();
+  console.timeEnd('clear');
+};
+const App = createComponent(() => {
   return div({
     slot: [
       MemoHeader({
@@ -169,7 +171,7 @@ const App = createComponent(() => {
         onSwap: handleSwap,
         onClear: handleClear,
       }),
-      List({ items: state.list, onRemove: handleRemove, onHighlight: handleHightlight }),
+      List({ items: [...state.list], onRemove: handleRemove, onHighlight: handleHightlight }),
     ],
   })
 });

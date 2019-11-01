@@ -6,13 +6,13 @@ import { getAppUid, getRegistery } from '@core/scope';
 import { ATTR_SKIP } from '../constants';
 
 type GetComponentFactoryType = (props: {}) => ComponentFactory;
-type ShouldUpdate = (props, nextProps) => boolean;
+type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
 const isMemo = (o) => o && o.elementToken === $$memo;
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
-  const keys = Object.keys(nextProps).filter(String);
+  const keys = Object.keys(nextProps);
 
   for (const key of keys) {
     if (nextProps[key] !== props[key]) return true;
@@ -21,14 +21,14 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   return false;
 } 
 
-function memo(getComponentFactory: GetComponentFactoryType, shouldUpdate: ShouldUpdate = defaultShouldUpdate) {
+function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate) {
   const Memo = createComponent((props: {}) => {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
     const skipMountHook = (componentId: string): boolean => {
       if (Boolean(app.memoStore[componentId])) {
         const memoStoreItem = app.memoStore[componentId];
-        const needUpdate = shouldUpdate(memoStoreItem.props, props);
+        const needUpdate = shouldUpdate(memoStoreItem.props, props as T);
 
         return !needUpdate;
       }
