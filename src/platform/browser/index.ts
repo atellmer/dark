@@ -1,2 +1,2 @@
 export * from './render';
-export * from './portal';
+export { default as createPortal } from './portal';

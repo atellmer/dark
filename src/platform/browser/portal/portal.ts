@@ -16,7 +16,7 @@ function createPortal(source: MountedSource, container: HTMLElement) {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
     const vDOM = isArray(mountedVNode) ? mountedVNode : [mountedVNode];
-    const componentRoute = vDOM[0].componentRoute.slice(0, -1);
+    const componentRoute = vDOM[0].componentRoute;
     let portalStoreItem = null;
     let vNode: VirtualNode = null;
     let nextVNode: VirtualNode = null;
@@ -79,4 +79,5 @@ export {
   isPortal,
   createPortal,
   clearUnmountedPortalContainers,
-}
+};
+export default createPortal;

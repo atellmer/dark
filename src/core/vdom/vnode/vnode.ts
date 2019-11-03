@@ -87,6 +87,14 @@ function isTagVirtualNode(vNode: VirtualNode): boolean {
   return vNode.type === 'TAG';
 }
 
+function isCommentVirtualNode(vNode: VirtualNode): boolean {
+  return vNode.type === 'COMMENT';
+}
+
+function isEmptyVirtualNode(vNode: VirtualNode): boolean {
+  return isCommentVirtualNode(vNode) && vNode.text === EMPTY_NODE;
+}
+
 function createAttribute(name: string, value: string | number | boolean) {
   return { [name]: value };
 }
@@ -123,4 +131,6 @@ export {
   removeAttribute,
   getNodeKey,
   isVirtualNode,
+  isCommentVirtualNode,
+  isEmptyVirtualNode,
 };
