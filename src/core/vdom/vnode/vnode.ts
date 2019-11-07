@@ -115,6 +115,43 @@ function getNodeKey(vNode: VirtualNode): string {
   return getAttribute(vNode, ATTR_KEY);
 }
 
+function getVirtualNodesByComponentId(comparedComponentId: string, vNode: VirtualNode, list = []): Array<VirtualNode> {
+  const componentId = vNode.componentRoute.join('.');
+  
+  if (componentId.length - comparedComponentId.length > 2) return list;
+
+  if (componentId === comparedComponentId) {
+    list.push(vNode);
+    return list;
+  }
+
+  if (componentId.indexOf(comparedComponentId) !== -1) {
+    list.push(vNode);
+  }
+
+  for (const childVNode of vNode.children) {
+    list = getVirtualNodesByComponentId(comparedComponentId, childVNode, list);
+  }
+
+  return list;
+}
+
+function replaceVirtualNode(replacedVNode: VirtualNode, vNode: VirtualNode, parentVNode: VirtualNode = null, idx: number = 0) {
+  if (replacedVNode.nodeRoute.length === vNode.nodeRoute.length) {
+    const nodeId = replacedVNode.nodeRoute.join('.');
+    const comparedNodeId = vNode.nodeRoute.join('.');
+
+    if (nodeId === comparedNodeId && Boolean(parentVNode)) {
+      parentVNode.children[idx] = replacedVNode;
+      return;
+    }
+  }
+
+  for (let i = 0; i < vNode.children.length; i++) {
+    replaceVirtualNode(replacedVNode, vNode.children[i], vNode, i);
+  }
+}
+
 export {
   createVirtualNode,
   createVirtualTextNode,
@@ -133,4 +170,6 @@ export {
   isVirtualNode,
   isCommentVirtualNode,
   isEmptyVirtualNode,
+  getVirtualNodesByComponentId,
+  replaceVirtualNode,
 };

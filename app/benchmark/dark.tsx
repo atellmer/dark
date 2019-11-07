@@ -1,4 +1,4 @@
-import { createComponent, Text, View, memo } from '../../src/core';
+import { createComponent, Text, View, memo, useState } from '../../src/core';
 import { renderComponent } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -68,7 +68,9 @@ type ListProps = {
 }
 
 const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
+  const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
+
   return tr({
     key,
     style: `${selected ? 'background-color: green;' : ''}`,
@@ -87,6 +89,10 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
             slot: Text('highlight'),
             onClick: () => onHighlight(id),
           }),
+          button({
+            slot: Text('count: ' + count),
+            onClick: () => setCount(count + 1),
+          }),
         ],
       }),
     ],
@@ -100,7 +106,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
     style: 'width: 100%; border-collapse: collapse;',
     slot: tbody({
       slot: items.map((x) => {
-        return MemoRow({
+        return Row({
           key: x.id,
           id: x.id,
           name: x.name,

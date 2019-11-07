@@ -1,4 +1,4 @@
-import { isEmpty, isFunction, isUndefined, error } from '@helpers';
+import { isEmpty, isUndefined, error } from '@helpers';
 import { ATTR_KEY, ATTR_SKIP } from '../../constants';
 import { createAttribute, getAttribute, getNodeKey, isTagVirtualNode, VirtualNode } from '../vnode';
 
@@ -44,7 +44,7 @@ function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virt
     commits.push(
       createCommit(REMOVE_ATTRIBUTE, nextVNode.nodeRoute, createAttribute(attrName, vNode.attrs[attrName]), null),
     );
-  } else if (nextVNode.attrs[attrName] !== vNode.attrs[attrName] && !isFunction(nextVNode.attrs[attrName])) {
+  } else if (nextVNode.attrs[attrName] !== vNode.attrs[attrName]) {
     const diffAction = createCommit(
       REPLACE_ATTRIBUTE,
       nextVNode.nodeRoute,
@@ -58,7 +58,7 @@ function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virt
 
 function mapNewAttributes(attrName: string, vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
   if (attrName === ATTR_KEY) return;
-  if (isEmpty(vNode.attrs[attrName]) && !isFunction(nextVNode.attrs[attrName])) {
+  if (isEmpty(vNode.attrs[attrName])) {
     commits.push(
       createCommit(ADD_ATTRIBUTE, nextVNode.nodeRoute, null, createAttribute(attrName, nextVNode.attrs[attrName])),
     );

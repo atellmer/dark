@@ -39,18 +39,20 @@ function renderComponent(source: MountedSource, container: HTMLElement, onRender
     registry.set(zoneId, app);
 
     vNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
-    // console.log('vNode: ', vNode);
+    console.log('vdom: ', vNode);
     app.vdom = vNode;
     const nodes = Array.from(mountRealDOM(vNode, app.nativeElement as HTMLElement).childNodes);
     for (const node of nodes) {
       container.appendChild(node);
     }
   } else {
+    const app = getRegistery().get(zoneId);
     const vNode = getVirtualDOM(zoneId);
     const nextVNode: VirtualNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
 
-    processDOM({ vNode, nextVNode });
+    processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
     clearUnmountedPortalContainers(zoneId, time);
+    app.vdom = nextVNode;
     //console.log('nextVNode: ', nextVNode);
   }
 

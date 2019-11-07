@@ -1,6 +1,7 @@
 import { flatten, isArray, isNull, isFunction, isEmpty } from '@helpers';
 import { getIsComponentFactory, ComponentFactory } from '../../component';
-import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode, getAttribute } from '../vnode/vnode';
+import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
+import { setMountedComponentId, setMountedComponentRoute, setMountedNodeRoute, setMountedComponentFactory, resetHooks } from '../../scope';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
@@ -22,14 +23,14 @@ function wrapWithRoot(
 
   const mountedVDOM = mountVirtualDOM({
     mountedSource,
+    mountedComponentRoute: mountedComponentRoute,
     mountedNodeRoute: [...mountedNodeRoute, 0],
-    mountedComponentRoute: [...mountedComponentRoute, 0],
   });
 
   vNode = createVirtualNode('TAG', {
     name: 'root',
-    nodeRoute: [...mountedNodeRoute],
-    componentRoute: [...mountedComponentRoute],
+    componentRoute: mountedComponentRoute,
+    nodeRoute: [0],
     children: isArray(mountedVDOM) ? mountedVDOM : [mountedVDOM],
   });
 
@@ -116,8 +117,13 @@ function mountVirtualDOM({
     vNode = wrapWithRoot(mountedSource, mountedNodeRoute, mountedComponentRoute);
   } else if (isComponentFactory) {
     mountedComponentRoute.push(-1);
-    vNode = componentFactory.createElement();
     const componentId = mountedComponentRoute.join('.');
+    setMountedComponentFactory(componentFactory);
+    setMountedComponentId(componentId);
+    setMountedComponentRoute(mountedComponentRoute);
+    setMountedNodeRoute(mountedNodeRoute);
+    vNode = componentFactory.createElement();
+    resetHooks(componentId);
     const nodeRoute = isFunction(componentFactory.props[$$nodeRouteHook])
       ? componentFactory.props[$$nodeRouteHook](mountedNodeRoute)
       : mountedNodeRoute;

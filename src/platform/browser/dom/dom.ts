@@ -15,13 +15,13 @@ import {
 } from '@core/vdom';
 import { getDiff } from '@core/vdom/diff';
 import { isArray, isFunction, isUndefined } from '@helpers';
-import { getAppUid, getRegistery } from '../../../core/scope/scope';
+import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
 
 type ProcessDOMOptions = {
   vNode: VirtualNode;
   nextVNode: VirtualNode;
-  container?: HTMLElement;
+  container: HTMLElement;
 };
 
 const attrBlackList = [ATTR_KEY, ATTR_SKIP];
@@ -161,7 +161,7 @@ const patchAttributes = (name: string, value: any, node: HTMLElement) => {
   }
 };
 
-const applyCommit = (commit: Commit, domElement: HTMLElement) => {
+const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
   const { action, nextValue, oldValue } = commit;
   const node = getNodeByCommit(domElement, commit);
   const nexVNode = nextValue as VirtualNode;
@@ -192,27 +192,29 @@ const applyCommit = (commit: Commit, domElement: HTMLElement) => {
     const attrNames = Object.keys(nextValue);
 
     for (const attrName of attrNames) {
-      patchAttributes(attrName, nextValue[attrName], node);
+      const attrValue = nextValue[attrName];
+      patchAttributes(attrName, attrValue, node);
+
+      if (isFunction(attrValue) && /^on/.test(attrName)) {
+        const eventName = attrName.slice(2, attrName.length).toLowerCase();
+        delegateEvent(uid, domElement, node, eventName, attrValue);
+      }
     }
   }
 };
 
 function patchDOM(commits: Commit[], domElement: HTMLElement) {
+  const uid = getAppUid();
+
   for (const commit of commits) {
-    applyCommit(commit, domElement);
+    applyCommit(uid, commit, domElement);
   }
 }
 
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
-  const uid = getAppUid();
-  const app = getRegistery().get(uid);
-  const domElement = (container || app.nativeElement) as HTMLElement;
-  let commits = [];
-
-  commits = getDiff(vNode, nextVNode);
-  console.log('commits:', commits);
-  patchDOM(commits, domElement);
-  app.vdom = nextVNode;
+  const commits = getDiff(vNode, nextVNode);
+  // console.log('commits:', commits);
+  patchDOM(commits, container);
 }
 
 export {

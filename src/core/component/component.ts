@@ -38,7 +38,7 @@ function createComponent<P>(
     const displayName = options ? options.displayName : '';
     const defaultProps = isStateless ? (options && options.defaultProps) || {} : {};
     const computedProps = { ...defaultProps, ...props } as P;
-
+    
     return {
       [$$componentFactory]: true,
       createElement: () => def({ ...computedProps }),

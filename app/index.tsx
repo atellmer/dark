@@ -1,45 +1,51 @@
 import runBench from './benchmark/dark';
 
 runBench();
-// import { createComponent, Fragment, h, Text, View, memo } from '../src/core';
+// import { createComponent, Fragment, h, Text, View, memo, useState } from '../src/core';
 // import { renderComponent, createPortal } from '../src/platform/browser';
 
 // const domElement = document.getElementById('app');
-// const domElement2 = document.getElementById('app2');
-// const domElement3 = document.getElementById('app3');
 
 // const div = (props = {}) => View({ ...props, as: 'div' });
 // const button = (props = {}) => View({ ...props, as: 'button' });
 // const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
-// const SomeComponent = createComponent(({ value }) => {
+// const SomeComponent = createComponent(({ value = '' }) => {
 //   return [
-//     div({ slot: Text('I am memo component: ' + value) }),
+//     div({ slot: Text('I am component: ' + value) }),
 //   ]
 // });
 
-// const Memoized = memo(SomeComponent);
+// const Input = createComponent(() => {
+//   const [value1, setValue1] = useState<string>('');
+//   const [value2, setValue2] = useState<string>('');
 
-// const App = createComponent(({ value = '' }) => {
 //   return [
-//     input({
-//       value,
-//       onInput: (e) => renderComponent(App({ value: e.target.value }), domElement),
-//     }),
-//     div({ slot: Text('header') }),
-//     [Text('123'), Text('321')],
 //     div({
 //       slot: [
-//         div({ slot: Text('content') }),
-//         value !== 'close' && SomeComponent({ value }),
+//         input({
+//           value: value1,
+//           onInput: (e) => setValue1(e.target.value),
+//         }),
+//         input({
+//           value: value2,
+//           onInput: (e) => setValue2(e.target.value),
+//         }),
+//         SomeComponent({ value: value1 }),
+//         SomeComponent({ value: value2 }),
 //       ]
-//     }),
-//     div({ slot: Text('footer') }),
+//     }) 
+//   ];
+// });
+
+// const App = createComponent(() => {
+//   //const [value, setValue] = useState<string>('');
+
+//   return [
+//     Text('header'),
+//     div({ slot: Input() }),
+//     Text('footer')
 //   ]
 // })
 
 // renderComponent(App(), domElement);
-
-// // setTimeout(() => {
-// //   renderComponent(App(), domElement);
-// // }, 2000)

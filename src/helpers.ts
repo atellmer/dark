@@ -9,7 +9,9 @@ const isEmpty = o => isNull(o) || isUndefined(o);
 const isDOMElement = element => element instanceof Element || element instanceof HTMLDocument;
 
 function error(errStr) {
-  console.error(errStr);
+  if (typeof console !== 'undefined') {
+    console.error(errStr);
+  }
 }
 
 function deepClone(obj: any) {
