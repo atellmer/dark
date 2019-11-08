@@ -7,7 +7,7 @@ type ScopeType = {
   mountedComponentFactory: ComponentFactory;
   mountedComponentId: string;
   mountedComponentRoute: Array<string | number>;
-  mountedNodeRoute: Array<number>;
+  fromUseStateRender: boolean;
 };
 
 type AppType = {
@@ -42,10 +42,10 @@ const getMountedComponentId = () => scope.mountedComponentId;
 const setMountedComponentId = (id: string) => scope.mountedComponentId = id;
 const getMountedComponentRoute = () => scope.mountedComponentRoute;
 const setMountedComponentRoute = (route: Array<string | number>) => scope.mountedComponentRoute = route;
-const getMountedNodeRoute = () => scope.mountedNodeRoute;
-const setMountedNodeRoute = (route: Array<number>) => scope.mountedNodeRoute = route;
 const getMountedComponentFactory = () => scope.mountedComponentFactory;
 const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedComponentFactory = factory;
+const getFromUseStateRender = (): boolean => scope.fromUseStateRender;
+const setFromUseStateRender = (value: boolean) => scope.fromUseStateRender = value;
 const getHooks = (componentId: string) => {
   const uid = getAppUid();
   const hookStore = getRegistery().get(uid).hookStore;
@@ -76,7 +76,7 @@ function createScope(): ScopeType {
     mountedComponentFactory: null,
     mountedComponentId: '',
     mountedComponentRoute: [],
-    mountedNodeRoute: [],
+    fromUseStateRender: false,
   };
 }
 
@@ -105,10 +105,10 @@ export {
   setMountedComponentId,
   getMountedComponentRoute,
   setMountedComponentRoute,
-  getMountedNodeRoute,
-  setMountedNodeRoute,
   getMountedComponentFactory,
   setMountedComponentFactory,
   getHooks,
   resetHooks,
+  getFromUseStateRender,
+  setFromUseStateRender,
 };

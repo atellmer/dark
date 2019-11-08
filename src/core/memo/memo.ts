@@ -2,7 +2,12 @@ import { VirtualDOM, setAttribute } from '@core/vdom';
 import { $$skipNodeMountHook, $$replaceNodeBeforeMountHook } from '@core/vdom/mount';
 import { ComponentFactory, createComponent } from '@core/component';
 import { isArray } from '@helpers';
-import { getAppUid, getRegistery } from '@core/scope';
+import {
+  getAppUid,
+  getRegistery,
+  getFromUseStateRender,
+  setFromUseStateRender,
+} from '@core/scope';
 import { ATTR_SKIP } from '../constants';
 
 type GetComponentFactoryType = (props: {}) => ComponentFactory;
@@ -28,7 +33,10 @@ function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdat
     const skipMountHook = (componentId: string): boolean => {
       if (Boolean(app.memoStore[componentId])) {
         const memoStoreItem = app.memoStore[componentId];
-        const needUpdate = shouldUpdate(memoStoreItem.props, props as T);
+        const fromUseState = getFromUseStateRender();
+        const needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
+
+        setFromUseStateRender(false);
 
         return !needUpdate;
       }

@@ -2,11 +2,11 @@ import {
   getRegistery,
   getHooks,
 	getMountedComponentRoute,
-	getMountedNodeRoute,
   getMountedComponentFactory,
   getMountedComponentId,
 	getVirtualDOM,
   getAppUid,
+  setFromUseStateRender,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { getVirtualNodesByComponentId, VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
@@ -18,16 +18,16 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
   const uid = getAppUid();
   const app = getRegistery().get(uid);
   const componentId = getMountedComponentId();
-  const componentRoute = getMountedComponentRoute();  
-  const nodeRoute = getMountedNodeRoute();
+  const componentRoute = getMountedComponentRoute();
   const hooks = getHooks(componentId);
   const componentFactory = getMountedComponentFactory();
   const idx = hooks.idx;
-
 	const setState = (value: T) => {
+    setFromUseStateRender(true);
     hooks.values[idx] = value;
     const vdom = getVirtualDOM(uid);
     const vNodeList: Array<VirtualNode> = getVirtualNodesByComponentId(componentId, vdom);
+    const nodeRoute = vNodeList[0].nodeRoute;
     const nextVNodeList: Array<VirtualNode> = flatten([
       mountVirtualDOM({
         mountedSource: componentFactory,

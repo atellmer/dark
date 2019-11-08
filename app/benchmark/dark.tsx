@@ -68,7 +68,8 @@ type ListProps = {
 }
 
 const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
-  const [count, setCount] = useState<number>(0);
+  const [count1, setCount1] = useState<number>(0);
+  const [count2, setCount2] = useState<number>(1);
   const cellStyle = `border: 1px solid pink;`;
 
   return tr({
@@ -90,8 +91,12 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
             onClick: () => onHighlight(id),
           }),
           button({
-            slot: Text('count: ' + count),
-            onClick: () => setCount(count + 1),
+            slot: Text('count: ' + count1),
+            onClick: () => setCount1(count1 + 1),
+          }),
+          button({
+            slot: Text('count: ' + count2),
+            onClick: () => setCount2(count2 + 1),
           }),
         ],
       }),
@@ -106,7 +111,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
     style: 'width: 100%; border-collapse: collapse;',
     slot: tbody({
       slot: items.map((x) => {
-        return Row({
+        return MemoRow({
           key: x.id,
           id: x.id,
           name: x.name,
@@ -154,6 +159,7 @@ const handleHightlight = (id) => {
   console.timeEnd('highlight');
 };
 const handleSwap = () => {
+  if (state.list.length === 0) return;
   const temp = state.list[1];
   state.list[1] = state.list[state.list.length - 2];
   state.list[state.list.length - 2] = temp;
