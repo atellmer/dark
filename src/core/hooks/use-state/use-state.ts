@@ -10,8 +10,9 @@ import {
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { getVirtualNodesByComponentId, VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
-import { isUndefined, flatten } from '@helpers';
+import { isUndefined, flatten, getTime } from '@helpers';
 import  { processDOM } from '../../../platform/browser/dom'; //temp
+import { clearUnmountedPortalContainers } from '../../../platform/browser/portal'; //temp
 
 
 function useState<T = any>(initialValue: T): [T, (v: T) => void] {
@@ -24,17 +25,20 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
   const idx = hooks.idx;
 	const setState = (value: T) => {
     setFromUseStateRender(true);
+    const time = getTime();
     hooks.values[idx] = value;
     const vdom = getVirtualDOM(uid);
     const vNodeList: Array<VirtualNode> = getVirtualNodesByComponentId(componentId, vdom);
     const nodeRoute = vNodeList[0].nodeRoute;
+    const fromRoot = nodeRoute.length === 1;
     const nextVNodeList: Array<VirtualNode> = flatten([
       mountVirtualDOM({
         mountedSource: componentFactory,
         mountedComponentRoute: componentRoute.slice(0, -1),
         mountedNodeRoute: nodeRoute,
+        fromRoot,
       })
-    ]);
+    ]);  
     const iterations = Math.max(vNodeList.length, nextVNodeList.length);
 
     for(let i = 0; i < iterations; i++) {
@@ -46,6 +50,8 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
 
       replaceVirtualNode(nextVNodeList[i], vdom);
     }
+
+    clearUnmountedPortalContainers(uid, time, componentId);
 	};
 
 	if (isUndefined(hooks.values[idx])) {

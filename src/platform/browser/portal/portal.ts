@@ -62,13 +62,17 @@ function createPortal(source: MountedSource, container: HTMLElement) {
   });
 }
 
-function clearUnmountedPortalContainers(uid: number, time: number) {
+function clearUnmountedPortalContainers(uid: number, time: number, componentId: string = '') {
   const registry = getRegistery();
   const app = registry.get(uid);
   const portalsKeys = Object.keys(app.portalStore);
 
   for(const key of portalsKeys) {
-    if (time > app.portalStore[key].time) {
+    const isMatch = Boolean(componentId)
+      ? key.indexOf(componentId) === 0
+      : true;
+
+    if (time > app.portalStore[key].time && isMatch) {
       app.portalStore[key].unmountContainer();
       delete app.portalStore[key];
     }
