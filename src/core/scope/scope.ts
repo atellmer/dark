@@ -7,7 +7,7 @@ type ScopeType = {
   mountedComponentFactory: ComponentFactory;
   mountedComponentId: string;
   mountedComponentRoute: Array<string | number>;
-  fromUseStateRender: boolean;
+  currentUseStateComponentId: string;
 };
 
 type AppType = {
@@ -44,8 +44,8 @@ const getMountedComponentRoute = () => scope.mountedComponentRoute;
 const setMountedComponentRoute = (route: Array<string | number>) => scope.mountedComponentRoute = route;
 const getMountedComponentFactory = () => scope.mountedComponentFactory;
 const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedComponentFactory = factory;
-const getFromUseStateRender = (): boolean => scope.fromUseStateRender;
-const setFromUseStateRender = (value: boolean) => scope.fromUseStateRender = value;
+const getCurrentUseStateComponentId = (): string => scope.currentUseStateComponentId;
+const setCurrentUseStateComponentId = (id: string) => scope.currentUseStateComponentId = id;
 const getHooks = (componentId: string) => {
   const uid = getAppUid();
   const hookStore = getRegistery().get(uid).hookStore;
@@ -76,7 +76,7 @@ function createScope(): ScopeType {
     mountedComponentFactory: null,
     mountedComponentId: '',
     mountedComponentRoute: [],
-    fromUseStateRender: false,
+    currentUseStateComponentId: '',
   };
 }
 
@@ -109,6 +109,6 @@ export {
   setMountedComponentFactory,
   getHooks,
   resetHooks,
-  getFromUseStateRender,
-  setFromUseStateRender,
+  getCurrentUseStateComponentId,
+  setCurrentUseStateComponentId,
 };

@@ -5,10 +5,11 @@ import { isArray } from '@helpers';
 import {
   getAppUid,
   getRegistery,
-  getFromUseStateRender,
-  setFromUseStateRender,
+  getCurrentUseStateComponentId,
+  setCurrentUseStateComponentId,
 } from '@core/scope';
 import { ATTR_SKIP } from '../constants';
+import { patchTimeOfPortals } from '../../platform/browser/portal';
 
 type GetComponentFactoryType = (props: {}) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
@@ -33,10 +34,11 @@ function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdat
     const skipMountHook = (componentId: string): boolean => {
       if (Boolean(app.memoStore[componentId])) {
         const memoStoreItem = app.memoStore[componentId];
-        const fromUseState = getFromUseStateRender();
+        const currentUseStateComponentId = getCurrentUseStateComponentId();
+        const fromUseState = currentUseStateComponentId === componentId;
         const needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
 
-        setFromUseStateRender(false);
+        setCurrentUseStateComponentId('');
 
         return !needUpdate;
       }
@@ -61,6 +63,7 @@ function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdat
           const patchRouteId = nodeRoute[patchIdx];
 
           patchNodeRoutes(vNode, patchIdx, patchRouteId);
+          patchTimeOfPortals(uid, componentId);
 
           for (const vNode of vDOM) {
             setAttribute(vNode, ATTR_SKIP, true);

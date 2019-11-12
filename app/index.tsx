@@ -15,7 +15,6 @@ const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
 const TextItem = createComponent(({ value }) => {
   console.log('render');
-  
 
   return [
     div({
@@ -29,6 +28,7 @@ const TextItem = createComponent(({ value }) => {
   ];
 });
 
+//const MemoTextItem = memo(TextItem);
 const MemoTextItem = memo(TextItem, () => false);
 
 const App = createComponent(() => {

@@ -152,6 +152,16 @@ function replaceVirtualNode(replacedVNode: VirtualNode, vNode: VirtualNode, pare
   }
 }
 
+function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): VirtualNode {
+  let vNode = vdom;
+  const mapRoute = (cIdx: number, idx: number) =>
+    idx === 0 ? vNode : (vNode = vNode ? vNode.children[cIdx] : vNode);
+
+  nodeRoute.forEach(mapRoute);
+
+  return vNode;
+}
+
 export {
   createVirtualNode,
   createVirtualTextNode,
@@ -172,4 +182,5 @@ export {
   isEmptyVirtualNode,
   getVirtualNodesByComponentId,
   replaceVirtualNode,
+  getVirtualNodeByRoute,
 };

@@ -1,11 +1,20 @@
 import { flatten, isArray, isNull, isFunction, isEmpty } from '@helpers';
 import { getIsComponentFactory, ComponentFactory } from '../../component';
-import { createVirtualEmptyNode, createVirtualNode, isVirtualNode, VirtualDOM, VirtualNode } from '../vnode/vnode';
+import {
+	createVirtualEmptyNode,
+	createVirtualNode,
+	isVirtualNode,
+	VirtualDOM,
+	VirtualNode,
+  getVirtualNodeByRoute,
+} from '../vnode/vnode';
 import {
 	setMountedComponentId,
 	setMountedComponentRoute,
 	setMountedComponentFactory,
 	resetHooks,
+	getAppUid,
+	getVirtualDOM
 } from '../../scope';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
@@ -137,10 +146,22 @@ function mountVirtualDOM({
 		resetHooks(componentId);
 		const nodeRoute = isFunction(componentFactory.props[$$nodeRouteHook])
 			? componentFactory.props[$$nodeRouteHook](mountedNodeRoute)
-      : mountedNodeRoute;
-    const skipMount = isFunction(componentFactory.props[$$skipNodeMountHook])
-      ? componentFactory.props[$$skipNodeMountHook](componentId)
-      : false;
+			: mountedNodeRoute;
+		const skipMount = isFunction(componentFactory.props[$$skipNodeMountHook])
+			? componentFactory.props[$$skipNodeMountHook](componentId)
+			: false;
+
+		// if (skipMount) {
+      // const uid = getAppUid();
+      // const vdom = getVirtualDOM(uid);
+    //   //console.time('1');
+    //   //vNode = componentFactory.createElement();
+		// 	//vNode = getVirtualNodeByRoute(vdom, mountedNodeRoute);
+		// 	//console.timeEnd('1');
+		// } else {
+		// 	vNode = componentFactory.createElement();
+		// }
+
 		vNode = isFunction(componentFactory.props[$$replaceNodeBeforeMountHook])
 			? componentFactory.props[$$replaceNodeBeforeMountHook](vNode, componentId, mountedNodeRoute, skipMount)
 			: vNode;

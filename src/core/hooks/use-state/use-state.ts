@@ -6,7 +6,7 @@ import {
   getMountedComponentId,
 	getVirtualDOM,
   getAppUid,
-  setFromUseStateRender,
+  setCurrentUseStateComponentId,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { getVirtualNodesByComponentId, VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
@@ -24,7 +24,7 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
   const componentFactory = getMountedComponentFactory();
   const idx = hooks.idx;
 	const setState = (value: T) => {
-    setFromUseStateRender(true);
+    setCurrentUseStateComponentId(componentId);
     const time = getTime();
     hooks.values[idx] = value;
     const vdom = getVirtualDOM(uid);

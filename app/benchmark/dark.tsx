@@ -59,8 +59,6 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
   });
 });
 
-const MemoHeader = memo(Header);
-
 type ListProps = {
   items: Array<{id: number, name: string; select: boolean}>;
   onRemove: Function;
@@ -124,8 +122,6 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   });
 });
 
-const MemoList = memo(List);
-
 const handleCreate = () => {
   state.list = buildData(10000);
   console.time('create')
@@ -176,7 +172,7 @@ const handleClear = () => {
 const App = createComponent(() => {
   return div({
     slot: [
-      MemoHeader({
+      Header({
         onCreate: handleCreate,
         onAdd: handleAdd,
         onUpdateAll: handleUpdateAll,
