@@ -1,47 +1,43 @@
 import runBench from './benchmark/dark';
 
-runBench();
-// import { createComponent, Fragment, h, Text, View, memo, useState } from '../src/core';
-// import { renderComponent, createPortal } from '../src/platform/browser';
+//runBench();
+import { createComponent, Fragment, h, Text, View, memo, useState } from '../src/core';
+import { renderComponent, createPortal } from '../src/platform/browser';
 
-// const domElement = document.getElementById('app');
-// const domElement1 = document.getElementById('portal');
+const domElement1 = document.getElementById('app');
+const domElementPortal = document.getElementById('portal');
+const domElement2 = document.getElementById('app2');
 
-// const div = (props = {}) => View({ ...props, as: 'div' });
-// const button = (props = {}) => View({ ...props, as: 'button' });
-// const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
+const div = (props = {}) => View({ ...props, as: 'div' });
+const button = (props = {}) => View({ ...props, as: 'button' });
+const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
 
+const TextItem = createComponent(({ value }) => {
+  return [
+    div({
+      slot: [
+        div({ slot: Text(`xxx: ${value}`) })
+      ]
+    }) 
+  ];
+});
 
-// const TextItem = createComponent(({ value }) => {
-//   console.log('render');
+const MemoTextItem = memo(TextItem);
 
-//   return [
-//     div({
-//       slot: [
-//         value !== 'close' && createPortal(
-//           div({ slot: Text(`xxx: ${value}`) }),
-//           domElement1,
-//         ),
-//       ]
-//     }) 
-//   ];
-// });
+const App = createComponent(() => {
+  const [value, setValue] = useState<string>('');
 
-// //const MemoTextItem = memo(TextItem);
-// const MemoTextItem = memo(TextItem, () => false);
+  return [
+    MemoTextItem({ value }),
+    input({
+      value: value,
+      onInput: (e) => setValue(e.target.value),
+    }),
+    //Text(`value: ${value}`),
+  ]
+})
 
-// const App = createComponent(() => {
-//   const [value, setValue] = useState<string>('');
+renderComponent(App(), domElement1);
 
-//   return [
-//     MemoTextItem({ value }),
-//     input({
-//       value: value,
-//       onInput: (e) => setValue(e.target.value),
-//     }),
-//     // Text(`value: ${value}`),
-//   ]
-// })
-
-// renderComponent(App(), domElement);
+renderComponent(App(), domElement2);

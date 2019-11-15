@@ -6,6 +6,7 @@ import {
   getMountedComponentId,
 	getVirtualDOM,
   getAppUid,
+  setAppUid,
   setCurrentUseStateComponentId,
   getComponentVirtualNodesById,
 } from '@core/scope';
@@ -25,6 +26,7 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
   const componentFactory = getMountedComponentFactory();
   const idx = hooks.idx;
 	const setState = (value: T) => {
+    setAppUid(uid);
     setCurrentUseStateComponentId(componentId);
     const time = getTime();
     hooks.values[idx] = value;
@@ -32,15 +34,14 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
     const vNode = getComponentVirtualNodesById(componentId);
     const vNodeList = isArray(vNode) ? vNode : [vNode];
     const nodeRoute = vNodeList[0].nodeRoute;
-    const fromRoot = nodeRoute.length === 1;
     const nextVNodeList: Array<VirtualNode> = flatten([
       mountVirtualDOM({
         mountedSource: componentFactory,
         mountedComponentRoute: componentRoute.slice(0, -1),
         mountedNodeRoute: nodeRoute,
-        fromRoot,
       })
-    ]);  
+    ]); 
+    
     const iterations = Math.max(vNodeList.length, nextVNodeList.length);
 
     for(let i = 0; i < iterations; i++) {
