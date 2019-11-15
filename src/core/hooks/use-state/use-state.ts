@@ -7,10 +7,11 @@ import {
 	getVirtualDOM,
   getAppUid,
   setCurrentUseStateComponentId,
+  getComponentVirtualNodesById,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
-import { getVirtualNodesByComponentId, VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
-import { isUndefined, flatten, getTime } from '@helpers';
+import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
+import { isUndefined, flatten, getTime, isArray } from '@helpers';
 import  { processDOM } from '../../../platform/browser/dom'; //temp
 import { clearUnmountedPortalContainers } from '../../../platform/browser/portal'; //temp
 
@@ -28,7 +29,8 @@ function useState<T = any>(initialValue: T): [T, (v: T) => void] {
     const time = getTime();
     hooks.values[idx] = value;
     const vdom = getVirtualDOM(uid);
-    const vNodeList: Array<VirtualNode> = getVirtualNodesByComponentId(componentId, vdom);
+    const vNode = getComponentVirtualNodesById(componentId);
+    const vNodeList = isArray(vNode) ? vNode : [vNode];
     const nodeRoute = vNodeList[0].nodeRoute;
     const fromRoot = nodeRoute.length === 1;
     const nextVNodeList: Array<VirtualNode> = flatten([

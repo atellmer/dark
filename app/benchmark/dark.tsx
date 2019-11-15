@@ -67,7 +67,6 @@ type ListProps = {
 
 const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
   const [count1, setCount1] = useState<number>(0);
-  const [count2, setCount2] = useState<number>(1);
   const cellStyle = `border: 1px solid pink;`;
 
   return tr({
@@ -91,10 +90,6 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
           button({
             slot: Text('count: ' + count1),
             onClick: () => setCount1(count1 + 1),
-          }),
-          button({
-            slot: Text('count: ' + count2),
-            onClick: () => setCount2(count2 + 1),
           }),
         ],
       }),
@@ -160,6 +155,7 @@ const handleSwap = () => {
   state.list[1] = state.list[state.list.length - 2];
   state.list[state.list.length - 2] = temp;
   console.time('swap')
+  //console.log('state.list', state.list); 
   forceUpdate();
   console.timeEnd('swap')
 };

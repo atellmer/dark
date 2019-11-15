@@ -2,8 +2,17 @@ import { createComponent } from '@core/component';
 import { Fragment } from '../../fragment';
 import { EMPTY_NODE, Text, View, VirtualNode } from '../vnode';
 import { mountVirtualDOM } from './mount';
+import { getRegistery, createApp, setAppUid } from '../../scope';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
+
+beforeEach(() => {
+  const registry = getRegistery();
+  const app = createApp(null);
+
+  registry.set(0, app);
+  setAppUid(0);
+});
 
 test('[mount vdom]: mount children correctly', () => {
   const Component = createComponent(() => {
@@ -26,7 +35,7 @@ test('[mount vdom]: mount children correctly', () => {
   expect(vdom.children.length).toBe(5);
 });
 
-describe('[mount vdom]: mount children correctly with arrays', () => {
+test('[mount vdom]: mount children correctly with arrays', () => {
   const Item = createComponent(() => {
     return div();
   });
@@ -47,12 +56,8 @@ describe('[mount vdom]: mount children correctly with arrays', () => {
 
   const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
 
-  test('right numbers of children', () => {
-    expect(vdom.children.length).toBe(12);
-  });
-  test('mounting components recursively', () => {
-    expect(vdom.children.every(vNode => vNode.isVirtualNode === true)).toBe(true);
-  });
+  expect(vdom.children.length).toBe(12);
+  expect(vdom.children.every(vNode => vNode.isVirtualNode === true)).toBe(true);
 });
 
 test('[mount vdom]: mount empty result', () => {

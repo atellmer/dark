@@ -1,4 +1,4 @@
-import { isArray, isEmpty } from '@helpers';
+import { isArray, isEmpty, deepClone } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 import { MountedSource } from '../mount';
 
@@ -115,27 +115,6 @@ function getNodeKey(vNode: VirtualNode): string {
   return getAttribute(vNode, ATTR_KEY);
 }
 
-function getVirtualNodesByComponentId(comparedComponentId: string, vNode: VirtualNode, list = []): Array<VirtualNode> {
-  const componentId = vNode.componentRoute.join('.');
-  
-  if (componentId.length - comparedComponentId.length > 2) return list;
-
-  if (componentId === comparedComponentId) {
-    list.push(vNode);
-    return list;
-  }
-
-  if (componentId.indexOf(comparedComponentId) !== -1) {
-    list.push(vNode);
-  }
-
-  for (const childVNode of vNode.children) {
-    list = getVirtualNodesByComponentId(comparedComponentId, childVNode, list);
-  }
-
-  return list;
-}
-
 function replaceVirtualNode(replacedVNode: VirtualNode, vNode: VirtualNode, parentVNode: VirtualNode = null, idx: number = 0) {
   if (replacedVNode.nodeRoute.length === vNode.nodeRoute.length) {
     const nodeId = replacedVNode.nodeRoute.join('.');
@@ -154,8 +133,9 @@ function replaceVirtualNode(replacedVNode: VirtualNode, vNode: VirtualNode, pare
 
 function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): VirtualNode {
   let vNode = vdom;
-  const mapRoute = (cIdx: number, idx: number) =>
+  const mapRoute = (cIdx: number, idx: number) => {
     idx === 0 ? vNode : (vNode = vNode ? vNode.children[cIdx] : vNode);
+  };
 
   nodeRoute.forEach(mapRoute);
 
@@ -180,7 +160,6 @@ export {
   isVirtualNode,
   isCommentVirtualNode,
   isEmptyVirtualNode,
-  getVirtualNodesByComponentId,
   replaceVirtualNode,
   getVirtualNodeByRoute,
 };

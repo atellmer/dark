@@ -13,6 +13,9 @@ type ScopeType = {
 type AppType = {
   nativeElement: unknown;
   vdom: VirtualNode;
+  componentStore: Record<string, {
+    vdom: VirtualDOM;
+  }>
   eventStore: Map<
     string,
     WeakMap<any, Function>
@@ -23,7 +26,6 @@ type AppType = {
     time: number;
   }>;
   memoStore: Record<string, {
-    vNode: VirtualDOM;
     props: any;
   }>;
   hookStore: Record<string, {
@@ -46,6 +48,23 @@ const getMountedComponentFactory = () => scope.mountedComponentFactory;
 const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedComponentFactory = factory;
 const getCurrentUseStateComponentId = (): string => scope.currentUseStateComponentId;
 const setCurrentUseStateComponentId = (id: string) => scope.currentUseStateComponentId = id;
+
+const getComponentVirtualNodesById = (id: string) => {
+  const { componentStore } = getRegistery().get(getAppUid());
+  const nodes = componentStore[id] ? componentStore[id].vdom : null;
+  return nodes;
+};
+
+const setComponentVirtualNodesById = (id: string, vdom: VirtualDOM) => {
+  const { componentStore } = getRegistery().get(getAppUid());
+  
+  if (!componentStore[id]) {
+    componentStore[id] = { vdom }; 
+  } else {
+    componentStore[id].vdom = vdom;
+  }
+};
+
 const getHooks = (componentId: string) => {
   const uid = getAppUid();
   const hookStore = getRegistery().get(uid).hookStore;
@@ -84,6 +103,7 @@ function createApp(nativeElement: unknown): AppType {
   return {
     nativeElement,
     vdom: null,
+    componentStore: {},
     eventStore: new Map(),
     portalStore: {},
     memoStore: {},
@@ -111,4 +131,6 @@ export {
   resetHooks,
   getCurrentUseStateComponentId,
   setCurrentUseStateComponentId,
+  getComponentVirtualNodesById,
+  setComponentVirtualNodesById,
 };

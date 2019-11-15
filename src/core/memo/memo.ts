@@ -1,14 +1,16 @@
 import { VirtualDOM, setAttribute } from '@core/vdom';
 import { $$skipNodeMountHook, $$replaceNodeBeforeMountHook } from '@core/vdom/mount';
 import { ComponentFactory, createComponent } from '@core/component';
-import { isArray } from '@helpers';
+import { isArray, isEmpty } from '@helpers';
 import {
   getAppUid,
   getRegistery,
   getCurrentUseStateComponentId,
   setCurrentUseStateComponentId,
+  getVirtualDOM,
 } from '@core/scope';
 import { ATTR_SKIP } from '../constants';
+import { getVirtualNodeByRoute, getNodeKey } from '../vdom/vnode';
 import { patchTimeOfPortals } from '../../platform/browser/portal';
 
 type GetComponentFactoryType = (props: {}) => ComponentFactory;
@@ -28,7 +30,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
 } 
 
 function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate) {
-  const Memo = createComponent((props: {}) => {
+  const Memo = createComponent((props: T & { key?: any }) => {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
     const skipMountHook = (componentId: string): boolean => {
@@ -36,7 +38,7 @@ function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdat
         const memoStoreItem = app.memoStore[componentId];
         const currentUseStateComponentId = getCurrentUseStateComponentId();
         const fromUseState = currentUseStateComponentId === componentId;
-        const needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
+        let needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
 
         setCurrentUseStateComponentId('');
 
@@ -46,30 +48,32 @@ function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdat
       return false;
     };
     const replaceNodeBeforeMountHook = (
-      mountedVNode: VirtualDOM, componentId: string, nodeRoute: Array<number>, skipMount: boolean): VirtualDOM => {
-      const vDOM = isArray(mountedVNode) ? mountedVNode : [mountedVNode];
-      let vNode: VirtualDOM = mountedVNode;
+      vNode: VirtualDOM, componentId: string, nodeRoute: Array<number>, skipMount: boolean): VirtualDOM => {
+      const vDOM = isArray(vNode) ? vNode : [vNode];
 
       if (!app.memoStore[componentId]) {
-        app.memoStore[componentId] = {
-          vNode: mountedVNode,
-          props,
-        };
+        app.memoStore[componentId] = { props };
       } else {
-        vNode = mountedVNode;
         if (skipMount) {
-          vNode = app.memoStore[componentId].vNode;
           const patchIdx = nodeRoute.length - 1;
           const patchRouteId = nodeRoute[patchIdx];
+          let skipReconciliation = true;
 
           patchNodeRoutes(vNode, patchIdx, patchRouteId);
           patchTimeOfPortals(uid, componentId);
 
+          if (!isEmpty(props.key)) {
+            const vdom = getVirtualDOM(uid);
+            const prevVNode = getVirtualNodeByRoute(vdom, nodeRoute)
+            const prevKey = getNodeKey(prevVNode);
+
+            skipReconciliation = props.key === prevKey;
+          }
+
           for (const vNode of vDOM) {
-            setAttribute(vNode, ATTR_SKIP, true);
+            setAttribute(vNode, ATTR_SKIP, skipReconciliation);
           }    
         }
-        app.memoStore[componentId].vNode = vNode;
         app.memoStore[componentId].props = props;
       }
 
