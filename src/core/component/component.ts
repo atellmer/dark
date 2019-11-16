@@ -19,6 +19,8 @@ export type ComponentFactory = {
   elementToken: any;
 } & { [key: string]: any };
 
+export type Component<T extends object> = (props: T) => ComponentFactory;
+
 type StandardComponentProps = {
   slot?: VirtualDOM | ComponentFactory | Array<ComponentFactory> | RenderProps;
 } & { [key: string]: any };

@@ -13,7 +13,7 @@ import { ATTR_SKIP } from '../constants';
 import { getVirtualNodeByRoute, getNodeKey } from '../vdom/vnode';
 import { patchTimeOfPortals } from '../../platform/browser/portal';
 
-type GetComponentFactoryType = (props: {}) => ComponentFactory;
+type Component<T extends object> = (props: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
@@ -23,13 +23,16 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   const keys = Object.keys(nextProps);
 
   for (const key of keys) {
-    if (nextProps[key] !== props[key]) return true;
+    if (nextProps[key] !== props[key] && key !== 'slot') {
+      return true;
+    }
   }
 
   return false;
 } 
 
-function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate) {
+function memo<T extends object>(
+  component: Component<T>, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate): Component<T> {
   const Memo = createComponent((props: T & { key?: any }) => {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
@@ -83,7 +86,7 @@ function memo<T = any>(getComponentFactory: GetComponentFactoryType, shouldUpdat
     props[$$skipNodeMountHook] = skipMountHook;
     props[$$replaceNodeBeforeMountHook] = replaceNodeBeforeMountHook;
 
-    return getComponentFactory(props);
+    return component(props);
   }, { displayName: 'Memo', elementToken: $$memo });
 
   return Memo;

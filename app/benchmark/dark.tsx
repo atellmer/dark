@@ -1,4 +1,4 @@
-import { createComponent, Text, View, memo, useState } from '../../src/core';
+import { h, createComponent, Text, View, Fragment, memo, useState } from '../../src/core';
 import { renderComponent } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -68,8 +68,21 @@ type ListProps = {
 }
 
 const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
-  const [count1, setCount1] = useState<number>(0);
+  const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
+
+  return (
+    <tr key={key} style={`${selected ? 'background-color: green;' : ''}`}>
+      <td style={cellStyle}>{name}</td>
+      <td style={cellStyle}>1</td>
+      <td style={cellStyle}>2</td>
+      <td style={cellStyle}>
+        <button onClick={() => onRemove(id)}>remove</button>
+        <button onClick={() => onHighlight(id)}>highlight</button>
+        <button onClick={() => setCount(count + 1)}>count: {count}</button>
+      </td>
+    </tr>
+  );
 
   return tr({
     key,
@@ -90,8 +103,8 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
             onClick: () => onHighlight(id),
           }),
           button({
-            slot: Text('count: ' + count1),
-            onClick: () => setCount1(count1 + 1),
+            slot: Text('count: ' + count),
+            onClick: () => setCount(count + 1),
           }),
         ],
       }),
@@ -102,6 +115,28 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
 const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+
+  return (
+    <table style='width: 100%; border-collapse: collapse;'>
+      <tbody>
+        {
+          items.map((x) => {
+            return (
+              <MemoRow
+                key={x.id}
+                id={x.id}
+                name={x.name}
+                selected={x.select}
+                onRemove={onRemove}
+                onHighlight={onHighlight}
+              />
+            )
+          })
+        }
+      </tbody>
+    </table>
+  )
+  
   return table({
     style: 'width: 100%; border-collapse: collapse;',
     slot: tbody({
@@ -119,14 +154,17 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   });
 });
 
+const MemoList = memo(List);
+
 const handleCreate = () => {
-  state.list = buildData(10000);
+  state.list = buildData(10);
   console.time('create')
   forceUpdate();
   console.timeEnd('create')
 };
 const handleAdd = () => {
   state.list.push( ...buildData(1000, '!!!'));
+  state.list = [...state.list];
   console.time('add')
   forceUpdate();
   console.timeEnd('add')
@@ -147,6 +185,7 @@ const handleHightlight = (id) => {
   //state.list.unshift( ...buildData(1, '!!!'));
   const idx = state.list.findIndex(z => z.id === id);
   state.list[idx].select = !state.list[idx].select;
+  state.list = [...state.list];
   console.time('highlight');
   forceUpdate();
   console.timeEnd('highlight');
@@ -156,6 +195,7 @@ const handleSwap = () => {
   const temp = state.list[1];
   state.list[1] = state.list[state.list.length - 2];
   state.list[state.list.length - 2] = temp;
+  state.list = [...state.list];
   console.time('swap')
   //console.log('state.list', state.list); 
   forceUpdate();
@@ -165,9 +205,26 @@ const handleClear = () => {
   state.list = [];
   console.time('clear');
   forceUpdate();
-  console.timeEnd('clear');
+  console.timeEnd('clear'); 
 };
 const App = createComponent(() => {
+  return (
+    <Fragment>
+      <Header
+        onCreate={handleCreate}
+        onAdd={handleAdd}
+        onUpdateAll={handleUpdateAll}
+        onSwap={handleSwap}
+        onClear={handleClear}
+      />
+      <MemoList
+        items={state.list}
+        onRemove={handleRemove}
+        onHighlight={handleHightlight}
+      />
+    </Fragment>
+  )
+
   return div({
     slot: [
       MemoHeader({
