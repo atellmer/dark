@@ -13,7 +13,7 @@ import { ATTR_SKIP } from '../constants';
 import { getVirtualNodeByRoute, getNodeKey } from '../vdom/vnode';
 import { patchTimeOfPortals } from '../../platform/browser/portal';
 
-type Component<T extends object> = (props: T) => ComponentFactory;
+type Component<T extends object> = (props?: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
@@ -33,7 +33,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
 
 function memo<T extends object>(
   component: Component<T>, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate): Component<T> {
-  const Memo = createComponent((props: T & { key?: any }) => {
+  const Memo = createComponent((props?: T & { key?: any }) => {
     const uid = getAppUid();
     const app = getRegistery().get(uid);
     const skipMountHook = (componentId: string): boolean => {

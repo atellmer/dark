@@ -31,7 +31,7 @@ const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
 const $$componentFactory = Symbol('componentFactory');
 
 
-function createComponent<P>(
+function createComponent<P extends object>(
   def: ComponentDefinition<P & StandardComponentProps>,
   options: ComponentOptions<P & StandardComponentProps> = null,
 ) {
