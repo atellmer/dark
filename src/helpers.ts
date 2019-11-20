@@ -1,4 +1,4 @@
-const isFunction = o => typeof o === 'function';
+const isFunction = (o): o is Function => typeof o === 'function';
 const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
 const isString = o => typeof o === 'string';

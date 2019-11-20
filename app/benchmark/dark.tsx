@@ -1,4 +1,4 @@
-import { h, createComponent, Text, View, Fragment, memo, useState } from '../../src/core';
+import { h, createComponent, Text, View, Fragment, memo, useState, useEffect } from '../../src/core';
 import { renderComponent } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -69,6 +69,12 @@ type ListProps = {
 
 const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
   const [count, setCount] = useState<number>(0);
+
+  useEffect(() => {
+    //console.log('effect', key);
+    setCount(count + 5);
+  }, []);
+
   const cellStyle = `border: 1px solid pink;`;
 
   return (
