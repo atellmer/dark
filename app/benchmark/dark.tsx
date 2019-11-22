@@ -70,10 +70,10 @@ type ListProps = {
 const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
   const [count, setCount] = useState<number>(0);
 
-  useEffect(() => {
-    //console.log('effect', key);
-    setCount(count + 5);
-  }, []);
+  // useEffect(() => {
+  //   //console.log('effect', key);
+  //   setCount(count + 5);
+  // }, []);
 
   const cellStyle = `border: 1px solid pink;`;
 
@@ -128,14 +128,19 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {
           items.map((x) => {
             return (
-              <MemoRow
-                key={x.id}
-                id={x.id}
-                name={x.name}
-                selected={x.select}
-                onRemove={onRemove}
-                onHighlight={onHighlight}
-              />
+              <Fragment key={x.id}>
+                <MemoRow
+                  //key={x.id}
+                  id={x.id}
+                  name={x.name}
+                  selected={x.select}
+                  onRemove={onRemove}
+                  onHighlight={onHighlight}
+                />
+                <div
+                  //key={x.id}
+                  style={`${x.select ? 'background-color: green;' : ''}`}>{x.id}</div>
+              </Fragment>
             )
           })
         }
