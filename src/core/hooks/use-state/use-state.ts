@@ -1,71 +1,72 @@
 import {
-  getRegistery,
-  getHooks,
+	getRegistery,
+	getHooks,
 	getMountedComponentRoute,
-  getMountedComponentFactory,
-  getMountedComponentId,
+	getMountedComponentFactory,
+	getMountedComponentId,
 	getVirtualDOM,
-  getAppUid,
-  setAppUid,
-  setCurrentUseStateComponentId,
-  getComponentVirtualNodesById,
+	getAppUid,
+	setAppUid,
+	setCurrentUseStateComponentId,
+	getComponentVirtualNodesById
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
-import { isUndefined, flatten, getTime, isArray } from '@helpers';
-import  { processDOM } from '../../../platform/browser/dom'; //temp
+import { isUndefined, flatten, getTime, isArray, isFunction } from '@helpers';
+import { processDOM } from '../../../platform/browser/dom'; //temp
 import { clearUnmountedPortalContainers } from '../../../platform/browser/portal'; //temp
 
+type SetStateValue<T> = T | ((prevValue: T) => T)
 
-function useState<T = any>(initialValue: T): [T, (v: T) => void] {
-  const uid = getAppUid();
-  const app = getRegistery().get(uid);
-  const componentId = getMountedComponentId();
-  const componentRoute = getMountedComponentRoute();
-  const hooks = getHooks(componentId);
-  const componentFactory = getMountedComponentFactory();
-  const idx = hooks.idx;
-	const setState = (value: T) => {
-    setAppUid(uid);
-    setCurrentUseStateComponentId(componentId);
-    const time = getTime();
-    hooks.values[idx] = value;
-    const vdom = getVirtualDOM(uid);
-    const vNode = getComponentVirtualNodesById(componentId);
-    const vNodeList = isArray(vNode) ? vNode : [vNode];
-    const nodeRoute = vNodeList[0].nodeRoute;
-    const nextVNodeList: Array<VirtualNode> = flatten([
-      mountVirtualDOM({
-        mountedSource: componentFactory,
-        mountedComponentRoute: componentRoute.slice(0, -1),
-        mountedNodeRoute: nodeRoute,
-      })
-    ]); 
-    
-    const iterations = Math.max(vNodeList.length, nextVNodeList.length);
+function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] {
+	const uid = getAppUid();
+	const app = getRegistery().get(uid);
+	const componentId = getMountedComponentId();
+	const componentRoute = getMountedComponentRoute();
+	const hooks = getHooks(componentId);
+	const componentFactory = getMountedComponentFactory();
+	const idx = hooks.idx;
+	const setState = (value: SetStateValue<T>) => {
+		setAppUid(uid);
+		setCurrentUseStateComponentId(componentId);
+		const time = getTime();
+		hooks.values[idx] = isFunction(value) ? value(hooks.values[idx]) : value;
+		const vdom = getVirtualDOM(uid);
+		const vNode = getComponentVirtualNodesById(componentId);
+		const vNodeList = isArray(vNode) ? vNode : [ vNode ];
+		const nodeRoute = vNodeList[0].nodeRoute;
+		const nextVNodeList: Array<VirtualNode> = flatten([
+			mountVirtualDOM({
+				mountedSource: componentFactory,
+				mountedComponentRoute: componentRoute.slice(0, -1),
+				mountedNodeRoute: nodeRoute
+			})
+		]);
 
-    for(let i = 0; i < iterations; i++) {
-      processDOM({
-        vNode: vNodeList[i],
-        nextVNode: nextVNodeList[i],
-        container: app.nativeElement as any,
-      });
+		const iterations = Math.max(vNodeList.length, nextVNodeList.length);
 
-      replaceVirtualNode(nextVNodeList[i], vdom);
-    }
+		for (let i = 0; i < iterations; i++) {
+			processDOM({
+				vNode: vNodeList[i],
+				nextVNode: nextVNodeList[i],
+				container: app.nativeElement as any
+			});
 
-    clearUnmountedPortalContainers(uid, time, componentId);
+			replaceVirtualNode(nextVNodeList[i], vdom);
+		}
+
+		clearUnmountedPortalContainers(uid, time, componentId);
 	};
 
 	if (isUndefined(hooks.values[idx])) {
 		hooks.values[idx] = initialValue;
-  }
-  
-  const value = hooks.values[idx];
+	}
 
-  hooks.idx++;
+	const value = hooks.values[idx];
 
-	return [value, setState];
+	hooks.idx++;
+
+	return [ value, setState ];
 }
 
 export default useState;
