@@ -9,7 +9,7 @@ let renderInProcess = false;
 let isInternalRenderCall = false;
 let zoneCount = 0;
 
-function renderComponent(source: MountedSource, container: HTMLElement, onRender?: Function) {
+function render(source: MountedSource, container: HTMLElement, onRender?: Function) {
   const time = getTime();
   const isMounted = !isUndefined(zoneIdByRootNodeMap.get(container));
   const prevZoneId = getAppUid();
@@ -66,6 +66,4 @@ function renderComponent(source: MountedSource, container: HTMLElement, onRender
   isFunction(onRender) && onRender();
 }
 
-export {
-  renderComponent, //
-};
+export default render;

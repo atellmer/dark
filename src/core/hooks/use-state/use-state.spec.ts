@@ -1,5 +1,5 @@
 import { createComponent } from '@core/component';
-import { renderComponent } from '../../../platform/browser/render';
+import render from '../../../platform/browser/render';
 import { Text, View } from '../../vdom/vnode';
 import { getRegistery, createApp, setAppUid } from '../../scope';
 import useState from './use-state';
@@ -43,7 +43,7 @@ test(
 			];
 		});
 
-		renderComponent(App(), domElement);
+		render(App(), domElement);
 
 		expect(domElement.innerHTML).toBe('<div>value: test</div>');
 
@@ -92,7 +92,7 @@ test(
 			];
 		});
 
-		renderComponent(App(), domElement);
+		render(App(), domElement);
 
 		expect(domElement.innerHTML).toBe('<div><div>value: test</div></div>');
 
@@ -142,7 +142,7 @@ test(
 			return Item();
 		});
 
-		renderComponent(App(), domElement);
+		render(App(), domElement);
 
 		expect(domElement.innerHTML).toBe('<div>value: test</div><div>count: 1</div>');
 

@@ -8,7 +8,7 @@ import {
 	getAppUid,
 	setAppUid,
 	setCurrentUseStateComponentId,
-	getComponentVirtualNodesById
+  getComponentVirtualNodesById,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
@@ -55,7 +55,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 			replaceVirtualNode(nextVNodeList[i], vdom);
 		}
 
-		clearUnmountedPortalContainers(uid, time, componentId);
+    clearUnmountedPortalContainers(uid, time, componentId);
 	};
 
 	if (isUndefined(hooks.values[idx])) {

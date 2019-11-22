@@ -17,11 +17,10 @@ function createEffectValue(deps: Array<any>, cleanup: void | Function): EffectVa
   };
 }
 
-function runEffect(hooks: any, idx: number, deps: Array<any>, effect: Effect) {
+function scheduleEffect(hooks: any, idx: number, deps: Array<any>, effect: Effect) {
   setTimeout(() => {
     const effectValue = hooks.values[idx] as EffectValue;
     const cleanup =  effectValue && effectValue.cleanup;
-
     isFunction(cleanup) && cleanup();
     hooks.values[idx] = createEffectValue(deps, effect());
   });
@@ -35,7 +34,7 @@ function useEffect(effect: Effect, deps?: Array<any>) {
 
   if (isUndefined(hooks.values[idx])) {
     hooks.values[idx] = {};
-    runEffect(hooks, idx, deps, effect);
+    scheduleEffect(hooks, idx, deps, effect);
   } else {
     if (hasDeps) {
       const effectValue = hooks.values[idx] as EffectValue; 
@@ -43,13 +42,13 @@ function useEffect(effect: Effect, deps?: Array<any>) {
       if (deps.length > 0 && isArray(prevDeps)) {        
         for (let i = 0; i < prevDeps.length; i++) {
           if (prevDeps[i] !== deps[i]) {
-            runEffect(hooks, idx, deps, effect);
+            scheduleEffect(hooks, idx, deps, effect);
             break;
           }
         }
       } 
     } else {
-      runEffect(hooks, idx, deps, effect);
+      scheduleEffect(hooks, idx, deps, effect);
     }
   }
 
