@@ -67,7 +67,7 @@ type ListProps = {
   onHighlight: Function;
 }
 
-const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
   const [count, setCount] = useState<number>(0);
 
   // useEffect(() => {
@@ -78,7 +78,7 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
   const cellStyle = `border: 1px solid pink;`;
 
   return (
-    <tr key={key} style={`${selected ? 'background-color: green;' : ''}`}>
+    <tr style={`${selected ? 'background-color: green;' : ''}`}>
       <td style={cellStyle}>{name}</td>
       <td style={cellStyle}>1</td>
       <td style={cellStyle}>2</td>
@@ -91,7 +91,6 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
   );
 
   return tr({
-    key,
     style: `${selected ? 'background-color: green;' : ''}`,
     slot: [
       td({ style: cellStyle, slot: Text(name) }),
@@ -128,20 +127,15 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {
           items.map((x) => {
             return (
-              <Fragment key={x.id}>
-                <MemoRow
-                  //key={x.id}
-                  id={x.id}
-                  name={x.name}
-                  selected={x.select}
-                  onRemove={onRemove}
-                  onHighlight={onHighlight}
-                />
-                <div
-                  //key={x.id}
-                  style={`${x.select ? 'background-color: green;' : ''}`}>{x.id}</div>
-              </Fragment>
-            )
+              <MemoRow
+                key={x.id}
+                id={x.id}
+                name={x.name}
+                selected={x.select}
+                onRemove={onRemove}
+                onHighlight={onHighlight}
+              />
+            );
           })
         }
       </tbody>

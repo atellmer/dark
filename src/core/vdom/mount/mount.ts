@@ -1,23 +1,22 @@
-import { flatten, isArray, isNull, isFunction, isEmpty, deepClone } from '@helpers';
+import { flatten, isArray, isNull, isFunction, isEmpty } from '@helpers';
 import { getIsComponentFactory, ComponentFactory } from '../../component';
 import {
 	createVirtualEmptyNode,
 	createVirtualNode,
 	isVirtualNode,
 	VirtualDOM,
-	VirtualNode,
-  getVirtualNodeByRoute,
+  VirtualNode,
+  setAttribute,
 } from '../vnode/vnode';
 import {
 	setMountedComponentId,
 	setMountedComponentRoute,
 	setMountedComponentFactory,
 	resetHooks,
-	getAppUid,
-  getVirtualDOM,
   setComponentVirtualNodesById,
   getComponentVirtualNodesById,
 } from '../../scope';
+import { ATTR_KEY } from '../../constants';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
@@ -132,13 +131,12 @@ function mountVirtualDOM({
 	mountedComponentRoute = [ 0 ],
 	fromRoot = false
 }: MountVirtualDOMOptions): VirtualDOM {
-	const isComponentFactory = getIsComponentFactory(mountedSource);
-	const componentFactory = mountedSource as ComponentFactory;
 	let vNode: VirtualDOM = null;
 
 	if (fromRoot) {
 		vNode = wrapWithRoot(mountedSource, mountedNodeRoute, mountedComponentRoute);
-	} else if (isComponentFactory) {
+	} else if (getIsComponentFactory(mountedSource)) {
+    const componentFactory = mountedSource as ComponentFactory;
 		mountedComponentRoute.push(-1);
 		const componentId = mountedComponentRoute.join('.');
 		setMountedComponentFactory(componentFactory);
@@ -167,6 +165,10 @@ function mountVirtualDOM({
 		vNode = isFunction(componentFactory.props[$$replaceNodeAfterMountHook])
 			? componentFactory.props[$$replaceNodeAfterMountHook](vNode, componentId)
       : vNode;
+
+    if (!isEmpty(componentFactory.props[ATTR_KEY]) && !isArray(vNode)) {
+      setAttribute(vNode, ATTR_KEY, componentFactory.props[ATTR_KEY]);
+    }
 
     setComponentVirtualNodesById(componentId, vNode);
 	} else if (Boolean(mountedSource)) {
