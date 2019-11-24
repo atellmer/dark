@@ -85,7 +85,7 @@ const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight })
   // );
 
   return (
-    <Fragment key={key}>
+    <Fragment>
       <tr style={`${selected ? 'background-color: green;' : ''}`}>
         <td style={cellStyle}>{name}</td>
         <td style={cellStyle}>1</td>
