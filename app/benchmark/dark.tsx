@@ -161,7 +161,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {
           items.map((x) => {
             return (
-              <Row
+              <MemoRow
                 key={x.id}
                 id={x.id}
                 name={x.name}

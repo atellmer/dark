@@ -95,8 +95,11 @@ function memo<T extends object>(
 function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number) {
   const vDOM = isArray(vNode) ? vNode : [vNode];
   
-  for (const vNode of vDOM) {
-    vNode.nodeRoute[idx] = routeId;
+  for (let i = 0; i < vDOM.length; i++) {
+    const vNode = vDOM[i];
+
+    vNode.nodeRoute[idx] = routeId + i;
+
     if (vNode.children.length > 0) {
       patchNodeRoutes(vNode.children, idx, routeId);
     }
