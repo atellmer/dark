@@ -141,8 +141,8 @@ function mountVirtualDOM({
 		const componentId = mountedComponentRoute.join('.');
 		setMountedComponentFactory(componentFactory);
 		setMountedComponentId(componentId);
-		setMountedComponentRoute(mountedComponentRoute);
-		
+    setMountedComponentRoute(mountedComponentRoute);
+
 		const nodeRoute = isFunction(componentFactory.props[$$nodeRouteHook])
 			? componentFactory.props[$$nodeRouteHook](mountedNodeRoute)
 			: mountedNodeRoute;

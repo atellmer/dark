@@ -67,21 +67,37 @@ type ListProps = {
   onHighlight: Function;
 }
 
-const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
   const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
 
+  // return (
+  //   <tr style={`${selected ? 'background-color: green;' : ''}`}>
+  //     <td style={cellStyle}>{name}</td>
+  //     <td style={cellStyle}>1</td>
+  //     <td style={cellStyle}>2</td>
+  //     <td style={cellStyle}>
+  //       <button onClick={() => onRemove(id)}>remove</button>
+  //       <button onClick={() => onHighlight(id)}>highlight</button>
+  //       <button onClick={() => setCount(count + 1)}>count: {count}</button>
+  //     </td>
+  //   </tr>
+  // );
+
   return (
-    <tr style={`${selected ? 'background-color: green;' : ''}`}>
-      <td style={cellStyle}>{name}</td>
-      <td style={cellStyle}>1</td>
-      <td style={cellStyle}>2</td>
-      <td style={cellStyle}>
-        <button onClick={() => onRemove(id)}>remove</button>
-        <button onClick={() => onHighlight(id)}>highlight</button>
-        <button onClick={() => setCount(count + 1)}>count: {count}</button>
-      </td>
-    </tr>
+    <Fragment key={key}>
+      <tr style={`${selected ? 'background-color: green;' : ''}`}>
+        <td style={cellStyle}>{name}</td>
+        <td style={cellStyle}>1</td>
+        <td style={cellStyle}>2</td>
+        <td style={cellStyle}>
+          <button onClick={() => onRemove(id)}>remove</button>
+          <button onClick={() => onHighlight(id)}>highlight</button>
+          <button onClick={() => setCount(count + 1)}>count: {count}</button>
+        </td>
+      </tr>
+      <div style={`${selected ? 'background-color: green;' : ''}`}>{id}</div>
+    </Fragment>
   );
 
   return tr({
@@ -115,13 +131,37 @@ const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name ||
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
+  // return (
+  //   <table style='width: 100%; border-collapse: collapse;'>
+  //     <tbody>
+  //       {
+  //         items.map((x) => {
+  //           return (
+  //             <Fragment key={x.id}>
+  //               <MemoRow
+  //                 //key={x.id}
+  //                 id={x.id}
+  //                 name={x.name}
+  //                 selected={x.select}
+  //                 onRemove={onRemove}
+  //                 onHighlight={onHighlight}
+  //               />
+  //               <div style={`${x.select ? 'background-color: green;' : ''}`}>{x.id}</div>
+  //             </Fragment>
+  //           );
+  //         })
+  //       }
+  //     </tbody>
+  //   </table>
+  // )
+
   return (
     <table style='width: 100%; border-collapse: collapse;'>
       <tbody>
         {
           items.map((x) => {
             return (
-              <MemoRow
+              <Row
                 key={x.id}
                 id={x.id}
                 name={x.name}
@@ -156,7 +196,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 const MemoList = memo(List);
 
 const handleCreate = () => {
-  state.list = buildData(10000);
+  state.list = buildData(10);
   console.time('create')
   forceUpdate();
   console.timeEnd('create')

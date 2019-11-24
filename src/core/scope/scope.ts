@@ -52,6 +52,7 @@ const setCurrentUseStateComponentId = (id: string) => scope.currentUseStateCompo
 const getComponentVirtualNodesById = (id: string) => {
   const { componentStore } = getRegistery().get(getAppUid());
   const nodes = componentStore[id] ? componentStore[id].vdom : null;
+  
   return nodes;
 };
 
