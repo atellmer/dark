@@ -67,6 +67,33 @@ type ListProps = {
   onHighlight: Function;
 }
 
+const CounterRow = createComponent(() => {
+  const [count, setCount] = useState<number>(0);
+  const cellStyle = `border: 1px solid pink;`;
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCount(c => c + 1);
+    }, 0);
+
+    return () => clearInterval(intervalId);
+  }, [])
+
+  return (
+    <tr>
+      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{count}</td>
+    </tr>
+  );
+});
+
+const MemoCounterRow = memo(CounterRow);
+
 const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => {
   const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
@@ -121,17 +148,14 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {
           items.map((x) => {
             return (
-              <Fragment key={x.id}>
-                <MemoRow
-                  //key={x.id}
-                  id={x.id}
-                  name={x.name}
-                  selected={x.select}
-                  onRemove={onRemove}
-                  onHighlight={onHighlight}
-                />
-                <div style={`${x.select ? 'background-color: red;' : ''}`}>item:{x.id}</div>
-              </Fragment>
+              <MemoRow
+                key={x.id}
+                id={x.id}
+                name={x.name}
+                selected={x.select}
+                onRemove={onRemove}
+                onHighlight={onHighlight}
+              />
             );
           })
         }
