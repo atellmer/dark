@@ -67,54 +67,48 @@ type ListProps = {
   onHighlight: Function;
 }
 
-const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => {
   const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCount(c => c + 1);
-    }, 0);
-    return () => clearInterval(intervalId);
-  }, []);
-
   return (
     <tr style={`${selected ? 'background-color: green;' : ''}`}>
-      <td style={cellStyle}>{count}</td>
-      <td style={cellStyle}>{count}</td>
-      <td style={cellStyle}>{count}</td>
-      <td style={cellStyle}>{count}</td>
-      <td style={cellStyle}>{count}</td>
-      <td style={cellStyle}>{count}</td>
-      <td style={cellStyle}>{count}</td>
+      <td style={cellStyle}>{name}</td>
+      <td style={cellStyle}>1</td>
+      <td style={cellStyle}>2</td>
+      <td style={cellStyle}>
+        <button onClick={() => onRemove(id)}>remove</button>
+        <button onClick={() => onHighlight(id)}>highlight</button>
+        <button onClick={() => setCount(count + 1)}>{'count: ' + count}</button>
+      </td>
     </tr>
   );
 
-  return tr({
-    style: `${selected ? 'background-color: green;' : ''}`,
-    slot: [
-      td({ style: cellStyle, slot: Text(name) }),
-      td({ style: cellStyle, slot: Text('1') }),
-      td({ style: cellStyle, slot: Text('2') }),
-      td({
-        style: cellStyle,
-        slot: [
-          button({
-            slot: Text('remove'),
-            onClick: () => onRemove(id),
-          }),
-          button({
-            slot: Text('highlight'),
-            onClick: () => onHighlight(id),
-          }),
-          button({
-            slot: Text('count: ' + count),
-            onClick: () => setCount(count + 1),
-          }),
-        ],
-      }),
-    ],
-  })
+  // return tr({
+  //   style: `${selected ? 'background-color: green;' : ''}`,
+  //   slot: [
+  //     td({ style: cellStyle, slot: Text(name) }),
+  //     td({ style: cellStyle, slot: Text('1') }),
+  //     td({ style: cellStyle, slot: Text('2') }),
+  //     td({
+  //       style: cellStyle,
+  //       slot: [
+  //         button({
+  //           slot: Text('remove'),
+  //           onClick: () => onRemove(id),
+  //         }),
+  //         button({
+  //           slot: Text('highlight'),
+  //           onClick: () => onHighlight(id),
+  //         }),
+  //         button({
+  //           slot: Text('count: ' + count),
+  //           onClick: () => setCount(count + 1),
+  //         }),
+  //       ],
+  //     }),
+  //   ],
+  // })
 });
 
 const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
@@ -127,14 +121,17 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {
           items.map((x) => {
             return (
-              <MemoRow
-                key={x.id}
-                id={x.id}
-                name={x.name}
-                selected={x.select}
-                onRemove={onRemove}
-                onHighlight={onHighlight}
-              />
+              <Fragment key={x.id}>
+                <MemoRow
+                  //key={x.id}
+                  id={x.id}
+                  name={x.name}
+                  selected={x.select}
+                  onRemove={onRemove}
+                  onHighlight={onHighlight}
+                />
+                <div style={`${x.select ? 'background-color: red;' : ''}`}>item:{x.id}</div>
+              </Fragment>
             );
           })
         }
@@ -142,21 +139,21 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
     </table>
   )
   
-  return table({
-    style: 'width: 100%; border-collapse: collapse;',
-    slot: tbody({
-      slot: items.map((x) => {
-        return MemoRow({
-          key: x.id,
-          id: x.id,
-          name: x.name,
-          selected: x.select,
-          onRemove,
-          onHighlight
-        })
-      }),
-    }),
-  });
+  // return table({
+  //   style: 'width: 100%; border-collapse: collapse;',
+  //   slot: tbody({
+  //     slot: items.map((x) => {
+  //       return MemoRow({
+  //         key: x.id,
+  //         id: x.id,
+  //         name: x.name,
+  //         selected: x.select,
+  //         onRemove,
+  //         onHighlight
+  //       })
+  //     }),
+  //   }),
+  // });
 });
 
 const MemoList = memo(List);
