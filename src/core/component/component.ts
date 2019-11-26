@@ -25,7 +25,7 @@ type StandardComponentProps = {
   slot?: VirtualDOM | ComponentFactory | Array<ComponentFactory> | RenderProps;
 } & { [key: string]: any };
 
-export type RenderProps = (...args: any) => VirtualDOM;
+type RenderProps = (...args: any) => VirtualDOM;
 
 const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
 const $$componentFactory = Symbol('componentFactory');

@@ -1,4 +1,4 @@
-import { h, createComponent, Text, View, Fragment, memo, useState, useEffect } from '../../src/core';
+import { h, createComponent, Text, View, Fragment, memo, useState, useEffect, useCallback } from '../../src/core';
 import { render } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -182,58 +182,57 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-const handleCreate = () => {
-  state.list = buildData(100);
-  console.time('create')
-  forceUpdate();
-  console.timeEnd('create')
-};
-const handleAdd = () => {
-  state.list.push( ...buildData(1000, '!!!'));
-  state.list = [...state.list];
-  console.time('add')
-  forceUpdate();
-  console.timeEnd('add')
-};
-const handleUpdateAll = () => {
-  state.list = state.list.map((x, idx) => ({...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name}));
-  console.time('update every 10th')
-  forceUpdate();
-  console.timeEnd('update every 10th')
-};
-const handleRemove = (id) => {
-  state.list = state.list.filter((z) => z.id !== id);
-  console.time('remove');
-  forceUpdate();
-  console.timeEnd('remove');
-};
-const handleHightlight = (id) => {
-  //state.list.unshift( ...buildData(1, '!!!'));
-  const idx = state.list.findIndex(z => z.id === id);
-  state.list[idx].select = !state.list[idx].select;
-  state.list = [...state.list];
-  console.time('highlight');
-  forceUpdate();
-  console.timeEnd('highlight');
-};
-const handleSwap = () => {
-  if (state.list.length === 0) return;
-  const temp = state.list[1];
-  state.list[1] = state.list[state.list.length - 2];
-  state.list[state.list.length - 2] = temp;
-  state.list = [...state.list];
-  console.time('swap')
-  //console.log('state.list', state.list); 
-  forceUpdate();
-  console.timeEnd('swap')
-};
-const handleClear = () => {
-  state.list = [];
-  console.time('clear');
-  forceUpdate();
-  console.timeEnd('clear'); 
-};
 const App = createComponent(() => {
+  const handleCreate = useCallback(() => {
+    state.list = buildData(1000);
+    console.time('create');
+    forceUpdate();
+    console.timeEnd('create');
+  });
+  const handleAdd = useCallback(() => {
+    state.list.push( ...buildData(1000, '!!!'));
+    state.list = [...state.list];
+    console.time('add');
+    forceUpdate();
+    console.timeEnd('add');
+  });
+  const handleUpdateAll = useCallback(() => {
+    state.list = state.list.map((x, idx) => ({...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name}));
+    console.time('update every 10th');
+    forceUpdate();
+    console.timeEnd('update every 10th');
+  });
+  const handleRemove = useCallback((id) => {
+    state.list = state.list.filter((z) => z.id !== id);
+    console.time('remove');
+    forceUpdate();
+    console.timeEnd('remove');
+  });
+  const handleHightlight = useCallback((id) => {
+    const idx = state.list.findIndex(z => z.id === id);
+    state.list[idx].select = !state.list[idx].select;
+    state.list = [...state.list];
+    console.time('highlight');
+    forceUpdate();
+    console.timeEnd('highlight');
+  });
+  const handleSwap = useCallback(() => {
+    if (state.list.length === 0) return;
+    const temp = state.list[1];
+    state.list[1] = state.list[state.list.length - 2];
+    state.list[state.list.length - 2] = temp;
+    state.list = [...state.list];
+    console.time('swap');
+    forceUpdate();
+    console.timeEnd('swap');
+  });
+  const handleClear = useCallback(() => {
+    state.list = [];
+    console.time('clear');
+    forceUpdate();
+    console.timeEnd('clear'); 
+  });
+
   return (
     <Fragment>
       <Header
