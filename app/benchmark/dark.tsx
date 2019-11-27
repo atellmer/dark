@@ -1,4 +1,4 @@
-import { h, createComponent, Text, View, Fragment, memo, useState, useEffect, useCallback } from '../../src/core';
+import { h, createComponent, Text, View, Fragment, memo, useState, useEffect, useCallback, useMemo } from '../../src/core';
 import { render } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -95,8 +95,10 @@ const CounterRow = createComponent(() => {
 const MemoCounterRow = memo(CounterRow);
 
 const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => {
-  const [count, setCount] = useState<number>(0);
+  //const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
+  const handleRemove = useCallback(() => onRemove(id), []);
+  const handleHighlight = useCallback(() => onHighlight(id), []);
 
   return (
     <tr style={`${selected ? 'background-color: green;' : ''}`}>
@@ -104,9 +106,9 @@ const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => 
       <td style={cellStyle}>1</td>
       <td style={cellStyle}>2</td>
       <td style={cellStyle}>
-        <button onClick={() => onRemove(id)}>remove</button>
-        <button onClick={() => onHighlight(id)}>highlight</button>
-        <button onClick={() => setCount(count + 1)}>{'count: ' + count}</button>
+        <button onClick={handleRemove}>remove</button>
+        <button onClick={handleHighlight}>highlight</button>
+        {/* <button onClick={() => setCount(count + 1)}>{'count: ' + count}</button> */}
       </td>
     </tr>
   );
@@ -141,26 +143,38 @@ const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => 
 const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  const time = new Date().getTime();
+  const memoValue = useMemo(() => {
+    return (
+      <Fragment>
+        <div>text: {time}</div>
+        <div>xxx: {time}</div>
+      </Fragment>
+  )}, []);
 
   return (
-    <table style='width: 100%; border-collapse: collapse;'>
-      <tbody>
-        {
-          items.map((x) => {
-            return (
-              <MemoRow
-                key={x.id}
-                id={x.id}
-                name={x.name}
-                selected={x.select}
-                onRemove={onRemove}
-                onHighlight={onHighlight}
-              />
-            );
-          })
-        }
-      </tbody>
-    </table>
+    <Fragment>
+      {memoValue} 
+      <table style='width: 100%; border-collapse: collapse;'>
+        <tbody>
+          {
+            items.map((x) => {
+              return (
+                <MemoRow
+                  key={x.id}
+                  id={x.id}
+                  name={x.name}
+                  selected={x.select}
+                  onRemove={onRemove}
+                  onHighlight={onHighlight}
+                />
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </Fragment>
+
   )
   
   // return table({
@@ -188,26 +202,26 @@ const App = createComponent(() => {
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
-  });
+  }, []);
   const handleAdd = useCallback(() => {
     state.list.push( ...buildData(1000, '!!!'));
     state.list = [...state.list];
     console.time('add');
     forceUpdate();
     console.timeEnd('add');
-  });
+  }, []);
   const handleUpdateAll = useCallback(() => {
     state.list = state.list.map((x, idx) => ({...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name}));
     console.time('update every 10th');
     forceUpdate();
     console.timeEnd('update every 10th');
-  });
+  }, []);
   const handleRemove = useCallback((id) => {
     state.list = state.list.filter((z) => z.id !== id);
     console.time('remove');
     forceUpdate();
     console.timeEnd('remove');
-  });
+  }, []);
   const handleHightlight = useCallback((id) => {
     const idx = state.list.findIndex(z => z.id === id);
     state.list[idx].select = !state.list[idx].select;
@@ -215,7 +229,7 @@ const App = createComponent(() => {
     console.time('highlight');
     forceUpdate();
     console.timeEnd('highlight');
-  });
+  }, []);
   const handleSwap = useCallback(() => {
     if (state.list.length === 0) return;
     const temp = state.list[1];
@@ -225,17 +239,17 @@ const App = createComponent(() => {
     console.time('swap');
     forceUpdate();
     console.timeEnd('swap');
-  });
+  }, []);
   const handleClear = useCallback(() => {
     state.list = [];
     console.time('clear');
     forceUpdate();
     console.timeEnd('clear'); 
-  });
+  }, []);
 
   return (
     <Fragment>
-      <Header
+      <MemoHeader
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
@@ -259,7 +273,7 @@ const App = createComponent(() => {
         onSwap: handleSwap,
         onClear: handleClear,
       }),
-      List({ items: [...state.list], onRemove: handleRemove, onHighlight: handleHightlight }),
+      List({ items: state.list, onRemove: handleRemove, onHighlight: handleHightlight }),
     ],
   })
 });

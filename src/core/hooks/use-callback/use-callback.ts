@@ -1,28 +1,13 @@
 import { getHooks, getMountedComponentId } from '@core/scope';
 import { isUndefined, isFunction, isArray, error } from '@helpers';
+import { HookValue, getIsDepsDifferent } from '../shared';
 
-type HookValue = {
-	deps: Array<any>;
-	value: Function;
-};
-
-function checkDeps(deps: Array<unknown>, prevDeps: Array<unknown>, onDifferentDeps: Function) {
-	if (!isUndefined(deps) && !isUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
-		for (let i = 0; i < prevDeps.length; i++) {
-			if (prevDeps[i] !== deps[i]) {
-				onDifferentDeps();
-				break;
-			}
-		}
-	}
-}
-
-function useCallback(callback: Function, deps?: Array<any>): Function {
+function useCallback(callback: Function, deps: Array<any>): Function {
 	if (!isFunction(callback)) {
 		error('[Dark]: useCallback must take only function as first argument!');
 		return;
 	}
-	if (!isUndefined(deps) && !isArray(deps)) {
+	if (isUndefined(deps) || !isArray(deps)) {
 		error('[Dark]: useCallback must take only array as deps!');
 		return;
 	}
@@ -42,11 +27,12 @@ function useCallback(callback: Function, deps?: Array<any>): Function {
 
 	const hookValue: HookValue = hooks.values[idx];
 	const prevDeps = hookValue.deps;
+	const isDepsDifferent = getIsDepsDifferent(deps, prevDeps);
 
-	checkDeps(deps, prevDeps, () => {
+	if (isDepsDifferent) {
 		hookValue.deps = deps;
 		hookValue.value = callback;
-	});
+	}
 
 	hooks.idx++;
 
