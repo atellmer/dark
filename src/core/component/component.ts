@@ -1,4 +1,4 @@
-import { isFunction, isObject } from '@helpers';
+import { isObject } from '@helpers';
 import { VirtualDOM } from '../vdom';
 
 type ComponentDefinition<P> = (props: P) => any | {};
@@ -36,9 +36,8 @@ function createComponent<P extends object>(
   options: ComponentOptions<P & StandardComponentProps> = null,
 ) {
   return (props = {} as P & StandardComponentProps): ComponentFactory => {
-    const isStateless = isFunction(def);
     const displayName = options ? options.displayName : '';
-    const defaultProps = isStateless ? (options && options.defaultProps) || {} : {};
+    const defaultProps = (options && options.defaultProps) || {};
     const computedProps = { ...defaultProps, ...props } as P;
     
     return {

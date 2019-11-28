@@ -1,4 +1,4 @@
-import { h, createComponent, Text, View, Fragment, memo, useState, useEffect, useCallback, useMemo } from '../../src/core';
+import { h, createComponent, Text, View, Fragment, memo, useState, useEffect, useCallback, useMemo, useReducer } from '../../src/core';
 import { render } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
@@ -94,11 +94,22 @@ const CounterRow = createComponent(() => {
 
 const MemoCounterRow = memo(CounterRow);
 
+type State = { count: number }
+type Action = { type: string; payload: number };
+
+const reducer = (state: State, action: Action) => {
+  if (action.type = 'INCREMENT') {
+    return { ...state, count: action.payload }
+  }
+  return state;
+}
+
 const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => {
   //const [count, setCount] = useState<number>(0);
   const cellStyle = `border: 1px solid pink;`;
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
+  const [state, dispatch] = useReducer(reducer, { count: 0 });
 
   return (
     <tr style={`${selected ? 'background-color: green;' : ''}`}>
@@ -108,53 +119,16 @@ const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => 
       <td style={cellStyle}>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        {/* <button onClick={() => setCount(count + 1)}>{'count: ' + count}</button> */}
+        <button onClick={() => dispatch({ type: 'INCREMENT', payload: state.count + 1 })}>{'count: ' + state.count}</button>
       </td>
     </tr>
   );
-
-  // return tr({
-  //   style: `${selected ? 'background-color: green;' : ''}`,
-  //   slot: [
-  //     td({ style: cellStyle, slot: Text(name) }),
-  //     td({ style: cellStyle, slot: Text('1') }),
-  //     td({ style: cellStyle, slot: Text('2') }),
-  //     td({
-  //       style: cellStyle,
-  //       slot: [
-  //         button({
-  //           slot: Text('remove'),
-  //           onClick: () => onRemove(id),
-  //         }),
-  //         button({
-  //           slot: Text('highlight'),
-  //           onClick: () => onHighlight(id),
-  //         }),
-  //         button({
-  //           slot: Text('count: ' + count),
-  //           onClick: () => setCount(count + 1),
-  //         }),
-  //       ],
-  //     }),
-  //   ],
-  // })
 });
 
 const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-  const time = new Date().getTime();
-  const memoValue = useMemo(() => {
-    return (
-      <Fragment>
-        <div>text: {time}</div>
-        <div>xxx: {time}</div>
-      </Fragment>
-  )}, []);
-
   return (
-    <Fragment>
-      {memoValue} 
       <table style='width: 100%; border-collapse: collapse;'>
         <tbody>
           {
@@ -173,25 +147,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
           }
         </tbody>
       </table>
-    </Fragment>
-
   )
-  
-  // return table({
-  //   style: 'width: 100%; border-collapse: collapse;',
-  //   slot: tbody({
-  //     slot: items.map((x) => {
-  //       return MemoRow({
-  //         key: x.id,
-  //         id: x.id,
-  //         name: x.name,
-  //         selected: x.select,
-  //         onRemove,
-  //         onHighlight
-  //       })
-  //     }),
-  //   }),
-  // });
 });
 
 const MemoList = memo(List);
@@ -262,20 +218,7 @@ const App = createComponent(() => {
         onHighlight={handleHightlight}
       />
     </Fragment>
-  )
-
-  return div({
-    slot: [
-      MemoHeader({
-        onCreate: handleCreate,
-        onAdd: handleAdd,
-        onUpdateAll: handleUpdateAll,
-        onSwap: handleSwap,
-        onClear: handleClear,
-      }),
-      List({ items: state.list, onRemove: handleRemove, onHighlight: handleHightlight }),
-    ],
-  })
+  );
 });
 
 function runBench() {
