@@ -106,10 +106,11 @@ const reducer = (state: State, action: Action) => {
 
 const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => {
   //const [count, setCount] = useState<number>(0);
+  const [{ count }, dispatch] = useReducer(reducer, { count: 0 });
   const cellStyle = `border: 1px solid pink;`;
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const [state, dispatch] = useReducer(reducer, { count: 0 });
+  const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
 
   return (
     <tr style={`${selected ? 'background-color: green;' : ''}`}>
@@ -119,7 +120,7 @@ const Row = createComponent(({  id, name, selected, onRemove, onHighlight }) => 
       <td style={cellStyle}>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        <button onClick={() => dispatch({ type: 'INCREMENT', payload: state.count + 1 })}>{'count: ' + state.count}</button>
+        <button onClick={handleIncrement}>{'count: ' + count}</button>
       </td>
     </tr>
   );

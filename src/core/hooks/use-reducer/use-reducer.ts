@@ -27,7 +27,13 @@ function useReducer<R extends Reducer<any, any>, I>(
   }
   const initialValue = isFunction(initializer) ? initializer(initialState) : initialState;
   const [state, setState] = useState(initialValue);
-  const dispatch = (action: ReducerAction<R>) => setState(reducer(state, action));
+  const dispatch = (action: ReducerAction<R>) => {
+    const newState = reducer(state, action);
+
+    if (!Object.is(state, newState)) {
+      setState(newState);
+    }
+  };
 
 	return [state, dispatch];
 }
