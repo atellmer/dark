@@ -15,6 +15,7 @@ import {
 	resetHooks,
   setComponentVirtualNodesById,
   getComponentVirtualNodesById,
+  setComponentPropsById,
 } from '../../scope';
 import { ATTR_KEY } from '../../constants';
 
@@ -175,6 +176,7 @@ function mountVirtualDOM({
     }
 
     setComponentVirtualNodesById(componentId, vNode as VirtualNode);
+    setComponentPropsById(componentId, componentFactory.props);
 	} else if (Boolean(mountedSource)) {
 		vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
 	}

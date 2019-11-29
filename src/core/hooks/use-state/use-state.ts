@@ -9,6 +9,7 @@ import {
 	setAppUid,
 	setCurrentUseStateComponentId,
   getComponentVirtualNodesById,
+  getComponentPropsById,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
@@ -33,8 +34,12 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 		hooks.values[idx] = isFunction(value) ? value(hooks.values[idx]) : value;
 		const vdom = getVirtualDOM(uid);
 		const vNode = getComponentVirtualNodesById(componentId);
+    const props = getComponentPropsById(componentId);
 		const vNodeList = isArray(vNode) ? vNode : [ vNode ];
     const nodeRoute = vNodeList[0].nodeRoute;
+
+    componentFactory.props = props;
+
 		const nextVNodeList: Array<VirtualNode> = flatten([
 			mountVirtualDOM({
 				mountedSource: componentFactory,

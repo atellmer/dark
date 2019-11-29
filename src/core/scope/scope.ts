@@ -14,6 +14,7 @@ type AppType = {
   nativeElement: unknown;
   vdom: VirtualNode;
   componentStore: Record<string, {
+    props: any;
     vdom: VirtualDOM;
   }>
   eventStore: Map<
@@ -60,9 +61,32 @@ const setComponentVirtualNodesById = (id: string, vdom: VirtualDOM) => {
   const { componentStore } = getRegistery().get(getAppUid());
   
   if (!componentStore[id]) {
-    componentStore[id] = { vdom }; 
+    componentStore[id] = {
+      props: null,
+      vdom,
+    }; 
   } else {
     componentStore[id].vdom = vdom;
+  }
+};
+
+const getComponentPropsById = (id: string): any => {
+  const { componentStore } = getRegistery().get(getAppUid());
+  const props = componentStore[id] ? componentStore[id].props : null;
+  
+  return props;
+};
+
+const setComponentPropsById = (id: string, props: any) => {
+  const { componentStore } = getRegistery().get(getAppUid());
+  
+  if (!componentStore[id]) {
+    componentStore[id] = {
+      props,
+      vdom: null,
+    }; 
+  } else {
+    componentStore[id].props = props;
   }
 };
 
@@ -134,4 +158,6 @@ export {
   setCurrentUseStateComponentId,
   getComponentVirtualNodesById,
   setComponentVirtualNodesById,
+  getComponentPropsById,
+  setComponentPropsById,
 };

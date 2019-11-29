@@ -39,14 +39,15 @@ function createComponent<P extends object>(
     const displayName = options ? options.displayName : '';
     const defaultProps = (options && options.defaultProps) || {};
     const computedProps = { ...defaultProps, ...props } as P;
-    
-    return {
+    const factory = {
       [$$componentFactory]: true,
-      createElement: () => def({ ...computedProps }),
+      createElement: () => def(factory.props),
       displayName,
       props: computedProps,
       elementToken: (options && options.elementToken) || $$defaultFunctionalComponent,
     };
+    
+    return factory;
   };
 }
 
