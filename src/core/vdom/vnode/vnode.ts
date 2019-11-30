@@ -115,19 +115,17 @@ function getNodeKey(vNode: VirtualNode): string {
   return getAttribute(vNode, ATTR_KEY);
 }
 
-function replaceVirtualNode(replacedVNode: VirtualNode, vNode: VirtualNode, parentVNode: VirtualNode = null, idx: number = 0) {
-  if (replacedVNode.nodeRoute.length === vNode.nodeRoute.length) {
-    const nodeId = replacedVNode.nodeRoute.join('.');
-    const comparedNodeId = vNode.nodeRoute.join('.');
+function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode) {
+  const nodeRoute = replacedVNode.nodeRoute;
+  let vNode = vdom;
 
-    if (nodeId === comparedNodeId && Boolean(parentVNode)) {
-      parentVNode.children[idx] = replacedVNode;
-      return;
+  for (let i = 1; i < nodeRoute.length; i++) {
+    const routeId = nodeRoute[i];
+    if (i === nodeRoute.length - 1) {
+      vNode.children[routeId] = replacedVNode;
+    } else {
+      vNode = vNode.children[routeId];
     }
-  }
-
-  for (let i = 0; i < vNode.children.length; i++) {
-    replaceVirtualNode(replacedVNode, vNode.children[i], vNode, i);
   }
 }
 

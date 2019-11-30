@@ -55,9 +55,9 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 				vNode: vNodeList[i],
 				nextVNode: nextVNodeList[i],
 				container: app.nativeElement as any
-			});
+      });
 
-			replaceVirtualNode(nextVNodeList[i], vdom);
+      replaceVirtualNode(nextVNodeList[i], vdom);
 		}
 
     clearUnmountedPortalContainers(uid, time, componentId);

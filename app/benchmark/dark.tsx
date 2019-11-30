@@ -125,41 +125,46 @@ const reducer = (state: State, action: Action) => {
   return state;
 }
 
-const Row = createComponent(({ key, id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
   //const [count, setCount] = useState<number>(0);
   const [{ count }, dispatch] = useReducer(reducer, { count: 0 });
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
-
-  const rowStyle = `
-  background-color: ${selected ? 'green' : 'transparent'};
-`;
-  const cellStyle = `
-    border: 1px solid pink;
-  `;
   //const handleIncrement = useCallback(() => setCount(count + 1), [count]);
 
   return (
-    <Fragment>
-      <tr style={rowStyle}>
-        <td style={cellStyle}>{name}</td>
-        <td style={cellStyle}>1</td>
-        <td style={cellStyle}>2</td>
-        <td style={cellStyle}>
-          <button onClick={handleRemove}>remove</button>
-          <button onClick={handleHighlight}>highlight</button>
-          <button onClick={handleIncrement}>{'count: ' + count}</button>
-        </td>
-      </tr>
-      <div style={rowStyle}>123</div>
-    </Fragment>
+    <ThemeContext.Consumer>
+      {
+        (theme) => {
+          const rowStyle = `
+            background-color: ${selected ? 'green' : 'transparent'};
+          `;
+          const cellStyle = `
+            border: 1px solid ${theme === 'light' ? 'pink' : 'blueviolet'};
+          `;
+          return (
+            <tr style={rowStyle}>
+              <td style={cellStyle}>{name}</td>
+              <td style={cellStyle}>1</td>
+              <td style={cellStyle}>2</td>
+              <td style={cellStyle}>
+                <button onClick={handleRemove}>remove</button>
+                <button onClick={handleHighlight}>highlight</button>
+                <button onClick={handleIncrement}>{'count: ' + count}</button>
+              </td>
+            </tr>
+          )
+        }
+      }
+    </ThemeContext.Consumer>
   );
 });
 
 const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  
   return (
     <table style='width: 100%; border-collapse: collapse;'>
       <tbody>
@@ -187,7 +192,7 @@ const MemoList = memo(List);
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -242,7 +247,7 @@ const App = createComponent(() => {
   return (
     <Fragment>
       <ThemeContext.Provider value={theme}>
-        <Header
+        <MemoHeader
           onCreate={handleCreate}
           onAdd={handleAdd}
           onUpdateAll={handleUpdateAll}

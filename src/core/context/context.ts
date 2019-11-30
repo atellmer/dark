@@ -1,6 +1,8 @@
 import { Component, createComponent } from '../component';
-import { isFunction } from '@helpers';
+import { isFunction, getTime } from '@helpers';
 import { getMountedComponentId } from '../scope';
+import useEffect from '../hooks/use-effect';
+import useState from '../hooks/use-state';
 
 type Context<T> = {
   Provider: Component<ContexProviderProps<T>>;
@@ -26,18 +28,38 @@ function createContext<T>(defaultValue: T): Context<T> {
   const $$token = Symbol('context');
   let displayName = 'Context';
   let contextStore = {};
+  const subscribers = [];
 
   const Provider = createComponent<ContexProviderProps<T>>(({ value, slot }) => {
     const componentId = getMountedComponentId();
-
-    contextStore[componentId] = value;
+    contextStore[componentId] = value || defaultValue;
+    
+    useEffect(() => {
+      setTimeout(() => {
+        for(const subscriber of subscribers) {
+          subscriber(value);
+        }
+      })
+    }, [value]);
 
     return slot;
   }, { displayName: `${displayName}.Povider` });
 
   const Consumer = createComponent(({ slot }) => {
     const componentId = getMountedComponentId();
-    const value = getContextValueByComponentId(contextStore, componentId) || defaultValue;
+    const value = getContextValueByComponentId(contextStore, componentId);
+    const [_, forceUpdate] = useState(0);
+
+    useEffect(() => {
+      const subscriber = (newValue: any) => {        
+        if (!Object.is(value, newValue)) {
+          forceUpdate(getTime());
+        }
+      };
+      subscribers.push(subscriber);
+      const idx = subscribers.length - 1;
+      return () => subscribers.splice(idx);
+    }, [value]);
 
     return isFunction(slot) ? slot(value) : slot;
   }, { displayName: `${displayName}.Consumer` });

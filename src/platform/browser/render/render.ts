@@ -53,7 +53,7 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
     clearUnmountedPortalContainers(zoneId, time);
     app.vdom = nextVNode;
-    console.log('nextVNode: ', nextVNode);
+    //console.log('nextVNode: ', nextVNode);
   }
 
   if (!isInternalRenderCall) {
