@@ -62,8 +62,13 @@ function memo<T extends object>(
           const patchRouteId = nodeRoute[patchIdx];
           let skipReconciliation = true;
 
+          console.log('nodeRoute', nodeRoute);
+
           patchNodeRoutes(vNode, patchIdx, patchRouteId);
           patchTimeOfPortals(uid, componentId);
+
+          console.log('vNode', vNode);
+          
 
           if (!isEmpty(props.key)) {
             const vdom = getVirtualDOM(uid);
@@ -97,8 +102,10 @@ function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number) {
   
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
+    const last = vNode.nodeRoute.length - 1;
 
-    vNode.nodeRoute[idx] = routeId + i;
+    vNode.nodeRoute[idx] = routeId;
+    vNode.nodeRoute[last] = vNode.nodeRoute[last] + i; 
 
     if (vNode.children.length > 0) {
       patchNodeRoutes(vNode.children, idx, routeId);
