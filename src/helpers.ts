@@ -53,6 +53,8 @@ function getTime() {
   return performance.now();
 }
 
+const truncateComponentId = (id: string): string => id.replace(/(\.|-1)*$/, '.-1');
+
 export {
   isFunction,
   isUndefined,
@@ -67,4 +69,5 @@ export {
   deepClone,
   flatten,
   getTime,
+  truncateComponentId,
 };

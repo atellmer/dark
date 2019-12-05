@@ -133,7 +133,7 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
   const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
   //const handleIncrement = useCallback(() => setCount(count + 1), [count]);
 
-  return (
+  return (     
     <ThemeContext.Consumer>
       {
         (theme) => {
@@ -247,7 +247,7 @@ const App = createComponent(() => {
   return (
     <Fragment>
       <ThemeContext.Provider value={theme}>
-        <MemoHeader
+        <Header
           onCreate={handleCreate}
           onAdd={handleAdd}
           onUpdateAll={handleUpdateAll}

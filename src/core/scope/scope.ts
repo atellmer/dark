@@ -1,5 +1,6 @@
 import { VirtualNode, VirtualDOM } from '../vdom';
 import { ComponentFactory } from '../component';
+import { truncateComponentId } from '@helpers';
 
 type ScopeType = {
   registery: Map<number, AppType>;
@@ -50,15 +51,19 @@ const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedC
 const getCurrentUseStateComponentId = (): string => scope.currentUseStateComponentId;
 const setCurrentUseStateComponentId = (id: string) => scope.currentUseStateComponentId = id;
 
-const getComponentVirtualNodesById = (id: string) => {
+const getComponentVirtualNodesById = (componentId: string) => {
   const { componentStore } = getRegistery().get(getAppUid());
+  const id = truncateComponentId(componentId);
   const nodes = componentStore[id] ? componentStore[id].vdom : null;
-  
+
+  //console.log('componentStore', componentStore);
+
   return nodes;
 };
 
-const setComponentVirtualNodesById = (id: string, vdom: VirtualDOM) => {
+const setComponentVirtualNodesById = (componentId: string, vdom: VirtualDOM) => {
   const { componentStore } = getRegistery().get(getAppUid());
+  const id = truncateComponentId(componentId);
   
   if (!componentStore[id]) {
     componentStore[id] = {

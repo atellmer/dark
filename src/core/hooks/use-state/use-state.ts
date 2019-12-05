@@ -10,6 +10,7 @@ import {
 	setCurrentUseStateComponentId,
   getComponentVirtualNodesById,
   getComponentPropsById,
+  setComponentVirtualNodesById,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
@@ -28,7 +29,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 	const componentFactory = getMountedComponentFactory();
   const idx = hooks.idx;
 	const setState = (value: SetStateValue<T>) => {
-		setAppUid(uid);
+    setAppUid(uid);
     setCurrentUseStateComponentId(componentId);
 		const time = getTime();
 		hooks.values[idx] = isFunction(value) ? value(hooks.values[idx]) : value;
@@ -51,16 +52,20 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 		const iterations = Math.max(vNodeList.length, nextVNodeList.length);
 
 		for (let i = 0; i < iterations; i++) {
+      const vNode = vNodeList[i];
+      const nextVNode = nextVNodeList[i];
 			processDOM({
-				vNode: vNodeList[i],
-				nextVNode: nextVNodeList[i],
+				vNode,
+				nextVNode,
 				container: app.nativeElement as any
       });
 
-      replaceVirtualNode(nextVNodeList[i], vdom);
-		}
+      replaceVirtualNode(nextVNode, vdom);
+    }
 
+    setComponentVirtualNodesById(componentId, nextVNodeList.length === 1 ? nextVNodeList[0] : nextVNodeList);
     clearUnmountedPortalContainers(uid, time, componentId);
+    app.vdom = vdom;
 	};
 
 	if (isUndefined(hooks.values[idx])) {

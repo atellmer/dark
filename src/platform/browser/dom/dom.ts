@@ -124,7 +124,7 @@ function getNodeByCommit(parentNode: HTMLElement, commit: Commit) {
         node = (node.childNodes[routeId] || node.childNodes[node.childNodes.length - 1]) as HTMLElement;
         return;
       }
-
+      
       node = node.childNodes[routeId] as HTMLElement;
     }
   };

@@ -1,6 +1,7 @@
 import { Component, createComponent } from '../component';
-import { isFunction, getTime } from '@helpers';
-import { getMountedComponentId } from '../scope';
+import { isFunction, getTime, flatten } from '@helpers';
+import { getMountedComponentId, getVirtualDOM, getAppUid, getComponentVirtualNodesById } from '../scope';
+import { getVirtualNodeByRoute, VirtualNode } from '../vdom/vnode';
 import useEffect from '../hooks/use-effect';
 import useState from '../hooks/use-state';
 
@@ -28,18 +29,17 @@ function createContext<T>(defaultValue: T): Context<T> {
   const $$token = Symbol('context');
   let displayName = 'Context';
   let contextStore = {};
-  const subscribers = [];
+  let subscribers = [];
 
   const Provider = createComponent<ContexProviderProps<T>>(({ value, slot }) => {
     const componentId = getMountedComponentId();
     contextStore[componentId] = value || defaultValue;
     
     useEffect(() => {
-      setTimeout(() => {
-        for(const subscriber of subscribers) {
-          subscriber(value);
-        }
-      })
+      for(const subscriber of subscribers) {
+        subscriber(value);
+      }
+      subscribers = [];
     }, [value]);
 
     return slot;
@@ -51,14 +51,14 @@ function createContext<T>(defaultValue: T): Context<T> {
     const [_, forceUpdate] = useState(0);
 
     useEffect(() => {
-      const subscriber = (newValue: any) => {        
+      const subscriber = (newValue: any) => {
         if (!Object.is(value, newValue)) {
           forceUpdate(getTime());
         }
       };
       subscribers.push(subscriber);
       const idx = subscribers.length - 1;
-      return () => subscribers.splice(idx);
+      return () => subscribers.splice(idx, 1);
     }, [value]);
 
     return isFunction(slot) ? slot(value) : slot;

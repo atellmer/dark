@@ -41,7 +41,7 @@ function memo<T extends object>(
         const memoStoreItem = app.memoStore[componentId];
         const currentUseStateComponentId = getCurrentUseStateComponentId();
         const fromUseState = currentUseStateComponentId === componentId;
-        let needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
+        const needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
 
         setCurrentUseStateComponentId('');
 
