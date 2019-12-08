@@ -16,7 +16,6 @@ import { mountVirtualDOM } from '@core/vdom/mount';
 import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
 import { isUndefined, flatten, getTime, isArray, isFunction } from '@helpers';
 import { processDOM } from '../../../platform/browser/dom'; //temp
-import { clearUnmountedPortalContainers } from '../../../platform/browser/portal'; //temp
 
 type SetStateValue<T> = T | ((prevValue: T) => T)
 
@@ -64,7 +63,6 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     }
 
     setComponentVirtualNodesById(componentId, nextVNodeList.length === 1 ? nextVNodeList[0] : nextVNodeList);
-    clearUnmountedPortalContainers(uid, time, componentId);
     app.vdom = vdom;
   };
 

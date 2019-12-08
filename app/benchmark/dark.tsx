@@ -163,7 +163,7 @@ const MemoList = memo(List);
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(1000);
+    state.list = buildData(10000);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');

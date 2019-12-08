@@ -9,7 +9,6 @@ import {
 import { setAttribute, VirtualDOM } from '@core/vdom';
 import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
 import { isArray, isEmpty } from '@helpers';
-import { patchTimeOfPortals } from '../../platform/browser/portal';
 import { ATTR_SKIP } from '../constants';
 import { getNodeKey, getVirtualNodeByRoute } from '../vdom/vnode';
 
@@ -63,7 +62,6 @@ function memo<T extends object>(
           let skipReconciliation = true;
 
           patchNodeRoutes(vNode, patchIdx, patchRouteId, true);
-          patchTimeOfPortals(uid, componentId);
 
           if (!isEmpty(props.key)) {
             const vdom = getVirtualDOM(uid);

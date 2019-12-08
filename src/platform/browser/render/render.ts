@@ -2,7 +2,6 @@ import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@c
 import { mountVirtualDOM, VirtualNode, MountedSource } from '@core/vdom';
 import { isUndefined, getTime, isFunction } from '../../../helpers';
 import { mountRealDOM, processDOM } from '../dom/dom';
-import { clearUnmountedPortalContainers } from '../portal';
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
@@ -51,7 +50,6 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     const nextVNode: VirtualNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
 
     processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
-    clearUnmountedPortalContainers(zoneId, time);
     app.vdom = nextVNode;
     //console.log('nextVNode: ', nextVNode);
   }
