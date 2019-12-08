@@ -1,19 +1,18 @@
+import { getTime, isFunction } from '@helpers';
 import { Component, createComponent } from '../component';
-import { isFunction, getTime, flatten } from '@helpers';
-import { getMountedComponentId, getVirtualDOM, getAppUid, getComponentVirtualNodesById } from '../scope';
-import { getVirtualNodeByRoute, VirtualNode } from '../vdom/vnode';
 import useEffect from '../hooks/use-effect';
 import useState from '../hooks/use-state';
+import { getMountedComponentId } from '../scope';
 
 type Context<T> = {
   Provider: Component<ContexProviderProps<T>>;
   Consumer: Component<any>;
   displayName?: string;
-}
+};
 
 type ContexProviderProps<T> = {
   value: T;
-}
+};
 
 function getContextValueByComponentId(contextStore: Record<string, any>, componentId: string): any {
   const providerIds = Object.keys(contextStore);
@@ -27,42 +26,54 @@ function getContextValueByComponentId(contextStore: Record<string, any>, compone
 
 function createContext<T>(defaultValue: T): Context<T> {
   const $$token = Symbol('context');
-  let displayName = 'Context';
-  let contextStore = {};
+  const contextStore = {};
   let subscribers = [];
+  let displayName = 'Context';
 
-  const Provider = createComponent<ContexProviderProps<T>>(({ value, slot }) => {
-    const componentId = getMountedComponentId();
-    contextStore[componentId] = value || defaultValue;
-    
-    useEffect(() => {
-      for(const subscriber of subscribers) {
-        subscriber(value);
-      }
-      subscribers = [];
-    }, [value]);
+  const Provider = createComponent<ContexProviderProps<T>>(
+    ({ value, slot }) => {
+      const componentId = getMountedComponentId();
+      contextStore[componentId] = value || defaultValue;
 
-    return slot;
-  }, { displayName: `${displayName}.Povider` });
+      useEffect(
+        () => {
+          for (const subscriber of subscribers) {
+            subscriber(value);
+          }
+          subscribers = [];
+        },
+        [value],
+      );
 
-  const Consumer = createComponent(({ slot }) => {
-    const componentId = getMountedComponentId();
-    const value = getContextValueByComponentId(contextStore, componentId);
-    const [_, forceUpdate] = useState(0);
+      return slot;
+    },
+    { displayName: `${displayName}.Povider` },
+  );
 
-    useEffect(() => {
-      const subscriber = (newValue: any) => {
-        if (!Object.is(value, newValue)) {
-          forceUpdate(getTime());
-        }
-      };
-      subscribers.push(subscriber);
-      const idx = subscribers.length - 1;
-      return () => subscribers.splice(idx, 1);
-    }, [value]);
+  const Consumer = createComponent(
+    ({ slot }) => {
+      const componentId = getMountedComponentId();
+      const value = getContextValueByComponentId(contextStore, componentId);
+      const [_, forceUpdate] = useState(0);
 
-    return isFunction(slot) ? slot(value) : slot;
-  }, { displayName: `${displayName}.Consumer` });
+      useEffect(
+        () => {
+          const subscriber = (newValue: any) => {
+            if (!Object.is(value, newValue)) {
+              forceUpdate(getTime());
+            }
+          };
+          subscribers.push(subscriber);
+          const idx = subscribers.length - 1;
+          return () => subscribers.splice(idx, 1);
+        },
+        [value],
+      );
+
+      return isFunction(slot) ? slot(value) : null;
+    },
+    { displayName: `${displayName}.Consumer` },
+  );
 
   const context = {
     $$token,
@@ -73,7 +84,7 @@ function createContext<T>(defaultValue: T): Context<T> {
 
   Object.defineProperty(context, 'displayName', {
     get: () => displayName,
-    set: (newValue: string) => displayName = newValue,
+    set: (newValue: string) => (displayName = newValue),
   });
 
   return context;

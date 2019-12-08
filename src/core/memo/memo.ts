@@ -1,17 +1,17 @@
-import { VirtualDOM, setAttribute } from '@core/vdom';
-import { $$skipNodeMountHook, $$replaceNodeBeforeMountHook } from '@core/vdom/mount';
 import { ComponentFactory, createComponent } from '@core/component';
-import { isArray, isEmpty } from '@helpers';
 import {
   getAppUid,
-  getRegistery,
   getCurrentUseStateComponentId,
-  setCurrentUseStateComponentId,
+  getRegistery,
   getVirtualDOM,
+  setCurrentUseStateComponentId,
 } from '@core/scope';
-import { ATTR_SKIP } from '../constants';
-import { getVirtualNodeByRoute, getNodeKey } from '../vdom/vnode';
+import { setAttribute, VirtualDOM } from '@core/vdom';
+import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
+import { isArray, isEmpty } from '@helpers';
 import { patchTimeOfPortals } from '../../platform/browser/portal';
+import { ATTR_SKIP } from '../constants';
+import { getNodeKey, getVirtualNodeByRoute } from '../vdom/vnode';
 
 type Component<T extends object> = (props?: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
@@ -29,7 +29,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   }
 
   return false;
-} 
+}
 
 function memo<T extends object>(
   component: Component<T>, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate): Component<T> {
@@ -75,7 +75,7 @@ function memo<T extends object>(
 
           for (const vNode of vDOM) {
             setAttribute(vNode, ATTR_SKIP, skipReconciliation);
-          }    
+          }
         }
         app.memoStore[componentId].props = props;
       }
@@ -94,7 +94,7 @@ function memo<T extends object>(
 
 function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number, fromRoot: boolean = false) {
   const vDOM = isArray(vNode) ? vNode : [vNode];
-  
+
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
 

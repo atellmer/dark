@@ -1,6 +1,6 @@
 import { isEmpty, isUndefined, error } from '@helpers';
 import { ATTR_KEY, ATTR_SKIP } from '../../constants';
-import { createAttribute, getAttribute, getNodeKey, isTagVirtualNode, VirtualNode } from '../vnode';
+import { createAttribute, getAttribute, getNodeKey, isTagVirtualNode, VirtualNode, isEmptyVirtualNode } from '../vnode';
 
 const ADD_NODE = 'ADD_NODE';
 const INSERT_NODE = 'INSERT_NODE';
@@ -119,7 +119,7 @@ function getDiff(
 
   if (!vNode) {
     commits.push(createCommit(ADD_NODE, nextVNode.nodeRoute, null, nextVNode));
-    if (isUndefined(nextKey)) {
+    if (isUndefined(nextKey) && !isEmptyVirtualNode(nextVNode)) {
       error(UNIQ_KEY_ERROR);
     }
     return commits;
@@ -127,7 +127,7 @@ function getDiff(
 
   if (!nextVNode || isRemovingNodeByKey) {
     commits.push(createCommit(REMOVE_NODE, vNode.nodeRoute, vNode, null));
-    if (isUndefined(key)) {
+    if (isUndefined(key) && !isEmptyVirtualNode(vNode)) {
       error(UNIQ_KEY_ERROR);
     }
     return commits;

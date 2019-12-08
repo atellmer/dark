@@ -21,6 +21,31 @@
       background-color: #1b1b1b;
       color:#FFF;
     }
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes fade-out {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+    .animation-fade-in {
+      transform-origin: 0 0;
+      animation: fade-in 0.6s 1;
+      animation-fill-mode: forwards;
+    }
+    .animation-fade-out {
+      animation: fade-out 0.6s 1;
+      animation-fill-mode: forwards;
+    }
 	</style>
 </head>
 <body>
