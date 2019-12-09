@@ -14,7 +14,7 @@ import {
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import { VirtualNode, replaceVirtualNode } from '@core/vdom/vnode';
-import { isUndefined, flatten, getTime, isArray, isFunction } from '@helpers';
+import { isUndefined, flatten, isArray, isFunction } from '@helpers';
 import { processDOM } from '../../../platform/browser/dom'; //temp
 
 type SetStateValue<T> = T | ((prevValue: T) => T)
@@ -30,7 +30,6 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
   const setState = (value: SetStateValue<T>) => {
     setAppUid(uid);
     setCurrentUseStateComponentId(componentId);
-    const time = getTime();
     hooks.values[idx] = isFunction(value) ? value(hooks.values[idx]) : value;
     const vdom = getVirtualDOM(uid);
     const vNode = getComponentVirtualNodesById(componentId);

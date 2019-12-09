@@ -156,6 +156,8 @@ function mountVirtualDOM({
       vNode = getComponentVirtualNodesById(componentId);
     } else {
       vNode = componentFactory.createElement();
+      vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, nodeRoute, mountedComponentRoute);
+
       if (!isEmpty(key) && getIsComponentFactory(vNode)) {
         vNode.props[ATTR_KEY] = key;
       }
@@ -175,11 +177,8 @@ function mountVirtualDOM({
       setAttribute(vNode as VirtualNode, ATTR_KEY, key);
     }
 
-    if (isArray(vNode) && !vNode[0]) {
-      vNode = createVirtualEmptyNode();
-      vNode.nodeRoute = nodeRoute;
-      vNode.componentRoute = mountedComponentRoute;
-    }
+    // console.log('vNode', vNode);
+    // console.log('route', nodeRoute);
 
     setComponentVirtualNodesById(componentId, vNode as VirtualNode);
     setComponentPropsById(componentId, componentFactory.props);
@@ -187,13 +186,26 @@ function mountVirtualDOM({
     vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
   }
 
-  if (!vNode) {
-    vNode = createVirtualEmptyNode();
-    vNode.nodeRoute = mountedNodeRoute;
-    vNode.componentRoute = mountedComponentRoute;
-  }
+  vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, mountedNodeRoute, mountedComponentRoute);
 
   return vNode as VirtualDOM;
+}
+
+function getEmptyVirtualNodeIfNodeNotExists(
+  vNode: VirtualDOM | null | undefined, nodeRoute: Array<number>, componentRoute: Array<number | string>): VirtualDOM {
+  let vdom = vNode;
+
+  if (isArray(vdom) && !vdom[0]) {
+    vdom[0] = createVirtualEmptyNode();
+    vdom[0].nodeRoute = nodeRoute;
+    vdom[0].componentRoute = componentRoute;
+  } else if (!vdom) {
+    vdom = createVirtualEmptyNode();
+    vdom.nodeRoute = nodeRoute;
+    vdom.componentRoute = componentRoute;
+  }
+
+  return vdom;
 }
 
 export {

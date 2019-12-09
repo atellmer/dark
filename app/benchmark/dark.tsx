@@ -104,7 +104,6 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
   const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
 
-
   return (
     <ThemeContext.Consumer>
       {
@@ -134,6 +133,16 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
 });
 
 const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
+
+const Animated = createComponent(({ slot }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  return null;
+})
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
