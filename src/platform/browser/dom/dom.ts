@@ -147,7 +147,10 @@ function getDomElementByRoute(parentNode: HTMLElement, route: number[] = []): HT
 }
 
 const patchAttributes = (name: string, value: any, node: HTMLElement) => {
-  !isFunction(value) && !isUndefined(value) && node.setAttribute(name, value);
+
+  if (!isFunction(value) && !isUndefined(value)) {
+    node.setAttribute(name, value);
+  }
 
   if (node.nodeName.toLowerCase() === 'input') {
     const input = node as HTMLInputElement;
@@ -178,7 +181,7 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
     const mountedNode = mountRealDOM(nexVNode, domElement);
     node.parentNode.insertBefore(mountedNode, node);
   } else if (action === ADD_ATTRIBUTE) {
-    const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name);
+    const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name) && !/^on/.test(name);
     const attrNames = Object.keys(nextValue).filter(filterAttrNamesFn);
     for (const attrName of attrNames) {
       node.setAttribute(attrName, nextValue[attrName]);
@@ -193,6 +196,7 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
 
     for (const attrName of attrNames) {
       const attrValue = nextValue[attrName];
+
       patchAttributes(attrName, attrValue, node);
 
       if (isFunction(attrValue) && /^on/.test(attrName)) {

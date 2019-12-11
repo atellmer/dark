@@ -2,7 +2,7 @@ import { isUndefined } from '@helpers';
 
 export type HookValue = {
 	deps: Array<any>;
-	value: Function;
+	value: any;
 };
 
 function getIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {

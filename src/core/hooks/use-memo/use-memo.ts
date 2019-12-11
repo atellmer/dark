@@ -28,7 +28,7 @@ function getMemoizedValue(getValue: () => any, deps?: Array<any>, prevDeps?: Arr
 	return value;
 }
 
-function useMemo(getValue: () => any, deps: Array<any>): any {
+function useMemo<T>(getValue: () => T, deps: Array<any>): T {
 	if (!isFunction(getValue)) {
 		error('[Dark]: useMemo must take only function as first argument!');
 		return;
@@ -42,7 +42,7 @@ function useMemo(getValue: () => any, deps: Array<any>): any {
 	const idx = hooks.idx;
 
 	if (isUndefined(hooks.values[idx])) {
-		const value = getMemoizedValue(getValue, deps);
+		const value = getMemoizedValue(getValue, deps) as T;
 
 		hooks.values[idx] = { deps, value };
 		hooks.idx++;

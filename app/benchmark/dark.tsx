@@ -132,32 +132,166 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
   );
 });
 
-const MemoRow = memo(Row, (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected);
+const MemoRow = memo(Row, (props, nextProps) =>
+  props.name !== nextProps.name ||
+  props.selected !== nextProps.selected ||
+  props.class !== nextProps.class ||
+  props.onAnimationEnd !== nextProps.onAnimationEnd,
+);
 
-const Animated = createComponent(({ slot }) => {
-  const [isMounted, setIsMounted] = useState(false);
+type TransitionOptions = {
+  enter: {
+    className?: string;
+  };
+  leave: {
+    className?: string;
+  };
+}
+
+type TransitionProps = {
+  className?: string;
+  onAnimationEnd?: Function;
+}
+
+type Transition<T> = {
+  state: TransitionState;
+  item: T;
+  key: string | number;
+  props: TransitionProps;
+}
+
+type TransitionState = 'enter' | 'update' | 'leave';
+
+type UseTransitionsState<T = any> = {
+  keyMap: Record<string, boolean>;
+  prevItems: Array<T>;
+}
+
+type GetTransitionsOptions<T> = {
+  items: Array<T>;
+  diffKeyMap?: Record<string, boolean>;
+  forceUpdate?: Function;
+}
+
+function useTransitions<T>(items: Array<T>, getKey: (item: T) => string | number, options: TransitionOptions) {
+  const [_, forceUpdate] = useState(0);
+  const state = useMemo<UseTransitionsState>(() => ({ keyMap: {}, prevItems: [] }), []);
+  const {
+    keyMap,
+    prevItems,
+  } = state;
+  const getPropsByState = (state: TransitionState, forceUpdate: Function): TransitionProps => {
+    if (state === 'update') {
+      return {};
+    } else if (state === 'enter') {
+      return {
+        className: options.enter.className,
+        onAnimationEnd: forceUpdate,
+      }
+    }
+
+    return {
+      className: options.leave.className,
+      onAnimationEnd: forceUpdate,
+    }
+  };
+
+  const getTransitions = (options: GetTransitionsOptions<T>): Array<Transition<T>> => {
+    const {
+      items,
+      diffKeyMap = {},
+      forceUpdate,
+    } = options;
+    const transitions = items.map(x => {
+      let state = 'update';
+      const key = getKey(x);
+      const hasDiff = diffKeyMap[key];
+
+      if (typeof keyMap[key] === 'undefined') {
+        state = 'enter';
+        keyMap[key] = true;
+      } else if (hasDiff) {
+        state = 'leave';
+        delete keyMap[key];
+      }
+
+      const transition: Transition<T> =  {
+        state: state as TransitionState,
+        item: x,
+        key: getKey(x),
+        props: getPropsByState(state as TransitionState, forceUpdate),
+      };
+      return transition;
+    });
+
+    return transitions;
+  };
+
+  const getDiffKeyMap = (items: Array<T>, prevItems: Array<T>): Record<string, boolean> => {
+    const diffKeyMap = {};
+    const iterations = Math.max(items.length, prevItems.length);
+    let idxShift = 0;
+
+    for (let i = 0; i < iterations; i++) {
+      const item = items[i];
+      const prevItem = prevItems[i + idxShift];
+      const key = item && getKey(item);
+      const prevKey = prevItem && getKey(prevItem);
+      const hasDiff = prevKey && key !== prevKey;
+
+      if (hasDiff) {
+        idxShift++;
+        diffKeyMap[prevKey] = true;
+      }
+    }
+
+    return diffKeyMap;
+  };
+
+  const diffKeyMap = getDiffKeyMap(items, prevItems);
+  const hasDiff = Object.keys(diffKeyMap).length > 0;
+  const transitions: Array<Transition<T>> = hasDiff
+    ? getTransitions({
+        items: prevItems,
+        diffKeyMap,
+        forceUpdate: () => {
+          requestAnimationFrame(() => {
+            forceUpdate(x => x + 1);
+          });
+        },
+      })
+    : getTransitions({ items });
+
+  //console.log('transitions', transitions);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    state.prevItems = items;
+  }, [items]);
 
-  return null;
-})
+  return transitions;
+}
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  const transitions = useTransitions(items, item => item.id, {
+    enter: { className: 'animation-fade-in' },
+    leave: { className: 'animation-fade-out' },
+  });
+
   return (
     <table style='width: 100%; border-collapse: collapse;'>
       <tbody>
         {
-          items.map((x) => {
+          transitions.map(({ item, key, props }) => {
             return (
               <MemoRow
-                key={x.id}
-                id={x.id}
-                name={x.name}
-                selected={x.select}
+                key={key}
+                id={item.id}
+                name={item.name}
+                selected={item.select}
                 onRemove={onRemove}
                 onHighlight={onHighlight}
+                class={props.className}
+                onAnimationEnd={props.onAnimationEnd}
               />
             );
           })
@@ -172,7 +306,7 @@ const MemoList = memo(List);
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -199,7 +333,7 @@ const App = createComponent(() => {
   const handleHightlight = useCallback((id) => {
     const idx = state.list.findIndex(z => z.id === id);
     state.list[idx].select = !state.list[idx].select;
-    state.list = [...state.list];
+    //state.list = [...state.list];
     console.time('highlight');
     forceUpdate();
     console.timeEnd('highlight');
@@ -209,7 +343,7 @@ const App = createComponent(() => {
     const temp = state.list[1];
     state.list[1] = state.list[state.list.length - 2];
     state.list[state.list.length - 2] = temp;
-    state.list = [...state.list];
+    //state.list = [...state.list];
     console.time('swap');
     forceUpdate();
     console.timeEnd('swap');
@@ -235,7 +369,7 @@ const App = createComponent(() => {
           onClear={handleClear}
           onToggleTheme={handleToggleTheme}
         />
-        <MemoList
+        <List
           items={state.list}
           onRemove={handleRemove}
           onHighlight={handleHightlight}

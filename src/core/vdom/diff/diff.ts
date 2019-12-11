@@ -39,28 +39,34 @@ const createCommit = (action: VirtualDOMActions, route: Array<number> = [], oldV
 });
 
 function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
-  if (attrName === ATTR_KEY) return;
-  if (isEmpty(nextVNode.attrs[attrName])) {
+  if (!isEmpty(vNode.attrs[attrName]) && isEmpty(nextVNode.attrs[attrName])) {
     commits.push(
-      createCommit(REMOVE_ATTRIBUTE, nextVNode.nodeRoute, createAttribute(attrName, vNode.attrs[attrName]), null),
+      createCommit(
+        REMOVE_ATTRIBUTE,
+        nextVNode.nodeRoute,
+        createAttribute(attrName, vNode.attrs[attrName]),
+        createAttribute(attrName, undefined),
+      ),
     );
   } else if (nextVNode.attrs[attrName] !== vNode.attrs[attrName]) {
-    const diffAction = createCommit(
+    commits.push(createCommit(
       REPLACE_ATTRIBUTE,
       nextVNode.nodeRoute,
       createAttribute(attrName, vNode.attrs[attrName]),
       createAttribute(attrName, nextVNode.attrs[attrName]),
-    );
-
-    commits.push(diffAction);
+    ));
   }
 }
 
 function mapNewAttributes(attrName: string, vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
-  if (attrName === ATTR_KEY) return;
-  if (isEmpty(vNode.attrs[attrName])) {
+  if (isEmpty(vNode.attrs[attrName]) && !isEmpty(nextVNode.attrs[attrName])) {
     commits.push(
-      createCommit(ADD_ATTRIBUTE, nextVNode.nodeRoute, null, createAttribute(attrName, nextVNode.attrs[attrName])),
+      createCommit(
+        ADD_ATTRIBUTE,
+        nextVNode.nodeRoute,
+        createAttribute(attrName, undefined),
+        createAttribute(attrName, nextVNode.attrs[attrName]),
+      ),
     );
   }
 }
@@ -149,8 +155,8 @@ function getDiff(
   }
 
   if (isTagVirtualNode(vNode)) {
-    const prevAttrs = Object.keys(vNode.attrs).filter(attrName => attrName !== ATTR_SKIP);
-    const newAttrs = Object.keys(nextVNode.attrs).filter(attrName => attrName !== ATTR_SKIP);
+    const prevAttrs = Object.keys(vNode.attrs).filter(attrName => attrName !== ATTR_SKIP && attrName !== ATTR_KEY);
+    const newAttrs = Object.keys(nextVNode.attrs).filter(attrName => attrName !== ATTR_SKIP && attrName !== ATTR_KEY);
 
     for (const attrName of prevAttrs) {
       mapPrevAttributes(attrName, vNode, nextVNode, commits);
