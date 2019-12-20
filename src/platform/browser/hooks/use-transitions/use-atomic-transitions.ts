@@ -29,6 +29,7 @@ type TransitionProps = {
 type UseTransitionsState = {
   prevValue: boolean;
   prevTransitions: Array<Transition>;
+  updateTransitions: Array<Transition>;
 }
 
 type GetAtomicTransitionsOptions = {
@@ -41,7 +42,11 @@ type GetAtomicTransitionsOptions = {
 
 function useAtomicTransitions(value: boolean, transitionOptions: TransitionOptions): Array<Transition> {
   const [_, forceUpdate] = useState(0);
-  const transitionState = useMemo<UseTransitionsState>(() => ({ prevValue: value, prevTransitions: [] }), []);
+  const transitionState = useMemo<UseTransitionsState>(() => ({
+    prevValue: value,
+    prevTransitions: [],
+    updateTransitions: [],
+  }), []);
   const hasDiff = transitionState.prevValue !== value || transitionState.prevTransitions.length === 0;
   const transitions = hasDiff
     ? getAtomicTransitions({
@@ -51,10 +56,14 @@ function useAtomicTransitions(value: boolean, transitionOptions: TransitionOptio
         onAnimationEnd: () => {},
         forceUpdate,
       })
-    : transitionState.prevTransitions;
+    : transitionState.updateTransitions.length === 0
+      ? transitionState.prevTransitions
+      : transitionState.updateTransitions;
 
-  transitionState.prevValue = value;
-  transitionState.prevTransitions = transitions;
+  if (hasDiff) {
+    transitionState.prevValue = value;
+    transitionState.prevTransitions = transitions;
+  }
 
   console.log('transitions', transitions);
 
@@ -97,10 +106,19 @@ function getAtomicTransitions(options: GetAtomicTransitionsOptions): Array<Trans
       key = prevTransitions[idx - 1] ? maxKey + 1 : maxKey;
     }
 
-    const callback = !isInitial && state === 'enter'
+    const callback = state === 'enter'
       ? () => {
         requestAnimationFrame(() => {
-          //forceUpdate(x => x + 1); 
+          transitionState.updateTransitions = [
+            {
+              state: 'update',
+              item,
+              key,
+              props: getPropsByState('update' as TransitionState),
+            },
+          ];
+          forceUpdate(c => c + 1);
+          transitionState.updateTransitions = [];
         });
       }
       : onAnimationEnd;
@@ -116,7 +134,7 @@ function getAtomicTransitions(options: GetAtomicTransitionsOptions): Array<Trans
   return transitions;
 };
 
-function getPropsByState(state: TransitionState, forceUpdate: Function, options: TransitionOptions): TransitionProps {
+function getPropsByState(state: TransitionState, forceUpdate?: Function, options?: TransitionOptions): TransitionProps {
   if (state === 'update') {
     return {};
   } else if (state === 'enter') {

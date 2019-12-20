@@ -146,11 +146,11 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   });
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
+    const intervalId = setTimeout(() => {
       setToggle(toggle => !toggle);
-    }, 2000);
-    return () => clearInterval(intervalId);
-  }, []);
+    }, 10000);
+    return () => clearTimeout(intervalId);
+  }, [toggle]);
 
   return (
     <div>
@@ -159,14 +159,14 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
             return item
               ? <div
                   key={key}
-                  style='font-size: 100px; position: absolute;'
+                  style='font-size: 300px; position: absolute;'
                   class={props.className}
                   onAnimationEnd={props.onAnimationEnd}>
                   😄
                 </div>
               : <div
                   key={key}
-                  style='font-size: 100px; position: absolute;'
+                  style='font-size: 300px; position: absolute;'
                   class={props.className}
                   onAnimationEnd={props.onAnimationEnd}>
                   🤪
