@@ -155,14 +155,16 @@ function getDiff(
   }
 
   if (isTagVirtualNode(vNode)) {
-    const prevAttrs = Object.keys(vNode.attrs).filter(attrName => attrName !== ATTR_SKIP && attrName !== ATTR_KEY);
-    const newAttrs = Object.keys(nextVNode.attrs).filter(attrName => attrName !== ATTR_SKIP && attrName !== ATTR_KEY);
+    const prevAttrBlackList = [ATTR_SKIP, ATTR_KEY];
+    const prevAttrs = Object.keys(vNode.attrs);
+    const newAttrBlackList = [...prevAttrBlackList, ...prevAttrs];
+    const newAttrs = Object.keys(nextVNode.attrs);
 
     for (const attrName of prevAttrs) {
-      mapPrevAttributes(attrName, vNode, nextVNode, commits);
+      !prevAttrBlackList.includes(attrName) && mapPrevAttributes(attrName, vNode, nextVNode, commits);
     }
     for (const attrName of newAttrs) {
-      mapNewAttributes(attrName, vNode, nextVNode, commits);
+      !newAttrBlackList.includes(attrName) && mapNewAttributes(attrName, vNode, nextVNode, commits);
     }
   }
 
