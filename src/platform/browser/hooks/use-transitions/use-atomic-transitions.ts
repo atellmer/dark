@@ -65,6 +65,8 @@ function useAtomicTransitions(value: boolean, transitionOptions: TransitionOptio
     transitionState.prevTransitions = transitions;
   }
 
+  transitionState.updateTransitions = [];
+
   console.log('transitions', transitions);
 
   return transitions;
@@ -118,7 +120,6 @@ function getAtomicTransitions(options: GetAtomicTransitionsOptions): Array<Trans
             },
           ];
           forceUpdate(c => c + 1);
-          transitionState.updateTransitions = [];
         });
       }
       : onAnimationEnd;

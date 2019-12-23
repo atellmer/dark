@@ -115,14 +115,18 @@ function getNodeKey(vNode: VirtualNode): string {
   return getAttribute(vNode, ATTR_KEY);
 }
 
-function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode) {
-  const nodeRoute = replacedVNode.nodeRoute;
+function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode, removingNodeRoute?: Array<number>) {
+  const nodeRoute = replacedVNode ? replacedVNode.nodeRoute : removingNodeRoute;
   let vNode = vdom;
 
   for (let i = 1; i < nodeRoute.length; i++) {
     const routeId = nodeRoute[i];
     if (i === nodeRoute.length - 1) {
-      vNode.children[routeId] = replacedVNode;
+      if (Boolean(replacedVNode)) {
+        vNode.children[routeId] = replacedVNode;
+      } else {
+        vNode.children.splice(routeId, 1);
+      }
     } else {
       vNode = vNode.children[routeId];
     }

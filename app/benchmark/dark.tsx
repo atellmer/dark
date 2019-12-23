@@ -153,27 +153,27 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   }, [toggle]);
 
   return (
-    <div>
+    <Fragment>
       {
         transitions.map(({ item, key, props }) => {
-            return item
-              ? <div
-                  key={key}
-                  style='font-size: 300px; position: absolute;'
-                  class={props.className}
-                  onAnimationEnd={props.onAnimationEnd}>
-                  😄
-                </div>
-              : <div
-                  key={key}
-                  style='font-size: 300px; position: absolute;'
-                  class={props.className}
-                  onAnimationEnd={props.onAnimationEnd}>
-                  🤪
-                </div>
-          })
-        }
-    </div>
+          return item 
+            ? <div
+                key={key}
+                style='font-size: 300px; position: absolute;'
+                class={props.className}
+                onAnimationEnd={props.onAnimationEnd}>
+                😄
+              </div>
+            : <div
+                key={key}
+                style='font-size: 300px; position: absolute;'
+                class={props.className}
+                onAnimationEnd={props.onAnimationEnd}>
+                🤪
+              </div>
+        })
+      }
+    </Fragment>
   )
 
   // const transitions = useTransitions(items, item => item.id, {

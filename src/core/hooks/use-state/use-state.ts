@@ -50,15 +50,15 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     const iterations = Math.max(vNodeList.length, nextVNodeList.length);
 
     for (let i = 0; i < iterations; i++) {
-      const vNode = vNodeList[i];
-      const nextVNode = nextVNodeList[i];
+      const vNode = vNodeList[i] || null;
+      const nextVNode = nextVNodeList[i] || null;
       processDOM({
         vNode,
         nextVNode,
         container: app.nativeElement as any,
       });
 
-      replaceVirtualNode(nextVNode, vdom);
+      replaceVirtualNode(nextVNode, vdom, vNode ? vNode.nodeRoute : []);
     }
 
     setComponentVirtualNodesById(componentId, nextVNodeList.length === 1 ? nextVNodeList[0] : nextVNodeList);
