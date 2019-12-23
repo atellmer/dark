@@ -65,8 +65,6 @@ function useAtomicTransitions(value: boolean, transitionOptions: TransitionOptio
     transitionState.prevTransitions = transitions;
   }
 
-  transitionState.updateTransitions = [];
-
   console.log('transitions', transitions);
 
   return transitions;
@@ -116,10 +114,11 @@ function getAtomicTransitions(options: GetAtomicTransitionsOptions): Array<Trans
               state: 'update',
               item,
               key,
-              props: getPropsByState('update' as TransitionState),
+              props: getPropsByState('update' as TransitionState, null, transitionOptions),
             },
           ];
           forceUpdate(c => c + 1);
+          transitionState.updateTransitions = [];
         });
       }
       : onAnimationEnd;
@@ -137,7 +136,9 @@ function getAtomicTransitions(options: GetAtomicTransitionsOptions): Array<Trans
 
 function getPropsByState(state: TransitionState, forceUpdate?: Function, options?: TransitionOptions): TransitionProps {
   if (state === 'update') {
-    return {};
+    return {
+      className: options.enter.className,
+    };
   } else if (state === 'enter') {
     return {
       className: options.enter.className,

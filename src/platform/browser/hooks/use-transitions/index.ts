@@ -1,1 +1,1 @@
-export { default } from './use-atomic-transitions';
+export { default } from './use-transitions';

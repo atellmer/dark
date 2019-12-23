@@ -138,9 +138,9 @@ const MemoRow = memo(Row, (props, nextProps) =>
   props.class !== nextProps.class ,
 );
 
-const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+const Emoji = createComponent(() => {
   const [toggle, setToggle] = useState(true);
-  const transitions = useTransitions(toggle, {
+  const transitions = useTransitions(toggle, null, {
     enter: { className: 'animation-fade-in' },
     leave: { className: 'animation-fade-out' },
   });
@@ -153,10 +153,10 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   }, [toggle]);
 
   return (
-    <Fragment>
+    <div>
       {
         transitions.map(({ item, key, props }) => {
-          return item 
+          return item
             ? <div
                 key={key}
                 style='font-size: 300px; position: absolute;'
@@ -173,36 +173,38 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
               </div>
         })
       }
-    </Fragment>
+  </div>
   )
+});
 
-  // const transitions = useTransitions(items, item => item.id, {
-  //   enter: { className: 'animation-fade-in' },
-  //   leave: { className: 'animation-fade-out' },
-  // });
+const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  const transitions = useTransitions(items, item => item.id, {
+    enter: { className: 'animation-fade-in' },
+    leave: { className: 'animation-fade-out' },
+  });
 
-  // return (
-  //   <table style='width: 100%; border-collapse: collapse;'>
-  //     <tbody>
-  //       {
-  //         transitions.map(({ item, key, props }) => {
-  //           return (
-  //             <MemoRow
-  //               key={key}
-  //               id={item.id}
-  //               name={item.name}
-  //               selected={item.select}
-  //               onRemove={onRemove}
-  //               onHighlight={onHighlight}
-  //               class={props.className}
-  //               onAnimationEnd={props.onAnimationEnd}
-  //             />
-  //           );
-  //         })
-  //       }
-  //     </tbody>
-  //   </table>
-  // )
+  return (
+    <table style='width: 100%; border-collapse: collapse;'>
+      <tbody>
+        {
+          transitions.map(({ item, key, props }) => {
+            return (
+              <MemoRow
+                key={key}
+                id={item.id}
+                name={item.name}
+                selected={item.select}
+                onRemove={onRemove}
+                onHighlight={onHighlight}
+                class={props.className}
+                onAnimationEnd={props.onAnimationEnd}
+              />
+            );
+          })
+        }
+      </tbody>
+    </table>
+  )
 });
 
 const MemoList = memo(List);
@@ -210,7 +212,7 @@ const MemoList = memo(List);
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(100);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -272,6 +274,7 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
+      <Emoji />
       <MemoList
         items={state.list}
         onRemove={handleRemove}
