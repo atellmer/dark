@@ -138,66 +138,21 @@ const MemoRow = memo(Row, (props, nextProps) =>
   props.class !== nextProps.class ,
 );
 
-const Emoji = createComponent(() => {
-  const [toggle, setToggle] = useState(true);
-  const transitions = useTransitions(toggle, null, {
-    enter: { className: 'animation-fade-in' },
-    leave: { className: 'animation-fade-out' },
-  });
-
-  useEffect(() => {
-    const intervalId = setTimeout(() => {
-      setToggle(toggle => !toggle);
-    }, 10000);
-    return () => clearTimeout(intervalId);
-  }, [toggle]);
-
-  return (
-    <div>
-      {
-        transitions.map(({ item, key, props }) => {
-          return item
-            ? <div
-                key={key}
-                style='font-size: 300px; position: absolute;'
-                class={props.className}
-                onAnimationEnd={props.onAnimationEnd}>
-                😄
-              </div>
-            : <div
-                key={key}
-                style='font-size: 300px; position: absolute;'
-                class={props.className}
-                onAnimationEnd={props.onAnimationEnd}>
-                🤪
-              </div>
-        })
-      }
-  </div>
-  )
-});
-
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-  const transitions = useTransitions(items, item => item.id, {
-    enter: { className: 'animation-fade-in' },
-    leave: { className: 'animation-fade-out' },
-  });
 
   return (
     <table style='width: 100%; border-collapse: collapse;'>
       <tbody>
         {
-          transitions.map(({ item, key, props }) => {
+          items.map((item) => {
             return (
               <MemoRow
-                key={key}
+                key={item.id}
                 id={item.id}
                 name={item.name}
                 selected={item.select}
                 onRemove={onRemove}
                 onHighlight={onHighlight}
-                class={props.className}
-                onAnimationEnd={props.onAnimationEnd}
               />
             );
           })
@@ -209,10 +164,31 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
+const StateList = createComponent<{prefix: string}>(({ prefix }) => {
+  const [list, setList] = useState(Array(2).fill(0).map((_, idx) => idx));
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      const newList = [...list];
+      newList.length > 0 && newList.shift();
+
+      setList(newList);
+    }, 5000);
+
+    return () => clearTimeout(timerId);
+  }, []);
+
+  return list.map(x => {
+    return (<div key={prefix + ':' + x}>{x}</div>);
+  });
+});
+
+const MemoStateList = memo(StateList);
+
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(100);
+    state.list = buildData(10);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -274,12 +250,13 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      <Emoji />
+      <MemoStateList prefix={'1'} />
       <MemoList
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
       />
+      <MemoStateList prefix={'2'} />
     </ThemeContext.Provider>
   );
 });

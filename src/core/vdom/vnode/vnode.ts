@@ -115,8 +115,8 @@ function getNodeKey(vNode: VirtualNode): string {
   return getAttribute(vNode, ATTR_KEY);
 }
 
-function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode, removingNodeRoute?: Array<number>) {
-  const nodeRoute = replacedVNode ? replacedVNode.nodeRoute : removingNodeRoute;
+function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode) {
+  const nodeRoute = replacedVNode.nodeRoute;
   let vNode = vdom;
 
   for (let i = 1; i < nodeRoute.length; i++) {
@@ -144,6 +144,38 @@ function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): Vir
   return vNode;
 }
 
+function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number, fromRoot: boolean = false) {
+  const vDOM = isArray(vNode) ? vNode : [vNode];
+
+  for (let i = 0; i < vDOM.length; i++) {
+    const vNode = vDOM[i];
+
+    if (fromRoot) {
+      const last = vNode.nodeRoute.length - 1;
+      vNode.nodeRoute[last] = vNode.nodeRoute[last] + i;
+    }
+
+    vNode.nodeRoute[idx] = routeId;
+
+    if (vNode.children.length > 0) {
+      patchNodeRoutes(vNode.children, idx, routeId);
+    }
+  }
+}
+
+function createRoot(componentRoute: Array<string | number>, nodeRoute: Array<number>, children: VirtualDOM): VirtualNode {
+  return createVirtualNode('TAG', {
+    name: 'root',
+    componentRoute,
+    nodeRoute,
+    children: isArray(children) ? children : [children],
+  });
+}
+
+function getLastRouteId(route: Array<number>) {
+  return route.slice(-1)[0];
+}
+
 export {
   createVirtualNode,
   createVirtualTextNode,
@@ -164,4 +196,7 @@ export {
   isEmptyVirtualNode,
   replaceVirtualNode,
   getVirtualNodeByRoute,
+  patchNodeRoutes,
+  createRoot,
+  getLastRouteId,
 };

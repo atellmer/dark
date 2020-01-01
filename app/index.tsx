@@ -2,7 +2,7 @@ import runBench from './benchmark/dark';
 
 runBench();
 // import { createComponent, Fragment, h, Text, View, memo, useState, useEffect } from '../src/core';
-// import { renderComponent, createPortal } from '../src/platform/browser';
+// import { render, createPortal, useTransitions } from '../src/platform/browser';
 
 // const domElement1 = document.getElementById('app');
 // const domElementPortal = document.getElementById('portal');
@@ -12,46 +12,44 @@ runBench();
 // const button = (props = {}) => View({ ...props, as: 'button' });
 // const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
+// const Emoji = createComponent(() => {
+//   const [toggle, setToggle] = useState(true);
+//   const transitions = useTransitions(toggle, null, {
+//     enter: { className: 'animation-fade-in' },
+//     leave: { className: 'animation-fade-out' },
+//   });
 
-// const TextItem = createComponent<{value: string}>(({ value }) => {
-//   return [
-//     div({
-//       slot: [
-//         div({ slot: Text(`xxx: ${value}`) })
-//       ]
-//     }) 
-//   ];
+//   useEffect(() => {
+//     const intervalId = setTimeout(() => {
+//       setToggle(toggle => !toggle);
+//     }, 3000);
+//     return () => clearTimeout(intervalId);
+//   }, [toggle]);
+
+//   return (
+//     <Fragment>
+//       {
+//         transitions.map(({ item, key, props }) => {
+//           return item
+//             ? <div
+//                 key={key}
+//                 style='font-size: 300px; position: absolute; top: 64px'
+//                 class={props.className}
+//                 onAnimationEnd={props.onAnimationEnd}>
+//                 😄
+//               </div>
+//             : <div
+//                 key={key}
+//                 style='font-size: 300px; position: absolute; top: 64px'
+//                 class={props.className}
+//                 onAnimationEnd={props.onAnimationEnd}>
+//                 🤪
+//               </div>
+//         })
+//       }
+//   </Fragment>
+//   )
 // });
 
-// const MemoTextItem = memo(TextItem);
-
-// const App = createComponent(() => {
-//   const [value, setValue] = useState<string>('');
-//   const [count, setCount] = useState<number>(0);
-
-//   useEffect(() => {
-//     const intervalId = setInterval(() => {
-//       setCount(count => count + 1);
-//     }, 1000);
-
-//     return () => clearInterval(intervalId);
-//   }, []);
-
-//   useEffect(() => {
-//     const handleResize = (e) => console.log('resize', e);
-//     window.addEventListener('resize', handleResize);
-//     return () => window.removeEventListener('resize', handleResize);
-//   }, []);
-
-//   return [
-//     <input
-//       value={value}
-//       onInput={(e) => setValue(e.target.value)}
-//     />,
-//     <MemoTextItem value={value} />,
-//     Text('count: ' + count)
-//   ]
-// })
-
-// render(App(), domElement1);
+// render(Emoji(), domElement1);
 

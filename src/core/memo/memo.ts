@@ -10,7 +10,7 @@ import { setAttribute, VirtualDOM } from '@core/vdom';
 import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
 import { isArray, isEmpty } from '@helpers';
 import { ATTR_SKIP } from '../constants';
-import { getNodeKey, getVirtualNodeByRoute } from '../vdom/vnode';
+import { getNodeKey, getVirtualNodeByRoute, patchNodeRoutes } from '../vdom/vnode';
 
 type Component<T extends object> = (props?: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
@@ -88,25 +88,6 @@ function memo<T extends object>(
   }, { displayName: 'Memo', elementToken: $$memo });
 
   return Memo;
-}
-
-function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number, fromRoot: boolean = false) {
-  const vDOM = isArray(vNode) ? vNode : [vNode];
-
-  for (let i = 0; i < vDOM.length; i++) {
-    const vNode = vDOM[i];
-
-    if (fromRoot) {
-      const last = vNode.nodeRoute.length - 1;
-      vNode.nodeRoute[last] = vNode.nodeRoute[last] + i;
-    }
-
-    vNode.nodeRoute[idx] = routeId;
-
-    if (vNode.children.length > 0) {
-      patchNodeRoutes(vNode.children, idx, routeId);
-    }
-  }
 }
 
 export { isMemo };

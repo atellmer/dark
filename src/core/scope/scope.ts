@@ -56,7 +56,7 @@ const getComponentVirtualNodesById = (componentId: string) => {
   const id = truncateComponentId(componentId);
   const nodes = componentStore[id] ? componentStore[id].vdom : null;
 
-  //console.log('componentStore', componentStore);
+  // console.log('componentStore', componentStore);
 
   return nodes;
 };

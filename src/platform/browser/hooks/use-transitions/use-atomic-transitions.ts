@@ -1,6 +1,5 @@
 import useMemo from '@core/hooks/use-memo';
 import useState from '@core/hooks/use-state';
-import { isUndefined } from '@helpers';
 
 
 type TransitionState = 'enter' | 'update' | 'leave';
@@ -65,7 +64,7 @@ function useAtomicTransitions(value: boolean, transitionOptions: TransitionOptio
     transitionState.prevTransitions = transitions;
   }
 
-  console.log('transitions', transitions);
+  //console.log('transitions', transitions);
 
   return transitions;
 }
