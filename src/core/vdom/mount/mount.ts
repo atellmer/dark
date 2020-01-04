@@ -7,6 +7,7 @@ import {
   VirtualDOM,
   VirtualNode,
   setAttribute,
+  getNodeKey,
 } from '../vnode/vnode';
 import {
   setMountedComponentId,
@@ -176,9 +177,6 @@ function mountVirtualDOM({
     if (!isEmpty(key) && !isArray(vNode) && !isEmpty(vNode)) {
       setAttribute(vNode as VirtualNode, ATTR_KEY, key);
     }
-
-    // console.log('vNode', vNode);
-    // console.log('route', nodeRoute);
 
     setComponentVirtualNodesById(componentId, vNode as VirtualNode);
     setComponentPropsById(componentId, componentFactory.props);

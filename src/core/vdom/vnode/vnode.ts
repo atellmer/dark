@@ -122,11 +122,7 @@ function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode) {
   for (let i = 1; i < nodeRoute.length; i++) {
     const routeId = nodeRoute[i];
     if (i === nodeRoute.length - 1) {
-      if (Boolean(replacedVNode)) {
-        vNode.children[routeId] = replacedVNode;
-      } else {
-        vNode.children.splice(routeId, 1);
-      }
+      vNode.children[routeId] = replacedVNode;
     } else {
       vNode = vNode.children[routeId];
     }
@@ -149,16 +145,12 @@ function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number, fromRo
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
+    const patchRouteId = fromRoot ? routeId + i : routeId;
 
-    if (fromRoot) {
-      const last = vNode.nodeRoute.length - 1;
-      vNode.nodeRoute[last] = vNode.nodeRoute[last] + i;
-    }
-
-    vNode.nodeRoute[idx] = routeId;
+    vNode.nodeRoute[idx] = patchRouteId;
 
     if (vNode.children.length > 0) {
-      patchNodeRoutes(vNode.children, idx, routeId);
+      patchNodeRoutes(vNode.children, idx, vNode.nodeRoute[idx]);
     }
   }
 }

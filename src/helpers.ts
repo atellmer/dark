@@ -55,6 +55,30 @@ function getTime() {
 
 const truncateComponentId = (id: string): string => id.replace(/(\.|-1)*$/, '.-1');
 
+function debounce(fn: Function, delay: number = 0) {
+  let calls = [];
+  let prevResult;
+  let timerId = null;
+
+  if (process.env.NODE_ENV === 'test') {
+    return fn;
+  }
+
+  return (...args) => {
+    calls.push(() => fn(...args));
+    clearTimeout(timerId);
+    timerId = setTimeout(() => {
+      if (calls.length > 0) {
+        prevResult = calls[calls.length - 1]();
+        calls = [];
+      }
+    }, delay);
+
+    return prevResult;
+  };
+};
+
+
 export {
   isFunction,
   isUndefined,
@@ -70,4 +94,5 @@ export {
   flatten,
   getTime,
   truncateComponentId,
+  debounce,
 };

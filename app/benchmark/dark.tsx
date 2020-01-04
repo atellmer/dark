@@ -15,6 +15,7 @@ import {
 import { render, useTransitions } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
+const domElement2 = document.getElementById('app2');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -165,7 +166,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 const MemoList = memo(List);
 
 const StateList = createComponent<{prefix: string}>(({ prefix }) => {
-  const [list, setList] = useState(Array(2).fill(0).map((_, idx) => idx));
+  const [list, setList] = useState(Array(10).fill(0).map((_, idx) => idx));
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -176,7 +177,11 @@ const StateList = createComponent<{prefix: string}>(({ prefix }) => {
     }, 5000);
 
     return () => clearTimeout(timerId);
-  }, []);
+  }, [list.length]);
+
+  if (list.length === 9) {
+    return [<div key='xxx'>null</div>]
+  }
 
   return list.map(x => {
     return (<div key={prefix + ':' + x}>{x}</div>);
@@ -242,7 +247,7 @@ const App = createComponent(() => {
 
   return (
     <ThemeContext.Provider value={theme}>
-      <MemoHeader
+      <Header
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}

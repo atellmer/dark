@@ -12,44 +12,71 @@ runBench();
 // const button = (props = {}) => View({ ...props, as: 'button' });
 // const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
-// const Emoji = createComponent(() => {
-//   const [toggle, setToggle] = useState(true);
-//   const transitions = useTransitions(toggle, null, {
-//     enter: { className: 'animation-fade-in' },
-//     leave: { className: 'animation-fade-out' },
-//   });
+// // const Emoji = createComponent(() => {
+// //   const [toggle, setToggle] = useState(true);
+// //   const transitions = useTransitions(toggle, null, {
+// //     enter: { className: 'animation-fade-in' },
+// //     leave: { className: 'animation-fade-out' },
+// //   });
+
+// //   useEffect(() => {
+// //     const intervalId = setTimeout(() => {
+// //       setToggle(toggle => !toggle);
+// //     }, 3000);
+// //     return () => clearTimeout(intervalId);
+// //   }, [toggle]);
+
+// //   return (
+// //     <Fragment>
+// //       {
+// //         transitions.map(({ item, key, props }) => {
+// //           return item
+// //             ? <div
+// //                 key={key}
+// //                 style='font-size: 300px; position: absolute; top: 64px'
+// //                 class={props.className}
+// //                 onAnimationEnd={props.onAnimationEnd}>
+// //                 😄
+// //               </div>
+// //             : <div
+// //                 key={key}
+// //                 style='font-size: 300px; position: absolute; top: 64px'
+// //                 class={props.className}
+// //                 onAnimationEnd={props.onAnimationEnd}>
+// //                 🤪
+// //               </div>
+// //         })
+// //       }
+// //   </Fragment>
+// //   )
+// // });
+
+// const Item = createComponent(() => {
+//   const [value, setValue] = useState('test');
+//   const [count, setCount] = useState(1);
 
 //   useEffect(() => {
-//     const intervalId = setTimeout(() => {
-//       setToggle(toggle => !toggle);
-//     }, 3000);
-//     return () => clearTimeout(intervalId);
-//   }, [toggle]);
+//     const id = setTimeout(() => {
+//       setValue('some text');
+//       setCount(2);
+//     }, 5000);
 
-//   return (
-//     <Fragment>
-//       {
-//         transitions.map(({ item, key, props }) => {
-//           return item
-//             ? <div
-//                 key={key}
-//                 style='font-size: 300px; position: absolute; top: 64px'
-//                 class={props.className}
-//                 onAnimationEnd={props.onAnimationEnd}>
-//                 😄
-//               </div>
-//             : <div
-//                 key={key}
-//                 style='font-size: 300px; position: absolute; top: 64px'
-//                 class={props.className}
-//                 onAnimationEnd={props.onAnimationEnd}>
-//                 🤪
-//               </div>
-//         })
-//       }
-//   </Fragment>
-//   )
+//     return () => clearTimeout(id);
+//   }, []);
+
+//   return [
+//     div({
+//       slot: [Text('value: ' + value)]
+//     }),
+//     div({
+//       slot: [Text('count: ' + count)]
+//     }),
+//   ];
 // });
 
-// render(Emoji(), domElement1);
+// const App = createComponent(() => {
+//   return Item();
+// });
 
+// render(App(), domElement1);
+// render(App(), domElement2);
