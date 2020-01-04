@@ -60,10 +60,11 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     const lastIdx = getLastRouteId(vNodeList[0].nodeRoute);
     const newLastIdx = lastIdx + nextVNodeList.length;
     const diffCount = vNodeList.length - nextVNodeList.length;
+    const diffCountAbs = Math.abs(diffCount);
     const isInsertOperation = diffCount < 0;
     const isRemoveOperation = diffCount > 0;
-    const isUpdateOperation = diffCount === 0; 
-    const forceInsert = isInsertOperation && (lastIdx + Math.abs(diffCount) < parentVNode.children.length);
+    const isUpdateOperation = diffCount === 0;
+    const forceInsert = isInsertOperation && (lastIdx + diffCountAbs <= parentVNode.children.length);
 
     processDOM({
       vNode: rootVNode,
@@ -73,7 +74,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     });
 
     if (isInsertOperation) {
-      parentVNode.children.splice(lastIdx, nextVNodeList.length - Math.abs(diffCount), ...nextVNodeList);
+      parentVNode.children.splice(lastIdx, nextVNodeList.length - diffCountAbs, ...nextVNodeList);
     } else if (isRemoveOperation) {
       parentVNode.children.splice(lastIdx, nextVNodeList.length, ...nextVNodeList);
       parentVNode.children.splice(newLastIdx, diffCount);
@@ -97,7 +98,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 
     setComponentVirtualNodesById(componentId, nextVNodeList.length === 1 ? nextVNodeList[0] : nextVNodeList);
     app.methods.patchComponentStore(vdom);
-    console.log('vdom after:', deepClone(vdom));
+    // console.log('vdom after:', deepClone(vdom));
   };
 
   if (isUndefined(hooks.values[idx])) {

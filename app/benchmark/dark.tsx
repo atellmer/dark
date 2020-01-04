@@ -166,7 +166,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 const MemoList = memo(List);
 
 const StateList = createComponent<{prefix: string}>(({ prefix }) => {
-  const [list, setList] = useState(Array(10).fill(0).map((_, idx) => idx));
+  const [list, setList] = useState(Array(6).fill(0).map((_, idx) => idx));
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -179,8 +179,8 @@ const StateList = createComponent<{prefix: string}>(({ prefix }) => {
     return () => clearTimeout(timerId);
   }, [list.length]);
 
-  if (list.length === 9) {
-    return [<div key='xxx'>null</div>]
+  if (list.length === 5) {
+    return null;
   }
 
   return list.map(x => {
