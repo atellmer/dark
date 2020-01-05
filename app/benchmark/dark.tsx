@@ -81,7 +81,7 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
   });
 });
 
-const MemoHeader = memo<HeaderProps>(Header);
+const MemoHeader = memo<HeaderProps & { key?: string }>(Header);
 
 type ListProps = {
   items: Array<{ id: number, name: string; select: boolean }>;
@@ -166,29 +166,61 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 const MemoList = memo(List);
 
 const StateList = createComponent<{prefix: string}>(({ prefix }) => {
-  const [list, setList] = useState(Array(6).fill(0).map((_, idx) => idx));
+  const [toggle, setToggle] = useState(false);
 
   useEffect(() => {
     const timerId = setTimeout(() => {
-      const newList = [...list];
-      newList.length > 0 && newList.shift();
-
-      setList(newList);
+      setToggle(!toggle);
     }, 5000);
 
     return () => clearTimeout(timerId);
-  }, [list.length]);
+  }, [toggle]);
 
-  if (list.length === 5) {
-    return null;
-  }
-
-  return list.map(x => {
+  return (toggle ? [0, 1] : [0]).map(x => {
     return (<div key={prefix + ':' + x}>{x}</div>);
   });
 });
 
 const MemoStateList = memo(StateList);
+
+const Emoji = createComponent(() => {
+  const [toggle, setToggle] = useState(true);
+  const transitions = useTransitions(toggle, null, {
+    enter: { className: 'animation-fade-in' },
+    leave: { className: 'animation-fade-out' },
+  });
+
+  useEffect(() => {
+    const intervalId = setTimeout(() => {
+      setToggle(toggle => !toggle);
+    }, 3000);
+    return () => clearTimeout(intervalId);
+  }, [toggle]);
+
+  return (
+    <Fragment>
+      {
+        transitions.map(({ item, key, props }) => {
+          return item
+            ? <div
+                key={key}
+                style='font-size: 300px; position: absolute; top: 128px'
+                class={props.className}
+                onAnimationEnd={props.onAnimationEnd}>
+                😄
+              </div>
+            : <div
+                key={key}
+                style='font-size: 300px; position: absolute; top: 128px'
+                class={props.className}
+                onAnimationEnd={props.onAnimationEnd}>
+                🤪
+              </div>
+        })
+      }
+  </Fragment>
+  )
+});
 
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
@@ -247,7 +279,8 @@ const App = createComponent(() => {
 
   return (
     <ThemeContext.Provider value={theme}>
-      <Header
+      <MemoHeader
+        key='header'
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
@@ -255,13 +288,15 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      <MemoStateList prefix={'1'} />
+      {/* <MemoStateList prefix={'1'} /> */}
+      {/* <span>----</span> */}
       <MemoList
+        key='list'
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
       />
-      <MemoStateList prefix={'2'} />
+      {/* <MemoStateList prefix={'2'} /> */}
     </ThemeContext.Provider>
   );
 });

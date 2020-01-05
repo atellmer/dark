@@ -22,7 +22,6 @@ type ProcessDOMOptions = {
   vNode: VirtualNode;
   nextVNode: VirtualNode;
   container: HTMLElement;
-  forceInsert?: boolean;
 };
 
 const attrBlackList = [ATTR_KEY, ATTR_SKIP];
@@ -216,8 +215,8 @@ function patchDOM(commits: Commit[], domElement: HTMLElement) {
   }
 }
 
-function processDOM({ vNode = null, nextVNode = null, container = null, forceInsert = false }: ProcessDOMOptions) {
-  const commits = getDiff(vNode, nextVNode, [], false, false, forceInsert);
+function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
+  const commits = getDiff(vNode, nextVNode);
   // console.log('commits:', commits);
   patchDOM(commits, container);
 }

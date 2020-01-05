@@ -38,7 +38,7 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     registry.set(zoneId, app);
 
     vNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
-    //console.log('vdom: ', vNode);
+    // console.log('vdom: ', vNode);
     app.vdom = vNode;
     const nodes = Array.from(mountRealDOM(vNode, app.nativeElement as HTMLElement).childNodes);
     for (const node of nodes) {

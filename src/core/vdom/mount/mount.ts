@@ -7,14 +7,13 @@ import {
   VirtualDOM,
   VirtualNode,
   setAttribute,
-  getNodeKey,
 } from '../vnode/vnode';
 import {
   setMountedComponentId,
   setMountedComponentRoute,
   setMountedComponentFactory,
   resetHooks,
-  setComponentVirtualNodesById,
+  setComponentNodeRoutesById,
   getComponentVirtualNodesById,
   setComponentPropsById,
 } from '../../scope';
@@ -178,7 +177,10 @@ function mountVirtualDOM({
       setAttribute(vNode as VirtualNode, ATTR_KEY, key);
     }
 
-    setComponentVirtualNodesById(componentId, vNode as VirtualNode);
+    const vNodes = isArray(vNode) ? vNode : [vNode];
+    const nodeRoutes = vNodes.filter(Boolean).map(x => x.nodeRoute);
+
+    setComponentNodeRoutesById(componentId, nodeRoutes);
     setComponentPropsById(componentId, componentFactory.props);
   } else if (Boolean(mountedSource)) {
     vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);

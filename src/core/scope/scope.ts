@@ -1,6 +1,7 @@
-import { VirtualNode, VirtualDOM } from '../vdom';
+import { VirtualNode, getVirtualNodeByRoute } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
-import { truncateComponentId, debounce, deepClone } from '@helpers';
+import { truncateComponentId, deepClone } from '@helpers';
+import { COMPONENT_MARKER_STRING } from '../constants';
 
 type ScopeType = {
   registery: Map<number, AppType>;
@@ -15,8 +16,9 @@ type AppType = {
   nativeElement: unknown;
   vdom: VirtualNode;
   componentStore: Record<string, {
-    props: any;
-    vdom: VirtualDOM;
+    props?: any;
+    nodeRoutes?: Array<Array<number>>;
+    nestedComponentIdsMap?: Record<string, boolean>;
   }>
   eventStore: Map<
     string,
@@ -34,9 +36,6 @@ type AppType = {
     idx: number;
     values: Array<any>;
   }>;
-  methods: {
-    patchComponentStore: typeof patchComponentStore;
-  }
 };
 
 const scope = createScope();
@@ -54,64 +53,133 @@ const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedC
 const getCurrentUseStateComponentId = (): string => scope.currentUseStateComponentId;
 const setCurrentUseStateComponentId = (id: string) => scope.currentUseStateComponentId = id;
 
-function patchComponentStore(vNode: VirtualNode) {
-  if (vNode.componentRoute[vNode.componentRoute.length - 1] === -1) {
-    const componentId = vNode.componentRoute.join('.');
-    if (vNode.name === 'root') {
-      setComponentVirtualNodesById(componentId, vNode.children);
+function getParentComponentId(componentRoute: Array<string | number>): string {
+  let idx = componentRoute.length;
+  let parentComponentId = '';
+
+  for (let i = componentRoute.length - 1; i >= 0; i--) {
+    const part = componentRoute[i];
+
+    if (part === COMPONENT_MARKER_STRING) {
+      idx--;
     } else {
-      setComponentVirtualNodesById(componentId, vNode);
+      break;
     }
   }
 
-  for (const childVNode of vNode.children) {
-    patchComponentStore(childVNode);
+  const transitIdx = idx;
+
+  for (let i = transitIdx - 1; i >= 0; i--) {
+    const part = componentRoute[i];
+
+    if (part !== COMPONENT_MARKER_STRING) {
+      idx--;
+    } else {
+      if (componentRoute[i - 1] && componentRoute[i - 1] === COMPONENT_MARKER_STRING) {
+        idx--;
+      } else {
+        break;
+      }
+    }
   }
+
+  parentComponentId = componentRoute.slice(0, idx).join('.');
+
+  return parentComponentId;
 }
 
-const getComponentVirtualNodesById = (componentId: string) => {
+function linkComponentIdToParentComponent(componentId: string, componentStore: AppType['componentStore']) {
+  const componentRoute = componentId.split('.');
+
+  if (componentRoute[componentRoute.length - 2] === COMPONENT_MARKER_STRING &&
+    componentRoute[componentRoute.length - 1] === COMPONENT_MARKER_STRING) {
+      return;
+  };
+
+  const parentComponentId = getParentComponentId(componentRoute);
+  const store = componentStore[parentComponentId];
+
+  if (store) {
+    if (!store.nestedComponentIdsMap) {
+      store.nestedComponentIdsMap = {};
+    }
+    store.nestedComponentIdsMap[componentId] = true;
+  } else if (parentComponentId) {
+    componentStore[parentComponentId] = {
+      nestedComponentIdsMap: {
+        [componentId]: true,
+      },
+    }
+  }
+
+  // console.log('componentStore', deepClone(componentStore));
+}
+
+function getComponentVirtualNodesById(componentId: string): Array<VirtualNode> {
+  const vdom = getVirtualDOM(getAppUid());
+  const nodeRoutes = getComponentNodeRoutesById(componentId);
+  const vNodes = nodeRoutes.map(nodeRoute => getVirtualNodeByRoute(vdom, nodeRoute)); // need optimization
+
+  return vNodes;
+}
+
+function getComponentNodeRoutesById(componentId: string): Array<Array<number>> {
   const { componentStore } = getRegistery().get(getAppUid());
   const id = truncateComponentId(componentId);
-  const nodes = componentStore[id] ? componentStore[id].vdom : null;
+  const nodes = componentStore[id] ? componentStore[id].nodeRoutes : null;
 
   // console.log('componentStore', deepClone(componentStore));
 
   return nodes;
-};
+}
 
-const setComponentVirtualNodesById = (componentId: string, vdom: VirtualDOM) => {
+function setComponentNodeRoutesById(
+  componentId: string, nodeRoutes: Array<Array<number>>, needPatchNestedNodeRoutes: boolean = false) {
   const { componentStore } = getRegistery().get(getAppUid());
   const id = truncateComponentId(componentId);
 
   if (!componentStore[id]) {
-    componentStore[id] = {
-      props: null,
-      vdom,
-    };
-  } else {
-    componentStore[id].vdom = vdom;
+    componentStore[id] = {};
   }
-};
 
-const getComponentPropsById = (id: string): any => {
+  const store = componentStore[id];
+
+  linkComponentIdToParentComponent(componentId, componentStore);
+
+  store.nodeRoutes = nodeRoutes;
+
+  if (needPatchNestedNodeRoutes && store.nestedComponentIdsMap) {
+    const nodeRoute = nodeRoutes[0];
+    const nestedComponentIds = Object.keys(store.nestedComponentIdsMap);
+
+    for (const nestedComponentId of nestedComponentIds) {
+      const nestedStore = componentStore[nestedComponentId];
+
+      if (nestedStore) {
+        for (const nestedNodeRoute of nestedStore.nodeRoutes) {
+          nestedNodeRoute.length > nodeRoute.length && nestedNodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+        }
+      }
+    }
+  }
+}
+
+function getComponentPropsById(id: string): any {
   const { componentStore } = getRegistery().get(getAppUid());
   const props = componentStore[id] ? componentStore[id].props : null;
 
   return props;
-};
+}
 
-const setComponentPropsById = (id: string, props: any) => {
+function setComponentPropsById(id: string, props: any) {
   const { componentStore } = getRegistery().get(getAppUid());
 
   if (!componentStore[id]) {
-    componentStore[id] = {
-      props,
-      vdom: null,
-    };
-  } else {
-    componentStore[id].props = props;
+    componentStore[id] = {};
   }
-};
+
+  componentStore[id].props = props;
+}
 
 const getHooks = (componentId: string) => {
   const uid = getAppUid();
@@ -156,9 +224,6 @@ function createApp(nativeElement: unknown): AppType {
     portalStore: {},
     memoStore: {},
     hookStore: {},
-    methods: {
-      patchComponentStore: debounce(patchComponentStore) as typeof patchComponentStore,
-    },
   };
 }
 
@@ -183,7 +248,8 @@ export {
   getCurrentUseStateComponentId,
   setCurrentUseStateComponentId,
   getComponentVirtualNodesById,
-  setComponentVirtualNodesById,
+  getComponentNodeRoutesById,
+  setComponentNodeRoutesById,
   getComponentPropsById,
   setComponentPropsById,
 };

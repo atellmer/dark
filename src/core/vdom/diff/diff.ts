@@ -71,7 +71,7 @@ function mapNewAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virtu
   }
 }
 
-function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>, forceInsert: boolean) {
+function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
   const iterations = Math.max(vNode.children.length, nextVNode.children.length);
   const removingSize = vNode.children.length - nextVNode.children.length;
   const insertingSize = nextVNode.children.length - vNode.children.length;
@@ -89,7 +89,7 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
     const isInsertingNodeByKey = vNodeShift < insertingSize && isDifferentKeys;
     const prevCommit = commits[commits.length - 1];
 
-    commits = getDiff(childVNode, childNextVNode, commits, isRemovingNodeByKey, isInsertingNodeByKey, forceInsert);
+    commits = getDiff(childVNode, childNextVNode, commits, isRemovingNodeByKey, isInsertingNodeByKey);
 
     if (prevCommit && prevCommit.action === 'REMOVE_NODE' && sameRemoveCommitsSize !== commits.length) {
       const commit = commits[commits.length - 1];
@@ -117,7 +117,6 @@ function getDiff(
   commits: Array<Commit> = [],
   isRemovingNodeByKey = false,
   isInsertingNodeByKey = false,
-  forceInsert = false,
 ): Array<Commit> {
   if (!vNode && !nextVNode || getAttribute(nextVNode, ATTR_SKIP)) return commits;
 
@@ -125,11 +124,7 @@ function getDiff(
   const nextKey = getNodeKey(nextVNode);
 
   if (!vNode) {
-    if (forceInsert) {
-      commits.push(createCommit(INSERT_NODE, nextVNode.nodeRoute, null, nextVNode));
-    } else {
-      commits.push(createCommit(ADD_NODE, nextVNode.nodeRoute, null, nextVNode));
-    }
+    commits.push(createCommit(ADD_NODE, nextVNode.nodeRoute, null, nextVNode));
     if (isUndefined(nextKey) && !isEmptyVirtualNode(nextVNode)) {
       error(UNIQ_KEY_ERROR);
     }
@@ -173,7 +168,7 @@ function getDiff(
     }
   }
 
-  commits = iterateNodes(vNode, nextVNode, commits, forceInsert);
+  commits = iterateNodes(vNode, nextVNode, commits);
 
   return commits;
 }

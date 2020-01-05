@@ -10,14 +10,14 @@ import {
   setCurrentUseStateComponentId,
   getComponentVirtualNodesById,
   getComponentPropsById,
-  setComponentVirtualNodesById,
+  setComponentNodeRoutesById,
 } from '@core/scope';
 import { mountVirtualDOM } from '@core/vdom/mount';
 import {
   VirtualNode,
   getVirtualNodeByRoute,
   createRoot, patchNodeRoutes, getLastRouteId, replaceVirtualNode } from '@core/vdom/vnode';
-import { isUndefined, flatten, isArray, isFunction, deepClone } from '@helpers';
+import { isUndefined, flatten, isFunction, deepClone } from '@helpers';
 import { processDOM } from '../../../platform/browser/dom'; // temp
 
 type SetStateValue<T> = T | ((prevValue: T) => T)
@@ -35,10 +35,9 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     setCurrentUseStateComponentId(componentId);
     hooks.values[idx] = isFunction(value) ? value(hooks.values[idx]) : value;
     const vdom = getVirtualDOM(uid);
-    const vNode = getComponentVirtualNodesById(componentId);
+    const vNodes = getComponentVirtualNodesById(componentId);
     const props = getComponentPropsById(componentId);
-    const vNodeList = isArray(vNode) ? vNode : [vNode];
-    const nodeRoute = vNodeList[0].nodeRoute;
+    const nodeRoute = vNodes[0].nodeRoute;
     const parentNodeRoute = nodeRoute.slice(0, -1);
     const hasNode = Boolean(getVirtualNodeByRoute(vdom, nodeRoute));
 
@@ -54,23 +53,21 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
       }),
     ]);
 
-    const rootVNode = createRoot(componentRoute, parentNodeRoute, vNodeList);
+    const rootVNode = createRoot(componentRoute, parentNodeRoute, vNodes);
     const rootNextVNode = createRoot(componentRoute, parentNodeRoute, nextVNodeList);
     const parentVNode = getVirtualNodeByRoute(vdom, parentNodeRoute);
-    const lastIdx = getLastRouteId(vNodeList[0].nodeRoute);
+    const lastIdx = getLastRouteId(vNodes[0].nodeRoute);
     const newLastIdx = lastIdx + nextVNodeList.length;
-    const diffCount = vNodeList.length - nextVNodeList.length;
+    const diffCount = vNodes.length - nextVNodeList.length;
     const diffCountAbs = Math.abs(diffCount);
     const isInsertOperation = diffCount < 0;
     const isRemoveOperation = diffCount > 0;
     const isUpdateOperation = diffCount === 0;
-    const forceInsert = isInsertOperation && (lastIdx + diffCountAbs <= parentVNode.children.length);
 
     processDOM({
       vNode: rootVNode,
       nextVNode: rootNextVNode,
       container: app.nativeElement as any,
-      forceInsert,
     });
 
     if (isInsertOperation) {
@@ -96,8 +93,9 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
       }
     }
 
-    setComponentVirtualNodesById(componentId, nextVNodeList.length === 1 ? nextVNodeList[0] : nextVNodeList);
-    app.methods.patchComponentStore(vdom);
+    const nodeRoutes = nextVNodeList.map(x => x.nodeRoute);
+
+    setComponentNodeRoutesById(componentId, nodeRoutes);
     // console.log('vdom after:', deepClone(vdom));
   };
 

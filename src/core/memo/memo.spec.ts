@@ -6,12 +6,14 @@ import memo from './memo';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 
+const uid = 0;
+
 beforeEach(() => {
   const registry = getRegistery();
   const app = createApp(null);
 
-  registry.set(0, app);
-  setAppUid(0);
+  registry.set(uid, app);
+  setAppUid(uid);
 });
 
 test('[memo]: memoization work correctly without custom comparer', () => {
@@ -31,6 +33,7 @@ test('[memo]: memoization work correctly without custom comparer', () => {
 
   const vdomOne = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
   const vNodeOne = vdomOne.children[0];
+  getRegistery().get(uid).vdom = vdomOne;
   const vdomTwo = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
   const vNodeTwo = vdomTwo.children[0];
 
@@ -52,9 +55,17 @@ test('[memo]: memoization work correctly with custom comparer', () => {
     });
   });
 
-  const vNodeOne = (mountVirtualDOM({ mountedSource: App({ value: 1 }) }) as VirtualNode).children[0];
-  const vNodeTwo = (mountVirtualDOM({ mountedSource: App({ value: 1 }) }) as VirtualNode).children[0];
-  const vNodeThree = (mountVirtualDOM({ mountedSource: App({ value: 2 }) }) as VirtualNode).children[0];
+  const vdomOne = mountVirtualDOM({ mountedSource: App({ value: 1 }) }) as VirtualNode;
+  const vNodeOne = vdomOne.children[0];
+  getRegistery().get(uid).vdom = vdomOne;
+
+  const vdomTwo = mountVirtualDOM({ mountedSource: App({ value: 1 }) }) as VirtualNode;
+  const vNodeTwo = vdomTwo.children[0];
+  getRegistery().get(uid).vdom = vdomTwo;
+
+  const vdomThree = mountVirtualDOM({ mountedSource: App({ value: 2 }) }) as VirtualNode;
+  const vNodeThree = vdomThree.children[0];
+  getRegistery().get(uid).vdom = vdomThree;
 
   expect(vNodeOne).toBe(vNodeTwo);
   expect(vNodeTwo).not.toBe(vNodeThree);
