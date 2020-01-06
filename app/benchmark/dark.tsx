@@ -288,7 +288,7 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      {/* <MemoStateList prefix={'1'} /> */}
+      <MemoStateList prefix={'1'} />
       {/* <span key='xxx'>----</span> */}
       <MemoList
         key='list'
@@ -296,7 +296,7 @@ const App = createComponent(() => {
         onRemove={handleRemove}
         onHighlight={handleHightlight}
       />
-      {/* <MemoStateList prefix={'2'} /> */}
+      <MemoStateList prefix={'2'} />
     </ThemeContext.Provider>
   );
 });

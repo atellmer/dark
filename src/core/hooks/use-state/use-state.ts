@@ -46,12 +46,6 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
 
     componentFactory.props = props;
 
-    const parentVNode = getVirtualNodeByRoute(vdom, parentNodeRoute);
-    const nextParentVNode = { ...parentVNode, children: [...parentVNode.children] };
-
-    console.log('nextParentVNode', nextParentVNode);
-    
-
     const nextVNodeList: Array<VirtualNode> = flatten([
       mountVirtualDOM({
         mountedSource: componentFactory,
@@ -67,14 +61,16 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     const isInsertOperation = diffCount < 0;
     const isRemoveOperation = diffCount > 0;
     const isUpdateOperation = diffCount === 0;
+    const parentVNode = getVirtualNodeByRoute(vdom, parentNodeRoute);
+    const nextParentVNode = !isUpdateOperation
+      ? { ...parentVNode, children: [...parentVNode.children] }
+      : null;
 
     if (isInsertOperation) {
       nextParentVNode.children.splice(lastIdx, nextVNodeList.length - diffCountAbs, ...nextVNodeList);
     } else if (isRemoveOperation) {
       nextParentVNode.children.splice(lastIdx, nextVNodeList.length, ...nextVNodeList);
       nextParentVNode.children.splice(newLastIdx, diffCount);
-    } else {
-      nextParentVNode.children.splice(lastIdx, nextVNodeList.length, ...nextVNodeList);
     }
 
     if (!isUpdateOperation) {
@@ -114,26 +110,37 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
         Object.keys(nodeRoutesMap).map(componentId => nodeRoutesMap[componentId]),
       );
 
-      // console.log('nodeRoutesMap', nodeRoutesMap)
-
       for (const componentId of Object.keys(nodeRoutesMap)) {
         setComponentNodeRoutesById(componentId, nodeRoutesMap[componentId]);
       }
-
-      // console.log('nextParentVNode', deepClone(nextParentVNode))
-      // console.log('nodeRoutesMap', nodeRoutesMap)
     }
 
-    processDOM({
-      vNode: parentVNode,
-      nextVNode: nextParentVNode,
-      container: app.nativeElement as any,
-    });
+    if (isUpdateOperation) {
+      const vNodeList = parentVNode.children.slice(lastIdx, newLastIdx);
+      const rootVNode = createRoot(parentVNode.componentRoute, parentNodeRoute, vNodeList);
+      const nextRootVNode = createRoot(parentVNode.componentRoute, parentNodeRoute, nextVNodeList);
 
-    if (nextParentVNode.nodeRoute.length === 1) {
-      app.vdom = nextParentVNode;
+      processDOM({
+        vNode: rootVNode,
+        nextVNode: nextRootVNode,
+        container: app.nativeElement as any,
+      });
+
+      for (const vNode of nextVNodeList) {
+        replaceVirtualNode(vNode, vdom);
+      }
     } else {
-      replaceVirtualNode(nextParentVNode, vdom);
+      processDOM({
+        vNode: parentVNode,
+        nextVNode: nextParentVNode,
+        container: app.nativeElement as any,
+      });
+
+      if (nextParentVNode.nodeRoute.length === 1) {
+        app.vdom = nextParentVNode;
+      } else {
+        replaceVirtualNode(nextParentVNode, vdom);
+      }
     }
 
     // console.log('vdom after:', deepClone(app.vdom));

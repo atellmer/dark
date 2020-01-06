@@ -60,9 +60,10 @@ function memo<T extends object>(
           const patchIdx = nodeRoute.length - 1;
           const patchRouteId = nodeRoute[patchIdx];
 
+          patchNodeRoutes(vNode, patchIdx, patchRouteId, true);
+
           for (const vNode of vDOM) {
             let skipReconciliation = true;
-            patchNodeRoutes(vNode, patchIdx, patchRouteId, true);
 
             if (!isEmpty(props.key)) {
               const vdom = getVirtualDOM(uid);
