@@ -134,7 +134,7 @@ function getComponentNodeRoutesById(componentId: string): Array<Array<number>> {
 }
 
 function setComponentNodeRoutesById(
-  componentId: string, nodeRoutes: Array<Array<number>>, needPatchNestedNodeRoutes: boolean = false) {
+  componentId: string, nodeRoutes: Array<Array<number>>) {
   const { componentStore } = getRegistery().get(getAppUid());
   const id = truncateComponentId(componentId);
 
@@ -147,21 +147,6 @@ function setComponentNodeRoutesById(
   linkComponentIdToParentComponent(componentId, componentStore);
 
   store.nodeRoutes = nodeRoutes;
-
-  if (needPatchNestedNodeRoutes && store.nestedComponentIdsMap) {
-    const nodeRoute = nodeRoutes[0];
-    const nestedComponentIds = Object.keys(store.nestedComponentIdsMap);
-
-    for (const nestedComponentId of nestedComponentIds) {
-      const nestedStore = componentStore[nestedComponentId];
-
-      if (nestedStore) {
-        for (const nestedNodeRoute of nestedStore.nodeRoutes) {
-          nestedNodeRoute.length > nodeRoute.length && nestedNodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
-        }
-      }
-    }
-  }
 }
 
 function getComponentPropsById(id: string): any {

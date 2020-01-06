@@ -6,12 +6,14 @@ import createPortal from './portal';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 
+const uid = 0;
+
 beforeEach(() => {
   const registry = getRegistery();
   const app = createApp(null);
 
-  registry.set(0, app);
-  setAppUid(0);
+  registry.set(uid, app);
+  setAppUid(uid);
 });
 
 test('[portal]: portal redirect render correctly', () => {
@@ -37,6 +39,9 @@ test('[portal]: portal redirect render correctly', () => {
   });
 
   const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
+
+  getRegistery().get(uid).vdom = vdom;
+
   const vNode = vdom.children[1];
 
   expect(isEmptyVirtualNode(vNode)).toBe(true);

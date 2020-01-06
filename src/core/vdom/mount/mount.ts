@@ -169,6 +169,7 @@ function mountVirtualDOM({
       ? componentFactory.props[$$replaceNodeBeforeMountHook](vNode, componentId, mountedNodeRoute, skipMount)
       : vNode;
     vNode = !skipMount ? flatVirtualDOM(vNode, nodeRoute, mountedComponentRoute) : vNode;
+
     vNode = isFunction(componentFactory.props[$$replaceNodeAfterMountHook])
       ? componentFactory.props[$$replaceNodeAfterMountHook](vNode, componentId)
       : vNode;

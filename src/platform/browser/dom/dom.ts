@@ -222,7 +222,7 @@ function processDOM({ vNode = null, nextVNode = null, container = null }: Proces
 }
 
 export {
-  mountRealDOM, //
+  mountRealDOM,
   getDomElementByRoute,
   patchDOM,
   processDOM,

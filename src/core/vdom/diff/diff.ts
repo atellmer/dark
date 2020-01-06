@@ -118,7 +118,7 @@ function getDiff(
   isRemovingNodeByKey = false,
   isInsertingNodeByKey = false,
 ): Array<Commit> {
-  if (!vNode && !nextVNode || getAttribute(nextVNode, ATTR_SKIP)) return commits;
+  if (!vNode && !nextVNode) return commits;
 
   const key = getNodeKey(vNode);
   const nextKey = getNodeKey(nextVNode);
@@ -153,6 +153,8 @@ function getDiff(
     commits.push(createCommit(REPLACE_NODE, nextVNode.nodeRoute, vNode, nextVNode));
     return commits;
   }
+
+  if (getAttribute(nextVNode, ATTR_SKIP)) return commits; // don't move this line
 
   if (isTagVirtualNode(vNode)) {
     const prevAttrBlackList = [ATTR_SKIP, ATTR_KEY];

@@ -289,7 +289,7 @@ const App = createComponent(() => {
         onToggleTheme={handleToggleTheme}
       />
       {/* <MemoStateList prefix={'1'} /> */}
-      {/* <span>----</span> */}
+      {/* <span key='xxx'>----</span> */}
       <MemoList
         key='list'
         items={state.list}

@@ -8,7 +8,7 @@ import {
 } from '@core/scope';
 import { setAttribute, VirtualDOM } from '@core/vdom';
 import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
-import { isArray, isEmpty } from '@helpers';
+import { isArray, isEmpty, deepClone } from '@helpers';
 import { ATTR_SKIP } from '../constants';
 import { getNodeKey, getVirtualNodeByRoute, patchNodeRoutes } from '../vdom/vnode';
 
@@ -59,22 +59,23 @@ function memo<T extends object>(
         if (skipMount) {
           const patchIdx = nodeRoute.length - 1;
           const patchRouteId = nodeRoute[patchIdx];
-          let skipReconciliation = true;
-
-          patchNodeRoutes(vNode, patchIdx, patchRouteId, true);
-
-          if (!isEmpty(props.key)) {
-            const vdom = getVirtualDOM(uid);
-            const prevVNode = getVirtualNodeByRoute(vdom, nodeRoute)
-            const prevKey = getNodeKey(prevVNode);
-
-            skipReconciliation = props.key === prevKey;
-          }
 
           for (const vNode of vDOM) {
+            let skipReconciliation = true;
+            patchNodeRoutes(vNode, patchIdx, patchRouteId, true);
+
+            if (!isEmpty(props.key)) {
+              const vdom = getVirtualDOM(uid);
+              const prevVNode = getVirtualNodeByRoute(vdom, nodeRoute)
+              const prevKey = getNodeKey(prevVNode);
+
+              skipReconciliation = props.key === prevKey;
+            }
+
             setAttribute(vNode, ATTR_SKIP, skipReconciliation);
           }
         }
+
         app.memoStore[componentId].props = props;
       }
 

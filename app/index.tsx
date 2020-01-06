@@ -1,16 +1,16 @@
 import runBench from './benchmark/dark';
 
 runBench();
-import { createComponent, Fragment, h, Text, View, memo, useState, useEffect } from '../src/core';
-import { render, createPortal, useTransitions } from '../src/platform/browser';
+// import { createComponent, Fragment, h, Text, View, memo, useState, useEffect } from '../src/core';
+// import { render, createPortal, useTransitions } from '../src/platform/browser';
 
-const domElement1 = document.getElementById('app');
-const domElementPortal = document.getElementById('portal');
-const domElement2 = document.getElementById('app2');
+// const domElement1 = document.getElementById('app');
+// const domElementPortal = document.getElementById('portal');
+// const domElement2 = document.getElementById('app2');
 
-const div = (props = {}) => View({ ...props, as: 'div' });
-const button = (props = {}) => View({ ...props, as: 'button' });
-const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
+// const div = (props = {}) => View({ ...props, as: 'div' });
+// const button = (props = {}) => View({ ...props, as: 'button' });
+// const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
 // const Emoji = createComponent(() => {
 //   const [toggle, setToggle] = useState(true);
@@ -50,3 +50,25 @@ const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 //   </Fragment>
 //   )
 // });
+
+// const Component = createComponent(() => {
+//   return [
+//     div({
+//       slot: Text('portal text')
+//     })
+//   ];
+// });
+
+// const App = createComponent(() => {
+//   return div({
+//     slot: [
+//       Component(),
+//       createPortal(
+//         Component(),
+//         domElementPortal,
+//       ),
+//     ],
+//   });
+// });
+
+// render(App(), domElement1);
