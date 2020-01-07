@@ -12,7 +12,7 @@ import {
   useReducer,
   createContext,
 } from '../../src/core';
-import { render, useTransitions } from '../../src/platform/browser';
+import { render, useTransitions, createPortal } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
 const domElement2 = document.getElementById('app2');
@@ -197,35 +197,29 @@ const Emoji = createComponent(() => {
     return () => clearTimeout(intervalId);
   }, [toggle]);
 
-  return (
-    <Fragment>
-      {
-        transitions.map(({ item, key, props }) => {
-          return item
-            ? <div
-                key={key}
-                style='font-size: 300px; position: absolute; top: 128px'
-                class={props.className}
-                onAnimationEnd={props.onAnimationEnd}>
-                😄
-              </div>
-            : <div
-                key={key}
-                style='font-size: 300px; position: absolute; top: 128px'
-                class={props.className}
-                onAnimationEnd={props.onAnimationEnd}>
-                🤪
-              </div>
-        })
-      }
-  </Fragment>
-  )
+  return transitions.map(({ item, key, props }) => {
+    return item
+      ? <div
+          key={key}
+          style='font-size: 100px; position: absolute; top: 128px'
+          class={props.className}
+          onAnimationEnd={props.onAnimationEnd}>
+          😄
+        </div>
+      : <div
+          key={key}
+          style='font-size: 100px; position: absolute; top: 128px'
+          class={props.className}
+          onAnimationEnd={props.onAnimationEnd}>
+          🤪
+        </div>
+  })
 });
 
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -288,7 +282,7 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      {/* <Emoji /> */}
+      <Emoji /> 
       {/* <MemoStateList prefix={'1'} /> */}
       {/* <span key='xxx'>----</span> */}
       <MemoList

@@ -66,7 +66,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     const isUpdateOperation = diffCount === 0;
     const parentVNode = getVirtualNodeByRoute(vdom, parentNodeRoute);
     const nextParentVNode = !isUpdateOperation
-      ? deepClone(parentVNode)
+      ? { ...parentVNode, children: [...parentVNode.children] }
       : null;
 
     if (isInsertOperation) {

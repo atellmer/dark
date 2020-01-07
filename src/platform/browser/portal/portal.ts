@@ -47,10 +47,13 @@ function createPortal(source: MountedSource, container: HTMLElement) {
       }
       portalStoreItem.vNode = nextVNode;
     } else {
+      portalStoreItem.vNode = nextVNode;
       processDOM({ vNode, nextVNode, container });
       portalStoreItem.time = time;
-      portalStoreItem.vNode = nextVNode;
     }
+
+    console.log('portal', portalStoreItem);
+    
 
     return null;
   };

@@ -49,8 +49,8 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     const vNode = getVirtualDOM(zoneId);
     const nextVNode: VirtualNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
 
+    // console.log('nextvdom: ', deepClone(app.vdom));
     app.vdom = nextVNode;
-    // console.log('nextvdom: ', deepClone(nextVNode));
     processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
   }
 

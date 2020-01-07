@@ -77,7 +77,6 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
   const insertingSize = nextVNode.children.length - vNode.children.length;
   let nextVNodeShift = 0;
   let vNodeShift = 0;
-  let sameRemoveCommitsSize = commits.length;
 
   for (let i = 0; i < iterations; i++) {
     const childNextVNode = nextVNode.children[i - nextVNodeShift];
@@ -87,18 +86,8 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
     const isDifferentKeys = !isEmpty(key) && !isEmpty(nextKey) && key !== nextKey;
     const isRemovingNodeByKey = nextVNodeShift < removingSize && isDifferentKeys;
     const isInsertingNodeByKey = vNodeShift < insertingSize && isDifferentKeys;
-    const prevCommit = commits[commits.length - 1];
 
-    commits = getDiff(childVNode, childNextVNode, commits, isRemovingNodeByKey, isInsertingNodeByKey);
-
-    if (prevCommit && prevCommit.action === 'REMOVE_NODE' && sameRemoveCommitsSize !== commits.length) {
-      const commit = commits[commits.length - 1];
-      if (commit && commit.action === 'REMOVE_NODE') {
-        const last = prevCommit.route[prevCommit.route.length - 1];
-        commit.route[commit.route.length - 1] = last;
-        sameRemoveCommitsSize = commits.length;
-      }
-    }
+    commits = getDiff(childVNode, childNextVNode, commits, isRemovingNodeByKey, isInsertingNodeByKey, false);
 
     if (isRemovingNodeByKey) {
       nextVNodeShift++;
@@ -115,8 +104,9 @@ function getDiff(
   vNode: VirtualNode,
   nextVNode: VirtualNode,
   commits: Array<Commit> = [],
-  isRemovingNodeByKey = false,
-  isInsertingNodeByKey = false,
+  isRemovingNodeByKey: boolean = false,
+  isInsertingNodeByKey: boolean = false,
+  fromRoot: boolean = true,
 ): Array<Commit> {
   if (!vNode && !nextVNode) return commits;
 
@@ -172,11 +162,48 @@ function getDiff(
 
   commits = iterateNodes(vNode, nextVNode, commits);
 
+  if (fromRoot) {
+    commits = getSortedByPriorityCommits(commits);
+  }
+
   return commits;
 }
 
+function getSortedByPriorityCommits(commits: Array<Commit>) {
+  const replaceCommits = [];
+  const removeCommits = [];
+  const insertCommits = [];
+  const addCommits = [];
+  const consistentCommits = [];
+  let commitsByPriotity = [];
+
+  for (const commit of commits) {
+    if (commit.action === 'REMOVE_NODE') {
+      removeCommits.unshift(commit);
+    } else if (commit.action === 'INSERT_NODE') {
+      insertCommits.unshift(commit);
+    } else if (commit.action === 'REPLACE_NODE') {
+      replaceCommits.push(commit);
+    } else if (commit.action === 'ADD_NODE') {
+      addCommits.push(commit);
+    } else {
+      consistentCommits.push(commit);
+    }
+  }
+
+  commitsByPriotity = [
+    ...removeCommits,
+    ...insertCommits,
+    ...replaceCommits,
+    ...addCommits,
+    ...consistentCommits,
+  ];
+
+  return commitsByPriotity;
+}
+
 export {
-  ADD_NODE, //
+  ADD_NODE,
   REMOVE_NODE,
   REPLACE_NODE,
   INSERT_NODE,

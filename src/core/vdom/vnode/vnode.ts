@@ -142,13 +142,13 @@ function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): Vir
 
 function patchNodeRoutes(vNode: VirtualDOM, nodeRoute: Array<number>, fromRoot: boolean = false) {
   const vDOM = isArray(vNode) ? vNode : [vNode];
+  const routeId = nodeRoute[nodeRoute.length - 1];
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
 
     if (fromRoot) {
-      const lastIdx = nodeRoute.length - 1;
-      nodeRoute[lastIdx] = nodeRoute[lastIdx] + i;
+      nodeRoute[nodeRoute.length - 1] = routeId + i;
     }
 
     vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
@@ -158,7 +158,6 @@ function patchNodeRoutes(vNode: VirtualDOM, nodeRoute: Array<number>, fromRoot: 
     }
   }
 }
-
 
 function createRoot(componentRoute: Array<string | number>, nodeRoute: Array<number>, children: VirtualDOM): VirtualNode {
   return createVirtualNode('TAG', {
