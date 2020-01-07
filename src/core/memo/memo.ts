@@ -3,7 +3,6 @@ import {
   getAppUid,
   getCurrentUseStateComponentId,
   getRegistery,
-  getVirtualDOM,
   setCurrentUseStateComponentId,
 } from '@core/scope';
 import { setAttribute, VirtualDOM } from '@core/vdom';
@@ -57,17 +56,13 @@ function memo<T extends object>(
         app.memoStore[componentId] = { props };
       } else {
         if (skipMount) {
-          const patchIdx = nodeRoute.length - 1;
-          const patchRouteId = nodeRoute[patchIdx];
-
-          patchNodeRoutes(vNode, patchIdx, patchRouteId, true);
+          patchNodeRoutes(vNode, [...nodeRoute], true);
 
           for (const vNode of vDOM) {
             let skipReconciliation = true;
 
             if (!isEmpty(props.key)) {
-              const vdom = getVirtualDOM(uid);
-              const prevVNode = getVirtualNodeByRoute(vdom, nodeRoute)
+              const prevVNode = getVirtualNodeByRoute(app.vdom, nodeRoute);
               const prevKey = getNodeKey(prevVNode);
 
               skipReconciliation = props.key === prevKey;

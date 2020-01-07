@@ -1,4 +1,4 @@
-import { flatten, isArray, isNull, isFunction, isEmpty } from '@helpers';
+import { flatten, isArray, isNull, isFunction, isEmpty, deepClone } from '@helpers';
 import { getIsComponentFactory, ComponentFactory } from '../../component';
 import {
   createVirtualEmptyNode,

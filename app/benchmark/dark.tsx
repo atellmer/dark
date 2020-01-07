@@ -193,7 +193,7 @@ const Emoji = createComponent(() => {
   useEffect(() => {
     const intervalId = setTimeout(() => {
       setToggle(toggle => !toggle);
-    }, 3000);
+    }, 5000);
     return () => clearTimeout(intervalId);
   }, [toggle]);
 
@@ -225,7 +225,7 @@ const Emoji = createComponent(() => {
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -288,7 +288,8 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      <MemoStateList prefix={'1'} />
+      {/* <Emoji /> */}
+      {/* <MemoStateList prefix={'1'} /> */}
       {/* <span key='xxx'>----</span> */}
       <MemoList
         key='list'
@@ -296,7 +297,7 @@ const App = createComponent(() => {
         onRemove={handleRemove}
         onHighlight={handleHightlight}
       />
-      <MemoStateList prefix={'2'} />
+      {/* <MemoStateList prefix={'2'} /> */}
     </ThemeContext.Provider>
   );
 });

@@ -167,18 +167,24 @@ const patchAttributes = (name: string, value: any, node: HTMLElement) => {
 const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
   const { action, nextValue, oldValue } = commit;
   const node = getNodeByCommit(domElement, commit);
-  const nexVNode = nextValue as VirtualNode;
+  const nextVNode = nextValue as VirtualNode;
 
   if (action === ADD_NODE) {
-    const mountedNode = mountRealDOM(nexVNode, domElement);
+    const mountedNode = mountRealDOM(nextVNode, domElement);
     node.appendChild(mountedNode);
   } else if (action === REMOVE_NODE) {
     node.parentNode.removeChild(node);
   } else if (action === REPLACE_NODE) {
-    const mountedNode = mountRealDOM(nexVNode, domElement);
+    const mountedNode = mountRealDOM(nextVNode, domElement);
+    // if (nextVNode.name === 'tr') {
+    //   debugger
+    // }
+    if (!node) {
+      //debugger
+    }
     node.replaceWith(mountedNode);
   } else if (action === INSERT_NODE) {
-    const mountedNode = mountRealDOM(nexVNode, domElement);
+    const mountedNode = mountRealDOM(nextVNode, domElement);
     node.parentNode.insertBefore(mountedNode, node);
   } else if (action === ADD_ATTRIBUTE) {
     const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name) && !/^on/.test(name);

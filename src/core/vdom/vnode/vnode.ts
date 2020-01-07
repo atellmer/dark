@@ -140,20 +140,25 @@ function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): Vir
   return vNode;
 }
 
-function patchNodeRoutes(vNode: VirtualDOM, idx: number, routeId: number, fromRoot: boolean = false) {
+function patchNodeRoutes(vNode: VirtualDOM, nodeRoute: Array<number>, fromRoot: boolean = false) {
   const vDOM = isArray(vNode) ? vNode : [vNode];
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
-    const patchRouteId = fromRoot ? routeId + i : routeId;
 
-    vNode.nodeRoute[idx] = patchRouteId;
+    if (fromRoot) {
+      const lastIdx = nodeRoute.length - 1;
+      nodeRoute[lastIdx] = nodeRoute[lastIdx] + i;
+    }
+
+    vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
 
     if (vNode.children.length > 0) {
-      patchNodeRoutes(vNode.children, idx, vNode.nodeRoute[idx]);
+      patchNodeRoutes(vNode.children, nodeRoute);
     }
   }
 }
+
 
 function createRoot(componentRoute: Array<string | number>, nodeRoute: Array<number>, children: VirtualDOM): VirtualNode {
   return createVirtualNode('TAG', {
