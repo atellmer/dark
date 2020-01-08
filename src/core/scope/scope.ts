@@ -2,6 +2,7 @@ import { VirtualNode, getVirtualNodeByRoute } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
 import { truncateComponentId, deepClone } from '@helpers';
 import { COMPONENT_MARKER_STRING } from '../constants';
+import { Context, ContextProviderStore } from '../context';
 
 type ScopeType = {
   registery: Map<number, AppType>;
@@ -36,6 +37,7 @@ type AppType = {
     idx: number;
     values: Array<any>;
   }>;
+  contextStore: Map<Context, ContextProviderStore>;
 };
 
 const scope = createScope();
@@ -203,6 +205,20 @@ const resetHooks = (componentId: string) => {
   }
 };
 
+function getContextProviderStore(context: Context): ContextProviderStore {
+  const { contextStore } = getRegistery().get(getAppUid());
+
+  return contextStore.get(context);
+}
+
+function setContextProviderStore(context: Context, contextProviderStore: ContextProviderStore) {
+  const { contextStore } = getRegistery().get(getAppUid());
+
+  if (!contextStore.get(context)) {
+    contextStore.set(context, contextProviderStore);
+  }
+}
+
 function createScope(): ScopeType {
   return {
     registery: new Map(),
@@ -223,6 +239,7 @@ function createApp(nativeElement: unknown): AppType {
     portalStore: {},
     memoStore: {},
     hookStore: {},
+    contextStore: new Map(),
   };
 }
 
@@ -251,4 +268,6 @@ export {
   setComponentNodeRoutesById,
   getComponentPropsById,
   setComponentPropsById,
+  getContextProviderStore,
+  setContextProviderStore,
 };

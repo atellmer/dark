@@ -10,6 +10,7 @@ import {
   useCallback,
   useMemo,
   useReducer,
+  useContext,
   createContext,
 } from '../../src/core';
 import { render, useTransitions, createPortal } from '../../src/platform/browser';
@@ -120,40 +121,27 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
   const handleRemove = useCallback(() => onRemove(id), [id]);
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
   const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
+  const theme = useContext<string>(ThemeContext);
+  const lang = useContext<string>(I18nContext);
+
+  const rowStyle = `
+    background-color: ${selected ? 'green' : 'transparent'};
+  `;
+  const cellStyle = `
+    border: 1px solid ${theme === 'light' ? 'pink' : 'blueviolet'};
+  `;
 
   return (
-    <I18nContext.Consumer>
-      {
-        (lang) => {
-          return (
-            <ThemeContext.Consumer>
-              {
-                (theme) => {
-                  const rowStyle = `
-                    background-color: ${selected ? 'green' : 'transparent'};
-                  `;
-                  const cellStyle = `
-                    border: 1px solid ${theme === 'light' ? 'pink' : 'blueviolet'};
-                  `;
-                  return (
-                    <tr style={rowStyle} {...rest}>
-                      <td style={cellStyle}>{name}</td>
-                      <td style={cellStyle}>1</td>
-                      <td style={cellStyle}>lang: {lang}</td>
-                      <td style={cellStyle}>
-                        <button onClick={handleRemove}>remove</button>
-                        <button onClick={handleHighlight}>highlight</button>
-                        <button onClick={handleIncrement}>{'count: ' + count}</button>
-                      </td>
-                    </tr>
-                  )
-                }
-              }
-            </ThemeContext.Consumer>
-          )
-        }
-      }
-    </I18nContext.Consumer>
+    <tr style={rowStyle} {...rest}>
+      <td style={cellStyle}>{name}</td>
+      <td style={cellStyle}>1</td>
+      <td style={cellStyle}>lang: {lang}</td>
+      <td style={cellStyle}>
+        <button onClick={handleRemove}>remove</button>
+        <button onClick={handleHighlight}>highlight</button>
+        <button onClick={handleIncrement}>{'count: ' + count}</button>
+      </td>
+    </tr>
   );
 });
 
