@@ -74,7 +74,7 @@ function createContext<T>(defaultValue: T): Context<T> {
       const componentId = getMountedComponentId();
       const contextStoreItem = getContextStoreItem(contextStore, componentId);
       const { value } = contextStoreItem;
-      const scope = useMemo(() => ({ prevValue: contextStoreItem.value }), []);
+      const scope = useMemo(() => ({ prevValue: value }), []);
       const [_, forceUpdate] = useState(0);
 
       useEffect(
