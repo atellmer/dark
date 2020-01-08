@@ -52,7 +52,7 @@ function createContext<T>(defaultValue: T): Context<T> {
 
       const contextStoreItem = contextStore[componentId];
 
-      contextStoreItem.value = value || defaultValue;
+      contextStoreItem.value = value;
 
       useEffect(
         () => {
@@ -73,22 +73,26 @@ function createContext<T>(defaultValue: T): Context<T> {
     ({ slot }) => {
       const componentId = getMountedComponentId();
       const contextStoreItem = getContextStoreItem(contextStore, componentId);
-      const { value } = contextStoreItem;
+      const value = contextStoreItem ? contextStoreItem.value : defaultValue;
       const scope = useMemo(() => ({ prevValue: value }), []);
       const [_, forceUpdate] = useState(0);
 
       useEffect(
         () => {
-          const { subscribers } = contextStoreItem;
-          const subscriber = (newValue: T) => {
-            if (!Object.is(scope.prevValue, newValue)) {
-              forceUpdate(getTime());
-            }
-          };
+          const hasProvider = Boolean(contextStoreItem);
 
-          subscribers.push(subscriber);
+          if (hasProvider) {
+            const { subscribers } = contextStoreItem;
+            const subscriber = (newValue: T) => {
+              if (!Object.is(scope.prevValue, newValue)) {
+                forceUpdate(getTime());
+              }
+            };
 
-          return () => subscribers.splice(subscribers.length - 1, 1);
+            subscribers.push(subscriber);
+
+            return () => subscribers.splice(subscribers.length - 1, 1);
+          }
         },
         [value],
       );

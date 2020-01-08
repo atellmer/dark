@@ -38,7 +38,12 @@ const state = {
 };
 
 const ThemeContext = createContext<string>('dark');
+
 ThemeContext.displayName = 'ThemeContext';
+
+const I18nContext = createContext<string>('ru');
+
+I18nContext.displayName = 'I18nContext';
 
 type HeaderProps = {
   onCreate: Function;
@@ -48,10 +53,11 @@ type HeaderProps = {
   onClear: Function;
   onToggleThemeOne: Function;
   onToggleThemeTwo: Function;
+  onToggleLang: Function;
 }
 
 const Header = createComponent<HeaderProps>((
-  { onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleThemeOne, onToggleThemeTwo }) => {
+  { onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleThemeOne, onToggleThemeTwo, onToggleLang }) => {
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
@@ -83,6 +89,10 @@ const Header = createComponent<HeaderProps>((
         slot: Text('toggle theme 2'),
         onClick: onToggleThemeTwo,
       }),
+      button({
+        slot: Text('toggle lang'),
+        onClick: onToggleLang,
+      }),
     ],
   });
 });
@@ -112,30 +122,38 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
   const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
 
   return (
-    <ThemeContext.Consumer>
+    <I18nContext.Consumer>
       {
-        (theme) => {
-          const rowStyle = `
-            background-color: ${selected ? 'green' : 'transparent'};
-          `;
-          const cellStyle = `
-            border: 1px solid ${theme === 'light' ? 'pink' : 'blueviolet'};
-          `;
+        (lang) => {
           return (
-            <tr style={rowStyle} {...rest}>
-              <td style={cellStyle}>{name}</td>
-              <td style={cellStyle}>1</td>
-              <td style={cellStyle}>2</td>
-              <td style={cellStyle}>
-                <button onClick={handleRemove}>remove</button>
-                <button onClick={handleHighlight}>highlight</button>
-                <button onClick={handleIncrement}>{'count: ' + count}</button>
-              </td>
-            </tr>
+            <ThemeContext.Consumer>
+              {
+                (theme) => {
+                  const rowStyle = `
+                    background-color: ${selected ? 'green' : 'transparent'};
+                  `;
+                  const cellStyle = `
+                    border: 1px solid ${theme === 'light' ? 'pink' : 'blueviolet'};
+                  `;
+                  return (
+                    <tr style={rowStyle} {...rest}>
+                      <td style={cellStyle}>{name}</td>
+                      <td style={cellStyle}>1</td>
+                      <td style={cellStyle}>lang: {lang}</td>
+                      <td style={cellStyle}>
+                        <button onClick={handleRemove}>remove</button>
+                        <button onClick={handleHighlight}>highlight</button>
+                        <button onClick={handleIncrement}>{'count: ' + count}</button>
+                      </td>
+                    </tr>
+                  )
+                }
+              }
+            </ThemeContext.Consumer>
           )
         }
       }
-    </ThemeContext.Consumer>
+    </I18nContext.Consumer>
   );
 });
 
@@ -171,62 +189,10 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-const StateList = createComponent<{prefix: string}>(({ prefix }) => {
-  const [toggle, setToggle] = useState(false);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setToggle(!toggle);
-    }, 5000);
-
-    return () => clearTimeout(timerId);
-  }, [toggle]);
-
-  return (toggle ? [0, 1] : [0]).map(x => {
-    return (<div key={prefix + ':' + x}>{x}</div>);
-  });
-});
-
-const MemoStateList = memo(StateList);
-
-const Emoji = createComponent(() => {
-  const [toggle, setToggle] = useState(true);
-  const transitions = useTransitions(toggle, null, {
-    enter: { className: 'animation-fade-in' },
-    leave: { className: 'animation-fade-out' },
-  });
-
-  useEffect(() => {
-    const intervalId = setTimeout(() => {
-      setToggle(toggle => !toggle);
-    }, 5000);
-    return () => clearTimeout(intervalId);
-  }, [toggle]);
-
-  return transitions.map(({ item, key, props }) => {
-    return item
-      ? <div
-          key={key}
-          style='font-size: 100px; position: absolute; top: 128px'
-          class={props.className}
-          onAnimationEnd={props.onAnimationEnd}>
-          😄
-        </div>
-      : <div
-          key={key}
-          style='font-size: 100px; position: absolute; top: 128px'
-          class={props.className}
-          onAnimationEnd={props.onAnimationEnd}>
-          🤪
-        </div>
-  })
-});
-
-const MemoEmoji = memo(Emoji);
-
 const App = createComponent(() => {
   const [themeOne, setThemeOne] = useState('dark');
   const [themeTwo, setThemeTwo] = useState('dark');
+  const [lang, setLang] = useState('ru');
   const handleCreate = useCallback(() => {
     state.list = buildData(10);
     console.time('create');
@@ -282,11 +248,13 @@ const App = createComponent(() => {
   const handleToggleThemeTwo = useCallback(() => {
     themeTwo === 'dark' ? setThemeTwo('light') : setThemeTwo('dark');
   }, [themeTwo]);
+  const handleToggleLang = useCallback(() => {
+    lang === 'ru' ? setLang('en') : setLang('ru');
+  }, [lang]);
 
   return (
     <Fragment>
       <MemoHeader
-        key='header'
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
@@ -294,26 +262,23 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleThemeOne={handleToggleThemeOne}
         onToggleThemeTwo={handleToggleThemeTwo}
+        onToggleLang={handleToggleLang}
       />
       <ThemeContext.Provider value={themeOne}>
-        {/* <Emoji /> */}
-        {/* <MemoStateList prefix={'1'} /> */}
-        {/* <span key='xxx'>----</span> */}
         <MemoList
-          //key='list1'
           items={state.list}
           onRemove={handleRemove}
           onHighlight={handleHightlight}
         />
-        {/* <MemoStateList prefix={'2'} /> */}
       </ThemeContext.Provider>
       <ThemeContext.Provider value={themeTwo}>
-        <MemoList
-          //key='list2'
-          items={state.list}
-          onRemove={handleRemove}
-          onHighlight={handleHightlight}
-        />
+        <I18nContext.Provider value={lang}>
+          <MemoList
+            items={state.list}
+            onRemove={handleRemove}
+            onHighlight={handleHightlight}
+          />
+        </I18nContext.Provider>
       </ThemeContext.Provider>
     </Fragment>
   );

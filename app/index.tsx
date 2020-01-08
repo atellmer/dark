@@ -12,44 +12,6 @@ runBench();
 // const button = (props = {}) => View({ ...props, as: 'button' });
 // const input = (props = {}) => View({ ...props, as: 'input', isVoid: true });
 
-// const Emoji = createComponent(() => {
-//   const [toggle, setToggle] = useState(true);
-//   const transitions = useTransitions(toggle, null, {
-//     enter: { className: 'animation-fade-in' },
-//     leave: { className: 'animation-fade-out' },
-//   });
-
-//   useEffect(() => {
-//     const intervalId = setTimeout(() => {
-//       setToggle(toggle => !toggle);
-//     }, 3000);
-//     return () => clearTimeout(intervalId);
-//   }, [toggle]);
-
-//   return (
-//     <Fragment>
-//       {
-//         transitions.map(({ item, key, props }) => {
-//           return item
-//             ? <div
-//                 key={key}
-//                 style='font-size: 300px; position: absolute; top: 64px'
-//                 class={props.className}
-//                 onAnimationEnd={props.onAnimationEnd}>
-//                 😄
-//               </div>
-//             : <div
-//                 key={key}
-//                 style='font-size: 300px; position: absolute; top: 64px'
-//                 class={props.className}
-//                 onAnimationEnd={props.onAnimationEnd}>
-//                 🤪
-//               </div>
-//         })
-//       }
-//   </Fragment>
-//   )
-// });
 
 // const Component = createComponent(() => {
 //   return [
@@ -70,5 +32,59 @@ runBench();
 //     ],
 //   });
 // });
+
+
+// const StateList = createComponent<{prefix: string}>(({ prefix }) => {
+//   const [toggle, setToggle] = useState(false);
+
+//   useEffect(() => {
+//     const timerId = setTimeout(() => {
+//       setToggle(!toggle);
+//     }, 5000);
+
+//     return () => clearTimeout(timerId);
+//   }, [toggle]);
+
+//   return (toggle ? [0, 1] : [0]).map(x => {
+//     return (<div key={prefix + ':' + x}>{x}</div>);
+//   });
+// });
+
+// const MemoStateList = memo(StateList);
+
+// const Emoji = createComponent(() => {
+//   const [toggle, setToggle] = useState(true);
+//   const transitions = useTransitions(toggle, null, {
+//     enter: { className: 'animation-fade-in' },
+//     leave: { className: 'animation-fade-out' },
+//   });
+
+//   useEffect(() => {
+//     const intervalId = setTimeout(() => {
+//       setToggle(toggle => !toggle);
+//     }, 5000);
+//     return () => clearTimeout(intervalId);
+//   }, [toggle]);
+
+//   return transitions.map(({ item, key, props }) => {
+//     return item
+//       ? <div
+//           key={key}
+//           style='font-size: 100px; position: absolute; top: 128px'
+//           class={props.className}
+//           onAnimationEnd={props.onAnimationEnd}>
+//           😄
+//         </div>
+//       : <div
+//           key={key}
+//           style='font-size: 100px; position: absolute; top: 128px'
+//           class={props.className}
+//           onAnimationEnd={props.onAnimationEnd}>
+//           🤪
+//         </div>
+//   })
+// });
+
+// const MemoEmoji = memo(Emoji);
 
 // render(App(), domElement1);
