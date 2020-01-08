@@ -46,10 +46,12 @@ type HeaderProps = {
   onUpdateAll: Function;
   onSwap: Function;
   onClear: Function;
-  onToggleTheme: Function;
+  onToggleThemeOne: Function;
+  onToggleThemeTwo: Function;
 }
 
-const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleTheme }) => {
+const Header = createComponent<HeaderProps>((
+  { onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleThemeOne, onToggleThemeTwo }) => {
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
@@ -74,8 +76,12 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         onClick: onClear,
       }),
       button({
-        slot: Text('toggle theme'),
-        onClick: onToggleTheme,
+        slot: Text('toggle theme 1'),
+        onClick: onToggleThemeOne,
+      }),
+      button({
+        slot: Text('toggle theme 2'),
+        onClick: onToggleThemeTwo,
       }),
     ],
   });
@@ -219,9 +225,10 @@ const Emoji = createComponent(() => {
 const MemoEmoji = memo(Emoji);
 
 const App = createComponent(() => {
-  const [theme, setTheme] = useState('dark');
+  const [themeOne, setThemeOne] = useState('dark');
+  const [themeTwo, setThemeTwo] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -269,12 +276,15 @@ const App = createComponent(() => {
     forceUpdate();
     console.timeEnd('clear');
   }, []);
-  const handleToggleTheme = useCallback(() => {
-    theme === 'dark' ? setTheme('light') : setTheme('dark');
-  }, [theme]);
+  const handleToggleThemeOne = useCallback(() => {
+    themeOne === 'dark' ? setThemeOne('light') : setThemeOne('dark');
+  }, [themeOne]);
+  const handleToggleThemeTwo = useCallback(() => {
+    themeTwo === 'dark' ? setThemeTwo('light') : setThemeTwo('dark');
+  }, [themeTwo]);
 
   return (
-    <ThemeContext.Provider value={theme}>
+    <Fragment>
       <MemoHeader
         key='header'
         onCreate={handleCreate}
@@ -282,19 +292,30 @@ const App = createComponent(() => {
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
-        onToggleTheme={handleToggleTheme}
+        onToggleThemeOne={handleToggleThemeOne}
+        onToggleThemeTwo={handleToggleThemeTwo}
       />
-      {/* <Emoji /> */}
-      {/* <MemoStateList prefix={'1'} /> */}
-      {/* <span key='xxx'>----</span> */}
-      <MemoList
-        key='list'
-        items={state.list}
-        onRemove={handleRemove}
-        onHighlight={handleHightlight}
-      />
-      {/* <MemoStateList prefix={'2'} /> */}
-    </ThemeContext.Provider>
+      <ThemeContext.Provider value={themeOne}>
+        {/* <Emoji /> */}
+        {/* <MemoStateList prefix={'1'} /> */}
+        {/* <span key='xxx'>----</span> */}
+        <MemoList
+          //key='list1'
+          items={state.list}
+          onRemove={handleRemove}
+          onHighlight={handleHightlight}
+        />
+        {/* <MemoStateList prefix={'2'} /> */}
+      </ThemeContext.Provider>
+      <ThemeContext.Provider value={themeTwo}>
+        <MemoList
+          //key='list2'
+          items={state.list}
+          onRemove={handleRemove}
+          onHighlight={handleHightlight}
+        />
+      </ThemeContext.Provider>
+    </Fragment>
   );
 });
 

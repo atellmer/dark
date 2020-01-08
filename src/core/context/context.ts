@@ -1,4 +1,4 @@
-import { getTime, isFunction, deepClone } from '@helpers';
+import { getTime, isFunction } from '@helpers';
 import { Component, createComponent } from '../component';
 import useEffect from '../hooks/use-effect';
 import useState from '../hooks/use-state';
@@ -15,8 +15,17 @@ type ContexProviderProps<T> = {
   value: T;
 };
 
-function getContextValueByComponentId(contextStore: Record<string, any>, componentId: string): any {
-  const providerIds = Object.keys(contextStore);
+type ContextStoreItem<T = any> = {
+  subscribers: Array<(value: T) => void>;
+  value: T;
+};
+
+type ContextStore<T> = Record<string, ContextStoreItem<T>>;
+
+const sortProvidersIds = (a: string, b: string) => b.length - a.length;
+
+function getContextStoreItem(contextStore: Record<string, any>, componentId: string): ContextStoreItem {
+  const providerIds = Object.keys(contextStore).sort(sortProvidersIds);
 
   for (const providerId of providerIds) {
     if (componentId.indexOf(providerId) === 0) {
@@ -27,21 +36,30 @@ function getContextValueByComponentId(contextStore: Record<string, any>, compone
 
 function createContext<T>(defaultValue: T): Context<T> {
   const $$token = Symbol('context');
-  const contextStore = {};
-  let subscribers = [];
+  const contextStore: ContextStore<T> = {};
   let displayName = 'Context';
 
   const Provider = createComponent<ContexProviderProps<T>>(
     ({ value, slot }) => {
       const componentId = getMountedComponentId();
-      contextStore[componentId] = value || defaultValue;
+
+      if (!contextStore[componentId]) {
+        contextStore[componentId] = {
+          subscribers: [],
+          value: null,
+        };
+      }
+
+      const contextStoreItem = contextStore[componentId];
+
+      contextStoreItem.value = value || defaultValue;
 
       useEffect(
         () => {
-          for (const subscriber of subscribers) {
+          for (const subscriber of contextStoreItem.subscribers) {
             subscriber(value);
           }
-          subscribers = [];
+          contextStoreItem.subscribers = [];
         },
         [value],
       );
@@ -54,20 +72,23 @@ function createContext<T>(defaultValue: T): Context<T> {
   const Consumer = createComponent(
     ({ slot }) => {
       const componentId = getMountedComponentId();
-      const value = getContextValueByComponentId(contextStore, componentId);
-      const scope = useMemo(() => ({ prevValue: value }), []);
+      const contextStoreItem = getContextStoreItem(contextStore, componentId);
+      const { value } = contextStoreItem;
+      const scope = useMemo(() => ({ prevValue: contextStoreItem.value }), []);
       const [_, forceUpdate] = useState(0);
 
       useEffect(
         () => {
-          const subscriber = (newValue: any) => {
+          const { subscribers } = contextStoreItem;
+          const subscriber = (newValue: T) => {
             if (!Object.is(scope.prevValue, newValue)) {
               forceUpdate(getTime());
             }
           };
+
           subscribers.push(subscriber);
-          const idx = subscribers.length - 1;
-          return () => subscribers.splice(idx, 1);
+
+          return () => subscribers.splice(subscribers.length - 1, 1);
         },
         [value],
       );
