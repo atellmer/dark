@@ -282,7 +282,7 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      <Emoji /> 
+      {/* <Emoji />  */}
       {/* <MemoStateList prefix={'1'} /> */}
       {/* <span key='xxx'>----</span> */}
       <MemoList

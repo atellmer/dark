@@ -173,9 +173,6 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
     const mountedNode = mountRealDOM(nextVNode, domElement);
     node.appendChild(mountedNode);
   } else if (action === REMOVE_NODE) {
-    if (!node) {
-      debugger
-    }
     node.parentNode.removeChild(node);
   } else if (action === REPLACE_NODE) {
     const mountedNode = mountRealDOM(nextVNode, domElement);
@@ -221,7 +218,7 @@ function patchDOM(commits: Commit[], domElement: HTMLElement) {
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
   const commits = getDiff(vNode, nextVNode);
 
-  console.log('commits:', commits);
+  // console.log('commits:', commits);
   patchDOM(commits, container);
 }
 

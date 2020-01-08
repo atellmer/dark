@@ -43,7 +43,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     const nodeRoutes = getComponentNodeRoutesById(componentId);
     const nodeRoute = nodeRoutes[0];
     const parentNodeRoute = nodeRoute.slice(0, -1);
-    const hasNode = Boolean(getVirtualNodeByRoute(vdom, nodeRoute));
+    const hasNode = checkVNode(componentId, vdom, nodeRoute);
 
     if (!hasNode) return; // remove after add unmount functional
 
@@ -148,7 +148,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
       });
     }
 
-    //console.log('vdom after:', deepClone(app.vdom));
+    // console.log('vdom after:', deepClone(app.vdom));
   };
 
   if (isUndefined(hooks.values[idx])) {
@@ -160,6 +160,18 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
   hooks.idx++;
 
   return [value, setState];
+}
+
+function checkVNode(componentId: string, vdom: VirtualNode, nodeRoute: Array<number>): boolean {
+  const vNode = getVirtualNodeByRoute(vdom, nodeRoute);
+  const comparedComponentId = vNode ? vNode.componentRoute.join('.') : '';
+  const hasNode = Boolean(vNode)
+      ? componentId.length === comparedComponentId.length
+        ? componentId === comparedComponentId
+        : true
+      : false;
+
+  return hasNode;
 }
 
 export default useState;
