@@ -216,10 +216,12 @@ const Emoji = createComponent(() => {
   })
 });
 
+const MemoEmoji = memo(Emoji);
+
 const App = createComponent(() => {
   const [theme, setTheme] = useState('dark');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -282,7 +284,7 @@ const App = createComponent(() => {
         onClear={handleClear}
         onToggleTheme={handleToggleTheme}
       />
-      {/* <Emoji />  */}
+      {/* <Emoji /> */}
       {/* <MemoStateList prefix={'1'} /> */}
       {/* <span key='xxx'>----</span> */}
       <MemoList

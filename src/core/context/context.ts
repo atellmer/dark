@@ -1,7 +1,8 @@
-import { getTime, isFunction } from '@helpers';
+import { getTime, isFunction, deepClone } from '@helpers';
 import { Component, createComponent } from '../component';
 import useEffect from '../hooks/use-effect';
 import useState from '../hooks/use-state';
+import useMemo from '../hooks/use-memo';
 import { getMountedComponentId } from '../scope';
 
 type Context<T> = {
@@ -54,12 +55,13 @@ function createContext<T>(defaultValue: T): Context<T> {
     ({ slot }) => {
       const componentId = getMountedComponentId();
       const value = getContextValueByComponentId(contextStore, componentId);
+      const scope = useMemo(() => ({ prevValue: value }), []);
       const [_, forceUpdate] = useState(0);
 
       useEffect(
         () => {
           const subscriber = (newValue: any) => {
-            if (!Object.is(value, newValue)) {
+            if (!Object.is(scope.prevValue, newValue)) {
               forceUpdate(getTime());
             }
           };
@@ -69,6 +71,8 @@ function createContext<T>(defaultValue: T): Context<T> {
         },
         [value],
       );
+
+      scope.prevValue = value;
 
       return isFunction(slot) ? slot(value) : null;
     },
