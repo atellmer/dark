@@ -71,14 +71,14 @@ function flatVirtualDOM(
   if (isArray(mountedSource)) {
     const list = [];
     const mountedSourceList = mountedSource as Array<MountedSource>;
-    const last = mountedNodeRoute.slice(-1)[0];
+    const lastId = mountedNodeRoute[mountedNodeRoute.length - 1];
+    const parentNodeRoute = mountedNodeRoute.slice(0, -1);
     let shift = 0;
 
     for (let i = 0; i < mountedSourceList.length; i++) {
       const source = mountedSourceList[i];
-      const nodeRoute = [...mountedNodeRoute.slice(0, -1), last + shift + i];
-      const componentRouteKey = generateComponentRouteKey(source, i);
-      const componentRoute = [...mountedComponentRoute, componentRouteKey];
+      const nodeRoute = [...parentNodeRoute, lastId + shift + i];
+      const componentRoute = [...mountedComponentRoute, generateComponentRouteKey(source, i)];
       const mounted = mountVirtualDOM({
         mountedSource: source,
         mountedNodeRoute: nodeRoute,
@@ -107,8 +107,7 @@ function flatVirtualDOM(
     for (let i = 0; i < mountedSourceList.length; i++) {
       const source = mountedSourceList[i];
       const nodeRoute = [...mountedNodeRoute, shift + i];
-      const componentRouteKey = generateComponentRouteKey(source, i);
-      const componentRoute = [...mountedComponentRoute, componentRouteKey];
+      const componentRoute = [...mountedComponentRoute, generateComponentRouteKey(source, i)];
       const mounted = mountVirtualDOM({
         mountedSource: source,
         mountedNodeRoute: nodeRoute,

@@ -179,9 +179,9 @@ function getSortedByPriorityCommits(commits: Array<Commit>) {
 
   for (const commit of commits) {
     if (commit.action === 'REMOVE_NODE') {
-      removeCommits.unshift(commit);
+      removeCommits.push(commit);
     } else if (commit.action === 'INSERT_NODE') {
-      insertCommits.unshift(commit);
+      insertCommits.push(commit);
     } else if (commit.action === 'REPLACE_NODE') {
       replaceCommits.push(commit);
     } else if (commit.action === 'ADD_NODE') {
@@ -192,8 +192,8 @@ function getSortedByPriorityCommits(commits: Array<Commit>) {
   }
 
   commitsByPriotity = [
-    ...removeCommits,
-    ...insertCommits,
+    ...removeCommits.reverse(),
+    ...insertCommits.reverse(),
     ...replaceCommits,
     ...addCommits,
     ...consistentCommits,

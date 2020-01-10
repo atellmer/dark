@@ -45,7 +45,7 @@ function createVirtualNode(type: VirtualNodeType, config: Partial<VirtualNode> =
 }
 
 function createVirtualTagNode(config: Partial<VirtualNode>): VirtualNode {
-  return createVirtualNode('TAG', { ...config });
+  return createVirtualNode('TAG', config);
 }
 
 function createVirtualTextNode(text: string): VirtualNode {
@@ -69,12 +69,12 @@ function createVirtualEmptyNode(): VirtualNode {
 const Text = (str: string) => createVirtualTextNode(str);
 const Comment = (str: string) => createVirtualCommentNode(str);
 const View = (def: ViewDefinition) => {
-  const { as, slot, isVoid = false, ...rest } = def;
+  const { as, slot, isVoid = false, ...attrs } = def;
 
   return createVirtualTagNode({
     name: as,
     isVoid,
-    attrs: { ...rest },
+    attrs,
     children: (isVoid ? [] : isArray(slot) ? slot : [slot]) as Array<VirtualNode>,
   });
 };
