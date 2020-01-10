@@ -119,7 +119,13 @@ function linkComponentIdToParentComponent(componentId: string) {
 function getComponentVirtualNodesById(componentId: string): Array<VirtualNode> {
   const vdom = getVirtualDOM(getAppUid());
   const nodeRoutes = getComponentNodeRoutesById(componentId);
-  const vNodes = nodeRoutes.map(nodeRoute => getVirtualNodeByRoute(vdom, nodeRoute)); // need optimization
+  const vNodes = []; // need optimization
+
+  for (const nodeRoute of nodeRoutes) {
+    const vNode = getVirtualNodeByRoute(vdom, nodeRoute);
+
+    vNodes.push(vNode);
+  }
 
   return vNodes;
 }

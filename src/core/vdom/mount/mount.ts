@@ -1,4 +1,4 @@
-import { flatten, isArray, isNull, isFunction, isEmpty, deepClone } from '@helpers';
+import { flatten, isArray, isNull, isFunction, isEmpty, createComponentId, deepClone } from '@helpers';
 import { getIsComponentFactory, ComponentFactory } from '../../component';
 import {
   createVirtualEmptyNode,
@@ -18,7 +18,7 @@ import {
   setComponentPropsById,
   linkComponentIdToParentComponent,
 } from '../../scope';
-import { ATTR_KEY } from '../../constants';
+import { ATTR_KEY, COMPONENT_MARKER } from '../../constants';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
@@ -69,11 +69,15 @@ function flatVirtualDOM(
   let vNode: VirtualDOM = null;
 
   if (isArray(mountedSource)) {
-    let shift = 0;
+    const list = [];
+    const mountedSourceList = mountedSource as Array<MountedSource>;
     const last = mountedNodeRoute.slice(-1)[0];
-    const list = (mountedSource as Array<MountedSource>).map((source, idx) => {
-      const nodeRoute = [...mountedNodeRoute.slice(0, -1), last + shift + idx];
-      const componentRouteKey = generateComponentRouteKey(source, idx);
+    let shift = 0;
+
+    for (let i = 0; i < mountedSourceList.length; i++) {
+      const source = mountedSourceList[i];
+      const nodeRoute = [...mountedNodeRoute.slice(0, -1), last + shift + i];
+      const componentRouteKey = generateComponentRouteKey(source, i);
       const componentRoute = [...mountedComponentRoute, componentRouteKey];
       const mounted = mountVirtualDOM({
         mountedSource: source,
@@ -85,8 +89,8 @@ function flatVirtualDOM(
         shift += flatten(mounted).length - 1;
       }
 
-      return mounted;
-    });
+      list.push(mounted);
+    }
 
     vNode = flatten(list);
   } else if (getIsComponentFactory(mountedSource)) {
@@ -96,10 +100,14 @@ function flatVirtualDOM(
     vNode.nodeRoute = [...mountedNodeRoute];
     vNode.componentRoute = [...mountedComponentRoute];
 
+    const mountedSourceList = vNode.children as Array<MountedSource>;
+    const list = [];
     let shift = 0;
-    const list = (vNode.children as Array<MountedSource>).map((source, idx) => {
-      const nodeRoute = [...mountedNodeRoute, shift + idx];
-      const componentRouteKey = generateComponentRouteKey(source, idx);
+
+    for (let i = 0; i < mountedSourceList.length; i++) {
+      const source = mountedSourceList[i];
+      const nodeRoute = [...mountedNodeRoute, shift + i];
+      const componentRouteKey = generateComponentRouteKey(source, i);
       const componentRoute = [...mountedComponentRoute, componentRouteKey];
       const mounted = mountVirtualDOM({
         mountedSource: source,
@@ -111,8 +119,8 @@ function flatVirtualDOM(
         shift += flatten(mounted).length - 1;
       }
 
-      return mounted;
-    });
+      list.push(mounted);
+    }
 
     vNode.children = flatten(list);
   }
@@ -140,8 +148,8 @@ function mountVirtualDOM({
   } else if (getIsComponentFactory(mountedSource)) {
     const componentFactory = mountedSource as ComponentFactory;
     const key = componentFactory.props[ATTR_KEY];
-    mountedComponentRoute.push(-1);
-    const componentId = mountedComponentRoute.join('.');
+    mountedComponentRoute.push(COMPONENT_MARKER);
+    const componentId = createComponentId(mountedComponentRoute);
     setMountedComponentFactory(componentFactory);
     setMountedComponentId(componentId);
     setMountedComponentRoute(mountedComponentRoute);
@@ -180,11 +188,12 @@ function mountVirtualDOM({
     }
 
     const vNodes = isArray(vNode) ? vNode : [vNode];
-    const nodeRoutes = vNodes.filter(Boolean).map(x => x.nodeRoute);
+    const mapNodeRoute = (vNode: VirtualNode) => vNode.nodeRoute;
+    const nodeRoutes = vNodes.filter(Boolean).map(mapNodeRoute);
 
     setComponentNodeRoutesById(componentId, nodeRoutes);
     setComponentPropsById(componentId, componentFactory.props);
-    linkComponentIdToParentComponent(componentId);
+    !skipMount && linkComponentIdToParentComponent(componentId);
   } else if (Boolean(mountedSource)) {
     vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
   }

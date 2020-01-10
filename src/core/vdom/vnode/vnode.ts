@@ -131,11 +131,16 @@ function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode) {
 
 function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): VirtualNode {
   let vNode = vdom;
-  const mapRoute = (cIdx: number, idx: number) => {
-    idx === 0 ? vNode : (vNode = vNode ? vNode.children[cIdx] : vNode);
-  };
 
-  nodeRoute.forEach(mapRoute);
+  for (let i = 0; i < nodeRoute.length; i++) {
+    const routeId = nodeRoute[i];
+
+    vNode = i === 0
+      ? vNode
+      : Boolean(vNode)
+        ? vNode.children[routeId]
+        : vNode;
+  }
 
   return vNode;
 }
@@ -151,10 +156,15 @@ function patchNodeRoutes(vNode: VirtualDOM, nodeRoute: Array<number>, fromRoot: 
       nodeRoute[nodeRoute.length - 1] = routeId + i;
     }
 
-    vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+    const prevRouteSlice = vNode.nodeRoute.slice(0, nodeRoute.length);
+    const isDifferent = prevRouteSlice.toString() !== nodeRoute.toString();
 
-    if (vNode.children.length > 0) {
-      patchNodeRoutes(vNode.children, nodeRoute);
+    if (isDifferent) {
+      vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+
+      if (vNode.children.length > 0) {
+        patchNodeRoutes(vNode.children, nodeRoute);
+      }
     }
   }
 }

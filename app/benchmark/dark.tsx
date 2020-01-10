@@ -6,6 +6,7 @@ import {
   Fragment,
   memo,
   useCallback,
+  useMemo,
 } from '../../src/core';
 import { render } from '../../src/platform/browser';
 
@@ -75,7 +76,7 @@ type ListProps = {
   onHighlight: Function;
 }
 
-const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...rest }) => {
+const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), [id]);
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
   const rowStyle = `
@@ -86,7 +87,7 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
   `;
 
   return (
-    <tr style={rowStyle} {...rest}>
+    <tr style={rowStyle}>
       <td style={cellStyle}>{name}</td>
       <td style={cellStyle}>1</td>
       <td style={cellStyle}>2</td>
@@ -104,24 +105,23 @@ const MemoRow = memo(Row, (props, nextProps) =>
 );
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  const renderRow = useMemo(() => (item) => {
+    return (
+      <MemoRow
+        key={item.id}
+        id={item.id}
+        name={item.name}
+        selected={item.select}
+        onRemove={onRemove}
+        onHighlight={onHighlight}
+      />
+    );
+  }, []);
 
   return (
     <table style='width: 100%; border-collapse: collapse;'>
       <tbody>
-        {
-          items.map((item) => {
-            return (
-              <MemoRow
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                selected={item.select}
-                onRemove={onRemove}
-                onHighlight={onHighlight}
-              />
-            );
-          })
-        }
+        {items.map(renderRow)}
       </tbody>
     </table>
   )

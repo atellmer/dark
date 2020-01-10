@@ -310,13 +310,15 @@ runBench();
 //         onToggleLang={handleToggleLang}
 //       />
 //       <ThemeContext.Provider value={themeOne}>
+//         <Emoji />
 //         <MemoList
+//           key='list'
 //           items={state.list}
 //           onRemove={handleRemove}
 //           onHighlight={handleHightlight}
 //         />
 //       </ThemeContext.Provider>
-//       <ThemeContext.Provider value={themeTwo}>
+//       {/* <ThemeContext.Provider value={themeTwo}>
 //         <I18nContext.Provider value={lang}>
 //           <MemoList
 //             items={state.list}
@@ -324,7 +326,7 @@ runBench();
 //             onHighlight={handleHightlight}
 //           />
 //         </I18nContext.Provider>
-//       </ThemeContext.Provider>
+//       </ThemeContext.Provider> */}
 //     </Fragment>
 //   );
 // });
