@@ -1,6 +1,6 @@
 import { VirtualNode, getVirtualNodeByRoute } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
-import { truncateComponentId, deepClone } from '@helpers';
+import { truncateComponentId, createComponentId } from '@helpers';
 import { COMPONENT_MARKER_STRING } from '../constants';
 import { Context, ContextProviderStore } from '../context';
 
@@ -85,12 +85,13 @@ function getParentComponentId(componentRoute: Array<string | number>): string {
     }
   }
 
-  parentComponentId = componentRoute.slice(0, idx).join('.');
+  parentComponentId = createComponentId(componentRoute.slice(0, idx));
 
   return parentComponentId;
 }
 
-function linkComponentIdToParentComponent(componentId: string, componentStore: AppType['componentStore']) {
+function linkComponentIdToParentComponent(componentId: string) {
+  const { componentStore } = getRegistery().get(getAppUid());
   const componentRoute = componentId.split('.');
 
   if (componentRoute[componentRoute.length - 2] === COMPONENT_MARKER_STRING &&
@@ -113,8 +114,6 @@ function linkComponentIdToParentComponent(componentId: string, componentStore: A
       },
     }
   }
-
-  // console.log('componentStore', deepClone(componentStore));
 }
 
 function getComponentVirtualNodesById(componentId: string): Array<VirtualNode> {
@@ -130,8 +129,6 @@ function getComponentNodeRoutesById(componentId: string): Array<Array<number>> {
   const id = truncateComponentId(componentId);
   const nodes = componentStore[id] ? componentStore[id].nodeRoutes : null;
 
-  // console.log('componentStore', deepClone(componentStore));
-
   return nodes;
 }
 
@@ -146,8 +143,6 @@ function setComponentNodeRoutesById(
 
   const store = componentStore[id];
 
-  linkComponentIdToParentComponent(componentId, componentStore);
-
   store.nodeRoutes = nodeRoutes;
 
   if (patchNestedNodeRoutes && store.nestedComponentIdsMap) {
@@ -158,8 +153,11 @@ function setComponentNodeRoutesById(
 
       if (nestedStore) {
         for (const nestedNodeRoute of nestedStore.nodeRoutes) {
-          nestedNodeRoute.length > nodeRoute.length && nestedNodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+          if (nestedNodeRoute.length > nodeRoute.length) {
+            nestedNodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+          }
         }
+        setComponentNodeRoutesById(nestedComponentId, nestedStore.nodeRoutes, true);
       }
     }
   }
@@ -270,4 +268,5 @@ export {
   setComponentPropsById,
   getContextProviderStore,
   setContextProviderStore,
+  linkComponentIdToParentComponent,
 };

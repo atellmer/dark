@@ -5,18 +5,11 @@ import {
   View,
   Fragment,
   memo,
-  useState,
-  useEffect,
   useCallback,
-  useMemo,
-  useReducer,
-  useContext,
-  createContext,
 } from '../../src/core';
-import { render, useTransitions, createPortal } from '../../src/platform/browser';
+import { render } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
-const domElement2 = document.getElementById('app2');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -38,27 +31,15 @@ const state = {
   list: [],
 };
 
-const ThemeContext = createContext<string>('dark');
-
-ThemeContext.displayName = 'ThemeContext';
-
-const I18nContext = createContext<string>('ru');
-
-I18nContext.displayName = 'I18nContext';
-
 type HeaderProps = {
   onCreate: Function;
   onAdd: Function;
   onUpdateAll: Function;
   onSwap: Function;
   onClear: Function;
-  onToggleThemeOne: Function;
-  onToggleThemeTwo: Function;
-  onToggleLang: Function;
 }
 
-const Header = createComponent<HeaderProps>((
-  { onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleThemeOne, onToggleThemeTwo, onToggleLang }) => {
+const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
@@ -82,23 +63,11 @@ const Header = createComponent<HeaderProps>((
         slot: Text('clear rows'),
         onClick: onClear,
       }),
-      button({
-        slot: Text('toggle theme 1'),
-        onClick: onToggleThemeOne,
-      }),
-      button({
-        slot: Text('toggle theme 2'),
-        onClick: onToggleThemeTwo,
-      }),
-      button({
-        slot: Text('toggle lang'),
-        onClick: onToggleLang,
-      }),
     ],
   });
 });
 
-const MemoHeader = memo<HeaderProps & { key?: string }>(Header);
+const MemoHeader = memo<HeaderProps>(Header);
 
 type ListProps = {
   items: Array<{ id: number, name: string; select: boolean }>;
@@ -106,40 +75,24 @@ type ListProps = {
   onHighlight: Function;
 }
 
-type State = { count: number }
-type Action = { type: string; payload: number };
-
-const reducer = (state: State, action: Action) => {
-  if (action.type === 'INCREMENT') {
-    return { ...state, count: action.payload }
-  }
-  return state;
-}
-
 const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...rest }) => {
-  const [{ count }, dispatch] = useReducer(reducer, { count: 0 });
   const handleRemove = useCallback(() => onRemove(id), [id]);
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
-  const handleIncrement = useCallback(() => dispatch({ type: 'INCREMENT', payload: count + 1 }), [count]);
-  const theme = useContext<string>(ThemeContext);
-  const lang = useContext<string>(I18nContext);
-
   const rowStyle = `
     background-color: ${selected ? 'green' : 'transparent'};
   `;
   const cellStyle = `
-    border: 1px solid ${theme === 'light' ? 'pink' : 'blueviolet'};
+    border: 1px solid blueviolet;
   `;
 
   return (
     <tr style={rowStyle} {...rest}>
       <td style={cellStyle}>{name}</td>
       <td style={cellStyle}>1</td>
-      <td style={cellStyle}>lang: {lang}</td>
+      <td style={cellStyle}>2</td>
       <td style={cellStyle}>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        <button onClick={handleIncrement}>{'count: ' + count}</button>
       </td>
     </tr>
   );
@@ -147,8 +100,7 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight, ...res
 
 const MemoRow = memo(Row, (props, nextProps) =>
   props.name !== nextProps.name ||
-  props.selected !== nextProps.selected ||
-  props.class !== nextProps.class ,
+  props.selected !== nextProps.selected,
 );
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
@@ -178,11 +130,8 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 const MemoList = memo(List);
 
 const App = createComponent(() => {
-  const [themeOne, setThemeOne] = useState('dark');
-  const [themeTwo, setThemeTwo] = useState('dark');
-  const [lang, setLang] = useState('ru');
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(1000);
     console.time('create');
     forceUpdate();
     console.timeEnd('create');
@@ -230,15 +179,6 @@ const App = createComponent(() => {
     forceUpdate();
     console.timeEnd('clear');
   }, []);
-  const handleToggleThemeOne = useCallback(() => {
-    themeOne === 'dark' ? setThemeOne('light') : setThemeOne('dark');
-  }, [themeOne]);
-  const handleToggleThemeTwo = useCallback(() => {
-    themeTwo === 'dark' ? setThemeTwo('light') : setThemeTwo('dark');
-  }, [themeTwo]);
-  const handleToggleLang = useCallback(() => {
-    lang === 'ru' ? setLang('en') : setLang('ru');
-  }, [lang]);
 
   return (
     <Fragment>
@@ -248,26 +188,12 @@ const App = createComponent(() => {
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
-        onToggleThemeOne={handleToggleThemeOne}
-        onToggleThemeTwo={handleToggleThemeTwo}
-        onToggleLang={handleToggleLang}
       />
-      <ThemeContext.Provider value={themeOne}>
-        <MemoList
-          items={state.list}
-          onRemove={handleRemove}
-          onHighlight={handleHightlight}
-        />
-      </ThemeContext.Provider>
-      <ThemeContext.Provider value={themeTwo}>
-        <I18nContext.Provider value={lang}>
-          <MemoList
-            items={state.list}
-            onRemove={handleRemove}
-            onHighlight={handleHightlight}
-          />
-        </I18nContext.Provider>
-      </ThemeContext.Provider>
+      <MemoList
+        items={state.list}
+        onRemove={handleRemove}
+        onHighlight={handleHightlight}
+      />
     </Fragment>
   );
 });

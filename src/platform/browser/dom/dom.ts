@@ -217,9 +217,28 @@ function patchDOM(commits: Commit[], domElement: HTMLElement) {
 
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
   const commits = getDiff(vNode, nextVNode);
+  const heuristicCount = Math.ceil(commits.length * 0.1);
+  const transactionCount = heuristicCount >= 100 ? heuristicCount : commits.length;
+
+  scheduleAsyncTransactions<Commit>(commits, transactionCount, (commits, next) => {
+    patchDOM(commits, container);
+    next();
+  });
 
   // console.log('commits:', commits);
-  patchDOM(commits, container);
+}
+
+function scheduleAsyncTransactions<T = any>(
+  operations: Array<T>, count: number, cb: (operations: Array<T>, cb: Function) => void) {
+  const transactions = operations.slice(0, count);
+
+  if (transactions.length === 0) return;
+
+  cb(transactions, () => {
+    requestAnimationFrame(() => {
+      scheduleAsyncTransactions(operations.slice(count), count, cb);
+    });
+  });
 }
 
 export {

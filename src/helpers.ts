@@ -53,7 +53,13 @@ function getTime() {
   return performance.now();
 }
 
-const truncateComponentId = (id: string): string => id.replace(/(\.|-1)*$/, '.-1');
+function truncateComponentId(componentId: string): string {
+  return componentId.replace(/(\.|-1)*$/, '.-1');
+}
+
+function createComponentId(componentRoute: Array<string | number>): string {
+  return componentRoute.join('.');
+}
 
 export {
   isFunction,
@@ -70,4 +76,5 @@ export {
   flatten,
   getTime,
   truncateComponentId,
+  createComponentId,
 };

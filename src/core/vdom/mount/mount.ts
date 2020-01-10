@@ -16,6 +16,7 @@ import {
   setComponentNodeRoutesById,
   getComponentVirtualNodesById,
   setComponentPropsById,
+  linkComponentIdToParentComponent,
 } from '../../scope';
 import { ATTR_KEY } from '../../constants';
 
@@ -183,6 +184,7 @@ function mountVirtualDOM({
 
     setComponentNodeRoutesById(componentId, nodeRoutes);
     setComponentPropsById(componentId, componentFactory.props);
+    linkComponentIdToParentComponent(componentId);
   } else if (Boolean(mountedSource)) {
     vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
   }
