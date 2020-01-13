@@ -1,23 +1,12 @@
-import {
-  h,
-  createComponent,
-  Text,
-  View,
+const {
   Fragment,
   memo,
   useCallback,
   useMemo,
-} from '../../src/core';
-import { render } from '../../src/platform/browser';
+} = React;;
+const { render } = ReactDOM;
 
 const domElement = document.getElementById('app');
-
-const div = (props = {}) => View({ ...props, as: 'div' });
-const button = (props = {}) => View({ ...props, as: 'button' });
-const table = (props = {}) => View({ ...props, as: 'table' });
-const tbody = (props = {}) => View({ ...props, as: 'tbody' });
-const tr = (props = {}) => View({ ...props, as: 'tr' });
-const td = (props = {}) => View({ ...props, as: 'td' });
 
 const createMeasurer = () => {
   let startTime;
@@ -69,33 +58,25 @@ type HeaderProps = {
   onClear: Function;
 }
 
-const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
-  return div({
-    style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
-    slot: [
-      button({
-        slot: Text('create 10000 rows'),
-        onClick: onCreate,
-      }),
-      button({
-        slot: Text('Add 1000 rows'),
-        onClick: onAdd,
-      }),
-      button({
-        slot: Text('update every 10th row'),
-        onClick: onUpdateAll,
-      }),
-      button({
-        slot: Text('swap rows'),
-        onClick: onSwap,
-      }),
-      button({
-        slot: Text('clear rows'),
-        onClick: onClear,
-      }),
-    ],
-  });
-});
+const Header = ({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
+  const style = {
+    width: '100%',
+    height: '64px',
+    backgroundColor: 'blueviolet',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '16px',
+  }
+  return (
+    <div style={style}>
+      <button onClick={onCreate}>create 10000 rows</button>
+      <button onClick={onAdd}>Add 1000 rows</button>
+      <button onClick={onUpdateAll}>update every 10th row</button>
+      <button onClick={onSwap}>swap rows</button>
+      <button onClick={onClear}>clear rows</button>
+    </div>
+  );
+}
 
 const MemoHeader = memo<HeaderProps>(Header);
 
@@ -105,29 +86,29 @@ type ListProps = {
   onHighlight: Function;
 }
 
-const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = ({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), [id]);
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
 
   return (
-    <tr class={selected && 'selected'}>
-      <td class='cell'>{name}</td>
-      <td class='cell'>1</td>
-      <td class='cell'>2</td>
-      <td class='cell'>
+    <tr className={selected && 'selected'}>
+      <td className='cell'>{name}</td>
+      <td className='cell'>1</td>
+      <td className='cell'>2</td>
+      <td className='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
       </td>
     </tr>
   );
-});
+}
 
 const MemoRow = memo(Row, (props, nextProps) =>
-  props.name !== nextProps.name ||
-  props.selected !== nextProps.selected,
+  props.name === nextProps.name &&
+  props.selected === nextProps.selected,
 );
 
-const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+const List = ({ items, onRemove, onHighlight }) => {
   const renderRow = useMemo(() => (item) => {
     return (
       <MemoRow
@@ -148,11 +129,11 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
       </tbody>
     </table>
   )
-});
+};
 
 const MemoList = memo(List);
 
-const App = createComponent(() => {
+const App = () => {
   const handleCreate = useCallback(() => {
     state.list = buildData(10000);
     measurer.start('create');
@@ -219,14 +200,14 @@ const App = createComponent(() => {
       />
     </Fragment>
   );
-});
+};
 
 function runBench() {
-  render(App(), domElement);
+  render(<App />, domElement);
 }
 
 function forceUpdate() {
-  render(App(), domElement);
+  render(<App />, domElement);
 }
 
 export default runBench;

@@ -147,24 +147,21 @@ function getVirtualNodeByRoute(vdom: VirtualNode, nodeRoute: number[] = []): Vir
 
 function patchNodeRoutes(vNode: VirtualDOM, nodeRoute: Array<number>, fromRoot: boolean = false) {
   const vDOM = isArray(vNode) ? vNode : [vNode];
+  if (vDOM.length === 0) return;
   const routeId = nodeRoute[nodeRoute.length - 1];
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
+    let isDifferent = false;
 
     if (fromRoot) {
+      isDifferent = vNode.nodeRoute.slice(0, nodeRoute.length).toString() !== nodeRoute.toString();
       nodeRoute[nodeRoute.length - 1] = routeId + i;
     }
 
-    const prevRouteSlice = vNode.nodeRoute.slice(0, nodeRoute.length);
-    const isDifferent = prevRouteSlice.toString() !== nodeRoute.toString();
-
-    if (isDifferent) {
+    if (isDifferent || !fromRoot) {
       vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
-
-      if (vNode.children.length > 0) {
-        patchNodeRoutes(vNode.children, nodeRoute);
-      }
+      patchNodeRoutes(vNode.children, nodeRoute);
     }
   }
 }

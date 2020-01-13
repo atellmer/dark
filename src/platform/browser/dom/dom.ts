@@ -13,7 +13,7 @@ import {
   VirtualDOM,
   VirtualNode,
 } from '@core/vdom';
-import { getDiff } from '@core/vdom/diff';
+import { getDiff, VirtualDOMActions } from '@core/vdom/diff';
 import { isArray, isFunction, isUndefined } from '@helpers';
 import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
@@ -168,43 +168,58 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
   const { action, nextValue, oldValue } = commit;
   const node = getNodeByCommit(domElement, commit);
   const nextVNode = nextValue as VirtualNode;
+  const map = {
+    [ADD_NODE]: () => {
+      const mountedNode = mountRealDOM(nextVNode, domElement);
+      node.appendChild(mountedNode);
+    },
+    [REPLACE_NODE]: () => {
+      const vNode = oldValue as VirtualNode;
 
-  if (action === ADD_NODE) {
-    const mountedNode = mountRealDOM(nextVNode, domElement);
-    node.appendChild(mountedNode);
-  } else if (action === REMOVE_NODE) {
-    node.parentNode.removeChild(node);
-  } else if (action === REPLACE_NODE) {
-    const mountedNode = mountRealDOM(nextVNode, domElement);
-    node.replaceWith(mountedNode);
-  } else if (action === INSERT_NODE) {
-    const mountedNode = mountRealDOM(nextVNode, domElement);
-    node.parentNode.insertBefore(mountedNode, node);
-  } else if (action === ADD_ATTRIBUTE) {
-    const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name) && !/^on/.test(name);
-    const attrNames = Object.keys(nextValue).filter(filterAttrNamesFn);
-    for (const attrName of attrNames) {
-      node.setAttribute(attrName, nextValue[attrName]);
-    }
-  } else if (action === REMOVE_ATTRIBUTE) {
-    const attrNames = Object.keys(oldValue);
-    for (const attrName of attrNames) {
-      node.removeAttribute(attrName);
-    }
-  } else if (action === REPLACE_ATTRIBUTE) {
-    const attrNames = Object.keys(nextValue);
-
-    for (const attrName of attrNames) {
-      const attrValue = nextValue[attrName];
-
-      patchAttributes(attrName, attrValue, node);
-
-      if (isFunction(attrValue) && /^on/.test(attrName)) {
-        const eventName = attrName.slice(2, attrName.length).toLowerCase();
-        delegateEvent(uid, domElement, node, eventName, attrValue);
+      if (vNode.type === 'TEXT' && nextVNode.type === 'TEXT') {
+        node.textContent = nextVNode.text;
+      } else {
+        const mountedNode = mountRealDOM(nextVNode, domElement);
+        node.parentNode.replaceChild(mountedNode, node);
       }
-    }
-  }
+    },
+    [INSERT_NODE]: () => {
+      const mountedNode = mountRealDOM(nextVNode, domElement);
+      node.parentNode.insertBefore(mountedNode, node);
+    },
+    [REMOVE_NODE]: () => {
+      node.parentNode.removeChild(node);
+    },
+    [ADD_ATTRIBUTE]: () => {
+      const filterAttrNamesFn = (name: string) => !attrBlackList.includes(name) && !/^on/.test(name);
+      const attrNames = Object.keys(nextValue).filter(filterAttrNamesFn);
+      for (const attrName of attrNames) {
+        node.setAttribute(attrName, nextValue[attrName]);
+      }
+    },
+    [REMOVE_ATTRIBUTE]: () => {
+      const attrNames = Object.keys(oldValue);
+      for (const attrName of attrNames) {
+        node.removeAttribute(attrName);
+      }
+    },
+    [REPLACE_ATTRIBUTE]: () => {
+      const attrNames = Object.keys(nextValue);
+
+      for (const attrName of attrNames) {
+        const attrValue = nextValue[attrName];
+
+        patchAttributes(attrName, attrValue, node);
+
+        if (isFunction(attrValue) && /^on/.test(attrName)) {
+          const eventName = attrName.slice(2, attrName.length).toLowerCase();
+          delegateEvent(uid, domElement, node, eventName, attrValue);
+        }
+      }
+    },
+  };
+
+  map[action]();
 };
 
 function patchDOM(commits: Commit[], domElement: HTMLElement) {

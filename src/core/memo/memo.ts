@@ -7,9 +7,9 @@ import {
 } from '@core/scope';
 import { setAttribute, VirtualDOM } from '@core/vdom';
 import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
-import { isArray, isEmpty, deepClone } from '@helpers';
+import { isArray } from '@helpers';
 import { ATTR_SKIP } from '../constants';
-import { getNodeKey, getVirtualNodeByRoute, patchNodeRoutes } from '../vdom/vnode';
+import { patchNodeRoutes } from '../vdom/vnode';
 
 type Component<T extends object> = (props?: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
@@ -32,8 +32,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
 function memo<T extends object>(
   component: Component<T>, shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate): Component<T> {
   const Memo = createComponent((props?: T & { key?: any }) => {
-    const uid = getAppUid();
-    const app = getRegistery().get(uid);
+    const app = getRegistery().get(getAppUid());
     const skipMountHook = (componentId: string): boolean => {
       if (Boolean(app.memoStore[componentId])) {
         const memoStoreItem = app.memoStore[componentId];
@@ -59,16 +58,7 @@ function memo<T extends object>(
           patchNodeRoutes(vNode, [...nodeRoute], true);
 
           for (const vNode of vDOM) {
-            let skipReconciliation = true;
-
-            if (!isEmpty(props.key)) {
-              const prevVNode = getVirtualNodeByRoute(app.vdom, nodeRoute);
-              const prevKey = getNodeKey(prevVNode);
-
-              skipReconciliation = props.key === prevKey;
-            }
-
-            setAttribute(vNode, ATTR_SKIP, skipReconciliation);
+            setAttribute(vNode, ATTR_SKIP, true);
           }
         }
 

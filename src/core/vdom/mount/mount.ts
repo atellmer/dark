@@ -68,45 +68,32 @@ function flatVirtualDOM(
 ): VirtualDOM {
   let vNode: VirtualDOM = null;
 
-  if (isArray(mountedSource)) {
-    const list = [];
-    const mountedSourceList = mountedSource as Array<MountedSource>;
-    const lastId = mountedNodeRoute[mountedNodeRoute.length - 1];
-    const parentNodeRoute = mountedNodeRoute.slice(0, -1);
-    let shift = 0;
-
-    for (let i = 0; i < mountedSourceList.length; i++) {
-      const source = mountedSourceList[i];
-      const nodeRoute = [...parentNodeRoute, lastId + shift + i];
-      const componentRoute = [...mountedComponentRoute, generateComponentRouteKey(source, i)];
-      const mounted = mountVirtualDOM({
-        mountedSource: source,
-        mountedNodeRoute: nodeRoute,
-        mountedComponentRoute: componentRoute,
-      });
-
-      if (isArray(mounted)) {
-        shift += flatten(mounted).length - 1;
-      }
-
-      list.push(mounted);
-    }
-
-    vNode = flatten(list);
-  } else if (getIsComponentFactory(mountedSource)) {
+  if (getIsComponentFactory(mountedSource)) {
     vNode = mountVirtualDOM({ mountedSource, mountedNodeRoute, mountedComponentRoute });
-  } else if (Boolean(mountedSource) && isVirtualNode(mountedSource)) {
-    vNode = mountedSource;
-    vNode.nodeRoute = [...mountedNodeRoute];
-    vNode.componentRoute = [...mountedComponentRoute];
+  } else if (Boolean(mountedSource)) {
+    const isList = isArray(mountedSource);
+    const isVNode = isVirtualNode(mountedSource);
+    let mountedSourceList: Array<MountedSource> = [];
 
-    const mountedSourceList = vNode.children as Array<MountedSource>;
+    if (isList) {
+      mountedSourceList = mountedSource as Array<MountedSource>
+    } else if (isVNode) {
+      vNode = mountedSource as VirtualNode;
+      vNode.nodeRoute = mountedNodeRoute;
+      vNode.componentRoute = mountedComponentRoute;
+      mountedSourceList = vNode.children;
+    }
+
     const list = [];
+    const parentNodeRoute = isList ? mountedNodeRoute.slice(0, -1) : [];
+    const lastId = mountedNodeRoute[mountedNodeRoute.length - 1];
     let shift = 0;
 
     for (let i = 0; i < mountedSourceList.length; i++) {
       const source = mountedSourceList[i];
-      const nodeRoute = [...mountedNodeRoute, shift + i];
+      const nodeRoute = isList
+        ? [...parentNodeRoute, lastId + shift + i]
+        : [...mountedNodeRoute, shift + i];
       const componentRoute = [...mountedComponentRoute, generateComponentRouteKey(source, i)];
       const mounted = mountVirtualDOM({
         mountedSource: source,
@@ -121,7 +108,11 @@ function flatVirtualDOM(
       list.push(mounted);
     }
 
-    vNode.children = flatten(list);
+    if (isList) {
+      vNode = flatten(list);
+    } else if (isVNode) {
+      (vNode as VirtualNode).children = flatten(list);
+    }
   }
 
   return vNode;
@@ -182,7 +173,7 @@ function mountVirtualDOM({
       ? componentFactory.props[$$replaceNodeAfterMountHook](vNode, componentId)
       : vNode;
 
-    if (!isEmpty(key) && !isArray(vNode) && !isEmpty(vNode)) {
+    if (!skipMount && !isEmpty(key) && !isArray(vNode) && !isEmpty(vNode)) {
       setAttribute(vNode as VirtualNode, ATTR_KEY, key);
     }
 

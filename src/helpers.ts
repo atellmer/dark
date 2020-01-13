@@ -36,13 +36,13 @@ function deepClone(obj: any) {
 }
 
 function flatten(list: Array<any>): Array<any> {
-  let flatList = [];
+  const flatList = [];
 
-  for (const el of list) {
-    if (isArray(el)) {
-      flatList = flatList.concat(el);
+  for (const item of list) {
+    if (isArray(item)) {
+      flatList.push(...item);
     } else {
-      flatList.push(el);
+      flatList.push(item);
     }
   }
 
