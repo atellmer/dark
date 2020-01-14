@@ -13,12 +13,13 @@ import {
   setMountedComponentRoute,
   setMountedComponentFactory,
   resetHooks,
-  setComponentNodeRoutesById,
   getComponentVirtualNodesById,
   setComponentPropsById,
   linkComponentIdToParentComponent,
+  setComponentVirtualNodesById,
 } from '../../scope';
 import { ATTR_KEY, COMPONENT_MARKER } from '../../constants';
+import { getIsMemo } from '../../memo/memo';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
@@ -150,40 +151,56 @@ function mountVirtualDOM({
     const skipMount = isFunction(componentFactory.props[$$skipNodeMountHook])
       ? componentFactory.props[$$skipNodeMountHook](componentId)
       : false;
+    const isMemo = getIsMemo(mountedSource);
+    let isDifferentRoutes = false;
 
     if (skipMount) {
       vNode = getComponentVirtualNodesById(componentId);
+      isDifferentRoutes = vNode[0]
+        ? vNode[0].nodeRoute.slice(0, nodeRoute.length).toString() !== nodeRoute.toString()
+        : false;
+
+      if (isArray(vNode) && vNode.length === 1) {
+        vNode = vNode[0];
+      }
     } else {
       vNode = componentFactory.createElement();
-      vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, nodeRoute, mountedComponentRoute);
 
-      if (!isEmpty(key) && getIsComponentFactory(vNode)) {
-        vNode.props[ATTR_KEY] = key;
+      if (!isMemo) {
+        vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, nodeRoute, mountedComponentRoute);
+
+        if (!isEmpty(key) && getIsComponentFactory(vNode)) {
+          vNode.props[ATTR_KEY] = key;
+        }
       }
     }
 
-    resetHooks(componentId);
+    !isMemo && resetHooks(componentId);
 
     vNode = isFunction(componentFactory.props[$$replaceNodeBeforeMountHook])
-      ? componentFactory.props[$$replaceNodeBeforeMountHook](vNode, componentId, mountedNodeRoute, skipMount)
+      ? componentFactory.props[$$replaceNodeBeforeMountHook](
+        vNode, componentId, mountedNodeRoute, skipMount, isDifferentRoutes)
       : vNode;
     vNode = !skipMount ? flatVirtualDOM(vNode, nodeRoute, mountedComponentRoute) : vNode;
-
     vNode = isFunction(componentFactory.props[$$replaceNodeAfterMountHook])
       ? componentFactory.props[$$replaceNodeAfterMountHook](vNode, componentId)
       : vNode;
 
-    if (!skipMount && !isEmpty(key) && !isArray(vNode) && !isEmpty(vNode)) {
-      setAttribute(vNode as VirtualNode, ATTR_KEY, key);
+    if (!isMemo) {
+      if (!skipMount) {
+        if (!isArray(vNode) && !isEmpty(key) && !isEmpty(vNode)) {
+          setAttribute(vNode as VirtualNode, ATTR_KEY, key);
+        }
+        setComponentPropsById(componentId, componentFactory.props);
+        linkComponentIdToParentComponent(componentId);
+      }
+
+      if (!skipMount || isDifferentRoutes) {
+        const vNodes = (isArray(vNode) ? vNode : [vNode]) as Array<VirtualNode>;
+
+        setComponentVirtualNodesById(componentId, vNodes.filter(Boolean));
+      }
     }
-
-    const vNodes = isArray(vNode) ? vNode : [vNode];
-    const mapNodeRoute = (vNode: VirtualNode) => vNode.nodeRoute;
-    const nodeRoutes = vNodes.filter(Boolean).map(mapNodeRoute);
-
-    setComponentNodeRoutesById(componentId, nodeRoutes);
-    setComponentPropsById(componentId, componentFactory.props);
-    !skipMount && linkComponentIdToParentComponent(componentId);
   } else if (Boolean(mountedSource)) {
     vNode = flatVirtualDOM(mountedSource, mountedNodeRoute, mountedComponentRoute);
   }

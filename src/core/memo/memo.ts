@@ -15,7 +15,7 @@ type Component<T extends object> = (props?: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
-const isMemo = (o) => o && o.elementToken === $$memo;
+const getIsMemo = (o) => o && o.elementToken === $$memo;
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   const keys = Object.keys(nextProps);
@@ -48,14 +48,15 @@ function memo<T extends object>(
       return false;
     };
     const replaceNodeBeforeMountHook = (
-      vNode: VirtualDOM, componentId: string, nodeRoute: Array<number>, skipMount: boolean): VirtualDOM => {
+      vNode: VirtualDOM,
+      componentId: string, nodeRoute: Array<number>, skipMount: boolean, isDifferentRoutes: boolean): VirtualDOM => {
       const vDOM = isArray(vNode) ? vNode : [vNode];
 
       if (!app.memoStore[componentId]) {
         app.memoStore[componentId] = { props };
       } else {
         if (skipMount) {
-          patchNodeRoutes(vNode, [...nodeRoute], true);
+          isDifferentRoutes && patchNodeRoutes(vNode, [...nodeRoute], true);
 
           for (const vNode of vDOM) {
             setAttribute(vNode, ATTR_SKIP, true);
@@ -77,5 +78,5 @@ function memo<T extends object>(
   return Memo;
 }
 
-export { isMemo };
+export { getIsMemo };
 export default memo;

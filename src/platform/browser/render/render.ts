@@ -1,6 +1,6 @@
 import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@core/scope';
 import { mountVirtualDOM, VirtualNode, MountedSource } from '@core/vdom';
-import { isUndefined, getTime, isFunction, deepClone } from '../../../helpers';
+import { isUndefined, isFunction, deepClone } from '../../../helpers';
 import { mountRealDOM, processDOM } from '../dom/dom';
 
 const zoneIdByRootNodeMap = new WeakMap();
@@ -9,7 +9,6 @@ let isInternalRenderCall = false;
 let zoneCount = 0;
 
 function render(source: MountedSource, container: HTMLElement, onRender?: Function) {
-  const time = getTime();
   const isMounted = !isUndefined(zoneIdByRootNodeMap.get(container));
   const prevZoneId = getAppUid();
   let zoneId = 0;
@@ -47,7 +46,9 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
   } else {
     const app = getRegistery().get(zoneId);
     const vNode = getVirtualDOM(zoneId);
+    // console.time('mount');
     const nextVNode: VirtualNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
+    // console.timeEnd('mount');
 
     // console.log('nextvdom: ', deepClone(app.vdom));
     app.vdom = nextVNode;

@@ -1,4 +1,4 @@
-import { VirtualNode, getVirtualNodeByRoute } from '../vdom/vnode';
+import { VirtualNode } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
 import { truncateComponentId, createComponentId } from '@helpers';
 import { COMPONENT_MARKER_STRING } from '../constants';
@@ -19,6 +19,7 @@ type AppType = {
   componentStore: Record<string, {
     props?: any;
     nodeRoutes?: Array<Array<number>>;
+    vNodes?: Array<VirtualNode>;
     nestedComponentIdsMap?: Record<string, boolean>;
   }>
   eventStore: Map<
@@ -117,29 +118,14 @@ function linkComponentIdToParentComponent(componentId: string) {
 }
 
 function getComponentVirtualNodesById(componentId: string): Array<VirtualNode> {
-  const vdom = getVirtualDOM(getAppUid());
-  const nodeRoutes = getComponentNodeRoutesById(componentId);
-  const vNodes = []; // need optimization
-
-  for (const nodeRoute of nodeRoutes) {
-    const vNode = getVirtualNodeByRoute(vdom, nodeRoute);
-
-    vNodes.push(vNode);
-  }
+  const { componentStore } = getRegistery().get(getAppUid());
+  const id = truncateComponentId(componentId);
+  const vNodes = componentStore[id] ? componentStore[id].vNodes : [];
 
   return vNodes;
 }
 
-function getComponentNodeRoutesById(componentId: string): Array<Array<number>> {
-  const { componentStore } = getRegistery().get(getAppUid());
-  const id = truncateComponentId(componentId);
-  const nodes = componentStore[id] ? componentStore[id].nodeRoutes : null;
-
-  return nodes;
-}
-
-function setComponentNodeRoutesById(
-  componentId: string, nodeRoutes: Array<Array<number>>, patchNestedNodeRoutes: boolean = false) {
+function setComponentVirtualNodesById(componentId: string, vNodes: Array<VirtualNode>, patchNodeRoutes: boolean = false) {
   const { componentStore } = getRegistery().get(getAppUid());
   const id = truncateComponentId(componentId);
 
@@ -149,21 +135,21 @@ function setComponentNodeRoutesById(
 
   const store = componentStore[id];
 
-  store.nodeRoutes = nodeRoutes;
+  store.vNodes = vNodes;
 
-  if (patchNestedNodeRoutes && store.nestedComponentIdsMap) {
-    const nodeRoute = nodeRoutes[0];
+  if (patchNodeRoutes && store.nestedComponentIdsMap) {
+    const nodeRoute = vNodes[0].nodeRoute;
 
     for (const nestedComponentId of Object.keys(store.nestedComponentIdsMap)) {
       const nestedStore = componentStore[nestedComponentId];
 
       if (nestedStore) {
-        for (const nestedNodeRoute of nestedStore.nodeRoutes) {
-          if (nestedNodeRoute.length > nodeRoute.length) {
-            nestedNodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+        for (const vNode of nestedStore.vNodes) {
+          if (vNode.nodeRoute.length > nodeRoute.length) {
+            vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
           }
         }
-        setComponentNodeRoutesById(nestedComponentId, nestedStore.nodeRoutes, true);
+        setComponentVirtualNodesById(nestedComponentId, nestedStore.vNodes, true);
       }
     }
   }
@@ -267,12 +253,11 @@ export {
   resetHooks,
   getCurrentUseStateComponentId,
   setCurrentUseStateComponentId,
-  getComponentVirtualNodesById,
-  getComponentNodeRoutesById,
-  setComponentNodeRoutesById,
   getComponentPropsById,
   setComponentPropsById,
   getContextProviderStore,
   setContextProviderStore,
   linkComponentIdToParentComponent,
+  getComponentVirtualNodesById,
+  setComponentVirtualNodesById,
 };

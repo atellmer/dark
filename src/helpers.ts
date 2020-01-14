@@ -54,7 +54,18 @@ function getTime() {
 }
 
 function truncateComponentId(componentId: string): string {
-  return componentId.replace(/(\.|-1)*$/, '.-1');
+  const hasComponentMarker = componentId[componentId.length - 1] === '1' &&
+    componentId[componentId.length - 2] === '-' &&
+    componentId[componentId.length - 3] === '.' &&
+    componentId[componentId.length - 4] === '1' &&
+    componentId[componentId.length - 5] === '-' &&
+    componentId[componentId.length - 6] === '.';
+
+  if (hasComponentMarker) {
+    return componentId.replace(/(\.|-1)*$/, '.-1');
+  }
+
+  return componentId;
 }
 
 function createComponentId(componentRoute: Array<string | number>): string {

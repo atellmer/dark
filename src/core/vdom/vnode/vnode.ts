@@ -152,17 +152,13 @@ function patchNodeRoutes(vNode: VirtualDOM, nodeRoute: Array<number>, fromRoot: 
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
-    let isDifferent = false;
 
     if (fromRoot) {
-      isDifferent = vNode.nodeRoute.slice(0, nodeRoute.length).toString() !== nodeRoute.toString();
       nodeRoute[nodeRoute.length - 1] = routeId + i;
     }
 
-    if (isDifferent || !fromRoot) {
-      vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
-      patchNodeRoutes(vNode.children, nodeRoute);
-    }
+    vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+    patchNodeRoutes(vNode.children, nodeRoute);
   }
 }
 
