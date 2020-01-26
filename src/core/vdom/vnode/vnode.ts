@@ -14,6 +14,8 @@ export type VirtualNode = {
   children: Array<VirtualNode>;
   nodeRoute: Array<number>;
   componentRoute: Array<number | string>;
+  nodeId: string;
+  componentId: string;
 };
 
 export type VirtualDOM = VirtualNode | Array<VirtualNode>;
@@ -39,6 +41,8 @@ function createVirtualNode(type: VirtualNodeType, config: Partial<VirtualNode> =
     children: [],
     nodeRoute: [],
     componentRoute: [],
+    nodeId: '',
+    componentId: '',
     ...config,
     type,
   };
@@ -175,6 +179,44 @@ function getLastRouteId(route: Array<number>) {
   return route.slice(-1)[0];
 }
 
+function createNodeRouteFromId(id: string): Array<number> {
+  return id.split('.').map(Number);
+}
+
+function getCompletedNodeIdFromEnd(nodeId: string, routeId: number): string {
+  return nodeId + '.' + routeId;
+}
+
+function getPatchedNodeId(parentNodeId, nodeId: string): string {
+  const patchedNodeId = parentNodeId + nodeId.substr(parentNodeId.length, nodeId.length);
+
+  return patchedNodeId;
+}
+
+function getLastRouteIdFromNodeId(nodeId: string): number {
+  return Number(nodeId.replace(/^((\d)*\.)*/g, ''));
+}
+
+function getParentNodeId(nodeId: string): string {
+  return nodeId.replace(/\.\d*$/g, '');
+}
+
+function createComponentRouteFromId(componentId: string): Array<number | string> {
+  return componentId.split('.').map(x => Number(x) || x);
+}
+
+function completeComponentIdFromEnd(componentId: string, routeId: number | string): string {
+  return componentId + '.' + routeId;
+}
+
+function getLastRouteIdFromComponentId(componentId: string): number {
+  return Number(componentId.replace(/^((\-?\d)*\.)*/g, ''));
+}
+
+function getParentComponentId(nodeId: string): string {
+  return nodeId.replace(/\.\-?\d*$/g, '');
+}
+
 export {
   createVirtualNode,
   createVirtualTextNode,
@@ -198,4 +240,13 @@ export {
   patchNodeRoutes,
   createRoot,
   getLastRouteId,
+  createNodeRouteFromId,
+  getCompletedNodeIdFromEnd,
+  getPatchedNodeId,
+  getLastRouteIdFromNodeId,
+  getParentNodeId,
+  createComponentRouteFromId,
+  completeComponentIdFromEnd,
+  getLastRouteIdFromComponentId,
+  getParentComponentId,
 };

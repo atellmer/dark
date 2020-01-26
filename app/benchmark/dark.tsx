@@ -128,23 +128,22 @@ const MemoRow = memo(Row, (props, nextProps) =>
 );
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-  const renderRow = useMemo(() => (item) => {
-    return (
-      <MemoRow
-        key={item.id}
-        id={item.id}
-        name={item.name}
-        selected={item.select}
-        onRemove={onRemove}
-        onHighlight={onHighlight}
-      />
-    );
-  }, []);
 
   return (
     <table class='table'>
       <tbody>
-        {items.map(renderRow)}
+        {items.map((item) => {
+          return (
+            <Row
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              selected={item.select}
+              onRemove={onRemove}
+              onHighlight={onHighlight}
+            />
+          );
+        })}
       </tbody>
     </table>
   )
@@ -154,7 +153,7 @@ const MemoList = memo(List);
 
 const App = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -205,14 +204,14 @@ const App = createComponent(() => {
 
   return (
     <Fragment>
-      <MemoHeader
+      <Header
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
       />
-      <MemoList
+      <List
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
