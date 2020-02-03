@@ -1,7 +1,6 @@
 import {
   getRegistery,
   getHooks,
-  getMountedComponentRoute,
   getMountedComponentFactory,
   getMountedComponentId,
   getVirtualDOM,
@@ -18,11 +17,17 @@ import {
   VirtualNode,
   getVirtualNodeByRoute,
   createRoot,
-  patchNodeRoutes,
   getLastRouteId,
   replaceVirtualNode,
+  createNodeRouteFromId,
+  getCompletedNodeIdFromEnd,
+  getLastRouteIdFromNodeId,
+  getParentNodeId,
+  getLastRouteIdFromComponentId,
+  getParentComponentId,
+  patchNodeIds,
 } from '@core/vdom/vnode';
-import { isUndefined, flatten, isFunction, deepClone, truncateComponentId, createComponentId } from '@helpers';
+import { isUndefined, flatten, isFunction, deepClone, truncateComponentId } from '@helpers';
 import { processDOM } from '../../../platform/browser/dom'; // temp
 
 type SetStateValue<T> = T | ((prevValue: T) => T)
@@ -31,7 +36,6 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
   const uid = getAppUid();
   const app = getRegistery().get(uid);
   const componentId = getMountedComponentId();
-  const componentRoute = [...getMountedComponentRoute()];
   const hooks = getHooks(componentId);
   const componentFactory = getMountedComponentFactory();
   const idx = hooks.idx;
@@ -41,9 +45,9 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     hooks.values[idx] = isFunction(value) ? value(hooks.values[idx]) : value;
     const vdom = getVirtualDOM(uid);
     const vNodes = getComponentVirtualNodesById(componentId);
-    const nodeRoutes = vNodes.map(vNode => vNode.nodeRoute);
-    const nodeRoute = nodeRoutes[0];
-    const hasNode = checkVNode(componentId, vdom, nodeRoute);
+    const nodeIds = vNodes.map(vNode => vNode.nodeId);
+    const nodeId = nodeIds[0];
+    const hasNode = checkVNode(componentId, vdom, nodeId);
 
     if (!hasNode) return; // remove after add unmount functional
 
@@ -52,11 +56,11 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
     const nextVNodeList: Array<VirtualNode> = flatten([
       mountVirtualDOM({
         mountedSource: componentFactory,
-        mountedComponentRoute: componentRoute.slice(0, -1),
-        mountedNodeRoute: nodeRoute,
+        mountedComponentId: getParentComponentId(componentId),
+        mountedNodeId: nodeId,
       }),
     ]);
-    const { rootVNode, nextRootVNode } = getRootNodes({ nodeRoutes, nextVNodeList, app });
+    const { rootVNode, nextRootVNode } = getRootNodes({ nodeIds, nextVNodeList, app });
 
     processDOM({
       vNode: rootVNode,
@@ -78,9 +82,10 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
   return [value, setState];
 }
 
-function checkVNode(componentId: string, vdom: VirtualNode, nodeRoute: Array<number>): boolean {
+function checkVNode(componentId: string, vdom: VirtualNode, nodeId: string): boolean {
+  const nodeRoute = createNodeRouteFromId(nodeId);
   const vNode = getVirtualNodeByRoute(vdom, nodeRoute);
-  const comparedComponentId = vNode ? createComponentId(vNode.componentRoute) : '';
+  const comparedComponentId = vNode ? vNode.componentId : '';
   const hasNode = Boolean(vNode)
       ? componentId.length === comparedComponentId.length
         ? componentId === comparedComponentId
@@ -92,10 +97,11 @@ function checkVNode(componentId: string, vdom: VirtualNode, nodeRoute: Array<num
 
 function generateVirtualNodesMap(parentVNode: VirtualNode): Record<string, Array<VirtualNode>> {
   const reduceFn = (acc: Record<string, Array<VirtualNode>>, vNode: VirtualNode) => {
-    let componentId = vNode.componentRoute[vNode.componentRoute.length - 1] === -1
-      ? createComponentId(vNode.componentRoute)
-      : vNode.componentRoute[vNode.componentRoute.length - 2] === -1
-        ? createComponentId(vNode.componentRoute.slice(0, -1))
+    const parentComponentId = getParentComponentId(vNode.componentId);
+    let componentId = getLastRouteIdFromComponentId(vNode.componentId) === -1
+      ? vNode.componentId
+      : getLastRouteIdFromComponentId(parentComponentId) === -1
+        ? parentComponentId
         : '';
 
     if (!componentId) return;
@@ -111,7 +117,7 @@ function generateVirtualNodesMap(parentVNode: VirtualNode): Record<string, Array
     return acc;
   };
   const vNodesMap = parentVNode.children.reduce(reduceFn, {});
-  const parentComponentId = truncateComponentId(createComponentId(parentVNode.componentRoute));
+  const parentComponentId = truncateComponentId(parentVNode.componentId);
 
   vNodesMap[parentComponentId] = flatten(
     Object.keys(vNodesMap).map(componentId => vNodesMap[componentId]),
@@ -121,25 +127,25 @@ function generateVirtualNodesMap(parentVNode: VirtualNode): Record<string, Array
 }
 
 type GetRootNodesOptions = {
-  nodeRoutes: Array<Array<number>>;
+  nodeIds: Array<string>;
   nextVNodeList: Array<VirtualNode>;
   app: AppType;
 }
 
 function getRootNodes(options: GetRootNodesOptions) {
   const {
-    nodeRoutes,
+    nodeIds,
     nextVNodeList,
     app,
   } = options;
   let rootVNode: VirtualNode = null;
   let nextRootVNode: VirtualNode = null;
   const { vdom } = app;
-  const nodeRoute = nodeRoutes[0];
+  const nodeRoute = createNodeRouteFromId(nodeIds[0]);
   const parentNodeRoute = nodeRoute.slice(0, -1);
   const lastIdx = getLastRouteId(nodeRoute);
   const newLastIdx = lastIdx + nextVNodeList.length;
-  const diffCount = nodeRoutes.length - nextVNodeList.length;
+  const diffCount = nodeIds.length - nextVNodeList.length;
   const diffCountAbs = Math.abs(diffCount);
   const isInsertOperation = diffCount < 0;
   const isRemoveOperation = diffCount > 0;
@@ -158,22 +164,21 @@ function getRootNodes(options: GetRootNodesOptions) {
 
   if (isUpdateOperation) {
     const vNodeList = parentVNode.children.slice(lastIdx, newLastIdx);
-    rootVNode = createRoot(parentVNode.componentRoute, parentVNode.nodeRoute, vNodeList);
-    nextRootVNode = createRoot(nextParentVNode.componentRoute, parentVNode.nodeRoute, nextVNodeList);
+    rootVNode = createRoot(parentVNode.componentId, parentVNode.nodeId, vNodeList);
+    nextRootVNode = createRoot(nextParentVNode.componentId, parentVNode.nodeId, nextVNodeList);
 
     for (const vNode of nextVNodeList) {
       replaceVirtualNode(vNode, vdom);
     }
   } else {
-    const patchRouteId = getLastRouteId(nextVNodeList[nextVNodeList.length - 1].nodeRoute) + 1;
+    const patchRouteId = getLastRouteIdFromNodeId(nextVNodeList[nextVNodeList.length - 1].nodeId) + 1;
     let shift = 0;
 
     for (let i = newLastIdx; i < nextParentVNode.children.length; i++) {
       const vNode = nextParentVNode.children[i];
-      const nodeRoute = [...vNode.nodeRoute];
 
-      nodeRoute[nodeRoute.length - 1] = patchRouteId + shift;
-      patchNodeRoutes(vNode, nodeRoute, true);
+      vNode.nodeId = getCompletedNodeIdFromEnd(getParentNodeId(vNode.nodeId), patchRouteId + shift);
+      patchNodeIds(vNode, vNode.nodeId, true);
       shift++;
     }
 
@@ -184,7 +189,7 @@ function getRootNodes(options: GetRootNodesOptions) {
       setComponentVirtualNodesById(componentId, vNodesMap[componentId], true);
     }
 
-    if (nextParentVNode.nodeRoute.length === 1) {
+    if (nextParentVNode.nodeId.length === 1) {
       app.vdom = nextParentVNode;
     } else {
       replaceVirtualNode(nextParentVNode, vdom);

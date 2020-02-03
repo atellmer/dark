@@ -96,22 +96,22 @@ test('[mount vdom]: calculate node routes correctly 1', () => {
   });
 
   const vdom = mountVirtualDOM({ mountedSource: App() }) as VirtualNode;
-  const nodeRoutes = vdom.children.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.children.map(n => n.componentRoute);
+  const nodeIds = vdom.children.map(n => n.nodeId);
+  const cmpIds = vdom.children.map(n => n.componentId);
 
-  expect(nodeRoutes).toEqual([[0, 0], [0, 1], [0, 2]]);
-  expect(cmpRoutes).toEqual([[0, -1, 0], [0, -1, 1], [0, -1, 2]]);
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2']);
+  expect(cmpIds).toEqual(['0.-1.0', '0.-1.1', '0.-1.2']);
 });
 
 test('[mount vdom]: calculate node routes correctly 2', () => {
   const vdom = mountVirtualDOM({
     mountedSource: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
   }) as Array<VirtualNode>;
-  const routes = vdom.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.map(n => n.componentRoute);
+  const nodeIds = vdom.map(n => n.nodeId);
+  const cmpIds = vdom.map(n => n.componentId);
 
-  expect(routes).toEqual([[0], [1], [2]]);
-  expect(cmpRoutes).toEqual([[0, 0], [0, 1], [0, 2]]);
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2']);
+  expect(cmpIds).toEqual(['0.0', '0.1', '0.2']);
 });
 
 test('[mount vdom]: calculate node routes correctly 3', () => {
@@ -120,11 +120,11 @@ test('[mount vdom]: calculate node routes correctly 3', () => {
       slot: [div({ slot: Text('1') }), div({ slot: Text('2') }), div({ slot: Text('3') })],
     }),
   }) as Array<VirtualNode>;
-  const routes = vdom.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.map(n => n.componentRoute);
+  const nodeIds = vdom.map(n => n.nodeId);
+  const cmpIds = vdom.map(n => n.componentId);
 
-  expect(routes).toEqual([[0], [1], [2]]);
-  expect(cmpRoutes).toEqual([[0, -1, 0], [0, -1, 1], [0, -1, 2]]);
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2']);
+  expect(cmpIds).toEqual(['0.-1.0', '0.-1.1', '0.-1.2']);
 });
 
 test('[mount vdom]: calculate node routes correctly 4', () => {
@@ -140,11 +140,11 @@ test('[mount vdom]: calculate node routes correctly 4', () => {
   });
 
   const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
-  const routes = vdom.children.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.children.map(n => n.componentRoute);
+  const nodeIds = vdom.children.map(n => n.nodeId);
+  const cmpIds = vdom.children.map(n => n.componentId);
 
-  expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5]]);
-  expect(cmpRoutes).toEqual([[0, -1, 0], [0, -1, 1, 0], [0, -1, 1, 1], [0, -1, 1, 2], [0, -1, 2], [0, -1, 3]]);
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2', '0.3', '0.4', '0.5']);
+  expect(cmpIds).toEqual(['0.-1.0', '0.-1.1.0', '0.-1.1.1', '0.-1.1.2', '0.-1.2', '0.-1.3']);
 });
 
 test('[mount vdom]: calculate node routes correctly 4', () => {
@@ -164,21 +164,21 @@ test('[mount vdom]: calculate node routes correctly 4', () => {
   });
 
   const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
-  const routes = vdom.children.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.children.map(n => n.componentRoute);
+  const nodeIds = vdom.children.map(n => n.nodeId);
+  const cmpIds = vdom.children.map(n => n.componentId);
 
-  expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9]]);
-  expect(cmpRoutes).toEqual([
-    [0, -1, 0],
-    [0, -1, 1, 0],
-    [0, -1, 1, 1],
-    [0, -1, 1, 2],
-    [0, -1, 2, -1, 0],
-    [0, -1, 2, -1, 1],
-    [0, -1, 2, -1, 2],
-    [0, -1, 3],
-    [0, -1, 4],
-    [0, -1, 5],
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9']);
+  expect(cmpIds).toEqual([
+    '0.-1.0',
+    '0.-1.1.0',
+    '0.-1.1.1',
+    '0.-1.1.2',
+    '0.-1.2.-1.0',
+    '0.-1.2.-1.1',
+    '0.-1.2.-1.2',
+    '0.-1.3',
+    '0.-1.4',
+    '0.-1.5',
   ]);
 });
 
@@ -193,22 +193,22 @@ test('[mount vdom]: calculate node routes correctly 5', () => {
   });
 
   const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
-  const routes = vdom.children.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.children.map(n => n.componentRoute);
+  const nodeIds = vdom.children.map(n => n.nodeId);
+  const cmpIds = vdom.children.map(n => n.componentId);
 
-  expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10]]);
-  expect(cmpRoutes).toEqual([
-    [0, -1, 0],
-    [0, -1, 1, 0, -1, 0],
-    [0, -1, 1, 0, -1, 1],
-    [0, -1, 1, 0, -1, 2],
-    [0, -1, 1, 1, -1, 0],
-    [0, -1, 1, 1, -1, 1],
-    [0, -1, 1, 1, -1, 2],
-    [0, -1, 1, 2, -1, 0],
-    [0, -1, 1, 2, -1, 1],
-    [0, -1, 1, 2, -1, 2],
-    [0, -1, 2],
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '0.10']);
+  expect(cmpIds).toEqual([
+    '0.-1.0',
+    '0.-1.1.0.-1.0',
+    '0.-1.1.0.-1.1',
+    '0.-1.1.0.-1.2',
+    '0.-1.1.1.-1.0',
+    '0.-1.1.1.-1.1',
+    '0.-1.1.1.-1.2',
+    '0.-1.1.2.-1.0',
+    '0.-1.1.2.-1.1',
+    '0.-1.1.2.-1.2',
+    '0.-1.2',
   ]);
 });
 
@@ -226,19 +226,19 @@ test('[mount vdom]: calculate node routes correctly 6', () => {
   });
 
   const vdom = mountVirtualDOM({mountedSource: App() }) as VirtualNode;
-  const routes = vdom.children.map(n => n.nodeRoute);
-  const cmpRoutes = vdom.children.map(n => n.componentRoute);
+  const nodeIds = vdom.children.map(n => n.nodeId);
+  const cmpIds = vdom.children.map(n => n.componentId);
 
-  expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7]]);
-  expect(cmpRoutes).toEqual([
-    [0, -1, 0],
-    [0, -1, 1, 0, -1, 0, -1],
-    [0, -1, 1, 0, -1, 1, -1],
-    [0, -1, 1, 0, -1, 2],
-    [0, -1, 1, 1, -1, 0, -1],
-    [0, -1, 1, 1, -1, 1, -1],
-    [0, -1, 1, 1, -1, 2],
-    [0, -1, 2],
+  expect(nodeIds).toEqual(['0.0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7']);
+  expect(cmpIds).toEqual([
+    '0.-1.0',
+    '0.-1.1.0.-1.0.-1',
+    '0.-1.1.0.-1.1.-1',
+    '0.-1.1.0.-1.2',
+    '0.-1.1.1.-1.0.-1',
+    '0.-1.1.1.-1.1.-1',
+    '0.-1.1.1.-1.2',
+    '0.-1.2',
   ]);
 });
 
@@ -260,20 +260,20 @@ test('[mount vdom]: calculate node routes correctly 7', () => {
   });
 
   const vdom = mountVirtualDOM({mountedSource: App() }) as Array<VirtualNode>;
-  const routes = vdom[0].children.map(n => n.nodeRoute);
-  const cmpRoutes = vdom[0].children.map(n => n.componentRoute);
+  const nodeIds = vdom[0].children.map(n => n.nodeId);
+  const cmpIds = vdom[0].children.map(n => n.componentId);
 
-  expect(routes).toEqual([[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9]]);
-  expect(cmpRoutes).toEqual([
-    [0, -1, 0, 0],
-    [0, -1, 0, 1],
-    [0, -1, 0, 2, 0, -1, 0],
-    [0, -1, 0, 2, 0, -1, 1, -1, 0],
-    [0, -1, 0, 2, 0, -1, 1, -1, 1],
-    [0, -1, 0, 2, 1, -1, 0],
-    [0, -1, 0, 2, 1, -1, 1, -1, 0],
-    [0, -1, 0, 2, 1, -1, 1, -1, 1],
-    [0, -1, 0, 3],
-    [0, -1, 0, 4],
+  expect(nodeIds).toEqual(['0.0.0', '0.0.1', '0.0.2', '0.0.3', '0.0.4', '0.0.5', '0.0.6', '0.0.7', '0.0.8', '0.0.9']);
+  expect(cmpIds).toEqual([
+    '0.-1.0.0',
+    '0.-1.0.1',
+    '0.-1.0.2.0.-1.0',
+    '0.-1.0.2.0.-1.1.-1.0',
+    '0.-1.0.2.0.-1.1.-1.1',
+    '0.-1.0.2.1.-1.0',
+    '0.-1.0.2.1.-1.1.-1.0',
+    '0.-1.0.2.1.-1.1.-1.1',
+    '0.-1.0.3',
+    '0.-1.0.4',
   ]);
 });

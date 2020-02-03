@@ -31,19 +31,23 @@ const UNIQ_KEY_ERROR = `
   otherwise the comparison algorithm will not work optimally or even will work incorrectly!
 `;
 
-const createCommit = (action: VirtualDOMActions, route: Array<number> = [], oldValue: any, nextValue: any): Commit => ({
-  action,
-  route,
-  oldValue,
-  nextValue,
-});
+const createCommit = (action: VirtualDOMActions, nodeId: string, oldValue: any, nextValue: any): Commit => {
+  const route = nodeId.split('.').map(Number);
+
+  return {
+    action,
+    route,
+    oldValue,
+    nextValue,
+  };
+};
 
 function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
   if (!isEmpty(vNode.attrs[attrName]) && isEmpty(nextVNode.attrs[attrName])) {
     commits.push(
       createCommit(
         REMOVE_ATTRIBUTE,
-        nextVNode.nodeRoute,
+        nextVNode.nodeId,
         createAttribute(attrName, vNode.attrs[attrName]),
         createAttribute(attrName, undefined),
       ),
@@ -51,7 +55,7 @@ function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virt
   } else if (nextVNode.attrs[attrName] !== vNode.attrs[attrName]) {
     commits.push(createCommit(
       REPLACE_ATTRIBUTE,
-      nextVNode.nodeRoute,
+      nextVNode.nodeId,
       createAttribute(attrName, vNode.attrs[attrName]),
       createAttribute(attrName, nextVNode.attrs[attrName]),
     ));
@@ -63,7 +67,7 @@ function mapNewAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virtu
     commits.push(
       createCommit(
         ADD_ATTRIBUTE,
-        nextVNode.nodeRoute,
+        nextVNode.nodeId,
         createAttribute(attrName, undefined),
         createAttribute(attrName, nextVNode.attrs[attrName]),
       ),
@@ -114,7 +118,7 @@ function getDiff(
   const nextKey = getNodeKey(nextVNode);
 
   if (!vNode) {
-    commits.push(createCommit(ADD_NODE, nextVNode.nodeRoute, null, nextVNode));
+    commits.push(createCommit(ADD_NODE, nextVNode.nodeId, null, nextVNode));
     if (isUndefined(nextKey) && !isEmptyVirtualNode(nextVNode)) {
       error(UNIQ_KEY_ERROR);
     }
@@ -122,7 +126,7 @@ function getDiff(
   }
 
   if (!nextVNode || isRemovingNodeByKey) {
-    commits.push(createCommit(REMOVE_NODE, vNode.nodeRoute, vNode, null));
+    commits.push(createCommit(REMOVE_NODE, vNode.nodeId, vNode, null));
     if (isUndefined(key) && !isEmptyVirtualNode(vNode)) {
       error(UNIQ_KEY_ERROR);
     }
@@ -130,7 +134,7 @@ function getDiff(
   }
 
   if (Boolean(vNode && nextVNode && isInsertingNodeByKey)) {
-    commits.push(createCommit(INSERT_NODE, nextVNode.nodeRoute, vNode, nextVNode));
+    commits.push(createCommit(INSERT_NODE, nextVNode.nodeId, vNode, nextVNode));
     return commits;
   }
 
@@ -140,7 +144,7 @@ function getDiff(
     vNode.name !== nextVNode.name ||
     vNode.text !== nextVNode.text
   ) {
-    commits.push(createCommit(REPLACE_NODE, nextVNode.nodeRoute, vNode, nextVNode));
+    commits.push(createCommit(REPLACE_NODE, nextVNode.nodeId, vNode, nextVNode));
     return commits;
   }
 

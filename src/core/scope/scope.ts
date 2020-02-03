@@ -1,4 +1,4 @@
-import { VirtualNode } from '../vdom/vnode';
+import { VirtualNode, getPatchedNodeId } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
 import { truncateComponentId, createComponentId } from '@helpers';
 import { COMPONENT_MARKER_STRING } from '../constants';
@@ -9,7 +9,6 @@ type ScopeType = {
   uid: number;
   mountedComponentFactory: ComponentFactory;
   mountedComponentId: string;
-  mountedComponentRoute: Array<string | number>;
   currentUseStateComponentId: string;
 };
 
@@ -18,7 +17,6 @@ type AppType = {
   vdom: VirtualNode;
   componentStore: Record<string, {
     props?: any;
-    nodeRoutes?: Array<Array<number>>;
     vNodes?: Array<VirtualNode>;
     nestedComponentIdsMap?: Record<string, boolean>;
   }>
@@ -49,8 +47,6 @@ const setAppUid = (uid: number) => (scope.uid = uid);
 const getVirtualDOM = (uid: number): VirtualNode => getRegistery().get(uid).vdom;
 const getMountedComponentId = () => scope.mountedComponentId;
 const setMountedComponentId = (id: string) => scope.mountedComponentId = id;
-const getMountedComponentRoute = () => scope.mountedComponentRoute;
-const setMountedComponentRoute = (route: Array<string | number>) => scope.mountedComponentRoute = route;
 const getMountedComponentFactory = () => scope.mountedComponentFactory;
 const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedComponentFactory = factory;
 const getCurrentUseStateComponentId = (): string => scope.currentUseStateComponentId;
@@ -125,7 +121,7 @@ function getComponentVirtualNodesById(componentId: string): Array<VirtualNode> {
   return vNodes;
 }
 
-function setComponentVirtualNodesById(componentId: string, vNodes: Array<VirtualNode>, patchNodeRoutes: boolean = false) {
+function setComponentVirtualNodesById(componentId: string, vNodes: Array<VirtualNode>, patchNodeIds: boolean = false) {
   const { componentStore } = getRegistery().get(getAppUid());
   const id = truncateComponentId(componentId);
 
@@ -137,16 +133,16 @@ function setComponentVirtualNodesById(componentId: string, vNodes: Array<Virtual
 
   store.vNodes = vNodes;
 
-  if (patchNodeRoutes && store.nestedComponentIdsMap) {
-    const nodeRoute = vNodes[0].nodeRoute;
+  if (patchNodeIds && store.nestedComponentIdsMap) {
+    const nodeId = vNodes[0].nodeId;
 
     for (const nestedComponentId of Object.keys(store.nestedComponentIdsMap)) {
       const nestedStore = componentStore[nestedComponentId];
 
       if (nestedStore) {
         for (const vNode of nestedStore.vNodes) {
-          if (vNode.nodeRoute.length > nodeRoute.length) {
-            vNode.nodeRoute.splice(0, nodeRoute.length, ...nodeRoute);
+          if (vNode.nodeId.length > nodeId.length) {
+            vNode.nodeId = getPatchedNodeId(nodeId, vNode.nodeId)
           }
         }
         setComponentVirtualNodesById(nestedComponentId, nestedStore.vNodes, true);
@@ -215,7 +211,6 @@ function createScope(): ScopeType {
     uid: 0,
     mountedComponentFactory: null,
     mountedComponentId: '',
-    mountedComponentRoute: [],
     currentUseStateComponentId: '',
   };
 }
@@ -245,8 +240,6 @@ export {
   createApp,
   getMountedComponentId,
   setMountedComponentId,
-  getMountedComponentRoute,
-  setMountedComponentRoute,
   getMountedComponentFactory,
   setMountedComponentFactory,
   getHooks,

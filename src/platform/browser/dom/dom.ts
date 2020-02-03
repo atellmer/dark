@@ -13,7 +13,7 @@ import {
   VirtualDOM,
   VirtualNode,
 } from '@core/vdom';
-import { getDiff, VirtualDOMActions } from '@core/vdom/diff';
+import { getDiff } from '@core/vdom/diff';
 import { isArray, isFunction, isUndefined } from '@helpers';
 import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';

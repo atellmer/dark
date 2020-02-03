@@ -9,7 +9,7 @@ import { setAttribute, VirtualDOM } from '@core/vdom';
 import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
 import { isArray } from '@helpers';
 import { ATTR_SKIP } from '../constants';
-import { patchNodeRoutes } from '../vdom/vnode';
+import { patchNodeIds } from '../vdom/vnode';
 
 type Component<T extends object> = (props?: T) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
@@ -49,14 +49,14 @@ function memo<T extends object>(
     };
     const replaceNodeBeforeMountHook = (
       vNode: VirtualDOM,
-      componentId: string, nodeRoute: Array<number>, skipMount: boolean, isDifferentRoutes: boolean): VirtualDOM => {
+      componentId: string, nodeId: string, skipMount: boolean, isDifferentNodeIds: boolean): VirtualDOM => {
       const vDOM = isArray(vNode) ? vNode : [vNode];
 
       if (!app.memoStore[componentId]) {
         app.memoStore[componentId] = { props };
       } else {
         if (skipMount) {
-          isDifferentRoutes && patchNodeRoutes(vNode, [...nodeRoute], true);
+          isDifferentNodeIds && patchNodeIds(vNode, nodeId, true);
 
           for (const vNode of vDOM) {
             setAttribute(vNode, ATTR_SKIP, true);
