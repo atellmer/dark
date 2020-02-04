@@ -152,11 +152,9 @@ function patchNodeIds(vNode: VirtualDOM, nodeId: string, fromRoot: boolean = fal
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
-
     if (fromRoot) {
       vNode.nodeId = getCompletedNodeIdFromEnd(getParentNodeId(vNode.nodeId), routeId + i);
     }
-
     vNode.nodeId = getPatchedNodeId(nodeId, vNode.nodeId);
     patchNodeIds(vNode.children, nodeId);
   }
@@ -184,7 +182,12 @@ function getCompletedNodeIdFromEnd(nodeId: string, routeId: number): string {
 }
 
 function getPatchedNodeId(baseNodeId: string, nodeId: string): string {
-  const patchedNodeId = baseNodeId + nodeId.substr(baseNodeId.length, nodeId.length);
+  const baseNodeRoute = baseNodeId.split('.');
+  const nodeRoute = nodeId.split('.');
+
+  nodeRoute.splice(0, baseNodeRoute.length, ...baseNodeRoute);
+
+  const patchedNodeId = nodeRoute.join('.');
 
   return patchedNodeId;
 }

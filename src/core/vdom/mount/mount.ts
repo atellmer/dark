@@ -182,9 +182,7 @@ function mountVirtualDOM({
 
     if (skipMount) {
       vNode = getComponentVirtualNodesById(componentId);
-      isDifferentNodeIds = vNode[0]
-        ? vNode[0].nodeId.slice(0, nodeId.length) !== nodeId
-        : false;
+      isDifferentNodeIds = vNode[0] ? vNode[0].nodeId !== nodeId : false;
 
       if (isArray(vNode) && vNode.length === 1) {
         vNode = vNode[0];
@@ -205,7 +203,7 @@ function mountVirtualDOM({
 
     vNode = isFunction(componentFactory.props[$$replaceNodeBeforeMountHook])
       ? componentFactory.props[$$replaceNodeBeforeMountHook](
-        vNode, componentId, mountedNodeId, skipMount, isDifferentNodeIds)
+        vNode, componentId, nodeId, skipMount, isDifferentNodeIds)
       : vNode;
     vNode = !skipMount ? flatVirtualDOM({
       mountedSource: vNode,
