@@ -1,7 +1,6 @@
 import { VirtualNode, getPatchedNodeId } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
-import { truncateComponentId, createComponentId } from '@helpers';
-import { COMPONENT_MARKER_STRING } from '../constants';
+import { truncateComponentId } from '@helpers';
 import { Context, ContextProviderStore } from '../context';
 
 type ScopeType = {
@@ -52,51 +51,17 @@ const setMountedComponentFactory = (factory: ComponentFactory) => scope.mountedC
 const getCurrentUseStateComponentId = (): string => scope.currentUseStateComponentId;
 const setCurrentUseStateComponentId = (id: string) => scope.currentUseStateComponentId = id;
 
-function getParentComponentId(componentRoute: Array<string | number>): string {
-  let idx = componentRoute.length;
-  let parentComponentId = '';
-
-  for (let i = componentRoute.length - 1; i >= 0; i--) {
-    const part = componentRoute[i];
-
-    if (part === COMPONENT_MARKER_STRING) {
-      idx--;
-    } else {
-      break;
-    }
-  }
-
-  const transitIdx = idx;
-
-  for (let i = transitIdx - 1; i >= 0; i--) {
-    const part = componentRoute[i];
-
-    if (part !== COMPONENT_MARKER_STRING) {
-      idx--;
-    } else {
-      if (componentRoute[i - 1] && componentRoute[i - 1] === COMPONENT_MARKER_STRING) {
-        idx--;
-      } else {
-        break;
-      }
-    }
-  }
-
-  parentComponentId = createComponentId(componentRoute.slice(0, idx));
+function getParentComponentId(componentId: string): string {
+  const parentComponentId = componentId
+    .replace(/(\.-1)+$/g, '')
+    .replace(/[^\-1][\.\[\]\d]+$/g, '');
 
   return parentComponentId;
 }
 
 function linkComponentIdToParentComponent(componentId: string) {
   const { componentStore } = getRegistery().get(getAppUid());
-  const componentRoute = componentId.split('.');
-
-  if (componentRoute[componentRoute.length - 2] === COMPONENT_MARKER_STRING &&
-    componentRoute[componentRoute.length - 1] === COMPONENT_MARKER_STRING) {
-      return;
-  };
-
-  const parentComponentId = getParentComponentId(componentRoute);
+  const parentComponentId = getParentComponentId(componentId);
   const store = componentStore[parentComponentId];
 
   if (store) {

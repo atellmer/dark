@@ -259,9 +259,12 @@ test('[mount vdom]: calculate node routes correctly 7', () => {
     ];
   });
 
-  const vdom = mountVirtualDOM({mountedSource: App() }) as Array<VirtualNode>;
+  const vdom = mountVirtualDOM({ mountedSource: App() }) as Array<VirtualNode>;
   const nodeIds = vdom[0].children.map(n => n.nodeId);
   const cmpIds = vdom[0].children.map(n => n.componentId);
+
+  console.log('vnode', vdom);
+  
 
   expect(nodeIds).toEqual(['0.0.0', '0.0.1', '0.0.2', '0.0.3', '0.0.4', '0.0.5', '0.0.6', '0.0.7', '0.0.8', '0.0.9']);
   expect(cmpIds).toEqual([
