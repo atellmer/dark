@@ -59,7 +59,7 @@ function truncateComponentId(componentId: string): string {
     componentId[componentId.length - 5] === '-';
 
   if (hasComponentMarker) {
-    return componentId.replace(/([\.\-1]+)$/, '.-1');
+    return componentId.replace(/((\.\-1)+)$/, '.-1');
   }
 
   return componentId;

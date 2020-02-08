@@ -60,6 +60,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
         mountedNodeId: nodeId,
       }),
     ]);
+
     const { rootVNode, nextRootVNode } = getRootNodes({ nodeIds, nextVNodeList, app });
 
     processDOM({
@@ -68,7 +69,7 @@ function useState<T = any>(initialValue: T): [T, (v: SetStateValue<T>) => void] 
       container: app.nativeElement as any,
     });
 
-    // console.log('vdom after:', deepClone(app.vdom));
+   // console.log('vdom after:', deepClone(app.vdom));
   };
 
   if (isUndefined(hooks.values[idx])) {

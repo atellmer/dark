@@ -339,4 +339,3 @@ runBench();
 // }
 
 
-// render(App(), domElement);

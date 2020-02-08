@@ -174,6 +174,7 @@ function getDiff(
 }
 
 function getSortedByPriorityCommits(commits: Array<Commit>) {
+  const styleChangesCommits = [];
   const replaceCommits = [];
   const removeCommits = [];
   const insertCommits = [];
@@ -190,12 +191,16 @@ function getSortedByPriorityCommits(commits: Array<Commit>) {
       replaceCommits.push(commit);
     } else if (commit.action === 'ADD_NODE') {
       addCommits.push(commit);
+    } else if (commit.action === 'REPLACE_ATTRIBUTE'
+      && (Boolean(commit.nextValue['style']) || Boolean(commit.nextValue['class']))) {
+        styleChangesCommits.push(commit);
     } else {
       consistentCommits.push(commit);
     }
   }
 
   commitsByPriotity = [
+    ...styleChangesCommits,
     ...removeCommits.reverse(),
     ...insertCommits.reverse(),
     ...replaceCommits,
