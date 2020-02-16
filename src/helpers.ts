@@ -21,7 +21,7 @@ function deepClone(obj: any) {
     ? Array.isArray(obj)
       ? [...obj]
       : Boolean(obj)
-      ? { ...obj }
+      ? obj instanceof Element ? obj : { ...obj }
       : obj
     : isFunction
     ? function() {

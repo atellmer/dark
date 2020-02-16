@@ -18,7 +18,7 @@ function delegateEvent(
     };
 
     app.eventStore.set(eventName, new WeakMap([[domElement, handler]]));
-    root.addEventListener(eventName, rootHandler);
+    root.addEventListener(eventName, rootHandler, true);
   } else {
     eventStore.set(domElement, handler);
   }

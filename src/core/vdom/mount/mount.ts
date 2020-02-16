@@ -23,6 +23,7 @@ import {
 } from '../../scope';
 import { ATTR_KEY, COMPONENT_MARKER } from '../../constants';
 import { getIsMemo } from '../../memo/memo';
+import { getIsPortal } from '../../../platform/browser/portal'; // temp
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
@@ -31,11 +32,14 @@ const $$replaceNodeAfterMountHook = Symbol('replaceNodeAfterMountHook');
 const $$nodeRouteHook = Symbol('nodeRouteHook');
 const $$skipNodeMountHook = Symbol('skipNodeMountHook');
 
-type WrapWithRooOptions = {
+
+type SharedOptions = {
   mountedSource: MountedSource;
   mountedNodeId: string;
   mountedComponentId: string;
-};
+}
+
+type WrapWithRooOptions = {} & SharedOptions;
 
 function wrapWithRoot(options: WrapWithRooOptions): VirtualNode {
   const {
@@ -74,11 +78,7 @@ function generateComponentRouteKey(source: MountedSource, fallback: number): num
   return formattedKey;
 }
 
-type FlatVirtualDOMOptions = {
-  mountedSource: MountedSource;
-  mountedNodeId: string;
-  mountedComponentId: string;
-}
+type FlatVirtualDOMOptions = {} & SharedOptions;
 
 function flatVirtualDOM(options: FlatVirtualDOMOptions): VirtualDOM {
   const {
@@ -87,56 +87,47 @@ function flatVirtualDOM(options: FlatVirtualDOMOptions): VirtualDOM {
     mountedComponentId,
   } = options;
   let vNode: VirtualDOM = null;
+  const isList = isArray(mountedSource);
+  const isVNode = isVirtualNode(mountedSource);
+  let mountedSourceList: Array<MountedSource> = [];
 
-  if (getIsComponentFactory(mountedSource)) {
-    vNode = mountVirtualDOM({
-      mountedSource,
-      mountedNodeId,
-      mountedComponentId,
+  if (isList) {
+    mountedSourceList = mountedSource as Array<MountedSource>
+  } else if (isVNode) {
+    vNode = mountedSource as VirtualNode;
+    vNode.nodeId = mountedNodeId;
+    vNode.componentId = mountedComponentId;
+    mountedSourceList = vNode.children;
+  }
+
+  const list = [];
+  const parentNodeId = getParentNodeId(mountedNodeId);
+  const lastId = getLastRouteIdFromNodeId(mountedNodeId);
+  let shift = 0;
+
+  for (let i = 0; i < mountedSourceList.length; i++) {
+    const source = mountedSourceList[i];
+    const nodeId = isList
+      ? parentNodeId + '.' + +(lastId + shift + i)
+      : mountedNodeId + '.' + +(shift + i)
+    const componentId = mountedComponentId + '.' + generateComponentRouteKey(source, i)
+    const mounted = mountVirtualDOM({
+      mountedSource: source,
+      mountedNodeId: nodeId,
+      mountedComponentId: componentId,
     });
-  } else if (Boolean(mountedSource)) {
-    const isList = isArray(mountedSource);
-    const isVNode = isVirtualNode(mountedSource);
-    let mountedSourceList: Array<MountedSource> = [];
 
-    if (isList) {
-      mountedSourceList = mountedSource as Array<MountedSource>
-    } else if (isVNode) {
-      vNode = mountedSource as VirtualNode;
-      vNode.nodeId = mountedNodeId;
-      vNode.componentId = mountedComponentId;
-      mountedSourceList = vNode.children;
+    if (isArray(mounted)) {
+      shift += flatten(mounted).length - 1;
     }
 
-    const list = [];
-    const parentNodeId = getParentNodeId(mountedNodeId);
-    const lastId = getLastRouteIdFromNodeId(mountedNodeId);
-    let shift = 0;
+    list.push(mounted);
+  }
 
-    for (let i = 0; i < mountedSourceList.length; i++) {
-      const source = mountedSourceList[i];
-      const nodeId = isList
-        ? getCompletedNodeIdFromEnd(parentNodeId, Number(lastId + shift + i))
-        : getCompletedNodeIdFromEnd(mountedNodeId, Number(shift + i))
-      const componentId = completeComponentIdFromEnd(mountedComponentId, generateComponentRouteKey(source, i))
-      const mounted = mountVirtualDOM({
-        mountedSource: source,
-        mountedNodeId: nodeId,
-        mountedComponentId: componentId,
-      });
-
-      if (isArray(mounted)) {
-        shift += flatten(mounted).length - 1;
-      }
-
-      list.push(mounted);
-    }
-
-    if (isList) {
-      vNode = flatten(list);
-    } else if (isVNode) {
-      (vNode as VirtualNode).children = flatten(list);
-    }
+  if (isList) {
+    vNode = flatten(list);
+  } else if (isVNode) {
+    (vNode as VirtualNode).children = flatten(list);
   }
 
   return vNode;
@@ -144,10 +135,8 @@ function flatVirtualDOM(options: FlatVirtualDOMOptions): VirtualDOM {
 
 type MountVirtualDOMOptions = {
   mountedSource: MountedSource;
-  mountedNodeId?: string;
-  mountedComponentId?: string;
   fromRoot?: boolean;
-};
+} & Partial<Omit<SharedOptions, 'mountedSource'>>;
 
 function mountVirtualDOM({
   mountedSource,
@@ -156,6 +145,7 @@ function mountVirtualDOM({
   fromRoot = false,
 }: MountVirtualDOMOptions): VirtualDOM {
   let vNode: MountedSource = null;
+  let isList = false;
 
   if (fromRoot) {
     vNode = wrapWithRoot({
@@ -165,15 +155,18 @@ function mountVirtualDOM({
     });
   } else if (getIsComponentFactory(mountedSource)) {
     const componentFactory = mountedSource as ComponentFactory;
+
+    if (getIsPortal(componentFactory)) {
+      mountedNodeId = '0';
+    }
+
     const key = componentFactory.props[ATTR_KEY];
     const componentId = completeComponentIdFromEnd(mountedComponentId, COMPONENT_MARKER);
 
     setMountedComponentFactory(componentFactory);
     setMountedComponentId(componentId);
 
-    const nodeId: string = isFunction(componentFactory.props[$$nodeRouteHook])
-      ? componentFactory.props[$$nodeRouteHook](mountedNodeId)
-      : mountedNodeId;
+    const nodeId: string = mountedNodeId;
     const skipMount = isFunction(componentFactory.props[$$skipNodeMountHook])
       ? componentFactory.props[$$skipNodeMountHook](componentId)
       : false;
@@ -183,15 +176,19 @@ function mountVirtualDOM({
     if (skipMount) {
       vNode = getComponentVirtualNodesById(componentId);
       isDifferentNodeIds = vNode[0] ? vNode[0].nodeId !== nodeId : false;
+      isList = isArray(vNode);
 
-      if (isArray(vNode) && vNode.length === 1) {
+      if (isList && vNode.length === 1) {
         vNode = vNode[0];
       }
     } else {
       vNode = componentFactory.createElement();
+      isList = isArray(vNode);
 
       if (!isMemo) {
-        vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, nodeId, mountedComponentId);
+        if (!vNode || isList && !vNode[0]) {
+          vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, nodeId, mountedComponentId);
+        }
 
         if (!isEmpty(key) && getIsComponentFactory(vNode)) {
           vNode.props[ATTR_KEY] = key;
@@ -202,21 +199,33 @@ function mountVirtualDOM({
     !isMemo && resetHooks(componentId);
 
     vNode = isFunction(componentFactory.props[$$replaceNodeBeforeMountHook])
-      ? componentFactory.props[$$replaceNodeBeforeMountHook](
-        vNode, componentId, nodeId, skipMount, isDifferentNodeIds)
+      ? componentFactory.props[$$replaceNodeBeforeMountHook](vNode, componentId, nodeId, skipMount, isDifferentNodeIds)
       : vNode;
-    vNode = !skipMount ? flatVirtualDOM({
-      mountedSource: vNode,
-      mountedNodeId: nodeId,
-      mountedComponentId: componentId,
-    }) : vNode;
+
+    if (!skipMount) {
+      if (getIsComponentFactory(vNode)) {
+        vNode = mountVirtualDOM({
+          mountedSource: vNode,
+          mountedNodeId: nodeId,
+          mountedComponentId: componentId,
+        });
+      } else if (Boolean(vNode)) {
+        vNode = flatVirtualDOM({
+          mountedSource: vNode,
+          mountedNodeId: nodeId,
+          mountedComponentId: componentId,
+        });
+      }
+    }
+
     vNode = isFunction(componentFactory.props[$$replaceNodeAfterMountHook])
       ? componentFactory.props[$$replaceNodeAfterMountHook](vNode, componentId)
       : vNode;
+    isList = isArray(vNode);
 
     if (!isMemo) {
       if (!skipMount) {
-        if (!isArray(vNode) && !isEmpty(key) && !isEmpty(vNode)) {
+        if (!isList && !isEmpty(key) && !isEmpty(vNode)) {
           setAttribute(vNode as VirtualNode, ATTR_KEY, key);
         }
         setComponentPropsById(componentId, componentFactory.props);
@@ -224,7 +233,7 @@ function mountVirtualDOM({
       }
 
       if (!skipMount || isDifferentNodeIds) {
-        const vNodes = (isArray(vNode) ? vNode : [vNode]) as Array<VirtualNode>;
+        const vNodes = (isList ? vNode : [vNode]) as Array<VirtualNode>;
 
         setComponentVirtualNodesById(componentId, vNodes.filter(Boolean));
       }
@@ -237,7 +246,9 @@ function mountVirtualDOM({
     });
   }
 
-  vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, mountedNodeId, mountedComponentId);
+  if (!vNode || isList && !vNode[0]) {
+    vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, mountedNodeId, mountedComponentId);
+  }
 
   return vNode as VirtualDOM;
 }

@@ -9,11 +9,13 @@ export type VirtualNode = {
   type: VirtualNodeType;
   name?: string;
   isVoid?: boolean;
+  isPortal?: boolean;
   attrs?: Record<string, string>;
   text?: string;
   children: Array<VirtualNode>;
   nodeId: string;
   componentId: string;
+  container?: unknown;
 };
 
 export type VirtualDOM = VirtualNode | Array<VirtualNode>;
@@ -32,10 +34,7 @@ const EMPTY_NODE = 'dark:empty';
 function createVirtualNode(type: VirtualNodeType, config: Partial<VirtualNode> = {}): VirtualNode {
   return {
     isVirtualNode: true,
-    name: null,
-    isVoid: false,
     attrs: {},
-    text: '',
     children: [],
     nodeId: '',
     componentId: '',
@@ -152,6 +151,7 @@ function patchNodeIds(vNode: VirtualDOM, nodeId: string, fromRoot: boolean = fal
 
   for (let i = 0; i < vDOM.length; i++) {
     const vNode = vDOM[i];
+    if (vNode.isPortal) continue;
     if (fromRoot) {
       vNode.nodeId = getCompletedNodeIdFromEnd(getParentNodeId(vNode.nodeId), routeId + i);
     }
@@ -216,6 +216,7 @@ function getParentComponentId(componentId: string): string {
 
 export {
   createVirtualNode,
+  createVirtualTagNode,
   createVirtualTextNode,
   createVirtualCommentNode,
   createVirtualEmptyNode,

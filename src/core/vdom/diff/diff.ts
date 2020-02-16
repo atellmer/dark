@@ -22,6 +22,7 @@ export type VirtualDOMActions =
 export type Commit = {
   action: VirtualDOMActions;
   route: Array<number>;
+  container?: unknown;
   oldValue: VirtualNode | Record<string, number | string | boolean>;
   nextValue: VirtualNode | Record<string, number | string | boolean>;
 };
@@ -31,18 +32,34 @@ const UNIQ_KEY_ERROR = `
   otherwise the comparison algorithm will not work optimally or even will work incorrectly!
 `;
 
-const createCommit = (action: VirtualDOMActions, nodeId: string, oldValue: any, nextValue: any): Commit => {
+const createCommit = (action: VirtualDOMActions, nodeId: string, oldValue: any, nextValue: any, container?: unknown): Commit => {
   const route = nodeId.split('.').map(Number);
 
   return {
     action,
     route,
+    container,
     oldValue,
     nextValue,
   };
 };
 
-function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
+type MapAttributesOptions = {
+  attrName: string;
+  vNode: VirtualNode;
+  nextVNode: VirtualNode;
+  commits: Array<Commit>;
+  container: unknown;
+}
+
+function mapPrevAttributes(options: MapAttributesOptions) {
+  const {
+    attrName,
+    vNode,
+    nextVNode,
+    commits,
+    container,
+  } = options;
   if (!isEmpty(vNode.attrs[attrName]) && isEmpty(nextVNode.attrs[attrName])) {
     commits.push(
       createCommit(
@@ -50,6 +67,7 @@ function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virt
         nextVNode.nodeId,
         createAttribute(attrName, vNode.attrs[attrName]),
         createAttribute(attrName, undefined),
+        container,
       ),
     );
   } else if (nextVNode.attrs[attrName] !== vNode.attrs[attrName]) {
@@ -58,11 +76,19 @@ function mapPrevAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virt
       nextVNode.nodeId,
       createAttribute(attrName, vNode.attrs[attrName]),
       createAttribute(attrName, nextVNode.attrs[attrName]),
+      container,
     ));
   }
 }
 
-function mapNewAttributes(attrName: string, vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
+function mapNewAttributes(options: MapAttributesOptions) {
+  const {
+    attrName,
+    vNode,
+    nextVNode,
+    commits,
+    container,
+  } = options;
   if (isEmpty(vNode.attrs[attrName]) && !isEmpty(nextVNode.attrs[attrName])) {
     commits.push(
       createCommit(
@@ -70,12 +96,26 @@ function mapNewAttributes(attrName: string, vNode: VirtualNode, nextVNode: Virtu
         nextVNode.nodeId,
         createAttribute(attrName, undefined),
         createAttribute(attrName, nextVNode.attrs[attrName]),
+        container,
       ),
     );
   }
 }
 
-function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array<Commit>) {
+type IterateNodesOptions = {
+  vNode: VirtualNode;
+  nextVNode: VirtualNode;
+  commits: Array<Commit>;
+  container: unknown;
+}
+
+function iterateNodes(options: IterateNodesOptions) {
+  const {
+    vNode,
+    nextVNode,
+    container,
+  } = options;
+  let { commits } = options;
   const iterations = Math.max(vNode.children.length, nextVNode.children.length);
   const removingSize = vNode.children.length - nextVNode.children.length;
   const insertingSize = nextVNode.children.length - vNode.children.length;
@@ -91,7 +131,15 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
     const isRemovingNodeByKey = nextVNodeShift < removingSize && isDifferentKeys;
     const isInsertingNodeByKey = vNodeShift < insertingSize && isDifferentKeys;
 
-    commits = getDiff(childVNode, childNextVNode, commits, isRemovingNodeByKey, isInsertingNodeByKey, false);
+    commits = getDiff({
+      vNode: childVNode,
+      nextVNode: childNextVNode,
+      commits,
+      container,
+      isRemovingNodeByKey,
+      isInsertingNodeByKey,
+      fromRoot: false,
+    });
 
     if (isRemovingNodeByKey) {
       nextVNodeShift++;
@@ -104,21 +152,34 @@ function iterateNodes(vNode: VirtualNode, nextVNode: VirtualNode, commits: Array
   return commits;
 }
 
-function getDiff(
-  vNode: VirtualNode,
-  nextVNode: VirtualNode,
-  commits: Array<Commit> = [],
-  isRemovingNodeByKey: boolean = false,
-  isInsertingNodeByKey: boolean = false,
-  fromRoot: boolean = true,
-): Array<Commit> {
+type GetDiffOptions = {
+  vNode: VirtualNode;
+  nextVNode: VirtualNode;
+  commits?: Array<Commit>;
+  container?: unknown;
+  isRemovingNodeByKey?: boolean;
+  isInsertingNodeByKey?: boolean;
+  fromRoot?: boolean;
+}
+
+function getDiff(options: GetDiffOptions): Array<Commit> {
+  const {
+    vNode,
+    nextVNode,
+    container,
+    isRemovingNodeByKey = false,
+    isInsertingNodeByKey = false,
+    fromRoot = true,
+  } = options;
+  let { commits = [] } = options;
   if (!vNode && !nextVNode) return commits;
 
   const key = getNodeKey(vNode);
   const nextKey = getNodeKey(nextVNode);
+  let mountPoint = (nextVNode && nextVNode.container) || (vNode && vNode.container) || container;
 
   if (!vNode) {
-    commits.push(createCommit(ADD_NODE, nextVNode.nodeId, null, nextVNode));
+    commits.push(createCommit(ADD_NODE, nextVNode.nodeId, null, nextVNode, mountPoint));
     if (isUndefined(nextKey) && !isEmptyVirtualNode(nextVNode)) {
       error(UNIQ_KEY_ERROR);
     }
@@ -126,7 +187,7 @@ function getDiff(
   }
 
   if (!nextVNode || isRemovingNodeByKey) {
-    commits.push(createCommit(REMOVE_NODE, vNode.nodeId, vNode, null));
+    commits.push(createCommit(REMOVE_NODE, vNode.nodeId, vNode, null, mountPoint));
     if (isUndefined(key) && !isEmptyVirtualNode(vNode)) {
       error(UNIQ_KEY_ERROR);
     }
@@ -134,7 +195,7 @@ function getDiff(
   }
 
   if (Boolean(vNode && nextVNode && isInsertingNodeByKey)) {
-    commits.push(createCommit(INSERT_NODE, nextVNode.nodeId, vNode, nextVNode));
+    commits.push(createCommit(INSERT_NODE, nextVNode.nodeId, vNode, nextVNode, mountPoint));
     return commits;
   }
 
@@ -144,7 +205,8 @@ function getDiff(
     vNode.name !== nextVNode.name ||
     vNode.text !== nextVNode.text
   ) {
-    commits.push(createCommit(REPLACE_NODE, nextVNode.nodeId, vNode, nextVNode));
+    mountPoint = vNode.isPortal && !nextVNode.isPortal ? container : mountPoint;
+    commits.push(createCommit(REPLACE_NODE, nextVNode.nodeId, vNode, nextVNode, mountPoint));
     return commits;
   }
 
@@ -157,14 +219,31 @@ function getDiff(
     const newAttrs = Object.keys(nextVNode.attrs);
 
     for (const attrName of prevAttrs) {
-      !prevAttrBlackList.includes(attrName) && mapPrevAttributes(attrName, vNode, nextVNode, commits);
+      !prevAttrBlackList.includes(attrName) && mapPrevAttributes({
+        attrName,
+        vNode,
+        nextVNode,
+        commits,
+        container: mountPoint,
+      });
     }
     for (const attrName of newAttrs) {
-      !newAttrBlackList.includes(attrName) && mapNewAttributes(attrName, vNode, nextVNode, commits);
+      !newAttrBlackList.includes(attrName) && mapNewAttributes({
+        attrName,
+        vNode,
+        nextVNode,
+        commits,
+        container: mountPoint,
+      });
     }
   }
 
-  commits = iterateNodes(vNode, nextVNode, commits);
+  commits = iterateNodes({
+    vNode,
+    nextVNode,
+    commits,
+    container: mountPoint,
+  });
 
   if (fromRoot) {
     commits = getSortedByPriorityCommits(commits);

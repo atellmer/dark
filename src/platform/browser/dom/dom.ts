@@ -17,6 +17,8 @@ import { getDiff } from '@core/vdom/diff';
 import { isArray, isFunction, isUndefined } from '@helpers';
 import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
+import { unmountPortalContainers } from '../portal';
+import { createEmptyNode } from '../shared';
 
 type ProcessDOMOptions = {
   vNode: VirtualNode;
@@ -37,6 +39,29 @@ function mountRealNode(
   const hasMountPoint = Boolean(container && container.nodeType === Node.ELEMENT_NODE);
 
   if (vNode.type === 'TAG') {
+    if (vNode.isPortal) {
+      const emptyNode = createEmptyNode();
+
+      if (hasMountPoint) {
+        container.appendChild(emptyNode);
+      } else {
+        container = emptyNode;
+      }
+
+      vNode.isPortal = false;
+
+      const mountPoint = vNode.container as HTMLElement;
+      const nodes = Array.from(mountRealDOM(vNode, mountPoint).childNodes);
+
+      vNode.isPortal = true;
+
+      for (const node of nodes) {
+        mountPoint.appendChild(node);
+      }
+
+      return container;
+    }
+
     const domElement = document.createElement(vNode.name);
     const attrNames = Object.keys(vNode.attrs);
 
@@ -176,6 +201,10 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
     [REPLACE_NODE]: () => {
       const vNode = oldValue as VirtualNode;
 
+      if (vNode.isPortal && !nextVNode.isPortal) {
+        return unmountPortalContainers(vNode);
+      }
+
       if (vNode.type === 'TEXT' && nextVNode.type === 'TEXT') {
         node.textContent = nextVNode.text;
       } else {
@@ -188,6 +217,12 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
       node.parentNode.insertBefore(mountedNode, node);
     },
     [REMOVE_NODE]: () => {
+      const vNode = oldValue as VirtualNode;
+
+      if (vNode.isPortal) {
+        return unmountPortalContainers(vNode);
+      }
+
       node.parentNode.removeChild(node);
     },
     [ADD_ATTRIBUTE]: () => {
@@ -226,21 +261,22 @@ function patchDOM(commits: Commit[], domElement: HTMLElement) {
   const uid = getAppUid();
 
   for (const commit of commits) {
-    applyCommit(uid, commit, domElement);
+    const mountPoint = (commit.container as HTMLElement) || domElement;
+    applyCommit(uid, commit, mountPoint);
   }
 }
 
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
-  const commits = getDiff(vNode, nextVNode);
+  const commits = getDiff({ vNode, nextVNode });
   const heuristicCount = Math.ceil(commits.length * 0.1);
   const transactionCount = heuristicCount >= 100 ? heuristicCount : commits.length;
+
+  // console.log('commits:', commits);
 
   scheduleAsyncTransactions<Commit>(commits, transactionCount, (commits, next) => {
     patchDOM(commits, container);
     next();
   });
-
-  // console.log('commits:', commits);
 }
 
 function scheduleAsyncTransactions<T = any>(

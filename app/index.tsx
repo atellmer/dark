@@ -1,34 +1,35 @@
 import runBench from './benchmark/dark';
 
-runBench();
+//runBench();
 
 
-// import {
-//   h,
-//   createComponent,
-//   Text,
-//   View,
-//   Fragment,
-//   memo,
-//   useState,
-//   useEffect,
-//   useCallback,
-//   useMemo,
-//   useReducer,
-//   useContext,
-//   createContext,
-// } from '../src/core';
-// import { render, useTransitions, createPortal } from '../src/platform/browser';
+import {
+  h,
+  createComponent,
+  Text,
+  View,
+  Fragment,
+  memo,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useReducer,
+  useContext,
+  createContext,
+} from '../src/core';
+import { render, useTransitions, createPortal } from '../src/platform/browser';
 
-// const domElement = document.getElementById('app');
-// const domElement2 = document.getElementById('app2');
+const domElement = document.getElementById('app');
+const domElement2 = document.getElementById('app2');
+const domElementPortal = document.getElementById('portal');
 
-// const div = (props = {}) => View({ ...props, as: 'div' });
-// const button = (props = {}) => View({ ...props, as: 'button' });
-// const table = (props = {}) => View({ ...props, as: 'table' });
-// const tbody = (props = {}) => View({ ...props, as: 'tbody' });
-// const tr = (props = {}) => View({ ...props, as: 'tr' });
-// const td = (props = {}) => View({ ...props, as: 'td' });
+const div = (props = {}) => View({ ...props, as: 'div' });
+const button = (props = {}) => View({ ...props, as: 'button' });
+const table = (props = {}) => View({ ...props, as: 'table' });
+const tbody = (props = {}) => View({ ...props, as: 'tbody' });
+const tr = (props = {}) => View({ ...props, as: 'tr' });
+const td = (props = {}) => View({ ...props, as: 'td' });
 
 
 
@@ -338,4 +339,47 @@ runBench();
 //   render(App(), domElement);
 // }
 
+const SomeComponent = createComponent(({ text }) => {
+  const domElement = useMemo(() => {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
 
+    return element;
+  }, []);
+
+  return [
+    <div>I am portal: {text}</div>,
+    createPortal(
+      Text('hello, ' + text),
+      domElement,
+    ),
+  ];
+});
+
+const MemoSomeComponent = memo(SomeComponent);
+
+const App = createComponent(({ text }) => {
+  return (
+    <div>
+      test
+      {Boolean(text) && createPortal(
+        MemoSomeComponent({ text }),
+        domElementPortal,
+      )}
+    </div>
+  )
+});
+
+render(App({ text: 'Alex' }), domElement);
+
+setTimeout(() => {
+  render(App({ text: 'Piter' }), domElement);
+}, 2000)
+
+setTimeout(() => {
+  render(App({ text: '' }), domElement);
+}, 3000)
+
+setTimeout(() => {
+  render(App({ text: 'Zara' }), domElement);
+}, 4000)
