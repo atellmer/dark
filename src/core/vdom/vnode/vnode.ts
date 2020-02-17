@@ -2,6 +2,7 @@ import { isArray, isEmpty, deepClone } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 import { MountedSource } from '../mount';
 import { MutableRef } from '../../hooks/use-ref';
+import { StandardComponentProps } from '../../component';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
 
@@ -67,7 +68,13 @@ function createVirtualEmptyNode(): VirtualNode {
   return createVirtualCommentNode(EMPTY_NODE);
 }
 
-const Text = (str: string) => createVirtualTextNode(str);
+const Text = (value: string | StandardComponentProps['slot']) => {
+  return typeof value === 'string'
+    ? createVirtualTextNode(value)
+    : isVirtualNode(value)
+      ? (value as VirtualNode).text || ''
+      : '';
+};
 const Comment = (str: string) => createVirtualCommentNode(str);
 const View = (def: ViewDefinition) => {
   const { as, slot, ref, isVoid = false, ...attrs } = def;

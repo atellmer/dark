@@ -1,5 +1,6 @@
 import {
   h,
+  Text,
   createComponent,
   memo,
   useState,
@@ -41,13 +42,13 @@ const Dot = createComponent((props) => {
 
   return (
     <div style={style} onMouseOver={enter} onMouseOut={leave}>
-      {hover ? `* ${props.slot.text} *` : props.slot.text}
+      {hover ? `* ${Text(props.slot)} *` : Text(props.slot)}
     </div>
   );
 });
 
 const MemoDot = memo(Dot, (p, n) =>
-  p.x !== n.x || p.y !== n.y || p.size !== n.size || p.slot.text !== n.slot.text);
+  p.x !== n.x || p.y !== n.y || p.size !== n.size || Text(p.slot) !== Text(n.slot));
 
 const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
   if (s <= targetSize) {

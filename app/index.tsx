@@ -1,6 +1,6 @@
-import runBench from './benchmark/dark';
+// import runBench from './benchmark/dark';
 
-//runBench();
+// runBench();
 
 
 import {
@@ -107,7 +107,7 @@ const td = (props = {}) => View({ ...props, as: 'td' });
 //   });
 // });
 
-// const MemoHeader = memo<HeaderProps & { key?: string }>(Header);
+// const MemoHeader = memo<HeaderProps>(Header);
 
 // const StateList = createComponent<{prefix: string}>(({ prefix }) => {
 //   const [toggle, setToggle] = useState(false);
@@ -305,6 +305,7 @@ const td = (props = {}) => View({ ...props, as: 'td' });
 //   return (
 //     <Fragment>
 //       <MemoHeader
+//         key='header'
 //         onCreate={handleCreate}
 //         onAdd={handleAdd}
 //         onUpdateAll={handleUpdateAll}

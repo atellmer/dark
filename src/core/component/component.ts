@@ -15,16 +15,17 @@ export type ComponentFactory = {
   createElement: () => VirtualDOM | null;
   props: {
     key?: number | string;
-    ref?: MutableRef;
   };
   elementToken: any;
 } & { [key: string]: any };
 
 export type Component<T extends object> = (props: T) => ComponentFactory;
 
-type StandardComponentProps = {
+export type StandardComponentProps = {
+  key?: number | string;
+  ref?: MutableRef;
   slot?: VirtualDOM | ComponentFactory | Array<ComponentFactory> | RenderProps;
-} & { [key: string]: any };
+} & Partial<{ [key: string]: any }>;
 
 type RenderProps = (...args: any) => VirtualDOM;
 

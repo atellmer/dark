@@ -1,4 +1,4 @@
-import { ComponentFactory, createComponent } from '@core/component';
+import { ComponentFactory, StandardComponentProps, createComponent } from '@core/component';
 import {
   getAppUid,
   getCurrentUseStateComponentId,
@@ -11,7 +11,7 @@ import { isArray } from '@helpers';
 import { ATTR_SKIP } from '../constants';
 import { patchNodeIds } from '../vdom/vnode';
 
-type Component<T extends object> = (props?: T) => ComponentFactory;
+type Component<T extends object> = (props?: T & Partial<Pick<StandardComponentProps, 'key' | 'ref' | 'slot'>>) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
