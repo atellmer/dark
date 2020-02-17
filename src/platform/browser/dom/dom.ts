@@ -14,11 +14,13 @@ import {
   VirtualNode,
 } from '@core/vdom';
 import { getDiff } from '@core/vdom/diff';
-import { isArray, isFunction, isUndefined } from '@helpers';
+import { isArray, isFunction, isUndefined, isObject, isNull } from '@helpers';
 import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
 import { unmountPortalContainers } from '../portal';
 import { createEmptyNode } from '../shared';
+import { hasRef } from '@core/hooks/use-ref';
+
 
 type ProcessDOMOptions = {
   vNode: VirtualNode;
@@ -64,6 +66,10 @@ function mountRealNode(
 
     const domElement = document.createElement(vNode.name);
     const attrNames = Object.keys(vNode.attrs);
+
+    if (hasRef(vNode)) {
+      vNode.ref.current = domElement;
+    }
 
     for (const attrName of attrNames) {
       const attrValue = getAttribute(vNode, attrName);
@@ -205,6 +211,10 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
         return unmountPortalContainers(vNode);
       }
 
+      if (hasRef(vNode)) {
+        vNode.ref.current = null;
+      }
+
       if (vNode.type === 'TEXT' && nextVNode.type === 'TEXT') {
         node.textContent = nextVNode.text;
       } else {
@@ -221,6 +231,10 @@ const applyCommit = (uid: number, commit: Commit, domElement: HTMLElement) => {
 
       if (vNode.isPortal) {
         return unmountPortalContainers(vNode);
+      }
+
+      if (hasRef(vNode)) {
+        vNode.ref.current = null;
       }
 
       node.parentNode.removeChild(node);

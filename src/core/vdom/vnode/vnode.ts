@@ -1,6 +1,7 @@
 import { isArray, isEmpty, deepClone } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 import { MountedSource } from '../mount';
+import { MutableRef } from '../../hooks/use-ref';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
 
@@ -16,6 +17,7 @@ export type VirtualNode = {
   nodeId: string;
   componentId: string;
   container?: unknown;
+  ref?: MutableRef;
 };
 
 export type VirtualDOM = VirtualNode | Array<VirtualNode>;
@@ -68,14 +70,19 @@ function createVirtualEmptyNode(): VirtualNode {
 const Text = (str: string) => createVirtualTextNode(str);
 const Comment = (str: string) => createVirtualCommentNode(str);
 const View = (def: ViewDefinition) => {
-  const { as, slot, isVoid = false, ...attrs } = def;
-
-  return createVirtualTagNode({
+  const { as, slot, ref, isVoid = false, ...attrs } = def;
+  const vNode = createVirtualTagNode({
     name: as,
     isVoid,
     attrs,
     children: (isVoid ? [] : isArray(slot) ? slot : [slot]) as Array<VirtualNode>,
   });
+
+  if (ref) {
+    vNode.ref = ref;
+  }
+
+  return vNode;
 };
 
 function isVirtualNode(o: any): o is VirtualNode {

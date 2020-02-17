@@ -1,5 +1,6 @@
 import { isObject } from '@helpers';
 import { VirtualDOM } from '../vdom';
+import { MutableRef } from '../hooks/use-ref';
 
 type ComponentDefinition<P> = (props: P) => any | {};
 
@@ -13,8 +14,8 @@ export type ComponentFactory = {
   displayName: string;
   createElement: () => VirtualDOM | null;
   props: {
-    key?: any;
-    renderHook?: (vNode: VirtualDOM) => boolean;
+    key?: number | string;
+    ref?: MutableRef;
   };
   elementToken: any;
 } & { [key: string]: any };
@@ -29,7 +30,6 @@ type RenderProps = (...args: any) => VirtualDOM;
 
 const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
 const $$componentFactory = Symbol('componentFactory');
-
 
 function createComponent<P extends object>(
   def: ComponentDefinition<P & StandardComponentProps>,
@@ -46,7 +46,7 @@ function createComponent<P extends object>(
       props: computedProps,
       elementToken: (options && options.elementToken) || $$defaultFunctionalComponent,
     };
-    
+
     return factory;
   };
 }

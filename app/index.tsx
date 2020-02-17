@@ -15,6 +15,7 @@ import {
   useCallback,
   useMemo,
   useReducer,
+  useRef,
   useContext,
   createContext,
 } from '../src/core';
@@ -339,47 +340,29 @@ const td = (props = {}) => View({ ...props, as: 'td' });
 //   render(App(), domElement);
 // }
 
-const SomeComponent = createComponent(({ text }) => {
-  const domElement = useMemo(() => {
-    const element = document.createElement('div');
-    document.body.appendChild(element);
 
-    return element;
-  }, []);
+const App = createComponent(({ isOpen }) => {
+  const elementRef = useRef<HTMLDivElement>(null);
 
-  return [
-    <div>I am portal: {text}</div>,
-    createPortal(
-      Text('hello, ' + text),
-      domElement,
-    ),
-  ];
-});
+  useEffect(() => {
+    console.log('ref', elementRef.current);
+  });
 
-const MemoSomeComponent = memo(SomeComponent);
-
-const App = createComponent(({ text }) => {
   return (
     <div>
       test
-      {Boolean(text) && createPortal(
-        MemoSomeComponent({ text }),
-        domElementPortal,
-      )}
+      {isOpen && <div ref={elementRef}>ref</div>}
     </div>
   )
 });
 
-render(App({ text: 'Alex' }), domElement);
+render(App({ isOpen: true }), domElement);
 
 setTimeout(() => {
-  render(App({ text: 'Piter' }), domElement);
+  render(App({ isOpen: false }), domElement);
+}, 1000)
+
+setTimeout(() => {
+  render(App({ isOpen: true }), domElement);
 }, 2000)
 
-setTimeout(() => {
-  render(App({ text: '' }), domElement);
-}, 3000)
-
-setTimeout(() => {
-  render(App({ text: 'Zara' }), domElement);
-}, 4000)
