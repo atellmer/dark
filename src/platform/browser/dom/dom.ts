@@ -19,7 +19,7 @@ import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
 import { unmountPortalContainers } from '../portal';
 import { createEmptyNode } from '../shared';
-import { hasRef } from '@core/hooks/use-ref';
+import { hasRef } from '@core/ref';
 
 
 type ProcessDOMOptions = {

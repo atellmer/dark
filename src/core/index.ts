@@ -7,5 +7,5 @@ export { default as useEffect } from './hooks/use-effect';
 export { default as useCallback } from './hooks/use-callback';
 export { default as useMemo } from './hooks/use-memo';
 export { default as useReducer } from './hooks/use-reducer';
-export { default as useRef } from './hooks/use-ref';
 export { default as createContext, useContext } from './context';
+export { forwardRef, useRef, hasRef, useImperativeHandle } from './ref';

@@ -1,8 +1,9 @@
-import { isObject } from '@helpers';
+import { isObject, error } from '@helpers';
 import { VirtualDOM } from '../vdom';
-import { MutableRef } from '../hooks/use-ref';
+import { MutableRef } from '../ref';
+import { DARK, $$memo, $$fragment } from '../constants';
 
-type ComponentDefinition<P> = (props: P) => any | {};
+type ComponentDefinition<P> = (props: P, ref?: MutableRef) => any;
 
 type ComponentOptions<P> = {
   displayName?: string;
@@ -19,7 +20,7 @@ export type ComponentFactory = {
   elementToken: any;
 } & { [key: string]: any };
 
-export type Component<T extends object> = (props: T) => ComponentFactory;
+export type Component<T = any> = (props: T, ref?: MutableRef) => ComponentFactory;
 
 export type StandardComponentProps = {
   key?: number | string;
@@ -31,22 +32,30 @@ type RenderProps = (...args: any) => VirtualDOM;
 
 const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
 const $$componentFactory = Symbol('componentFactory');
+const refWhiteListMap = new Map()
+  .set($$fragment, true)
+  .set($$memo, true);
 
 function createComponent<P extends object>(
   def: ComponentDefinition<P & StandardComponentProps>,
   options: ComponentOptions<P & StandardComponentProps> = null,
 ) {
-  return (props = {} as P & StandardComponentProps): ComponentFactory => {
+  return (props = {} as P & StandardComponentProps, ref?: MutableRef): ComponentFactory => {
     const displayName = options ? options.displayName : '';
     const defaultProps = (options && options.defaultProps) || {};
-    const computedProps = { ...defaultProps, ...props } as P;
+    const computedProps = { ...defaultProps, ...props } as P & StandardComponentProps;
     const factory = {
       [$$componentFactory]: true,
-      createElement: () => def(factory.props),
+      createElement: () => def(factory.props, ref),
       displayName,
       props: computedProps,
       elementToken: (options && options.elementToken) || $$defaultFunctionalComponent,
     };
+
+    if (Boolean(computedProps.ref) && !refWhiteListMap.get(factory.elementToken)) {
+      delete computedProps.ref;
+      error(`[${DARK}]: To use ref you need to wrap the component with forwardRef!`);
+    }
 
     return factory;
   };

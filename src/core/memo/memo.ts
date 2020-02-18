@@ -8,13 +8,12 @@ import {
 import { setAttribute, VirtualDOM } from '@core/vdom';
 import { $$replaceNodeBeforeMountHook, $$skipNodeMountHook } from '@core/vdom/mount';
 import { isArray } from '@helpers';
-import { ATTR_SKIP } from '../constants';
+import { ATTR_SKIP, $$memo } from '../constants';
 import { patchNodeIds } from '../vdom/vnode';
 
 type Component<T extends object> = (props?: T & Partial<Pick<StandardComponentProps, 'key' | 'ref' | 'slot'>>) => ComponentFactory;
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
-const $$memo = Symbol('memo');
 const getIsMemo = (o) => o && o.elementToken === $$memo;
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {

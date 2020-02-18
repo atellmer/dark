@@ -17,7 +17,9 @@ import {
   useReducer,
   useRef,
   useContext,
+  useImperativeHandle,
   createContext,
+  forwardRef,
 } from '../src/core';
 import { render, useTransitions, createPortal } from '../src/platform/browser';
 
@@ -341,17 +343,32 @@ const td = (props = {}) => View({ ...props, as: 'td' });
 //   render(App(), domElement);
 // }
 
+const SomeComponent = forwardRef(createComponent((props, ref) => {
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    someMethod: () => console.log('elementRef', elementRef),
+  }), []);
+
+  return (
+    <div ref={elementRef}>ref test component</div>
+  )
+}));
+
+const MemoSomeComponent = memo(SomeComponent);
 
 const App = createComponent(({ isOpen }) => {
+  const componentRef = useRef<{someMethod: Function}>(null);
   const elementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('ref', elementRef.current);
+    componentRef.current.someMethod();
   });
 
   return (
     <div>
       test
+      <MemoSomeComponent ref={componentRef} />
       {isOpen && <div ref={elementRef}>ref</div>}
     </div>
   )
@@ -359,11 +376,11 @@ const App = createComponent(({ isOpen }) => {
 
 render(App({ isOpen: true }), domElement);
 
-setTimeout(() => {
-  render(App({ isOpen: false }), domElement);
-}, 1000)
+// setTimeout(() => {
+//   render(App({ isOpen: false }), domElement);
+// }, 1000)
 
-setTimeout(() => {
-  render(App({ isOpen: true }), domElement);
-}, 2000)
+// setTimeout(() => {
+//   render(App({ isOpen: true }), domElement);
+// }, 2000)
 

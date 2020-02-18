@@ -1,9 +1,8 @@
 import { createComponent, getIsComponentFactory, ComponentFactory } from '../component';
 import { isVirtualNode, setAttribute, VirtualNode } from '../vdom/vnode';
-import { ATTR_KEY } from '../constants';
+import { ATTR_KEY, $$fragment } from '../constants';
 import { isEmpty, isArray, isFunction } from '@helpers';
 
-const $$fragment = Symbol('fragment');
 
 function setKey(element: ComponentFactory | VirtualNode, key: string | number) {
 	if (getIsComponentFactory(element)) {
