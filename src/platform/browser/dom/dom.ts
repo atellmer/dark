@@ -14,12 +14,13 @@ import {
   VirtualNode,
 } from '@core/vdom';
 import { getDiff } from '@core/vdom/diff';
-import { isArray, isFunction, isUndefined, isObject, isNull } from '@helpers';
+import { isArray, isFunction, isUndefined, getTime } from '@helpers';
 import { getAppUid } from '../../../core/scope/scope';
 import { delegateEvent } from '../events/events';
 import { unmountPortalContainers } from '../portal';
 import { createEmptyNode } from '../shared';
 import { hasRef } from '@core/ref';
+import { getCurrentFiber } from '@core/fiber';
 
 
 type ProcessDOMOptions = {
@@ -281,16 +282,30 @@ function patchDOM(commits: Commit[], domElement: HTMLElement) {
 }
 
 function processDOM({ vNode = null, nextVNode = null, container = null }: ProcessDOMOptions) {
-  const commits = getDiff({ vNode, nextVNode });
-  const heuristicCount = Math.ceil(commits.length * 0.1);
-  const transactionCount = heuristicCount >= 100 ? heuristicCount : commits.length;
+  const startTime = getTime();
 
-  // console.log('commits:', commits);
-
-  scheduleAsyncTransactions<Commit>(commits, transactionCount, (commits, next) => {
-    patchDOM(commits, container);
-    next();
-  });
+  try {
+    const commits = getDiff({ vNode, nextVNode, startTime });
+    // console.log('commits:', commits);
+    const heuristicCount = Math.ceil(commits.length * 0.1);
+    const transactionCount = heuristicCount >= 100 ? heuristicCount : commits.length;
+    scheduleAsyncTransactions<Commit>(commits, transactionCount, (commits, next) => {
+      patchDOM(commits, container);
+      next();
+    });
+  } catch (e) {
+    if (e instanceof Promise) {
+      e.then((commits: Array<Commit>) => {
+        // console.log('commits', commits);
+        const heuristicCount = Math.ceil(commits.length * 0.1);
+        const transactionCount = heuristicCount >= 100 ? heuristicCount : commits.length;
+        scheduleAsyncTransactions<Commit>(commits, transactionCount, (commits, next) => {
+          patchDOM(commits, container);
+          next();
+        });
+      })
+    }
+  }
 }
 
 function scheduleAsyncTransactions<T = any>(

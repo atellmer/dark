@@ -1,6 +1,15 @@
-import { isEmpty, isUndefined, error } from '@helpers';
+import { isEmpty, isUndefined, error, getTime } from '@helpers';
 import { ATTR_KEY, ATTR_SKIP } from '../../constants';
-import { createAttribute, getAttribute, getNodeKey, isTagVirtualNode, VirtualNode, isEmptyVirtualNode } from '../vnode';
+import {
+  createAttribute,
+  getAttribute,
+  getNodeKey,
+  isTagVirtualNode,
+  VirtualNode,
+  isEmptyVirtualNode,
+  isVirtualNode,
+} from '../vnode';
+
 
 const ADD_NODE = 'ADD_NODE';
 const INSERT_NODE = 'INSERT_NODE';
@@ -107,6 +116,7 @@ type IterateNodesOptions = {
   nextVNode: VirtualNode;
   commits: Array<Commit>;
   container: unknown;
+  startTime: number;
 }
 
 function iterateNodes(options: IterateNodesOptions) {
@@ -114,6 +124,7 @@ function iterateNodes(options: IterateNodesOptions) {
     vNode,
     nextVNode,
     container,
+    startTime,
   } = options;
   let { commits } = options;
   const iterations = Math.max(vNode.children.length, nextVNode.children.length);
@@ -139,6 +150,7 @@ function iterateNodes(options: IterateNodesOptions) {
       isRemovingNodeByKey,
       isInsertingNodeByKey,
       fromRoot: false,
+      startTime,
     });
 
     if (isRemovingNodeByKey) {
@@ -160,6 +172,7 @@ type GetDiffOptions = {
   isRemovingNodeByKey?: boolean;
   isInsertingNodeByKey?: boolean;
   fromRoot?: boolean;
+  startTime: number;
 }
 
 function getDiff(options: GetDiffOptions): Array<Commit> {
@@ -170,9 +183,18 @@ function getDiff(options: GetDiffOptions): Array<Commit> {
     isRemovingNodeByKey = false,
     isInsertingNodeByKey = false,
     fromRoot = true,
+    startTime,
   } = options;
+  const time = getTime();
   let { commits = [] } = options;
+
+  if (time - startTime >= 32) {
+    //throw new Promise(resolve => resolve(commits));
+    //to make restore
+  }
+
   if (!vNode && !nextVNode) return commits;
+  if ((vNode && !isVirtualNode(vNode)) || (nextVNode && !isVirtualNode(nextVNode))) return commits;
 
   const key = getNodeKey(vNode);
   const nextKey = getNodeKey(nextVNode);
@@ -243,6 +265,7 @@ function getDiff(options: GetDiffOptions): Array<Commit> {
     nextVNode,
     commits,
     container: mountPoint,
+    startTime,
   });
 
   if (fromRoot) {

@@ -17,8 +17,7 @@ const Fragment = createComponent(
 		if (!isEmpty(key) && Boolean(slot)) {
 			if (isArray(slot)) {
 				for (let i = 0; i < slot.length; i++) {
-					let newKey = `${key}:${i}`;
-					setKey(slot[i], newKey);
+					setKey(slot[i], `${key}:${i}`);
 				}
 			} else if (!isFunction(slot)) {
 				setKey(slot, key);
@@ -27,7 +26,7 @@ const Fragment = createComponent(
 
 		return slot || null;
 	},
-	{ elementToken: $$fragment }
+	{ elementToken: $$fragment },
 );
 
 const isFragment = (o) => o && o.elementToken === $$fragment;

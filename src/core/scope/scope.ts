@@ -2,6 +2,7 @@ import { VirtualNode, getPatchedNodeId } from '../vdom/vnode';
 import { ComponentFactory } from '../component';
 import { truncateComponentId } from '@helpers';
 import { Context, ContextProviderStore } from '../context';
+import { FiberInstance } from '../fiber';
 
 type ScopeType = {
   registery: Map<number, AppType>;
@@ -14,20 +15,18 @@ type ScopeType = {
 type AppType = {
   nativeElement: unknown;
   vdom: VirtualNode;
+  fiber: {
+    current: FiberInstance;
+  };
   componentStore: Record<string, {
     props?: any;
     vNodes?: Array<VirtualNode>;
     nestedComponentIdsMap?: Record<string, boolean>;
-  }>
+  }>;
   eventStore: Map<
     string,
     WeakMap<any, Function>
   >;
-  portalStore: Record<string, {
-    vNode: VirtualNode;
-    unmountContainer: Function;
-    time: number;
-  }>;
   memoStore: Record<string, {
     props: any;
   }>;
@@ -184,9 +183,11 @@ function createApp(nativeElement: unknown): AppType {
   return {
     nativeElement,
     vdom: null,
+    fiber: {
+      current: null,
+    },
     componentStore: {},
     eventStore: new Map(),
-    portalStore: {},
     memoStore: {},
     hookStore: {},
     contextStore: new Map(),
