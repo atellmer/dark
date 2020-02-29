@@ -50,11 +50,12 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     const app = getRegistery().get(zoneId);
     const vNode = getVirtualDOM(zoneId);
 
+    // const nextVNode = mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
+    // app.vdom = nextVNode;
+    // processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
+
     mountFiber.execute(() => {
-      asyncMountVirtualDOM({
-        mountedSource: source,
-        fromRoot: true,
-      }, (nextVNode, complete) => {
+      asyncMountVirtualDOM({ mountedSource: source, fromRoot: true }, (nextVNode, complete) => {
         complete && (app.vdom = nextVNode);
 
         processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });

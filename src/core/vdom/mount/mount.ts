@@ -24,7 +24,7 @@ import {
 import { ATTR_KEY, COMPONENT_MARKER } from '../../constants';
 import { getIsMemo } from '../../memo/memo';
 import { getIsPortal } from '../../../platform/browser/portal'; // temp
-import createFiber, { FiberOptions } from '../../fiber';
+import createFiber from '../../fiber';
 
 export type MountedSource = VirtualDOM | ComponentFactory | Array<ComponentFactory> | null | undefined;
 
@@ -32,6 +32,7 @@ const $$replaceNodeBeforeMountHook = Symbol('replaceNodeBeforeMountHook');
 const $$replaceNodeAfterMountHook = Symbol('replaceNodeAfterMountHook');
 const $$skipNodeMountHook = Symbol('skipNodeMountHook');
 
+const mountFiber = createFiber();
 
 type SharedOptions = {
   mountedSource: MountedSource;
@@ -41,7 +42,7 @@ type SharedOptions = {
 
 type WrapWithRooOptions = {} & SharedOptions;
 
-function wrapWithRoot(options: WrapWithRooOptions, fiberOptions: FiberOptions): VirtualNode {
+function wrapWithRoot(options: WrapWithRooOptions): VirtualNode {
   const {
     mountedNodeId,
     mountedComponentId,
@@ -59,7 +60,7 @@ function wrapWithRoot(options: WrapWithRooOptions, fiberOptions: FiberOptions): 
     mountedSource,
     mountedNodeId: getCompletedNodeIdFromEnd(mountedNodeId, 0),
     mountedComponentId,
-  }, fiberOptions);
+  });
 
   vNode = createVirtualNode('TAG', {
     name: 'root',
@@ -82,24 +83,12 @@ type FlatVirtualDOMOptions = {} & SharedOptions;
 
 let pool = [];
 
-function flatVirtualDOM(options: FlatVirtualDOMOptions, fiberOptions: FiberOptions): VirtualDOM {
-  const {
-    scheduleNextFrame,
-    putToCache,
-    takeFromCache,
-  } = (fiberOptions || {});
-  const isAsync = Boolean(scheduleNextFrame);
+function flatVirtualDOM(options: FlatVirtualDOMOptions): VirtualDOM {
   const {
     mountedSource,
     mountedNodeId,
     mountedComponentId,
   } = options;
-
-  if (isAsync) {
-    const cache = takeFromCache(`${mountedComponentId}:node`);
-
-    if (cache) return cache;
-  }
 
   let vNode: VirtualDOM = null;
   const isList = isArray(mountedSource);
@@ -121,18 +110,13 @@ function flatVirtualDOM(options: FlatVirtualDOMOptions, fiberOptions: FiberOptio
     }
   }
 
-  const list =  isAsync
-    ? takeFromCache(`${mountedComponentId}:list`) || []
-    : [];
-  const start = isAsync
-    ? takeFromCache(`${mountedComponentId}:index`) || 0
-    : 0;
+  const list =  [];
 
   const parentNodeId = getParentNodeId(mountedNodeId);
   const lastId = getLastRouteIdFromNodeId(mountedNodeId);
   let shift = 0;
 
-  for (let i = start; i < mountedSourceList.length; i++) {
+  for (let i = 0; i < mountedSourceList.length; i++) {
     const source = mountedSourceList[i];
     const nodeId = isList
       ? parentNodeId + '.' + +(lastId + shift + i)
@@ -142,28 +126,19 @@ function flatVirtualDOM(options: FlatVirtualDOMOptions, fiberOptions: FiberOptio
       mountedSource: source,
       mountedNodeId: nodeId,
       mountedComponentId: componentId,
-    }, fiberOptions);
+    });
 
     if (isArray(vDOM)) {
       shift += flatten(vDOM).length - 1;
     }
 
     list.push(vDOM);
-
-    if (isAsync) {
-      putToCache(`${mountedComponentId}:index`, i + 1);
-      putToCache(`${mountedComponentId}:list`, list);
-    }
   }
 
   if (isList) {
     vNode = flatten(list);
   } else if (isVNode) {
     (vNode as VirtualNode).children = flatten(list);
-  }
-
-  if (isAsync) {
-    putToCache(`${mountedComponentId}:node`, vNode);
   }
 
   return vNode;
@@ -174,13 +149,8 @@ type MountVirtualDOMOptions = {
   fromRoot?: boolean;
 } & Partial<Omit<SharedOptions, 'mountedSource'>>;
 
-function mountVirtualDOM(options: MountVirtualDOMOptions, fiberOptions: FiberOptions = null): VirtualDOM {
-  const {
-    scheduleNextFrame,
-    putToCache,
-    takeFromCache,
-  } = (fiberOptions || {});
-  const isAsync = Boolean(scheduleNextFrame);
+function mountVirtualDOM(options: MountVirtualDOMOptions): VirtualDOM {
+  const isFiberExecuting = mountFiber.detectExecuting();
   const {
     mountedSource,
     mountedComponentId = '0',
@@ -191,11 +161,13 @@ function mountVirtualDOM(options: MountVirtualDOMOptions, fiberOptions: FiberOpt
   } = options;
   let vNode: MountedSource = null;
   let isList = false;
+  const cacheKey = `${mountedComponentId}:${mountedNodeId}`;
 
-  if (isAsync) {
-    const cache = takeFromCache(mountedComponentId);
+  if (isFiberExecuting) {
+    mountFiber.addToStack(() => mountVirtualDOM(options));
+    const cache = mountFiber.takeFromCache(cacheKey);
 
-    //if (cache) return cache;
+    if (cache) return cache;
   }
 
   if (fromRoot) {
@@ -203,7 +175,7 @@ function mountVirtualDOM(options: MountVirtualDOMOptions, fiberOptions: FiberOpt
       mountedSource,
       mountedNodeId,
       mountedComponentId,
-    }, fiberOptions);
+    });
   } else if (getIsComponentFactory(mountedSource)) {
     const componentFactory = mountedSource as ComponentFactory;
 
@@ -259,13 +231,13 @@ function mountVirtualDOM(options: MountVirtualDOMOptions, fiberOptions: FiberOpt
           mountedSource: vNode,
           mountedNodeId: nodeId,
           mountedComponentId: componentId,
-        }, fiberOptions);
+        });
       } else if (Boolean(vNode)) {
         vNode = flatVirtualDOM({
           mountedSource: vNode,
           mountedNodeId: nodeId,
           mountedComponentId: componentId,
-        }, fiberOptions);
+        });
       }
     }
 
@@ -294,29 +266,26 @@ function mountVirtualDOM(options: MountVirtualDOMOptions, fiberOptions: FiberOpt
       mountedSource,
       mountedNodeId,
       mountedComponentId,
-    }, fiberOptions);
+    });
   }
 
   if (!vNode || isList && !vNode[0]) {
     vNode = getEmptyVirtualNodeIfNodeNotExists(vNode as VirtualDOM, mountedNodeId, mountedComponentId);
   }
 
-  if (isAsync) {
-    putToCache(mountedComponentId, vNode);
-  }
+  if (isFiberExecuting) {
+    mountFiber.putToCache(cacheKey, vNode);
 
-  if (isAsync && pool[pool.length - 2]) {
-    // console.log('pool', deepClone(pool));
-    scheduleNextFrame(() => {
-      const vNode = createVirtualNode('TAG', {
-        name: 'root',
-        nodeId: mountedNodeId,
-        componentId: '0.-1',
-        children: [pool[pool.length - 2]],
+    if (pool[pool.length - 2]) {
+      mountFiber.requestFrame(() => {
+        return createVirtualNode('TAG', {
+          name: 'root',
+          nodeId: mountedNodeId,
+          componentId: '0.-1',
+          children: [pool[pool.length - 2]],
+        });
       });
-
-      return vNode;
-    });
+    }
   }
 
   return vNode as VirtualDOM;
@@ -342,8 +311,6 @@ function getEmptyVirtualNodeIfNodeNotExists(
 type AsyncMountVirtualDOMCallback = (nextVNode: VirtualNode, complete: boolean) => void;
 
 type AsyncMountVirtualDOM = (options: MountVirtualDOMOptions, cb: AsyncMountVirtualDOMCallback) => void;
-
-const mountFiber = createFiber(16);
 
 const asyncMountVirtualDOM =  mountFiber.make(mountVirtualDOM) as AsyncMountVirtualDOM;
 
