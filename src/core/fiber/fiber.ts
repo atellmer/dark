@@ -1,173 +1,82 @@
-import { getRegistery, getAppUid } from '../scope';
-import { getTime } from '@helpers';
 
+export type FiberOptions = {
+  scheduleNextFrame: (cb: (args: any) => void) => void;
+  putToCache: (key: any, value: any) => void;
+  takeFromCache: (key: any) => any;
+};
 
 type FiberScope = {
-  startTime: number;
-  stack: Array<any>;
-  isStackBlocked: boolean;
-  isDeadLineBlocked: boolean;
+  executeTime: number;
+  resolver: (...args: Array<any>) => void,
+  cache: Map<any, any>;
 }
 
-export type FiberInstance<T = {}, O = {}, V = {}> = {
-  run: (context: T) => void;
-  pushToStack: (context: T) => void;
-  putToCache: (value: any, key: () => any) => void;
-  takeFromCache: TakeFormCache<V>;
-  checkDeadline: (getOptions: O) => void;
-};
+const MAX_TIME = 16;
 
-type TakeFormCache<V = {}> = (key: () => any) => V | null;
+function createFiber() {
+  let scope: FiberScope = null;
 
-type FiberOptions<O, T> = {
-  fn: FiberFunction<O, T>;
-  effect: FiberEffect<O>;
-  mutateOptions?: (options: O) => O;
-};
-type FiberFunction<O, T> = (effect: FiberEffect<O>, args: T) => void;
-type FiberEffect<O> = (options: O) => void;
-
-
-const MAX_TIME = 32;
-
-const mutateOptionsDefault = x => x;
-
-const Fiber = <O, T>(options: FiberOptions<O, T>) => {
-  const {
-    fn,
-    effect,
-    mutateOptions = mutateOptionsDefault,
-  } = options;
-  let instance;
-  const cache = new Map();
-  let scope: FiberScope = createFiberScope();
-
-  setCurrentFiber(null);
-
-  function run(args: T) {
-    try {
-      scope = createFiberScope();
-      fn((options) => effect(options), args);
-    } catch (e) {
-      if (e instanceof Promise) {
-        e.then((options: O) => {
-          scope.isStackBlocked = true;
-          const stack = [...scope.stack].reverse();
-
-          // console.log('stack', stack);
-
-          effect(mutateOptions(options));
-          requestAnimationFrame(() => {
-            try {
-              for (const context of stack) {
-                const fiber = getCurrentFiber();
-
-                if (fiber === instance) {
-                  run(context);
-                  scope.stack.pop();
-                } else {
-                  throw new Promise(resolve => resolve());
-                }
-              }
-            } catch (e) {}
-          });
-        });
-      }
-    }
-  };
-
-  function pushToStack(context: T) {
-    !scope.isStackBlocked && scope.stack.push(context);
-  }
-
-  function putToCache<T>(value: T, key: () => any) {
-    cache.set(key(), value);
-  }
-
-  function takeFromCache<V>(key: () => any): V | null {
-    return cache.get(key()) || null;
-  }
-
-  function checkDeadline(getOptions: () => O) {
-    const timeDiff = getTime() - scope.startTime;
-    const deadline = timeDiff >= MAX_TIME;
-
-    if (deadline) {
-      throw new Promise<O>(resolve => resolve(getOptions()));
-    }
-  }
-
-  function createFiberScope(): FiberScope {
+  function createScope(cache): FiberScope {
     return {
-      startTime: getTime(),
-      stack: [],
-      isStackBlocked: false,
-      isDeadLineBlocked: false,
+      executeTime: performance.now(),
+      resolver: () => {},
+      cache,
     };
   }
 
-  instance = {
-    run,
-    pushToStack,
-    putToCache,
-    takeFromCache,
-    checkDeadline,
+  function requestNextFrame(...args) {
+    throw new Promise(resolve => {
+      resolve([...args]);
+    });
+  }
+
+  function detectLimit(startTime: number): boolean {
+    const now = performance.now();
+
+    return now - startTime >= MAX_TIME;
+  }
+
+  function make(fn: (...args: Array<unknown | FiberOptions>) => any): (...args: Array<any>) => void {
+    return (...args) => {
+      const startTime = performance.now();
+      const result = fn(...args.slice(0, -1), {
+        scheduleNextFrame: (cb: Function) => detectLimit(startTime) && requestNextFrame(cb()),
+        putToCache: (key, value) => scope.cache.set(key, value),
+        takeFromCache: key => scope.cache.get(key),
+      });
+      scope.resolver = args[args.length - 1];
+      scope.resolver(result, true);
+    };
+  }
+
+  function execute(fn: Function, fromRoot: boolean = true) {
+
+    if (fromRoot) {
+      scope = createScope(new Map());
+    }
+
+    try {
+      fn();
+    } catch (promise) {
+      if (promise instanceof Promise) {
+        const breakTime = performance.now();
+        promise.then(args => {
+          scope.resolver(args, false);
+          if (scope.executeTime < breakTime) {
+          requestAnimationFrame(() => {
+            //console.log('!!!new frame!!!');
+              execute(fn, false);
+            });
+          }
+        });
+      }
+    }
+  }
+
+  return {
+    make,
+    execute,
   };
-
-  setCurrentFiber(instance);
-
-  return instance;
 }
 
-function getCurrentFiber<T, O, V>() {
-  const { fiber } = getRegistery().get(getAppUid());
-
-  return fiber.current as FiberInstance<T, O, V>;
-}
-
-function setCurrentFiber(current: FiberInstance) {
-  const { fiber } = getRegistery().get(getAppUid());
-
-  fiber.current = current;
-}
-
-export {
-  getCurrentFiber,
-  setCurrentFiber,
-}
-
-export default Fiber;
-
-
-// function asyncMountVirtualDOM(options: MountVirtualDOMOptions, cb: Function) {
-//   fromAsync = true;
-//   try {
-//     const vNode = mountVirtualDOM({ ...options, fromRoot: true }) as VirtualNode;
-//     console.log('full render', deepClone(vNode));
-//     isBlockStack = false;
-//     deadline = false;
-//     vNodeMap = {};
-//     stack = [];
-//     cb(vNode, true);
-//   } catch (e) {
-//     if (e instanceof Promise) {
-//       e.then(vNode => {
-//         isBlockStack = true;
-//         //console.log('stack', [...stack]);
-//         console.log('request new frame', deepClone(vNode));
-//         cb(vNode); // provide only attrs or text changes
-
-//         requestAnimationFrame(() => {
-//           stack.pop();
-//           for (const context of stack.reverse()) {
-//             // console.log('context', context);
-//             // console.log('vNodeMap', vNodeMap);
-//             asyncMountVirtualDOM({ ...context }, (...args) => {
-//               context.fromRoot && cb(...args);
-//             });
-//           }
-//         })
-//       });
-//     }
-//   }
-// }
+export default createFiber;

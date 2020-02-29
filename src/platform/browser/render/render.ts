@@ -1,14 +1,14 @@
 import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@core/scope';
 import { VirtualNode, MountedSource } from '@core/vdom';
-import { mountVirtualDOM } from '@core/vdom/mount';
+import { mountVirtualDOM, asyncMountVirtualDOM, mountFiber } from '@core/vdom/mount';
 import { isUndefined, isFunction, deepClone } from '../../../helpers';
 import { mountRealDOM, processDOM } from '../dom/dom';
-import Fiber, { setCurrentFiber } from '@core/fiber';
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
 let isInternalRenderCall = false;
 let zoneCount = 0;
+
 
 function render(source: MountedSource, container: HTMLElement, onRender?: Function) {
   const isMounted = !isUndefined(zoneIdByRootNodeMap.get(container));
@@ -50,33 +50,15 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     const app = getRegistery().get(zoneId);
     const vNode = getVirtualDOM(zoneId);
 
-    Fiber<AsyncRenderOptions, { mountedSource: MountedSource, fromRoot: boolean }>({
-      fn: (effect, args) => {
-        const options = {
-          vNode: mountVirtualDOM(args) as VirtualNode,
-          replaceState: true,
-        };
-        args.fromRoot && effect(options);
-      },
-      effect: (options) => {
-        const {
-          vNode: nextVNode,
-          replaceState,
-        } = options;
-        if (replaceState) {
-          setCurrentFiber(null);
-          app.vdom = nextVNode;
-          //console.log('vdom: ', deepClone(app.vdom));
-        }
+    mountFiber.execute(() => {
+      asyncMountVirtualDOM({
+        mountedSource: source,
+        fromRoot: true,
+      }, (nextVNode, complete) => {
+        complete && (app.vdom = nextVNode);
+
         processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
-      },
-      mutateOptions: (options) => {
-        options.replaceState = false;
-        return options;
-      },
-    }).run({
-      mountedSource: source,
-      fromRoot: true,
+      });
     });
   }
 
@@ -89,10 +71,5 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
 
   isFunction(onRender) && onRender();
 }
-
-type AsyncRenderOptions = {
-  vNode: VirtualNode;
-  replaceState: boolean;
-};
 
 export default render;
