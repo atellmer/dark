@@ -1,14 +1,15 @@
 import { createApp, getAppUid, getRegistery, getVirtualDOM, setAppUid } from '@core/scope';
 import { VirtualNode, MountedSource } from '@core/vdom';
-import { mountVirtualDOM, asyncMountVirtualDOM, mountFiber } from '@core/vdom/mount';
+import { mountVirtualDOM } from '@core/vdom/mount';
 import { isUndefined, isFunction, deepClone } from '../../../helpers';
 import { mountRealDOM, processDOM } from '../dom/dom';
+import { Fiber } from '@core/fiber';
+
 
 const zoneIdByRootNodeMap = new WeakMap();
 let renderInProcess = false;
 let isInternalRenderCall = false;
 let zoneCount = 0;
-
 
 function render(source: MountedSource, container: HTMLElement, onRender?: Function) {
   const isMounted = !isUndefined(zoneIdByRootNodeMap.get(container));
@@ -54,13 +55,17 @@ function render(source: MountedSource, container: HTMLElement, onRender?: Functi
     // app.vdom = nextVNode;
     // processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
 
-    mountFiber.execute(() => {
-      asyncMountVirtualDOM({ mountedSource: source, fromRoot: true }, (nextVNode, complete) => {
-        complete && (app.vdom = nextVNode);
+    Fiber.execute(result => {
+      const nextVNode = result || mountVirtualDOM({ mountedSource: source, fromRoot: true }) as VirtualNode;
 
-        processDOM({ vNode, nextVNode, container: app.nativeElement as HTMLElement });
+      processDOM({
+        vNode,
+        nextVNode,
+        container: app.nativeElement as HTMLElement,
       });
-    });
+
+      !result && (app.vdom = nextVNode);
+    }, requestAnimationFrame);
   }
 
   if (!isInternalRenderCall) {

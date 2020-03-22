@@ -34,10 +34,10 @@ function memo<T extends object>(
     const app = getRegistery().get(getAppUid());
     const skipMountHook = (componentId: string): boolean => {
       if (Boolean(app.memoStore[componentId])) {
-        const memoStoreItem = app.memoStore[componentId];
+        const prevProps = app.memoStore[componentId].props;
         const currentUseStateComponentId = getCurrentUseStateComponentId();
         const fromUseState = currentUseStateComponentId === componentId;
-        const needUpdate = fromUseState || shouldUpdate(memoStoreItem.props, props as T);
+        const needUpdate = fromUseState || shouldUpdate(prevProps, props as T);
 
         setCurrentUseStateComponentId('');
 

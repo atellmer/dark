@@ -1,125 +1,72 @@
-type FiberScope = {
-  stack: Array<Function>;
-  isFreezed: boolean;
-  isExecuting: boolean;
-  startTime: number;
-  resolver: (...args: Array<any>) => void,
+import { getTime } from '@helpers';
+
+
+type Scope = {
   cache: Map<any, any>;
-}
+  startTime: number;
+  createTime: number;
+};
 
-const MAX_TIME = 160000;
+const FRAME_TIME = 16;
+const LIVE_TIME = 10000;
+let id = 0;
 
-function createFiber() {
-  let scope: FiberScope = null;
+class Fiber {
+  public static current: Fiber = null;
+  public static execute(
+    fn: (result: any) => any,
+    raf: Function,
+    fiber: Fiber = new Fiber(),
+  ) {
+    const scope = fiber.getScope();
 
-  function createScope(): FiberScope {
-    return {
-      stack: [],
-      isFreezed: false,
-      isExecuting: false,
-      startTime: performance.now(),
-      resolver: () => {},
-      cache: new Map(),
-    };
-  }
-
-  function detectOverLimit(startTime: number): boolean {
-    return performance.now() - startTime >= MAX_TIME;
-  }
-
-  function addToStack(fn: Function) {
-    !scope.isFreezed && scope.stack.push(fn);
-  }
-
-  function requestFrame(...args) {
-    if (!detectOverLimit(scope.startTime)) return;
-    throw new Promise(resolve => {
-      resolve([...args]);
-    });
-  }
-
-  function putToCache(key: any, value: any) {
-    scope.cache.set(key, value);
-  }
-
-  function takeFromCache(key: any) {
-    return scope.cache.get(key);
-  }
-
-  function detectExecuting() {
-    return scope && scope.isExecuting;;
-  }
-
-  function make(fn: (...args: Array<unknown>) => any): (...args: Array<any>) => void {
-    return (...args) => {
-      scope.startTime = performance.now();
-      scope.resolver = args[args.length - 1];
-      scope.resolver(fn(...args), true);
-      scope = createScope();
-    };
-  }
-
-  function execute(fn: Function, fromRoot = true) {
-    fromRoot && (scope = createScope());
-    scope.isExecuting = true;
-
+    scope.startTime = getTime();
+    Fiber.current = fiber;
     try {
-      fn();
+      fn(null);
+      Fiber.current = null;
     } catch (promise) {
       if (promise instanceof Promise) {
-        scope.isFreezed = true;
-        const breakTime = performance.now();
+        promise.then((result) => {
+          const fiber = Fiber.current;
 
-        promise.then(args => {
-          scope.resolver(args, false);
-          const stack = [...scope.stack].reverse();
-          requestAnimationFrame(() => {
-            console.log('!!!new frame!!!');
+          fn(result);
 
-            for (const fn of stack) {
-              execute(fn, false);
-            }
+          if (performance.now() - fiber.scope.createTime > LIVE_TIME) {
+            Fiber.current = null;
+            return;
+          }
 
-            scope.stack = [];
-            scope.isFreezed = false;
+          raf(() => {
+            //console.log('!!!new frame!!!', fiber.id);
+            Fiber.execute(fn, raf, fiber);
           });
         });
       }
     }
+  };
+
+  public id = ++id;
+
+  private scope: Scope = {
+    cache: new Map(),
+    createTime: getTime(),
+    startTime: getTime(),
+  };
+
+  public cache = (key: any, value?: any) => {
+    return value ? this.scope.cache.set(key, value) : this.scope.cache.get(key);
   }
 
-  return {
-    make,
-    execute,
-    detectExecuting,
-    addToStack,
-    requestFrame,
-    putToCache,
-    takeFromCache,
-  };
+  public quant = (cb: Function)  => {
+    if (getTime() - this.scope.startTime > FRAME_TIME) {
+      throw new Promise(resolve => resolve(cb()));
+    };
+  }
+
+  private getScope = () => this.scope;
 }
 
-function debounce(fn: Function, delay: number = 0) {
-  let calls = [];
-  let prevResult;
-  let timerId = null;
-
-  if (process.env.NODE_ENV === 'test') {
-    return fn;
-  }
-
-  return (...args) => {
-    calls.push(() => fn(...args));
-    clearTimeout(timerId);
-    timerId = setTimeout(() => {
-      if (calls.length > 0) {
-        prevResult = calls[calls.length - 1]();
-        calls = [];
-      }
-    }, delay);
-
-    return prevResult;
-  };
+export {
+  Fiber,
 };
-
-export default createFiber;

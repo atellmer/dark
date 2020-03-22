@@ -140,6 +140,8 @@ function update() {
   requestAnimationFrame(update);
 }
 
+//renderApp();
+
 requestAnimationFrame(update);
 
 

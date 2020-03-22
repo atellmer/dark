@@ -1,7 +1,7 @@
 import { isArray, isEmpty, deepClone } from '@helpers';
 import { ATTR_KEY } from '../../constants';
 import { MountedSource } from '../mount';
-import { MutableRef } from '../../hooks/use-ref';
+import { MutableRef } from '../../ref';
 import { StandardComponentProps } from '../../component';
 
 type VirtualNodeType = 'TAG' | 'TEXT' | 'COMMENT';
@@ -134,6 +134,7 @@ function replaceVirtualNode(replacedVNode: VirtualNode, vdom: VirtualNode) {
 
   for (let i = 1; i < nodeRoute.length; i++) {
     const routeId = nodeRoute[i];
+
     if (i === nodeRoute.length - 1) {
       vNode.children[routeId] = replacedVNode;
     } else {

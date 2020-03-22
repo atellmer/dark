@@ -222,7 +222,7 @@ function getDiff(options: GetDiffOptions): Array<Commit> {
     return commits;
   }
 
-  if (getAttribute(nextVNode, ATTR_SKIP)) return commits; // don't move this line
+  // if (getAttribute(nextVNode, ATTR_SKIP)) return commits; // don't move this line
 
   if (isTagVirtualNode(vNode)) {
     const prevAttrBlackList = [ATTR_SKIP, ATTR_KEY];
