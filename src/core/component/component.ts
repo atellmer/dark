@@ -1,58 +1,52 @@
-import { isObject, error } from '@helpers';
+import {
+  ComponentDef,
+  ComponentOptions,
+  StandardComponentProps,
+} from './model';
 
 
-type ComponentDefinition<P> = (props: P) => any;
+const $$component = Symbol('component');
 
-type ComponentOptions<P> = {
-  displayName?: string;
-  defaultProps?: Partial<P>;
-  elementToken?: any;
-};
+class ComponentFactory<P extends StandardComponentProps = any> {
+  public type: Function = null;
+  public token: Symbol = null;
+  public props: P = null;
+  public displayName = '';
+  public createElement: (props: P) => any = null;
 
-export type ComponentFactory = {
-  displayName: string;
-  createElement: () => any;
-  props: {
-    key?: number | string;
-  };
-  elementToken: any;
-} & { [key: string]: any };
+  constructor(options: ComponentFactory<P>) {
+    this.type = options.type;
+    this.token = options.token;
+    this.props = options.props;
+    this.displayName = options.displayName;
+    this.createElement = options.createElement;
+  }
+}
 
-export type Component<T = any> = (props: T) => ComponentFactory;
-
-export type StandardComponentProps = {
-  key?: number | string;
-  slot?: VirtualDOM | ComponentFactory | Array<ComponentFactory> | RenderProps;
-} & Partial<{ [key: string]: any }>;
-
-type RenderProps = (...args: any) => VirtualDOM;
-
-const $$defaultFunctionalComponent = Symbol('defaultFunctionalComponent');
-const $$componentFactory = Symbol('componentFactory');
-
-function createComponent<P extends object>(
-  def: ComponentDefinition<P & StandardComponentProps>,
-  options: ComponentOptions<P & StandardComponentProps> = null,
-) {
-  return (props = {} as P & StandardComponentProps): ComponentFactory => {
+function createComponent<P extends StandardComponentProps>(def: ComponentDef<P>, options: ComponentOptions<P> = null) {
+  const type = (props = {} as P): ComponentFactory<P> => {
     const displayName = options ? options.displayName : '';
     const defaultProps = (options && options.defaultProps) || {};
-    const computedProps = { ...defaultProps, ...props } as P & StandardComponentProps;
-    const factory = {
-      [$$componentFactory]: true,
-      createElement: () => def(factory.props),
+    const computedProps = { ...defaultProps, ...props } as P;
+    const factory = new ComponentFactory({
+      createElement: (props: P) => def(props),
       displayName,
       props: computedProps,
-      elementToken: (options && options.elementToken) || $$defaultFunctionalComponent,
-    };
+      token: (options && options.token) || $$component,
+      type,
+    });
 
     return factory;
   };
+
+  return type;
 }
 
-const getIsComponentFactory = (o: any): o is ComponentFactory => o && isObject(o) && o[$$componentFactory] === true;
+const detectIsComponentFactory =
+  (factory: unknown): factory is ComponentFactory => factory && factory instanceof ComponentFactory;
 
 export {
+  ComponentFactory,
   createComponent,
-  getIsComponentFactory,
+  detectIsComponentFactory,
 };
