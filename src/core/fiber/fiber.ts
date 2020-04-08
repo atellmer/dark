@@ -1,4 +1,4 @@
-import { EffectTag } from './model';
+import { EffectTag, NativeElement } from './model';
 import {
   wipRootHelper,
   currentRootHelper,
@@ -10,17 +10,17 @@ import { VirtualNode, detectIsTagVirtualNode } from '../view';
 import { flatten } from '@helpers';
 
 
-class Fiber {
-  public parent: Fiber = null;
-  public child: Fiber = null;
-  public sibling: Fiber = null;
-  public alternate: Fiber = null;
-  public link: HTMLElement = null;
+class Fiber<N = NativeElement> {
+  public parent: Fiber<N> = null;
+  public child: Fiber<N> = null;
+  public sibling: Fiber<N> = null;
+  public alternate: Fiber<N> = null;
+  public link: N = null;
   public effectTag: EffectTag = null;
   public type: string | Function = null;
   public instance: VirtualNode | ComponentFactory = null;
 
-  constructor(options: Partial<Fiber>) {
+  constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || this.parent;
     this.child = options.child || this.child;
     this.sibling = options.sibling || this.sibling;
@@ -35,8 +35,9 @@ class Fiber {
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
 function workLoop(deadline: IdleDeadline) {
-  let shouldYield = false;
+  const wipRoot = wipRootHelper.get();
   let nextUnitOfWork = nextUnitOfWorkHelper.get();
+  let shouldYield = false;
 
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
@@ -44,9 +45,9 @@ function workLoop(deadline: IdleDeadline) {
     shouldYield = deadline.timeRemaining() < 1;
   }
 
-  // if (!nextUnitOfWork && wipRoot) {
-  //   commitRoot();
-  // }
+  if (!nextUnitOfWork && wipRoot) {
+    commitRoot();
+  }
 
   global.ric(workLoop);
 }
@@ -83,6 +84,10 @@ function updateComponent(fiber: Fiber) {
     children = detectIsTagVirtualNode(fiber.instance)
       ? fiber.instance.children
       : [];
+
+    if (!fiber.link) {
+      fiber.link = global.createLink(fiber);
+    }
   }
 
   reconcileChildren(fiber, children);
@@ -138,6 +143,21 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
   }
 }
 
+function commitRoot() {
+  const wipRoot = wipRootHelper.get();
+  // deletions.forEach(commitWork);
+  commitWork(wipRoot.child);
+  currentRootHelper.set(wipRoot);
+  wipRootHelper.set(null);
+}
+
+function commitWork(fiber: Fiber) {
+  if (!fiber) return;
+
+  global.updateTree(fiber);
+  commitWork(fiber.child);
+  commitWork(fiber.sibling);
+}
 
 export {
   Fiber,

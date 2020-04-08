@@ -72,9 +72,9 @@ const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vN
 const detectIsEmptyVirtualNode = (vNode: CommentVirtualNode): boolean =>
   detectIsCommentVirtualNode(vNode) && vNode.value === EMPTY_NODE;
 
-const Text = (str: string) => createTextVirtualNode(str);
+const Text = (text: string) => createTextVirtualNode(text);
 
-const Comment = (str: string) => createCommentVirtualNode(str);
+const Comment = (text: string) => createCommentVirtualNode(text);
 
 const View = (def: ViewDef) => {
   const {

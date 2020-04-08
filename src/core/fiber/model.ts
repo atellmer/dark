@@ -5,3 +5,5 @@ export enum EffectTag {
   UPDATE = 'UPDATE',
   DELETION = 'DELETION',
 };
+
+export type NativeElement = unknown;
