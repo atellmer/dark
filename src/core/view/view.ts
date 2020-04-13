@@ -5,6 +5,7 @@ import {
   isNumber,
   isString,
   isFunction,
+  isEmpty,
 } from '@helpers';
 import { EMPTY_NODE } from '../constants';
 
@@ -76,6 +77,12 @@ const Text = (text: string) => createTextVirtualNode(text);
 
 const Comment = (text: string) => createCommentVirtualNode(text);
 
+const getAttribute = (vNode: VirtualNode, attrName: string): any =>
+  detectIsTagVirtualNode(vNode) && !isEmpty(vNode.attrs[attrName]) ? vNode.attrs[attrName] : undefined;
+
+const setAttribute = (vNode: VirtualNode, name: string, value: any) =>
+  detectIsTagVirtualNode(vNode) && (vNode.attrs[name] = value);
+
 const View = (def: ViewDef) => {
   const {
     as,
@@ -129,6 +136,7 @@ function createElement(tag: string | Function, props: any, ...children: Array<an
   return null;
 }
 
+
 export {
   VirtualNode,
   TagVirtualNode,
@@ -143,6 +151,8 @@ export {
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
   detectIsEmptyVirtualNode,
+  getAttribute,
+  setAttribute,
   Text,
   Comment,
   View,

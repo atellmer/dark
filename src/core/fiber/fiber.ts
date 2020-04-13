@@ -34,7 +34,7 @@ class Fiber<N = NativeElement> {
 
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
-function workLoop(deadline: IdleDeadline) {
+function workLoop(deadline: IdleDeadline = null) {
   const wipRoot = wipRootHelper.get();
   let nextUnitOfWork = nextUnitOfWorkHelper.get();
   let shouldYield = false;
@@ -42,7 +42,7 @@ function workLoop(deadline: IdleDeadline) {
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     nextUnitOfWorkHelper.set(nextUnitOfWork);
-    shouldYield = deadline.timeRemaining() < 1;
+    shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
   }
 
   if (!nextUnitOfWork && wipRoot) {
@@ -101,7 +101,8 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
   while (index < elements.length || alternate != null) {
     let fiber = null;
     const element = elements[index];
-    const isSameType = alternate && element && element.type === alternate.type;
+    const type = detectIsTagVirtualNode(element) ? element.name : element.type;
+    const isSameType = Boolean(alternate && element && alternate.type === type);
 
     if (isSameType) {
       fiber = createFiber({
@@ -114,7 +115,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
       });
     } else if (element) {
       fiber = createFiber({
-        type: detectIsTagVirtualNode(element) ? element.name : element.type,
+        type,
         instance: element,
         link: null,
         parent: wipFiber,
