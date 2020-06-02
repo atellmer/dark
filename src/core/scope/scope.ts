@@ -6,6 +6,7 @@ class Store {
   public currentRoot: Fiber = null;
   public nextUnitOfWork: Fiber = null;
   public events: Map<string, WeakMap<object, Function>> = new Map();
+  public deletions: Array<Fiber> = [];
 }
 
 let rootId = null;
@@ -47,6 +48,11 @@ const rootLinkHelper = {
   get: () => storeHelper.get().wipRoot.link,
 };
 
+const deletionsHelper = {
+  get: () => storeHelper.get().deletions,
+  set: (deletions: Array<Fiber>) => storeHelper.get().deletions = deletions,
+}
+
 
 export {
   effectStoreHelper,
@@ -55,4 +61,5 @@ export {
   nextUnitOfWorkHelper,
   eventsHelper,
   rootLinkHelper,
+  deletionsHelper,
 };

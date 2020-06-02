@@ -1,9 +1,9 @@
 import { Fiber } from '../fiber';
 
 
-export type Global = {
+export type Platform = {
   raf: typeof requestAnimationFrame;
   ric: typeof requestIdleCallback;
   createLink: <N>(fiber: Fiber<N>) => N;
-  updateTree: <N>(fiber: Fiber<N>) => void;
+  mutateTree: <N>(fiber: Fiber<N>) => void;
 };

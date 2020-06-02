@@ -3,10 +3,11 @@ import {
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
+  deletionsHelper,
 } from '@core/scope';
-import { global } from '@core/global';
+import { platform } from '@core/global';
 import { ComponentFactory, detectIsComponentFactory } from '@core/component';
-import { VirtualNode, detectIsTagVirtualNode } from '../view';
+import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, detectIsVirtualNode } from '../view';
 import { flatten } from '@helpers';
 
 
@@ -49,7 +50,7 @@ function workLoop(deadline: IdleDeadline = null) {
     commitRoot();
   }
 
-  global.ric(workLoop);
+  platform.ric(workLoop);
 }
 
 function performUnitOfWork(fiber: Fiber) {
@@ -74,8 +75,6 @@ function updateComponent(fiber: Fiber) {
   let children = [];
   const isComponentFactory = detectIsComponentFactory(fiber.instance);
 
-  console.log('fiber', fiber);
-
   if (isComponentFactory) {
     const factory = fiber.instance as ComponentFactory;
 
@@ -86,9 +85,11 @@ function updateComponent(fiber: Fiber) {
       : [];
 
     if (!fiber.link) {
-      fiber.link = global.createLink(fiber);
+      fiber.link = platform.createLink(fiber);
     }
   }
+
+  //console.log('fiber', fiber);
 
   reconcileChildren(fiber, children);
 }
@@ -98,9 +99,9 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
   let alternate = wipFiber.alternate && wipFiber.alternate.child;
   let prevSibling = null;
 
-  while (index < elements.length || alternate != null) {
+  while (index < elements.length || alternate !== null) {
     let fiber = null;
-    const element = elements[index];
+    const element = elements[index] || createEmptyVirtualNode();
     const type = detectIsTagVirtualNode(element) ? element.name : element.type;
     const isSameType = Boolean(alternate && element && alternate.type === type);
 
@@ -125,8 +126,14 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
     }
 
     if (alternate && !isSameType) {
+      console.log('fiber', fiber);
+      console.log('alter', alternate);
       alternate.effectTag = EffectTag.DELETION;
-      //deletions.push(oldFiber);
+
+      const before = alternate.child.child.link; // костыль
+
+      fiber.before = before;
+      deletionsHelper.get().push(alternate);
     }
 
     if (alternate) {
@@ -145,20 +152,24 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
 }
 
 function commitRoot() {
-  const wipRoot = wipRootHelper.get();
-  // deletions.forEach(commitWork);
+  const wipRoot = wipRootHelper.get()
+
   commitWork(wipRoot.child);
+  deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
   currentRootHelper.set(wipRoot);
   wipRootHelper.set(null);
+  deletionsHelper.set([]);
 }
 
 function commitWork(fiber: Fiber) {
   if (!fiber) return;
 
-  global.updateTree(fiber);
+  platform.mutateTree(fiber);
+
   commitWork(fiber.child);
   commitWork(fiber.sibling);
 }
+
 
 export {
   Fiber,

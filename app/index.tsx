@@ -19,24 +19,37 @@ const Item = createComponent(({ text }) => {
   )
 });
 
-const List = createComponent(() => {
+const List1 = createComponent(() => {
   return [
-    Item({ text: 'xxx' }),
-    Item({ text: 'zzz' }),
+    Item({ text: 'Alex' }),
+    Item({ text: 'Jane' }),
   ]
-});
+},{ displayName: 'List1' });
 
-const App = createComponent(({ title }) => {
+const List2 = createComponent(() => {
   return [
-    Text(title),
-    <List />,
+    Item({ text: 'Alex' }),
+    Item({ text: 'Denis' }),
+    Item({ text: 'John' }),
+    Item({ text: 'Jess' }),
+  ]
+},{ displayName: 'List2' });
+
+const App = createComponent(({ isOpen }) => {
+  return [
+    isOpen
+      ? <List2 />
+      : <List1 />,
     <button onClick={() => console.log('click')}>Click me</button>,
   ]
 });
 
-render(App({ title: 'first' }), host);
+render(App({ isOpen: false }), host);
+
+setTimeout(() => {
+  render(App({ isOpen: true }), host);
+}, 1000)
 
 // setTimeout(() => {
-//   console.log('---');
-//   render(App({ title: 'second' }), host);
-// }, 1000)
+//   render(App({ isOpen: false }), host);
+// }, 2000)

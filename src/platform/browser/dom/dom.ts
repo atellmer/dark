@@ -13,7 +13,7 @@ import {
 import { isFunction } from '@helpers';
 import { delegateEvent, detectIsEvent } from '../events';
 import { ATTR_KEY } from '@core/constants';
-import { rootLinkHelper } from '@core/scope';
+import { rootLinkHelper, deletionsHelper } from '@core/scope';
 
 
 const attrBlackList = [ATTR_KEY];
@@ -80,7 +80,11 @@ function updateAttributes(fiber: Fiber<Element>) {
   }
 }
 
-function updateDom(fiber: Fiber<Element>) {
+function updateDom(dom, prevProps, nextProps) {
+
+}
+
+function mutateDom(fiber: Fiber<Element>) {
   let linkParentFiber = fiber.parent;
 
   while (!linkParentFiber.link) {
@@ -89,25 +93,58 @@ function updateDom(fiber: Fiber<Element>) {
 
   const parent = linkParentFiber.link;
 
-  if (fiber.effectTag === EffectTag.PLACEMENT && fiber.link !== null) {
-    parent.appendChild(fiber.link);
+  if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
+    const before = fiber.parent.parent.before as HTMLElement; // костыль
+
+    if (before) {
+      before.parentElement.insertBefore(fiber.link, before);
+    } else {
+      parent.appendChild(fiber.link);
+    }
+
     updateAttributes(fiber);
-  } else if (fiber.effectTag === EffectTag.UPDATE && fiber.link !== null) {
+  } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
 
   } else if (fiber.effectTag === EffectTag.DELETION) {
     commitDeletion(fiber, parent);
   }
 }
 
-function commitDeletion(fiber: Fiber<Element>, parent: Element) {
+function getChildDomNodes(fiber: Fiber) {
+  const nodes = [];
+  let prevFiber = fiber;
+
+  while (prevFiber) {
+    if (detectIsVirtualNode(prevFiber.instance)) {
+      nodes.push(prevFiber);
+
+      if (prevFiber === fiber) {
+        prevFiber = null;
+      } else if (prevFiber === prevFiber.parent.child) {
+        prevFiber = prevFiber.parent.sibling;
+      }
+    } else {
+      prevFiber = prevFiber ? prevFiber.child : null;
+    }
+  }
+
+  return nodes;
+}
+
+function commitDeletion(fiber: Fiber<Element>, parent: Element, fromChild = false) {
   if (fiber.link) {
     parent.removeChild(fiber.link);
   } else {
-    commitDeletion(fiber.child, parent);
+    commitDeletion(fiber.child, parent, true);
+  }
+
+  if (fromChild && fiber.sibling) {
+    commitDeletion(fiber.sibling, parent, true);
   }
 }
 
 export {
   createDomLink,
-  updateDom,
+  mutateDom,
+  commitDeletion,
 };

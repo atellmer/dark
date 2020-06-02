@@ -1,7 +1,7 @@
-import { Global } from './model';
+import { Platform } from './model';
 
 
-export const global: Global = {
+export const platform: Platform = {
   raf: () => {
     throw new Error('raf doesn\'t install by renderer');
   },
@@ -11,7 +11,7 @@ export const global: Global = {
   createLink: () => {
     throw new Error('createLink doesn\'t install by renderer');
   },
-  updateTree: () => {
-    throw new Error('updateTree doesn\'t install by renderer');
+  mutateTree: () => {
+    throw new Error('mutateTree doesn\'t install by renderer');
   },
 };

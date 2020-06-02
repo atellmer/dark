@@ -1,6 +1,6 @@
 import { Fiber, createFiber, workLoop } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
-import { global } from '@core/global';
+import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
 import { createTagVirtualNode } from '@core/view';
 import {
@@ -9,13 +9,13 @@ import {
   currentRootHelper,
   nextUnitOfWorkHelper,
 } from '@core/scope';
-import { createDomLink, updateDom } from '../dom';
+import { createDomLink, mutateDom } from '../dom';
 
 
-global.raf = (...args) => requestAnimationFrame(...args);
-global.ric = (...args) => requestIdleCallback(...args);
-global.createLink = ((fiber: Fiber<HTMLElement>) => createDomLink(fiber)) as typeof global.createLink;
-global.updateTree = ((fiber: Fiber<HTMLElement>) => updateDom(fiber)) as typeof global.updateTree;
+platform.raf = (...args) => requestAnimationFrame(...args);
+platform.ric = (...args) => requestIdleCallback(...args);
+platform.createLink = ((fiber: Fiber<HTMLElement>) => createDomLink(fiber)) as typeof platform.createLink;
+platform.mutateTree = ((fiber: Fiber<HTMLElement>) => mutateDom(fiber)) as typeof platform.mutateTree;
 
 const roots: Map<HTMLElement, number> = new Map();
 
@@ -49,7 +49,7 @@ function render(element: DarkElement, container: HTMLElement) {
   if (!isMounted) {
     workLoop();
   } else {
-    global.ric(workLoop);
+    platform.ric(workLoop);
   }
 }
 
