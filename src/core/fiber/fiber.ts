@@ -20,6 +20,7 @@ class Fiber<N = NativeElement> {
   public effectTag: EffectTag = null;
   public type: string | Function = null;
   public instance: VirtualNode | ComponentFactory = null;
+  public shadow: Fiber<N> = null;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || this.parent;
@@ -30,6 +31,7 @@ class Fiber<N = NativeElement> {
     this.effectTag = options.effectTag || this.effectTag;
     this.type = options.type || this.type;
     this.instance = options.instance || this.instance;
+    this.shadow = options.shadow || this.shadow;
   }
 }
 
@@ -129,10 +131,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
       console.log('fiber', fiber);
       console.log('alter', alternate);
       alternate.effectTag = EffectTag.DELETION;
-
-      const before = alternate.child.child.link; // костыль
-
-      fiber.before = before;
+      fiber.shadow = alternate;
       deletionsHelper.get().push(alternate);
     }
 

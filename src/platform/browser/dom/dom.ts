@@ -94,10 +94,10 @@ function mutateDom(fiber: Fiber<Element>) {
   const parent = linkParentFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const before = fiber.parent.parent.before as HTMLElement; // костыль
+    const node = !detectIsVirtualNode(fiber.parent.instance) && getLink(getShadow(fiber));
 
-    if (before) {
-      before.parentElement.insertBefore(fiber.link, before);
+    if (node) {
+      node.parentElement.insertBefore(fiber.link, node);
     } else {
       parent.appendChild(fiber.link);
     }
@@ -110,27 +110,6 @@ function mutateDom(fiber: Fiber<Element>) {
   }
 }
 
-function getChildDomNodes(fiber: Fiber) {
-  const nodes = [];
-  let prevFiber = fiber;
-
-  while (prevFiber) {
-    if (detectIsVirtualNode(prevFiber.instance)) {
-      nodes.push(prevFiber);
-
-      if (prevFiber === fiber) {
-        prevFiber = null;
-      } else if (prevFiber === prevFiber.parent.child) {
-        prevFiber = prevFiber.parent.sibling;
-      }
-    } else {
-      prevFiber = prevFiber ? prevFiber.child : null;
-    }
-  }
-
-  return nodes;
-}
-
 function commitDeletion(fiber: Fiber<Element>, parent: Element, fromChild = false) {
   if (fiber.link) {
     parent.removeChild(fiber.link);
@@ -141,6 +120,30 @@ function commitDeletion(fiber: Fiber<Element>, parent: Element, fromChild = fals
   if (fromChild && fiber.sibling) {
     commitDeletion(fiber.sibling, parent, true);
   }
+}
+
+function getLink(fiber: Fiber<Element>): Element | null {
+  if (!fiber) return null;
+  let prevFiber = fiber;
+
+  while (prevFiber) {
+    if (prevFiber.link) return prevFiber.link;
+    prevFiber = prevFiber.child;
+  }
+
+  return null;
+}
+
+function getShadow(fiber: Fiber<Element>): Fiber<Element> | null {
+  if (!fiber) return null;
+  let prevFiber = fiber;
+
+  while (prevFiber) {
+    if (prevFiber.shadow) return prevFiber.shadow;
+    prevFiber = prevFiber.parent;
+  }
+
+  return null;
 }
 
 export {

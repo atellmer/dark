@@ -28,7 +28,6 @@ const List1 = createComponent(() => {
 
 const List2 = createComponent(() => {
   return [
-    Item({ text: 'Alex' }),
     Item({ text: 'Denis' }),
     Item({ text: 'John' }),
     Item({ text: 'Jess' }),
