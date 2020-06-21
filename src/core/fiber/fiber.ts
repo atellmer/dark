@@ -91,8 +91,6 @@ function updateComponent(fiber: Fiber) {
     }
   }
 
-  //console.log('fiber', fiber);
-
   reconcileChildren(fiber, children);
 }
 
@@ -128,8 +126,6 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
     }
 
     if (alternate && !isSameType) {
-      console.log('fiber', fiber);
-      console.log('alter', alternate);
       alternate.effectTag = EffectTag.DELETION;
       fiber.shadow = alternate;
       deletionsHelper.get().push(alternate);

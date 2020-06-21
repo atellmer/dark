@@ -23,7 +23,7 @@ const effectStore = (id: number) => {
 
 const storeHelper = {
   get: () => stores.get(rootId),
-}
+};
 
 const wipRootHelper = {
   get: () => storeHelper.get()?.wipRoot || null,

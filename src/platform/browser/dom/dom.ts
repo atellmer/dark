@@ -8,10 +8,11 @@ import {
   CommentVirtualNode,
   detectIsVirtualNode,
   detectIsTagVirtualNode,
+  detectIsTextVirtualNode,
   getAttribute,
 } from '@core/view';
-import { isFunction } from '@helpers';
-import { delegateEvent, detectIsEvent } from '../events';
+import { isFunction, isUndefined } from '@helpers';
+import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { ATTR_KEY } from '@core/constants';
 import { rootLinkHelper, deletionsHelper } from '@core/scope';
 
@@ -43,9 +44,9 @@ function createElement(vNode: VirtualNode): DomElement {
   return map[vNode.type](vNode);
 }
 
-function createDomLink(fiber: Fiber<HTMLElement>): DomElement {
+function createDomLink(fiber: Fiber<Element>): DomElement {
   if (!detectIsVirtualNode(fiber.instance)) {
-    throw new Error('createDomLink receives only HTMLElement into fiber!');
+    throw new Error('createDomLink receives only Element into fiber!');
   }
 
   const vNode: VirtualNode = fiber.instance;
@@ -53,35 +54,78 @@ function createDomLink(fiber: Fiber<HTMLElement>): DomElement {
   return createElement(vNode);
 }
 
-function updateAttributes(fiber: Fiber<Element>) {
-  if (detectIsTagVirtualNode(fiber.instance)) {
-    const vNode = fiber.instance;
-    const element = fiber.link;
-    const attrNames = Object.keys(fiber.instance.attrs);
+function addAttributes(element: Element, vNode: VirtualNode) {
+  if (!detectIsTagVirtualNode(vNode)) return;
+  const attrNames = Object.keys(vNode.attrs);
 
-    for (const attrName of attrNames) {
-      const attrValue = getAttribute(vNode, attrName);
+  for (const attrName of attrNames) {
+    const attrValue = getAttribute(vNode, attrName);
 
-      if (Boolean(attrValue) && !isFunction(attrValue) && !attrBlackList.includes(attrName)) {
-        element.setAttribute(attrName, attrValue);
-      }
-
-      if (detectIsEvent(attrName) && isFunction(attrValue)) {
-        const eventName = attrName.slice(2, attrName.length).toLowerCase();
-
+    if (isFunction(attrValue)){
+      if (detectIsEvent(attrName)) {
         delegateEvent({
           root: rootLinkHelper.get() as Element,
           target: element,
           handler: attrValue,
-          eventName,
+          eventName: getEventName(attrName),
         });
       }
+    } else if (!isUndefined(attrValue) && !attrBlackList.includes(attrName)) {
+      element.setAttribute(attrName, attrValue);
     }
   }
 }
 
-function updateDom(dom, prevProps, nextProps) {
+function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
+  if (!detectIsTagVirtualNode(vNode) || !detectIsTagVirtualNode(nextVNode)) return;
+  const attrNames = new Set([
+    ...Object.keys(vNode.attrs),
+    ...Object.keys(nextVNode.attrs),
+  ]);
 
+  for (const attrName of attrNames) {
+    const attrValue = getAttribute(vNode, attrName);;
+    const nextAttrValue = getAttribute(nextVNode, attrName)
+
+    if (!isUndefined(nextAttrValue)) {
+      if (isFunction(attrValue)) {
+        if (detectIsEvent(attrName) && attrValue !== nextAttrValue) {
+          delegateEvent({
+            root: rootLinkHelper.get() as Element,
+            target: element,
+            handler: nextAttrValue,
+            eventName: getEventName(attrName),
+          });
+        }
+      } else if (!isUndefined(nextAttrValue) && attrValue !== nextAttrValue && !attrBlackList.includes(attrName)) {
+
+        if (nextVNode.name === 'input') {
+          const input = element as HTMLInputElement;
+          const inputType = input.type.toLowerCase();
+
+          if (inputType === 'text' && attrName === 'value') {
+            input.value = nextAttrValue;
+          } else if (inputType === 'checkbox' && attrName === 'checked') {
+            input.checked = nextAttrValue;
+          }
+        }
+
+        element.setAttribute(attrName, nextAttrValue);
+      }
+    } else {
+      element.removeAttribute(attrName);
+    }
+  }
+}
+
+function updateDom(element: Element, instance: VirtualNode, nextInstance: VirtualNode) {
+  if (detectIsTextVirtualNode(instance) && detectIsTextVirtualNode(nextInstance) && instance.value !== nextInstance.value) {
+    return (element.textContent = nextInstance.value);
+  }
+
+  if (detectIsTagVirtualNode(instance) && detectIsTagVirtualNode(nextInstance)) {
+    return updateAttributes(element, instance, nextInstance);
+  }
 }
 
 function mutateDom(fiber: Fiber<Element>) {
@@ -102,9 +146,12 @@ function mutateDom(fiber: Fiber<Element>) {
       parent.appendChild(fiber.link);
     }
 
-    updateAttributes(fiber);
+    addAttributes(fiber.link, fiber.instance as VirtualNode);
   } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
+    const instance = fiber.alternate.instance as VirtualNode;
+    const nextInstance = fiber.instance as VirtualNode;
 
+    updateDom(fiber.link, instance, nextInstance)
   } else if (fiber.effectTag === EffectTag.DELETION) {
     commitDeletion(fiber, parent);
   }

@@ -14,13 +14,13 @@ import { createDomLink, mutateDom } from '../dom';
 
 platform.raf = (...args) => requestAnimationFrame(...args);
 platform.ric = (...args) => requestIdleCallback(...args);
-platform.createLink = ((fiber: Fiber<HTMLElement>) => createDomLink(fiber)) as typeof platform.createLink;
-platform.mutateTree = ((fiber: Fiber<HTMLElement>) => mutateDom(fiber)) as typeof platform.mutateTree;
+platform.createLink = ((fiber: Fiber<Element>) => createDomLink(fiber)) as typeof platform.createLink;
+platform.mutateTree = ((fiber: Fiber<Element>) => mutateDom(fiber)) as typeof platform.mutateTree;
 
-const roots: Map<HTMLElement, number> = new Map();
+const roots: Map<Element, number> = new Map();
 
-function render(element: DarkElement, container: HTMLElement) {
-  if (!(container instanceof HTMLElement)) {
+function render(element: DarkElement, container: Element) {
+  if (!(container instanceof Element)) {
     throw new Error(`render expects to receive container as HTMLElement!`);
   }
 
@@ -32,6 +32,10 @@ function render(element: DarkElement, container: HTMLElement) {
     roots.set(container, rootId);
     effectStoreHelper.set(rootId);
     container.innerHTML = '';
+  } else {
+    const rootId = roots.get(container);
+
+    effectStoreHelper.set(rootId);
   }
 
   const fiber = createFiber({
@@ -46,11 +50,7 @@ function render(element: DarkElement, container: HTMLElement) {
   wipRootHelper.set(fiber);
   nextUnitOfWorkHelper.set(fiber);
 
-  if (!isMounted) {
-    workLoop();
-  } else {
-    platform.ric(workLoop);
-  }
+  workLoop();
 }
 
 export {

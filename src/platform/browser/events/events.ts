@@ -32,9 +32,12 @@ function delegateEvent(options: DelegateEventOptions) {
   }
 }
 
-const detectIsEvent = (attr: string): boolean => attr.startsWith('on');
+const detectIsEvent = (attrName: string) => attrName.startsWith('on');
+
+const getEventName = (attrName: string) => attrName.slice(2, attrName.length).toLowerCase();
 
 export {
   delegateEvent,
   detectIsEvent,
+  getEventName,
 };
