@@ -11,50 +11,54 @@ const div = (...props) => View({ as: 'div', ...props });
 const host = document.getElementById('root');
 const portal = document.getElementById('root2');
 
-// const Item = createComponent(({ text }) => {
-//   return (
-//     <div>
-//       <span>
-//         Item: {text}
-//       </span>
-//     </div>
-//   )
-// });
+let nextId = 0;
 
-// const List1 = createComponent(() => {
-//   return [
-//     Item({ text: 'Alex' }),
-//     Item({ text: 'Jane' }),
-//   ]
-// },{ displayName: 'List1' });
+const generateItems = (count: number) => {
+  return Array(count).fill(0).map(x => ({
+    id: ++nextId,
+    name: nextId,
+  }));
+};
 
-// const List2 = createComponent(() => {
-//   return [
-//     Item({ text: 'Denis' }),
-//     Item({ text: 'John' }),
-//     Item({ text: 'Jess' }),
-//   ]
-// },{ displayName: 'List2' });
+const ListItem = createComponent(({ key, id, slot, onRemove }) => {
+  return (
+    <div key={key} class='list-item'>
+      <div>slot: {slot}</div>
+      {/* <div>
+        <button onClick={() => onRemove(id)}>remove</button>
+      </div> */}
+    </div>
+  );
+}, { displayName: 'ListItem' })
 
-const App = createComponent(({ text }) => {
+const List = createComponent(({ items }) => {
+  const handleRemove = (id: number) => {
+    const newItems = items.filter(x => x.id !== id);
 
-  const handleInput = (e) => {
-    render(App({ text: e.target.value }), host);
-    render(App({ text: e.target.value }), portal);
+    render(App({ items: newItems }), host);
+  };
+
+  return items.map((x => {
+    return (
+      <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
+        {x.name}
+      </ListItem>
+    )
+  }))
+}, { displayName: 'List' });
+
+const App = createComponent(({ items }) => {
+  const handleAddItems = () => {
+    render(App({ items: [...items, ...generateItems(1)] }), host);
   };
 
   return [
-    <div>text: {text}</div>,
-    <input value={text} onInput={handleInput} />,
-    <div>-----------</div>,
+    <div>
+      <button onClick={handleAddItems}>add items</button>
+    </div>,
+    <List items={items} />,
+    <div>footer</div>,
   ]
 });
 
-render(App({ text: '' }), host);
-
-//render(App({ text: '' }), portal);
-
-// setTimeout(() => {
-//   render(App({ color: 'blue' }), host);
-// }, 1000)
-
+render(App({ items: generateItems(3) }), host);

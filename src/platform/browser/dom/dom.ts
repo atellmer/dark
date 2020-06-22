@@ -15,6 +15,7 @@ import { isFunction, isUndefined } from '@helpers';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { ATTR_KEY } from '@core/constants';
 import { rootLinkHelper, deletionsHelper } from '@core/scope';
+import { detectIsComponentFactory } from '@core/component';
 
 
 const attrBlackList = [ATTR_KEY];
@@ -138,9 +139,10 @@ function mutateDom(fiber: Fiber<Element>) {
   const parent = linkParentFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const node = !detectIsVirtualNode(fiber.parent.instance) && getLink(getShadow(fiber));
+    const isParentComponentFactory = detectIsComponentFactory(fiber.parent.instance);
+    const node = isParentComponentFactory && (getDomNode(getShadow(fiber)) || getSiblingDomNode(fiber));
 
-    if (node) {
+    if (node && node.parentElement) {
       node.parentElement.insertBefore(fiber.link, node);
     } else {
       parent.appendChild(fiber.link);
@@ -169,7 +171,7 @@ function commitDeletion(fiber: Fiber<Element>, parent: Element, fromChild = fals
   }
 }
 
-function getLink(fiber: Fiber<Element>): Element | null {
+function getDomNode(fiber: Fiber<Element>): Element | null {
   if (!fiber) return null;
   let prevFiber = fiber;
 
@@ -192,6 +194,25 @@ function getShadow(fiber: Fiber<Element>): Fiber<Element> | null {
 
   return null;
 }
+
+function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
+  if (!fiber) return null;
+  let prevFiber = fiber;
+
+  while (prevFiber) {
+    if (prevFiber.sibling) {
+      const link = getDomNode(prevFiber.sibling);
+
+      if (link) return link;
+    }
+
+    prevFiber = prevFiber.parent;
+  }
+
+  return null;
+}
+
+
 
 export {
   createDomLink,
