@@ -6,9 +6,9 @@ import {
   deletionsHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
-import { ComponentFactory, detectIsComponentFactory } from '@core/component';
+import { ComponentFactory, detectIsComponentFactory, getComponentKey } from '@core/component';
 import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, detectIsVirtualNode } from '../view';
-import { flatten } from '@helpers';
+import { flatten, isEmpty, error } from '@helpers';
 
 
 class Fiber<N = NativeElement> {
@@ -103,6 +103,14 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
       ? elements[idx] || createEmptyVirtualNode()
       : null;
 
+    if (!element) {
+      const key = getComponentKey(alternate.instance as ComponentFactory);
+
+      if (isEmpty(key)) {
+        error(UNIQ_KEY_ERROR);
+      }
+    }
+
     const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
     const isSameType = Boolean(alternate && element && alternate.type === type);
 
@@ -165,6 +173,10 @@ function commitWork(fiber: Fiber) {
   commitWork(fiber.sibling);
 }
 
+const UNIQ_KEY_ERROR = `
+  [Dark]: The node must have a unique key (string or number, but not array index), 
+  otherwise the comparison algorithm will not work optimally or even will work incorrectly!
+`;
 
 export {
   Fiber,

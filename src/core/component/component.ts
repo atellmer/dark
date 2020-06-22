@@ -3,6 +3,7 @@ import {
   ComponentOptions,
   StandardComponentProps,
 } from './model';
+import { ATTR_KEY } from '../constants';
 
 
 const $$component = Symbol('component');
@@ -45,8 +46,11 @@ function createComponent<P extends StandardComponentProps>(def: ComponentDef<P>,
 const detectIsComponentFactory =
   (factory: unknown): factory is ComponentFactory => factory && factory instanceof ComponentFactory;
 
+const getComponentKey = (factory: ComponentFactory): string | number => factory.props[ATTR_KEY];
+
 export {
   ComponentFactory,
   createComponent,
   detectIsComponentFactory,
+  getComponentKey,
 };
