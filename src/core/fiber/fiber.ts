@@ -93,14 +93,17 @@ function updateComponent(fiber: Fiber) {
 }
 
 function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
-  let index = 0;
+  let idx = 0;
   let alternate = wipFiber.alternate && wipFiber.alternate.child;
   let prevSibling = null;
 
-  while (index < elements.length || alternate !== null) {
+  while (idx < elements.length || alternate !== null) {
     let fiber: Fiber = null;
-    const element = elements[index] || createEmptyVirtualNode();
-    const type = detectIsTagVirtualNode(element) ? element.name : element.type;
+    const element = idx < elements.length
+      ? elements[idx] || createEmptyVirtualNode()
+      : null;
+
+    const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
     const isSameType = Boolean(alternate && element && alternate.type === type);
 
     if (isSameType) {
@@ -132,14 +135,14 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
       alternate = alternate.sibling;
     }
 
-    if (index === 0) {
+    if (idx === 0) {
       wipFiber.child = fiber;
     } else if (element) {
       prevSibling.sibling = fiber;
     }
 
     prevSibling = fiber;
-    index++;
+    idx++;
   }
 }
 

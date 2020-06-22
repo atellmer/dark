@@ -59,4 +59,4 @@ const App = createComponent(({ items }) => {
   ]
 });
 
-render(App({ items: generateItems(3) }), host);
+render(App({ items: generateItems(5) }), host);

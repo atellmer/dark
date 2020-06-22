@@ -52,7 +52,7 @@ const App = createComponent(({ one, items }) => {
 
   return [
     <div>header</div>,
-    one ? <List1 items={items} /> : <List2 items={items} />,
+    one && <List1 items={items} />,
     <div>footer</div>,
   ]
 });
@@ -63,10 +63,10 @@ setTimeout(() => {
   render(App({ one: false, items: generateItems(3) }), host);
 }, 3000)
 
-// setTimeout(() => {
-//   render(App({ one: true, items: generateItems(3) }), host);
-// }, 5000)
+setTimeout(() => {
+  render(App({ one: true, items: generateItems(3) }), host);
+}, 5000)
 
-// setTimeout(() => {
-//   render(App({ one: false, items: generateItems(3) }), host);
-// }, 7000)
+setTimeout(() => {
+  render(App({ one: false, items: generateItems(3) }), host);
+}, 7000)
