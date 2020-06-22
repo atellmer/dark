@@ -20,7 +20,6 @@ class Fiber<N = NativeElement> {
   public effectTag: EffectTag = null;
   public type: string | Function = null;
   public instance: VirtualNode | ComponentFactory = null;
-  public shadow: Fiber<N> = null;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || this.parent;
@@ -31,7 +30,6 @@ class Fiber<N = NativeElement> {
     this.effectTag = options.effectTag || this.effectTag;
     this.type = options.type || this.type;
     this.instance = options.instance || this.instance;
-    this.shadow = options.shadow || this.shadow;
   }
 }
 
@@ -100,7 +98,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
   let prevSibling = null;
 
   while (index < elements.length || alternate !== null) {
-    let fiber = null;
+    let fiber: Fiber = null;
     const element = elements[index] || createEmptyVirtualNode();
     const type = detectIsTagVirtualNode(element) ? element.name : element.type;
     const isSameType = Boolean(alternate && element && alternate.type === type);
@@ -127,7 +125,6 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
 
     if (alternate && !isSameType) {
       alternate.effectTag = EffectTag.DELETION;
-      fiber.shadow = alternate;
       deletionsHelper.get().push(alternate);
     }
 

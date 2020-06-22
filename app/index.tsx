@@ -24,9 +24,7 @@ const ListItem = createComponent(({ key, id, slot, onRemove }) => {
   return (
     <div key={key} class='list-item'>
       <div>slot: {slot}</div>
-      {/* <div>
-        <button onClick={() => onRemove(id)}>remove</button>
-      </div> */}
+      <button onClick={() => onRemove(id)}>remove</button>
     </div>
   );
 }, { displayName: 'ListItem' })

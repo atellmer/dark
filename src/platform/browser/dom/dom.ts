@@ -140,9 +140,9 @@ function mutateDom(fiber: Fiber<Element>) {
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
     const isParentComponentFactory = detectIsComponentFactory(fiber.parent.instance);
-    const node = isParentComponentFactory && (getDomNode(getShadow(fiber)) || getSiblingDomNode(fiber));
+    const node = isParentComponentFactory && getSiblingDomNode(fiber);
 
-    if (node && node.parentElement) {
+    if (node) {
       node.parentElement.insertBefore(fiber.link, node);
     } else {
       parent.appendChild(fiber.link);
@@ -183,18 +183,6 @@ function getDomNode(fiber: Fiber<Element>): Element | null {
   return null;
 }
 
-function getShadow(fiber: Fiber<Element>): Fiber<Element> | null {
-  if (!fiber) return null;
-  let prevFiber = fiber;
-
-  while (prevFiber) {
-    if (prevFiber.shadow) return prevFiber.shadow;
-    prevFiber = prevFiber.parent;
-  }
-
-  return null;
-}
-
 function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
   if (!fiber) return null;
   let prevFiber = fiber;
@@ -203,7 +191,7 @@ function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
     if (prevFiber.sibling) {
       const link = getDomNode(prevFiber.sibling);
 
-      if (link) return link;
+      if (link && link.parentElement) return link;
     }
 
     prevFiber = prevFiber.parent;
@@ -211,8 +199,6 @@ function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
 
   return null;
 }
-
-
 
 export {
   createDomLink,
