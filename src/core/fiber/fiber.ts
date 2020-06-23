@@ -6,9 +6,14 @@ import {
   deletionsHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
-import { ComponentFactory, detectIsComponentFactory, getComponentKey } from '@core/component';
-import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, detectIsVirtualNode } from '../view';
+import {
+  ComponentFactory,
+  detectIsComponentFactory,
+  getComponentFactoryKey,
+} from '@core/component';
+import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, detectIsVirtualNode, getVirtualNodeKey } from '../view';
 import { flatten, isEmpty, error } from '@helpers';
+import { ElementKey } from '../shared/model';
 
 
 class Fiber<N = NativeElement> {
@@ -92,19 +97,27 @@ function updateComponent(fiber: Fiber) {
   reconcileChildren(fiber, children);
 }
 
-function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
+function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | ComponentFactory>) {
   let idx = 0;
-  let alternate = wipFiber.alternate && wipFiber.alternate.child;
+  let alternate = wipFiber?.alternate?.child;
   let prevSibling = null;
+  const keys = alternate ? getAlternateKeys(alternate) : [];
+  let nextKeys = [];
+  let diff = [];
 
-  while (idx < elements.length || alternate !== null) {
+  if (keys.length > 0) {
+    nextKeys = elements.map(x => getElementKey(x));
+    diff = getDiffKeys(keys, nextKeys);
+  }
+
+  while (idx < elements.length || alternate) {
     let fiber: Fiber = null;
     const element = idx < elements.length
       ? elements[idx] || createEmptyVirtualNode()
       : null;
 
     if (!element) {
-      const key = getComponentKey(alternate.instance as ComponentFactory);
+      const key = getElementKey(alternate.instance);
 
       if (isEmpty(key)) {
         error(UNIQ_KEY_ERROR);
@@ -113,6 +126,9 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
 
     const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
     const isSameType = Boolean(alternate && element && alternate.type === type);
+    const alternateByKey = detectIsComponentFactory(element)
+      ? getAlternateByKey(getElementKey(element), alternate)
+      : null;
 
     if (isSameType) {
       fiber = createFiber({
@@ -120,7 +136,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
         instance: element,
         link: alternate.link,
         parent: wipFiber,
-        alternate,
+        alternate: alternateByKey || alternate,
         effectTag: EffectTag.UPDATE,
       });
     } else if (element) {
@@ -135,8 +151,20 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode>) {
     }
 
     if (alternate && !isSameType) {
-      alternate.effectTag = EffectTag.DELETION;
-      deletionsHelper.get().push(alternate);
+      const [key] = diff;
+      const alternateByKey = !isEmpty(key) && detectIsComponentFactory(alternate.instance)
+        ? getAlternateByKey(key, wipFiber.alternate.child)
+        : null;
+
+      diff.length > 0 && diff.shift();
+
+      if (alternateByKey) {
+        alternateByKey.effectTag = EffectTag.DELETION;
+        deletionsHelper.get().push(alternateByKey);
+      } else {
+        alternate.effectTag = EffectTag.DELETION;
+        deletionsHelper.get().push(alternate);
+      }
     }
 
     if (alternate) {
@@ -171,6 +199,59 @@ function commitWork(fiber: Fiber) {
 
   commitWork(fiber.child);
   commitWork(fiber.sibling);
+}
+
+function getAlternateByKey(key: string | number, fiber: Fiber) {
+  if (isEmpty(key)) return null;
+  let nextFiber = fiber;
+
+  while (nextFiber) {
+    if (key === getElementKey(nextFiber.instance)) {
+      return nextFiber;
+    }
+
+    nextFiber = nextFiber.sibling;
+  }
+
+  return null;
+}
+
+function getAlternateKeys(fiber: Fiber): Array<string | number> {
+  let nextFiber = fiber;
+  const keys = [];
+
+  while (nextFiber) {
+    const key = getElementKey(nextFiber.instance);
+
+    if (!isEmpty(key)) {
+      keys.push(key);
+    }
+
+    nextFiber = nextFiber.sibling;
+  }
+
+  return keys;
+}
+
+function getDiffKeys(keys: Array<number | string>, nextKeys: Array<number | string>) {
+  const nextKeysMap = nextKeys.reduce((acc, key) => (acc[key] = true, acc), {});
+  const diff = [];
+
+  for (const key of keys) {
+    if (!nextKeysMap[key]) {
+      diff.push(key);
+    }
+  }
+
+  return diff;
+}
+
+function getElementKey(element: ComponentFactory | VirtualNode): ElementKey | null {
+  return detectIsComponentFactory(element)
+    ? getComponentFactoryKey(element)
+    : detectIsTagVirtualNode(element)
+      ? getVirtualNodeKey(element)
+      : null;
 }
 
 const UNIQ_KEY_ERROR = `

@@ -7,7 +7,8 @@ import {
   isFunction,
   isEmpty,
 } from '@helpers';
-import { EMPTY_NODE } from '../constants';
+import { EMPTY_NODE, ATTR_KEY } from '../constants';
+import { ElementKey } from '../shared/model';
 
 
 class VirtualNode {
@@ -136,6 +137,12 @@ function createElement(tag: string | Function, props: any, ...children: Array<an
   return null;
 }
 
+function getVirtualNodeKey(vNode: TagVirtualNode): ElementKey | null {
+  const key = vNode && vNode.attrs[ATTR_KEY];
+
+  return !isEmpty(key) ? key : null;
+}
+
 
 export {
   VirtualNode,
@@ -157,4 +164,5 @@ export {
   Comment,
   View,
   createElement,
+  getVirtualNodeKey,
 };

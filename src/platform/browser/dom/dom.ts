@@ -155,6 +155,7 @@ function mutateDom(fiber: Fiber<Element>) {
 
     updateDom(fiber.link, instance, nextInstance)
   } else if (fiber.effectTag === EffectTag.DELETION) {
+    //console.log('del', fiber);
     commitDeletion(fiber, parent);
   }
 }
