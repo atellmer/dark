@@ -126,17 +126,16 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 
     const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
     const isSameType = Boolean(alternate && element && alternate.type === type);
-    const alternateByKey = detectIsComponentFactory(element)
-      ? getAlternateByKey(getElementKey(element), alternate)
-      : null;
 
     if (isSameType) {
+      const replacedAlternate = getAlternateByKey(getElementKey(element), alternate) || alternate;
+
       fiber = createFiber({
-        type: alternate.type,
+        type: replacedAlternate.type,
         instance: element,
-        link: alternate.link,
+        link: replacedAlternate.link,
         parent: wipFiber,
-        alternate: alternateByKey || alternate,
+        alternate: replacedAlternate,
         effectTag: EffectTag.UPDATE,
       });
     } else if (element) {
@@ -152,7 +151,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 
     if (alternate && !isSameType) {
       const [key] = diff;
-      const alternateByKey = !isEmpty(key) && detectIsComponentFactory(alternate.instance)
+      const alternateByKey = !isEmpty(key)
         ? getAlternateByKey(key, wipFiber.alternate.child)
         : null;
 

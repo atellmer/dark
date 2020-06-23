@@ -78,15 +78,14 @@ function addAttributes(element: Element, vNode: VirtualNode) {
 }
 
 function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
-  if (!detectIsTagVirtualNode(vNode) || !detectIsTagVirtualNode(nextVNode)) return;
   const attrNames = new Set([
     ...Object.keys(vNode.attrs),
     ...Object.keys(nextVNode.attrs),
   ]);
 
   for (const attrName of attrNames) {
-    const attrValue = getAttribute(vNode, attrName);;
-    const nextAttrValue = getAttribute(nextVNode, attrName)
+    const attrValue = getAttribute(vNode, attrName);
+    const nextAttrValue = getAttribute(nextVNode, attrName);
 
     if (!isUndefined(nextAttrValue)) {
       if (isFunction(attrValue)) {
@@ -150,12 +149,12 @@ function mutateDom(fiber: Fiber<Element>) {
 
     addAttributes(fiber.link, fiber.instance as VirtualNode);
   } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
-    const instance = fiber.alternate.instance as VirtualNode;
-    const nextInstance = fiber.instance as VirtualNode;
+    if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsTagVirtualNode(fiber.instance)) return;
+    const vNode: VirtualNode = fiber.alternate.instance;
+    const nextVNode: VirtualNode = fiber.instance;
 
-    updateDom(fiber.link, instance, nextInstance)
+    updateDom(fiber.link, vNode, nextVNode)
   } else if (fiber.effectTag === EffectTag.DELETION) {
-    //console.log('del', fiber);
     commitDeletion(fiber, parent);
   }
 }
