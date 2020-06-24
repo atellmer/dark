@@ -24,7 +24,9 @@ const ListItem = createComponent(({ key, id, slot, onRemove }) => {
   return (
     <div key={key} class='list-item'>
       <div>slot: {slot}</div>
-      <button onClick={() => onRemove(id)}>remove</button>
+      <div>
+        <button onClick={() => onRemove(id)}>remove</button>
+      </div>
     </div>
   );
 }, { displayName: 'ListItem' })
@@ -47,16 +49,24 @@ const List = createComponent(({ items }) => {
 
 const App = createComponent(({ items }) => {
   const handleAddItems = () => {
-    render(App({ items: [...items, ...generateItems(1)] }), host);
+    render(App({ items: [...items, ...generateItems(10)] }), host);
+  };
+  const handleSwap = () => {
+    const newItems = [...items];
+    newItems[1] = items[items.length - 2];
+    newItems[newItems.length - 2] = items[1];
+
+    render(App({ items: newItems }), host);
   };
 
   return [
-    <div>
+    <div style='display: flex'>
       <button onClick={handleAddItems}>add items</button>
+      <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} />,
     <div>footer</div>,
   ]
 });
 
-render(App({ items: generateItems(10) }), host);
+render(App({ items: generateItems(10000) }), host);

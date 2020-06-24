@@ -149,11 +149,11 @@ function mutateDom(fiber: Fiber<Element>) {
 
     addAttributes(fiber.link, fiber.instance as VirtualNode);
   } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
-    if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsTagVirtualNode(fiber.instance)) return;
+    if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsVirtualNode(fiber.instance)) return;
     const vNode: VirtualNode = fiber.alternate.instance;
     const nextVNode: VirtualNode = fiber.instance;
 
-    updateDom(fiber.link, vNode, nextVNode)
+    updateDom(fiber.link, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
     commitDeletion(fiber, parent);
   }

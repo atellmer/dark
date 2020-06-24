@@ -104,10 +104,12 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
   const keys = alternate ? getAlternateKeys(alternate) : [];
   let nextKeys = [];
   let diff = [];
+  let isRemovingByKey = false;
 
   if (keys.length > 0) {
     nextKeys = elements.map(x => getElementKey(x));
     diff = getDiffKeys(keys, nextKeys);
+    isRemovingByKey = nextKeys.length < keys.length && diff.length > 0;
   }
 
   while (idx < elements.length || alternate) {
@@ -125,7 +127,9 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
     }
 
     const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
-    const replacedAlternate = getAlternateByKey(getElementKey(element), alternate) || alternate;
+    const replacedAlternate = isRemovingByKey
+      ? getAlternateByKey(getElementKey(element), alternate) || alternate
+      : alternate;
     const isSameType = Boolean(replacedAlternate && element && replacedAlternate.type === type);
 
     if (isSameType) {
@@ -265,7 +269,7 @@ function getElementKey(element: ComponentFactory | VirtualNode): ElementKey | nu
 }
 
 const UNIQ_KEY_ERROR = `
-  [Dark]: The node must have a unique key (string or number, but not array index), 
+  [Dark]: The node must have a unique key (string or number, but not array index),
   otherwise the comparison algorithm will not work optimally or even will work incorrectly!
 `;
 
