@@ -79,14 +79,15 @@ function performUnitOfWork(fiber: Fiber) {
 
 function updateComponent(fiber: Fiber) {
   let children: Array<VirtualNode | ComponentFactory> = [];
-  const isComponentFactory = detectIsComponentFactory(fiber.instance);
+  const isList = isArray(fiber.instance);
 
-  if (isComponentFactory) {
-    const factory = fiber.instance as ComponentFactory;
+  if (isList || detectIsComponentFactory(fiber.instance)) {
+    const factory = isList
+      ? Fragment({ slot: flatten([fiber.instance]) })
+      : fiber.instance as ComponentFactory;
 
+    fiber.instance = factory;
     children = flatten([factory.createElement(factory.props)]);
-  } else if (isArray(fiber.instance)) {
-    children = flatten(fiber.instance);
   } else {
     children = detectIsTagVirtualNode(fiber.instance)
       ? fiber.instance.children

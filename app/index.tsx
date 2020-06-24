@@ -66,12 +66,12 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
       <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} />,
-    items.length === 3 &&
-    <Fragment>
-      <div>1</div>
-      <div>2</div>
-      <div>3</div>
-    </Fragment>,
+    items.length === 5 &&
+    [[
+      [<div>1</div>],
+      <div>2</div>,
+      <div>3</div>,
+    ]],
     <div>footer</div>,
   ]
 });
