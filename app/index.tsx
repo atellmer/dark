@@ -36,13 +36,16 @@ const List = createComponent(({ items }) => {
     render(App({ items: newItems }), host);
   };
 
-  return items.map((x => {
-    return (
-      <div key={x.id} class='list-item' onClick={() => handleRemove(x.id)}>
-        {x.name}
-      </div>
-    )
-  }))
+  return [
+    ...items.map((x => {
+      return (
+        <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
+          {x.name}
+        </ListItem>
+      )
+    })),
+    <div key='xxx'>xxx</div>,
+  ]
 }, { displayName: 'List' });
 
 const App = createComponent(({ items }) => {

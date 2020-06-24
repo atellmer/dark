@@ -125,11 +125,10 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
     }
 
     const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
-    const isSameType = Boolean(alternate && element && alternate.type === type);
+    const replacedAlternate = getAlternateByKey(getElementKey(element), alternate) || alternate;
+    const isSameType = Boolean(replacedAlternate && element && replacedAlternate.type === type);
 
     if (isSameType) {
-      const replacedAlternate = getAlternateByKey(getElementKey(element), alternate) || alternate;
-
       fiber = createFiber({
         type: replacedAlternate.type,
         instance: element,
