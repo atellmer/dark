@@ -1,4 +1,5 @@
 import { ComponentFactory } from './component';
+import { ElementKey, DarkElement } from '../shared/model';
 
 export type ComponentDef<P extends StandardComponentProps> = (props: P) => any;
 
@@ -9,8 +10,8 @@ export type ComponentOptions<P extends StandardComponentProps> = {
 };
 
 export type StandardComponentProps = {
-  key?: number | string;
-  slot?: any;
+  key?: ElementKey;
+  slot?: DarkElement;
 } & Partial<{ [key: string]: any }>;
 
 export type Component<T = any> = (props: T) => ComponentFactory;

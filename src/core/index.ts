@@ -5,3 +5,4 @@ export {
   createElement as h,
 } from './view';
 export { createComponent } from './component';
+export { Fragment } from './fragment';

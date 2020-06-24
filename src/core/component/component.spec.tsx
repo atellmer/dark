@@ -11,7 +11,7 @@ const div = (props = {}) => View({ ...props, as: 'div' });
 
 test('[Component]: createComponent do not throws error', () => {
   const compile = () => {
-    const Component = createComponent(() => div());
+    const Component = createComponent(() => null);
     Component();
   };
 
@@ -20,14 +20,14 @@ test('[Component]: createComponent do not throws error', () => {
 
 test('[Component]: createElement do not throws error', () => {
   const compile = () => {
-    const Component = createComponent(() => div());
+    const Component = createComponent(() => null);
     Component().createElement({});
   };
 
   expect(compile).not.toThrowError();
 });
 
-test('[Component]: createElement returns virtual node', () => {
+test('[Component]: createElement returns virtual node correctly', () => {
   const Component = createComponent(() => div());
   const vNode = Component().createElement({}) as VirtualNode;
 
@@ -35,12 +35,19 @@ test('[Component]: createElement returns virtual node', () => {
   expect(detectIsVirtualNode(vNode)).toBe(true);
 });
 
+test('[Component]: createElement returns null correctly', () => {
+  const Component = createComponent(() => null);
+  const element = Component().createElement({});
+
+  expect(element).toBe(null);
+});
+
 test('[Component]: pass props to component correctly', () => {
   const compile = () => {
     const Component = createComponent(({ one, two }) => {
       expect(one).toBe('hello');
       expect(two).toBe('world');
-      return div();
+      return null;
     });
     const factory = Component({ one: 'hello', two: 'world' });
 

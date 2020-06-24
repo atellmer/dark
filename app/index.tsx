@@ -3,6 +3,7 @@ import {
   View,
   Text,
   createComponent,
+  Fragment,
 } from '../src/core';
 import { render } from '../src/platform/browser';
 
@@ -47,7 +48,7 @@ const List = createComponent(({ items }) => {
   }))
 }, { displayName: 'List' });
 
-const App = createComponent(({ items }) => {
+const App = createComponent<{items: Array<any>}>(({ items }) => {
   const handleAddItems = () => {
     render(App({ items: [...items, ...generateItems(1)] }), host);
   };
@@ -65,10 +66,12 @@ const App = createComponent(({ items }) => {
       <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} />,
+    items.length === 3 &&
+    <div>1</div>,
     <div>footer</div>,
   ]
 });
 
-render(App({
-  items: generateItems(5),
-}), host);
+const items = generateItems(1);
+
+render(App({ items }), host);

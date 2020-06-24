@@ -11,9 +11,10 @@ import {
   detectIsComponentFactory,
   getComponentFactoryKey,
 } from '@core/component';
-import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, detectIsVirtualNode, getVirtualNodeKey } from '../view';
-import { flatten, isEmpty, error } from '@helpers';
+import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, getVirtualNodeKey } from '../view';
+import { flatten, isEmpty, error, isArray } from '@helpers';
 import { ElementKey } from '../shared/model';
+import { Fragment } from '../fragment';
 
 
 class Fiber<N = NativeElement> {
@@ -77,13 +78,15 @@ function performUnitOfWork(fiber: Fiber) {
 }
 
 function updateComponent(fiber: Fiber) {
-  let children = [];
+  let children: Array<VirtualNode | ComponentFactory> = [];
   const isComponentFactory = detectIsComponentFactory(fiber.instance);
 
   if (isComponentFactory) {
     const factory = fiber.instance as ComponentFactory;
 
     children = flatten([factory.createElement(factory.props)]);
+  } else if (isArray(fiber.instance)) {
+    children = flatten(fiber.instance);
   } else {
     children = detectIsTagVirtualNode(fiber.instance)
       ? fiber.instance.children
