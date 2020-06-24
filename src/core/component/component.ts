@@ -4,6 +4,7 @@ import {
   StandardComponentProps,
 } from './model';
 import { ATTR_KEY } from '../constants';
+import { DarkElement } from '../shared/model';
 
 
 const $$component = Symbol('component');
@@ -13,7 +14,7 @@ class ComponentFactory<P extends StandardComponentProps = any> {
   public token: Symbol = null;
   public props: P = null;
   public displayName = '';
-  public createElement: (props: P) => any = null;
+  public createElement: (props: P) => DarkElement = null;
 
   constructor(options: ComponentFactory<P>) {
     this.type = options.type;

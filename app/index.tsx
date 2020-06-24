@@ -9,7 +9,7 @@ import { render } from '../src/platform/browser';
 
 const div = (...props) => View({ as: 'div', ...props });
 const host = document.getElementById('root');
-const portal = document.getElementById('root2');
+const host2 = document.getElementById('root2');
 
 let nextId = 0;
 
@@ -49,7 +49,7 @@ const List = createComponent(({ items }) => {
 
 const App = createComponent(({ items }) => {
   const handleAddItems = () => {
-    render(App({ items: [...items, ...generateItems(10)] }), host);
+    render(App({ items: [...items, ...generateItems(1)] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -69,4 +69,6 @@ const App = createComponent(({ items }) => {
   ]
 });
 
-render(App({ items: generateItems(10000) }), host);
+render(App({
+  items: generateItems(5),
+}), host);
