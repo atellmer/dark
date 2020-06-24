@@ -181,7 +181,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 }
 
 function commitRoot() {
-  const wipRoot = wipRootHelper.get()
+  const wipRoot = wipRootHelper.get();
 
   commitWork(wipRoot.child);
   deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
@@ -191,12 +191,24 @@ function commitRoot() {
 }
 
 function commitWork(fiber: Fiber) {
-  if (!fiber) return;
+  let nextFiber = fiber;
+  let isDeepWalking = true;
 
-  platform.mutateTree(fiber);
+  while (nextFiber) {
+    platform.mutateTree(nextFiber);
 
-  commitWork(fiber.child);
-  commitWork(fiber.sibling);
+    if (nextFiber.child && isDeepWalking) {
+      nextFiber = nextFiber.child;
+    } else if (nextFiber.sibling) {
+      isDeepWalking = true;
+      nextFiber = nextFiber.sibling;
+    } else if (nextFiber.parent && nextFiber.parent !== fiber.parent) {
+      isDeepWalking = false;
+      nextFiber = nextFiber.parent;
+    } else {
+      nextFiber = null;
+    }
+  }
 }
 
 function getAlternateByKey(key: string | number, fiber: Fiber) {

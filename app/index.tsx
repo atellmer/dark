@@ -36,16 +36,13 @@ const List = createComponent(({ items }) => {
     render(App({ items: newItems }), host);
   };
 
-  return [
-    ...items.map((x => {
-      return (
-        <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
-          {x.name}
-        </ListItem>
-      )
-    })),
-    <div key='xxx'>xxx</div>,
-  ]
+  return items.map((x => {
+    return (
+      <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
+        {x.name}
+      </ListItem>
+    )
+  }))
 }, { displayName: 'List' });
 
 const App = createComponent(({ items }) => {
@@ -62,4 +59,4 @@ const App = createComponent(({ items }) => {
   ]
 });
 
-render(App({ items: generateItems(3) }), host);
+render(App({ items: generateItems(10) }), host);
