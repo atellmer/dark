@@ -139,10 +139,10 @@ function mutateDom(fiber: Fiber<Element>) {
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
     const isParentComponentFactory = detectIsComponentFactory(fiber.parent.instance);
-    const node = isParentComponentFactory && getSiblingDomNode(fiber);
+    const node = isParentComponentFactory ? getSiblingDomNode(fiber) : null;
 
     if (node) {
-      node.parentElement.insertBefore(fiber.link, node);
+      parent.insertBefore(fiber.link, node);
     } else {
       parent.appendChild(fiber.link);
     }
@@ -171,13 +171,12 @@ function commitDeletion(fiber: Fiber<Element>, parent: Element, fromChild = fals
   }
 }
 
-function getDomNode(fiber: Fiber<Element>): Element | null {
-  if (!fiber) return null;
-  let prevFiber = fiber;
+function getChildDomNode(fiber: Fiber<Element>): Element | null {
+  let nextFiber = fiber;
 
-  while (prevFiber) {
-    if (prevFiber.link) return prevFiber.link;
-    prevFiber = prevFiber.child;
+  while (nextFiber) {
+    if (nextFiber.link) return nextFiber.link;
+    nextFiber = nextFiber.child;
   }
 
   return null;
@@ -185,16 +184,16 @@ function getDomNode(fiber: Fiber<Element>): Element | null {
 
 function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
   if (!fiber) return null;
-  let prevFiber = fiber;
+  let nextFiber = fiber;
 
-  while (prevFiber) {
-    if (prevFiber.sibling) {
-      const link = getDomNode(prevFiber.sibling);
+  while (nextFiber) {
+    if (nextFiber.sibling) {
+      const link = getChildDomNode(nextFiber.sibling);
 
       if (link && link.parentElement) return link;
     }
 
-    prevFiber = prevFiber.parent;
+    nextFiber = nextFiber.sibling || nextFiber.parent;
   }
 
   return null;

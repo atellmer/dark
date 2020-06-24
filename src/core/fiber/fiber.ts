@@ -190,6 +190,8 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 function commitRoot() {
   const wipRoot = wipRootHelper.get();
 
+  console.log('wip', wipRoot);
+
   commitWork(wipRoot.child);
   deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
   currentRootHelper.set(wipRoot);
