@@ -1,10 +1,3 @@
-export {
-  VirtualNode,
-  TagVirtualNode,
-  TextVirtualNode,
-  CommentVirtualNode,
-} from './view';
-
 export type ViewDef = {
   as: string;
   slot?: any;

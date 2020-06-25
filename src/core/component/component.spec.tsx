@@ -4,7 +4,7 @@ import {
   getComponentFactoryKey,
 } from './component';
 import { View, detectIsVirtualNode } from '../view/view';
-import { VirtualNode } from '../view/model';
+import { VirtualNode } from '../view';
 
 
 const div = (props = {}) => View({ ...props, as: 'div' });
