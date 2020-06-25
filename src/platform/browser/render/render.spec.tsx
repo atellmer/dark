@@ -322,3 +322,54 @@ test('[Render]: node adding works correctly', () => {
   renderApp();
   expect(host.innerHTML).toBe(content(items));
 });
+
+
+test('[Render]: node adding works by key correctly', () => {
+  type AppProps = {
+    items: Array<Item>;
+  };
+
+  const ListItem = createComponent(({ slot }) => {
+    return div({
+      slot,
+    });
+  })
+
+  const List = createComponent<AppProps>(({ items }) => {
+    return items.map((x => {
+      return ListItem({
+        key: x.id,
+        slot: Text(x.name),
+      })
+    }))
+  });
+
+  const App = createComponent<AppProps>(({ items }) => {
+    return [
+      List({ items }),
+    ]
+  });
+
+  const addItemsToStart = (count: number) => {
+    items = [...generateItems(count), ...items];
+  };
+
+  let items = generateItems(5);
+
+  const renderApp = () => render(App({ items }), host);
+
+  renderApp();
+
+  const nodes = Array.from(host.querySelectorAll('div'));
+  const node = nodes[0];
+  const expected = node.textContent;
+
+  console.log('text', node.textContent);
+
+  jest.advanceTimersByTime(10);
+  addItemsToStart(5);
+  renderApp();
+  console.log('text',  node.textContent);
+  expect(node.textContent).toBe(expected);
+
+});

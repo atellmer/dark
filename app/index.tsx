@@ -50,7 +50,7 @@ const List = createComponent(({ items }) => {
 
 const App = createComponent<{items: Array<any>}>(({ items }) => {
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(3), ...items] }), host);
+    render(App({ items: [...generateItems(1), ...items] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -76,6 +76,6 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
   ]
 });
 
-const items = generateItems(10);
+const items = generateItems(2);
 
 render(App({ items }), host);

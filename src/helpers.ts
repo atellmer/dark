@@ -3,7 +3,7 @@ const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
 const isString = o => typeof o === 'string';
 const isObject = o => typeof o === 'object';
-const isArray = Array.isArray;
+const isArray = (o: unknown): o is Array<any> => Array.isArray(o);
 const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
 const isDOMElement = element => element instanceof Element || element instanceof HTMLDocument;
@@ -53,6 +53,10 @@ function getTime() {
   return performance.now();
 }
 
+function keyBy<T = any>(list: Array<T>, fn: (o: T) => string | number, value = false): Record<string | number, T | boolean> {
+  return list.reduce((acc, x) => (acc[fn(x)] = value ? x : true, acc), {});
+}
+
 export {
   isFunction,
   isUndefined,
@@ -67,4 +71,5 @@ export {
   deepClone,
   flatten,
   getTime,
+  keyBy,
 };

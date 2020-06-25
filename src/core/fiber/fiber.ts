@@ -12,7 +12,7 @@ import {
   getComponentFactoryKey,
 } from '@core/component';
 import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, getVirtualNodeKey } from '../view';
-import { flatten, isEmpty, error, isArray } from '@helpers';
+import { flatten, isEmpty, error, isArray, keyBy } from '@helpers';
 import { ElementKey } from '../shared/model';
 import { Fragment } from '../fragment';
 
@@ -103,17 +103,29 @@ function updateComponent(fiber: Fiber) {
 
 function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | ComponentFactory>) {
   let idx = 0;
-  let alternate = wipFiber?.alternate?.child;
-  let prevSibling = null;
-  const keys = alternate ? getAlternateKeys(alternate) : [];
-  let nextKeys = [];
-  let diff = [];
+  let alternate: Fiber = wipFiber?.alternate?.child;
+  let prevSibling: Fiber = null;
+  const keys: Array<ElementKey> = alternate ? getAlternateKeys(alternate) : [];
+  let nextKeys: Array<ElementKey> = [];
+  let diff: Array<number> = [];
+  let diffMap: Record<number, boolean> = {};
+  let isOperationByKey = false;
   let isRemovingByKey = false;
+  let isInsertingByKey = false;
 
   if (keys.length > 0) {
     nextKeys = elements.map(x => getElementKey(x));
-    diff = getDiffKeys(keys, nextKeys);
-    isRemovingByKey = nextKeys.length < keys.length && diff.length > 0;
+    const isRemoving = nextKeys.length < keys.length;
+    const isInserting = nextKeys.length > keys.length;
+    diff = isRemoving
+      ? getDiffKeys(keys, nextKeys)
+      : isInserting
+        ? getDiffKeys(nextKeys, keys)
+        : [];
+    diffMap = keyBy<number>(diff, x => x) as Record<number, boolean>;
+    isOperationByKey = diff.length > 0;
+    isRemovingByKey = isOperationByKey && isRemoving;
+    isInsertingByKey = isOperationByKey && isInserting;
   }
 
   while (idx < elements.length || alternate) {
@@ -121,6 +133,8 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
     const element = idx < elements.length
       ? elements[idx] || createEmptyVirtualNode()
       : null;
+    const key = getElementKey(element);
+    const hasDifferenceByKey = diffMap[key];
 
     if (!element) {
       const key = getElementKey(alternate.instance);
@@ -132,8 +146,11 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 
     const type = element && (detectIsTagVirtualNode(element) ? element.name : element.type);
     const replacedAlternate = isRemovingByKey
-      ? getAlternateByKey(getElementKey(element), alternate) || alternate
-      : alternate;
+      ? getAlternateByKey(getElementKey(element), alternate?.parent?.child) || alternate
+      : isInsertingByKey
+        ? hasDifferenceByKey
+          ? null : alternate
+        : alternate;
     const isSameType = Boolean(replacedAlternate && element && replacedAlternate.type === type);
 
     if (isSameType) {
@@ -156,7 +173,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
       });
     }
 
-    if (alternate && !isSameType) {
+    if (alternate && !isSameType && !(isInsertingByKey && hasDifferenceByKey)) {
       const [key] = diff;
       const alternateByKey = !isEmpty(key)
         ? getAlternateByKey(key, wipFiber.alternate.child)
@@ -173,7 +190,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
       }
     }
 
-    if (alternate) {
+    if (alternate && !(isInsertingByKey && hasDifferenceByKey)) {
       alternate = alternate.sibling;
     }
 
@@ -191,8 +208,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 function commitRoot() {
   const wipRoot = wipRootHelper.get();
 
-  //console.log('wip', wipRoot);
-
+  console.log('wip', wipRoot);
   commitWork(wipRoot.child);
   deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
   currentRootHelper.set(wipRoot);
