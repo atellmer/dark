@@ -1,8 +1,9 @@
+/** @jsx createElement */
 import { requestIdleCallback, animationFrame } from '@shopify/jest-dom-mocks';
 
 import { render } from './render';
 import { createComponent } from '../../../core/component/component';
-import { View, Text, Comment } from '../../../core/view/view';
+import { View, Text, Comment, createElement } from '../../../core/view/view';
 import { dom } from '../../../../test/utils';
 
 
@@ -10,6 +11,8 @@ type Item = { id: number; name: string };
 
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
+const span = (props = {}) => View({ ...props, as: 'span' });
+const TEST_MARKER = '[RENDER]';
 
 let nextId = 0;
 
@@ -31,7 +34,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-test('[Render]: render do not throws error', () => {
+test(`${TEST_MARKER}: render do not throws error`, () => {
   const Component = createComponent(() => null);
   const compile = () => {
     render(Component(), host);
@@ -40,7 +43,7 @@ test('[Render]: render do not throws error', () => {
   expect(compile).not.toThrowError();
 });
 
-test('[Render]: render text correctly', () => {
+test(`${TEST_MARKER}: render text correctly`, () => {
   const content = 'hello';
   const Component = createComponent(() => Text(content));
 
@@ -48,7 +51,7 @@ test('[Render]: render text correctly', () => {
   expect(host.innerHTML).toBe(content);
 });
 
-test('[Render]: render tag correctly', () => {
+test(`${TEST_MARKER}: render tag correctly`, () => {
   const content = '<div></div>';
   const Component = createComponent(() => div());
 
@@ -56,7 +59,7 @@ test('[Render]: render tag correctly', () => {
   expect(host.innerHTML).toBe(content);
 });
 
-test('[Render]: render comment correctly', () => {
+test(`${TEST_MARKER}: render comment correctly`, () => {
   const content = 'some comment';
   const Component = createComponent(() => Comment(content));
 
@@ -78,7 +81,7 @@ test('[Render]: render array of items correctly', () => {
   expect(host.innerHTML).toBe(content);
 });
 
-test('[Render]: conditional rendering works correctly', () => {
+test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
   type AppProps = {
     items: Array<Item>;
     one: boolean;
@@ -149,7 +152,7 @@ test('[Render]: conditional rendering works correctly', () => {
   expect(host.innerHTML).toBe(content(items));
 });
 
-describe('[Render]: adding/removing/swap nodes', () => {
+describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
   type AppProps = {
     items: Array<Item>;
   };
@@ -301,5 +304,117 @@ describe('[Render]: adding/removing/swap nodes', () => {
     expect(newNodeOne.textContent).toBe('2');
     expect(newNodeTwo.textContent).toBe('9');
   });
+});
 
-})
+describe(`${TEST_MARKER} list of items`, () => {
+  test('render simple array correctly', () => {
+    const content = dom`
+      <div></div>
+      <div></div>
+      <div></div>
+    `;
+    const Component = createComponent(
+      () => [div(), div(), div()],
+    );
+
+    render(Component(), host);
+    expect(host.innerHTML).toBe(content);
+  });
+
+  test('render arrays of any nesting correctly', () => {
+    const content = dom`
+      <div></div>
+      <div></div>
+      <div></div>
+      <div id="one"></div>
+      <div id="two"></div>
+      <div></div>
+    `;
+
+    const Item = createComponent(() => {
+      return [
+        [[div({ id: 'one' })]],
+        div({ id: 'two' }),
+      ]
+    })
+
+    const App = createComponent(
+      () => [
+        [[[div()], [[div()]], div()]],
+        [Item()],
+        div(),
+      ],
+    );
+
+    render(App(), host);
+    expect(host.innerHTML).toBe(content);
+  });
+});
+
+test(`${TEST_MARKER} dynamic tag render correcrly`, () => {
+  const text = 'I am dynamic tag';
+  const App = createComponent(({ dynamic }) => {
+    const Tag = dynamic ? span : div;
+
+    return Tag({ slot: Text(text) });
+  });
+
+  render(App({ dynamic: false }), host);
+  expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
+
+  render(App({ dynamic: true }), host);
+  expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
+});
+
+test(`${TEST_MARKER} JSX works`, () => {
+  const text = 'I am dynamic tag';
+
+  const CustomItem = createComponent(({ slot }) => {
+    return <span>{slot}</span>;
+  });
+
+  const App = createComponent(({ dynamic }) => {
+    const Tag = dynamic ? CustomItem : 'div';
+
+    return <Tag>{text}</Tag>;
+  });
+
+  render(App({ dynamic: false }), host);
+  expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
+
+  render(App({ dynamic: true }), host);
+  expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
+});
+
+test(`${TEST_MARKER} render app in more than one host correctly`, () => {
+  const hostOne = document.createElement('div');
+  const hostTwo = document.createElement('div');
+
+  const Hello = createComponent(() => <span>hello</span>);
+  const Name = createComponent(({ slot }) => <span>{slot}</span>);
+  const App = createComponent(({ name }) => {
+    return (
+      <div>
+        <Hello />
+        <Name>{name}</Name>
+      </div>
+    );
+  });
+
+  const content = (name: string) => dom`
+    <div>
+      <span>hello</span>
+      <span>${name}</span>
+    </div>
+  `;
+
+  render(App({ name: 'Alex' }), hostOne);
+  render(App({ name: 'Rebecka' }), hostTwo);
+  expect(hostOne.innerHTML).toBe(content('Alex'));
+  expect(hostTwo.innerHTML).toBe(content('Rebecka'));
+  jest.advanceTimersByTime(100);
+  render(App({ name: 'Mark' }), hostOne);
+  render(App({ name: 'Rebecka' }), hostTwo);
+  expect(hostOne.innerHTML).toBe(content('Mark'));
+  expect(hostTwo.innerHTML).toBe(content('Rebecka'));
+});

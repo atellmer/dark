@@ -81,3 +81,4 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
 const items = generateItems(10);
 
 render(App({ items }), host);
+

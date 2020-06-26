@@ -16,6 +16,7 @@
   "devDependencies": {
     "@babel/core": "^7.6.2",
     "@babel/plugin-proposal-optional-chaining": "^7.10.3",
+    "@babel/plugin-transform-react-jsx": "^7.10.3",
     "@babel/preset-env": "^7.6.2",
     "@babel/preset-typescript": "^7.6.0",
     "@shopify/jest-dom-mocks": "^2.9.1",
