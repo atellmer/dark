@@ -17,13 +17,15 @@ const effectStoreHelper = {
   set: (id: number) => effectStore(id),
 };
 
+const getRootId = (): number => rootId;
+
 const effectStore = (id: number) => {
   rootId = id;
   !stores.get(rootId) && stores.set(rootId, new Store());
 };
 
 const storeHelper = {
-  get: () => stores.get(rootId),
+  get: (id: number = rootId) => stores.get(id),
 };
 
 const wipRootHelper = {
@@ -60,6 +62,7 @@ const commitPhaseHelper = {
 };
 
 export {
+  getRootId,
   effectStoreHelper,
   wipRootHelper,
   currentRootHelper,

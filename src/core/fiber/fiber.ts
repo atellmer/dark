@@ -1,11 +1,13 @@
 import { EffectTag, NativeElement, WorkLoopOptions } from './model';
 import { ElementKey } from '../shared/model';
 import {
+  getRootId,
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
   deletionsHelper,
   commitPhaseHelper,
+  effectStoreHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import {
@@ -45,9 +47,8 @@ let lastUpdate = null;
 
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
-function updateRoot() {
+function updateRoot(alternate: Fiber) {
   const update = () => {
-    const alternate = currentRootHelper.get();
     const fiber = createFiber({
       link: alternate.link,
       instance: alternate.instance,
@@ -59,6 +60,15 @@ function updateRoot() {
   };
 
   commitPhaseHelper.get() ? (lastUpdate = update) : update();
+}
+
+function useForceUpdate() {
+  const rootId = getRootId();
+
+  return [() => {
+    effectStoreHelper.set(rootId);
+    updateRoot(currentRootHelper.get());
+  }];
 }
 
 function workLoop(options?: WorkLoopOptions) {
@@ -230,7 +240,7 @@ function commitRoot(onRender: () => void) {
   const wipRoot = wipRootHelper.get();
 
   commitPhaseHelper.set(true);
-  console.log('wipRoot', wipRoot);
+  //sconsole.log('wipRoot', wipRoot);
   commitWork(wipRoot.child, null, () => {
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
     currentRootHelper.set(wipRoot);
@@ -336,4 +346,5 @@ export {
   createFiber,
   workLoop,
   updateRoot,
+  useForceUpdate,
 };

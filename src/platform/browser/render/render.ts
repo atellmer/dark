@@ -40,7 +40,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
   }
 
   if (commitPhaseHelper.get()) {
-    return updateRoot();
+    return updateRoot(currentRootHelper.get());
   }
 
   const fiber = createFiber({

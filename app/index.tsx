@@ -6,7 +6,7 @@ import {
   Fragment,
 } from '../src/core';
 import { render } from '../src/platform/browser';
-import { updateRoot } from '../src/core/fiber';
+import { useForceUpdate } from '../src/core/fiber';
 
 
 const div = (...props) => View({ as: 'div', ...props });
@@ -33,11 +33,11 @@ const ListItem = createComponent(({ key, id, slot, onRemove }) => {
   );
 }, { displayName: 'ListItem' })
 
-const List = createComponent(({ items }) => {
+const List = createComponent(({ items, host }) => {
   const handleRemove = (id: number) => {
     const newItems = items.filter(x => x.id !== id);
 
-    render(App({ items: newItems }), host);
+    render(App({ items: newItems, host }), host);
   };
 
   return items.map((x => {
@@ -49,25 +49,25 @@ const List = createComponent(({ items }) => {
   }))
 }, { displayName: 'List' });
 
-const App = createComponent<{items: Array<any>}>(({ items }) => {
+const App = createComponent<{items: Array<any>; host: HTMLElement;}>(({ items, host }) => {
+  const [update] = useForceUpdate();
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(10), ...items] }), host);
+    render(App({ items: [...generateItems(10), ...items], host }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
     newItems[1] = items[items.length - 2];
     newItems[newItems.length - 2] = items[1];
 
-    render(App({ items: newItems }), host);
+    render(App({ items: newItems, host }), host);
   };
 
   const handleIncrement = () => {
     counter++;
-    updateRoot();
+    update();
   };
 
   console.log('render');
-  
 
   return [
     <div style='display: flex'>
@@ -76,13 +76,15 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
       <button onClick={handleIncrement}>increment</button>
     </div>,
     <div>{counter}</div>,
-    <List items={items} />,
+    <List items={items} host={host} />,
     <div>footer</div>,
   ]
 });
 
 let counter = 0;
-const items = generateItems(10000);
+const items = generateItems(5);
 
-render(App({ items }), host, () => console.log('complete!'));
+render(App({ items, host }), host);
+
+render(App({ items, host: host2 }), host2);
 
