@@ -1,4 +1,5 @@
-import { EffectTag, NativeElement } from './model';
+import { EffectTag, NativeElement, WorkLoopOptions } from './model';
+import { ElementKey } from '../shared/model';
 import {
   wipRootHelper,
   currentRootHelper,
@@ -12,9 +13,9 @@ import {
   getComponentFactoryKey,
 } from '@core/component';
 import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, getVirtualNodeKey } from '../view';
-import { flatten, isEmpty, error, isArray, keyBy } from '@helpers';
-import { ElementKey } from '../shared/model';
+import { flatten, isEmpty, error, isArray, keyBy, isFunction } from '@helpers';
 import { Fragment } from '../fragment';
+import { MAX_FIBERS_RENDERED_PER_FRAME, UNIQ_KEY_ERROR } from '../constants';
 
 
 class Fiber<N = NativeElement> {
@@ -39,9 +40,31 @@ class Fiber<N = NativeElement> {
   }
 }
 
+let lastUpdate = null;
+let isCommitPhase = false;
+
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
-function workLoop(deadline: IdleDeadline = null) {
+function updateRoot() {
+  const update = () => {
+    const alternate = currentRootHelper.get();
+
+    if (!alternate) return;
+    const fiber = createFiber({
+      link: alternate.link,
+      instance: alternate.instance,
+      alternate,
+    });
+
+    wipRootHelper.set(fiber);
+    nextUnitOfWorkHelper.set(fiber);
+  };
+
+  isCommitPhase ? (lastUpdate = update) : update();
+}
+
+function workLoop(options?: WorkLoopOptions) {
+  const { deadline, onRender } = options;
   const wipRoot = wipRootHelper.get();
   let nextUnitOfWork = nextUnitOfWorkHelper.get();
   let shouldYield = false;
@@ -52,11 +75,11 @@ function workLoop(deadline: IdleDeadline = null) {
     shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
   }
 
-  if (!nextUnitOfWork && wipRoot) {
-    commitRoot();
+  if (!nextUnitOfWork && wipRoot && !isCommitPhase) {
+    commitRoot(onRender);
   }
 
-  platform.ric(workLoop);
+  platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
 function performUnitOfWork(fiber: Fiber) {
@@ -205,22 +228,37 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
   }
 }
 
-function commitRoot() {
+function commitRoot(onRender: () => void) {
   const wipRoot = wipRootHelper.get();
 
-  console.log('wip', wipRoot);
-  commitWork(wipRoot.child);
-  deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
-  currentRootHelper.set(wipRoot);
-  wipRootHelper.set(null);
-  deletionsHelper.set([]);
+  isCommitPhase = true;
+  console.log('wipRoot', wipRoot);
+  commitWork(wipRoot.child, null, () => {
+    deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
+    currentRootHelper.set(wipRoot);
+    wipRootHelper.set(null);
+    deletionsHelper.set([]);
+
+    isFunction(onRender) && onRender();
+    isFunction(lastUpdate) && lastUpdate();
+    lastUpdate = null;
+    isCommitPhase = false;
+  });
 }
 
-function commitWork(fiber: Fiber) {
+function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function) {
   let nextFiber = fiber;
   let isDeepWalking = true;
+  let fibersRendered = 0;
+
+  rootFiber = rootFiber || fiber;
 
   while (nextFiber) {
+    if (fibersRendered >= MAX_FIBERS_RENDERED_PER_FRAME && isDeepWalking) {
+      platform.raf(() => commitWork(nextFiber, rootFiber, onComplete));
+      return;
+    }
+
     platform.mutateTree(nextFiber);
 
     if (nextFiber.child && isDeepWalking) {
@@ -228,12 +266,18 @@ function commitWork(fiber: Fiber) {
     } else if (nextFiber.sibling) {
       isDeepWalking = true;
       nextFiber = nextFiber.sibling;
-    } else if (nextFiber.parent && nextFiber.parent !== fiber.parent) {
+    } else if (nextFiber.parent && nextFiber.parent !== rootFiber.parent) {
       isDeepWalking = false;
       nextFiber = nextFiber.parent;
     } else {
       nextFiber = null;
     }
+
+    fibersRendered++;
+  }
+
+  if (!nextFiber) {
+    onComplete();
   }
 }
 
@@ -290,13 +334,9 @@ function getElementKey(element: ComponentFactory | VirtualNode): ElementKey | nu
       : null;
 }
 
-const UNIQ_KEY_ERROR = `
-  [Dark]: The node must have a unique key (string or number, but not array index),
-  otherwise the comparison algorithm will not work optimally or even will work incorrectly!
-`;
-
 export {
   Fiber,
   createFiber,
   workLoop,
+  updateRoot,
 };

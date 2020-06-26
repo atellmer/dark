@@ -6,6 +6,7 @@ import {
   Fragment,
 } from '../src/core';
 import { render } from '../src/platform/browser';
+import { updateRoot } from '../src/core/fiber';
 
 
 const div = (...props) => View({ as: 'div', ...props });
@@ -22,15 +23,13 @@ const generateItems = (count: number) => {
 };
 
 const ListItem = createComponent(({ key, id, slot, onRemove }) => {
-  const Tag = key === 9 ? 'p' : 'div';
-
   return (
-    <Tag key={key} class='list-item'>
+    <div key={key} class='list-item'>
       <div>slot: {slot}</div>
       <div>
         <button onClick={() => onRemove(id)}>remove</button>
       </div>
-    </Tag>
+    </div>
   );
 }, { displayName: 'ListItem' })
 
@@ -52,7 +51,7 @@ const List = createComponent(({ items }) => {
 
 const App = createComponent<{items: Array<any>}>(({ items }) => {
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(3), ...items] }), host);
+    render(App({ items: [...generateItems(10), ...items] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -62,23 +61,25 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
     render(App({ items: newItems }), host);
   };
 
+  const handleIncrement = () => {
+    counter++;
+    updateRoot();
+  };
+
   return [
     <div style='display: flex'>
       <button onClick={handleAddItems}>add items</button>
       <button onClick={handleSwap}>swap</button>
+      <button onClick={handleIncrement}>increment</button>
     </div>,
+    <div>{counter}</div>,
     <List items={items} />,
-    // items.length === 5 &&
-    // [[
-    //   [<div>1</div>],
-    //   <div>2</div>,
-    //   <div>3</div>,
-    // ]],
     <div>footer</div>,
   ]
 });
 
-const items = generateItems(10);
+let counter = 0;
+const items = generateItems(10000);
 
 render(App({ items }), host);
 

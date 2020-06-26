@@ -1,5 +1,4 @@
-import { requestIdleCallback, animationFrame } from '@shopify/jest-dom-mocks';
+import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 
 
-animationFrame.mock();
 requestIdleCallback.mock();

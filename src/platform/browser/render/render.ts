@@ -19,7 +19,7 @@ platform.mutateTree = ((fiber: Fiber<Element>) => mutateDom(fiber)) as typeof pl
 
 const roots: Map<Element, number> = new Map();
 
-function render(element: DarkElement, container: Element) {
+function render(element: DarkElement, container: Element, onRender?: () => void) {
   if (!(container instanceof Element)) {
     throw new Error(`render expects to receive container as HTMLElement!`);
   }
@@ -49,8 +49,7 @@ function render(element: DarkElement, container: Element) {
 
   wipRootHelper.set(fiber);
   nextUnitOfWorkHelper.set(fiber);
-
-  workLoop();
+  workLoop({ onRender });
 }
 
 export {

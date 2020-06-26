@@ -5,3 +5,8 @@ export enum EffectTag {
 };
 
 export type NativeElement = unknown;
+
+export type WorkLoopOptions = {
+  deadline?: IdleDeadline;
+  onRender?: () => void;
+};

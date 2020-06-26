@@ -27,6 +27,7 @@ beforeAll(() => {
 beforeEach(() => {
   nextId = 0;
   host = document.createElement('div');
+  jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: Function) => cb());
 });
 
 test(`${TEST_MARKER}: render do not throws error`, () => {
@@ -116,16 +117,15 @@ test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
     ]
   });
 
-  let items = generateItems(3);
-
-  render(App({ one: true, items }), host);
-
   const content = (items: AppProps['items']) => dom`
     <div>header</div>
     ${items.map(x => `<div>${x.name}</div>`).join('')}
     <div>footer</div>
   `;
 
+  let items = generateItems(3);
+
+  render(App({ one: true, items }), host);
   expect(host.innerHTML).toBe(content(items));
 
   jest.advanceTimersByTime(10);
