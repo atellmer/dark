@@ -47,8 +47,6 @@ function createElement(vNode: VirtualNode): DomElement {
 
 function createDomLink(fiber: Fiber<Element>): DomElement {
   if (!detectIsVirtualNode(fiber.instance)) {
-    console.log('fiber.ins', fiber);
-    
     throw new Error('createDomLink receives only Element into fiber!');
   }
 

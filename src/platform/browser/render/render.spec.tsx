@@ -1,9 +1,7 @@
 /** @jsx createElement */
-import { requestIdleCallback, animationFrame } from '@shopify/jest-dom-mocks';
-
 import { render } from './render';
-import { createComponent } from '../../../core/component/component';
-import { View, Text, Comment, createElement } from '../../../core/view/view';
+import { createComponent } from '@core/component/component';
+import { View, Text, Comment, createElement } from '@core/view/view';
 import { dom } from '../../../../test/utils';
 
 
@@ -13,7 +11,6 @@ let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
 const TEST_MARKER = '[RENDER]';
-
 let nextId = 0;
 
 const generateItems = (count: number) => {
@@ -25,8 +22,6 @@ const generateItems = (count: number) => {
 
 beforeAll(() => {
   jest.useFakeTimers();
-  animationFrame.mock();
-  requestIdleCallback.mock();
 });
 
 beforeEach(() => {
