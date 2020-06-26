@@ -7,6 +7,7 @@ class Store {
   public nextUnitOfWork: Fiber = null;
   public events: Map<string, WeakMap<object, Function>> = new Map();
   public deletions: Array<Fiber> = [];
+  public isCommitPhase: boolean = false;
 }
 
 let rootId = null;
@@ -51,8 +52,12 @@ const rootLinkHelper = {
 const deletionsHelper = {
   get: () => storeHelper.get().deletions,
   set: (deletions: Array<Fiber>) => storeHelper.get().deletions = deletions,
-}
+};
 
+const commitPhaseHelper = {
+  get: () => storeHelper.get().isCommitPhase,
+  set: (isCommitPhase: boolean) => storeHelper.get().isCommitPhase = isCommitPhase,
+};
 
 export {
   effectStoreHelper,
@@ -62,4 +67,5 @@ export {
   eventsHelper,
   rootLinkHelper,
   deletionsHelper,
+  commitPhaseHelper,
 };

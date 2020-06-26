@@ -5,6 +5,7 @@ import {
   currentRootHelper,
   nextUnitOfWorkHelper,
   deletionsHelper,
+  commitPhaseHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import {
@@ -41,15 +42,12 @@ class Fiber<N = NativeElement> {
 }
 
 let lastUpdate = null;
-let isCommitPhase = false;
 
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
 function updateRoot() {
   const update = () => {
     const alternate = currentRootHelper.get();
-
-    if (!alternate) return;
     const fiber = createFiber({
       link: alternate.link,
       instance: alternate.instance,
@@ -60,7 +58,7 @@ function updateRoot() {
     nextUnitOfWorkHelper.set(fiber);
   };
 
-  isCommitPhase ? (lastUpdate = update) : update();
+  commitPhaseHelper.get() ? (lastUpdate = update) : update();
 }
 
 function workLoop(options?: WorkLoopOptions) {
@@ -75,7 +73,7 @@ function workLoop(options?: WorkLoopOptions) {
     shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
   }
 
-  if (!nextUnitOfWork && wipRoot && !isCommitPhase) {
+  if (!nextUnitOfWork && wipRoot && !commitPhaseHelper.get()) {
     commitRoot(onRender);
   }
 
@@ -231,18 +229,17 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 function commitRoot(onRender: () => void) {
   const wipRoot = wipRootHelper.get();
 
-  isCommitPhase = true;
+  commitPhaseHelper.set(true);
   console.log('wipRoot', wipRoot);
   commitWork(wipRoot.child, null, () => {
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
     currentRootHelper.set(wipRoot);
     wipRootHelper.set(null);
     deletionsHelper.set([]);
-
     isFunction(onRender) && onRender();
     isFunction(lastUpdate) && lastUpdate();
     lastUpdate = null;
-    isCommitPhase = false;
+    commitPhaseHelper.set(false);
   });
 }
 

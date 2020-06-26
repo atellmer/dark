@@ -66,6 +66,9 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
     updateRoot();
   };
 
+  console.log('render');
+  
+
   return [
     <div style='display: flex'>
       <button onClick={handleAddItems}>add items</button>
@@ -81,5 +84,5 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
 let counter = 0;
 const items = generateItems(10000);
 
-render(App({ items }), host);
+render(App({ items }), host, () => console.log('complete!'));
 

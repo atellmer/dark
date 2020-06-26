@@ -1,4 +1,4 @@
-import { Fiber, createFiber, workLoop } from '@core/fiber';
+import { Fiber, createFiber, workLoop, updateRoot } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
@@ -8,6 +8,7 @@ import {
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
+  commitPhaseHelper,
 } from '@core/scope';
 import { createDomLink, mutateDom } from '../dom';
 
@@ -36,6 +37,10 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     const rootId = roots.get(container);
 
     effectStoreHelper.set(rootId);
+  }
+
+  if (commitPhaseHelper.get()) {
+    return updateRoot();
   }
 
   const fiber = createFiber({
