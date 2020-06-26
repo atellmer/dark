@@ -90,7 +90,7 @@ test('[Render]: conditional rendering works correctly', () => {
     });
   })
 
-  const ListOne = createComponent<{items: AppProps['items']}>(({ items }) => {
+  const ListOne = createComponent<{ items: AppProps['items'] }>(({ items }) => {
     return items.map((x => {
       return ListItem({
         key: x.id,
@@ -99,7 +99,7 @@ test('[Render]: conditional rendering works correctly', () => {
     }))
   });
 
-  const ListTwo = createComponent<{items: AppProps['items']}>(({ items }) => {
+  const ListTwo = createComponent<{ items: AppProps['items'] }>(({ items }) => {
     return items.map((x => {
       return ListItem({
         key: x.id,
@@ -149,13 +149,16 @@ test('[Render]: conditional rendering works correctly', () => {
   expect(host.innerHTML).toBe(content(items));
 });
 
-test('[Render]: node removing works correctly', () => {
+describe('[Render]: adding/removing/swap nodes', () => {
   type AppProps = {
     items: Array<Item>;
   };
+  const itemAttrName = 'data-item';
+  let items = [];
 
   const ListItem = createComponent(({ slot }) => {
     return div({
+      [itemAttrName]: true,
       slot,
     });
   })
@@ -176,200 +179,127 @@ test('[Render]: node removing works correctly', () => {
       div({ slot: Text('footer') }),
     ]
   });
-
-  const removeItem = (id: number) => {
-    items = items.filter(x => x.id !== id);
-  };
-
-  let items = generateItems(10);
 
   const renderApp = () => render(App({ items }), host);
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
-    ${items.map(x => `<div>${x.name}</div>`).join('')}
+    ${items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')}
     <div>footer</div>
   `;
-
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
-  removeItem(6);
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
-  removeItem(5);
-  removeItem(1);
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
-  items = [];
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-});
-
-test('[Render]: node removing by key works correctly', () => {
-  type AppProps = {
-    items: Array<Item>;
-  };
-
-  const ListItem = createComponent(({ key, slot }) => {
-    return div({
-      'data-key': key,
-      slot,
-    });
-  })
-
-  const List = createComponent<AppProps>(({ items }) => {
-    return items.map((x => {
-      return ListItem({
-        key: x.id,
-        slot: Text(x.name),
-      })
-    }))
-  });
-
-  const App = createComponent<AppProps>(({ items }) => {
-    return [
-      div({ slot: Text('header') }),
-      List({ items }),
-      div({ slot: Text('footer') }),
-    ]
-  });
-
-  const removeItem = (id: number) => {
-    items = items.filter(x => x.id !== id);
-
-    render(App({ items }), host);
-  };
-
-  let items = generateItems(10);
-
-  const renderApp = () => render(App({ items }), host);
-
-  renderApp();
-
-  const nodes = Array.from(host.querySelectorAll('div'));
-  const node = nodes[8];
-  const expected = node.textContent;
-
-  jest.advanceTimersByTime(10);
-  removeItem(6);
-  removeItem(7);
-  renderApp();
-  expect(node.textContent).toBe(expected);
-});
-
-test('[Render]: node adding works correctly', () => {
-  type AppProps = {
-    items: Array<Item>;
-  };
-
-  const ListItem = createComponent(({ slot }) => {
-    return div({
-      slot,
-    });
-  })
-
-  const List = createComponent<AppProps>(({ items }) => {
-    return items.map((x => {
-      return ListItem({
-        key: x.id,
-        slot: Text(x.name),
-      })
-    }))
-  });
-
-  const App = createComponent<AppProps>(({ items }) => {
-    return [
-      div({ slot: Text('header') }),
-      List({ items }),
-      div({ slot: Text('footer') }),
-    ]
-  });
 
   const addItemsToEnd = (count: number) => {
     items = [...items, ...generateItems(count)];
   };
-
   const addItemsToStart = (count: number) => {
     items = [...generateItems(count), ...items];
   };
+  const removeItem = (id: number) => {
+    items = items.filter(x => x.id !== id);
+  };
+  const swapItems = () => {
+    const newItems = [...items];
 
-  let items = generateItems(5);
-
-  const renderApp = () => render(App({ items }), host);
-
-  const content = (items: Array<Item>) => dom`
-    <div>header</div>
-    ${items.map(x => `<div>${x.name}</div>`).join('')}
-    <div>footer</div>
-  `;
-
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
-  addItemsToEnd(5);
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
-  addItemsToStart(5)
-  renderApp();
-  expect(host.innerHTML).toBe(content(items));
-});
-
-
-test('[Render]: node adding works by key correctly', () => {
-  type AppProps = {
-    items: Array<Item>;
+    newItems[1] = items[items.length - 2];
+    newItems[newItems.length - 2] = items[1];
+    items = newItems;
   };
 
-  const ListItem = createComponent(({ slot }) => {
-    return div({
-      slot,
-    });
-  })
+  test('nodes added correctly', () => {
+    items = generateItems(5);
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
 
-  const List = createComponent<AppProps>(({ items }) => {
-    return items.map((x => {
-      return ListItem({
-        key: x.id,
-        slot: Text(x.name),
-      })
-    }))
+    jest.advanceTimersByTime(100);
+    addItemsToEnd(5);
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
+
+    jest.advanceTimersByTime(100);
+    addItemsToStart(5)
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
   });
 
-  const App = createComponent<AppProps>(({ items }) => {
-    return [
-      List({ items }),
-    ]
+  test('nodes not recreated after adding', () => {
+    items = generateItems(5);
+    renderApp();
+
+    const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+    const node = nodes[0];
+    const expected = node.textContent;
+    const count = 4;
+
+    jest.advanceTimersByTime(100);
+    addItemsToStart(count);
+    renderApp();
+
+    const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+    const newNode = newNodes[count];
+
+    expect(node).toBe(newNode);
+    expect(node.textContent).toBe(expected);
   });
 
-  const addItemsToStart = (count: number) => {
-    items = [...generateItems(count), ...items];
-  };
+  test('nodes removed correctly', () => {
+    items = generateItems(10);
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
 
-  let items = generateItems(5);
+    jest.advanceTimersByTime(100);
+    removeItem(6);
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
 
-  const renderApp = () => render(App({ items }), host);
+    jest.advanceTimersByTime(100);
+    removeItem(5);
+    removeItem(1);
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
 
-  renderApp();
+    jest.advanceTimersByTime(100);
+    items = [];
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
+  });
 
-  const nodes = Array.from(host.querySelectorAll('div'));
-  const node = nodes[0];
-  const expected = node.textContent;
+  test('nodes not recreated after removing', () => {
+    items = generateItems(10);
+    renderApp();
 
-  console.log('text', node.textContent);
+    const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+    const node = nodes[8];
+    const expected = node.textContent;
 
-  jest.advanceTimersByTime(10);
-  addItemsToStart(5);
-  renderApp();
-  console.log('text',  node.textContent);
-  expect(node.textContent).toBe(expected);
+    jest.advanceTimersByTime(100);
+    removeItem(6);
+    renderApp();
+    const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
 
-});
+    expect(node).toBe(newNodes[7]);
+    expect(node.textContent).toBe(expected);
+  });
+
+  test('nodes swapped correctly', () => {
+    items = generateItems(10);
+    renderApp();
+
+    const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+    const nodeOne = nodes[1];
+    const nodeTwo = nodes[8];
+
+    expect(nodeOne.textContent).toBe('2');
+    expect(nodeTwo.textContent).toBe('9');
+
+    swapItems();
+    renderApp();
+
+    const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+    const newNodeOne = newNodes[8];
+    const newNodeTwo = newNodes[1];
+
+    expect(newNodeOne.textContent).toBe('2');
+    expect(newNodeTwo.textContent).toBe('9');
+  });
+
+})

@@ -32,14 +32,14 @@ test('[Component]: createElement returns virtual node correctly', () => {
   const vNode = Component().createElement({}) as VirtualNode;
 
   expect(vNode).toBeTruthy();
-  expect(detectIsVirtualNode(vNode)).toBe(true);
+  expect(detectIsVirtualNode(vNode)).toBeTruthy();
 });
 
 test('[Component]: createElement returns null correctly', () => {
   const Component = createComponent(() => null);
   const element = Component().createElement({});
 
-  expect(element).toBe(null);
+  expect(element).toBeNull();
 });
 
 test('[Component]: pass props to component correctly', () => {
@@ -80,7 +80,7 @@ test('[Component]: createComponent provide type as function', () => {
 test('[Component]: detectIsComponentFactory works correctly', () => {
   const Component = createComponent(() => null);
 
-  expect(detectIsComponentFactory(Component())).toBe(true);
+  expect(detectIsComponentFactory(Component())).toBeTruthy();
 });
 
 test('[Component]: getComponentFactoryKey works correctly', () => {

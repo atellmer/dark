@@ -22,13 +22,15 @@ const generateItems = (count: number) => {
 };
 
 const ListItem = createComponent(({ key, id, slot, onRemove }) => {
+  const Tag = key === 9 ? 'p' : 'div';
+
   return (
-    <div key={key} class='list-item'>
+    <Tag key={key} class='list-item'>
       <div>slot: {slot}</div>
       <div>
         <button onClick={() => onRemove(id)}>remove</button>
       </div>
-    </div>
+    </Tag>
   );
 }, { displayName: 'ListItem' })
 
@@ -50,7 +52,7 @@ const List = createComponent(({ items }) => {
 
 const App = createComponent<{items: Array<any>}>(({ items }) => {
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(1), ...items] }), host);
+    render(App({ items: [...generateItems(3), ...items] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -66,16 +68,16 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
       <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} />,
-    items.length === 5 &&
-    [[
-      [<div>1</div>],
-      <div>2</div>,
-      <div>3</div>,
-    ]],
+    // items.length === 5 &&
+    // [[
+    //   [<div>1</div>],
+    //   <div>2</div>,
+    //   <div>3</div>,
+    // ]],
     <div>footer</div>,
   ]
 });
 
-const items = generateItems(2);
+const items = generateItems(10);
 
 render(App({ items }), host);
