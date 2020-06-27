@@ -16,7 +16,7 @@ import {
   getComponentFactoryKey,
 } from '@core/component';
 import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, getVirtualNodeKey } from '../view';
-import { flatten, isEmpty, error, isArray, keyBy, isFunction } from '@helpers';
+import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean } from '@helpers';
 import { Fragment } from '../fragment';
 import { MAX_FIBERS_RENDERED_PER_FRAME, UNIQ_KEY_ERROR } from '../constants';
 
@@ -41,14 +41,15 @@ class Fiber<N = NativeElement> {
     this.effectTag = options.effectTag || this.effectTag;
     this.type = options.type || this.type;
     this.instance = options.instance || this.instance;
-    this.insideViewport = options.insideViewport || this.insideViewport;
+    this.insideViewport = isBoolean(options.insideViewport) ? options.insideViewport : this.insideViewport;
     this.onBeforeDeletion = options.onBeforeDeletion || this.onBeforeDeletion;
   }
 
-  public onBeforeDeletion: () => void = () => {};
+  public onBeforeDeletion: () => void = () => { };
 }
 
 let lastUpdate = null;
+let isOnlyViewportUpdate = true;
 
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
@@ -58,6 +59,7 @@ function updateRoot() {
     const fiber = createFiber({
       link: alternate.link,
       instance: alternate.instance,
+      effectTag: EffectTag.UPDATE,
       alternate,
     });
 
@@ -117,14 +119,20 @@ function performUnitOfWork(fiber: Fiber) {
 function updateComponent(fiber: Fiber) {
   let children: Array<VirtualNode | ComponentFactory> = [];
   const isList = isArray(fiber.instance);
+  const alternate = fiber?.alternate?.child;
+  const skip = isOnlyViewportUpdate ? (alternate && !alternate.insideViewport) : false;
 
   if (isList || detectIsComponentFactory(fiber.instance)) {
-    const factory = isList
-      ? Fragment({ slot: flatten([fiber.instance]) })
-      : fiber.instance as ComponentFactory;
+    if (!skip) {
+      const factory = isList
+        ? Fragment({ slot: flatten([fiber.instance]) })
+        : fiber.instance as ComponentFactory;
 
-    fiber.instance = factory;
-    children = flatten([factory.createElement(factory.props)]);
+      fiber.instance = factory;
+      children = flatten([factory.createElement(factory.props)]);
+    } else {
+      children = getSiblingInstances(alternate);
+    }
   } else {
     children = detectIsTagVirtualNode(fiber.instance)
       ? fiber.instance.children
@@ -135,10 +143,23 @@ function updateComponent(fiber: Fiber) {
     }
   }
 
-  reconcileChildren(fiber, children);
+  reconcileChildren(fiber, children, skip);
 }
 
-function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | ComponentFactory>) {
+function getSiblingInstances(fiber: Fiber): Array<VirtualNode | ComponentFactory> {
+  const instances = [];
+  if (!fiber) return [];
+  let nextFiber = fiber;
+
+  while (nextFiber) {
+    instances.push(nextFiber.instance);
+    nextFiber = nextFiber.sibling;
+  }
+
+  return instances;
+}
+
+function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | ComponentFactory>, parentSkip: boolean = false) {
   let idx = 0;
   let alternate: Fiber = wipFiber?.alternate?.child;
   let prevSibling: Fiber = null;
@@ -191,13 +212,16 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
     const isUpdate = Boolean(replacedAlternate && element && replacedAlternate.type === type);
 
     if (isUpdate) {
+      const skip = isOnlyViewportUpdate ? (parentSkip || !alternate.insideViewport) : false;
+
       fiber = createFiber({
         type: replacedAlternate.type,
         instance: element,
         link: replacedAlternate.link,
-        parent: wipFiber,
         alternate: replacedAlternate,
-        effectTag: EffectTag.UPDATE,
+        parent: wipFiber,
+        insideViewport: alternate.insideViewport,
+        effectTag: skip ? EffectTag.SKIP : EffectTag.UPDATE,
       });
     } else if (element) {
       fiber = createFiber({
@@ -256,6 +280,13 @@ function commitRoot(onRender: () => void) {
     isFunction(lastUpdate) && lastUpdate();
     lastUpdate = null;
     commitPhaseHelper.set(false);
+
+    if (!isOnlyViewportUpdate) {
+      isOnlyViewportUpdate = true;
+    } else if (wipRoot.effectTag === EffectTag.UPDATE) {
+      isOnlyViewportUpdate = false;
+      //setTimeout(() => updateRoot(), 10);
+    }
   });
 }
 
@@ -267,14 +298,19 @@ function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function)
   rootFiber = rootFiber || fiber;
 
   while (nextFiber) {
-    if (fibersRendered >= MAX_FIBERS_RENDERED_PER_FRAME && isDeepWalking) {
-      platform.raf(() => commitWork(nextFiber, rootFiber, onComplete));
-      return;
+    const skip = nextFiber.effectTag === EffectTag.SKIP;
+
+    if (!skip) {
+      if (fibersRendered >= MAX_FIBERS_RENDERED_PER_FRAME && isDeepWalking) {
+        platform.raf(() => commitWork(nextFiber, rootFiber, onComplete));
+        return;
+      }
+
+      platform.mutateTree(nextFiber);
+      fibersRendered++;
     }
 
-    platform.mutateTree(nextFiber);
-
-    if (nextFiber.child && isDeepWalking) {
+    if (nextFiber.child && isDeepWalking && !skip) {
       nextFiber = nextFiber.child;
     } else if (nextFiber.sibling) {
       isDeepWalking = true;
@@ -285,8 +321,6 @@ function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function)
     } else {
       nextFiber = null;
     }
-
-    fibersRendered++;
   }
 
   if (!nextFiber) {

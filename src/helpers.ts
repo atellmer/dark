@@ -3,6 +3,7 @@ const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
 const isString = o => typeof o === 'string';
 const isObject = o => typeof o === 'object';
+const isBoolean = o => typeof o === 'boolean';
 const isArray = (o: unknown): o is Array<any> => Array.isArray(o);
 const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
@@ -63,6 +64,7 @@ export {
   isNumber,
   isString,
   isObject,
+  isBoolean,
   isArray,
   isNull,
   isEmpty,

@@ -49,7 +49,7 @@ const List = createComponent(({ items }) => {
   }))
 }, { displayName: 'List' });
 
-const App = createComponent<{items: Array<any>;}>(({ items }) => {
+const App = createComponent<{items: Array<any>}>(({ items }) => {
   const [update] = useForceUpdate();
   const handleAddItems = () => {
     render(App({ items: [...generateItems(10), ...items] }), host);
@@ -80,7 +80,7 @@ const App = createComponent<{items: Array<any>;}>(({ items }) => {
 });
 
 let counter = 0;
-const items = generateItems(10000);
+const items = generateItems(100);
 
 render(App({ items }), host);
 

@@ -2,6 +2,7 @@ export enum EffectTag {
   PLACEMENT = 'PLACEMENT',
   UPDATE = 'UPDATE',
   DELETION = 'DELETION',
+  SKIP = 'SKIP',
 };
 
 export type NativeElement = unknown;

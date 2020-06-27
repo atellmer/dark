@@ -1,4 +1,4 @@
-import { Fiber, createFiber, workLoop, updateRoot } from '@core/fiber';
+import { Fiber, createFiber, workLoop, updateRoot, EffectTag } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
@@ -49,6 +49,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
       name: 'root',
       children: flatten([element]),
     }),
+    effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
     alternate: currentRootHelper.get(),
   });
 

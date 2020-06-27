@@ -21,10 +21,13 @@ import { platform } from '@core/global';
 
 const attrBlackList = [ATTR_KEY];
 
-const fiberMap = new WeakMap();
-const intersectionObserver = createIntersectionObserver(fiberMap);
+const fiberObserverMap = new WeakMap();
+const intersectionObserver = createIntersectionObserver(fiberObserverMap);
 
-function createIntersectionObserver(fiberMap: WeakMap<Element, Fiber>, options: IntersectionObserverInit = { threshold: 0.0 }) {
+function createIntersectionObserver(
+  fiberMap: WeakMap<Element, Fiber<Element>>,
+  options: IntersectionObserverInit = { threshold: 0.0 }
+) {
   return new IntersectionObserver((entries) => {
     platform.ric(() => {
       for (const entry of entries) {
@@ -32,6 +35,7 @@ function createIntersectionObserver(fiberMap: WeakMap<Element, Fiber>, options: 
 
         if (fiber && fiber.link === entry.target) {
           fiber.insideViewport = entry.isIntersecting;
+          fiber.link.setAttribute('viewport', fiber.insideViewport.toString())
         }
       }
     });
@@ -41,10 +45,14 @@ function createIntersectionObserver(fiberMap: WeakMap<Element, Fiber>, options: 
 function observeIntersection(fiber: Fiber<Element>) {
   const node = fiber.link;
 
-  fiberMap.set(fiber.link, fiber);
+  addFiberToIntersectionMap(fiber);
   intersectionObserver.observe(node);
 
   return () => intersectionObserver.unobserve(node);
+}
+
+function addFiberToIntersectionMap(fiber: Fiber<Element>) {
+  fiberObserverMap.set(fiber.link, fiber);
 }
 
 function createElement(vNode: VirtualNode): DomElement {
@@ -163,9 +171,9 @@ function mutateDom(fiber: Fiber<Element>) {
   }
 
   const parent = linkParentFiber.link;
+  const isTagNode = detectIsTagVirtualNode(fiber.instance);
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const isTagNode = detectIsTagVirtualNode(fiber.instance);
     const isParentComponentFactory = detectIsComponentFactory(fiber.parent.instance);
     const node = isParentComponentFactory ? getSiblingDomNode(fiber) : null;
 
@@ -176,17 +184,14 @@ function mutateDom(fiber: Fiber<Element>) {
     }
 
     addAttributes(fiber.link, fiber.instance as VirtualNode);
-
-    if (isTagNode) {
-      fiber.onBeforeDeletion = observeIntersection(fiber);
-    }
-
+    isTagNode && (fiber.onBeforeDeletion = observeIntersection(fiber));
   } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
     if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsVirtualNode(fiber.instance)) return;
     const vNode: VirtualNode = fiber.alternate.instance;
     const nextVNode: VirtualNode = fiber.instance;
 
     updateDom(fiber.link, vNode, nextVNode);
+    isTagNode && addFiberToIntersectionMap(fiber);
   } else if (fiber.effectTag === EffectTag.DELETION) {
     commitDeletion({
       fiber,
