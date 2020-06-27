@@ -5,9 +5,14 @@ class Store {
   public wipRoot: Fiber = null;
   public currentRoot: Fiber = null;
   public nextUnitOfWork: Fiber = null;
+  public currentMountedFiber: Fiber = null;
   public events: Map<string, WeakMap<object, Function>> = new Map();
   public deletions: Array<Fiber> = [];
   public isCommitPhase: boolean = false;
+  public isForceUpdatePhase: boolean = false;
+  public isViewportUpdatePhase: boolean = true;
+  public lastUpdateFn: () => void = null;
+  public updateTimerId: number = null;
 }
 
 let rootId = null;
@@ -43,6 +48,11 @@ const nextUnitOfWorkHelper = {
   set: (fiber: Fiber) => (storeHelper.get().nextUnitOfWork = fiber),
 };
 
+const currentMountedFiberHelper = {
+  get: () => storeHelper.get()?.currentMountedFiber || null,
+  set: (fiber: Fiber) => (storeHelper.get().currentMountedFiber = fiber),
+};
+
 const eventsHelper = {
   get: () => storeHelper.get().events,
 };
@@ -61,14 +71,39 @@ const commitPhaseHelper = {
   set: (isCommitPhase: boolean) => storeHelper.get().isCommitPhase = isCommitPhase,
 };
 
+const forceUpdatePhaseHelper = {
+  get: () => storeHelper.get()?.isForceUpdatePhase || null,
+  set: (isForceUpdatePhase: boolean) => (storeHelper.get().isForceUpdatePhase = isForceUpdatePhase),
+};
+
+const viewportUpdatePhaseHelper = {
+  get: () => storeHelper.get()?.isViewportUpdatePhase || null,
+  set: (isViewportUpdatePhase: boolean) => (storeHelper.get().isViewportUpdatePhase = isViewportUpdatePhase),
+};
+
+const lastUpdateFnHelper = {
+  get: () => storeHelper.get()?.lastUpdateFn || null,
+  set: (lastUpdateFn: () => void) => (storeHelper.get().lastUpdateFn = lastUpdateFn),
+};
+
+const updateTimerIdHelper = {
+  get: () => storeHelper.get()?.updateTimerId || null,
+  set: (updateTimerId: number) => (storeHelper.get().updateTimerId = updateTimerId),
+};
+
 export {
   getRootId,
   effectStoreHelper,
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
+  currentMountedFiberHelper,
   eventsHelper,
   rootLinkHelper,
   deletionsHelper,
   commitPhaseHelper,
+  forceUpdatePhaseHelper,
+  viewportUpdatePhaseHelper,
+  lastUpdateFnHelper,
+  updateTimerIdHelper,
 };

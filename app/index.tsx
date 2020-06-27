@@ -49,8 +49,23 @@ const List = createComponent(({ items }) => {
   }))
 });
 
+const Counter = createComponent(() => {
+  const[update] = useForceUpdate();
+
+  const handleIncrement = () => {
+    counter++;
+    update();
+  };
+
+  return (
+    <div style='display: flex; margin: 20px;'>
+      <button onClick={handleIncrement}>increment</button>
+      <div style='margin-left: 20px;'>{counter}</div>
+    </div>
+  );
+}, { displayName: 'Counter' })
+
 const App = createComponent<{items: Array<any>}>(({ items }) => {
-  const [update] = useForceUpdate();
   const handleAddItems = () => {
     render(App({ items: [...generateItems(10), ...items] }), host);
   };
@@ -62,18 +77,12 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
     render(App({ items: newItems }), host);
   };
 
-  const handleIncrement = () => {
-    counter++;
-    update();
-  };
-
   return [
     <div style='display: flex'>
       <button onClick={handleAddItems}>add items</button>
       <button onClick={handleSwap}>swap</button>
-      <button onClick={handleIncrement}>increment</button>
     </div>,
-    <div>{counter}</div>,
+    <Counter />,
     <List items={items} host={host} />,
     <div>footer</div>,
   ]
