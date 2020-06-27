@@ -35,7 +35,6 @@ function createIntersectionObserver(
 
         if (fiber && fiber.link === entry.target) {
           fiber.insideViewport = entry.isIntersecting;
-          fiber.link.setAttribute('viewport', fiber.insideViewport.toString())
         }
       }
     });

@@ -81,8 +81,8 @@ function useForceUpdate() {
   const currentMountedFiber = currentMountedFiberHelper.get();
 
   return [() => {
+    effectStoreHelper.set(rootId); // important order!
     forceUpdatePhaseHelper.set(true);
-    effectStoreHelper.set(rootId);
 
     const fiber = createFiber({
       ...currentMountedFiber,
@@ -110,7 +110,8 @@ function workLoop(options?: WorkLoopOptions) {
 
   if (!nextUnitOfWork && wipRoot && !commitPhaseHelper.get()) {
     const isForceUpdatePhase = forceUpdatePhaseHelper.get();
-
+    console.log('start');
+    
     isForceUpdatePhase ? commitLocal() : commitRoot(onRender);
   }
 
@@ -303,27 +304,27 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 }
 
 function commitRoot(onRender: () => void) {
-  const wipRoot = wipRootHelper.get();
+  const wipFiber = wipRootHelper.get();
   let updateTimerId: any = updateTimerIdHelper.get();
 
   updateTimerId && clearTimeout(updateTimerId);
   commitPhaseHelper.set(true);
-  commitWork(wipRoot.child, null, () => {
+  commitWork(wipFiber.child, null, () => {
     const isViewportUpdatePhase = viewportUpdatePhaseHelper.get();
     const lastUpdateFn = lastUpdateFnHelper.get();
 
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
-    currentRootHelper.set(wipRoot);
+    currentRootHelper.set(wipFiber);
     wipRootHelper.set(null);
     deletionsHelper.set([]);
     isFunction(onRender) && onRender();
     isFunction(lastUpdateFn) && lastUpdateFn();
-    lastUpdateFnHelper.set(null)
+    lastUpdateFnHelper.set(null);
     commitPhaseHelper.set(false);
 
     if (!isViewportUpdatePhase) {
       viewportUpdatePhaseHelper.set(true);
-    } else if (wipRoot.effectTag === EffectTag.UPDATE) {
+    } else if (wipFiber.effectTag === EffectTag.UPDATE) {
       updateTimerId = setTimeout(() => {
         viewportUpdatePhaseHelper.set(false);
         updateRoot();
@@ -335,12 +336,29 @@ function commitRoot(onRender: () => void) {
 
 function commitLocal() {
   const wipFiber = wipRootHelper.get();
+  let updateTimerId: any = updateTimerIdHelper.get();
+
+  updateTimerId && clearTimeout(updateTimerId);
 
   commitWork(wipFiber.child, null, () => {
+    const isViewportUpdatePhase = viewportUpdatePhaseHelper.get();
     forceUpdatePhaseHelper.set(false);
+
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
     wipRootHelper.set(null);
     deletionsHelper.set([]);
+    lastUpdateFnHelper.set(null);
+    commitPhaseHelper.set(false);
+
+    if (!isViewportUpdatePhase) {
+      viewportUpdatePhaseHelper.set(true);
+    } else if (wipFiber.effectTag === EffectTag.UPDATE) {
+      updateTimerId = setTimeout(() => {
+        viewportUpdatePhaseHelper.set(false);
+        updateRoot();
+      }, SHADOW_UPDATE_TIMEOUT);
+      updateTimerIdHelper.set(updateTimerId);
+    }
   });
 }
 

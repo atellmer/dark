@@ -37,7 +37,7 @@ const List = createComponent(({ items }) => {
   const handleRemove = (id: number) => {
     const newItems = items.filter(x => x.id !== id);
 
-    render(App({ items: newItems }), host);
+    render(App({ items: newItems, host }), host);
   };
 
   return items.map((x => {
@@ -65,16 +65,16 @@ const Counter = createComponent(() => {
   );
 }, { displayName: 'Counter' })
 
-const App = createComponent<{items: Array<any>}>(({ items }) => {
+const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }) => {
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(10), ...items] }), host);
+    render(App({ items: [...generateItems(10), ...items], host }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
     newItems[1] = items[items.length - 2];
     newItems[newItems.length - 2] = items[1];
 
-    render(App({ items: newItems }), host);
+    render(App({ items: newItems, host }), host);
   };
 
   return [
@@ -91,5 +91,7 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
 let counter = 0;
 const items = generateItems(10000);
 
-render(App({ items }), host);
+render(App({ items, host }), host);
+
+//render(App({ items, host: host2 }), host2);
 
