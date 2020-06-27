@@ -55,14 +55,15 @@ const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
 function updateRoot() {
   const update = () => {
-    const alternate = currentRootHelper.get();
+    const currentRootFiber = currentRootHelper.get();
     const fiber = createFiber({
-      link: alternate.link,
-      instance: alternate.instance,
+      link: currentRootFiber.link,
+      instance: currentRootFiber.instance,
+      alternate: currentRootFiber,
       effectTag: EffectTag.UPDATE,
-      alternate,
     });
 
+    currentRootFiber.alternate = null;
     wipRootHelper.set(fiber);
     nextUnitOfWorkHelper.set(fiber);
   };
@@ -213,6 +214,9 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 
     if (isUpdate) {
       const skip = isOnlyViewportUpdate ? (parentSkip || !alternate.insideViewport) : false;
+
+      replacedAlternate.alternate = null;
+      alternate.alternate = null;
 
       fiber = createFiber({
         type: replacedAlternate.type,

@@ -43,18 +43,21 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     return updateRoot();
   }
 
+  const currentRootFiber = currentRootHelper.get();
   const fiber = createFiber({
     link: container,
     instance: createTagVirtualNode({
       name: 'root',
       children: flatten([element]),
     }),
+    alternate: currentRootFiber,
     effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
-    alternate: currentRootHelper.get(),
   });
 
+  currentRootFiber && (currentRootFiber.alternate = null);
   wipRootHelper.set(fiber);
   nextUnitOfWorkHelper.set(fiber);
+
   workLoop({ onRender });
 }
 

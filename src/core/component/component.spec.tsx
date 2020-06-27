@@ -71,12 +71,6 @@ test('[Component]: createComponent provide token correctly', () => {
   expect(Component().token).toBe(token);
 });
 
-test('[Component]: createComponent provide type as function', () => {
-  const Component = createComponent(() => null);
-
-  expect(typeof Component().type).toBe('function');
-});
-
 test('[Component]: detectIsComponentFactory works correctly', () => {
   const Component = createComponent(() => null);
 

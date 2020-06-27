@@ -1,7 +1,8 @@
 import { ComponentFactory } from './component';
 import { ElementKey, DarkElement } from '../shared/model';
 
-export type ComponentDef<P extends StandardComponentProps> = (props: P) => any;
+
+export type CreateElement<P extends StandardComponentProps> = (props: P) => DarkElement;
 
 export type ComponentOptions<P extends StandardComponentProps> = {
   displayName?: string;

@@ -31,7 +31,7 @@ const ListItem = createComponent(({ key, id, slot, onRemove }) => {
       </div>
     </div>
   );
-}, { displayName: 'ListItem' })
+})
 
 const List = createComponent(({ items }) => {
   const handleRemove = (id: number) => {
@@ -47,7 +47,7 @@ const List = createComponent(({ items }) => {
       </ListItem>
     )
   }))
-}, { displayName: 'List' });
+});
 
 const App = createComponent<{items: Array<any>}>(({ items }) => {
   const [update] = useForceUpdate();
@@ -80,7 +80,7 @@ const App = createComponent<{items: Array<any>}>(({ items }) => {
 });
 
 let counter = 0;
-const items = generateItems(100);
+const items = generateItems(10000);
 
 render(App({ items }), host);
 

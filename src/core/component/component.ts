@@ -1,10 +1,11 @@
 import {
-  ComponentDef,
+  CreateElement,
   ComponentOptions,
   StandardComponentProps,
 } from './model';
 import { ATTR_KEY } from '../constants';
 import { DarkElement } from '../shared/model';
+import { createElement } from '@core/view';
 
 
 const $$component = Symbol('component');
@@ -25,23 +26,23 @@ class ComponentFactory<P extends StandardComponentProps = any> {
   }
 }
 
-function createComponent<P extends StandardComponentProps>(def: ComponentDef<P>, options: ComponentOptions<P> = null) {
-  const type = (props = {} as P): ComponentFactory<P> => {
-    const displayName = options ? options.displayName : '';
-    const defaultProps = (options && options.defaultProps) || {};
+function createComponent<P extends StandardComponentProps>(createElement: CreateElement<P>, options: ComponentOptions<P> = null) {
+  const displayName = options ? options.displayName : '';
+  const defaultProps = (options && options.defaultProps) || {};
+  const token = (options && options.token) || $$component;
+
+  return (props = {} as P): ComponentFactory<P> => {
     const computedProps = { ...defaultProps, ...props } as P;
     const factory = new ComponentFactory({
-      createElement: (props: P) => def(props),
+      token,
       displayName,
+      createElement,
       props: computedProps,
-      token: (options && options.token) || $$component,
-      type,
+      type: createElement,
     });
 
     return factory;
   };
-
-  return type;
 }
 
 const detectIsComponentFactory =
