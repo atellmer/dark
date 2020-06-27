@@ -18,7 +18,11 @@ import {
 import { VirtualNode, detectIsTagVirtualNode, createEmptyVirtualNode, getVirtualNodeKey } from '../view';
 import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean } from '@helpers';
 import { Fragment } from '../fragment';
-import { MAX_FIBERS_RENDERED_PER_FRAME, UNIQ_KEY_ERROR } from '../constants';
+import {
+  MAX_FIBERS_RENDERED_PER_FRAME,
+  SHADOW_UPDATE_TIMEOUT,
+  UNIQ_KEY_ERROR,
+} from '../constants';
 
 
 class Fiber<N = NativeElement> {
@@ -274,7 +278,7 @@ function commitRoot(onRender: () => void) {
   const wipRoot = wipRootHelper.get();
 
   commitPhaseHelper.set(true);
-  console.log('wipRoot', wipRoot);
+  //console.log('wipRoot', wipRoot);
   commitWork(wipRoot.child, null, () => {
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
     currentRootHelper.set(wipRoot);
@@ -289,7 +293,7 @@ function commitRoot(onRender: () => void) {
       isOnlyViewportUpdate = true;
     } else if (wipRoot.effectTag === EffectTag.UPDATE) {
       isOnlyViewportUpdate = false;
-      //setTimeout(() => updateRoot(), 10);
+      setTimeout(updateRoot, SHADOW_UPDATE_TIMEOUT);
     }
   });
 }
