@@ -1,4 +1,5 @@
-import { requestIdleCallback } from '@shopify/jest-dom-mocks';
+import { requestIdleCallback, intersectionObserver } from '@shopify/jest-dom-mocks';
 
 
 requestIdleCallback.mock();
+intersectionObserver.mock();

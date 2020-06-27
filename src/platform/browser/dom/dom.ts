@@ -14,11 +14,38 @@ import {
 import { isFunction, isUndefined } from '@helpers';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { ATTR_KEY } from '@core/constants';
-import { rootLinkHelper, deletionsHelper } from '@core/scope';
+import { rootLinkHelper } from '@core/scope';
 import { detectIsComponentFactory } from '@core/component';
+import { platform } from '@core/global';
 
 
 const attrBlackList = [ATTR_KEY];
+
+const fiberMap = new WeakMap();
+const intersectionObserver = createIntersectionObserver(fiberMap);
+
+function createIntersectionObserver(fiberMap: WeakMap<Element, Fiber>, options: IntersectionObserverInit = { threshold: 0.0 }) {
+  return new IntersectionObserver((entries) => {
+    platform.ric(() => {
+      for (const entry of entries) {
+        const fiber = fiberMap.get(entry.target);
+
+        if (fiber && fiber.link === entry.target) {
+          fiber.insideViewport = entry.isIntersecting;
+        }
+      }
+    });
+  }, options);
+}
+
+function observeIntersection(fiber: Fiber<Element>) {
+  const node = fiber.link;
+
+  fiberMap.set(fiber.link, fiber);
+  intersectionObserver.observe(node);
+
+  return () => intersectionObserver.unobserve(node);
+}
 
 function createElement(vNode: VirtualNode): DomElement {
   const map = {
@@ -138,6 +165,7 @@ function mutateDom(fiber: Fiber<Element>) {
   const parent = linkParentFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
+    const isTagNode = detectIsTagVirtualNode(fiber.instance);
     const isParentComponentFactory = detectIsComponentFactory(fiber.parent.instance);
     const node = isParentComponentFactory ? getSiblingDomNode(fiber) : null;
 
@@ -148,6 +176,11 @@ function mutateDom(fiber: Fiber<Element>) {
     }
 
     addAttributes(fiber.link, fiber.instance as VirtualNode);
+
+    if (isTagNode) {
+      fiber.onBeforeDeletion = observeIntersection(fiber);
+    }
+
   } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
     if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsVirtualNode(fiber.instance)) return;
     const vNode: VirtualNode = fiber.alternate.instance;
@@ -155,19 +188,48 @@ function mutateDom(fiber: Fiber<Element>) {
 
     updateDom(fiber.link, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
-    commitDeletion(fiber, parent);
+    commitDeletion({
+      fiber,
+      parent,
+      onBeforeCommit: fiber => fiber.onBeforeDeletion(),
+    });
   }
 }
 
-function commitDeletion(fiber: Fiber<Element>, parent: Element, fromChild = false) {
+type CommitDeletionOptions = {
+  fiber: Fiber<Element>;
+  parent: Element;
+  fromChild?: boolean;
+  onBeforeCommit: (fiber: Fiber) => void;
+};
+
+function commitDeletion(options: CommitDeletionOptions) {
+  const {
+    fiber,
+    parent,
+    fromChild = false,
+    onBeforeCommit,
+  } = options;
+
   if (fiber.link) {
+    onBeforeCommit(fiber);
     parent.removeChild(fiber.link);
   } else {
-    commitDeletion(fiber.child, parent, true);
+    commitDeletion({
+      fiber: fiber.child,
+      parent,
+      fromChild: true,
+      onBeforeCommit,
+    });
   }
 
   if (fromChild && fiber.sibling) {
-    commitDeletion(fiber.sibling, parent, true);
+    commitDeletion({
+      fiber: fiber.sibling,
+      parent,
+      fromChild: true,
+      onBeforeCommit,
+    });
   }
 }
 

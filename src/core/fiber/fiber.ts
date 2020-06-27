@@ -30,6 +30,7 @@ class Fiber<N = NativeElement> {
   public effectTag: EffectTag = null;
   public type: string | Function = null;
   public instance: VirtualNode | ComponentFactory = null;
+  public insideViewport: boolean = true;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || this.parent;
@@ -40,15 +41,20 @@ class Fiber<N = NativeElement> {
     this.effectTag = options.effectTag || this.effectTag;
     this.type = options.type || this.type;
     this.instance = options.instance || this.instance;
+    this.insideViewport = options.insideViewport || this.insideViewport;
+    this.onBeforeDeletion = options.onBeforeDeletion || this.onBeforeDeletion;
   }
+
+  public onBeforeDeletion: () => void = () => {};
 }
 
 let lastUpdate = null;
 
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
-function updateRoot(alternate: Fiber) {
+function updateRoot() {
   const update = () => {
+    const alternate = currentRootHelper.get();
     const fiber = createFiber({
       link: alternate.link,
       instance: alternate.instance,
@@ -67,7 +73,7 @@ function useForceUpdate() {
 
   return [() => {
     effectStoreHelper.set(rootId);
-    updateRoot(currentRootHelper.get());
+    updateRoot();
   }];
 }
 
@@ -240,7 +246,7 @@ function commitRoot(onRender: () => void) {
   const wipRoot = wipRootHelper.get();
 
   commitPhaseHelper.set(true);
-  //sconsole.log('wipRoot', wipRoot);
+  console.log('wipRoot', wipRoot);
   commitWork(wipRoot.child, null, () => {
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
     currentRootHelper.set(wipRoot);

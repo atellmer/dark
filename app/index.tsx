@@ -33,11 +33,11 @@ const ListItem = createComponent(({ key, id, slot, onRemove }) => {
   );
 }, { displayName: 'ListItem' })
 
-const List = createComponent(({ items, host }) => {
+const List = createComponent(({ items }) => {
   const handleRemove = (id: number) => {
     const newItems = items.filter(x => x.id !== id);
 
-    render(App({ items: newItems, host }), host);
+    render(App({ items: newItems }), host);
   };
 
   return items.map((x => {
@@ -49,25 +49,23 @@ const List = createComponent(({ items, host }) => {
   }))
 }, { displayName: 'List' });
 
-const App = createComponent<{items: Array<any>; host: HTMLElement;}>(({ items, host }) => {
+const App = createComponent<{items: Array<any>;}>(({ items }) => {
   const [update] = useForceUpdate();
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(10), ...items], host }), host);
+    render(App({ items: [...generateItems(10), ...items] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
     newItems[1] = items[items.length - 2];
     newItems[newItems.length - 2] = items[1];
 
-    render(App({ items: newItems, host }), host);
+    render(App({ items: newItems }), host);
   };
 
   const handleIncrement = () => {
     counter++;
     update();
   };
-
-  console.log('render');
 
   return [
     <div style='display: flex'>
@@ -82,9 +80,7 @@ const App = createComponent<{items: Array<any>; host: HTMLElement;}>(({ items, h
 });
 
 let counter = 0;
-const items = generateItems(5);
+const items = generateItems(10000);
 
-render(App({ items, host }), host);
-
-render(App({ items, host: host2 }), host2);
+render(App({ items }), host);
 
