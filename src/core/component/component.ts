@@ -5,24 +5,23 @@ import {
 } from './model';
 import { ATTR_KEY } from '../constants';
 import { DarkElement } from '../shared/model';
-import { createElement } from '@core/view';
+import { VirtualNode } from '../view';
 
 
 const $$component = Symbol('component');
 
 class ComponentFactory<P extends StandardComponentProps = any> {
-  public type: Function = null;
+  public type: (props: P) => DarkElement = null;
   public token: Symbol = null;
   public props: P = null;
   public displayName = '';
-  public createElement: (props: P) => DarkElement = null;
+  public children: Array<VirtualNode | ComponentFactory>;
 
   constructor(options: ComponentFactory<P>) {
     this.type = options.type;
     this.token = options.token;
     this.props = options.props;
     this.displayName = options.displayName;
-    this.createElement = options.createElement;
   }
 }
 
@@ -36,9 +35,9 @@ function createComponent<P extends StandardComponentProps>(createElement: Create
     const factory = new ComponentFactory({
       token,
       displayName,
-      createElement,
       props: computedProps,
       type: createElement,
+      children: [],
     });
 
     return factory;

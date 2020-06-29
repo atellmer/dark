@@ -1,24 +1,26 @@
-import { Fiber, createFiber, workLoop, updateRoot, EffectTag } from '@core/fiber';
+import { createFiber, workLoop, EffectTag } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
-import { createTagVirtualNode } from '@core/view';
+import { createTagVirtualNode, VirtualNode } from '@core/view';
 import {
   effectStoreHelper,
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
-  commitPhaseHelper,
+  getRootId,
 } from '@core/scope';
 import { createDomLink, mutateDom } from '../dom';
+import { ComponentFactory } from '@core/component';
 
 
-platform.raf = (...args) => requestAnimationFrame(...args);
-platform.ric = (...args) => requestIdleCallback(...args);
-platform.createLink = ((fiber: Fiber<Element>) => createDomLink(fiber)) as typeof platform.createLink;
-platform.mutateTree = ((fiber: Fiber<Element>) => mutateDom(fiber)) as typeof platform.mutateTree;
+platform.raf = requestAnimationFrame.bind(this);
+platform.ric = requestIdleCallback.bind(this);
+platform.createLink = createDomLink as typeof platform.createLink;
+platform.mutateTree = mutateDom as typeof platform.mutateTree;
 
 const roots: Map<Element, number> = new Map();
+const renderRequests: Array<(deadline: IdleDeadline) => void> = [];
 
 function render(element: DarkElement, container: Element, onRender?: () => void) {
   if (!(container instanceof Element)) {
@@ -39,26 +41,38 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     effectStoreHelper.set(rootId);
   }
 
-  if (commitPhaseHelper.get()) {
-    return updateRoot();
-  }
-
   const currentRootFiber = currentRootHelper.get();
   const fiber = createFiber({
     link: container,
     instance: createTagVirtualNode({
       name: 'root',
-      children: flatten([element]),
+      children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
     }),
     alternate: currentRootFiber,
     effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
   });
 
-  currentRootFiber && (currentRootFiber.alternate = null);
-  wipRootHelper.set(fiber);
-  nextUnitOfWorkHelper.set(fiber);
+  renderRequests.push((rootId => (deadline: IdleDeadline) => {
+    effectStoreHelper.set(rootId);
+    currentRootFiber && (currentRootFiber.alternate = null);
+    wipRootHelper.set(fiber);
+    nextUnitOfWorkHelper.set(fiber);
+    workLoop({ deadline, onRender });
+  })(getRootId()));
 
-  platform.ric(deadline => workLoop({ deadline, onRender }));
+  setTimeout(() => {
+    platform.ric(scheduleRenders);
+  });
+}
+
+function scheduleRenders(deadline: IdleDeadline) {
+  const [request] = renderRequests;
+
+  if (request) {
+    request(deadline);
+    renderRequests.shift();
+    platform.ric(scheduleRenders);
+  }
 }
 
 export {

@@ -75,6 +75,10 @@ function keyBy<T = any>(list: Array<T>, fn: (o: T) => string | number, value = f
   return list.reduce((acc, x) => (acc[fn(x)] = value ? x : true, acc), {});
 }
 
+function takeListFromEnd(source: Array<any>, count: number) {
+  return [...source].splice(-count);
+}
+
 export {
   isFunction,
   isUndefined,
@@ -91,4 +95,5 @@ export {
   flatten,
   getTime,
   keyBy,
+  takeListFromEnd,
 };
