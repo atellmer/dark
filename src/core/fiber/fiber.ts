@@ -32,7 +32,8 @@ import {
 class Fiber<N = NativeElement> {
   public parent: Fiber<N> = null;
   public child: Fiber<N> = null;
-  public sibling: Fiber<N> = null;
+  public prevSibling: Fiber<N> = null;
+  public nextSibling: Fiber<N> = null;
   public alternate: Fiber<N> = null;
   public link: N = null;
   public effectTag: EffectTag = null;
@@ -43,7 +44,8 @@ class Fiber<N = NativeElement> {
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || this.parent;
     this.child = options.child || this.child;
-    this.sibling = options.sibling || this.sibling;
+    this.prevSibling = options.prevSibling || this.prevSibling;
+    this.nextSibling = options.nextSibling || this.nextSibling;
     this.alternate = options.alternate || this.alternate;
     this.link = options.link || this.link;
     this.effectTag = options.effectTag || this.effectTag;
@@ -110,8 +112,7 @@ function workLoop(options?: WorkLoopOptions) {
 
   if (!nextUnitOfWork && wipRoot && !commitPhaseHelper.get()) {
     const isForceUpdatePhase = forceUpdatePhaseHelper.get();
-    console.log('start');
-    
+
     isForceUpdatePhase ? commitLocal() : commitRoot(onRender);
   }
 
@@ -130,8 +131,8 @@ function performUnitOfWork(fiber: Fiber) {
   let nextFiber = fiber;
 
   while (nextFiber) {
-    if (nextFiber.sibling) {
-      return nextFiber.sibling;
+    if (nextFiber.nextSibling) {
+      return nextFiber.nextSibling;
     }
 
     if (forceUpdatePhaseHelper.get()) {
@@ -186,7 +187,7 @@ function getSiblingInstances(fiber: Fiber): Array<VirtualNode | ComponentFactory
 
   while (nextFiber) {
     instances.push(nextFiber.instance);
-    nextFiber = nextFiber.sibling;
+    nextFiber = nextFiber.nextSibling;
   }
 
   return instances;
@@ -258,6 +259,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
         alternate: replacedAlternate,
         parent: wipFiber,
         insideViewport: alternate.insideViewport,
+        prevSibling,
         effectTag: skip ? EffectTag.SKIP : EffectTag.UPDATE,
       });
     } else if (element) {
@@ -267,6 +269,7 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
         link: null,
         parent: wipFiber,
         alternate: null,
+        prevSibling,
         effectTag: EffectTag.PLACEMENT,
       });
     }
@@ -289,13 +292,13 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
     }
 
     if (alternate && !(isInsertingByKey && hasDifferenceByKey)) {
-      alternate = alternate.sibling;
+      alternate = alternate.nextSibling;
     }
 
     if (idx === 0) {
       wipFiber.child = fiber;
     } else if (element) {
-      prevSibling.sibling = fiber;
+      prevSibling.nextSibling = fiber;
     }
 
     prevSibling = fiber;
@@ -306,6 +309,8 @@ function reconcileChildren(wipFiber: Fiber, elements: Array<VirtualNode | Compon
 function commitRoot(onRender: () => void) {
   const wipFiber = wipRootHelper.get();
   let updateTimerId: any = updateTimerIdHelper.get();
+
+  console.log('wip', wipFiber);
 
   updateTimerId && clearTimeout(updateTimerId);
   commitPhaseHelper.set(true);
@@ -336,29 +341,14 @@ function commitRoot(onRender: () => void) {
 
 function commitLocal() {
   const wipFiber = wipRootHelper.get();
-  let updateTimerId: any = updateTimerIdHelper.get();
-
-  updateTimerId && clearTimeout(updateTimerId);
 
   commitWork(wipFiber.child, null, () => {
-    const isViewportUpdatePhase = viewportUpdatePhaseHelper.get();
     forceUpdatePhaseHelper.set(false);
-
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
     wipRootHelper.set(null);
     deletionsHelper.set([]);
     lastUpdateFnHelper.set(null);
     commitPhaseHelper.set(false);
-
-    if (!isViewportUpdatePhase) {
-      viewportUpdatePhaseHelper.set(true);
-    } else if (wipFiber.effectTag === EffectTag.UPDATE) {
-      updateTimerId = setTimeout(() => {
-        viewportUpdatePhaseHelper.set(false);
-        updateRoot();
-      }, SHADOW_UPDATE_TIMEOUT);
-      updateTimerIdHelper.set(updateTimerId);
-    }
   });
 }
 
@@ -384,9 +374,9 @@ function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function)
 
     if (nextFiber.child && isDeepWalking && !skip) {
       nextFiber = nextFiber.child;
-    } else if (nextFiber.sibling) {
+    } else if (nextFiber.nextSibling) {
       isDeepWalking = true;
-      nextFiber = nextFiber.sibling;
+      nextFiber = nextFiber.nextSibling;
     } else if (nextFiber.parent && nextFiber.parent !== rootFiber.parent) {
       isDeepWalking = false;
       nextFiber = nextFiber.parent;
@@ -409,7 +399,7 @@ function getAlternateByKey(key: string | number, fiber: Fiber) {
       return nextFiber;
     }
 
-    nextFiber = nextFiber.sibling;
+    nextFiber = nextFiber.nextSibling;
   }
 
   return null;
@@ -426,7 +416,7 @@ function getAlternateKeys(fiber: Fiber): Array<string | number> {
       keys.push(key);
     }
 
-    nextFiber = nextFiber.sibling;
+    nextFiber = nextFiber.nextSibling;
   }
 
   return keys;

@@ -227,9 +227,9 @@ function commitDeletion(options: CommitDeletionOptions) {
     });
   }
 
-  if (fromChild && fiber.sibling) {
+  if (fromChild && fiber.nextSibling) {
     commitDeletion({
-      fiber: fiber.sibling,
+      fiber: fiber.nextSibling,
       parent,
       fromChild: true,
       onBeforeCommit,
@@ -253,13 +253,13 @@ function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
   let nextFiber = fiber;
 
   while (nextFiber) {
-    if (nextFiber.sibling) {
-      const link = getChildDomNode(nextFiber.sibling);
+    if (nextFiber.nextSibling) {
+      const link = getChildDomNode(nextFiber.nextSibling);
 
       if (link && link.parentElement) return link;
     }
 
-    nextFiber = nextFiber.sibling || nextFiber.parent;
+    nextFiber = nextFiber.nextSibling || nextFiber.parent;
   }
 
   return null;

@@ -60,6 +60,7 @@ const Counter = createComponent(() => {
   return (
     <div style='display: flex; margin: 20px;'>
       <button onClick={handleIncrement}>increment</button>
+      {counter > 1 && <div>!!!hello!!!</div>}
       <div style='margin-left: 20px;'>{counter}</div>
     </div>
   );
@@ -89,7 +90,7 @@ const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }
 });
 
 let counter = 0;
-const items = generateItems(10000);
+const items = generateItems(10);
 
 render(App({ items, host }), host);
 

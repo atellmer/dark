@@ -41,7 +41,7 @@ function flatten(list: Array<any>): Array<any> {
 
   for (const item of list) {
     if (isArray(item)) {
-      flatList.push(...item);
+      flatList.push(...flatten(item));
     } else {
       flatList.push(item);
     }
