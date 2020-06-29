@@ -58,7 +58,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
   wipRootHelper.set(fiber);
   nextUnitOfWorkHelper.set(fiber);
 
-  workLoop({ onRender });
+  platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
 export {
