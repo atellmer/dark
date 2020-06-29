@@ -9,6 +9,10 @@ export type DarkElement = ComponentFactory
   | VirtualNode
   | Array<VirtualNode>
   | RenderProps
-  | null;
+  | null
+  | false
+  | undefined
 
 export type ElementKey = string | number;
+
+export type ElementInstance = VirtualNode | ComponentFactory;

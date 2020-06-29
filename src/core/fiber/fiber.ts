@@ -1,5 +1,5 @@
 import { EffectTag, NativeElement, WorkLoopOptions } from './model';
-import { ElementKey, DarkElement } from '../shared/model';
+import { ElementKey, DarkElement, ElementInstance } from '../shared/model';
 import {
   getRootId,
   wipRootHelper,
@@ -20,7 +20,7 @@ import {
   detectIsComponentFactory,
   getComponentFactoryKey,
 } from '@core/component';
-import { VirtualNode, detectIsTagVirtualNode, detectIsTextVirtualNode, createEmptyVirtualNode, getVirtualNodeKey, TagVirtualNode, detectIsVirtualNode } from '../view';
+import { VirtualNode, detectIsTagVirtualNode, detectIsTextVirtualNode, createEmptyVirtualNode, getVirtualNodeKey, TagVirtualNode, detectIsVirtualNode, detectIsCommentVirtualNode } from '../view';
 import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd } from '@helpers';
 import { Fragment } from '../fragment';
 import {
@@ -34,24 +34,24 @@ let level = 0;
 const levelMap = {};
 
 class Fiber<N = NativeElement> {
-  public parent: Fiber<N> = null;
-  public child: Fiber<N> = null;
-  public prevSibling: Fiber<N> = null;
-  public nextSibling: Fiber<N> = null;
-  public alternate: Fiber<N> = null;
+  public parent: Fiber<N>;
+  public child: Fiber<N>;
+  public prevSibling: Fiber<N>;
+  public nextSibling: Fiber<N>;
+  public alternate: Fiber<N>;
+  public effectTag: EffectTag;
+  public instance: ElementInstance;
   public link: N = null;
-  public effectTag: EffectTag = null;
-  public instance: VirtualNode | ComponentFactory = null;
 
   constructor(options: Partial<Fiber<N>>) {
-    this.parent = options.parent || this.parent;
-    this.child = options.child || this.child;
-    this.prevSibling = options.prevSibling || this.prevSibling;
-    this.nextSibling = options.nextSibling || this.nextSibling;
-    this.alternate = options.alternate || this.alternate;
-    this.link = options.link || this.link;
-    this.effectTag = options.effectTag || this.effectTag;
-    this.instance = options.instance || this.instance;
+    this.parent = options.parent || null;
+    this.child = options.child || null;
+    this.prevSibling = options.prevSibling || null;
+    this.nextSibling = options.nextSibling || null;
+    this.alternate = options.alternate || null;
+    this.link = options.link || null;
+    this.effectTag = options.effectTag || null;
+    this.instance = options.instance || null;
   }
 }
 
@@ -66,8 +66,6 @@ function workLoop(options: WorkLoopOptions) {
     nextUnitOfWorkHelper.set(nextUnitOfWork);
     shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
   }
-
-  //console.log('nextUnitOfWork', nextUnitOfWork);
 
   if (!nextUnitOfWork && wipFiber) {
     commitRoot(onRender);
@@ -111,21 +109,47 @@ function performUnitOfWork(fiber: Fiber) {
       const elements = flatten([element.children[0]]);
 
       element.children.splice(0, 1, ...elements);
-      element = element.children[0];
+      element = element.children[0] as ElementInstance;
 
       if (detectIsComponentFactory(element)) {
-        element.children = flatten([element.type(element.props)]) as Array<VirtualNode | ComponentFactory>;
+        element.children = flatten([(element.type(element.props))]) as Array<ElementInstance>;
+      }
+
+      if (hasChildrenProp(element)) {
+        element.children = element.children.map(transformElementInstance) as Array<ElementInstance>;
       }
     }
 
     level++;
     levelMap[level] = 0;
 
+    if (alternate) {
+      const alternateType = getInstanceType(alternate.instance);
+      const elementType = getInstanceType(element);
+      const diffCount = getInstanceChildDiffCount(alternate.instance, element);
+      const isRemovingNodes = diffCount > 0;
+
+      if (elementType !== alternateType) {
+        alternate.effectTag = EffectTag.DELETION;
+        deletionsHelper.get().push(alternate);
+      } else if (isRemovingNodes) {
+        const fibers: Array<Fiber> = takeListFromEnd(
+          getSiblingFibers(alternate.child), diffCount,
+        ).map(x => (x.effectTag = EffectTag.DELETION, x));
+
+        deletionsHelper.get().push(...fibers);
+      }
+    }
+
     const fiber = createFiberFromElement(element, alternate);
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
     nextFiber = fiber;
+
+    if (fiber.parent.effectTag === EffectTag.PLACEMENT) {
+      fiber.effectTag = EffectTag.PLACEMENT;
+    }
 
     return nextFiber;
   }
@@ -149,16 +173,29 @@ function performUnitOfWork(fiber: Fiber) {
         element = parent.children[childrenIdx];
 
         if (detectIsComponentFactory(element)) {
-          element.children = flatten([element.type(element.props)]) as Array<VirtualNode | ComponentFactory>;
+          element.children = flatten([element.type(element.props)]) as Array<ElementInstance>;
+        }
+
+        if (hasChildrenProp(element)) {
+          element.children = element.children.map(transformElementInstance) as Array<ElementInstance>;
         }
       }
 
-      if (alternate && (hasChildrenProp(alternate.instance) && hasChildrenProp(element))) {
-        if (alternate.instance.children.length > element.children.length) {
-          const diffCount = alternate.instance.children.length - element.children.length;
-          const list = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
+      if (alternate) {
+        const alternateType = getInstanceType(alternate.instance);
+        const elementType = getInstanceType(element);
+        const diffCount = getInstanceChildDiffCount(alternate.instance, element);
+        const isRemovingNodes = diffCount > 0;
 
-          deletionsHelper.get().push(...list);
+        if (elementType !== alternateType) {
+          alternate.effectTag = EffectTag.DELETION;
+          deletionsHelper.get().push(alternate);
+        } else if (isRemovingNodes) {
+          const fibers: Array<Fiber> = takeListFromEnd(
+            getSiblingFibers(alternate.child), diffCount,
+          ).map(x => (x.effectTag = EffectTag.DELETION, x));
+
+          deletionsHelper.get().push(...fibers);
         }
       }
 
@@ -168,6 +205,10 @@ function performUnitOfWork(fiber: Fiber) {
       nextFiber.nextSibling = fiber;
       fiber.parent = nextFiber.parent;
       nextFiber = fiber;
+
+      if (fiber.parent.effectTag === EffectTag.PLACEMENT) {
+        fiber.effectTag = EffectTag.PLACEMENT;
+      }
 
       return nextFiber;
     } else {
@@ -180,26 +221,51 @@ function performUnitOfWork(fiber: Fiber) {
 
     return null;
   }
+}
 
-  function createFiberFromElement(element: VirtualNode | ComponentFactory, alternate: Fiber) {
-    const fiber = new Fiber({
-      instance: element,
-      alternate: alternate || null,
-      link: alternate ? alternate.link : null,
-      effectTag: alternate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
-    });
+function transformElementInstance(instance: DarkElement): DarkElement {
+  return (isEmpty(instance) || instance === false) ? createEmptyVirtualNode() : instance;
+}
 
-    if (detectIsVirtualNode(fiber.instance) && !fiber.link) {
-      fiber.link = platform.createLink(fiber);
-    }
+function getInstanceType(instance: ElementInstance): string | Function {
+  return detectIsTagVirtualNode(instance)
+    ? instance.name
+    : detectIsVirtualNode(instance)
+      ? instance.type
+      : detectIsComponentFactory(instance)
+        ? instance.type
+        : null;
+}
 
-    return fiber;
+function getInstanceChildDiffCount(alternateInstance: ElementInstance, instance: ElementInstance): number {
+  return (hasChildrenProp(alternateInstance) && hasChildrenProp(instance))
+    ? alternateInstance.children.length - instance.children.length
+    : 0;
+}
+
+function createFiberFromElement(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
+  const isUpdate = alternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const fiber = new Fiber({
+    instance,
+    alternate: alternate || null,
+    link: isUpdate ? alternate.link : null,
+    effectTag: isUpdate
+      ? EffectTag.UPDATE
+      : EffectTag.PLACEMENT,
+  });
+
+  fiber.alternate && (fiber.alternate.alternate = null);
+
+  if (!fiber.link && detectIsVirtualNode(fiber.instance)) {
+    fiber.link = platform.createLink(fiber);
   }
+
+  return fiber;
 }
 
 const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
 
-function getSiblingFibers(fiber: Fiber) {
+function getSiblingFibers(fiber: Fiber): Array<Fiber> {
   const list = [];
   let nextFiber = fiber;
 
@@ -220,12 +286,11 @@ function commitRoot(onRender: () => void) {
 
   //console.log('wip', wipFiber);
 
-  commitPhaseHelper.set(true);
   commitWork(wipFiber.child, null, () => {
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
-    currentRootHelper.set(wipFiber);
-    wipRootHelper.set(null);
     deletionsHelper.set([]);
+    wipRootHelper.set(null);
+    currentRootHelper.set(wipFiber);
     isFunction(onRender) && onRender();
   });
 }
