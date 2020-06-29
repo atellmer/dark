@@ -218,7 +218,7 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
 function commitRoot(onRender: () => void) {
   const wipFiber = wipRootHelper.get();
 
-  console.log('wip', wipFiber);
+  //console.log('wip', wipFiber);
 
   commitPhaseHelper.set(true);
   commitWork(wipFiber.child, null, () => {

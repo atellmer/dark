@@ -41,19 +41,20 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     effectStoreHelper.set(rootId);
   }
 
-  const currentRootFiber = currentRootHelper.get();
-  const fiber = createFiber({
-    link: container,
-    instance: createTagVirtualNode({
-      name: 'root',
-      children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
-    }),
-    alternate: currentRootFiber,
-    effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
-  });
-
   renderRequests.push((rootId => (deadline: IdleDeadline) => {
     effectStoreHelper.set(rootId);
+
+    const currentRootFiber = currentRootHelper.get();
+    const fiber = createFiber({
+      link: container,
+      instance: createTagVirtualNode({
+        name: 'root',
+        children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
+      }),
+      alternate: currentRootFiber,
+      effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
+    });
+
     currentRootFiber && (currentRootFiber.alternate = null);
     wipRootHelper.set(fiber);
     nextUnitOfWorkHelper.set(fiber);

@@ -90,25 +90,17 @@ const host2 = document.getElementById('root2');
 
 // const items = generateItems(10);
 
-const Item = createComponent(() => {
-  return [
-    [<input />],
-    <span>zzzz</span>,
-  ]
-})
 
 const App = createComponent(({ x }) => {
 
-  console.log('render', x);
+  //console.log('render', x);
 
   return [
-    <div>123</div>,
-    <Item />,
+    <div>{x}</div>,
     <div>xxx</div>,
   ]
 });
 
 render(App({ x: 1 }), host);
 
-render(App({ x: 2 }), host);
 
