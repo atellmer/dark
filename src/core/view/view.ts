@@ -91,6 +91,7 @@ const View = (def: ViewDef) => {
     isVoid = false,
     ...rest
   } = def;
+
   const children = isVoid
     ? []
     : isArray(slot)

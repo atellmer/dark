@@ -1,5 +1,5 @@
 import { EffectTag, NativeElement, WorkLoopOptions } from './model';
-import { ElementKey, DarkElement, ElementInstance } from '../shared/model';
+import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import {
   getRootId,
   wipRootHelper,
@@ -40,7 +40,7 @@ class Fiber<N = NativeElement> {
   public nextSibling: Fiber<N>;
   public alternate: Fiber<N>;
   public effectTag: EffectTag;
-  public instance: ElementInstance;
+  public instance: DarkElementInstance;
   public link: N = null;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -78,7 +78,9 @@ function performUnitOfWork(fiber: Fiber) {
   let isDeepWalking = true;
   let element = fiber.instance;
   let nextFiber = fiber;
-  let alternate =  fiber.alternate && fiber.alternate.child || null;
+  let alternate = fiber.alternate
+    && fiber.alternate.effectTag !== EffectTag.DELETION
+    && fiber.alternate.child || null;
 
   while (true) {
     if (isDeepWalking) {
@@ -109,14 +111,14 @@ function performUnitOfWork(fiber: Fiber) {
       const elements = flatten([element.children[0]]);
 
       element.children.splice(0, 1, ...elements);
-      element = element.children[0] as ElementInstance;
+      element = element.children[0] as DarkElementInstance;
 
       if (detectIsComponentFactory(element)) {
-        element.children = flatten([(element.type(element.props))]) as Array<ElementInstance>;
+        element.children = flatten([(element.type(element.props))]) as Array<DarkElementInstance>;
       }
 
       if (hasChildrenProp(element)) {
-        element.children = element.children.map(transformElementInstance) as Array<ElementInstance>;
+        element.children = element.children.map(transformElementInstance) as Array<DarkElementInstance>;
       }
     }
 
@@ -161,7 +163,10 @@ function performUnitOfWork(fiber: Fiber) {
     const hasSibling = (detectIsTagVirtualNode(parent)
       || detectIsComponentFactory(parent)) && parent.children[childrenIdx];
 
-    alternate = nextFiber.alternate && nextFiber.alternate.nextSibling || null;
+    alternate = nextFiber.alternate
+      && nextFiber.alternate.nextSibling
+      && nextFiber.alternate.nextSibling.effectTag !== EffectTag.DELETION
+      && nextFiber.alternate.nextSibling || null;
 
     if (hasSibling) {
       isDeepWalking = true;
@@ -173,11 +178,11 @@ function performUnitOfWork(fiber: Fiber) {
         element = parent.children[childrenIdx];
 
         if (detectIsComponentFactory(element)) {
-          element.children = flatten([element.type(element.props)]) as Array<ElementInstance>;
+          element.children = flatten([element.type(element.props)]) as Array<DarkElementInstance>;
         }
 
         if (hasChildrenProp(element)) {
-          element.children = element.children.map(transformElementInstance) as Array<ElementInstance>;
+          element.children = element.children.map(transformElementInstance) as Array<DarkElementInstance>;
         }
       }
 
@@ -227,7 +232,7 @@ function transformElementInstance(instance: DarkElement): DarkElement {
   return (isEmpty(instance) || instance === false) ? createEmptyVirtualNode() : instance;
 }
 
-function getInstanceType(instance: ElementInstance): string | Function {
+function getInstanceType(instance: DarkElementInstance): string | Function {
   return detectIsTagVirtualNode(instance)
     ? instance.name
     : detectIsVirtualNode(instance)
@@ -237,7 +242,7 @@ function getInstanceType(instance: ElementInstance): string | Function {
         : null;
 }
 
-function getInstanceChildDiffCount(alternateInstance: ElementInstance, instance: ElementInstance): number {
+function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, instance: DarkElementInstance): number {
   return (hasChildrenProp(alternateInstance) && hasChildrenProp(instance))
     ? alternateInstance.children.length - instance.children.length
     : 0;
@@ -284,7 +289,7 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
 function commitRoot(onRender: () => void) {
   const wipFiber = wipRootHelper.get();
 
-  //console.log('wip', wipFiber);
+  console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, null, () => {
     deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));

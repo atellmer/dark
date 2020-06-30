@@ -18,26 +18,26 @@ test('[Component]: createComponent do not throws error', () => {
   expect(compile).not.toThrowError();
 });
 
-test('[Component]: createElement do not throws error', () => {
+test('[Component]: type do not throws error', () => {
   const compile = () => {
     const Component = createComponent(() => null);
-    Component().createElement({});
+    Component().type({});
   };
 
   expect(compile).not.toThrowError();
 });
 
-test('[Component]: createElement returns virtual node correctly', () => {
+test('[Component]: type returns virtual node correctly', () => {
   const Component = createComponent(() => div());
-  const vNode = Component().createElement({}) as VirtualNode;
+  const vNode = Component().type({}) as VirtualNode;
 
   expect(vNode).toBeTruthy();
   expect(detectIsVirtualNode(vNode)).toBeTruthy();
 });
 
-test('[Component]: createElement returns null correctly', () => {
+test('[Component]: type returns null correctly', () => {
   const Component = createComponent(() => null);
-  const element = Component().createElement({});
+  const element = Component().type({});
 
   expect(element).toBeNull();
 });
@@ -51,7 +51,7 @@ test('[Component]: pass props to component correctly', () => {
     });
     const factory = Component({ one: 'hello', two: 'world' });
 
-    factory.createElement(factory.props);
+    factory.type(factory.props);
   };
 
   compile();

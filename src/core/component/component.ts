@@ -4,14 +4,13 @@ import {
   StandardComponentProps,
 } from './model';
 import { ATTR_KEY } from '../constants';
-import { DarkElement } from '../shared/model';
 import { VirtualNode } from '../view';
 
 
 const $$component = Symbol('component');
 
 class ComponentFactory<P extends StandardComponentProps = any> {
-  public type: (props: P) => DarkElement = null;
+  public type: CreateElement<P> = null;
   public token: Symbol = null;
   public props: P = null;
   public displayName = '';

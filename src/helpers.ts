@@ -37,7 +37,9 @@ function deepClone(obj: any) {
 }
 
 // flatten without recursion
-function flatten<T = any>(source: Array<T>): Array<T> {
+type NestedArray<T> = T | Array<NestedArray<T>>;
+
+function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
   const list = [];
   const levelMap = { 0: { idx: 0, source } };
   let level = 0;

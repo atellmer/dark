@@ -12,10 +12,11 @@ import {
 } from '@core/scope';
 import { createDomLink, mutateDom } from '../dom';
 import { ComponentFactory } from '@core/component';
+import { ROOT } from '@core/constants';
 
 
-platform.raf = requestAnimationFrame.bind(this);
-platform.ric = requestIdleCallback.bind(this);
+platform.raf = window.requestAnimationFrame.bind(this);
+platform.ric = window.requestIdleCallback.bind(this);
 platform.createLink = createDomLink as typeof platform.createLink;
 platform.mutateTree = mutateDom as typeof platform.mutateTree;
 
@@ -48,7 +49,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     const fiber = createFiber({
       link: container,
       instance: createTagVirtualNode({
-        name: 'root',
+        name: ROOT,
         children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
       }),
       alternate: currentRootFiber,
@@ -61,9 +62,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     workLoop({ deadline, onRender });
   })(getRootId()));
 
-  setTimeout(() => {
-    platform.ric(scheduleRenders);
-  });
+  platform.ric(scheduleRenders);
 }
 
 function scheduleRenders(deadline: IdleDeadline) {

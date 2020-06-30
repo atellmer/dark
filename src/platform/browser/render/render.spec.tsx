@@ -1,4 +1,6 @@
 /** @jsx createElement */
+import { requestIdleCallback } from '@shopify/jest-dom-mocks';
+
 import { render } from './render';
 import { createComponent } from '@core/component/component';
 import { View, Text, Comment, createElement } from '@core/view/view';
@@ -10,6 +12,7 @@ type Item = { id: number; name: string };
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
+const fireRenders = () =>  requestIdleCallback.runIdleCallbacks();
 const TEST_MARKER = '[RENDER]';
 let nextId = 0;
 
@@ -44,6 +47,7 @@ test(`${TEST_MARKER}: render text correctly`, () => {
   const Component = createComponent(() => Text(content));
 
   render(Component(), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content);
 });
 
@@ -52,6 +56,7 @@ test(`${TEST_MARKER}: render tag correctly`, () => {
   const Component = createComponent(() => div());
 
   render(Component(), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content);
 });
 
@@ -60,6 +65,7 @@ test(`${TEST_MARKER}: render comment correctly`, () => {
   const Component = createComponent(() => Comment(content));
 
   render(Component(), host);
+  fireRenders();
   expect(host.innerHTML).toBe(`<!--${content}-->`);
 });
 
@@ -74,6 +80,7 @@ test('[Render]: render array of items correctly', () => {
   );
 
   render(Component(), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content);
 });
 
@@ -126,24 +133,28 @@ test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
   let items = generateItems(3);
 
   render(App({ one: true, items }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content(items));
 
   jest.advanceTimersByTime(10);
 
   items = generateItems(3);
   render(App({ one: false, items }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content(items));
 
   jest.advanceTimersByTime(10);
 
   items = generateItems(4);
   render(App({ one: true, items }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content(items));
 
   jest.advanceTimersByTime(10);
 
   items = generateItems(2);
   render(App({ one: false, items }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(content(items));
 });
 
@@ -178,7 +189,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     ]
   });
 
-  const renderApp = () => render(App({ items }), host);
+  const renderApp = () => (render(App({ items }), host), fireRenders());
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
@@ -313,6 +324,7 @@ describe(`${TEST_MARKER} list of items`, () => {
     );
 
     render(Component(), host);
+    fireRenders();
     expect(host.innerHTML).toBe(content);
   });
 
@@ -342,6 +354,7 @@ describe(`${TEST_MARKER} list of items`, () => {
     );
 
     render(App(), host);
+    fireRenders();
     expect(host.innerHTML).toBe(content);
   });
 });
@@ -355,9 +368,11 @@ test(`${TEST_MARKER} dynamic tag render correcrly`, () => {
   });
 
   render(App({ dynamic: false }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
   render(App({ dynamic: true }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
 });
 
@@ -375,9 +390,11 @@ test(`${TEST_MARKER} JSX works`, () => {
   });
 
   render(App({ dynamic: false }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
   render(App({ dynamic: true }), host);
+  fireRenders();
   expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
 });
 
@@ -405,11 +422,13 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
 
   render(App({ name: 'Alex' }), hostOne);
   render(App({ name: 'Rebecka' }), hostTwo);
+  fireRenders();
   expect(hostOne.innerHTML).toBe(content('Alex'));
   expect(hostTwo.innerHTML).toBe(content('Rebecka'));
   jest.advanceTimersByTime(100);
   render(App({ name: 'Mark' }), hostOne);
   render(App({ name: 'Rebecka' }), hostTwo);
+  fireRenders();
   expect(hostOne.innerHTML).toBe(content('Mark'));
   expect(hostTwo.innerHTML).toBe(content('Rebecka'));
 });

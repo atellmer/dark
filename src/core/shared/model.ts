@@ -2,17 +2,19 @@ import { ComponentFactory } from '../component';
 import { VirtualNode } from '../view';
 
 
-export type RenderProps = (...args: any) => DarkElement;
+export type Nullable = null
+| false
+| undefined;
 
 export type DarkElement = ComponentFactory
-  | Array<ComponentFactory>
-  | VirtualNode
-  | Array<VirtualNode>
-  | RenderProps
-  | null
-  | false
-  | undefined
+| Array<ComponentFactory>
+| VirtualNode
+| Array<VirtualNode>
+| RenderProps
+| Nullable;
 
-export type ElementKey = string | number;
+export type RenderProps = (...args: any) => DarkElement;
 
-export type ElementInstance = VirtualNode | ComponentFactory;
+export type DarkElementKey = string | number;
+
+export type DarkElementInstance = VirtualNode | ComponentFactory;

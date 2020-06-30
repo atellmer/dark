@@ -63,7 +63,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
   for (const attrName of attrNames) {
     const attrValue = getAttribute(vNode, attrName);
 
-    if (isFunction(attrValue)){
+    if (isFunction(attrValue)) {
       if (detectIsEvent(attrName)) {
         delegateEvent({
           root: rootLinkHelper.get() as Element,
