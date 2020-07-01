@@ -22,14 +22,13 @@ const generateItems = (count: number) => {
 };
 
 const ListItem = createComponent(({ id, slot, onRemove }) => {
-  const Tag = id === 9 ? 'p' : 'div';
   return (
-    <Tag class='list-item'>
+    <div class='list-item'>
       <div>slot: {slot}</div>
       <div>
         <button onClick={() => onRemove(id)}>remove</button>
       </div>
-    </Tag>
+    </div>
   );
 })
 
@@ -59,7 +58,8 @@ const Counter = createComponent(() => {
 
 const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }) => {
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(5), ...items], host }), host);
+    const [item1, item2, ...rest] = items;
+    render(App({ items: [...generateItems(4), item1, item2, item1, ...rest], host }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];

@@ -6,29 +6,19 @@ import {
   currentRootHelper,
   nextUnitOfWorkHelper,
   deletionsHelper,
-  commitPhaseHelper,
-  effectStoreHelper,
-  currentMountedFiberHelper,
-  forceUpdatePhaseHelper,
-  viewportUpdatePhaseHelper,
-  lastUpdateFnHelper,
-  updateTimerIdHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import { ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@core/component';
 import {
   VirtualNode,
   detectIsTagVirtualNode,
-  detectIsTextVirtualNode,
   createEmptyVirtualNode,
   getVirtualNodeKey,
   TagVirtualNode,
   detectIsVirtualNode,
-  detectIsCommentVirtualNode,
 } from '../view';
 import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd } from '@helpers';
-import { Fragment } from '../fragment';
-import { MAX_FIBERS_RENDERED_PER_FRAME, SHADOW_UPDATE_TIMEOUT, UNIQ_KEY_ERROR } from '../constants';
+import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 let level = 0;
 const levelMap = {};
@@ -239,9 +229,16 @@ function performUnitOfWork(fiber: Fiber) {
 
           if (diffKeys.length > 0) {
             const diffKeyMap = keyBy(diffKeys, x => x);
-
+            const usedKeyMap = {};
             let keyIdx = 0;
+
             for (const nextKey of nextKeys) {
+              if (usedKeyMap[nextKey]) {
+                error(IS_ALREADY_USED_KEY_ERROR);
+              }
+
+              usedKeyMap[nextKey] = true;
+
               if (nextKey !== keys[keyIdx] && diffKeyMap[nextKey]) {
                 const insertionFiber = new Fiber({
                   instance: createEmptyVirtualNode(),
@@ -398,7 +395,7 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
 function commitRoot(onRender: () => void) {
   const wipFiber = wipRootHelper.get();
 
-  console.log('wip', wipFiber);
+  // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, null, () => {
     deletionsHelper.get().forEach(platform.applyCommits);
