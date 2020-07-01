@@ -5,7 +5,7 @@ import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/mode
 export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   displayName?: string;
   defaultProps?: Partial<P>;
-  token?: any;
+  token?: Symbol;
 }>;
 
 export type StandardComponentProps = Readonly<{

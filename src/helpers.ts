@@ -1,3 +1,6 @@
+import { NestedArray } from '@core/shared';
+
+
 const isFunction = (o): o is Function => typeof o === 'function';
 const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
@@ -9,9 +12,9 @@ const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
 const isDOMElement = element => element instanceof Element || element instanceof HTMLDocument;
 
-function error(errStr) {
+function error(str: string) {
   if (typeof console !== 'undefined') {
-    console.error(errStr);
+    console.error(str);
   }
 }
 
@@ -37,8 +40,6 @@ function deepClone(obj: any) {
 }
 
 // flatten without recursion
-type NestedArray<T> = T | Array<NestedArray<T>>;
-
 function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
   const list = [];
   const levelMap = { 0: { idx: 0, source } };
@@ -54,7 +55,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
       continue;
     }
 
-    if (Array.isArray(item)) {
+    if (isArray(item)) {
       level++;
       levelMap[level] = {
         idx: 0,

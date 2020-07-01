@@ -11,7 +11,7 @@ export const platform: Platform = {
   createLink: () => {
     throw new Error('createLink doesn\'t install by renderer');
   },
-  mutateTree: () => {
-    throw new Error('mutateTree doesn\'t install by renderer');
+  applyCommits: () => {
+    throw new Error('applyCommits doesn\'t install by renderer');
   },
 };

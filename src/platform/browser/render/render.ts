@@ -1,4 +1,4 @@
-import { createFiber, workLoop, EffectTag } from '@core/fiber';
+import { Fiber, workLoop, EffectTag } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
@@ -18,7 +18,7 @@ import { ROOT } from '@core/constants';
 platform.raf = window.requestAnimationFrame.bind(this);
 platform.ric = window.requestIdleCallback.bind(this);
 platform.createLink = createDomLink as typeof platform.createLink;
-platform.mutateTree = mutateDom as typeof platform.mutateTree;
+platform.applyCommits = mutateDom as typeof platform.applyCommits;
 
 const roots: Map<Element, number> = new Map();
 const renderRequests: Array<(deadline: IdleDeadline) => void> = [];
@@ -46,7 +46,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     effectStoreHelper.set(rootId);
 
     const currentRootFiber = currentRootHelper.get();
-    const fiber = createFiber({
+    const fiber = new Fiber({
       link: container,
       instance: createTagVirtualNode({
         name: ROOT,

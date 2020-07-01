@@ -156,6 +156,7 @@ function mutateDom(fiber: Fiber<Element>) {
 
     updateDom(fiber.link, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
+
     commitDeletion({
       fiber,
       parent,
@@ -178,6 +179,8 @@ function commitDeletion(options: CommitDeletionOptions) {
     fromChild = false,
     onBeforeCommit,
   } = options;
+
+  if (!fiber) return; // empty fiber without link for inserting
 
   if (fiber.link) {
     onBeforeCommit(fiber);

@@ -15,20 +15,20 @@ import {
   updateTimerIdHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
+import { ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@core/component';
 import {
-  ComponentFactory,
-  detectIsComponentFactory,
-  getComponentFactoryKey,
-} from '@core/component';
-import { VirtualNode, detectIsTagVirtualNode, detectIsTextVirtualNode, createEmptyVirtualNode, getVirtualNodeKey, TagVirtualNode, detectIsVirtualNode, detectIsCommentVirtualNode } from '../view';
+  VirtualNode,
+  detectIsTagVirtualNode,
+  detectIsTextVirtualNode,
+  createEmptyVirtualNode,
+  getVirtualNodeKey,
+  TagVirtualNode,
+  detectIsVirtualNode,
+  detectIsCommentVirtualNode,
+} from '../view';
 import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd } from '@helpers';
 import { Fragment } from '../fragment';
-import {
-  MAX_FIBERS_RENDERED_PER_FRAME,
-  SHADOW_UPDATE_TIMEOUT,
-  UNIQ_KEY_ERROR,
-} from '../constants';
-
+import { MAX_FIBERS_RENDERED_PER_FRAME, SHADOW_UPDATE_TIMEOUT, UNIQ_KEY_ERROR } from '../constants';
 
 let level = 0;
 const levelMap = {};
@@ -78,14 +78,10 @@ function performUnitOfWork(fiber: Fiber) {
   let isDeepWalking = true;
   let element = fiber.instance;
   let nextFiber = fiber;
-  let alternate = fiber.alternate
-    && fiber.alternate.effectTag !== EffectTag.DELETION
-    && fiber.alternate.child || null;
 
   while (true) {
     if (isDeepWalking) {
-      const hasChild = (detectIsTagVirtualNode(element)
-        || detectIsComponentFactory(element)) && Boolean(element.children[0]);
+      const hasChild = hasChildrenProp(element) && Boolean(element.children[0]);
 
       if (hasChild) {
         return performChild();
@@ -107,40 +103,15 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performChild() {
-    if (hasChildrenProp(element)) {
-      const elements = flatten([element.children[0]]);
+    pertformInstance(element, 0);
 
-      element.children.splice(0, 1, ...elements);
-      element = element.children[0] as DarkElementInstance;
-
-      if (detectIsComponentFactory(element)) {
-        element.children = flatten([(element.type(element.props))]) as Array<DarkElementInstance>;
-      }
-
-      if (hasChildrenProp(element)) {
-        element.children = element.children.map(transformElementInstance) as Array<DarkElementInstance>;
-      }
-    }
+    const alternate = getChildAlternate(nextFiber);
 
     level++;
     levelMap[level] = 0;
 
     if (alternate) {
-      const alternateType = getInstanceType(alternate.instance);
-      const elementType = getInstanceType(element);
-      const diffCount = getInstanceChildDiffCount(alternate.instance, element);
-      const isRemovingNodes = diffCount > 0;
-
-      if (elementType !== alternateType) {
-        alternate.effectTag = EffectTag.DELETION;
-        deletionsHelper.get().push(alternate);
-      } else if (isRemovingNodes) {
-        const fibers: Array<Fiber> = takeListFromEnd(
-          getSiblingFibers(alternate.child), diffCount,
-        ).map(x => (x.effectTag = EffectTag.DELETION, x));
-
-        deletionsHelper.get().push(...fibers);
-      }
+      performAlternate(alternate);
     }
 
     const fiber = createFiberFromElement(element, alternate);
@@ -160,48 +131,17 @@ function performUnitOfWork(fiber: Fiber) {
     levelMap[level]++;
     const parent = nextFiber.parent.instance;
     const childrenIdx = levelMap[level];
-    const hasSibling = (detectIsTagVirtualNode(parent)
-      || detectIsComponentFactory(parent)) && parent.children[childrenIdx];
-
-    alternate = nextFiber.alternate
-      && nextFiber.alternate.nextSibling
-      && nextFiber.alternate.nextSibling.effectTag !== EffectTag.DELETION
-      && nextFiber.alternate.nextSibling || null;
+    const hasSibling = hasChildrenProp(parent) && parent.children[childrenIdx];
 
     if (hasSibling) {
       isDeepWalking = true;
 
-      if (hasChildrenProp(parent)) {
-        const elements = flatten([parent.children[childrenIdx]]);
+      pertformInstance(parent, childrenIdx);
 
-        parent.children.splice(childrenIdx, 1, ...elements);
-        element = parent.children[childrenIdx];
-
-        if (detectIsComponentFactory(element)) {
-          element.children = flatten([element.type(element.props)]) as Array<DarkElementInstance>;
-        }
-
-        if (hasChildrenProp(element)) {
-          element.children = element.children.map(transformElementInstance) as Array<DarkElementInstance>;
-        }
-      }
+      const alternate = getNextSiblingAlternate(nextFiber);
 
       if (alternate) {
-        const alternateType = getInstanceType(alternate.instance);
-        const elementType = getInstanceType(element);
-        const diffCount = getInstanceChildDiffCount(alternate.instance, element);
-        const isRemovingNodes = diffCount > 0;
-
-        if (elementType !== alternateType) {
-          alternate.effectTag = EffectTag.DELETION;
-          deletionsHelper.get().push(alternate);
-        } else if (isRemovingNodes) {
-          const fibers: Array<Fiber> = takeListFromEnd(
-            getSiblingFibers(alternate.child), diffCount,
-          ).map(x => (x.effectTag = EffectTag.DELETION, x));
-
-          deletionsHelper.get().push(...fibers);
-        }
+        performAlternate(alternate);
       }
 
       const fiber = createFiberFromElement(element, alternate);
@@ -219,17 +159,190 @@ function performUnitOfWork(fiber: Fiber) {
     } else {
       isDeepWalking = false;
       levelMap[level] = 0;
+      level--;
       nextFiber = nextFiber.parent;
       element = nextFiber.instance;
-      level--;
     }
 
     return null;
   }
+
+  function pertformInstance(instance: DarkElementInstance, idx: number) {
+    if (hasChildrenProp(instance)) {
+      const elements = flatten([instance.children[idx]]);
+
+      instance.children.splice(idx, 1, ...elements);
+      element = instance.children[idx];
+
+      if (detectIsComponentFactory(element)) {
+        element.children = flatten([element.type(element.props)]) as Array<DarkElementInstance>;
+      }
+
+      if (hasChildrenProp(element)) {
+        element.children = element.children.map(transformElementInstance) as Array<DarkElementInstance>;
+      }
+    }
+  }
+
+  function performAlternate(alternate: Fiber) {
+    const alternateType = getInstanceType(alternate.instance);
+    const elementType = getInstanceType(element);
+    const isSameType = elementType === alternateType;
+
+    if (!isSameType) {
+      alternate.effectTag = EffectTag.DELETION;
+      deletionsHelper.get().push(alternate);
+    }
+
+    if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
+      const isRemovingOperation = alternate.instance.children.length > element.children.length;
+      const isInsertingOperation = alternate.instance.children.length < element.children.length;
+      const isRequestedKeys = isRemovingOperation || isInsertingOperation;
+
+      if (isRequestedKeys) {
+        const keys = alternate.instance.children.map(getElementKey).filter(Boolean);
+        const nextKeys = element.children.map(getElementKey).filter(Boolean);
+
+        if (nextKeys.length !== element.children.length) {
+          error(UNIQ_KEY_ERROR);
+        }
+
+        if (isSameType && isRemovingOperation) {
+          const diffKeys = getDiffKeys(keys, nextKeys);
+
+          if (diffKeys.length > 0) {
+            for (const key of diffKeys) {
+              const childAlternate = getAlternateByKey(key, alternate.child);
+
+              if (childAlternate) {
+                childAlternate.effectTag = EffectTag.DELETION;
+
+                if (childAlternate.prevSibling) {
+                  childAlternate.prevSibling.nextSibling = childAlternate.nextSibling;
+                } else {
+                  childAlternate.parent.child = childAlternate.nextSibling;
+                }
+
+                deletionsHelper.get().push(childAlternate);
+              }
+            }
+          } else {
+            const diffCount = getInstanceChildDiffCount(alternate.instance, element);
+            const fibers: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount).map(
+              x => ((x.effectTag = EffectTag.DELETION), x),
+            );
+
+            deletionsHelper.get().push(...fibers);
+          }
+        } else if (isInsertingOperation) {
+          const diffKeys = getDiffKeys(nextKeys, keys);
+
+          if (diffKeys.length > 0) {
+            const diffKeyMap = keyBy(diffKeys, x => x);
+
+            let keyIdx = 0;
+            for (const nextKey of nextKeys) {
+              if (nextKey !== keys[keyIdx] && diffKeyMap[nextKey]) {
+                const insertionFiber = new Fiber({
+                  instance: createEmptyVirtualNode(),
+                  parent: alternate,
+                  effectTag: EffectTag.PLACEMENT,
+                });
+
+                if (keyIdx === 0) {
+                  insertionFiber.nextSibling = alternate.child;
+                  alternate.child = insertionFiber;
+                  insertionFiber.nextSibling.prevSibling = insertionFiber;
+                } else {
+                  const fiber = getChildFiberByIdx(alternate, keyIdx);
+
+                  if (fiber) {
+                    insertionFiber.nextSibling = fiber;
+                    insertionFiber.prevSibling = fiber.prevSibling;
+                    fiber.prevSibling && (fiber.prevSibling.nextSibling = insertionFiber);
+                    fiber.prevSibling = insertionFiber;
+                  }
+                }
+              }
+
+              keyIdx++;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function getChildFiberByIdx(fiber: Fiber, idx: number) {
+  let position = 0;
+  let nextFiber = fiber.child;
+
+  if (idx === 0) {
+    return nextFiber;
+  } else {
+    while (nextFiber) {
+      nextFiber = nextFiber.nextSibling;
+      position++;
+      if (position === idx) {
+        return nextFiber;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {
+  if (isEmpty(key)) return null;
+  let nextFiber = fiber;
+
+  while (nextFiber) {
+    if (key === getElementKey(nextFiber.instance)) {
+      return nextFiber;
+    }
+
+    nextFiber = nextFiber.nextSibling;
+  }
+
+  return null;
+}
+
+function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
+  return detectIsComponentFactory(instance)
+    ? getComponentFactoryKey(instance)
+    : detectIsTagVirtualNode(instance)
+      ? getVirtualNodeKey(instance)
+      : null;
+}
+
+function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey> {
+  const nextKeysMap = nextKeys.reduce((acc, key) => (acc[key] = true, acc), {});
+  const diff = [];
+
+  for (const key of keys) {
+    if (!nextKeysMap[key]) {
+      diff.push(key);
+    }
+  }
+
+  return diff;
+}
+
+function getChildAlternate(fiber: Fiber): Fiber | null {
+  const alternate = fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETION && fiber.alternate.child || null;
+
+  return alternate;
+}
+
+function getNextSiblingAlternate(fiber: Fiber): Fiber | null {
+  const alternate = fiber.alternate && fiber.alternate.nextSibling || null;
+
+  return alternate;
 }
 
 function transformElementInstance(instance: DarkElement): DarkElement {
-  return (isEmpty(instance) || instance === false) ? createEmptyVirtualNode() : instance;
+  return isEmpty(instance) || instance === false ? createEmptyVirtualNode() : instance;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
@@ -243,7 +356,7 @@ function getInstanceType(instance: DarkElementInstance): string | Function {
 }
 
 function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, instance: DarkElementInstance): number {
-  return (hasChildrenProp(alternateInstance) && hasChildrenProp(instance))
+  return hasChildrenProp(alternateInstance) && hasChildrenProp(instance)
     ? alternateInstance.children.length - instance.children.length
     : 0;
 }
@@ -254,9 +367,7 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
     instance,
     alternate: alternate || null,
     link: isUpdate ? alternate.link : null,
-    effectTag: isUpdate
-      ? EffectTag.UPDATE
-      : EffectTag.PLACEMENT,
+    effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
   });
 
   fiber.alternate && (fiber.alternate.alternate = null);
@@ -268,8 +379,6 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
   return fiber;
 }
 
-const createFiber = (options: Partial<Fiber>): Fiber => new Fiber(options);
-
 function getSiblingFibers(fiber: Fiber): Array<Fiber> {
   const list = [];
   let nextFiber = fiber;
@@ -280,7 +389,7 @@ function getSiblingFibers(fiber: Fiber): Array<Fiber> {
   }
 
   return list;
-};
+}
 
 function hasChildrenProp(element: VirtualNode | ComponentFactory): element is TagVirtualNode | ComponentFactory {
   return detectIsTagVirtualNode(element) || detectIsComponentFactory(element);
@@ -292,14 +401,13 @@ function commitRoot(onRender: () => void) {
   console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, null, () => {
-    deletionsHelper.get().forEach(fiber => platform.mutateTree(fiber));
+    deletionsHelper.get().forEach(platform.applyCommits);
     deletionsHelper.set([]);
     wipRootHelper.set(null);
     currentRootHelper.set(wipFiber);
     isFunction(onRender) && onRender();
   });
 }
-
 
 function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function) {
   let nextFiber = fiber;
@@ -308,7 +416,7 @@ function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function)
   rootFiber = rootFiber || fiber;
 
   while (nextFiber) {
-    platform.mutateTree(nextFiber);
+    platform.applyCommits(nextFiber);
 
     if (nextFiber.child && isDeepWalking) {
       nextFiber = nextFiber.child;
@@ -328,8 +436,4 @@ function commitWork(fiber: Fiber, rootFiber: Fiber = null, onComplete: Function)
   }
 }
 
-export {
-  Fiber,
-  createFiber,
-  workLoop,
-};
+export { Fiber, workLoop };
