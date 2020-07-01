@@ -17,7 +17,7 @@ import {
   TagVirtualNode,
   detectIsVirtualNode,
 } from '../view';
-import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd } from '@helpers';
+import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd, deepClone } from '@helpers';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 let level = 0;
@@ -169,7 +169,7 @@ function performUnitOfWork(fiber: Fiber) {
       }
 
       if (hasChildrenProp(element)) {
-        element.children = element.children.map(transformElementInstance) as Array<DarkElementInstance>;
+        element.children = flatten([element.children.map(transformElementInstance)]) as Array<DarkElementInstance>;
       }
     }
   }
@@ -192,8 +192,9 @@ function performUnitOfWork(fiber: Fiber) {
       if (isRequestedKeys) {
         const keys = alternate.instance.children.map(getElementKey).filter(Boolean);
         const nextKeys = element.children.map(getElementKey).filter(Boolean);
+        const key = getElementKey(element);
 
-        if (nextKeys.length !== element.children.length) {
+        if (isEmpty(key)) {
           error(UNIQ_KEY_ERROR);
         }
 
@@ -395,7 +396,7 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
 function commitRoot(onRender: () => void) {
   const wipFiber = wipRootHelper.get();
 
-  // console.log('wip', wipFiber);
+  console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, null, () => {
     deletionsHelper.get().forEach(platform.applyCommits);

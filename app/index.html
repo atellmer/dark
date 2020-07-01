@@ -35,8 +35,14 @@
 	</style>
 </head>
 <body>
+  <button id='btn'>Clck me</button>
   <div id="root"></div>
   <div id="root2"></div>
   <script src="./build.js"></script>
+  <script>
+    document.querySelector('#btn').addEventListener('click', () => {
+      console.log('click');
+    })
+  </script>
 </body>
 </html>

@@ -40,6 +40,13 @@ const List = createComponent(({ items }) => {
   };
 
   return items.map((x => {
+
+    if (x.id === 2) {
+      return(
+        <NestedList key={x.id} x={x} onRemove={handleRemove} />
+      )
+    }
+
     return (
       <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
         {x.name}
@@ -47,6 +54,17 @@ const List = createComponent(({ items }) => {
     )
   }))
 }, { displayName: 'List' });
+
+const NestedList = createComponent(({ x, onRemove }) => {
+  return [
+    <ListItem key={`${x.id}:0`} id={x.id} onRemove={onRemove}>
+      !!!{x.name}:0!!!
+    </ListItem>,
+    <ListItem key={`${x.id}:1`} id={x.id} onRemove={onRemove}>
+      !!!{x.name}:1!!!
+    </ListItem>,
+  ];
+});
 
 const Counter = createComponent(() => {
   return (
@@ -58,8 +76,7 @@ const Counter = createComponent(() => {
 
 const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }) => {
   const handleAddItems = () => {
-    const [item1, item2, ...rest] = items;
-    render(App({ items: [...generateItems(4), item1, item2, item1, ...rest], host }), host);
+    render(App({ items: [...generateItems(5), ...items], host }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -74,7 +91,6 @@ const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }
       <button onClick={handleAddItems}>add items</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
-    <Counter />,
     <List items={items} host={host} />,
     <div>footer</div>,
   ]
