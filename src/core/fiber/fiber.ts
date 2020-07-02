@@ -191,20 +191,14 @@ function performUnitOfWork(fiber: Fiber) {
         const keys = alternate.instance.children.map(getElementKey).filter(Boolean);
         const nextKeys = element.children.map(getElementKey).filter(Boolean);
         const hasKeys = keys.length > 0;
+        const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
-        console.log('keys', keys);
-        console.log('nextKeys', nextKeys);
-
-        if (!hasKeys) {
-          console.log('element', element);
-
+        if (!hasAnyKeys) {
           error(UNIQ_KEY_ERROR);
         }
 
         const performRemovingNodes = () => {
           const diffKeys = getDiffKeys(keys, nextKeys);
-
-          console.log('remove keys', diffKeys);
 
           if (diffKeys.length > 0) {
             for (const key of diffKeys) {
@@ -227,8 +221,6 @@ function performUnitOfWork(fiber: Fiber) {
 
         const performInsertingNodes = () => {
           const diffKeys = getDiffKeys(nextKeys, keys);
-
-          console.log('insert keys', diffKeys);
 
           if (diffKeys.length > 0) {
             const diffKeyMap = keyBy(diffKeys, x => x);
@@ -380,7 +372,8 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
-  const isUpdate = alternate && !isDifferentKeys && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const isSameType = alternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const isUpdate = isSameType && !isDifferentKeys;
 
   const fiber = new Fiber({
     instance,
@@ -389,7 +382,7 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
     effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
   });
 
-  if (isDifferentKeys) {
+  if (isSameType && isDifferentKeys) {
     alternate.effectTag = EffectTag.DELETION;
     deletionsHelper.get().push(alternate);
   }
