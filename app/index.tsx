@@ -23,12 +23,15 @@ const generateItems = (count: number) => {
 
 const ListItem = createComponent(({ id, slot, onRemove }) => {
   return (
-    <div class='list-item'>
-      <div>slot: {slot}</div>
-      <div>
+    <tr>
+      <td class='cell'>{slot}</td>
+      <td class='cell'>1</td>
+      <td class='cell'>2</td>
+      <td class='cell'>
+        <button>highlight</button>
         <button onClick={() => onRemove(id)}>remove</button>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 })
 
@@ -39,20 +42,26 @@ const List = createComponent(({ items }) => {
     render(App({ items: newItems, host }), host);
   };
 
-  return items.map((x => {
+  return (
+    <table class='table'>
+      <tbody>
+      {items.map((x => {
 
-    if (x.id === 2) {
-      return(
-        <NestedList  x={x} onRemove={handleRemove} />
-      )
-    }
+        // if (x.id === 2) {
+        //   return(
+        //     <NestedList  x={x} onRemove={handleRemove} />
+        //   )
+        // }
 
-    return (
-      <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
-        {x.name}
-      </ListItem>
-    )
-  }))
+        return (
+          <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
+            {x.name}
+          </ListItem>
+        )
+        }))
+      }</tbody>
+    </table>
+  );
 }, { displayName: 'List' });
 
 const NestedList = createComponent(({ x, onRemove }) => {
@@ -75,18 +84,8 @@ const Counter = createComponent(() => {
 }, { displayName: 'Counter' })
 
 const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }) => {
-  const handleAddItems = () => {
-    const [item1, item2, item3, item4, ...rest] = items;
-    //render(App({ items: [...generateItems(2), item1, item2, item3, ...generateItems(2), ...rest], host }), host);
-    render(App({ items: [...generateItems(1000), ...items], host }), host);
-  };
-  const handleSwap = () => {
-    const newItems = [...items];
-    newItems[1] = items[items.length - 2];
-    newItems[newItems.length - 2] = items[1];
 
-    render(App({ items: newItems, host }), host);
-  };
+  //console.log('items', items);
 
   return [
     <div style='display: flex'>
@@ -94,11 +93,31 @@ const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }
       <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} host={host} />,
-    <div>footer</div>,
+   // <div>footer</div>,
   ]
 });
 
-const items = generateItems(10000);
+let items = generateItems(1000);
 
-render(App({ items, host }), host);
+const handleAddItems = () => {
+  const [item1, item2, item3, item4, ...rest] = items;
+  //render(App({ items: [...generateItems(2), item1, item2, item3, ...generateItems(2), ...rest], host }), host);
+  render(App({ items: [...generateItems(1000), ...items], host }), host);
+};
+const handleSwap = () => {
+  const newItems = [...items];
+  newItems[1] = items[items.length - 2];
+  newItems[newItems.length - 2] = items[1];
+
+  items = newItems;
+
+  render(App({ items: newItems, host }), host);
+};
+
+render(App({ items, host }), host, () => {
+  setInterval(() => {
+    handleSwap();
+  }, 100)
+});
+
 

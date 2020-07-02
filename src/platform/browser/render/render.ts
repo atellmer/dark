@@ -9,6 +9,7 @@ import {
   currentRootHelper,
   nextUnitOfWorkHelper,
   getRootId,
+  deletionsHelper,
 } from '@core/scope';
 import { createDomLink, mutateDom } from '../dom';
 import { ComponentFactory } from '@core/component';
@@ -59,7 +60,9 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     currentRootFiber && (currentRootFiber.alternate = null);
     wipRootHelper.set(fiber);
     nextUnitOfWorkHelper.set(fiber);
-    workLoop({ deadline, onRender });
+    deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
+    deletionsHelper.set([]);
+    workLoop({ deadline, fromRoot: true, onRender });
   })(getRootId()));
 
   platform.ric(scheduleRenders);

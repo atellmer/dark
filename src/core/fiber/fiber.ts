@@ -21,7 +21,7 @@ import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoo
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 let level = 0;
-const levelMap = {};
+let levelMap = {};
 
 class Fiber<N = NativeElement> {
   public parent: Fiber<N>;
@@ -46,10 +46,15 @@ class Fiber<N = NativeElement> {
 }
 
 function workLoop(options: WorkLoopOptions) {
-  const { deadline, onRender } = options;
+  const { deadline, fromRoot, onRender } = options;
   const wipFiber = wipRootHelper.get();
   let nextUnitOfWork = nextUnitOfWorkHelper.get();
   let shouldYield = false;
+
+  if (fromRoot) {
+    level = 0;
+    levelMap = {};
+  }
 
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
@@ -372,7 +377,7 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
-  const isSameType = alternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
   const isUpdate = isSameType && !isDifferentKeys;
 
   const fiber = new Fiber({
@@ -381,6 +386,12 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
     link: isUpdate ? alternate.link : null,
     effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
   });
+
+  if (key === 3 && !isUpdate) {
+    console.log('alternate', alternate);
+    console.log('element', instance);
+    console.log('isUpdate', isUpdate);
+  } 
 
   if (isSameType && isDifferentKeys) {
     alternate.effectTag = EffectTag.DELETION;
@@ -415,7 +426,7 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
 function commitRoot(onRender: () => void) {
   const wipFiber = wipRootHelper.get();
 
-  console.log('wip', wipFiber);
+  //console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, null, () => {
     deletionsHelper.get().forEach(platform.applyCommits);

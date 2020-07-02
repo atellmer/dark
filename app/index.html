@@ -4,7 +4,6 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <!-- <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"> -->
 	<title>demo</title>
 	<style>
 		* {
@@ -20,17 +19,20 @@
     body {
       color: black;
       font-family: 'Roboto';
-      padding: 20px;
       background-color: #222;
       color: white;
     }
-    .list-item {
+    .selected {
+      background-color: green;
+    }
+    .table {
       width: 100%;
-      min-height: 30px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .cell {
+      width: 25%;
       border: 1px solid blueviolet;
-      padding: 6px;
-      display: flex;
-      justify-content: space-between;
     }
 	</style>
 </head>
