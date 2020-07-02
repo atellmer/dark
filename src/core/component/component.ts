@@ -52,7 +52,7 @@ function createComponent<P extends StandardComponentProps>(
 const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory =>
   factory && factory instanceof ComponentFactory;
 
-const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey => factory.props[ATTR_KEY];
+const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey => factory.props[ATTR_KEY] || null;
 
 export {
   ComponentFactory,

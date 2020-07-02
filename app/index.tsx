@@ -41,11 +41,11 @@ const List = createComponent(({ items }) => {
 
   return items.map((x => {
 
-    if (x.id === 2) {
-      return(
-        <NestedList key={x.id} x={x} onRemove={handleRemove} />
-      )
-    }
+    // if (x.id === 2) {
+    //   return(
+    //     <NestedList key={x.id} x={x} onRemove={handleRemove} />
+    //   )
+    // }
 
     return (
       <ListItem key={x.id} id={x.id} onRemove={handleRemove}>
@@ -76,7 +76,9 @@ const Counter = createComponent(() => {
 
 const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }) => {
   const handleAddItems = () => {
-    render(App({ items: [...generateItems(5), ...items], host }), host);
+    const [item1, item2, item3, item4, ...rest] = items;
+    render(App({ items: [...generateItems(2), item1, item2, item3, ...generateItems(2), ...rest], host }), host);
+    //render(App({ items: [...generateItems(2), ...items], host }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -99,3 +101,4 @@ const App = createComponent<{items: Array<any>; host: Element}>(({ items, host }
 const items = generateItems(10);
 
 render(App({ items, host }), host);
+

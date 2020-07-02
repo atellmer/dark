@@ -12,7 +12,7 @@ type Item = { id: number; name: string };
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
-const fireRenders = () =>  requestIdleCallback.runIdleCallbacks();
+const fireRenders = () => requestIdleCallback.runIdleCallbacks();
 const TEST_MARKER = '[RENDER]';
 let nextId = 0;
 
@@ -203,6 +203,11 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
   const addItemsToStart = (count: number) => {
     items = [...generateItems(count), ...items];
   };
+  const insertNodesInDifferentPlaces = () => {
+    const [item1, item2, item3, ...rest] = items;
+
+    items = [...generateItems(5), item1, item2, ...generateItems(2), ...rest];
+  };
   const removeItem = (id: number) => {
     items = items.filter(x => x.id !== id);
   };
@@ -248,6 +253,16 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
 
     expect(node).toBe(newNode);
     expect(node.textContent).toBe(expected);
+  });
+
+  test('nodes inserted in different places correctly', () => {
+    items = generateItems(10);
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
+    jest.advanceTimersByTime(100);
+    insertNodesInDifferentPlaces();
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
   });
 
   test('nodes removed correctly', () => {
@@ -328,14 +343,15 @@ describe(`${TEST_MARKER} list of items`, () => {
     expect(host.innerHTML).toBe(content);
   });
 
+
   test('render arrays of any nesting correctly', () => {
     const content = dom`
-      <div></div>
-      <div></div>
-      <div></div>
-      <div id="one"></div>
-      <div id="two"></div>
-      <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div id="one"></div>
+    <div id="two"></div>
+    <div></div>
     `;
 
     const Item = createComponent(() => {
@@ -357,6 +373,38 @@ describe(`${TEST_MARKER} list of items`, () => {
     fireRenders();
     expect(host.innerHTML).toBe(content);
   });
+});
+
+test('render nested array as components correctly', () => {
+  const content = (count: number) => dom`
+    <div>1</div>
+    <div>2</div>
+    ${Array(count).fill(0).map((x, idx) => `<p>${idx}</p>`).join('')}
+    <div>3</div>
+  `;
+
+  const NestedArray = createComponent(({ count }) => {
+    return Array(count).fill(0).map((x, idx) => (<p>{idx}</p>))
+  });
+
+  const Component = createComponent(
+    ({ count }) => [
+      <div>1</div>,
+      <div>2</div>,
+      <NestedArray count={count} />,
+      <div>3</div>,
+    ],
+  );
+
+  render(Component({ count: 3 }), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(3));
+  render(Component({ count: 5 }), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(5));
+  render(Component({ count: 1 }), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(1));
 });
 
 test(`${TEST_MARKER} dynamic tag render correcrly`, () => {

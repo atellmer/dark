@@ -185,21 +185,26 @@ function performUnitOfWork(fiber: Fiber) {
     }
 
     if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
-      const isRemovingOperation = alternate.instance.children.length > element.children.length;
-      const isInsertingOperation = alternate.instance.children.length < element.children.length;
-      const isRequestedKeys = isRemovingOperation || isInsertingOperation;
+      const isRequestedKeys = alternate.instance.children.length !== element.children.length;
 
       if (isRequestedKeys) {
         const keys = alternate.instance.children.map(getElementKey).filter(Boolean);
         const nextKeys = element.children.map(getElementKey).filter(Boolean);
-        const key = getElementKey(element);
+        const hasKeys = keys.length > 0;
 
-        if (isEmpty(key)) {
+        console.log('keys', keys);
+        console.log('nextKeys', nextKeys);
+
+        if (!hasKeys) {
+          console.log('element', element);
+
           error(UNIQ_KEY_ERROR);
         }
 
-        if (isSameType && isRemovingOperation) {
+        const performRemovingNodes = () => {
           const diffKeys = getDiffKeys(keys, nextKeys);
+
+          console.log('remove keys', diffKeys);
 
           if (diffKeys.length > 0) {
             for (const key of diffKeys) {
@@ -207,17 +212,10 @@ function performUnitOfWork(fiber: Fiber) {
 
               if (childAlternate) {
                 childAlternate.effectTag = EffectTag.DELETION;
-
-                if (childAlternate.prevSibling) {
-                  childAlternate.prevSibling.nextSibling = childAlternate.nextSibling;
-                } else {
-                  childAlternate.parent.child = childAlternate.nextSibling;
-                }
-
                 deletionsHelper.get().push(childAlternate);
               }
             }
-          } else {
+          } else if (!hasKeys) {
             const diffCount = getInstanceChildDiffCount(alternate.instance, element);
             const fibers: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount).map(
               x => ((x.effectTag = EffectTag.DELETION), x),
@@ -225,8 +223,12 @@ function performUnitOfWork(fiber: Fiber) {
 
             deletionsHelper.get().push(...fibers);
           }
-        } else if (isInsertingOperation) {
+        }
+
+        const performInsertingNodes = () => {
           const diffKeys = getDiffKeys(nextKeys, keys);
+
+          console.log('insert keys', diffKeys);
 
           if (diffKeys.length > 0) {
             const diffKeyMap = keyBy(diffKeys, x => x);
@@ -266,6 +268,11 @@ function performUnitOfWork(fiber: Fiber) {
               keyIdx++;
             }
           }
+        }
+
+        if (isSameType) {
+          performRemovingNodes();
+          performInsertingNodes();
         }
       }
     }
@@ -307,11 +314,13 @@ function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {
 }
 
 function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
-  return detectIsComponentFactory(instance)
+  const key = detectIsComponentFactory(instance)
     ? getComponentFactoryKey(instance)
     : detectIsTagVirtualNode(instance)
       ? getVirtualNodeKey(instance)
       : null;
+
+  return key || null;
 }
 
 function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey> {
@@ -328,13 +337,21 @@ function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey
 }
 
 function getChildAlternate(fiber: Fiber): Fiber | null {
-  const alternate = fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETION && fiber.alternate.child || null;
+  let alternate = fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETION && fiber.alternate.child || null;
+
+  while (alternate && alternate.effectTag === EffectTag.DELETION) {
+    alternate = alternate.nextSibling;
+  }
 
   return alternate;
 }
 
 function getNextSiblingAlternate(fiber: Fiber): Fiber | null {
-  const alternate = fiber.alternate && fiber.alternate.nextSibling || null;
+  let alternate = fiber.alternate && fiber.alternate.nextSibling || null;
+
+  while (alternate && alternate.effectTag === EffectTag.DELETION) {
+    alternate = alternate.nextSibling;
+  }
 
   return alternate;
 }
@@ -360,13 +377,22 @@ function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, insta
 }
 
 function createFiberFromElement(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
-  const isUpdate = alternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const key = alternate ? getElementKey(alternate.instance) : null;
+  const nextKey = alternate ? getElementKey(instance) : null;
+  const isDifferentKeys = key !== nextKey;
+  const isUpdate = alternate && !isDifferentKeys && getInstanceType(alternate.instance) === getInstanceType(instance);
+
   const fiber = new Fiber({
     instance,
     alternate: alternate || null,
     link: isUpdate ? alternate.link : null,
     effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
   });
+
+  if (isDifferentKeys) {
+    alternate.effectTag = EffectTag.DELETION;
+    deletionsHelper.get().push(alternate);
+  }
 
   fiber.alternate && (fiber.alternate.alternate = null);
 
