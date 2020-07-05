@@ -4,6 +4,7 @@ import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 import { render } from './render';
 import { createComponent } from '@core/component/component';
 import { View, Text, Comment, createElement } from '@core/view/view';
+import { EMPTY_NODE } from '@core/constants';
 import { dom } from '../../../../test/utils';
 
 
@@ -193,7 +194,10 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
-    ${items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')}
+    ${items.length > 0
+      ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')
+      : `<!--${EMPTY_NODE}-->`
+    }
     <div>footer</div>
   `;
 

@@ -139,8 +139,7 @@ function mutateDom(fiber: Fiber<Element>) {
   const parent = linkParentFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const isParentComponentFactory = detectIsComponentFactory(fiber.parent.instance);
-    const node = isParentComponentFactory ? getSiblingDomNode(fiber) : null;
+    const node = getNodeOnTheRight(fiber, parent);
 
     if (node) {
       parent.insertBefore(fiber.link, node);
@@ -163,6 +162,38 @@ function mutateDom(fiber: Fiber<Element>) {
       onBeforeCommit: fiber => {},
     });
   }
+}
+
+//temp
+function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
+  let nextFiber = fiber;
+  let isDeepWalking = true;
+  let isReturn = false;
+
+  while (nextFiber) {
+
+    if (!isReturn) {
+      if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
+        return nextFiber.link;
+      }
+    }
+
+    if (nextFiber.child && isDeepWalking) {
+      nextFiber = nextFiber.child;
+    } else if (nextFiber.nextSibling) {
+      isDeepWalking = true;
+      isReturn = false;
+      nextFiber = nextFiber.nextSibling;
+    } else if (nextFiber.parent) {
+      isDeepWalking = false;
+      isReturn = true;
+      nextFiber = nextFiber.parent;
+    } else {
+      nextFiber = null;
+    }
+  }
+
+  return null;
 }
 
 type CommitDeletionOptions = {
@@ -204,33 +235,7 @@ function commitDeletion(options: CommitDeletionOptions) {
   }
 }
 
-function getChildDomNode(fiber: Fiber<Element>): Element | null {
-  let nextFiber = fiber;
 
-  while (nextFiber) {
-    if (nextFiber.link) return nextFiber.link;
-    nextFiber = nextFiber.child;
-  }
-
-  return null;
-}
-
-function getSiblingDomNode(fiber: Fiber<Element>): Element | null {
-  if (!fiber) return null;
-  let nextFiber = fiber;
-
-  while (nextFiber) {
-    if (nextFiber.nextSibling) {
-      const link = getChildDomNode(nextFiber.nextSibling);
-
-      if (link && link.parentElement) return link;
-    }
-
-    nextFiber = nextFiber.nextSibling || nextFiber.parent;
-  }
-
-  return null;
-}
 
 export {
   createDomLink,
