@@ -63,20 +63,6 @@ const List = createComponent(({ items }) => {
   );
 }, { displayName: 'List' });
 
-
-const Counter = createComponent(({ count }) => {
-  return [
-    <span>{'<couter>'}</span>,
-    <span>
-      yyy
-      {count > 3 && Text(count)}
-      xxxx
-    </span>,
-    <span>{'</counter>'}</span>,
-  ]
-});
-
-
 const App = createComponent<{items: Array<any>;}>(({ items }) => {
   const handleAddItems = () => {
     render(App({ items: [...generateItems(1000), ...items] }), host);
@@ -94,13 +80,12 @@ const App = createComponent<{items: Array<any>;}>(({ items }) => {
       <button onClick={handleAddItems}>add items</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
-    <Counter count={items.length} />,
     <List items={items} />,
     <div>footer</div>,
   ]
 });
 
-let items = generateItems(100);
+let items = generateItems(10000);
 
 render(App({ items }), host);
 

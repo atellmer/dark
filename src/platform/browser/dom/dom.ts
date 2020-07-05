@@ -171,11 +171,14 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let isReturn = false;
 
   while (nextFiber) {
-
     if (!isReturn) {
       if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
         return nextFiber.link;
       }
+    }
+
+    if (nextFiber.effectTag === EffectTag.PLACEMENT) {
+      isDeepWalking = false;
     }
 
     if (nextFiber.child && isDeepWalking) {
@@ -188,6 +191,7 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
+      if (nextFiber.link) return null;
     } else {
       nextFiber = null;
     }
