@@ -88,6 +88,6 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   ]
 });
 
-render(App({ items: generateItems(100) }), host);
+render(App({ items: generateItems(10000) }), host);
 
 

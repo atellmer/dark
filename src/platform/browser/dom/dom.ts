@@ -141,7 +141,9 @@ function mutateDom(fiber: Fiber<Element>) {
   const parent = linkParentFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const node = getNodeOnTheRight(fiber, parent);
+    const node = linkParentFiber.alternate
+      ? getNodeOnTheRight(fiber, parent)
+      : null;
 
     if (node) {
       parent.insertBefore(fiber.link, node);
@@ -173,7 +175,7 @@ function mutateDom(fiber: Fiber<Element>) {
     commitDeletion({
       fiber,
       parent,
-      onBeforeCommit: fiber => {},
+      onBeforeCommit: fiber => { },
     });
   }
 }
@@ -181,13 +183,10 @@ function mutateDom(fiber: Fiber<Element>) {
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let nextFiber = fiber;
   let isDeepWalking = true;
-  let isReturn = false;
 
   while (nextFiber) {
-    if (!isReturn) {
-      if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
-        return nextFiber.link;
-      }
+    if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
+      return nextFiber.link;
     }
 
     if (nextFiber.effectTag === EffectTag.PLACEMENT) {
@@ -198,11 +197,9 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
       nextFiber = nextFiber.child;
     } else if (nextFiber.nextSibling) {
       isDeepWalking = true;
-      isReturn = false;
       nextFiber = nextFiber.nextSibling;
     } else if (nextFiber.parent) {
       isDeepWalking = false;
-      isReturn = true;
       nextFiber = nextFiber.parent;
       if (nextFiber.link) return null;
     } else {
