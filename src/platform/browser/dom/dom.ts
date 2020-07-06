@@ -129,6 +129,8 @@ function updateDom(element: Element, instance: VirtualNode, nextInstance: Virtua
   }
 }
 
+const fragmentMap: Map<Element, DocumentFragment> = new Map();
+
 function mutateDom(fiber: Fiber<Element>) {
   let linkParentFiber = fiber.parent;
 
@@ -144,7 +146,19 @@ function mutateDom(fiber: Fiber<Element>) {
     if (node) {
       parent.insertBefore(fiber.link, node);
     } else {
-      parent.appendChild(fiber.link);
+      let fragment = fragmentMap.get(parent);
+
+      if (isUndefined(fragment)) {
+        fragment = document.createDocumentFragment();
+        fragmentMap.set(parent, fragment);
+      }
+
+      fragment.appendChild(fiber.link);
+
+      if (!fiber.nextSibling) {
+        parent.appendChild(fragment);
+        fragmentMap.delete(parent);
+      }
     }
 
     addAttributes(fiber.link, fiber.instance as VirtualNode);
@@ -164,7 +178,6 @@ function mutateDom(fiber: Fiber<Element>) {
   }
 }
 
-//temp
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let nextFiber = fiber;
   let isDeepWalking = true;

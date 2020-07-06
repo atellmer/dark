@@ -63,7 +63,10 @@ const List = createComponent(({ items }) => {
   );
 }, { displayName: 'List' });
 
-const App = createComponent<{items: Array<any>;}>(({ items }) => {
+const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
+  const handleCreate = () => {
+    render(App({ items: [...generateItems(100000)] }), host);
+  };
   const handleAddItems = () => {
     render(App({ items: [...generateItems(1000), ...items] }), host);
   };
@@ -77,16 +80,14 @@ const App = createComponent<{items: Array<any>;}>(({ items }) => {
 
   return [
     <div style='display: flex'>
+      <button onClick={handleCreate}>create</button>
       <button onClick={handleAddItems}>add items</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} />,
-    <div>footer</div>,
   ]
 });
 
-let items = generateItems(10000);
-
-render(App({ items }), host);
+render(App({ items: generateItems(100) }), host);
 
 
