@@ -11,7 +11,7 @@ import {
   getRootId,
   deletionsHelper,
 } from '@core/scope';
-import { createDomLink, mutateDom } from '../dom';
+import { createDomLink, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 
@@ -45,6 +45,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
 
   renderRequests.push((rootId => (deadline: IdleDeadline) => {
     effectStoreHelper.set(rootId);
+    resetNodeCache();
 
     const currentRootFiber = currentRootHelper.get();
     const fiber = new Fiber({

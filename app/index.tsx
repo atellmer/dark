@@ -65,9 +65,12 @@ const List = createComponent(({ items }) => {
 
 const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   const handleCreate = () => {
-    render(App({ items: [...generateItems(100000)] }), host);
+    render(App({ items: [...generateItems(10)] }), host);
   };
-  const handleAddItems = () => {
+  const handleAddItemsToEnd = () => {
+    render(App({ items: [...items, ...generateItems(5)] }), host);
+  };
+  const handleAddItemsToStart = () => {
     render(App({ items: [...generateItems(1000), ...items] }), host);
   };
   const handleSwap = () => {
@@ -81,13 +84,14 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   return [
     <div style='display: flex'>
       <button onClick={handleCreate}>create</button>
-      <button onClick={handleAddItems}>add items</button>
+      <button onClick={handleAddItemsToStart}>add items to start</button>
+      <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
     <List items={items} />,
   ]
 });
 
-render(App({ items: generateItems(10000) }), host);
+render(App({ items: generateItems(1000) }), host);
 
 

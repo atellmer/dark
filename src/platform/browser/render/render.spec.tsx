@@ -234,7 +234,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     expect(host.innerHTML).toBe(content(items));
 
     jest.advanceTimersByTime(100);
-    addItemsToStart(5)
+    addItemsToStart(6);
     renderApp();
     expect(host.innerHTML).toBe(content(items));
   });

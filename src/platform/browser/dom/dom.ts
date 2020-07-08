@@ -10,10 +10,11 @@ import {
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
   getAttribute,
+  detectIsCommentVirtualNode,
 } from '@core/view';
-import { isFunction, isUndefined } from '@helpers';
+import { isFunction, isUndefined, isEmpty, takeListFromEnd } from '@helpers';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { ATTR_KEY } from '@core/constants';
+import { ATTR_KEY, EMPTY_NODE } from '@core/constants';
 import { rootLinkHelper } from '@core/scope';
 import { detectIsComponentFactory } from '@core/component';
 import { platform } from '@core/global';
@@ -130,6 +131,11 @@ function updateDom(element: Element, instance: VirtualNode, nextInstance: Virtua
 }
 
 const fragmentMap: Map<Element, DocumentFragment> = new Map();
+let nodeCacheMap: Map<Element, Element> = new Map();
+
+function resetNodeCache() {
+  nodeCacheMap = new Map();
+}
 
 function mutateDom(fiber: Fiber<Element>) {
   let linkParentFiber = fiber.parent;
@@ -141,12 +147,20 @@ function mutateDom(fiber: Fiber<Element>) {
   const parent = linkParentFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
+    const cachedNode = nodeCacheMap.get(parent);
     const node = linkParentFiber.alternate
-      ? getNodeOnTheRight(fiber, parent)
+      ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, linkParentFiber)
+          ? cachedNode
+          : getNodeOnTheRight(fiber, parent)
       : null;
+
+    nodeCacheMap.set(parent, node);
 
     if (node) {
       parent.insertBefore(fiber.link, node);
+      if (isEndOfInsertion(fiber, linkParentFiber)) {
+        nodeCacheMap.delete(parent);
+      }
     } else {
       let fragment = fragmentMap.get(parent);
 
@@ -160,6 +174,7 @@ function mutateDom(fiber: Fiber<Element>) {
       if (!fiber.nextSibling) {
         parent.appendChild(fragment);
         fragmentMap.delete(parent);
+        nodeCacheMap.delete(parent);
       }
     }
 
@@ -178,6 +193,40 @@ function mutateDom(fiber: Fiber<Element>) {
       onBeforeCommit: fiber => { },
     });
   }
+}
+
+function canTakeNodeFromCache(fiber: Fiber, parentFiber: Fiber) {
+  let nextFiber = fiber;
+
+  while(nextFiber) {
+    if (nextFiber.alternate) {
+      const alternate = nextFiber.alternate;
+      const isEmptyNode = detectIsCommentVirtualNode(alternate.instance) && alternate.instance.value === EMPTY_NODE;
+
+      return isEmptyNode;
+    }
+
+    nextFiber = nextFiber.parent;
+    if (nextFiber === parentFiber) return false;
+  }
+
+  return false;
+}
+
+function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
+  let nextFiber = fiber;
+
+  do {
+    if (!nextFiber) return false;
+    nextFiber = nextFiber.nextSibling || nextFiber.parent.nextSibling;
+    if (nextFiber && nextFiber.parent === parentFiber) break;
+  } while (!nextFiber)
+
+  if (nextFiber.effectTag === EffectTag.UPDATE) {
+    return true;
+  }
+
+  return false;
 }
 
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
@@ -255,4 +304,5 @@ export {
   createDomLink,
   mutateDom,
   commitDeletion,
+  resetNodeCache,
 };
