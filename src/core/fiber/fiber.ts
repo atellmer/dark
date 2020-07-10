@@ -6,6 +6,7 @@ import {
   currentRootHelper,
   nextUnitOfWorkHelper,
   deletionsHelper,
+  fiberMountHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import { ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@core/component';
@@ -21,8 +22,6 @@ import {
 import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd, deepClone } from '@helpers';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR, EMPTY_NODE } from '../constants';
 
-let level = 0;
-let levelMap = {};
 
 class Fiber<N = NativeElement> {
   public parent: Fiber<N>;
@@ -55,8 +54,7 @@ function workLoop(options: WorkLoopOptions) {
   let shouldYield = false;
 
   if (fromRoot) {
-    level = 0;
-    levelMap = {};
+    fiberMountHelper.reset();
   }
 
   while (nextUnitOfWork && !shouldYield) {
@@ -105,8 +103,7 @@ function performUnitOfWork(fiber: Fiber) {
 
     const alternate = getChildAlternate(nextFiber);
 
-    level++;
-    levelMap[level] = 0;
+    fiberMountHelper.jumpToChild();
 
     if (alternate) {
       performAlternate(alternate);
@@ -126,9 +123,11 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performSibling() {
-    levelMap[level]++;
+
+    fiberMountHelper.jumpToSibling();
+
     const parent = nextFiber.parent.instance;
-    const childrenIdx = levelMap[level];
+    const childrenIdx = fiberMountHelper.getIndex();
     const hasSibling = hasChildrenProp(parent) && parent.children[childrenIdx];
 
     if (hasSibling) {
@@ -154,9 +153,8 @@ function performUnitOfWork(fiber: Fiber) {
 
       return nextFiber;
     } else {
+      fiberMountHelper.jumpToParent();
       isDeepWalking = false;
-      levelMap[level] = 0;
-      level--;
       nextFiber = nextFiber.parent;
       element = nextFiber.instance;
     }

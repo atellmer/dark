@@ -8,6 +8,10 @@ class Store {
   public currentMountedFiber: Fiber = null;
   public events: Map<string, WeakMap<object, Function>> = new Map();
   public deletions: Array<Fiber> = [];
+  public fiberMount = {
+    level: 0,
+    navigation: {},
+  };
 }
 
 let rootId = null;
@@ -61,6 +65,39 @@ const deletionsHelper = {
   set: (deletions: Array<Fiber>) => storeHelper.get().deletions = deletions,
 };
 
+const fiberMountHelper = {
+  reset: () => {
+    storeHelper.get().fiberMount = {
+      level: 0,
+      navigation: {},
+    };
+  },
+  getIndex: () => storeHelper.get().fiberMount.navigation[storeHelper.get().fiberMount.level],
+  jumpToChild: () => {
+    const { fiberMount } = storeHelper.get();
+    const level = fiberMount.level;
+    const nextLevel = level + 1;
+
+    fiberMount.level = nextLevel;
+    fiberMount.navigation[nextLevel] = 0;
+  },
+  jumpToParent: () => {
+    const { fiberMount } = storeHelper.get();
+    const level = fiberMount.level;
+    const nextLevel = level - 1;
+
+    fiberMount.navigation[level] = 0;
+    fiberMount.level = nextLevel;
+  },
+  jumpToSibling: () => {
+    const { fiberMount } = storeHelper.get();
+    const level = fiberMount.level;
+    const idx = fiberMount.navigation[level] + 1;
+
+    fiberMount.navigation[level] = idx;
+  },
+};
+
 export {
   getRootId,
   effectStoreHelper,
@@ -71,4 +108,5 @@ export {
   eventsHelper,
   rootLinkHelper,
   deletionsHelper,
+  fiberMountHelper,
 };
