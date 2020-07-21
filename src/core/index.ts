@@ -6,3 +6,4 @@ export {
 } from './view';
 export { createComponent } from './component';
 export { Fragment } from './fragment';
+export { useUpdate } from './use-update';

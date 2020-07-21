@@ -146,6 +146,8 @@ function mutateDom(fiber: Fiber<Element>) {
 
   const parent = linkParentFiber.link;
 
+  //console.log('fiber', fiber);
+
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
     const cachedNode = nodeCacheMap.get(parent);
     const node = linkParentFiber.alternate

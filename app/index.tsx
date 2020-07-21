@@ -4,6 +4,7 @@ import {
   Text,
   createComponent,
   Fragment,
+  useUpdate,
 } from '../src/core';
 import { render } from '../src/platform/browser';
 
@@ -48,6 +49,8 @@ const List = createComponent(({ items }) => {
     render(App({ items: newItems }), host);
   };
 
+  console.log('render sibling');
+
   return (
     <table class='table'>
       <tbody>
@@ -62,6 +65,24 @@ const List = createComponent(({ items }) => {
     </table>
   );
 }, { displayName: 'List' });
+
+let count = 0;
+
+const Counter = createComponent(() => {
+  const [update] = useUpdate();
+
+  const handleClick = () => {
+    count++;
+    update();
+  };
+
+  console.log('render', count);
+
+  return [
+    Text(`count: ${count}`),
+    <button onClick={handleClick}>Click me</button>
+  ]
+}, { displayName: 'Counter' });
 
 const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   const handleCreate = () => {
@@ -88,10 +109,11 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
       <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
+    <Counter />,
     <List items={items} />,
   ]
-});
+}, { displayName: 'App' });
 
-render(App({ items: generateItems(1000) }), host);
+render(App({ items: generateItems(10) }), host);
 
 

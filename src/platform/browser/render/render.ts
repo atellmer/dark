@@ -10,6 +10,7 @@ import {
   nextUnitOfWorkHelper,
   getRootId,
   deletionsHelper,
+  fiberMountHelper,
 } from '@core/scope';
 import { createDomLink, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
@@ -59,11 +60,12 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     });
 
     currentRootFiber && (currentRootFiber.alternate = null);
+    fiberMountHelper.reset();
     wipRootHelper.set(fiber);
     nextUnitOfWorkHelper.set(fiber);
     deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
     deletionsHelper.set([]);
-    workLoop({ deadline, fromRoot: true, onRender });
+    workLoop({ deadline, onRender });
   })(getRootId()));
 
   platform.ric(scheduleRenders);

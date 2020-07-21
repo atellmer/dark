@@ -5,13 +5,14 @@ class Store {
   public wipRoot: Fiber = null;
   public currentRoot: Fiber = null;
   public nextUnitOfWork: Fiber = null;
-  public currentMountedFiber: Fiber = null;
+  public fromHookUpdate: boolean = false;
   public events: Map<string, WeakMap<object, Function>> = new Map();
   public deletions: Array<Fiber> = [];
   public fiberMount = {
     level: 0,
     navigation: {},
   };
+  public getComponentFiber: () => Fiber = () => null;
 }
 
 let rootId = null;
@@ -47,9 +48,14 @@ const nextUnitOfWorkHelper = {
   set: (fiber: Fiber) => (storeHelper.get().nextUnitOfWork = fiber),
 };
 
-const currentMountedFiberHelper = {
-  get: () => storeHelper.get()?.currentMountedFiber || null,
-  set: (fiber: Fiber) => (storeHelper.get().currentMountedFiber = fiber),
+const componentFiberHelper = {
+  get: () => storeHelper.get()?.getComponentFiber,
+  set: (fn: () => Fiber) => (storeHelper.get().getComponentFiber = fn),
+};
+
+const fromHookUpdateHelper = {
+  get: () => storeHelper.get()?.fromHookUpdate || false,
+  set: (value: boolean) => (storeHelper.get().fromHookUpdate = value),
 };
 
 const eventsHelper = {
@@ -104,7 +110,8 @@ export {
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
-  currentMountedFiberHelper,
+  componentFiberHelper,
+  fromHookUpdateHelper,
   eventsHelper,
   rootLinkHelper,
   deletionsHelper,

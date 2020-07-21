@@ -7,6 +7,8 @@ import {
   nextUnitOfWorkHelper,
   deletionsHelper,
   fiberMountHelper,
+  componentFiberHelper,
+  fromHookUpdateHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import { ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@core/component';
@@ -32,7 +34,6 @@ class Fiber<N = NativeElement> {
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
   public link: N = null;
-  public placement: N = null;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || null;
@@ -43,19 +44,14 @@ class Fiber<N = NativeElement> {
     this.link = options.link || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
-    this.placement = options.placement || null;
   }
 }
 
 function workLoop(options: WorkLoopOptions) {
-  const { deadline, fromRoot, onRender } = options;
+  const { deadline, onRender } = options;
   const wipFiber = wipRootHelper.get();
   let nextUnitOfWork = nextUnitOfWorkHelper.get();
   let shouldYield = false;
-
-  if (fromRoot) {
-    fiberMountHelper.reset();
-  }
 
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
@@ -64,7 +60,7 @@ function workLoop(options: WorkLoopOptions) {
   }
 
   if (!nextUnitOfWork && wipFiber) {
-    commitRoot(onRender);
+    commitChanges(onRender);
   }
 
   platform.ric(deadline => workLoop({ deadline, onRender }));
@@ -93,15 +89,14 @@ function performUnitOfWork(fiber: Fiber) {
     }
 
     if (nextFiber.parent === null) {
-      wipRootHelper.set(nextFiber);
       return null;
     }
   }
 
   function performChild() {
-    pertformInstance(element, 0);
-
     const alternate = getChildAlternate(nextFiber);
+
+    pertformInstance(element, 0, alternate);
 
     fiberMountHelper.jumpToChild();
 
@@ -133,9 +128,10 @@ function performUnitOfWork(fiber: Fiber) {
     if (hasSibling) {
       isDeepWalking = true;
 
-      pertformInstance(parent, childrenIdx);
-
       const alternate = getNextSiblingAlternate(nextFiber);
+
+      pertformInstance(parent, childrenIdx, alternate);
+
       if (alternate) {
         performAlternate(alternate);
       }
@@ -162,7 +158,7 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function pertformInstance(instance: DarkElementInstance, idx: number) {
+  function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
@@ -170,6 +166,7 @@ function performUnitOfWork(fiber: Fiber) {
       element = instance.children[idx];
 
       if (detectIsComponentFactory(element)) {
+        componentFiberHelper.set(() => nextFiber);
         element.children = flatten([element.type(element.props)]) as Array<DarkElementInstance>;
       }
 
@@ -421,8 +418,9 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
   return detectIsTagVirtualNode(element) || detectIsComponentFactory(element);
 }
 
-function commitRoot(onRender: () => void) {
+function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
+  const fromHook = fromHookUpdateHelper.get();
 
   //console.log('wip', wipFiber);
 
@@ -430,8 +428,13 @@ function commitRoot(onRender: () => void) {
     deletionsHelper.get().forEach(platform.applyCommits);
     deletionsHelper.set([]);
     wipRootHelper.set(null);
-    currentRootHelper.set(wipFiber);
-    isFunction(onRender) && onRender();
+
+    if (fromHook) {
+      fromHookUpdateHelper.set(false);
+    } else {
+      currentRootHelper.set(wipFiber);
+      isFunction(onRender) && onRender();
+    }
   });
 }
 
@@ -439,6 +442,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   let nextFiber = fiber;
   let isDeepWalking = true;
   let isReturn = false;
+  const fromHookUpdate = fromHookUpdateHelper.get();
 
   while (nextFiber) {
 
@@ -456,13 +460,18 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
+
+      if (fromHookUpdate && nextFiber === fiber.parent) {
+        nextFiber = null;
+      }
+
     } else {
       nextFiber = null;
     }
   }
 
   if (!nextFiber) {
-    console.log('complete!');
+    //console.log('complete!');
     onComplete();
   }
 }

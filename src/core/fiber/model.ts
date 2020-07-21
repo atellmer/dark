@@ -9,6 +9,5 @@ export type NativeElement = unknown;
 
 export type WorkLoopOptions = {
   deadline?: IdleDeadline;
-  fromRoot?: boolean;
   onRender?: () => void;
 };
