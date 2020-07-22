@@ -96,7 +96,7 @@ function performUnitOfWork(fiber: Fiber) {
   function performChild() {
     const alternate = getChildAlternate(nextFiber);
 
-    pertformInstance(element, 0, alternate);
+    pertformInstance(element, 0);
 
     fiberMountHelper.jumpToChild();
 
@@ -130,7 +130,7 @@ function performUnitOfWork(fiber: Fiber) {
 
       const alternate = getNextSiblingAlternate(nextFiber);
 
-      pertformInstance(parent, childrenIdx, alternate);
+      pertformInstance(parent, childrenIdx);
 
       if (alternate) {
         performAlternate(alternate);
@@ -158,25 +158,13 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
+  function pertformInstance(instance: DarkElementInstance, idx: number) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-
-      if (detectIsComponentFactory(element)) {
-        componentFiberHelper.set(() => nextFiber);
-        element.children = flatten([element.type(element.props)]) as Array<DarkElementInstance>;
-      }
-
-      if (hasChildrenProp(element)) {
-        element.children = flatten([element.children.map(transformElementInstance)]) as Array<DarkElementInstance>;
-
-        if (detectIsComponentFactory(element) && element.children.length === 0) {
-          element.children.push(createEmptyVirtualNode());
-        }
-      }
+      element = mountInstance(element, () => nextFiber);
     }
   }
 
@@ -275,6 +263,23 @@ function performUnitOfWork(fiber: Fiber) {
       }
     }
   }
+}
+
+function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber) {
+  if (detectIsComponentFactory(instance)) {
+    componentFiberHelper.set(getNextFiber);
+    instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
+  }
+
+  if (hasChildrenProp(instance)) {
+    instance.children = flatten([instance.children.map(transformElementInstance)]) as Array<DarkElementInstance>;
+
+    if (detectIsComponentFactory(instance) && instance.children.length === 0) {
+      instance.children.push(createEmptyVirtualNode());
+    }
+  }
+
+  return instance;
 }
 
 function getChildFiberByIdx(fiber: Fiber, idx: number) {
@@ -476,4 +481,8 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   }
 }
 
-export { Fiber, workLoop };
+export {
+  Fiber,
+  workLoop,
+  mountInstance,
+};

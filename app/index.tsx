@@ -80,7 +80,8 @@ const Counter = createComponent(() => {
 
   return [
     Text(`count: ${count}`),
-    <button onClick={handleClick}>Click me</button>
+    <button onClick={handleClick}>Click me</button>,
+    (count === 2 || count === 4) && Text('kuku!'),
   ]
 }, { displayName: 'Counter' });
 
@@ -114,6 +115,6 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   ]
 }, { displayName: 'App' });
 
-render(App({ items: generateItems(10) }), host);
+let items = generateItems(10);
 
-
+render(App({ items }), host);

@@ -15,7 +15,7 @@ import {
 import { isFunction, isUndefined, isEmpty, takeListFromEnd } from '@helpers';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { ATTR_KEY, EMPTY_NODE } from '@core/constants';
-import { rootLinkHelper } from '@core/scope';
+import { rootLinkHelper, fromHookUpdateHelper } from '@core/scope';
 import { detectIsComponentFactory } from '@core/component';
 import { platform } from '@core/global';
 
@@ -139,6 +139,7 @@ function resetNodeCache() {
 
 function mutateDom(fiber: Fiber<Element>) {
   let linkParentFiber = fiber.parent;
+  const fromHookUpdate = fromHookUpdateHelper.get();
 
   while (!linkParentFiber.link) {
     linkParentFiber = linkParentFiber.parent;
@@ -146,15 +147,15 @@ function mutateDom(fiber: Fiber<Element>) {
 
   const parent = linkParentFiber.link;
 
-  //console.log('fiber', fiber);
-
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
     const cachedNode = nodeCacheMap.get(parent);
     const node = linkParentFiber.alternate
       ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, linkParentFiber)
           ? cachedNode
           : getNodeOnTheRight(fiber, parent)
-      : null;
+      : fromHookUpdate
+        ? getNodeOnTheRight(fiber, parent)
+        : null;
 
     nodeCacheMap.set(parent, node);
 
@@ -234,13 +235,14 @@ function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let nextFiber = fiber;
   let isDeepWalking = true;
+  const fromHookUpdate = fromHookUpdateHelper.get();
 
   while (nextFiber) {
     if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
       return nextFiber.link;
     }
 
-    if (nextFiber.effectTag === EffectTag.PLACEMENT) {
+    if (!fromHookUpdate && nextFiber.effectTag === EffectTag.PLACEMENT) {
       isDeepWalking = false;
     }
 
