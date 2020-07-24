@@ -7,3 +7,4 @@ export {
 export { createComponent } from './component';
 export { Fragment } from './fragment';
 export { useUpdate } from './use-update';
+export { useState } from './use-state';

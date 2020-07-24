@@ -7,6 +7,7 @@ import {
   fromHookUpdateHelper,
   fiberMountHelper,
   deletionsHelper,
+  currentHookHelper,
 } from '@core/scope';
 import {
   EffectTag,
@@ -29,10 +30,11 @@ function useUpdate() {
       effectTag: EffectTag.UPDATE,
     });
 
-    wipFiber.instance = mountInstance(fiber.instance, () => wipFiber);
     fiber.alternate = null;
-    fiberMountHelper.reset();
     wipRootHelper.set(wipFiber);
+    currentHookHelper.set(fiber.hook);
+    wipFiber.instance = mountInstance(fiber.instance, () => wipFiber);
+    fiberMountHelper.reset();
     nextUnitOfWorkHelper.set(wipFiber);
     deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
     deletionsHelper.set([]);

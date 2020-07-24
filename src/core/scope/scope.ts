@@ -12,6 +12,10 @@ class Store {
     level: 0,
     navigation: {},
   };
+  public currentHook = {
+    idx: 0,
+    values: [],
+  };
   public getComponentFiber: () => Fiber = () => null;
 }
 
@@ -56,6 +60,11 @@ const componentFiberHelper = {
 const fromHookUpdateHelper = {
   get: () => storeHelper.get()?.fromHookUpdate || false,
   set: (value: boolean) => (storeHelper.get().fromHookUpdate = value),
+};
+
+const currentHookHelper = {
+  get: () => storeHelper.get()?.currentHook,
+  set: (hook) => (storeHelper.get().currentHook = hook),
 };
 
 const eventsHelper = {
@@ -116,4 +125,5 @@ export {
   rootLinkHelper,
   deletionsHelper,
   fiberMountHelper,
+  currentHookHelper,
 };

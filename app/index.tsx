@@ -5,6 +5,7 @@ import {
   createComponent,
   Fragment,
   useUpdate,
+  useState,
 } from '../src/core';
 import { render } from '../src/platform/browser';
 
@@ -66,24 +67,29 @@ const List = createComponent(({ items }) => {
   );
 }, { displayName: 'List' });
 
-let count = 0;
-
 const Counter = createComponent(() => {
-  const [update] = useUpdate();
+  const [counter1, setCounter1] = useState(0);
+  const [counter2, setCounter2] = useState(0);
 
-  const handleClick = () => {
-    count++;
-    update();
+  const handleClick1 = () => {
+    setCounter1(counter1 + 1);
   };
 
-  console.log('render', count);
+  const handleClick2 = () => {
+    setCounter2(counter2 + 1);
+  };
+
+  // console.log('render 1', counter1);
+  // console.log('render 2', counter2);
 
   return [
-    Text(`count: ${count}`),
-    <button onClick={handleClick}>Click me</button>,
-    (count === 2 || count === 4) && Text('kuku!'),
+    Text(`counter1: ${counter1}`),
+    <button onClick={handleClick1}>Click me</button>,
+    Text(`counter2: ${counter2}`),
+    <button onClick={handleClick2}>Click me</button>,
   ]
 }, { displayName: 'Counter' });
+
 
 const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   const handleCreate = () => {
@@ -110,6 +116,7 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
       <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
+    <Counter />,
     <Counter />,
     <List items={items} />,
   ]

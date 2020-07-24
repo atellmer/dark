@@ -9,6 +9,7 @@ import {
   fiberMountHelper,
   componentFiberHelper,
   fromHookUpdateHelper,
+  currentHookHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import { ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@core/component';
@@ -21,7 +22,16 @@ import {
   detectIsVirtualNode,
   detectIsCommentVirtualNode,
 } from '../view';
-import { flatten, isEmpty, error, isArray, keyBy, isFunction, isUndefined, isBoolean, takeListFromEnd, deepClone } from '@helpers';
+import {
+  flatten,
+  isEmpty,
+  error,
+  isArray,
+  keyBy,
+  isFunction,
+  takeListFromEnd,
+  detectIsTestEnvironment,
+} from '@helpers';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR, EMPTY_NODE } from '../constants';
 
 
@@ -33,6 +43,10 @@ class Fiber<N = NativeElement> {
   public alternate: Fiber<N>;
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
+  public hook = {
+    idx: 0,
+    values: [],
+  };
   public link: N = null;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -41,9 +55,10 @@ class Fiber<N = NativeElement> {
     this.prevSibling = options.prevSibling || null;
     this.nextSibling = options.nextSibling || null;
     this.alternate = options.alternate || null;
-    this.link = options.link || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
+    this.hook = options.hook || this.hook;
+    this.link = options.link || null;
   }
 }
 
@@ -72,6 +87,8 @@ function performUnitOfWork(fiber: Fiber) {
   let nextFiber = fiber;
 
   while (true) {
+    nextFiber.hook.idx = 0;
+
     if (isDeepWalking) {
       const hasChild = hasChildrenProp(element) && Boolean(element.children[0]);
 
@@ -95,6 +112,10 @@ function performUnitOfWork(fiber: Fiber) {
 
   function performChild() {
     const alternate = getChildAlternate(nextFiber);
+    const hook = alternate
+      ? alternate.hook
+      : { idx: 0, values: [] };
+    currentHookHelper.set(hook);
 
     pertformInstance(element, 0);
 
@@ -104,7 +125,7 @@ function performUnitOfWork(fiber: Fiber) {
       performAlternate(alternate);
     }
 
-    const fiber = createFiberFromElement(element, alternate);
+    const fiber = createFiberFromElement(element, alternate, hook);
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
@@ -129,6 +150,10 @@ function performUnitOfWork(fiber: Fiber) {
       isDeepWalking = true;
 
       const alternate = getNextSiblingAlternate(nextFiber);
+      const hook = alternate
+        ? alternate.hook
+        : { idx: 0, values: [] };
+      currentHookHelper.set(hook);
 
       pertformInstance(parent, childrenIdx);
 
@@ -136,7 +161,7 @@ function performUnitOfWork(fiber: Fiber) {
         performAlternate(alternate);
       }
 
-      const fiber = createFiberFromElement(element, alternate);
+      const fiber = createFiberFromElement(element, alternate, hook);
 
       fiber.prevSibling = nextFiber;
       nextFiber.nextSibling = fiber;
@@ -187,7 +212,7 @@ function performUnitOfWork(fiber: Fiber) {
         const hasKeys = keys.length > 0;
         const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
-        if (!hasAnyKeys) {
+        if (!hasAnyKeys && !detectIsTestEnvironment()) {
           error(UNIQ_KEY_ERROR);
         }
 
@@ -223,7 +248,9 @@ function performUnitOfWork(fiber: Fiber) {
 
             for (const nextKey of nextKeys) {
               if (usedKeyMap[nextKey]) {
-                error(IS_ALREADY_USED_KEY_ERROR);
+                if (!detectIsTestEnvironment()) {
+                  error(IS_ALREADY_USED_KEY_ERROR);
+                }
               }
 
               usedKeyMap[nextKey] = true;
@@ -385,7 +412,7 @@ function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, insta
     : 0;
 }
 
-function createFiberFromElement(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
+function createFiberFromElement(instance: VirtualNode | ComponentFactory, alternate: Fiber, hook) {
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
@@ -395,6 +422,7 @@ function createFiberFromElement(instance: VirtualNode | ComponentFactory, altern
   const fiber = new Fiber({
     instance,
     alternate: alternate || null,
+    hook,
     link: isUpdate ? alternate.link : null,
     effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
   });

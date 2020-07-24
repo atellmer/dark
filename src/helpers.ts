@@ -82,6 +82,10 @@ function takeListFromEnd(source: Array<any>, count: number) {
   return [...source].splice(-count);
 }
 
+function detectIsTestEnvironment() {
+  return process.env.NODE_ENV === 'test';
+}
+
 export {
   isFunction,
   isUndefined,
@@ -99,4 +103,5 @@ export {
   getTime,
   keyBy,
   takeListFromEnd,
+  detectIsTestEnvironment,
 };
