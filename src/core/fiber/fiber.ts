@@ -268,7 +268,13 @@ function performUnitOfWork(fiber: Fiber) {
 function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber) {
   if (detectIsComponentFactory(instance)) {
     componentFiberHelper.set(getNextFiber);
-    instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
+
+    try {
+      instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
+    } catch (err) {
+      instance.children = [];
+      error(err);
+    }
   }
 
   if (hasChildrenProp(instance)) {

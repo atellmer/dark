@@ -1,4 +1,4 @@
-import { isFunction } from '@helpers';
+import { isFunction, error } from '@helpers';
 import { eventsHelper } from '@core/scope';
 
 
@@ -22,7 +22,12 @@ function delegateEvent(options: DelegateEventOptions) {
   if (!handlerMap) {
     const rootHandler = (e: Event) => {
       const fireEvent =  eventsStore.get(eventName).get(e.target);
-      isFunction(fireEvent) && fireEvent(e);
+
+      try {
+        isFunction(fireEvent) && fireEvent(e);
+      } catch (err) {
+        error(err);
+      }
     };
 
     eventsStore.set(eventName, new WeakMap([[target, handler]]));
