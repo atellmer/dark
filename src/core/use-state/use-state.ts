@@ -5,24 +5,26 @@ import {
   currentHookHelper,
 } from '@core/scope';
 import { useUpdate } from '../use-update';
-import { isUndefined } from '@helpers';
+import { isUndefined, isFunction } from '@helpers';
 
 
-function useState<T = unknown>(initialValue: T): [T, (value: T) => void] {
+type Value<T> = T | ((prevValue: T) => T);
+
+function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] {
   const rootId = getRootId();
   const getComponentFiber = componentFiberHelper.get();
   const hook = currentHookHelper.get();
   const { idx, values } = hook;
   const [update] = useUpdate();
   const value = !isUndefined(values[idx]) ? values[idx] : initialValue;
-  const setState = (value: T) => {
+  const setState = (value: Value<T>) => {
     effectStoreHelper.set(rootId);
 
     const fiber = getComponentFiber();
     const hook = fiber.hook;
     const { values } = hook;
 
-    values[idx] = value;
+    values[idx] = isFunction(value) ? value(values[idx] || initialValue) : value;
     update();
   }
 

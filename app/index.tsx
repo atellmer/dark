@@ -68,25 +68,16 @@ const List = createComponent(({ items }) => {
 }, { displayName: 'List' });
 
 const Counter = createComponent(() => {
-  const [counter1, setCounter1] = useState(0);
-  const [counter2, setCounter2] = useState(0);
+  const [counter, setCounter] = useState(0);
 
-  const handleClick1 = () => {
-    setCounter1(counter1 + 1);
+  const handleClick = () => {
+    setCounter(counter => counter + 1);
   };
-
-  const handleClick2 = () => {
-    setCounter2(counter2 + 1);
-  };
-
-  // console.log('render 1', counter1);
-  // console.log('render 2', counter2);
+  console.log('render', counter); 
 
   return [
-    Text(`counter1: ${counter1}`),
-    <button onClick={handleClick1}>Click me</button>,
-    Text(`counter2: ${counter2}`),
-    <button onClick={handleClick2}>Click me</button>,
+    Text(`counter: ${counter}`),
+    <button onClick={handleClick}>Click me</button>,
   ]
 }, { displayName: 'Counter' });
 
