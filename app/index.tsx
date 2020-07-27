@@ -6,6 +6,7 @@ import {
   Fragment,
   useUpdate,
   useState,
+  useCallback,
 } from '../src/core';
 import { render } from '../src/platform/browser';
 
@@ -70,10 +71,11 @@ const List = createComponent(({ items }) => {
 const Counter = createComponent(() => {
   const [counter, setCounter] = useState(0);
 
-  const handleClick = () => {
-    setCounter(counter => counter + 1);
-  };
-  console.log('render', counter); 
+  const handleClick = useCallback(() => {
+    setCounter(counter + 1);
+  }, [counter]);
+
+  console.log('render', counter);
 
   return [
     Text(`counter: ${counter}`),
