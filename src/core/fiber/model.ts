@@ -11,3 +11,8 @@ export type WorkLoopOptions = {
   deadline?: IdleDeadline;
   onRender?: () => void;
 };
+
+export type Hook = {
+  idx: number;
+  values: Array<any>;
+};

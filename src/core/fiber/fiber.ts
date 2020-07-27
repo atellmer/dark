@@ -1,4 +1,4 @@
-import { EffectTag, NativeElement, WorkLoopOptions } from './model';
+import { EffectTag, NativeElement, WorkLoopOptions, Hook } from './model';
 import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import {
   getRootId,
@@ -43,11 +43,8 @@ class Fiber<N = NativeElement> {
   public alternate: Fiber<N>;
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
-  public hook = {
-    idx: 0,
-    values: [],
-  };
-  public link: N = null;
+  public hook: Hook;
+  public link: N;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || null;
@@ -57,7 +54,7 @@ class Fiber<N = NativeElement> {
     this.alternate = options.alternate || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
-    this.hook = options.hook || this.hook;
+    this.hook = options.hook || createHook();
     this.link = options.link || null;
   }
 }
@@ -111,21 +108,21 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performChild() {
-    const alternate = getChildAlternate(nextFiber);
-    const hook = alternate
-      ? alternate.hook
-      : { idx: 0, values: [] };
-    currentHookHelper.set(hook);
-
-    pertformInstance(element, 0);
 
     fiberMountHelper.jumpToChild();
+
+    const alternate = getChildAlternate(nextFiber);
+    const hook = alternate ? alternate.hook : createHook();
+
+    currentHookHelper.set(hook);
+    pertformInstance(element, 0);
+
 
     if (alternate) {
       performAlternate(alternate);
     }
 
-    const fiber = createFiberFromElement(element, alternate, hook);
+    const fiber = createFiberFromInstance(element, alternate, hook);
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
@@ -150,18 +147,16 @@ function performUnitOfWork(fiber: Fiber) {
       isDeepWalking = true;
 
       const alternate = getNextSiblingAlternate(nextFiber);
-      const hook = alternate
-        ? alternate.hook
-        : { idx: 0, values: [] };
-      currentHookHelper.set(hook);
+      const hook = alternate ? alternate.hook : createHook();
 
+      currentHookHelper.set(hook);
       pertformInstance(parent, childrenIdx);
 
       if (alternate) {
         performAlternate(alternate);
       }
 
-      const fiber = createFiberFromElement(element, alternate, hook);
+      const fiber = createFiberFromInstance(element, alternate, hook);
 
       fiber.prevSibling = nextFiber;
       nextFiber.nextSibling = fiber;
@@ -412,7 +407,7 @@ function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, insta
     : 0;
 }
 
-function createFiberFromElement(instance: VirtualNode | ComponentFactory, alternate: Fiber, hook) {
+function createFiberFromInstance(instance: VirtualNode | ComponentFactory, alternate: Fiber, hook: Hook) {
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
@@ -515,8 +510,16 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   }
 }
 
+function createHook(): Hook {
+  return {
+    idx: 0,
+    values: [],
+  };
+}
+
 export {
   Fiber,
   workLoop,
   mountInstance,
+  createHook,
 };

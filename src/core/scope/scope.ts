@@ -1,4 +1,4 @@
-import { Fiber } from '../fiber';
+import { Fiber, Hook } from '../fiber';
 
 
 class Store {
@@ -12,10 +12,7 @@ class Store {
     level: 0,
     navigation: {},
   };
-  public currentHook = {
-    idx: 0,
-    values: [],
-  };
+  public currentHook: Hook = null;
   public getComponentFiber: () => Fiber = () => null;
 }
 
