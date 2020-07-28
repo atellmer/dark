@@ -18,11 +18,11 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@helpers": ["src/helpers"],
-      "@core": ["src/core/index"],
-      "@core/*":["src/core/*"],
-      "@platform": ["src/platform/index"],
-      "@platform/*":["src/plarform/*"]
+      "@helpers": ["./src/helpers"],
+      "@core": ["./src/core/index"],
+      "@core/*":["./src/core/*"],
+      "@platform": ["./src/platform/index"],
+      "@platform/*":["./src/plarform/*"]
     }
 	},
 	"include": [

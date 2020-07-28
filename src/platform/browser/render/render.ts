@@ -27,7 +27,7 @@ const renderRequests: Array<(deadline: IdleDeadline) => void> = [];
 
 function render(element: DarkElement, container: Element, onRender?: () => void) {
   if (!(container instanceof Element)) {
-    throw new Error(`render expects to receive container as HTMLElement!`);
+    throw new Error(`render expects to receive container as Element!`);
   }
 
   const isMounted = !isUndefined(roots.get(container));

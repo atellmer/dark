@@ -8,12 +8,12 @@ import {
   useState,
   useCallback,
 } from '../src/core';
-import { render } from '../src/platform/browser';
+import { render, createPortal, Portal } from '../src/platform/browser';
 
 
 const div = (props = {}) => View({ as: 'div', ...props });
 const host = document.getElementById('root');
-const host2 = document.getElementById('root2');
+const portal = document.getElementById('root2');
 
 let nextId = 0;
 
@@ -109,8 +109,10 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
       <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
-    <Counter />,
-    <Counter />,
+    <Portal container={portal}>
+      <Counter />
+      <Counter />
+    </Portal>,
     <List items={items} />,
   ]
 }, { displayName: 'App' });

@@ -3,7 +3,6 @@ import { eventsHelper } from '@core/scope';
 
 
 type DelegateEventOptions = {
-  root: Element,
   target: Element,
   eventName: string,
   handler: (e: Event) => void,
@@ -11,7 +10,6 @@ type DelegateEventOptions = {
 
 function delegateEvent(options: DelegateEventOptions) {
   const {
-    root,
     target,
     eventName,
     handler,
@@ -31,7 +29,7 @@ function delegateEvent(options: DelegateEventOptions) {
     };
 
     eventsStore.set(eventName, new WeakMap([[target, handler]]));
-    root.addEventListener(eventName, rootHandler);
+    document.addEventListener(eventName, rootHandler);
   } else {
     handlerMap.set(target, handler);
   }

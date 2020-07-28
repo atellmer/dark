@@ -12,12 +12,11 @@ import {
   getAttribute,
   detectIsCommentVirtualNode,
 } from '@core/view';
-import { isFunction, isUndefined, isEmpty, takeListFromEnd } from '@helpers';
+import { isFunction, isUndefined } from '@helpers';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { ATTR_KEY, EMPTY_NODE } from '@core/constants';
-import { rootLinkHelper, fromHookUpdateHelper } from '@core/scope';
-import { detectIsComponentFactory } from '@core/component';
-import { platform } from '@core/global';
+import { fromHookUpdateHelper } from '@core/scope';
+import { detectIsPortal, getPortalContainer } from '../portal';
 
 
 const attrBlackList = [ATTR_KEY];
@@ -67,7 +66,6 @@ function addAttributes(element: Element, vNode: VirtualNode) {
     if (isFunction(attrValue)) {
       if (detectIsEvent(attrName)) {
         delegateEvent({
-          root: rootLinkHelper.get() as Element,
           target: element,
           handler: attrValue,
           eventName: getEventName(attrName),
@@ -93,7 +91,6 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
       if (isFunction(attrValue)) {
         if (detectIsEvent(attrName) && attrValue !== nextAttrValue) {
           delegateEvent({
-            root: rootLinkHelper.get() as Element,
             target: element,
             handler: nextAttrValue,
             eventName: getEventName(attrName),
@@ -142,7 +139,11 @@ function mutateDom(fiber: Fiber<Element>) {
   const fromHookUpdate = fromHookUpdateHelper.get();
 
   while (!linkParentFiber.link) {
-    linkParentFiber = linkParentFiber.parent;
+    if (detectIsPortal(linkParentFiber.instance)) {
+      linkParentFiber.link = getPortalContainer(linkParentFiber.instance);
+    } else {
+      linkParentFiber = linkParentFiber.parent;
+    }
   }
 
   const parent = linkParentFiber.link;
@@ -201,7 +202,7 @@ function mutateDom(fiber: Fiber<Element>) {
 function canTakeNodeFromCache(fiber: Fiber, parentFiber: Fiber) {
   let nextFiber = fiber;
 
-  while(nextFiber) {
+  while (nextFiber) {
     if (nextFiber.alternate) {
       const alternate = nextFiber.alternate;
       const isEmptyNode = detectIsCommentVirtualNode(alternate.instance) && alternate.instance.value === EMPTY_NODE;

@@ -8,7 +8,7 @@ import {
   isEmpty,
 } from '@helpers';
 import { EMPTY_NODE, ATTR_KEY } from '../constants';
-import { ElementKey } from '../shared/model';
+import { DarkElementKey } from '../shared/model';
 
 
 class VirtualNode {
@@ -138,7 +138,7 @@ function createElement(tag: string | Function, props: any, ...children: Array<an
   return null;
 }
 
-function getVirtualNodeKey(vNode: TagVirtualNode): ElementKey | null {
+function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
   const key = vNode && vNode.attrs[ATTR_KEY];
 
   return !isEmpty(key) ? key : null;

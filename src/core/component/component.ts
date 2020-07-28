@@ -1,4 +1,4 @@
-import { DarkElementKey } from '@core/shared';
+import { DarkElementKey } from '@core/shared/model';
 import {
   CreateElement,
   ComponentOptions,
@@ -30,12 +30,12 @@ class ComponentFactory<P extends StandardComponentProps = any> {
   }
 }
 
-function createComponent<P extends StandardComponentProps>(
+function createComponent<P>(
   createElement: CreateElement<P>, options: ComponentOptions<P> = {}) {
   const computedOptions = {...defaultOptions, ...options };
   const { defaultProps, displayName, token } = computedOptions;
 
-  return (props = {} as P): ComponentFactory<P> => {
+  return (props = {} as P & StandardComponentProps): ComponentFactory<P> => {
     const computedProps = { ...defaultProps, ...props } as P;
     const factory = new ComponentFactory({
       token,

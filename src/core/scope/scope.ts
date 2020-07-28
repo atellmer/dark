@@ -68,10 +68,6 @@ const eventsHelper = {
   get: () => storeHelper.get().events,
 };
 
-const rootLinkHelper = {
-  get: () => storeHelper.get().wipRoot.link,
-};
-
 const deletionsHelper = {
   get: () => storeHelper.get().deletions,
   set: (deletions: Array<Fiber>) => storeHelper.get().deletions = deletions,
@@ -119,7 +115,6 @@ export {
   componentFiberHelper,
   fromHookUpdateHelper,
   eventsHelper,
-  rootLinkHelper,
   deletionsHelper,
   fiberMountHelper,
   currentHookHelper,

@@ -1,5 +1,5 @@
 import { ComponentFactory } from './component';
-import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
+import { DarkElementKey, DarkElement } from '../shared/model';
 
 
 export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
@@ -15,6 +15,6 @@ export type StandardComponentProps = Readonly<{
 
 export type Component<T = any> = (props: T) => ComponentFactory;
 
-export type ComponentFactoryReturnType = DarkElementInstance | Array<ComponentFactoryReturnType>;
+export type ComponentFactoryReturnType = DarkElement;
 
-export type CreateElement<P extends StandardComponentProps> = (props: P) => ComponentFactoryReturnType;
+export type CreateElement<P extends StandardComponentProps> = (props: P & StandardComponentProps) => ComponentFactoryReturnType;

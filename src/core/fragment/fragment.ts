@@ -1,13 +1,13 @@
-import { createComponent, detectIsComponentFactory, ComponentFactory } from '../component';
-import { detectIsVirtualNode, setAttribute, VirtualNode } from '../view';
+import { createComponent, detectIsComponentFactory } from '../component';
+import { detectIsVirtualNode, setAttribute } from '../view';
 import { ATTR_KEY } from '../constants';
 import { isEmpty, isArray, isFunction } from '@helpers';
-import { ElementKey } from '../shared/model';
+import { DarkElementKey, DarkElement } from '../shared/model';
 
 
 const $$fragment = Symbol('fragment');
 
-function setKey(element: ComponentFactory | VirtualNode, key: ElementKey) {
+function setKey(element: DarkElement, key: DarkElementKey) {
 	if (detectIsComponentFactory(element)) {
 		element.props[ATTR_KEY] = key;
 	} else if (detectIsVirtualNode(element)) {
