@@ -135,50 +135,41 @@ function resetNodeCache() {
 }
 
 function mutateDom(fiber: Fiber<Element>) {
-  let linkParentFiber = fiber.parent;
   const fromHookUpdate = fromHookUpdateHelper.get();
-
-  while (!linkParentFiber.link) {
-    if (detectIsPortal(linkParentFiber.instance)) {
-      linkParentFiber.link = getPortalContainer(linkParentFiber.instance);
-    } else {
-      linkParentFiber = linkParentFiber.parent;
-    }
-  }
-
-  const parent = linkParentFiber.link;
+  const nextFiber = getFiberWithLink(fiber);
+  const parentLink = nextFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const cachedNode = nodeCacheMap.get(parent);
-    const node = linkParentFiber.alternate
-      ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, linkParentFiber)
+    const cachedNode = nodeCacheMap.get(parentLink);
+    const node = nextFiber.alternate
+      ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
           ? cachedNode
-          : getNodeOnTheRight(fiber, parent)
+          : getNodeOnTheRight(fiber, parentLink)
       : fromHookUpdate
-        ? getNodeOnTheRight(fiber, parent)
+        ? getNodeOnTheRight(fiber, parentLink)
         : null;
 
-    nodeCacheMap.set(parent, node);
+    nodeCacheMap.set(parentLink, node);
 
     if (node) {
-      parent.insertBefore(fiber.link, node);
-      if (isEndOfInsertion(fiber, linkParentFiber)) {
-        nodeCacheMap.delete(parent);
+      parentLink.insertBefore(fiber.link, node);
+      if (isEndOfInsertion(fiber, nextFiber)) {
+        nodeCacheMap.delete(parentLink);
       }
     } else {
-      let fragment = fragmentMap.get(parent);
+      let fragment = fragmentMap.get(parentLink);
 
       if (isUndefined(fragment)) {
         fragment = document.createDocumentFragment();
-        fragmentMap.set(parent, fragment);
+        fragmentMap.set(parentLink, fragment);
       }
 
       fragment.appendChild(fiber.link);
 
       if (!fiber.nextSibling) {
-        parent.appendChild(fragment);
-        fragmentMap.delete(parent);
-        nodeCacheMap.delete(parent);
+        parentLink.appendChild(fragment);
+        fragmentMap.delete(parentLink);
+        nodeCacheMap.delete(parentLink);
       }
     }
 
@@ -190,13 +181,31 @@ function mutateDom(fiber: Fiber<Element>) {
 
     updateDom(fiber.link, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
-
     commitDeletion({
       fiber,
-      parent,
+      parent: parentLink,
       onBeforeCommit: fiber => { },
     });
   }
+}
+
+function getFiberWithLink(fiber: Fiber<Element>): Fiber<Element> {
+
+  if (detectIsPortal(fiber.instance)) {
+    return fiber;
+  }
+
+  let nextFiber = fiber.parent;
+
+  while (!nextFiber.link) {
+    if (detectIsPortal(nextFiber.instance)) {
+      nextFiber.link = getPortalContainer(nextFiber.instance);
+    } else {
+      nextFiber = nextFiber.parent;
+    }
+  }
+
+  return nextFiber;
 }
 
 function canTakeNodeFromCache(fiber: Fiber, parentFiber: Fiber) {
@@ -280,6 +289,11 @@ function commitDeletion(options: CommitDeletionOptions) {
   } = options;
 
   if (!fiber) return; // empty fiber without link for inserting
+
+  if (detectIsPortal(fiber.instance)) {
+    fiber.link.innerHTML = '';
+    return;
+  }
 
   if (fiber.link) {
     onBeforeCommit(fiber);

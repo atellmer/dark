@@ -8,7 +8,7 @@ import {
   useState,
   useCallback,
 } from '../src/core';
-import { render, createPortal, Portal } from '../src/platform/browser';
+import { render, createPortal } from '../src/platform/browser';
 
 
 const div = (props = {}) => View({ as: 'div', ...props });
@@ -92,7 +92,7 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
     render(App({ items: [...items, ...generateItems(5)] }), host);
   };
   const handleAddItemsToStart = () => {
-    render(App({ items: [...generateItems(1000), ...items] }), host);
+    render(App({ items: [...generateItems(1), ...items] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -109,10 +109,9 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
       <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
-    <Portal container={portal}>
-      <Counter />
-      <Counter />
-    </Portal>,
+    items.length >= 9 && createPortal([
+      <Counter />,
+    ], portal),
     <List items={items} />,
   ]
 }, { displayName: 'App' });

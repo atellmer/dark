@@ -1,32 +1,30 @@
 import { createComponent, detectIsComponentFactory } from '@core/component';
 import { DarkElement } from '@core/shared/model';
+import { error } from '@helpers';
 
 
 const $$portal = Symbol('portal');
-
-const Wrapper = createComponent(({ slot }) => slot, { token: $$portal });
-
-type PortalProps = {
-  container: Element;
-};
-
-const Portal = createComponent<PortalProps>(({ slot, container }) => {
-  return Wrapper({
-    [$$portal]: container,
-    slot,
-  });
-});
+const Portal = createComponent(({ slot }) => slot, { token: $$portal });
 
 function createPortal(slot: DarkElement, container: Element) {
-  return Portal({ container, slot });
+
+  if (!(container instanceof Element)) {
+    error(`[Dark]: createPortal receives only Element as container!`);
+    return null;
+  }
+
+  if (!container[$$portal]) {
+    container.innerHTML = '';
+    container[$$portal] = true;
+  }
+
+  return Portal({ [$$portal]: container, slot });
 }
 
 const detectIsPortal = (factory: any): boolean => detectIsComponentFactory(factory) && factory.token === $$portal;
-
 const getPortalContainer = (factory: any): Element => detectIsPortal(factory) ? factory.props[$$portal] : null;
 
 export {
-  Portal,
   createPortal,
   detectIsPortal,
   getPortalContainer,

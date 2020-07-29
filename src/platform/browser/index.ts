@@ -1,2 +1,2 @@
 export { render } from './render';
-export { Portal, createPortal } from './portal';
+export { createPortal } from './portal';
