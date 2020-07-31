@@ -84,6 +84,18 @@ const Counter = createComponent(() => {
 }, { displayName: 'Counter' });
 
 
+const Wrapper = createComponent(() => {
+  return [
+    <div>
+      {
+        createPortal([
+          <Counter />,
+        ], portal)
+      }
+    </div>,
+  ]
+})
+
 const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
   const handleCreate = () => {
     render(App({ items: [...generateItems(10)] }), host);
@@ -109,9 +121,7 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
       <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
-    items.length >= 9 && createPortal([
-      <Counter />,
-    ], portal),
+    items.length >= 9 && <Wrapper />,
     <List items={items} />,
   ]
 }, { displayName: 'App' });

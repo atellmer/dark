@@ -273,6 +273,45 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   return null;
 }
 
+function removePortals(fiber: Fiber<Element>) {
+  const containers: Array<Element> = [];
+  let isRootPortal = false;
+  let isDeepWalking = true;
+  let nextFiber = fiber;
+
+  while (nextFiber) {
+    if (detectIsPortal(nextFiber.instance)) {
+      containers.push(nextFiber.link);
+
+      if (nextFiber === fiber) {
+        isRootPortal = true;
+      }
+    }
+
+    if (nextFiber.child && isDeepWalking) {
+      nextFiber = nextFiber.child;
+    } else if (nextFiber.nextSibling) {
+      isDeepWalking = true;
+      nextFiber = nextFiber.nextSibling;
+    } else if (nextFiber.parent) {
+      isDeepWalking = false;
+      nextFiber = nextFiber.parent;
+    } else {
+      nextFiber = null;
+    }
+
+    if (nextFiber === fiber) {
+      nextFiber = null;
+    }
+  }
+
+  for (const container of containers) {
+    container.innerHTML = '';
+  }
+
+  return isRootPortal;
+}
+
 type CommitDeletionOptions = {
   fiber: Fiber<Element>;
   parent: Element;
@@ -290,10 +329,9 @@ function commitDeletion(options: CommitDeletionOptions) {
 
   if (!fiber) return; // empty fiber without link for inserting
 
-  if (detectIsPortal(fiber.instance)) {
-    fiber.link.innerHTML = '';
-    return;
-  }
+  const itWasPortal = removePortals(fiber);
+
+  if (itWasPortal) return;
 
   if (fiber.link) {
     onBeforeCommit(fiber);
@@ -316,8 +354,6 @@ function commitDeletion(options: CommitDeletionOptions) {
     });
   }
 }
-
-
 
 export {
   createDomLink,
