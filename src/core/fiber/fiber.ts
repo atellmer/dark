@@ -20,7 +20,6 @@ import {
   getVirtualNodeKey,
   TagVirtualNode,
   detectIsVirtualNode,
-  detectIsCommentVirtualNode,
 } from '../view';
 import {
   flatten,
@@ -32,6 +31,7 @@ import {
   takeListFromEnd,
   detectIsTestEnvironment,
 } from '@helpers';
+import { detectIsMemo, detectNeedUpdateMemo } from '../use-memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR, EMPTY_NODE } from '../constants';
 
 
@@ -90,7 +90,9 @@ function performUnitOfWork(fiber: Fiber) {
       const hasChild = hasChildrenProp(element) && Boolean(element.children[0]);
 
       if (hasChild) {
-        return performChild();
+        const childFiber = performChild();
+
+        if (childFiber) return childFiber;
       } else {
         const siblingFiber = performSibling();
 
@@ -108,18 +110,27 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performChild() {
-
     fiberMountHelper.jumpToChild();
 
     const alternate = getChildAlternate(nextFiber);
     const hook = alternate ? alternate.hook : createHook();
+    const isMemo = alternate && detectIsMemo(nextFiber.instance);
+    const parentSkiped = alternate && nextFiber.parent && nextFiber.parent.effectTag === EffectTag.SKIP;
+    const skip = isMemo
+      ? !detectNeedUpdateMemo(nextFiber.instance as ComponentFactory)
+      : parentSkiped;
+
+    if (isMemo) {
+      nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
+    }
 
     currentHookHelper.set(hook);
-    pertformInstance(element, 0);
+    pertformInstance(element, 0, skip, alternate);
 
-
-    if (alternate) {
-      performAlternate(alternate);
+    if (!skip) {
+      if (alternate) {
+        performAlternate(alternate);
+      }
     }
 
     const fiber = createFiberFromInstance(element, alternate, hook);
@@ -132,11 +143,14 @@ function performUnitOfWork(fiber: Fiber) {
       fiber.effectTag = EffectTag.PLACEMENT;
     }
 
+    if (fiber.parent.effectTag === EffectTag.SKIP) {
+      fiber.effectTag = EffectTag.SKIP;
+    }
+
     return nextFiber;
   }
 
   function performSibling() {
-
     fiberMountHelper.jumpToSibling();
 
     const parent = nextFiber.parent.instance;
@@ -148,12 +162,23 @@ function performUnitOfWork(fiber: Fiber) {
 
       const alternate = getNextSiblingAlternate(nextFiber);
       const hook = alternate ? alternate.hook : createHook();
+      const isMemo = alternate && detectIsMemo(nextFiber.instance);
+      const parentSkiped = alternate && nextFiber.parent && nextFiber.parent.effectTag === EffectTag.SKIP;
+      const skip = isMemo
+        ? !detectNeedUpdateMemo(nextFiber.instance as ComponentFactory)
+        : parentSkiped;
+
+      if (isMemo) {
+        nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
+      }
 
       currentHookHelper.set(hook);
-      pertformInstance(parent, childrenIdx);
+      pertformInstance(parent, childrenIdx, skip, alternate);
 
-      if (alternate) {
-        performAlternate(alternate);
+      if (!skip) {
+        if (alternate) {
+          performAlternate(alternate);
+        }
       }
 
       const fiber = createFiberFromInstance(element, alternate, hook);
@@ -167,6 +192,10 @@ function performUnitOfWork(fiber: Fiber) {
         fiber.effectTag = EffectTag.PLACEMENT;
       }
 
+      if (fiber.parent.effectTag === EffectTag.SKIP) {
+        fiber.effectTag = EffectTag.SKIP;
+      }
+
       return nextFiber;
     } else {
       fiberMountHelper.jumpToParent();
@@ -178,13 +207,13 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function pertformInstance(instance: DarkElementInstance, idx: number) {
+  function pertformInstance(instance: DarkElementInstance, idx: number, skip: boolean, alternate: Fiber) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-      element = mountInstance(element, () => nextFiber);
+      element = mountInstance(element, () => nextFiber, skip, alternate);
     }
   }
 
@@ -287,12 +316,16 @@ function performUnitOfWork(fiber: Fiber) {
   }
 }
 
-function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber) {
+function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber, skip: boolean, alternate: Fiber) {
   if (detectIsComponentFactory(instance)) {
     componentFiberHelper.set(getNextFiber);
 
     try {
-      instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
+      if (skip && alternate && hasChildrenProp(alternate.instance)) {
+        instance.children = alternate.instance.children;
+      } else {
+        instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
+      }
     } catch (err) {
       instance.children = [];
       error(err);
@@ -456,7 +489,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  //console.log('wip', wipFiber);
+  // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
     deletionsHelper.get().forEach(platform.applyCommits);
@@ -480,7 +513,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
 
   while (nextFiber) {
 
-    if (!isReturn) {
+    if (!isReturn && nextFiber.effectTag !== EffectTag.SKIP) {
       platform.applyCommits(nextFiber);
     }
 
@@ -505,7 +538,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   }
 
   if (!nextFiber) {
-    //console.log('complete!');
+    // console.log('complete!');
     onComplete();
   }
 }

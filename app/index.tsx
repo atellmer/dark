@@ -7,6 +7,7 @@ import {
   useUpdate,
   useState,
   useCallback,
+  useMemo,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
 
@@ -51,8 +52,6 @@ const List = createComponent(({ items }) => {
     render(App({ items: newItems }), host);
   };
 
-  console.log('render sibling');
-
   return (
     <table class='table'>
       <tbody>
@@ -68,17 +67,33 @@ const List = createComponent(({ items }) => {
   );
 }, { displayName: 'List' });
 
+const Some = createComponent(() => {
+
+  console.log('render');
+
+  return (
+    <div>
+      <div>{Math.random()}</div>
+    </div>
+  );
+}, { displayName: 'Some' })
+
 const Counter = createComponent(() => {
   const [counter, setCounter] = useState(0);
+  const memoized = useMemo(() => {
+    return [
+      <Some />
+    ];
+  }, [counter]);
 
   const handleClick = useCallback(() => {
     setCounter(counter + 1);
   }, [counter]);
 
-  console.log('render', counter);
-
   return [
     Text(`counter: ${counter}`),
+    <br />,
+    memoized,
     <button onClick={handleClick}>Click me</button>,
   ]
 }, { displayName: 'Counter' });
@@ -96,15 +111,15 @@ const Wrapper = createComponent(() => {
   ]
 })
 
-const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
+const App = createComponent<{items: Array<any>}>(({ items = [] }) => {
   const handleCreate = () => {
-    render(App({ items: [...generateItems(10)] }), host);
+    render(App({ items: [...generateItems(10000)] }), host);
   };
   const handleAddItemsToEnd = () => {
-    render(App({ items: [...items, ...generateItems(5)] }), host);
+    render(App({ items: [...items, ...generateItems(1000)] }), host);
   };
   const handleAddItemsToStart = () => {
-    render(App({ items: [...generateItems(1), ...items] }), host);
+    render(App({ items: [...generateItems(1000), ...items] }), host);
   };
   const handleSwap = () => {
     const newItems = [...items];
@@ -121,11 +136,12 @@ const App = createComponent<{items: Array<any>;}>(({ items = [] }) => {
       <button onClick={handleAddItemsToEnd}>add items to end</button>
       <button onClick={handleSwap}>swap</button>
     </div>,
-    items.length >= 9 && <Wrapper />,
+    // items.length >= 9 && <Wrapper />,
     <List items={items} />,
+    <Counter />
   ]
 }, { displayName: 'App' });
 
-let items = generateItems(10);
+const items = generateItems(10);
 
 render(App({ items }), host);

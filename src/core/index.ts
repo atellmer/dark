@@ -9,3 +9,4 @@ export { Fragment } from './fragment';
 export { useUpdate } from './use-update';
 export { useState } from './use-state';
 export { useCallback } from './use-callback';
+export { useMemo } from './use-memo';
