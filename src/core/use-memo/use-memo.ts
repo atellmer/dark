@@ -1,13 +1,13 @@
 import { createComponent, detectIsComponentFactory, ComponentFactory } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
 import { currentHookHelper } from '@core/scope';
-import { isUndefined, isArray, error } from '@helpers';
+import { isUndefined, isArray, isFunction } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
 
 
 const $$memo = Symbol('memo');
 
-const Memo = createComponent(({ slot }) => slot, { token: $$memo });
+const Memo = createComponent(({ slot, ...rest }) => slot, { token: $$memo });
 
 function wrap(value: any, isDepsDifferent: boolean) {
   if (detectIsTagVirtualNode(value) || detectIsComponentFactory(value)) {
@@ -67,9 +67,11 @@ function useMemo(fn: () => any, deps: Array<any> = []) {
 
 const detectIsMemo = (o: any) => detectIsComponentFactory(o) && o.token === $$memo;
 
-const detectNeedUpdateMemo = (factory: ComponentFactory): boolean => factory.props[$$memo]();
+const detectNeedUpdateMemo = (memoProps: any, props: any, nextProps: any): boolean => memoProps[$$memo](props, nextProps);
 
 export {
+  $$memo,
+  Memo,
   useMemo,
   detectIsMemo,
   detectNeedUpdateMemo,

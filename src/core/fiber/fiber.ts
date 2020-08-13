@@ -31,7 +31,8 @@ import {
   takeListFromEnd,
   detectIsTestEnvironment,
 } from '@helpers';
-import { detectIsMemo, detectNeedUpdateMemo } from '../use-memo';
+import { detectIsMemo, detectNeedUpdateMemo, $$memo } from '../use-memo';
+import { $$memoProps } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR, EMPTY_NODE } from '../constants';
 
 
@@ -116,8 +117,12 @@ function performUnitOfWork(fiber: Fiber) {
     const hook = alternate ? alternate.hook : createHook();
     const isMemo = alternate && detectIsMemo(nextFiber.instance);
     const parentSkiped = alternate && nextFiber.parent && nextFiber.parent.effectTag === EffectTag.SKIP;
+    const factory = nextFiber.instance as ComponentFactory;
+    const alternateFactory = alternate && alternate.instance as ComponentFactory;
+    const props = alternateFactory ? alternateFactory.props : {};
+    const nextProps = factory.props ? factory.props[$$memoProps] : {};
     const skip = isMemo
-      ? !detectNeedUpdateMemo(nextFiber.instance as ComponentFactory)
+      ? !detectNeedUpdateMemo(factory.props, props, nextProps)
       : parentSkiped;
 
     if (isMemo) {
@@ -164,8 +169,12 @@ function performUnitOfWork(fiber: Fiber) {
       const hook = alternate ? alternate.hook : createHook();
       const isMemo = alternate && detectIsMemo(nextFiber.instance);
       const parentSkiped = alternate && nextFiber.parent && nextFiber.parent.effectTag === EffectTag.SKIP;
+      const factory = nextFiber.instance as ComponentFactory;
+      const alternateFactory = alternate && alternate.instance as ComponentFactory;
+      const props = alternateFactory ? alternateFactory.props : {};
+      const nextProps = factory.props ? factory.props[$$memoProps] : {};
       const skip = isMemo
-        ? !detectNeedUpdateMemo(nextFiber.instance as ComponentFactory)
+        ? !detectNeedUpdateMemo(factory.props, props, nextProps)
         : parentSkiped;
 
       if (isMemo) {

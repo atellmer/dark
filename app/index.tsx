@@ -4,7 +4,7 @@ import {
   Text,
   createComponent,
   Fragment,
-  useUpdate,
+  memo,
   useState,
   useCallback,
   useMemo,
@@ -27,6 +27,9 @@ const generateItems = (count: number) => {
 };
 
 const ListItem = createComponent(({ id, slot, selected, onSelect, onRemove }) => {
+
+  //console.log('render', id);
+
   return (
     <tr class={selected ? 'selected' : ''}>
       <td class='cell'>{slot}</td>
@@ -38,28 +41,35 @@ const ListItem = createComponent(({ id, slot, selected, onSelect, onRemove }) =>
       </td>
     </tr>
   );
-})
+});
+
+const MemoListItem = memo(ListItem, (props, nextProps) => 
+  props.selected !== nextProps.selected
+  || props.onSelect !== nextProps.onSelect
+  || props.onRemove !== nextProps.onRemove);
 
 const List = createComponent(({ items }) => {
-  const handleRemove = (id: number) => {
-    const newItems = items.filter(x => x.id !== id);
+  const handleRemove = useCallback((id: number) => {
+    const idx = items.findIndex(x => x.id === id);
 
-    render(App({ items: newItems }), host);
-  };
-  const handleSelect = (id: number) => {
-    const newItems = items.map(x => x.id === id ? (x.selected = !x.selected, x) : x);
+    items.splice(idx, 1);
+    render(App({ items }), host);
+  }, [items]);
+  const handleSelect = useCallback((id: number) => {
+    const item = items.find(x => x.id === id);
 
-    render(App({ items: newItems }), host);
-  };
+    item.selected = !item.selected;
+    render(App({ items }), host);
+  }, [items]);
 
   return (
     <table class='table'>
       <tbody>
       {items.map((x => {
         return (
-          <ListItem key={x.id} selected={x.selected} id={x.id} onSelect={handleSelect} onRemove={handleRemove}>
+          <MemoListItem key={x.id} selected={x.selected} id={x.id} onSelect={handleSelect} onRemove={handleRemove}>
             {x.name}
-          </ListItem>
+          </MemoListItem>
         )
         }))
       }</tbody>
@@ -82,7 +92,7 @@ const Counter = createComponent(() => {
   const [counter, setCounter] = useState(0);
   const memoized = useMemo(() => {
     return [
-      <Some />
+      <Some />,
     ];
   }, [counter]);
 
@@ -138,10 +148,9 @@ const App = createComponent<{items: Array<any>}>(({ items = [] }) => {
     </div>,
     // items.length >= 9 && <Wrapper />,
     <List items={items} />,
-    <Counter />
   ]
 }, { displayName: 'App' });
 
-const items = generateItems(10);
+const items = generateItems(0);
 
 render(App({ items }), host);
