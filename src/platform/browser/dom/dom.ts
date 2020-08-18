@@ -144,7 +144,9 @@ function mutateDom(fiber: Fiber<Element>) {
     const node = nextFiber.alternate
       ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
           ? cachedNode
-          : getNodeOnTheRight(fiber, parentLink)
+          : cachedNode === null
+            ? null
+            : getNodeOnTheRight(fiber, parentLink)
       : fromHookUpdate
         ? getNodeOnTheRight(fiber, parentLink)
         : null;
@@ -166,7 +168,7 @@ function mutateDom(fiber: Fiber<Element>) {
 
       fragment.appendChild(fiber.link);
 
-      if (!fiber.nextSibling) {
+      if (!hasNextSibling(fiber, nextFiber)) {
         parentLink.appendChild(fragment);
         fragmentMap.delete(parentLink);
         nodeCacheMap.delete(parentLink);
@@ -187,6 +189,20 @@ function mutateDom(fiber: Fiber<Element>) {
       onBeforeCommit: fiber => { },
     });
   }
+}
+
+function hasNextSibling(fiber: Fiber, rootFilber: Fiber) {
+  let nextFiber = fiber;
+
+  while (!nextFiber.nextSibling) {
+    nextFiber = nextFiber.parent;
+
+    if (nextFiber === rootFilber || nextFiber.link) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function getFiberWithLink(fiber: Fiber<Element>): Fiber<Element> {

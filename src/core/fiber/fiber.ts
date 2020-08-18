@@ -1,4 +1,4 @@
-import { EffectTag, NativeElement, WorkLoopOptions, Hook } from './model';
+import { EffectTag, NativeElement, WorkLoopOptions, Hook, cloneTagMap } from './model';
 import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import {
   getRootId,
@@ -31,9 +31,9 @@ import {
   takeListFromEnd,
   detectIsTestEnvironment,
 } from '@helpers';
-import { detectIsMemo, detectNeedUpdateMemo, $$memo } from '../use-memo';
+import { detectIsMemo, detectNeedUpdateMemo } from '../use-memo';
 import { $$memoProps } from '../memo';
-import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR, EMPTY_NODE } from '../constants';
+import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 
 class Fiber<N = NativeElement> {
@@ -124,33 +124,35 @@ function performUnitOfWork(fiber: Fiber) {
     const skip = isMemo
       ? !detectNeedUpdateMemo(factory.props, props, nextProps)
       : parentSkiped;
+    let fiber = null;
 
     if (isMemo) {
       nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
     }
 
     currentHookHelper.set(hook);
-    pertformInstance(element, 0, skip, alternate);
 
-    if (!skip) {
+    if (skip) {
+      element = alternate.instance;
+      fiber = new Fiber({
+        ...alternate,
+        alternate,
+      });
+      alternate.alternate = null;
+    } else {
+      pertformInstance(element, 0);
+
       if (alternate) {
         performAlternate(alternate);
       }
+      fiber = createFiberFromInstance(element, alternate, hook);
     }
-
-    const fiber = createFiberFromInstance(element, alternate, hook);
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
     nextFiber = fiber;
 
-    if (fiber.parent.effectTag === EffectTag.PLACEMENT) {
-      fiber.effectTag = EffectTag.PLACEMENT;
-    }
-
-    if (fiber.parent.effectTag === EffectTag.SKIP) {
-      fiber.effectTag = EffectTag.SKIP;
-    }
+    cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
     return nextFiber;
   }
@@ -176,34 +178,37 @@ function performUnitOfWork(fiber: Fiber) {
       const skip = isMemo
         ? !detectNeedUpdateMemo(factory.props, props, nextProps)
         : parentSkiped;
+      let fiber = null;
 
       if (isMemo) {
         nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
       }
 
       currentHookHelper.set(hook);
-      pertformInstance(parent, childrenIdx, skip, alternate);
 
-      if (!skip) {
+      if (skip) {
+        element = alternate.instance;
+        fiber = new Fiber({
+          ...alternate,
+          alternate,
+        });
+        alternate.alternate = null;
+      } else {
+        pertformInstance(parent, childrenIdx);
+
         if (alternate) {
           performAlternate(alternate);
         }
-      }
 
-      const fiber = createFiberFromInstance(element, alternate, hook);
+        fiber = createFiberFromInstance(element, alternate, hook);
+      }
 
       fiber.prevSibling = nextFiber;
       nextFiber.nextSibling = fiber;
       fiber.parent = nextFiber.parent;
       nextFiber = fiber;
 
-      if (fiber.parent.effectTag === EffectTag.PLACEMENT) {
-        fiber.effectTag = EffectTag.PLACEMENT;
-      }
-
-      if (fiber.parent.effectTag === EffectTag.SKIP) {
-        fiber.effectTag = EffectTag.SKIP;
-      }
+      cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
       return nextFiber;
     } else {
@@ -216,13 +221,13 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function pertformInstance(instance: DarkElementInstance, idx: number, skip: boolean, alternate: Fiber) {
+  function pertformInstance(instance: DarkElementInstance, idx: number) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-      element = mountInstance(element, () => nextFiber, skip, alternate);
+      element = mountInstance(element, () => nextFiber);
     }
   }
 
@@ -325,16 +330,12 @@ function performUnitOfWork(fiber: Fiber) {
   }
 }
 
-function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber, skip: boolean, alternate: Fiber) {
+function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber) {
   if (detectIsComponentFactory(instance)) {
     componentFiberHelper.set(getNextFiber);
 
     try {
-      if (skip && alternate && hasChildrenProp(alternate.instance)) {
-        instance.children = alternate.instance.children;
-      } else {
-        instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
-      }
+      instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
     } catch (err) {
       instance.children = [];
       error(err);
@@ -455,7 +456,6 @@ function createFiberFromInstance(instance: VirtualNode | ComponentFactory, alter
   const isDifferentKeys = key !== nextKey;
   const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
   const isUpdate = isSameType && !isDifferentKeys;
-
   const fiber = new Fiber({
     instance,
     alternate: alternate || null,
