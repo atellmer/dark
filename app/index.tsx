@@ -98,15 +98,17 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
   });
 });
 
-const MemoHeader = memo(Header, (props, nextProps) => props !== nextProps);
+const MemoHeader = memo(Header);
 
-type ListProps = {
-  items: Array<{ id: number, name: string; select: boolean }>;
+type RowProps = {
+  id: number,
+  name: string;
+  selected: boolean;
   onRemove: Function;
   onHighlight: Function;
-}
+};
 
-const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), [id]);
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
 
@@ -123,10 +125,16 @@ const Row = createComponent(({ id, name, selected, onRemove, onHighlight }) => {
   );
 });
 
-const MemoRow = memo(Row, (props, nextProps) =>
+const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
   props.name !== nextProps.name ||
   props.selected !== nextProps.selected,
 );
+
+type ListProps = {
+  items: Array<{ id: number, name: string; select: boolean }>;
+  onRemove: Function;
+  onHighlight: Function;
+}
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   const renderRow = useMemo(() => (item) => {
@@ -151,7 +159,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   )
 });
 
-const MemoList = memo(List, (props, nextProps) => props !== nextProps);
+const MemoList = memo(List);
 
 const App = createComponent(() => {
   const handleCreate = useCallback(() => {

@@ -13,7 +13,7 @@ export type StandardComponentProps = Readonly<{
   slot?: DarkElement;
 } & Partial<{ [key: string]: any }>>;
 
-export type Component<T = any> = (props: T) => ComponentFactory;
+export type Component<T> = (props: T) => ComponentFactory;
 
 export type ComponentFactoryReturnType = DarkElement;
 
