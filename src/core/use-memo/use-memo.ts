@@ -1,4 +1,4 @@
-import { createComponent, detectIsComponentFactory, ComponentFactory } from '@core/component';
+import { createComponent, detectIsComponentFactory } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
 import { currentHookHelper } from '@core/scope';
 import { isUndefined, isArray, isFunction } from '@helpers';

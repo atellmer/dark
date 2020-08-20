@@ -25,7 +25,15 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
     const { values } = hook;
 
     values[idx] = isFunction(value) ? value(values[idx] || initialValue) : value;
-    update();
+
+    hook.asyncUpdate = true;
+
+    setImmediate(() => {
+      if (hook.asyncUpdate) {
+        hook.asyncUpdate = false;
+        update();
+      }
+    });
   }
 
   hook.idx++;

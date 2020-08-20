@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin')
 
 const { alias } = require('./webpack.alias');
 
@@ -8,7 +9,14 @@ const coreFileName = library.toLowerCase();
 const config = env => ({
   mode: 'production',
   optimization: {
-    minimize: !!env.production,
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true,
+        terserOptions: {},
+      }),
+    ],
   },
   resolve: {
     modules: ['node_modules'],

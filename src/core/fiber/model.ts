@@ -15,6 +15,7 @@ export type WorkLoopOptions = {
 export type Hook = {
   idx: number;
   values: Array<any>;
+  asyncUpdate: boolean;
 };
 
 export const cloneTagMap = {

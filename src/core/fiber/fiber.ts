@@ -556,6 +556,7 @@ function createHook(): Hook {
   return {
     idx: 0,
     values: [],
+    asyncUpdate: false,
   };
 }
 
