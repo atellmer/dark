@@ -17,6 +17,7 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   const { idx, values } = hook;
   const [update] = useUpdate();
   const value = !isUndefined(values[idx]) ? values[idx] : initialValue;
+
   const setState = (value: Value<T>) => {
     effectStoreHelper.set(rootId);
 
@@ -26,16 +27,17 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
 
     values[idx] = isFunction(value) ? value(values[idx] || initialValue) : value;
 
-    hook.asyncUpdate = true;
+    hook.updateScheduled = true;
 
     setImmediate(() => {
-      if (hook.asyncUpdate) {
-        hook.asyncUpdate = false;
-        update();
+      if (hook.updateScheduled) {
+        hook.updateScheduled = false;
+        hook.update();
       }
     });
   }
 
+  hook.update = update;
   hook.idx++;
 
   return [value, setState];

@@ -108,10 +108,9 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Row = createComponent<RowProps>(({ id, name, onRemove, onHighlight }) => {
-  const [selected, setSelected] = useState(false);
+const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), [id]);
-  const handleHighlight = useCallback(() => setSelected(selected => !selected), []);
+  const handleHighlight = useCallback(() => onHighlight(id), [id]);
 
   return (
     <tr class={selected && 'selected'}>
