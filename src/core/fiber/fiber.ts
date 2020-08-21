@@ -498,7 +498,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  // console.log('wip', wipFiber);
+  console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
     deletionsHelper.get().forEach(platform.applyCommits);

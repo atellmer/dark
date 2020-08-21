@@ -25,8 +25,7 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
     const hook = fiber.hook;
     const { values } = hook;
 
-    values[idx] = isFunction(value) ? value(values[idx] || initialValue) : value;
-
+    values[idx] = isFunction(value) ? value(values[idx]) : value;
     hook.updateScheduled = true;
 
     setImmediate(() => {
@@ -37,6 +36,7 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
     });
   }
 
+  values[idx] = value;
   hook.update = update;
   hook.idx++;
 
