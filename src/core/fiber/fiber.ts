@@ -140,12 +140,12 @@ function performUnitOfWork(fiber: Fiber) {
       });
       alternate.alternate = null;
     } else {
-      pertformInstance(element, 0);
+      pertformInstance(element, 0, alternate);
 
       if (alternate) {
         performAlternate(alternate);
       }
-      fiber = createFiberFromInstance(element, alternate, hook);
+      fiber = createFiberFromInstance(element, alternate);
     }
 
     nextFiber.child = fiber;
@@ -194,13 +194,13 @@ function performUnitOfWork(fiber: Fiber) {
         });
         alternate.alternate = null;
       } else {
-        pertformInstance(parent, childrenIdx);
+        pertformInstance(parent, childrenIdx, alternate);
 
         if (alternate) {
           performAlternate(alternate);
         }
 
-        fiber = createFiberFromInstance(element, alternate, hook);
+        fiber = createFiberFromInstance(element, alternate);
       }
 
       fiber.prevSibling = nextFiber;
@@ -221,12 +221,22 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function pertformInstance(instance: DarkElementInstance, idx: number) {
+  function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
+
+      const key = alternate && getElementKey(alternate.instance);
+      const nextKey = getElementKey(element);
+
+      if (key && nextKey && key !== nextKey) {
+        const alternateByKey = getAlternateByKey(nextKey, alternate.parent.child);
+
+        currentHookHelper.set(alternateByKey.hook);
+      }
+
       element = mountInstance(element, () => nextFiber);
     }
   }
@@ -450,7 +460,8 @@ function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, insta
     : 0;
 }
 
-function createFiberFromInstance(instance: VirtualNode | ComponentFactory, alternate: Fiber, hook: Hook) {
+function createFiberFromInstance(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
+  const hook = currentHookHelper.get();
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
@@ -498,7 +509,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  console.log('wip', wipFiber);
+  // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
     deletionsHelper.get().forEach(platform.applyCommits);
