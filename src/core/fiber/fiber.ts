@@ -80,7 +80,7 @@ function workLoop(options: WorkLoopOptions) {
 }
 
 function performUnitOfWork(fiber: Fiber) {
-  let isDeepWalking = true;
+  let isDeepWalking = fiberMountHelper.deepWalking.get();
   let element = fiber.instance;
   let nextFiber = fiber;
 
@@ -133,12 +133,11 @@ function performUnitOfWork(fiber: Fiber) {
     currentHookHelper.set(hook);
 
     if (skip) {
+      isDeepWalking = false;
+      fiberMountHelper.deepWalking.set(isDeepWalking);
       element = alternate.instance;
-      fiber = new Fiber({
-        ...alternate,
-        alternate,
-      });
-      alternate.alternate = null;
+      fiber = alternate;
+      fiber.alternate = alternate;
     } else {
       pertformInstance(element, 0, alternate);
 
@@ -166,6 +165,7 @@ function performUnitOfWork(fiber: Fiber) {
 
     if (hasSibling) {
       isDeepWalking = true;
+      fiberMountHelper.deepWalking.set(isDeepWalking);
 
       const alternate = getNextSiblingAlternate(nextFiber);
       const hook = alternate ? alternate.hook : createHook();
@@ -178,7 +178,7 @@ function performUnitOfWork(fiber: Fiber) {
       const skip = isMemo
         ? !detectNeedUpdateMemo(factory.props, props, nextProps)
         : parentSkiped;
-      let fiber = null;
+      let fiber: Fiber = null;
 
       if (isMemo) {
         nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
@@ -187,12 +187,11 @@ function performUnitOfWork(fiber: Fiber) {
       currentHookHelper.set(hook);
 
       if (skip) {
+        isDeepWalking = false;
+        fiberMountHelper.deepWalking.set(isDeepWalking);
         element = alternate.instance;
-        fiber = new Fiber({
-          ...alternate,
-          alternate,
-        });
-        alternate.alternate = null;
+        fiber = alternate;
+        fiber.alternate = alternate;
       } else {
         pertformInstance(parent, childrenIdx, alternate);
 
@@ -212,10 +211,11 @@ function performUnitOfWork(fiber: Fiber) {
 
       return nextFiber;
     } else {
-      fiberMountHelper.jumpToParent();
       isDeepWalking = false;
       nextFiber = nextFiber.parent;
       element = nextFiber.instance;
+      fiberMountHelper.jumpToParent();
+      fiberMountHelper.deepWalking.set(isDeepWalking);
     }
 
     return null;
@@ -228,13 +228,15 @@ function performUnitOfWork(fiber: Fiber) {
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
 
-      const key = alternate && getElementKey(alternate.instance);
-      const nextKey = getElementKey(element);
+      if (alternate) {
+        const key = getElementKey(alternate.instance);
+        const nextKey = getElementKey(element);
 
-      if (key && nextKey && key !== nextKey) {
-        const alternateByKey = getAlternateByKey(nextKey, alternate.parent.child);
+        if (key && nextKey && key !== nextKey) {
+          const alternateByKey = getAlternateByKey(nextKey, alternate.parent.child);
 
-        currentHookHelper.set(alternateByKey.hook);
+          currentHookHelper.set(alternateByKey.hook);
+        }
       }
 
       element = mountInstance(element, () => nextFiber);
@@ -509,7 +511,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  // console.log('wip', wipFiber);
+  //console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
     deletionsHelper.get().forEach(platform.applyCommits);
@@ -532,8 +534,25 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   const fromHookUpdate = fromHookUpdateHelper.get();
 
   while (nextFiber) {
+    const skip = nextFiber.effectTag === EffectTag.SKIP;
 
-    if (!isReturn && nextFiber.effectTag !== EffectTag.SKIP) {
+    if (skip) {
+      if (nextFiber.nextSibling) {
+        isDeepWalking = true;
+        isReturn = false;
+        nextFiber = nextFiber.nextSibling;
+      } else if (nextFiber.parent && nextFiber !== fiber) {
+        isDeepWalking = false;
+        isReturn = true;
+        nextFiber = nextFiber.parent;
+      } else {
+        nextFiber = null;
+      }
+
+      continue;
+    }
+
+    if (!isReturn) {
       platform.applyCommits(nextFiber);
     }
 

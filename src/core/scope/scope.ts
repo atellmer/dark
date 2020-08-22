@@ -11,6 +11,7 @@ class Store {
   public fiberMount = {
     level: 0,
     navigation: {},
+    isDeepWalking: true,
   };
   public currentHook: Hook = null;
   public getComponentFiber: () => Fiber = () => null;
@@ -78,6 +79,7 @@ const fiberMountHelper = {
     storeHelper.get().fiberMount = {
       level: 0,
       navigation: {},
+      isDeepWalking: true,
     };
   },
   getIndex: () => storeHelper.get().fiberMount.navigation[storeHelper.get().fiberMount.level],
@@ -103,6 +105,10 @@ const fiberMountHelper = {
     const idx = fiberMount.navigation[level] + 1;
 
     fiberMount.navigation[level] = idx;
+  },
+  deepWalking: {
+    get: () => storeHelper.get().fiberMount.isDeepWalking,
+    set: (value: boolean) => storeHelper.get().fiberMount.isDeepWalking = value,
   },
 };
 
