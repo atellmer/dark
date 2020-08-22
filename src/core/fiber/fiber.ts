@@ -25,7 +25,6 @@ import {
   flatten,
   isEmpty,
   error,
-  isArray,
   keyBy,
   isFunction,
   takeListFromEnd,
@@ -88,7 +87,7 @@ function performUnitOfWork(fiber: Fiber) {
     nextFiber.hook.idx = 0;
 
     if (isDeepWalking) {
-      const hasChild = hasChildrenProp(element) && Boolean(element.children[0]);
+      const hasChild = hasChildrenProp(element) && Boolean(element.children.length > 0);
 
       if (hasChild) {
         const childFiber = performChild();
@@ -115,36 +114,27 @@ function performUnitOfWork(fiber: Fiber) {
 
     const alternate = getChildAlternate(nextFiber);
     const hook = alternate ? alternate.hook : createHook();
-    const isMemo = alternate && detectIsMemo(nextFiber.instance);
-    const parentSkiped = alternate && nextFiber.parent && nextFiber.parent.effectTag === EffectTag.SKIP;
-    const factory = nextFiber.instance as ComponentFactory;
-    const alternateFactory = alternate && alternate.instance as ComponentFactory;
-    const props = alternateFactory ? alternateFactory.props : {};
-    const nextProps = factory.props ? factory.props[$$memoProps] : {};
-    const skip = isMemo
-      ? !detectNeedUpdateMemo(factory.props, props, nextProps)
-      : parentSkiped;
-    let fiber = null;
-
-    if (isMemo) {
-      nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
-    }
+    let fiber: Fiber = null;
 
     currentHookHelper.set(hook);
 
-    if (skip) {
-      isDeepWalking = false;
-      fiberMountHelper.deepWalking.set(isDeepWalking);
-      element = alternate.instance;
-      fiber = alternate;
-      fiber.alternate = alternate;
-    } else {
-      pertformInstance(element, 0, alternate);
+    pertformInstance(element, 0, alternate);
+    alternate && performAlternate(alternate);
+    fiber = createFiberFromInstance(element, alternate);
 
-      if (alternate) {
-        performAlternate(alternate);
+    if (alternate && detectIsMemo(fiber.instance)) {
+      const factory = element as ComponentFactory;
+      const alternateFactory = alternate.instance as ComponentFactory;
+      const props = alternateFactory.props[$$memoProps];
+      const nextProps = factory.props[$$memoProps];
+      const skip = !detectNeedUpdateMemo(factory.props, props, nextProps);
+
+      if (skip) {
+        isDeepWalking = false;
+        fiberMountHelper.deepWalking.set(isDeepWalking);
+        fiber = alternate;
+        fiber.effectTag = EffectTag.SKIP;
       }
-      fiber = createFiberFromInstance(element, alternate);
     }
 
     nextFiber.child = fiber;
@@ -169,37 +159,27 @@ function performUnitOfWork(fiber: Fiber) {
 
       const alternate = getNextSiblingAlternate(nextFiber);
       const hook = alternate ? alternate.hook : createHook();
-      const isMemo = alternate && detectIsMemo(nextFiber.instance);
-      const parentSkiped = alternate && nextFiber.parent && nextFiber.parent.effectTag === EffectTag.SKIP;
-      const factory = nextFiber.instance as ComponentFactory;
-      const alternateFactory = alternate && alternate.instance as ComponentFactory;
-      const props = alternateFactory ? alternateFactory.props : {};
-      const nextProps = factory.props ? factory.props[$$memoProps] : {};
-      const skip = isMemo
-        ? !detectNeedUpdateMemo(factory.props, props, nextProps)
-        : parentSkiped;
       let fiber: Fiber = null;
-
-      if (isMemo) {
-        nextFiber.effectTag = skip ? EffectTag.SKIP : EffectTag.UPDATE;
-      }
 
       currentHookHelper.set(hook);
 
-      if (skip) {
-        isDeepWalking = false;
-        fiberMountHelper.deepWalking.set(isDeepWalking);
-        element = alternate.instance;
-        fiber = alternate;
-        fiber.alternate = alternate;
-      } else {
-        pertformInstance(parent, childrenIdx, alternate);
+      pertformInstance(parent, childrenIdx, alternate);
+      alternate && performAlternate(alternate);
+      fiber = createFiberFromInstance(element, alternate);
 
-        if (alternate) {
-          performAlternate(alternate);
+      if (alternate && detectIsMemo(fiber.instance)) {
+        const factory = element as ComponentFactory;
+        const alternateFactory = alternate.instance as ComponentFactory;
+        const props = alternateFactory.props[$$memoProps];
+        const nextProps = factory.props[$$memoProps];
+        const skip = !detectNeedUpdateMemo(factory.props, props, nextProps);
+
+        if (skip) {
+          isDeepWalking = false;
+          fiberMountHelper.deepWalking.set(isDeepWalking);
+          fiber = alternate;
+          fiber.effectTag = EffectTag.SKIP;
         }
-
-        fiber = createFiberFromInstance(element, alternate);
       }
 
       fiber.prevSibling = nextFiber;
@@ -343,22 +323,31 @@ function performUnitOfWork(fiber: Fiber) {
 }
 
 function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber) {
-  if (detectIsComponentFactory(instance)) {
+  const isFactory = detectIsComponentFactory(instance);
+  const factory = instance as ComponentFactory;
+
+  if (isFactory) {
     componentFiberHelper.set(getNextFiber);
 
     try {
-      instance.children = flatten([instance.type(instance.props)]) as Array<DarkElementInstance>;
+      factory.children = flatten([factory.type(factory.props)]) as Array<DarkElementInstance>;
     } catch (err) {
-      instance.children = [];
+      factory.children = [];
       error(err);
     }
   }
 
   if (hasChildrenProp(instance)) {
-    instance.children = flatten([instance.children.map(transformElementInstance)]) as Array<DarkElementInstance>;
+    for (let i = 0; i < instance.children.length; i++) {
+      if (!instance.children[i]) {
+        instance.children[i] = transformElementInstance(instance.children[i]) as DarkElementInstance;
+      }
+    }
 
-    if (detectIsComponentFactory(instance) && instance.children.length === 0) {
-      instance.children.push(createEmptyVirtualNode());
+    instance.children = isFactory ? instance.children : flatten([instance.children]);
+
+    if (isFactory && factory.children.length === 0) {
+      factory.children.push(createEmptyVirtualNode());
     }
   }
 

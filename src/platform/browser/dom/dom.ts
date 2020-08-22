@@ -259,16 +259,21 @@ function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
 }
 
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
+  const fromHookUpdate = fromHookUpdateHelper.get();
   let nextFiber = fiber;
   let isDeepWalking = true;
-  const fromHookUpdate = fromHookUpdateHelper.get();
+  let skipFiber = null;
 
   while (nextFiber) {
     if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
       return nextFiber.link;
     }
 
-    if (!fromHookUpdate && nextFiber.effectTag === EffectTag.PLACEMENT) {
+    if (nextFiber.effectTag === EffectTag.SKIP) {
+      skipFiber = nextFiber;
+    }
+
+    if (!fromHookUpdate && !skipFiber && nextFiber.effectTag === EffectTag.PLACEMENT) {
       isDeepWalking = false;
     }
 
@@ -280,6 +285,11 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
     } else if (nextFiber.parent) {
       isDeepWalking = false;
       nextFiber = nextFiber.parent;
+
+      if (nextFiber === skipFiber) {
+        skipFiber = null;
+      }
+
       if (nextFiber.link) return null;
     } else {
       nextFiber = null;

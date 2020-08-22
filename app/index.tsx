@@ -112,6 +112,9 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), [id]);
   const handleHighlight = useCallback(() => onHighlight(id), [id]);
 
+  //console.log('render', id);
+  
+
   return (
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
