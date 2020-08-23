@@ -1,11 +1,15 @@
-import { createComponent, StandardComponentProps, Component } from '../component';
-import { Memo, $$memo } from '../use-memo';
+import {
+  Component,
+  StandardComponentProps,
+  createComponent,
+  detectIsComponentFactory,
+} from '../component';
 
 
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
-const $$memoProps = Symbol('memoProps');
-
+const $$memo = Symbol('memo');
+const Memoize = createComponent(({ slot }) => slot, { token: $$memo });
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   const keys = Object.keys(nextProps);
 
@@ -18,12 +22,13 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   return false;
 }
 
+const detectIsMemo = (o: any) => detectIsComponentFactory(o) && o.token === $$memo;
+
 function memo<T>(
   component: ReturnType<typeof createComponent>,
   shouldUpdate: ShouldUpdate<T> = defaultShouldUpdate): Component<T & StandardComponentProps> {
   return createComponent(props => {
-    return Memo({
-      [$$memoProps]: props,
+    return Memoize({
       [$$memo]: shouldUpdate,
       slot: component(props),
     });
@@ -31,6 +36,8 @@ function memo<T>(
 }
 
 export {
-  $$memoProps,
+  $$memo,
+  Memoize,
   memo,
+  detectIsMemo,
 };

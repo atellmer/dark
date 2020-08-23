@@ -10,33 +10,11 @@ const isBoolean = o => typeof o === 'boolean';
 const isArray = (o: unknown): o is Array<any> => Array.isArray(o);
 const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
-const isDOMElement = element => element instanceof Element || element instanceof HTMLDocument;
 
 function error(str: string) {
   if (typeof console !== 'undefined') {
     console.error(str);
   }
-}
-
-function deepClone(obj: any) {
-  const isObject = typeof obj === 'object';
-  const isFunction = typeof obj === 'function';
-  const copyObj = isObject
-    ? Array.isArray(obj)
-      ? [...obj]
-      : Boolean(obj)
-      ? obj instanceof Element ? obj : { ...obj }
-      : obj
-    : isFunction
-    ? function() {
-        return obj.apply(this, arguments);
-      }
-    : obj;
-  const clonePropsFn = (prop: string) => (copyObj[prop] = deepClone(copyObj[prop]));
-
-  Boolean(copyObj) && isObject && Object.keys(copyObj).forEach(clonePropsFn);
-
-  return copyObj;
 }
 
 // flatten without recursion
@@ -86,6 +64,10 @@ function detectIsTestEnvironment() {
   return process.env.NODE_ENV === 'test';
 }
 
+function detectIsDevEnvironment() {
+  return process.env.NODE_ENV === 'development';
+}
+
 export {
   isFunction,
   isUndefined,
@@ -97,11 +79,10 @@ export {
   isNull,
   isEmpty,
   error,
-  isDOMElement,
-  deepClone,
   flatten,
   getTime,
   keyBy,
   takeListFromEnd,
   detectIsTestEnvironment,
+  detectIsDevEnvironment,
 };

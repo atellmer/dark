@@ -28,10 +28,9 @@ import {
   keyBy,
   isFunction,
   takeListFromEnd,
-  detectIsTestEnvironment,
+  detectIsDevEnvironment,
 } from '@helpers';
-import { detectIsMemo, detectNeedUpdateMemo } from '../use-memo';
-import { $$memoProps } from '../memo';
+import { $$memo, detectIsMemo } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 
@@ -79,15 +78,16 @@ function workLoop(options: WorkLoopOptions) {
 }
 
 function performUnitOfWork(fiber: Fiber) {
-  let isDeepWalking = fiberMountHelper.deepWalking.get();
+  let isDeepWalking = true;
   let element = fiber.instance;
   let nextFiber = fiber;
 
   while (true) {
+    isDeepWalking = fiberMountHelper.deepWalking.get();
     nextFiber.hook.idx = 0;
 
     if (isDeepWalking) {
-      const hasChild = hasChildrenProp(element) && Boolean(element.children.length > 0);
+      const hasChild = hasChildrenProp(element) && element.children.length > 0;
 
       if (hasChild) {
         const childFiber = performChild();
@@ -121,21 +121,7 @@ function performUnitOfWork(fiber: Fiber) {
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
     fiber = createFiberFromInstance(element, alternate);
-
-    if (alternate && detectIsMemo(fiber.instance)) {
-      const factory = element as ComponentFactory;
-      const alternateFactory = alternate.instance as ComponentFactory;
-      const props = alternateFactory.props[$$memoProps];
-      const nextProps = factory.props[$$memoProps];
-      const skip = !detectNeedUpdateMemo(factory.props, props, nextProps);
-
-      if (skip) {
-        isDeepWalking = false;
-        fiberMountHelper.deepWalking.set(isDeepWalking);
-        fiber = alternate;
-        fiber.effectTag = EffectTag.SKIP;
-      }
-    }
+    fiber = alternate ? performMemo(fiber, alternate) : fiber;
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
@@ -154,8 +140,7 @@ function performUnitOfWork(fiber: Fiber) {
     const hasSibling = hasChildrenProp(parent) && parent.children[childrenIdx];
 
     if (hasSibling) {
-      isDeepWalking = true;
-      fiberMountHelper.deepWalking.set(isDeepWalking);
+      fiberMountHelper.deepWalking.set(true);
 
       const alternate = getNextSiblingAlternate(nextFiber);
       const hook = alternate ? alternate.hook : createHook();
@@ -166,21 +151,7 @@ function performUnitOfWork(fiber: Fiber) {
       pertformInstance(parent, childrenIdx, alternate);
       alternate && performAlternate(alternate);
       fiber = createFiberFromInstance(element, alternate);
-
-      if (alternate && detectIsMemo(fiber.instance)) {
-        const factory = element as ComponentFactory;
-        const alternateFactory = alternate.instance as ComponentFactory;
-        const props = alternateFactory.props[$$memoProps];
-        const nextProps = factory.props[$$memoProps];
-        const skip = !detectNeedUpdateMemo(factory.props, props, nextProps);
-
-        if (skip) {
-          isDeepWalking = false;
-          fiberMountHelper.deepWalking.set(isDeepWalking);
-          fiber = alternate;
-          fiber.effectTag = EffectTag.SKIP;
-        }
-      }
+      fiber = alternate ? performMemo(fiber, alternate) : fiber;
 
       fiber.prevSibling = nextFiber;
       nextFiber.nextSibling = fiber;
@@ -191,11 +162,10 @@ function performUnitOfWork(fiber: Fiber) {
 
       return nextFiber;
     } else {
-      isDeepWalking = false;
+      fiberMountHelper.jumpToParent();
+      fiberMountHelper.deepWalking.set(false);
       nextFiber = nextFiber.parent;
       element = nextFiber.instance;
-      fiberMountHelper.jumpToParent();
-      fiberMountHelper.deepWalking.set(isDeepWalking);
     }
 
     return null;
@@ -242,7 +212,7 @@ function performUnitOfWork(fiber: Fiber) {
         const hasKeys = keys.length > 0;
         const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
-        if (!hasAnyKeys && !detectIsTestEnvironment()) {
+        if (detectIsDevEnvironment() && !hasAnyKeys) {
           error(UNIQ_KEY_ERROR);
         }
 
@@ -278,7 +248,7 @@ function performUnitOfWork(fiber: Fiber) {
 
             for (const nextKey of nextKeys) {
               if (usedKeyMap[nextKey]) {
-                if (!detectIsTestEnvironment()) {
+                if (detectIsDevEnvironment()) {
                   error(IS_ALREADY_USED_KEY_ERROR);
                 }
               }
@@ -319,6 +289,24 @@ function performUnitOfWork(fiber: Fiber) {
         }
       }
     }
+  }
+
+  function performMemo(fiber: Fiber, alternate: Fiber) {
+    if (detectIsMemo(fiber.instance)) {
+      const factory = element as ComponentFactory<{slot: ComponentFactory<{}>}>;
+      const alternateFactory = alternate.instance as ComponentFactory<{slot: ComponentFactory<{}>}>;
+      const props = alternateFactory.props.slot.props;
+      const nextProps = factory.props.slot.props;
+      const skip = !factory.props[$$memo](props, nextProps);
+
+      if (skip) {
+        fiberMountHelper.deepWalking.set(false);
+        fiber = alternate;
+        fiber.effectTag = EffectTag.SKIP;
+      }
+    }
+
+    return fiber;
   }
 }
 

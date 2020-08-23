@@ -1,2 +1,2 @@
 export * from './core';
-//export * from './platform/browser';
+export * from './platform/browser';

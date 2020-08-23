@@ -1,17 +1,14 @@
 import { createComponent, detectIsComponentFactory } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
 import { currentHookHelper } from '@core/scope';
-import { isUndefined, isArray, isFunction } from '@helpers';
+import { isUndefined, isArray } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
+import { $$memo, Memoize } from '../memo';
 
-
-const $$memo = Symbol('memo');
-
-const Memo = createComponent(({ slot, ...rest }) => slot, { token: $$memo });
 
 function wrap(value: any, isDepsDifferent: boolean) {
   if (detectIsTagVirtualNode(value) || detectIsComponentFactory(value)) {
-    return Memo({
+    return Memoize({
       [$$memo]: () => isDepsDifferent,
       slot: value,
     });
@@ -65,14 +62,6 @@ function useMemo(fn: () => any, deps: Array<any> = []) {
   return hookValue.value;
 }
 
-const detectIsMemo = (o: any) => detectIsComponentFactory(o) && o.token === $$memo;
-
-const detectNeedUpdateMemo = (memoProps: any, props: any, nextProps: any): boolean => memoProps[$$memo](props, nextProps);
-
 export {
-  $$memo,
-  Memo,
   useMemo,
-  detectIsMemo,
-  detectNeedUpdateMemo,
 };
