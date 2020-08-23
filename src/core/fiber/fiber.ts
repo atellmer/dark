@@ -96,16 +96,16 @@ function performUnitOfWork(fiber: Fiber) {
       if (hasChild) {
         const childFiber = performChild();
 
-        if (childFiber) return childFiber;
+        if (childFiber && childFiber.link) return childFiber;
       } else {
         const siblingFiber = performSibling();
 
-        if (siblingFiber) return siblingFiber;
+        if (siblingFiber && siblingFiber.link) return siblingFiber;
       }
     } else {
       const siblingFiber = performSibling();
 
-      if (siblingFiber) return siblingFiber;
+      if (siblingFiber && siblingFiber.link) return siblingFiber;
     }
 
     if (nextFiber.parent === null) {
