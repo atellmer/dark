@@ -1,7 +1,6 @@
 import { EffectTag, NativeElement, WorkLoopOptions, Hook, cloneTagMap } from './model';
 import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import {
-  getRootId,
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
@@ -12,7 +11,12 @@ import {
   currentHookHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
-import { ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@core/component';
+import {
+  ComponentFactory,
+  ComponentWrapper,
+  detectIsComponentFactory,
+  getComponentFactoryKey,
+} from '@core/component';
 import {
   VirtualNode,
   detectIsTagVirtualNode,
@@ -293,8 +297,8 @@ function performUnitOfWork(fiber: Fiber) {
 
   function performMemo(fiber: Fiber, alternate: Fiber) {
     if (detectIsMemo(fiber.instance)) {
-      const factory = element as ComponentFactory<{slot: ComponentFactory<{}>}>;
-      const alternateFactory = alternate.instance as ComponentFactory<{slot: ComponentFactory<{}>}>;
+      const factory = element as ComponentWrapper;
+      const alternateFactory = alternate.instance as ComponentWrapper;
       const props = alternateFactory.props.slot.props;
       const nextProps = factory.props.slot.props;
       const skip = !factory.props[$$memo](props, nextProps);

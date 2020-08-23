@@ -15,6 +15,8 @@ export type StandardComponentProps = Readonly<{
 
 export type Component<T> = (props: T) => ComponentFactory;
 
+export type ComponentWrapper<T = {}> = ComponentFactory<{slot: ComponentFactory<T>}>;
+
 export type ComponentFactoryReturnType = DarkElement;
 
 export type CreateElement<P extends StandardComponentProps> = (props: P & StandardComponentProps) => ComponentFactoryReturnType;
