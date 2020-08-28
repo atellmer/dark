@@ -81,6 +81,9 @@ function workLoop(options: WorkLoopOptions) {
   platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
+let shadowFiberRoot: Fiber = null;
+let shadowFiber: Fiber = null;
+
 function performUnitOfWork(fiber: Fiber) {
   let isDeepWalking = true;
   let element = fiber.instance;
@@ -116,8 +119,13 @@ function performUnitOfWork(fiber: Fiber) {
   function performChild() {
     fiberMountHelper.jumpToChild();
 
+    shadowFiber = shadowFiber ? shadowFiber.child : null;
     const alternate = getChildAlternate(nextFiber);
-    const hook = alternate ? alternate.hook : createHook();
+    const hook = alternate
+      ? alternate.hook
+      : shadowFiber
+        ? shadowFiber.hook
+        : createHook();
     let fiber: Fiber = null;
 
     currentHookHelper.set(hook);
@@ -146,8 +154,18 @@ function performUnitOfWork(fiber: Fiber) {
     if (hasSibling) {
       fiberMountHelper.deepWalking.set(true);
 
+      if (shadowFiber && shadowFiberRoot.parent === shadowFiber.parent) {
+        shadowFiberRoot = null;
+        shadowFiber = null;
+      }
+
+      shadowFiber = shadowFiber ? shadowFiber.nextSibling : null;
       const alternate = getNextSiblingAlternate(nextFiber);
-      const hook = alternate ? alternate.hook : createHook();
+      const hook = alternate
+        ? alternate.hook
+        : shadowFiber
+          ? shadowFiber.hook
+          : createHook();
       let fiber: Fiber = null;
 
       currentHookHelper.set(hook);
@@ -166,6 +184,8 @@ function performUnitOfWork(fiber: Fiber) {
 
       return nextFiber;
     } else {
+      shadowFiber = shadowFiber ? shadowFiber.parent : null;
+
       fiberMountHelper.jumpToParent();
       fiberMountHelper.deepWalking.set(false);
       nextFiber = nextFiber.parent;
@@ -175,25 +195,31 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
+  function performHook(alternate: Fiber) {
+    const key = getElementKey(alternate.instance);
+    const nextKey = getElementKey(element);
+
+    const hook = shadowFiber ? shadowFiber.hook : null;
+
+    if (hook) {
+      currentHookHelper.set(shadowFiber.hook);
+    }
+
+    if (key && nextKey && key !== nextKey) {
+      shadowFiber = getAlternateByKey(nextKey, alternate.parent.child);
+      shadowFiberRoot = shadowFiber;
+      currentHookHelper.set(shadowFiber.hook);
+    }
+  }
+
   function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-
-      if (alternate) {
-        const key = getElementKey(alternate.instance);
-        const nextKey = getElementKey(element);
-
-        if (key && nextKey && key !== nextKey) {
-          const alternateByKey = getAlternateByKey(nextKey, alternate.parent.child);
-
-          currentHookHelper.set(alternateByKey.hook);
-        }
-      }
-
-      element = mountInstance(element, () => nextFiber);
+      alternate && performHook(alternate);
+      element = mountInstance(element, () => nextFiber.parent);
     }
   }
 
@@ -450,6 +476,7 @@ function createFiberFromInstance(instance: VirtualNode | ComponentFactory, alter
   const isDifferentKeys = key !== nextKey;
   const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
   const isUpdate = isSameType && !isDifferentKeys;
+
   const fiber = new Fiber({
     instance,
     alternate: alternate || null,
@@ -492,7 +519,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  //console.log('wip', wipFiber);
+  // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
     deletionsHelper.get().forEach(platform.applyCommits);

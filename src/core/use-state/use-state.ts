@@ -27,7 +27,6 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
 
     values[idx] = isFunction(value) ? value(values[idx]) : value;
     hook.updateScheduled = true;
-
     setImmediate(() => {
       if (hook.updateScheduled) {
         hook.updateScheduled = false;

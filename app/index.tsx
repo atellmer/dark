@@ -108,20 +108,31 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
-  const handleRemove = useCallback(() => onRemove(id), [id]);
-  const handleHighlight = useCallback(() => onHighlight(id), [id]);
+const Counter = createComponent(() => {
+  const [count, setCount] = useState(0);
 
-  //console.log('render', id);
+  return [
+      <div>count: {count}</div>,
+      <button onClick={() => setCount(count + 1)}>+</button>,
+  ];
+});
+
+const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+  const [count, setCount] = useState(0);
+  const handleRemove = useCallback(() => onRemove(id), []);
+  const handleHighlight = useCallback(() => onHighlight(id), []);
+
+  // console.log('render', id);
 
   return (
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
-      <td class='cell'>1</td>
-      <td class='cell'>2</td>
+      <td class='cell'>xxx</td>
+      <td class='cell'>count: {count}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
+        <button onClick={() => setCount(count + 1)}>increment</button>
       </td>
     </tr>
   );
@@ -215,14 +226,14 @@ const App = createComponent(() => {
 
   return (
     <Fragment>
-      <MemoHeader
+      <Header
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
       />
-      <MemoList
+      <List
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
