@@ -108,10 +108,21 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Counter = createComponent(() => {
+const Counter2 = createComponent(({ id }) => {
   const [count, setCount] = useState(0);
 
   return [
+      <div>count: {count}</div>,
+      <button onClick={() => setCount(count + 1)}>+</button>,
+  ];
+});
+
+const Counter = createComponent(({ id }) => {
+  const [count, setCount] = useState(0);
+  const key = count % 2 ? 1 : 2;
+
+  return [
+      <div><Counter2 key={key} /></div>,
       <div>count: {count}</div>,
       <button onClick={() => setCount(count + 1)}>+</button>,
   ];
@@ -127,7 +138,9 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   return (
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
-      <td class='cell'>xxx</td>
+      <td class='cell'>
+        <Counter id={id} />
+      </td>
       <td class='cell'>count: {count}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
@@ -175,7 +188,7 @@ const MemoList = memo(List);
 
 const App = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

@@ -121,11 +121,7 @@ function performUnitOfWork(fiber: Fiber) {
 
     shadowFiber = shadowFiber ? shadowFiber.child : null;
     const alternate = getChildAlternate(nextFiber);
-    const hook = alternate
-      ? alternate.hook
-      : shadowFiber
-        ? shadowFiber.hook
-        : createHook();
+    const hook = alternate ? alternate.hook : createHook();
     let fiber: Fiber = null;
 
     currentHookHelper.set(hook);
@@ -161,11 +157,7 @@ function performUnitOfWork(fiber: Fiber) {
 
       shadowFiber = shadowFiber ? shadowFiber.nextSibling : null;
       const alternate = getNextSiblingAlternate(nextFiber);
-      const hook = alternate
-        ? alternate.hook
-        : shadowFiber
-          ? shadowFiber.hook
-          : createHook();
+      const hook = alternate ? alternate.hook : createHook();
       let fiber: Fiber = null;
 
       currentHookHelper.set(hook);
@@ -195,31 +187,35 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function performHook(alternate: Fiber) {
-    const key = getElementKey(alternate.instance);
-    const nextKey = getElementKey(element);
-
-    const hook = shadowFiber ? shadowFiber.hook : null;
-
-    if (hook) {
-      currentHookHelper.set(shadowFiber.hook);
-    }
-
-    if (key && nextKey && key !== nextKey) {
-      shadowFiber = getAlternateByKey(nextKey, alternate.parent.child);
-      shadowFiberRoot = shadowFiber;
-      currentHookHelper.set(shadowFiber.hook);
-    }
-  }
-
   function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-      alternate && performHook(alternate);
+      performHook(element, alternate);
       element = mountInstance(element, () => nextFiber.parent);
+    }
+  }
+
+  function performHook(instance: DarkElementInstance, alternate: Fiber) {
+    const hook = shadowFiber ? shadowFiber.hook : null;
+
+    hook && currentHookHelper.set(hook);
+
+    if (alternate) {
+      const isFactory = detectIsComponentFactory(instance);
+      if (!isFactory) return;
+      const key = getElementKey(alternate.instance);
+      const nextKey = getElementKey(instance);
+
+      if (key && nextKey && key !== nextKey) {
+        shadowFiber = getAlternateByKey(nextKey, alternate.parent.child);
+
+        if (!shadowFiber) return;
+        shadowFiberRoot = shadowFiber;
+        currentHookHelper.set(shadowFiber.hook);
+      }
     }
   }
 
