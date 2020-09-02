@@ -44,6 +44,7 @@ class Fiber<N = NativeElement> {
   public prevSibling: Fiber<N>;
   public nextSibling: Fiber<N>;
   public alternate: Fiber<N>;
+  public shadow: Fiber<N>;
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
   public hook: Hook;
@@ -55,6 +56,7 @@ class Fiber<N = NativeElement> {
     this.prevSibling = options.prevSibling || null;
     this.nextSibling = options.nextSibling || null;
     this.alternate = options.alternate || null;
+    this.shadow = options.shadow || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
     this.hook = options.hook || createHook();
@@ -81,13 +83,11 @@ function workLoop(options: WorkLoopOptions) {
   platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
-let shadowFiberRoot: Fiber = null;
-let shadowFiber: Fiber = null;
-
 function performUnitOfWork(fiber: Fiber) {
   let isDeepWalking = true;
   let element = fiber.instance;
   let nextFiber = fiber;
+  let shadow: Fiber = fiber.shadow;
 
   while (true) {
     isDeepWalking = fiberMountHelper.deepWalking.get();
@@ -119,20 +119,25 @@ function performUnitOfWork(fiber: Fiber) {
   function performChild() {
     fiberMountHelper.jumpToChild();
 
-    shadowFiber = shadowFiber ? shadowFiber.child : null;
+    shadow = shadow ? shadow.child : null;
     const alternate = getChildAlternate(nextFiber);
-    const hook = alternate ? alternate.hook : createHook();
+    const hook = shadow
+      ? shadow.hook
+      : alternate
+        ? alternate.hook
+        : createHook();
     let fiber: Fiber = null;
 
     currentHookHelper.set(hook);
 
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
-    fiber = createFiberFromInstance(element, alternate);
+    fiber = createFiber(element, alternate);
     fiber = alternate ? performMemo(fiber, alternate) : fiber;
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
+    fiber.shadow = shadow;
     nextFiber = fiber;
 
     cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
@@ -150,41 +155,56 @@ function performUnitOfWork(fiber: Fiber) {
     if (hasSibling) {
       fiberMountHelper.deepWalking.set(true);
 
-      if (shadowFiber && shadowFiberRoot.parent === shadowFiber.parent) {
-        shadowFiberRoot = null;
-        shadowFiber = null;
-      }
-
-      shadowFiber = shadowFiber ? shadowFiber.nextSibling : null;
+      shadow = shadow ? shadow.nextSibling : null;
       const alternate = getNextSiblingAlternate(nextFiber);
-      const hook = alternate ? alternate.hook : createHook();
+      const hook = shadow
+        ? shadow.hook
+        : alternate
+          ? alternate.hook
+          : createHook();
       let fiber: Fiber = null;
 
       currentHookHelper.set(hook);
 
       pertformInstance(parent, childrenIdx, alternate);
       alternate && performAlternate(alternate);
-      fiber = createFiberFromInstance(element, alternate);
+      fiber = createFiber(element, alternate);
       fiber = alternate ? performMemo(fiber, alternate) : fiber;
 
       fiber.prevSibling = nextFiber;
       nextFiber.nextSibling = fiber;
       fiber.parent = nextFiber.parent;
+      fiber.shadow = shadow;
       nextFiber = fiber;
 
       cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
       return nextFiber;
     } else {
-      shadowFiber = shadowFiber ? shadowFiber.parent : null;
-
       fiberMountHelper.jumpToParent();
       fiberMountHelper.deepWalking.set(false);
+      shadow = shadow ? shadow.parent : null;
       nextFiber = nextFiber.parent;
       element = nextFiber.instance;
     }
 
     return null;
+  }
+
+  function getRootShadow(element: DarkElementInstance, alternate: Fiber) {
+    const key = getElementKey(alternate.instance);
+    const nextKey = getElementKey(element);
+    let shadow: Fiber = null;
+
+    if (key !== nextKey) {
+      shadow = getAlternateByKey(nextKey, alternate.parent.child);
+
+      if (shadow) {
+        currentHookHelper.set(shadow.hook);
+      }
+    }
+
+    return shadow;
   }
 
   function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
@@ -193,29 +213,8 @@ function performUnitOfWork(fiber: Fiber) {
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-      performHook(element, alternate);
+      shadow = alternate ? getRootShadow(element, alternate) : shadow;
       element = mountInstance(element, () => nextFiber.parent);
-    }
-  }
-
-  function performHook(instance: DarkElementInstance, alternate: Fiber) {
-    const hook = shadowFiber ? shadowFiber.hook : null;
-
-    hook && currentHookHelper.set(hook);
-
-    if (alternate) {
-      const isFactory = detectIsComponentFactory(instance);
-      if (!isFactory) return;
-      const key = getElementKey(alternate.instance);
-      const nextKey = getElementKey(instance);
-
-      if (key && nextKey && key !== nextKey) {
-        shadowFiber = getAlternateByKey(nextKey, alternate.parent.child);
-
-        if (!shadowFiber) return;
-        shadowFiberRoot = shadowFiber;
-        currentHookHelper.set(shadowFiber.hook);
-      }
     }
   }
 
@@ -465,7 +464,7 @@ function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, insta
     : 0;
 }
 
-function createFiberFromInstance(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
+function createFiber(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
   const hook = currentHookHelper.get();
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
@@ -581,7 +580,6 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   }
 
   if (!nextFiber) {
-    // console.log('complete!');
     onComplete();
   }
 }

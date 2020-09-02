@@ -122,7 +122,6 @@ const Counter = createComponent(({ id }) => {
   const key = count % 2 ? 1 : 2;
 
   return [
-      <div><Counter2 key={key} /></div>,
       <div>count: {count}</div>,
       <button onClick={() => setCount(count + 1)}>+</button>,
   ];
@@ -139,7 +138,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>
-        <Counter id={id} />
+        <Counter />
       </td>
       <td class='cell'>count: {count}</td>
       <td class='cell'>
