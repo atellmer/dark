@@ -111,8 +111,10 @@ type RowProps = {
 const Counter2 = createComponent(({ id }) => {
   const [count, setCount] = useState(0);
 
+  console.log('child', count);
+
   return [
-      <div>count: {count}</div>,
+      <div>child: {count}</div>,
       <button onClick={() => setCount(count + 1)}>+</button>,
   ];
 });
@@ -121,9 +123,12 @@ const Counter = createComponent(({ id }) => {
   const [count, setCount] = useState(0);
   const key = count % 2 ? 1 : 2;
 
+  console.log('parent', count);
+
   return [
-      <div>count: {count}</div>,
-      <button onClick={() => setCount(count + 1)}>+</button>,
+    <Counter2 key={key} />,
+    <div>parent: {count}</div>,
+    <button onClick={() => setCount(count + 1)}>+</button>,
   ];
 });
 
@@ -144,7 +149,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        <button onClick={() => setCount(count + 1)}>increment</button>
+        <button onClick={() => setCount(count + 1)}>increment</button>,
       </td>
     </tr>
   );

@@ -1,6 +1,6 @@
-import { createComponent, detectIsComponentFactory } from '@core/component';
+import { detectIsComponentFactory } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
-import { currentHookHelper } from '@core/scope';
+import { componentFiberHelper } from '@core/scope';
 import { isUndefined, isArray } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
 import { $$memo, Memoize } from '../memo';
@@ -30,7 +30,8 @@ function processValue(fn: () => any, isDepsDifferent: boolean) {
 }
 
 function useMemo(fn: () => any, deps: Array<any> = []) {
-  const hook = currentHookHelper.get();
+  const fiber = componentFiberHelper.get();
+  const  { hook } = fiber
   const { idx, values } = hook;
 
   if (isUndefined(values[idx])) {

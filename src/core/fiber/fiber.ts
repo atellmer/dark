@@ -8,7 +8,6 @@ import {
   fiberMountHelper,
   componentFiberHelper,
   fromHookUpdateHelper,
-  currentHookHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import {
@@ -126,14 +125,14 @@ function performUnitOfWork(fiber: Fiber) {
       : alternate
         ? alternate.hook
         : createHook();
-    let fiber: Fiber = null;
+    const fiber = new Fiber({ hook });
 
-    currentHookHelper.set(hook);
+    componentFiberHelper.set(fiber);
 
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
-    fiber = createFiber(element, alternate);
-    fiber = alternate ? performMemo(fiber, alternate) : fiber;
+    mutateFiber(fiber, element, alternate);
+    alternate && performMemo(fiber, alternate);
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
@@ -162,14 +161,14 @@ function performUnitOfWork(fiber: Fiber) {
         : alternate
           ? alternate.hook
           : createHook();
-      let fiber: Fiber = null;
+      const fiber = new Fiber({ hook });
 
-      currentHookHelper.set(hook);
+      componentFiberHelper.set(fiber);
 
       pertformInstance(parent, childrenIdx, alternate);
       alternate && performAlternate(alternate);
-      fiber = createFiber(element, alternate);
-      fiber = alternate ? performMemo(fiber, alternate) : fiber;
+      mutateFiber(fiber, element, alternate);
+      alternate && performMemo(fiber, alternate);
 
       fiber.prevSibling = nextFiber;
       nextFiber.nextSibling = fiber;
@@ -198,10 +197,6 @@ function performUnitOfWork(fiber: Fiber) {
 
     if (key !== nextKey) {
       shadow = getAlternateByKey(nextKey, alternate.parent.child);
-
-      if (shadow) {
-        currentHookHelper.set(shadow.hook);
-      }
     }
 
     return shadow;
@@ -214,7 +209,7 @@ function performUnitOfWork(fiber: Fiber) {
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
       shadow = alternate ? getRootShadow(element, alternate) : shadow;
-      element = mountInstance(element, () => nextFiber.parent);
+      element = mountInstance(element);
     }
   }
 
@@ -326,22 +321,24 @@ function performUnitOfWork(fiber: Fiber) {
 
       if (skip) {
         fiberMountHelper.deepWalking.set(false);
-        fiber = alternate;
+
+        for (const key in alternate) {
+          if (alternate.hasOwnProperty(key)) {
+            fiber[key] = alternate[key];
+          }
+        }
+
         fiber.effectTag = EffectTag.SKIP;
       }
     }
-
-    return fiber;
   }
 }
 
-function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber) {
+function mountInstance(instance: DarkElementInstance) {
   const isFactory = detectIsComponentFactory(instance);
   const factory = instance as ComponentFactory;
 
   if (isFactory) {
-    componentFiberHelper.set(getNextFiber);
-
     try {
       factory.children = flatten([factory.type(factory.props)]) as Array<DarkElementInstance>;
     } catch (err) {
@@ -365,6 +362,33 @@ function mountInstance(instance: DarkElementInstance, getNextFiber: () => Fiber)
   }
 
   return instance;
+}
+
+function mutateFiber(fiber: Fiber, instance: VirtualNode | ComponentFactory, alternate: Fiber) {
+  const key = alternate ? getElementKey(alternate.instance) : null;
+  const nextKey = alternate ? getElementKey(instance) : null;
+  const isDifferentKeys = key !== nextKey;
+  const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const isUpdate = isSameType && !isDifferentKeys;
+
+  fiber.instance = instance;
+  fiber.alternate = alternate || null;
+  fiber.link = isUpdate ? alternate.link : null;
+  fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
+
+  if (isSameType && isDifferentKeys) {
+    alternate.effectTag = EffectTag.DELETION;
+    deletionsHelper.get().push(alternate);
+  }
+
+  if (fiber.alternate) {
+    fiber.alternate.shadow = null;
+    fiber.alternate.alternate = null;
+  }
+
+  if (!fiber.link && detectIsVirtualNode(fiber.instance)) {
+    fiber.link = platform.createLink(fiber);
+  }
 }
 
 function getChildFiberByIdx(fiber: Fiber, idx: number) {
@@ -464,36 +488,6 @@ function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, insta
     : 0;
 }
 
-function createFiber(instance: VirtualNode | ComponentFactory, alternate: Fiber) {
-  const hook = currentHookHelper.get();
-  const key = alternate ? getElementKey(alternate.instance) : null;
-  const nextKey = alternate ? getElementKey(instance) : null;
-  const isDifferentKeys = key !== nextKey;
-  const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
-  const isUpdate = isSameType && !isDifferentKeys;
-
-  const fiber = new Fiber({
-    instance,
-    alternate: alternate || null,
-    hook,
-    link: isUpdate ? alternate.link : null,
-    effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT,
-  });
-
-  if (isSameType && isDifferentKeys) {
-    alternate.effectTag = EffectTag.DELETION;
-    deletionsHelper.get().push(alternate);
-  }
-
-  fiber.alternate && (fiber.alternate.alternate = null);
-
-  if (!fiber.link && detectIsVirtualNode(fiber.instance)) {
-    fiber.link = platform.createLink(fiber);
-  }
-
-  return fiber;
-}
-
 function getSiblingFibers(fiber: Fiber): Array<Fiber> {
   const list = [];
   let nextFiber = fiber;
@@ -538,6 +532,11 @@ function commitWork(fiber: Fiber, onComplete: Function) {
 
   while (nextFiber) {
     const skip = nextFiber.effectTag === EffectTag.SKIP;
+
+    if (nextFiber.shadow) {
+      nextFiber.shadow = null;
+    }
+
 
     if (skip) {
       if (nextFiber.nextSibling) {

@@ -290,7 +290,9 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
         skipFiber = null;
       }
 
-      if (nextFiber.link) return null;
+      if (nextFiber.link) {
+        return null;
+      }
     } else {
       nextFiber = null;
     }

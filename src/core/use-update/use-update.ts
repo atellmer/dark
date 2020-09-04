@@ -7,7 +7,6 @@ import {
   fromHookUpdateHelper,
   fiberMountHelper,
   deletionsHelper,
-  currentHookHelper,
 } from '@core/scope';
 import {
   EffectTag,
@@ -18,24 +17,19 @@ import {
 
 function useUpdate() {
   const rootId = getRootId();
-  const getComponentFiber = componentFiberHelper.get();
+  const fiber = componentFiberHelper.get();
   const update = () => {
     effectStoreHelper.set(rootId); // important order!
     fromHookUpdateHelper.set(true);
 
-    const fiber = getComponentFiber();
-    const wipFiber = new Fiber({
-      ...fiber,
-      alternate: fiber,
-      effectTag: EffectTag.UPDATE,
-    });
+    fiber.alternate = fiber;
+    fiber.effectTag = EffectTag.UPDATE;
 
-    fiber.alternate = null;
-    wipRootHelper.set(wipFiber);
-    currentHookHelper.set(fiber.hook);
-    wipFiber.instance = mountInstance(fiber.instance, () => wipFiber);
+    wipRootHelper.set(fiber);
+    componentFiberHelper.set(fiber);
+    fiber.instance = mountInstance(fiber.instance);
     fiberMountHelper.reset();
-    nextUnitOfWorkHelper.set(wipFiber);
+    nextUnitOfWorkHelper.set(fiber);
     deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
     deletionsHelper.set([]);
   };

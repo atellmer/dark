@@ -1,4 +1,4 @@
-import { currentHookHelper } from '@core/scope';
+import { componentFiberHelper } from '@core/scope';
 import { isUndefined, isFunction, isArray, error } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
 
@@ -12,7 +12,8 @@ function useCallback(callback: Function, deps: Array<any>): Function {
     return;
   }
 
-  const hook = currentHookHelper.get();
+  const fiber = componentFiberHelper.get();
+  const { hook } = fiber;
   const { idx, values } = hook;
 
   if (isUndefined(values[idx])) {

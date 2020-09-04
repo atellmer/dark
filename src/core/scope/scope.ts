@@ -13,8 +13,7 @@ class Store {
     navigation: {},
     isDeepWalking: true,
   };
-  public currentHook: Hook = null;
-  public getComponentFiber: () => Fiber = () => null;
+  public componentFiber: Fiber = null;
 }
 
 let rootId = null;
@@ -51,18 +50,13 @@ const nextUnitOfWorkHelper = {
 };
 
 const componentFiberHelper = {
-  get: () => storeHelper.get()?.getComponentFiber,
-  set: (fn: () => Fiber) => (storeHelper.get().getComponentFiber = fn),
+  get: () => storeHelper.get()?.componentFiber,
+  set: (fiber: Fiber) => (storeHelper.get().componentFiber = fiber),
 };
 
 const fromHookUpdateHelper = {
   get: () => storeHelper.get()?.fromHookUpdate || false,
   set: (value: boolean) => (storeHelper.get().fromHookUpdate = value),
-};
-
-const currentHookHelper = {
-  get: () => storeHelper.get()?.currentHook,
-  set: (hook) => (storeHelper.get().currentHook = hook),
 };
 
 const eventsHelper = {
@@ -123,5 +117,4 @@ export {
   eventsHelper,
   deletionsHelper,
   fiberMountHelper,
-  currentHookHelper,
 };
