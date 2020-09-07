@@ -108,32 +108,7 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Counter2 = createComponent(({ id }) => {
-  const [count, setCount] = useState(0);
-
-  console.log('child', count);
-
-  return [
-      <div>child: {count}</div>,
-      <button onClick={() => setCount(count + 1)}>+</button>,
-  ];
-});
-
-const Counter = createComponent(({ id }) => {
-  const [count, setCount] = useState(0);
-  const key = count % 2 ? 1 : 2;
-
-  console.log('parent', count);
-
-  return [
-    <Counter2 key={key} />,
-    <div>parent: {count}</div>,
-    <button onClick={() => setCount(count + 1)}>+</button>,
-  ];
-});
-
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
-  const [count, setCount] = useState(0);
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
 
@@ -142,14 +117,11 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   return (
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
-      <td class='cell'>
-        <Counter />
-      </td>
-      <td class='cell'>count: {count}</td>
+      <td class='cell'>xxx</td>
+      <td class='cell'>yyy</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        <button onClick={() => setCount(count + 1)}>increment</button>,
       </td>
     </tr>
   );
@@ -192,7 +164,7 @@ const MemoList = memo(List);
 
 const App = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -243,14 +215,14 @@ const App = createComponent(() => {
 
   return (
     <Fragment>
-      <Header
+      <MemoHeader
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
       />
-      <List
+      <MemoList
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
@@ -265,3 +237,4 @@ function forceUpdate() {
 }
 
 render(App(), domElement);
+

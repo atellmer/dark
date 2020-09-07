@@ -259,7 +259,6 @@ function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
 }
 
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
-  const fromHookUpdate = fromHookUpdateHelper.get();
   let nextFiber = fiber;
   let isDeepWalking = true;
   let skipFiber = null;
@@ -273,7 +272,7 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
       skipFiber = nextFiber;
     }
 
-    if (!fromHookUpdate && !skipFiber && nextFiber.effectTag === EffectTag.PLACEMENT) {
+    if (!skipFiber && nextFiber.effectTag === EffectTag.PLACEMENT) {
       isDeepWalking = false;
     }
 
