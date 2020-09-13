@@ -511,7 +511,11 @@ function commitChanges(onRender?: () => void) {
   // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
-    deletionsHelper.get().forEach(platform.applyCommits);
+
+    for (const fiber of deletionsHelper.get()) {
+      platform.applyCommits(fiber);
+    }
+
     deletionsHelper.set([]);
     wipRootHelper.set(null);
 

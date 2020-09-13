@@ -17,7 +17,7 @@ function wrap(value: any, isDepsDifferent: boolean) {
   return value;
 }
 
-function processValue(fn: () => any, isDepsDifferent: boolean) {
+function processValue(fn: () => any, isDepsDifferent: boolean = false) {
   let value = fn();
 
   if (isArray(value)) {
@@ -29,13 +29,13 @@ function processValue(fn: () => any, isDepsDifferent: boolean) {
   return value;
 }
 
-function useMemo(fn: () => any, deps: Array<any> = []) {
+function useMemo(fn: () => any, deps: Array<any>) {
   const fiber = componentFiberHelper.get();
   const  { hook } = fiber
   const { idx, values } = hook;
 
   if (isUndefined(values[idx])) {
-    const value = processValue(fn, false);
+    const value = processValue(fn);
 
     values[idx] = {
       deps,
@@ -54,8 +54,6 @@ function useMemo(fn: () => any, deps: Array<any> = []) {
   if (isDepsDifferent) {
     hookValue.deps = deps;
     hookValue.value = processValue(fn, true);
-  } else {
-    hookValue.value = processValue(fn, false);
   }
 
   hook.idx++;

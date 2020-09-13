@@ -100,6 +100,25 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
 
 const MemoHeader = memo(Header);
 
+// const Counter2 = createComponent(() => {
+//   const [count, setCount] = useState(0);
+//   const key = count % 2 ? 1 : 2;
+
+//   return [
+//     <div key={key}>count: {count}</div>,
+//     <button onClick={() => setCount(count + 1)}>Click me</button>,
+//   ]
+// })
+
+const Counter = createComponent(() => {
+  const [count, setCount] = useState(0);
+
+  return [
+    <div>count: {count}</div>,
+    <button onClick={() => setCount(count + 1)}>Click me</button>,
+  ]
+})
+
 type RowProps = {
   id: number,
   name: string;
@@ -111,6 +130,12 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
+  const container = useMemo(() => {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+
+    return element;
+  }, []);
 
   // console.log('render', id);
 
@@ -118,7 +143,14 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>xxx</td>
-      <td class='cell'>yyy</td>
+      <td class='cell'>
+        {
+          createPortal(
+            <Counter />,
+            container,
+          )
+        }
+      </td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
@@ -162,15 +194,15 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-const App = createComponent(() => {
+const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAdd = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+    state.list.push(...buildData(1, '!!!'));
     state.list = [...state.list];
     measurer.start('add');
     forceUpdate();
@@ -233,8 +265,7 @@ const App = createComponent(() => {
 
 
 function forceUpdate() {
-  render(App(), domElement);
+  render(Bench(), domElement);
 }
 
-render(App(), domElement);
-
+render(Bench(), domElement);
