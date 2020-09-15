@@ -1,4 +1,4 @@
-import { Fiber, Hook } from '../fiber';
+import { Fiber, NativeElement } from '../fiber';
 
 
 class Store {

@@ -1,68 +1,65 @@
-import { createComponent, detectIsComponentFactory } from '@core/component';
-import { DarkElement } from '@core/shared/model';
-import { error } from '@helpers';
-import { componentFiberHelper } from '@core/scope';
 import { Fiber } from '@core/fiber';
-import { useMemo } from '@core/use-memo';
+import { DarkElement } from '@core/shared/model';
+import { createComponent, detectIsComponentFactory } from '@core/component';
+import { componentFiberHelper, currentRootHelper } from '@core/scope';
+import { error } from '@helpers';
 
+
+type PortalListener = {
+  fn: () => void;
+  link: Element;
+};
 
 const $$portal = Symbol('portal');
+const portalListenersMap = new Map<Element, Map<Element, PortalListener>>();
 
-let isObserved = false;
-let listeners = [];
+function runPortalMutationObserver(rootLink: Element) {
+  const listenerMap = new Map();
+  const observer = new MutationObserver(mutationsList => {
+    const removedListenersMap = new Map();
 
-const observer = new MutationObserver(mutationsList => {
-  const removedListenersMap = new Map();
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+        const removedLinks = Array.from(mutation.removedNodes) as Array<Element>;
 
-  for (const mutation of mutationsList) {
-    if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-      const removedLinks = Array.from(mutation.removedNodes) as Array<Element>;
-
-      for (const link of removedLinks) {
-        for (const listener of listeners) {
-          if (link.contains(listener.link)) {
-            listener.fn();
-            removedListenersMap.set(listener, true);
+        for (const link of removedLinks) {
+          for (const listener of listenerMap.values()) {
+            if (link.contains(listener.link)) {
+              listener.fn();
+              removedListenersMap.set(listener.link, true);
+            }
           }
         }
       }
     }
-  }
 
-  setImmediate(() => {
-    listeners = listeners.filter(x => !removedListenersMap.get(x));
+    for (const key of removedListenersMap.keys()) {
+      listenerMap.delete(key);
+    }
   });
-});
+
+  portalListenersMap.set(rootLink, listenerMap);
+  observer.observe(rootLink, {
+    childList: true,
+    subtree: true,
+  });
+}
 
 const Portal = createComponent(({ slot }) => {
-  const scope = useMemo(() => ({ isObserved: false }), []);
   const fiber = componentFiberHelper.get() as Fiber<Element>;
 
-  if (!isObserved) {
-    setImmediate(() => {
-      const rootLink = getRootLink(fiber);
+  setImmediate(() => {
+    const rootElement = currentRootHelper.get().link as Element;
+    const listenerMap = portalListenersMap.get(rootElement);
+    const parentLink = getParentLink(fiber.parent);
 
-      observer.observe(rootLink, {
-        childList: true,
-        subtree: true,
-      });
-
-      isObserved = true;
-    });
-  }
-
-  if (!scope.isObserved) {
-    setImmediate(() => {
-      const parentLink = getParentLink(fiber.parent);
-
-      listeners.push({
+    if (!listenerMap.get(parentLink)) {
+      listenerMap.set(parentLink, {
         link: parentLink,
-        fn: () => getPortalContainer(fiber.instance).innerHTML = '',
+        fn: () => removeLinks(fiber),
       });
-
-      scope.isObserved = true;
-    });
-  }
+    }
+  });
 
   return slot;
 }, { token: $$portal });
@@ -85,16 +82,6 @@ function createPortal(slot: DarkElement, container: Element) {
 const detectIsPortal = (factory: any): boolean => detectIsComponentFactory(factory) && factory.token === $$portal;
 const getPortalContainer = (factory: any): Element => detectIsPortal(factory) ? factory.props[$$portal] : null;
 
-function getRootLink(fiber: Fiber<Element>) {
-  let nextFiber = fiber;
-
-  while (nextFiber.parent) {
-    nextFiber = nextFiber.parent;
-  }
-
-  return nextFiber.link;
-}
-
 function getParentLink(fiber: Fiber<Element>) {
   let nextFiber = fiber;
 
@@ -106,8 +93,43 @@ function getParentLink(fiber: Fiber<Element>) {
   return null;
 }
 
+function removeLinks(fiber: Fiber<Element>) {
+  const parentLink = fiber.link;
+  let nextFiber = fiber;
+  let isDeepWalking = true;
+
+  while (nextFiber) {
+    if (nextFiber.link && nextFiber.link.parentElement === parentLink) {
+      parentLink.removeChild(nextFiber.link);
+
+      if (nextFiber.nextSibling) {
+        isDeepWalking = true;
+        nextFiber = nextFiber.nextSibling;
+      } else if (nextFiber.parent) {
+        isDeepWalking = false;
+        nextFiber = nextFiber.parent;
+      }
+
+      continue;
+    }
+
+    if (nextFiber.child && isDeepWalking) {
+      nextFiber = nextFiber.child;
+    } else if (nextFiber.nextSibling) {
+      isDeepWalking = true;
+      nextFiber = nextFiber.nextSibling;
+    } else if (nextFiber.parent) {
+      isDeepWalking = false;
+      nextFiber = nextFiber.parent;
+    }
+
+    if (nextFiber === fiber) return;
+  }
+}
+
 export {
   createPortal,
   detectIsPortal,
   getPortalContainer,
+  runPortalMutationObserver,
 };

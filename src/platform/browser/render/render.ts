@@ -15,6 +15,7 @@ import {
 import { createDomLink, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
+import { runPortalMutationObserver } from '../portal';
 
 
 platform.raf = window.requestAnimationFrame.bind(this);
@@ -38,6 +39,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     roots.set(container, rootId);
     effectStoreHelper.set(rootId);
     container.innerHTML = '';
+    runPortalMutationObserver(container);
   } else {
     const rootId = roots.get(container);
 
