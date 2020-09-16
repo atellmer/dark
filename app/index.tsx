@@ -10,7 +10,6 @@ import {
   useCallback,
   useMemo,
   useEffect,
-  useLayoutEffect,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
 
