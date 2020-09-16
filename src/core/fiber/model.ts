@@ -12,9 +12,14 @@ export type WorkLoopOptions = {
   onRender?: () => void;
 };
 
-export type Hook = {
+export type HookValue<T = any> = {
+  deps: Array<any>;
+  value: T;
+};
+
+export type Hook<T = any> = {
   idx: number;
-  values: Array<any>;
+  values: Array<T>;
   updateScheduled: boolean;
   update: () => void;
 };

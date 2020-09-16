@@ -10,8 +10,10 @@ import {
   useCallback,
   useMemo,
   useEffect,
+  useLayoutEffect,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
+
 
 const domElement = document.getElementById('root');
 
@@ -122,21 +124,23 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  // const [count, setCount] = useState(0);
-  // const scope = useMemo(() => ({ timer: null }), []);
+  const [count, setCount] = useState(0);
 
-  // scope.timer && clearTimeout(scope.timer);
-  // scope.timer = setTimeout(() => {
-  //   setCount(count + 1);
-  // }, 10);
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setCount(count + 1);
+    }, 1000);
+
+    return () => clearTimeout(timerId);
+  }, [count]);
 
   // console.log('render', id);
 
   return (
-    <tr class={selected ? 'selected' : undefined}>
+    <tr id={`row-${id}`} class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>xxx</td>
-      <td class='cell'>zzz</td>
+      <td class='cell'>{count}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
@@ -181,7 +185,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

@@ -37,7 +37,7 @@ function useUpdate() {
         deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
         deletionsHelper.set([]);
         workLoop({ deadline });
-      }
+      },
     });
   };
 

@@ -1,5 +1,5 @@
 import { platform } from '../global';
-import { nextUnitOfWorkHelper } from '@core/scope';
+import { nextUnitOfWorkHelper } from '../scope';
 import { Updator, UpdatorZone } from './model';
 
 
