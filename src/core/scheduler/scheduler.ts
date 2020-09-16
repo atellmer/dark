@@ -1,6 +1,6 @@
 import { platform } from '../global';
-import { fromHookUpdateHelper } from '@core/scope';
-import { Updator } from './model';
+import { nextUnitOfWorkHelper } from '@core/scope';
+import { Updator, UpdatorZone } from './model';
 
 
 class Scheduller {
@@ -12,18 +12,16 @@ class Scheduller {
   };
 
   private executeUpdate = (deadline: IdleDeadline) => {
-    const isFrommHookUpdate = fromHookUpdateHelper.get();
+    const hasUnitOfWork = Boolean(nextUnitOfWorkHelper.get());
 
-    if (isFrommHookUpdate) {
+    if (hasUnitOfWork) {
       platform.ric(this.executeUpdate);
-    } else {
+    } else if (this.queue.length > 0) {
       const [updator] = this.queue;
 
-      if (updator) {
-        updator.run(deadline);
-        this.queue.shift();
-        platform.ric(this.executeUpdate);
-      }
+      this.queue.shift();
+      updator.run(deadline);
+      platform.ric(this.executeUpdate);
     }
   }
 }

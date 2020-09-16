@@ -122,13 +122,13 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const [count, setCount] = useState(0);
-  const scope = useMemo(() => ({ timer: null }), []);
+  // const [count, setCount] = useState(0);
+  // const scope = useMemo(() => ({ timer: null }), []);
 
-  scope.timer && clearTimeout(scope.timer);
-  scope.timer = setTimeout(() => {
-    setCount(count + 1);
-  }, 100);
+  // scope.timer && clearTimeout(scope.timer);
+  // scope.timer = setTimeout(() => {
+  //   setCount(count + 1);
+  // }, 10);
 
   // console.log('render', id);
 
@@ -136,7 +136,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>xxx</td>
-      <td class='cell'>count: {count}</td>
+      <td class='cell'>zzz</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
@@ -181,7 +181,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
