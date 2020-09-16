@@ -13,14 +13,14 @@ import {
   mountInstance,
   workLoop,
 } from '@core/fiber';
-import { scheduller, UpdatorZone } from '../scheduler';
+import { scheduler, UpdatorZone } from '../scheduler';
 
 
 function useUpdate() {
   const rootId = getRootId();
   const fiber = componentFiberHelper.get();
   const update = () => {
-    scheduller.scheduleUpdate({
+    scheduler.scheduleUpdate({
       zone: UpdatorZone.LOCAL,
       run: (deadline: IdleDeadline) => {
         effectStoreHelper.set(rootId); // important order!
@@ -43,7 +43,6 @@ function useUpdate() {
 
   return [update];
 }
-
 
 export {
   useUpdate,

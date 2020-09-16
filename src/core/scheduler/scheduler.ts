@@ -3,7 +3,7 @@ import { nextUnitOfWorkHelper } from '@core/scope';
 import { Updator, UpdatorZone } from './model';
 
 
-class Scheduller {
+class Scheduler {
   private queue: Array<Updator> = [];
 
   public scheduleUpdate = (updator: Updator) => {
@@ -26,8 +26,8 @@ class Scheduller {
   }
 }
 
-const scheduller = new Scheduller();
+const scheduler = new Scheduler();
 
 export {
-  scheduller,
+  scheduler,
 };

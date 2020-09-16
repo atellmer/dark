@@ -15,7 +15,7 @@ import {
 import { createDomLink, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
-import { scheduller, UpdatorZone } from '@core/scheduler';
+import { scheduler, UpdatorZone } from '@core/scheduler';
 import { runPortalMutationObserver } from '../portal';
 
 
@@ -48,7 +48,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
 
   const rootId = getRootId();
 
-  scheduller.scheduleUpdate({
+  scheduler.scheduleUpdate({
     zone: UpdatorZone.ROOT,
     run: (deadline: IdleDeadline) => {
       effectStoreHelper.set(rootId);
