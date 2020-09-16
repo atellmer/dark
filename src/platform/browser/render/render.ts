@@ -15,6 +15,7 @@ import {
 import { createDomLink, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
+import { scheduller, UpdatorZone } from '@core/scheduler';
 import { runPortalMutationObserver } from '../portal';
 
 
@@ -24,7 +25,6 @@ platform.createLink = createDomLink as typeof platform.createLink;
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
 
 const roots: Map<Element, number> = new Map();
-const renderRequests: Array<(deadline: IdleDeadline) => void> = [];
 
 function render(element: DarkElement, container: Element, onRender?: () => void) {
   if (!(container instanceof Element)) {
@@ -46,41 +46,34 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     effectStoreHelper.set(rootId);
   }
 
-  renderRequests.push((rootId => (deadline: IdleDeadline) => {
-    effectStoreHelper.set(rootId);
-    resetNodeCache();
+  const rootId = getRootId();
 
-    const currentRootFiber = currentRootHelper.get();
-    const fiber = new Fiber({
-      link: container,
-      instance: createTagVirtualNode({
-        name: ROOT,
-        children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
-      }),
-      alternate: currentRootFiber,
-      effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
-    });
+  scheduller.scheduleUpdate({
+    zone: UpdatorZone.ROOT,
+    run: (deadline: IdleDeadline) => {
+      effectStoreHelper.set(rootId);
+      resetNodeCache();
 
-    currentRootFiber && (currentRootFiber.alternate = null);
-    fiberMountHelper.reset();
-    wipRootHelper.set(fiber);
-    nextUnitOfWorkHelper.set(fiber);
-    deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
-    deletionsHelper.set([]);
-    workLoop({ deadline, onRender });
-  })(getRootId()));
+      const currentRootFiber = currentRootHelper.get();
+      const fiber = new Fiber({
+        link: container,
+        instance: createTagVirtualNode({
+          name: ROOT,
+          children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
+        }),
+        alternate: currentRootFiber,
+        effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
+      });
 
-  platform.ric(scheduleRenders);
-}
-
-function scheduleRenders(deadline: IdleDeadline) {
-  const [request] = renderRequests;
-
-  if (request) {
-    request(deadline);
-    renderRequests.shift();
-    platform.ric(scheduleRenders);
-  }
+      currentRootFiber && (currentRootFiber.alternate = null);
+      fiberMountHelper.reset();
+      wipRootHelper.set(fiber);
+      nextUnitOfWorkHelper.set(fiber);
+      deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
+      deletionsHelper.set([]);
+      workLoop({ deadline, onRender });
+    },
+  });
 }
 
 export {

@@ -6,8 +6,10 @@ import {
   Fragment,
   memo,
   useState,
+  useUpdate,
   useCallback,
   useMemo,
+  useEffect,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
 
@@ -100,16 +102,6 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
 
 const MemoHeader = memo(Header);
 
-// const Counter2 = createComponent(() => {
-//   const [count, setCount] = useState(0);
-//   const key = count % 2 ? 1 : 2;
-
-//   return [
-//     <div key={key}>count: {count}</div>,
-//     <button onClick={() => setCount(count + 1)}>Click me</button>,
-//   ]
-// })
-
 const Counter = createComponent(() => {
   const [count, setCount] = useState(0);
 
@@ -130,12 +122,13 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const container = useMemo(() => {
-    const element = document.createElement('div');
-    document.body.appendChild(element);
+  const [count, setCount] = useState(0);
+  const scope = useMemo(() => ({ timer: null }), []);
 
-    return element;
-  }, []);
+  scope.timer && clearTimeout(scope.timer);
+  scope.timer = setTimeout(() => {
+    setCount(count + 1);
+  }, 100);
 
   // console.log('render', id);
 
@@ -143,14 +136,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>xxx</td>
-      <td class='cell'>
-        {
-          createPortal(
-            <Counter />,
-            container,
-          )
-        }
-      </td>
+      <td class='cell'>count: {count}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
@@ -171,7 +157,6 @@ type ListProps = {
 }
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-
   return (
     <table class='table'>
       <tbody>
