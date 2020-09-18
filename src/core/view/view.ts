@@ -1,5 +1,5 @@
 import { ViewDef, NodeType } from './model';
-import { ComponentFactory } from '@core/component';
+import { ComponentFactory, StandardComponentProps } from '@core/component';
 import {
   isArray,
   isNumber,
@@ -74,7 +74,15 @@ const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vN
 const detectIsEmptyVirtualNode = (vNode: CommentVirtualNode): boolean =>
   detectIsCommentVirtualNode(vNode) && vNode.value === EMPTY_NODE;
 
-const Text = (text: string) => createTextVirtualNode(text);
+const Text = (source: string | StandardComponentProps['slot']) => {
+  const text = typeof source === 'string'
+    ? createTextVirtualNode(source)
+    : detectIsTextVirtualNode(source)
+      ? source.value
+      : '';
+
+  return text;
+}
 
 const Comment = (text: string) => createCommentVirtualNode(text);
 

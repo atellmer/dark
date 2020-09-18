@@ -1,6 +1,6 @@
 import { platform } from '../global';
 import { nextUnitOfWorkHelper } from '../scope';
-import { Updator, UpdatorZone } from './model';
+import { Updator } from './model';
 
 
 class Scheduler {
