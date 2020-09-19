@@ -132,7 +132,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const theme = useContext(ThemeContext);
   const lang = useContext(I18nContext);
 
-  // console.log('render', id);
+  console.log('render', id);
 
   const themeClassName = theme === 'dark' ? 'dark' : 'light';
   const selectedClassName = selected ? 'selected' : '';
@@ -235,43 +235,22 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const [theme1, setTheme1] = useState('dark');
-  const handleToggleTheme1 = useCallback(() => setTheme1(theme => theme === 'dark' ? 'light' : 'dark'), []);
-  const [theme2, setTheme2] = useState('dark');
-  const handleToggleTheme2 = useCallback(() => setTheme2(theme => theme === 'dark' ? 'light' : 'dark'), []);
+  const [theme, setTheme] = useState('dark');
+  const handleToggleTheme = useCallback(() => setTheme(theme => theme === 'dark' ? 'light' : 'dark'), []);
   const [lang, setLang] = useState('ru');
-  const handleToggleLang = useCallback(() => setLang(lang => lang === 'ru' ? 'en' : 'en'), []);
-
-  console.log('render');
-  
+  const handleToggleLang = useCallback(() => setLang(lang => lang === 'ru' ? 'en' : 'ru'), []);
 
   return (
     <Fragment>
       <I18nContext.Provider value={lang}>
-        <ThemeContext.Provider value={theme1}>
+        <ThemeContext.Provider value={theme}>
           <MemoHeader
             onCreate={handleCreate}
             onAdd={handleAdd}
             onUpdateAll={handleUpdateAll}
             onSwap={handleSwap}
             onClear={handleClear}
-            onToggleTheme={handleToggleTheme1}
-            onToggleLang={handleToggleLang}
-          />
-          <MemoList
-            items={state.list}
-            onRemove={handleRemove}
-            onHighlight={handleHightlight}
-          />
-        </ThemeContext.Provider>
-        <ThemeContext.Provider value={theme2}>
-          <MemoHeader
-            onCreate={handleCreate}
-            onAdd={handleAdd}
-            onUpdateAll={handleUpdateAll}
-            onSwap={handleSwap}
-            onClear={handleClear}
-            onToggleTheme={handleToggleTheme2}
+            onToggleTheme={handleToggleTheme}
             onToggleLang={handleToggleLang}
           />
           <MemoList

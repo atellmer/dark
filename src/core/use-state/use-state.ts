@@ -16,12 +16,17 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   const { idx, values } = hook;
   const [update] = useUpdate();
   const value = !isUndefined(values[idx]) ? values[idx] : initialValue;
-
-  const setState = (value: Value<T>) => {
+  const setState = (sourceValue: Value<T>) => {
     effectStoreHelper.set(rootId);
-    values[idx] = isFunction(value) ? value(values[idx]) : value;
-    hook.update();
-  }
+    const value = values[idx];
+    const newValue = isFunction(sourceValue) ? sourceValue(value) : sourceValue;
+
+    if (!Object.is(value, newValue)) {
+      hook.update();
+    }
+
+    values[idx] = newValue;
+  };
 
   values[idx] = value;
   hook.update = update;

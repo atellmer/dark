@@ -1,7 +1,6 @@
 import { createComponent } from '@core/component';
 import { Context, ContexProviderProps } from './model';
 import { useEffect } from '@core/use-effect';
-import { useMemo } from '@core/use-memo';
 import { componentFiberHelper } from '@core/scope';
 import { useContext } from '@core/use-context';
 import { isFunction } from '@helpers';
@@ -33,14 +32,12 @@ function createContext<T>(defaultValue: T): Context<T> {
         }
 
         const provider = fiber.provider.get(context);
-        const scope = useMemo(() => ({ prevValue: value }), []);
-        const isDifferent = !Object.is(scope.prevValue, value);
 
         useEffect(() => {
           for (const subscriber of provider.subscribers) {
             subscriber(value);
           }
-        }, [isDifferent]);
+        }, [value]);
 
         provider.value = value;
 
