@@ -1,5 +1,12 @@
-import { EffectTag, NativeElement, WorkLoopOptions, Hook, cloneTagMap } from './model';
+import {
+  EffectTag,
+  NativeElement,
+  WorkLoopOptions,
+  Hook,
+  cloneTagMap,
+} from './model';
 import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
+import { Context, ContextProviderValue } from '../context/model';
 import {
   wipRootHelper,
   currentRootHelper,
@@ -47,6 +54,7 @@ class Fiber<N = NativeElement> {
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
   public hook: Hook;
+  public provider: Map<Context, ContextProviderValue>;
   public link: N;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -59,6 +67,7 @@ class Fiber<N = NativeElement> {
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
     this.hook = options.hook || createHook();
+    this.provider = options.provider || null;
     this.link = options.link || null;
   }
 }
@@ -125,9 +134,15 @@ function performUnitOfWork(fiber: Fiber) {
       : alternate
         ? alternate.hook
         : createHook();
-    const fiber = new Fiber({ hook });
+    const provider =  shadow
+      ? shadow.provider
+      : alternate
+        ? alternate.provider
+        : null;
+    const fiber = new Fiber({ hook, provider });
 
     componentFiberHelper.set(fiber);
+    fiber.parent = nextFiber;
 
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
@@ -161,9 +176,15 @@ function performUnitOfWork(fiber: Fiber) {
         : alternate
           ? alternate.hook
           : createHook();
-      const fiber = new Fiber({ hook });
+      const provider =  shadow
+        ? shadow.provider
+        : alternate
+          ? alternate.provider
+          : null;
+      const fiber = new Fiber({ hook, provider });
 
       componentFiberHelper.set(fiber);
+      fiber.parent = nextFiber.parent;
 
       pertformInstance(parent, childrenIdx, alternate);
       alternate && performAlternate(alternate);
@@ -171,8 +192,8 @@ function performUnitOfWork(fiber: Fiber) {
       alternate && performMemo(fiber, alternate);
 
       fiber.prevSibling = nextFiber;
-      nextFiber.nextSibling = fiber;
       fiber.parent = nextFiber.parent;
+      nextFiber.nextSibling = fiber;
       fiber.shadow = shadow;
       nextFiber = fiber;
 
