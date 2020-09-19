@@ -79,7 +79,7 @@ function workLoop(options: WorkLoopOptions) {
     commitChanges(onRender);
   }
 
-  platform.ric(deadline => workLoop({ deadline, onRender }));
+  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
 function performUnitOfWork(fiber: Fiber) {

@@ -20,7 +20,7 @@ function useUpdate() {
   const rootId = getRootId();
   const fiber = componentFiberHelper.get();
   const update = () => {
-    scheduler.scheduleUpdate({
+    scheduler.scheduleTask({
       zone: UpdatorZone.LOCAL,
       run: (deadline: IdleDeadline) => {
         effectStoreHelper.set(rootId); // important order!

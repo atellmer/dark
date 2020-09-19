@@ -34,6 +34,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
   const isMounted = !isUndefined(roots.get(container));
 
   if (!isMounted) {
+    scheduler.run();
     const rootId = roots.size;
 
     roots.set(container, rootId);
@@ -48,7 +49,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
 
   const rootId = getRootId();
 
-  scheduler.scheduleUpdate({
+  scheduler.scheduleTask({
     zone: UpdatorZone.ROOT,
     run: (deadline: IdleDeadline) => {
       effectStoreHelper.set(rootId);
