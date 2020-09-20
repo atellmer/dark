@@ -149,7 +149,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
       </td>
     </tr>
   );
-});
+}, { displayName: 'Row' });
 
 const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
   props.name !== nextProps.name ||

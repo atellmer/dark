@@ -14,7 +14,6 @@ const defaultOptions: ComponentOptions<any> = {
   defaultProps: {},
   token: $$component,
 };
-
 class ComponentFactory<P extends StandardComponentProps = any> {
   public type: CreateElement<P>;
   public token: Symbol;
@@ -49,8 +48,7 @@ function createComponent<P>(
   };
 }
 
-const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory =>
-  factory && factory instanceof ComponentFactory;
+const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory => factory instanceof ComponentFactory;
 
 const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey => factory.props[ATTR_KEY] || null;
 
