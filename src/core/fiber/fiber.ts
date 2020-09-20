@@ -341,8 +341,6 @@ function performUnitOfWork(fiber: Fiber) {
       const skip = !factory.props[$$memo](props, nextProps);
 
       if (skip) {
-        const parentFiber = fiber.parent;
-
         fiberMountHelper.deepWalking.set(false);
 
         for (const key in alternate) {
@@ -351,8 +349,17 @@ function performUnitOfWork(fiber: Fiber) {
           }
         }
 
-        fiber.parent = parentFiber;
         fiber.effectTag = EffectTag.SKIP;
+
+        if (fiber.child) {
+          let nextFiber = fiber.child.nextSibling;
+          fiber.child.parent = fiber;
+
+          while (nextFiber) {
+            nextFiber.parent = fiber;
+            nextFiber = nextFiber.nextSibling;
+          }
+        }
       }
     }
   }

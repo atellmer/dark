@@ -186,7 +186,6 @@ function mutateDom(fiber: Fiber<Element>) {
     commitDeletion({
       fiber,
       parent: parentLink,
-      onBeforeCommit: fiber => { },
     });
   }
 }
@@ -304,7 +303,6 @@ type CommitDeletionOptions = {
   fiber: Fiber<Element>;
   parent: Element;
   fromChild?: boolean;
-  onBeforeCommit: (fiber: Fiber) => void;
 };
 
 function commitDeletion(options: CommitDeletionOptions) {
@@ -312,20 +310,17 @@ function commitDeletion(options: CommitDeletionOptions) {
     fiber,
     parent,
     fromChild = false,
-    onBeforeCommit,
   } = options;
 
   if (!fiber) return; // empty fiber without link for inserting
 
   if (fiber.link) {
-    onBeforeCommit(fiber);
     parent.removeChild(fiber.link);
   } else {
     commitDeletion({
       fiber: fiber.child,
       parent,
       fromChild: true,
-      onBeforeCommit,
     });
   }
 
@@ -334,7 +329,6 @@ function commitDeletion(options: CommitDeletionOptions) {
       fiber: fiber.nextSibling,
       parent,
       fromChild: true,
-      onBeforeCommit,
     });
   }
 }
