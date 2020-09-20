@@ -50,12 +50,13 @@ class Fiber<N = NativeElement> {
   public prevSibling: Fiber<N>;
   public nextSibling: Fiber<N>;
   public alternate: Fiber<N>;
-  public shadow: Fiber<N>;
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
-  public hook: Hook;
-  public provider: Map<Context, ContextProviderValue>;
   public link: N;
+  public hook?: Hook;
+  public shadow?: Fiber<N>;
+  public provider?: Map<Context, ContextProviderValue>;
+  public transposition?: boolean;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || null;
@@ -63,11 +64,9 @@ class Fiber<N = NativeElement> {
     this.prevSibling = options.prevSibling || null;
     this.nextSibling = options.nextSibling || null;
     this.alternate = options.alternate || null;
-    this.shadow = options.shadow || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
     this.hook = options.hook || createHook();
-    this.provider = options.provider || null;
     this.link = options.link || null;
   }
 }
@@ -218,6 +217,10 @@ function performUnitOfWork(fiber: Fiber) {
 
     if (key !== nextKey) {
       shadow = getAlternateByKey(nextKey, alternate.parent.child);
+
+      if (shadow) {
+        alternate.transposition = true;
+      }
     }
 
     return shadow;
@@ -572,7 +575,6 @@ function commitWork(fiber: Fiber, onComplete: Function) {
     if (nextFiber.shadow) {
       nextFiber.shadow = null;
     }
-
 
     if (skip) {
       if (nextFiber.nextSibling) {

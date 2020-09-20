@@ -306,6 +306,7 @@ type CommitDeletionOptions = {
   parent: Element;
   fromChild?: boolean;
   isRemoved?: boolean;
+  isTransposition?: boolean;
 };
 
 function commitDeletion(options: CommitDeletionOptions) {
@@ -314,15 +315,18 @@ function commitDeletion(options: CommitDeletionOptions) {
     parent,
     fromChild = false,
     isRemoved = false,
+    isTransposition = false,
   } = options;
 
   if (!fiber) return; // empty fiber without link for inserting
 
-  if (fiber.link && !isRemoved) {
+  const hasLink = Boolean(fiber.link);
+
+  if (hasLink && !isRemoved) {
     parent.removeChild(fiber.link);
   }
 
-  if (detectIsComponentFactory(fiber.instance)) {
+  if (!isTransposition && !fiber.transposition && detectIsComponentFactory(fiber.instance)) {
     runEffectCleanup(fiber.hook);
   }
 
@@ -330,7 +334,8 @@ function commitDeletion(options: CommitDeletionOptions) {
     fiber: fiber.child,
     parent,
     fromChild: true,
-    isRemoved: Boolean(fiber.link) || isRemoved,
+    isRemoved: hasLink || isRemoved,
+    isTransposition: fiber.transposition || isTransposition,
   });
 
   if (fromChild && fiber.nextSibling) {
@@ -338,7 +343,8 @@ function commitDeletion(options: CommitDeletionOptions) {
       fiber: fiber.nextSibling,
       parent,
       fromChild: true,
-      isRemoved: Boolean(fiber.link) || isRemoved,
+      isRemoved: hasLink || isRemoved,
+      isTransposition: fiber.transposition || isTransposition,
     });
   }
 }
