@@ -353,6 +353,7 @@ function performUnitOfWork(fiber: Fiber) {
 
         if (fiber.child) {
           let nextFiber = fiber.child.nextSibling;
+
           fiber.child.parent = fiber;
 
           while (nextFiber) {

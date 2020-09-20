@@ -13,6 +13,7 @@ export type WorkLoopOptions = {
 };
 
 export type HookValue<T = any> = {
+  token?: Symbol;
   deps: Array<any>;
   value: T;
 };

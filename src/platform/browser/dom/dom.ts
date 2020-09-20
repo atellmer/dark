@@ -1,5 +1,6 @@
 import { DomElement } from './model';
 import { Fiber, EffectTag } from '@core/fiber';
+import { isFunction, isUndefined } from '@helpers';
 import {
   NodeType,
   VirtualNode,
@@ -12,11 +13,12 @@ import {
   getAttribute,
   detectIsCommentVirtualNode,
 } from '@core/view';
-import { isFunction, isUndefined } from '@helpers';
-import { delegateEvent, detectIsEvent, getEventName } from '../events';
+import { detectIsComponentFactory } from '@core/component';
+import { runEffectCleanup } from '@core/use-effect';
 import { ATTR_KEY, EMPTY_NODE } from '@core/constants';
 import { fromHookUpdateHelper } from '@core/scope';
 import { detectIsPortal, getPortalContainer } from '../portal';
+import { delegateEvent, detectIsEvent, getEventName } from '../events';
 
 
 const attrBlackList = [ATTR_KEY];
@@ -303,6 +305,7 @@ type CommitDeletionOptions = {
   fiber: Fiber<Element>;
   parent: Element;
   fromChild?: boolean;
+  isRemoved?: boolean;
 };
 
 function commitDeletion(options: CommitDeletionOptions) {
@@ -310,25 +313,32 @@ function commitDeletion(options: CommitDeletionOptions) {
     fiber,
     parent,
     fromChild = false,
+    isRemoved = false,
   } = options;
 
   if (!fiber) return; // empty fiber without link for inserting
 
-  if (fiber.link) {
+  if (fiber.link && !isRemoved) {
     parent.removeChild(fiber.link);
-  } else {
-    commitDeletion({
-      fiber: fiber.child,
-      parent,
-      fromChild: true,
-    });
   }
+
+  if (detectIsComponentFactory(fiber.instance)) {
+    runEffectCleanup(fiber.hook);
+  }
+
+  commitDeletion({
+    fiber: fiber.child,
+    parent,
+    fromChild: true,
+    isRemoved: Boolean(fiber.link) || isRemoved,
+  });
 
   if (fromChild && fiber.nextSibling) {
     commitDeletion({
       fiber: fiber.nextSibling,
       parent,
       fromChild: true,
+      isRemoved: Boolean(fiber.link) || isRemoved,
     });
   }
 }
