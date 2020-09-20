@@ -18,7 +18,7 @@ function useEffect(effect: Effect, deps?: Array<any>) {
       };
     };
 
-    setImmediate(() => run());
+    setImmediate(run);
   };
 
   if (isUndefined(values[idx])) {
