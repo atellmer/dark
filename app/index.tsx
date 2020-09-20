@@ -2,385 +2,283 @@
 
 // run();
 
-// import {
-//   h,
-//   View,
-//   Text,
-//   createComponent,
-//   Fragment,
-//   memo,
-//   useState,
-//   useUpdate,
-//   useCallback,
-//   useMemo,
-//   useEffect,
-//   useContext,
-//   createContext,
-// } from '../src/core';
-// import { render, createPortal } from '../src/platform/browser';
+import {
+  h,
+  View,
+  Text,
+  createComponent,
+  Fragment,
+  memo,
+  useState,
+  useUpdate,
+  useCallback,
+  useMemo,
+  useEffect,
+  useContext,
+  createContext,
+} from '../src/core';
+import { render, createPortal } from '../src/platform/browser';
 
 
-// const domElement = document.getElementById('root');
+const domElement = document.getElementById('root');
 
-// const div = (props = {}) => View({ ...props, as: 'div' });
-// const button = (props = {}) => View({ ...props, as: 'button' });
-// const table = (props = {}) => View({ ...props, as: 'table' });
-// const tbody = (props = {}) => View({ ...props, as: 'tbody' });
-// const tr = (props = {}) => View({ ...props, as: 'tr' });
-// const td = (props = {}) => View({ ...props, as: 'td' });
+const div = (props = {}) => View({ ...props, as: 'div' });
+const button = (props = {}) => View({ ...props, as: 'button' });
+const table = (props = {}) => View({ ...props, as: 'table' });
+const tbody = (props = {}) => View({ ...props, as: 'tbody' });
+const tr = (props = {}) => View({ ...props, as: 'tr' });
+const td = (props = {}) => View({ ...props, as: 'td' });
 
-// const createMeasurer = () => {
-//   let startTime;
-//   let lastMeasureName;
-//   const start = (name: string) => {
-//     startTime = performance.now();
-//     lastMeasureName = name;
-//   };
-//   const stop = () => {
-//     const last = lastMeasureName;
+const createMeasurer = () => {
+  let startTime;
+  let lastMeasureName;
+  const start = (name: string) => {
+    startTime = performance.now();
+    lastMeasureName = name;
+  };
+  const stop = () => {
+    const last = lastMeasureName;
 
-//     if (lastMeasureName) {
-//       setTimeout(() => {
-//         lastMeasureName = null;
-//         const stopTime = performance.now();
-//         const diff = stopTime - startTime;
+    if (lastMeasureName) {
+      setTimeout(() => {
+        lastMeasureName = null;
+        const stopTime = performance.now();
+        const diff = stopTime - startTime;
 
-//         console.log(`${last}: ${diff}`);
-//       }, 0);
-//     }
-//   };
+        console.log(`${last}: ${diff}`);
+      }, 0);
+    }
+  };
 
-//   return {
-//     start,
-//     stop,
-//   };
-// };
-
-// const measurer = createMeasurer();
-
-// let nextId = 0;
-// const buildData = (count, prefix = '') => {
-//   return Array(count).fill(0).map((_, idx) => ({
-//     id: ++nextId,
-//     name: `item: ${idx + 1} ${prefix}`,
-//     select: false,
-//   }))
-// }
-
-// const state = {
-//   list: [],
-// };
-
-// type HeaderProps = {
-//   onCreate: Function;
-//   onAdd: Function;
-//   onUpdateAll: Function;
-//   onSwap: Function;
-//   onClear: Function;
-//   onToggleTheme: Function;
-//   onToggleLang: Function;
-// }
-
-// const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleTheme, onToggleLang }) => {
-//   const theme = useContext(ThemeContext);
-//   const lang = useContext(I18nContext);
-
-//   return div({
-//     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
-//     slot: [
-//       button({
-//         slot: Text('create 10000 rows'),
-//         onClick: onCreate,
-//       }),
-//       button({
-//         slot: Text('Add 1000 rows'),
-//         onClick: onAdd,
-//       }),
-//       button({
-//         slot: Text('update every 10th row'),
-//         onClick: onUpdateAll,
-//       }),
-//       button({
-//         slot: Text('swap rows'),
-//         onClick: onSwap,
-//       }),
-//       button({
-//         slot: Text('clear rows'),
-//         onClick: onClear,
-//       }),
-//       button({
-//         slot: Text(theme),
-//         onClick: onToggleTheme,
-//       }),
-//       button({
-//         slot: Text(lang),
-//         onClick: onToggleLang,
-//       }),
-//     ],
-//   });
-// });
-
-// const MemoHeader = memo(Header);
-
-// type RowProps = {
-//   id: number,
-//   name: string;
-//   selected: boolean;
-//   onRemove: Function;
-//   onHighlight: Function;
-// };
-
-// const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
-//   const handleRemove = useCallback(() => onRemove(id), []);
-//   const handleHighlight = useCallback(() => onHighlight(id), []);
-//   const theme = useContext(ThemeContext);
-//   const lang = useContext(I18nContext);
-
-//   // console.log('render', id);
-
-//   const themeClassName = theme === 'dark' ? 'dark' : 'light';
-//   const selectedClassName = selected ? 'selected' : '';
-//   const className = `${themeClassName} ${selectedClassName}`;
-
-//   return (
-//     <tr class={className}>
-//       <td class='cell'>{name}</td>
-//       <td class='cell'>xxx</td>
-//       <td class='cell'>{lang}</td>
-//       <td class='cell'>
-//         <button onClick={handleRemove}>remove</button>
-//         <button onClick={handleHighlight}>highlight</button>
-//       </td>
-//     </tr>
-//   );
-// }, { displayName: 'Row' });
-
-// const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
-//   props.name !== nextProps.name ||
-//   props.selected !== nextProps.selected,
-// );
-
-// type ListProps = {
-//   items: Array<{ id: number, name: string; select: boolean }>;
-//   onRemove: Function;
-//   onHighlight: Function;
-// };
-
-// const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-//   return (
-//     <table class='table'>
-//       <tbody>
-//         {items.map((item) => {
-//           return (
-//             <MemoRow
-//               key={item.id}
-//               id={item.id}
-//               name={item.name}
-//               selected={item.select}
-//               onRemove={onRemove}
-//               onHighlight={onHighlight}
-//             />
-//           );
-//         })}
-//       </tbody>
-//     </table>
-//   )
-// });
-
-// const MemoList = memo(List);
-
-// const Bench = createComponent(() => {
-//   const handleCreate = useCallback(() => {
-//     state.list = buildData(10);
-//     measurer.start('create');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const handleAdd = useCallback(() => {
-//     state.list.push(...buildData(10, '!!!'));
-//     state.list = [...state.list];
-//     measurer.start('add');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const handleUpdateAll = useCallback(() => {
-//     state.list = state.list.map((x, idx) => ({ ...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name }));
-//     measurer.start('update every 10th');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const handleRemove = useCallback((id) => {
-//     state.list = state.list.filter((z) => z.id !== id);
-//     measurer.start('remove');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const handleHightlight = useCallback((id) => {
-//     const idx = state.list.findIndex(z => z.id === id);
-//     state.list[idx].select = !state.list[idx].select;
-//     state.list = [...state.list];
-//     measurer.start('highlight');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const handleSwap = useCallback(() => {
-//     if (state.list.length === 0) return;
-//     const temp = state.list[1];
-//     state.list[1] = state.list[state.list.length - 2];
-//     state.list[state.list.length - 2] = temp;
-//     state.list = [...state.list];
-//     measurer.start('swap');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const handleClear = useCallback(() => {
-//     state.list = [];
-//     measurer.start('clear');
-//     forceUpdate();
-//     measurer.stop();
-//   }, []);
-//   const [theme, setTheme] = useState('dark');
-//   const handleToggleTheme = useCallback(() => setTheme(theme => theme === 'dark' ? 'light' : 'dark'), []);
-//   const [lang, setLang] = useState('ru');
-//   const handleToggleLang = useCallback(() => setLang(lang => lang === 'ru' ? 'en' : 'ru'), []);
-
-//   return (
-//     <Fragment>
-//       <I18nContext.Provider value={lang}>
-//         <ThemeContext.Provider value={theme}>
-//           <MemoHeader
-//             onCreate={handleCreate}
-//             onAdd={handleAdd}
-//             onUpdateAll={handleUpdateAll}
-//             onSwap={handleSwap}
-//             onClear={handleClear}
-//             onToggleTheme={handleToggleTheme}
-//             onToggleLang={handleToggleLang}
-//           />
-//           <MemoList
-//             items={state.list}
-//             onRemove={handleRemove}
-//             onHighlight={handleHightlight}
-//           />
-//         </ThemeContext.Provider>
-//       </I18nContext.Provider>
-//     </Fragment>
-//   );
-// });
-
-// const ThemeContext = createContext('dark');
-
-// ThemeContext.displayName = 'Theme';
-
-// const I18nContext = createContext('ru');
-
-// ThemeContext.displayName = 'i18n';
-
-// function forceUpdate() {
-//   render(Bench(), domElement);
-// }
-
-// render(Bench(), domElement);
-
-type Task = {
-  id?: number;
-  marker?: string;
-  branchThread?: boolean;
-  execute: (deadline: IdleDeadline, isHightPriority: boolean, onComplete: () => void) => void;
+  return {
+    start,
+    stop,
+  };
 };
 
-class Scheduler {
-  private nextId = 0;
-  private queue: Array<Task> = [];
-  private isMainThreadBusy = false;
-  private isBranchThreadBusy = false;
+const measurer = createMeasurer();
 
-  public run = () => {
-    requestIdleCallback(this.runMainThread);
-    requestIdleCallback(this.runBranchThread);
-  };
-
-  public addTask = (task: Task) => {
-    this.queue.push({
-      ...task,
-      id: ++this.nextId,
-      branchThread: false,
-    });
-  };
-
-  public runMainThread = (deadline: IdleDeadline) => {
-    const [task] = this.queue;
-
-    if (task) {
-      if (!this.isMainThreadBusy) {
-        this.isMainThreadBusy = true;
-        this.queue.shift();
-        task.execute(deadline, false, () => {
-          this.isMainThreadBusy = false;
-          console.log('main-thread', task.id, task.marker);
-        });
-      }
-    }
-
-    requestIdleCallback(this.runMainThread);
-  };
-
-  public runBranchThread = (deadline: IdleDeadline) => {
-
-    if (this.queue.length > 0 && this.isMainThreadBusy && !this.isBranchThreadBusy) {
-      const task = this.queue.find(x => x.branchThread === false);
-
-      if (task) {
-        this.isBranchThreadBusy = true;
-        task.execute(deadline, true, () => {
-          this.isBranchThreadBusy = false;
-          task.branchThread = true;
-          console.log('branch-thread', task.id, task.marker);
-        });
-      }
-    }
-
-    requestIdleCallback(this.runBranchThread);
-  };
+let nextId = 0;
+const buildData = (count, prefix = '') => {
+  return Array(count).fill(0).map((_, idx) => ({
+    id: ++nextId,
+    name: `item: ${idx + 1} ${prefix}`,
+    select: false,
+  }))
 }
 
-const scheduler = new Scheduler();
-
-scheduler.run();
-
-const workLoop = (deadline, isHightPriority, onComplete) => {
-  const startTime = performance.now() + 5000;
-  const run = (deadline: IdleDeadline) => {
-    let shouldYeild = false;
-    while (performance.now() < startTime && !shouldYeild) {
-      // long execution time.
-      shouldYeild = deadline ? deadline.timeRemaining() < 1 : false;
-    }
-
-    if (!shouldYeild) {
-      onComplete();
-    } else {
-      if (isHightPriority) {
-        onComplete();
-      } else {
-        requestIdleCallback(run);
-      }
-    }
-  }
-
-  run(deadline);
+const state = {
+  list: [],
 };
 
-setInterval(() => {
-  scheduler.addTask({
-    marker: 'timer',
-    execute: workLoop,
-  })
-}, 1000);
+type HeaderProps = {
+  onCreate: Function;
+  onAdd: Function;
+  onUpdateAll: Function;
+  onSwap: Function;
+  onClear: Function;
+  onToggleTheme: Function;
+  onToggleLang: Function;
+}
 
-// const timerId = setInterval(() => {
-//   scheduler.addTask({
-//     marker: 'animation',
-//     execute: workLoop,
-//   })
-// }, 200);
+const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleTheme, onToggleLang }) => {
+  const theme = useContext(ThemeContext);
+  const lang = useContext(I18nContext);
+
+  return div({
+    style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
+    slot: [
+      button({
+        slot: Text('create 10000 rows'),
+        onClick: onCreate,
+      }),
+      button({
+        slot: Text('Add 1000 rows'),
+        onClick: onAdd,
+      }),
+      button({
+        slot: Text('update every 10th row'),
+        onClick: onUpdateAll,
+      }),
+      button({
+        slot: Text('swap rows'),
+        onClick: onSwap,
+      }),
+      button({
+        slot: Text('clear rows'),
+        onClick: onClear,
+      }),
+      button({
+        slot: Text(theme),
+        onClick: onToggleTheme,
+      }),
+      button({
+        slot: Text(lang),
+        onClick: onToggleLang,
+      }),
+    ],
+  });
+});
+
+const MemoHeader = memo(Header);
+
+type RowProps = {
+  id: number,
+  name: string;
+  selected: boolean;
+  onRemove: Function;
+  onHighlight: Function;
+};
+
+const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+  const handleRemove = useCallback(() => onRemove(id), []);
+  const handleHighlight = useCallback(() => onHighlight(id), []);
+  const theme = useContext(ThemeContext);
+  const lang = useContext(I18nContext);
+
+  // console.log('render', id);
+
+  const themeClassName = theme === 'dark' ? 'dark' : 'light';
+  const selectedClassName = selected ? 'selected' : '';
+  const className = `${themeClassName} ${selectedClassName}`;
+
+  return (
+    <tr class={className}>
+      <td class='cell'>{name}</td>
+      <td class='cell'>xxx</td>
+      <td class='cell'>{lang}</td>
+      <td class='cell'>
+        <button onClick={handleRemove}>remove</button>
+        <button onClick={handleHighlight}>highlight</button>
+      </td>
+    </tr>
+  );
+}, { displayName: 'Row' });
+
+const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
+  props.name !== nextProps.name ||
+  props.selected !== nextProps.selected,
+);
+
+type ListProps = {
+  items: Array<{ id: number, name: string; select: boolean }>;
+  onRemove: Function;
+  onHighlight: Function;
+};
+
+const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  return (
+    <table class='table'>
+      <tbody>
+        {items.map((item) => {
+          return (
+            <MemoRow
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              selected={item.select}
+              onRemove={onRemove}
+              onHighlight={onHighlight}
+            />
+          );
+        })}
+      </tbody>
+    </table>
+  )
+});
+
+const MemoList = memo(List);
+
+const Bench = createComponent(() => {
+  const handleCreate = useCallback(() => {
+    state.list = buildData(10);
+    measurer.start('create');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleAdd = useCallback(() => {
+    state.list.push(...buildData(10, '!!!'));
+    state.list = [...state.list];
+    measurer.start('add');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleUpdateAll = useCallback(() => {
+    state.list = state.list.map((x, idx) => ({ ...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name }));
+    measurer.start('update every 10th');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleRemove = useCallback((id) => {
+    state.list = state.list.filter((z) => z.id !== id);
+    measurer.start('remove');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleHightlight = useCallback((id) => {
+    const idx = state.list.findIndex(z => z.id === id);
+    state.list[idx].select = !state.list[idx].select;
+    state.list = [...state.list];
+    measurer.start('highlight');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleSwap = useCallback(() => {
+    if (state.list.length === 0) return;
+    const temp = state.list[1];
+    state.list[1] = state.list[state.list.length - 2];
+    state.list[state.list.length - 2] = temp;
+    state.list = [...state.list];
+    measurer.start('swap');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleClear = useCallback(() => {
+    state.list = [];
+    measurer.start('clear');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const [theme, setTheme] = useState('dark');
+  const handleToggleTheme = useCallback(() => setTheme(theme => theme === 'dark' ? 'light' : 'dark'), []);
+  const [lang, setLang] = useState('ru');
+  const handleToggleLang = useCallback(() => setLang(lang => lang === 'ru' ? 'en' : 'ru'), []);
+
+  return (
+    <Fragment>
+      <I18nContext.Provider value={lang}>
+        <ThemeContext.Provider value={theme}>
+          <MemoHeader
+            onCreate={handleCreate}
+            onAdd={handleAdd}
+            onUpdateAll={handleUpdateAll}
+            onSwap={handleSwap}
+            onClear={handleClear}
+            onToggleTheme={handleToggleTheme}
+            onToggleLang={handleToggleLang}
+          />
+          <MemoList
+            items={state.list}
+            onRemove={handleRemove}
+            onHighlight={handleHightlight}
+          />
+        </ThemeContext.Provider>
+      </I18nContext.Provider>
+    </Fragment>
+  );
+});
+
+const ThemeContext = createContext('dark');
+
+ThemeContext.displayName = 'Theme';
+
+const I18nContext = createContext('ru');
+
+ThemeContext.displayName = 'i18n';
+
+function forceUpdate() {
+  render(Bench(), domElement);
+}
+
+render(Bench(), domElement);
+
