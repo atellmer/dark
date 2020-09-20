@@ -3,7 +3,8 @@ import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 
 import { render } from './render';
 import { createComponent } from '@core/component/component';
-import { View, Text, Comment, createElement } from '@core/view/view';
+import { View, Text, Comment } from '@core/view/view';
+import { createElement } from '@core/element/element';
 import { EMPTY_NODE } from '@core/constants';
 import { dom } from '../../../../test/utils';
 

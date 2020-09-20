@@ -132,7 +132,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const theme = useContext(ThemeContext);
   const lang = useContext(I18nContext);
 
-  console.log('render', id);
+  // console.log('render', id);
 
   const themeClassName = theme === 'dark' ? 'dark' : 'light';
   const selectedClassName = selected ? 'selected' : '';
@@ -187,7 +187,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

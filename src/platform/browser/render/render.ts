@@ -2,7 +2,7 @@ import { Fiber, workLoop, EffectTag } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
-import { createTagVirtualNode, VirtualNode } from '@core/view';
+import { TagVirtualNode, VirtualNode } from '@core/view';
 import {
   effectStoreHelper,
   wipRootHelper,
@@ -58,7 +58,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
       const currentRootFiber = currentRootHelper.get();
       const fiber = new Fiber({
         link: container,
-        instance: createTagVirtualNode({
+        instance: new TagVirtualNode({
           name: ROOT,
           children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
         }),

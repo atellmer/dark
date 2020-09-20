@@ -2,8 +2,8 @@ export {
   Text,
   Comment,
   View,
-  createElement as h,
 } from './view';
+export { createElement as h } from './element';
 export { createComponent } from './component';
 export { Fragment } from './fragment';
 export { memo } from './memo';
