@@ -65,14 +65,14 @@ const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
 
   s /= 2;
 
-  const slowDown = true;
+  // const slowDown = true;
 
-  if (slowDown) {
-    const e = performance.now() + 0.8;
-    while (performance.now() < e) {
-      // Artificially long execution time.
-    }
-  }
+  // if (slowDown) {
+  //   const e = performance.now() + 0.8;
+  //   while (performance.now() < e) {
+  //     // Artificially long execution time.
+  //   }
+  // }
 
   return (
     <div>
