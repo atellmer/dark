@@ -1,38 +1,47 @@
+
 type Task = {
   id?: number;
   marker?: string;
-  branchThread?: boolean;
   execute: (deadline: IdleDeadline, isHightPriority: boolean, onComplete: () => void) => void;
 };
 
 class Scheduler {
   private nextId = 0;
-  private queue: Array<Task> = [];
+  private mainTaskId = 1;
+  private branchTaskId = 1;
+  private taskMap: Map<number, Task> = new Map();
   private isMainThreadBusy = false;
   private isBranchThreadBusy = false;
 
   public run = () => {
-    requestIdleCallback(this.runMainThread);
-    requestIdleCallback(this.runBranchThread);
-  };
-
-  public addTask = (task: Task) => {
-    this.queue.push({
-      ...task,
-      id: ++this.nextId,
-      branchThread: false,
+    requestIdleCallback((deadline: IdleDeadline) => {
+      this.runMainThread(deadline);
+      this.runBranchThread(deadline);
     });
   };
 
-  public runMainThread = (deadline: IdleDeadline) => {
-    const [task] = this.queue;
+  public addTask = (task: Task) => {
+    const id = ++this.nextId;
 
-    if (task) {
-      if (!this.isMainThreadBusy) {
+    this.taskMap.set(id, { ...task, id });
+  };
+
+  public runMainThread = (deadline: IdleDeadline) => {
+
+    if (!this.isMainThreadBusy) {
+      const task = this.taskMap.get(this.mainTaskId);
+
+      if (task) {
         this.isMainThreadBusy = true;
-        this.queue.shift();
+        this.taskMap.delete(this.mainTaskId);
+
+        if (this.branchTaskId <= this.mainTaskId) {
+          this.branchTaskId = this.mainTaskId + 1;
+        }
+
         task.execute(deadline, false, () => {
           this.isMainThreadBusy = false;
+          this.mainTaskId++;
           console.log('main-thread', task.id, task.marker);
         });
       }
@@ -43,14 +52,16 @@ class Scheduler {
 
   public runBranchThread = (deadline: IdleDeadline) => {
 
-    if (this.queue.length > 0 && this.isMainThreadBusy && !this.isBranchThreadBusy) {
-      const task = this.queue.find(x => x.branchThread === false);
+    if (!this.isBranchThreadBusy && this.isMainThreadBusy) {
+      const task = this.branchTaskId > this.mainTaskId
+        ? this.taskMap.get(this.branchTaskId)
+        : null;
 
       if (task) {
         this.isBranchThreadBusy = true;
         task.execute(deadline, true, () => {
           this.isBranchThreadBusy = false;
-          task.branchThread = true;
+          this.branchTaskId++;
           console.log('branch-thread', task.id, task.marker);
         });
       }
@@ -65,7 +76,7 @@ const scheduler = new Scheduler();
 scheduler.run();
 
 const workLoop = (deadline, isHightPriority, onComplete) => {
-  const startTime = performance.now() + 2000;
+  const startTime = performance.now() + 500;
   const run = (deadline: IdleDeadline) => {
     let shouldYeild = false;
     while (performance.now() < startTime && !shouldYeild) {
@@ -94,9 +105,20 @@ setInterval(() => {
   })
 }, 1000);
 
+// const update = () => {
+//   scheduler.addTask({
+//     marker: 'animation',
+//     execute: workLoop,
+//   });
+
+//   requestAnimationFrame(update);
+// }
+
+// requestAnimationFrame(update);
+
 // const timerId = setInterval(() => {
 //   scheduler.addTask({
 //     marker: 'animation',
 //     execute: workLoop,
 //   })
-// }, 200);
+// }, 100);
