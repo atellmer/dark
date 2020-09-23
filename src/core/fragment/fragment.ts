@@ -1,4 +1,5 @@
 import { createComponent, detectIsComponentFactory } from '@core/component';
+import { KeyProps } from '../component';
 import { DarkElementKey, DarkElement } from '@core/shared/model';
 import { detectIsVirtualNode, setAttribute } from '@core/view';
 import { ATTR_KEY } from '@core/constants';
@@ -15,7 +16,7 @@ function setKey(element: DarkElement, key: DarkElementKey) {
   }
 }
 
-const Fragment = createComponent(
+const Fragment = createComponent<KeyProps>(
   ({ key, slot }) => {
     if (!isEmpty(key) && Boolean(slot)) {
       if (isArray(slot)) {

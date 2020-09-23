@@ -2,12 +2,13 @@ import { ComponentFactory } from '../component';
 import { VirtualNode } from '../view';
 
 
-export type DarkElement = ComponentFactory
-| Array<ComponentFactory>
-| VirtualNode
-| Array<VirtualNode>
-| RenderProps
-| Nullable;
+export type DarkElement = NestedArray<
+  ComponentFactory
+  | VirtualNode
+  | RenderProps
+  | Nullable
+  | string
+>;
 
 export type Nullable = null
 | false

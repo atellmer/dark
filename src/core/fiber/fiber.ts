@@ -378,7 +378,7 @@ function mountInstance(instance: DarkElementInstance) {
 
   if (isFactory) {
     try {
-      factory.children = flatten([factory.type(factory.props)]) as Array<DarkElementInstance>;
+      factory.children = flatten([factory.type(factory.props, factory.ref)]) as Array<DarkElementInstance>;
     } catch (err) {
       factory.children = [];
       error(err);

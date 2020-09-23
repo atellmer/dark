@@ -9,6 +9,7 @@ import {
   createComponent,
   Fragment,
   memo,
+  forwardRef,
   useState,
   Reducer,
   useReducer,
@@ -18,6 +19,8 @@ import {
   useEffect,
   useContext,
   createContext,
+  useRef,
+  useImperativeHandle,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
 
@@ -132,20 +135,20 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = forwardRef(createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected, onRemove, onHighlight }, ref) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const theme = useContext(ThemeContext);
   const lang = useContext(I18nContext);
 
-  // console.log('render', id);
+  console.log('render', id, ref);
 
   const themeClassName = theme === 'dark' ? 'dark' : 'light';
   const selectedClassName = selected ? 'selected' : '';
   const className = `${themeClassName} ${selectedClassName}`;
 
   return (
-    <tr class={className}>
+    <tr ref={ref} class={className}>
       <td class='cell'>{name}</td>
       <td class='cell'>xxx</td>
       <td class='cell'>{lang}</td>
@@ -155,7 +158,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
       </td>
     </tr>
   );
-}, { displayName: 'Row' });
+}, { displayName: 'Row' }));
 
 const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
   props.name !== nextProps.name ||
@@ -169,12 +172,15 @@ type ListProps = {
 };
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  const rowRef = useRef<HTMLTableRowElement>(null);
+
   return (
     <table class='table'>
       <tbody>
         {items.map((item) => {
           return (
             <MemoRow
+              ref={rowRef}
               key={item.id}
               id={item.id}
               name={item.name}

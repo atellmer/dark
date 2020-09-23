@@ -388,11 +388,11 @@ test('render nested array as components correctly', () => {
     <div>3</div>
   `;
 
-  const NestedArray = createComponent(({ count }) => {
+  const NestedArray = createComponent<{count: number}>(({ count }) => {
     return Array(count).fill(0).map((x, idx) => (<p>{idx}</p>))
   });
 
-  const Component = createComponent(
+  const Component = createComponent<{count: number}>(
     ({ count }) => [
       <div>1</div>,
       <div>2</div>,
@@ -414,7 +414,7 @@ test('render nested array as components correctly', () => {
 
 test(`${TEST_MARKER} dynamic tag render correcrly`, () => {
   const text = 'I am dynamic tag';
-  const App = createComponent(({ dynamic }) => {
+  const App = createComponent<{dynamic: boolean}>(({ dynamic }) => {
     const Tag = dynamic ? span : div;
 
     return Tag({ slot: Text(text) });
@@ -436,7 +436,7 @@ test(`${TEST_MARKER} JSX works`, () => {
     return <span>{slot}</span>;
   });
 
-  const App = createComponent(({ dynamic }) => {
+  const App = createComponent<{dynamic: boolean}>(({ dynamic }) => {
     const Tag = dynamic ? CustomItem : 'div';
 
     return <Tag>{text}</Tag>;
@@ -457,7 +457,7 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
 
   const Hello = createComponent(() => <span>hello</span>);
   const Name = createComponent(({ slot }) => <span>{slot}</span>);
-  const App = createComponent(({ name }) => {
+  const App = createComponent<{name: string}>(({ name }) => {
     return (
       <div>
         <Hello />

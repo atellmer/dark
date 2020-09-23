@@ -2,8 +2,8 @@ import { detectIsComponentFactory } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
 import { componentFiberHelper } from '@core/scope';
 import { isUndefined, isArray } from '@helpers';
-import { detectIsDepsDifferent } from '../shared';
-import { $$memo, Memoize } from '../memo';
+import { detectIsDepsDifferent } from '@core/shared';
+import { $$memo, Memoize } from '@core/memo';
 
 
 function wrap(value: any, isDepsDifferent: boolean) {

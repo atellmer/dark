@@ -15,13 +15,14 @@ import {
 } from '@core/view';
 import { detectIsComponentFactory } from '@core/component';
 import { runEffectCleanup } from '@core/use-effect';
-import { ATTR_KEY, EMPTY_NODE } from '@core/constants';
+import { MutableRef, detectIsRef } from '@core/ref';
+import { ATTR_KEY, ATTR_REF, EMPTY_NODE } from '@core/constants';
 import { fromHookUpdateHelper } from '@core/scope';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 
 
-const attrBlackList = [ATTR_KEY];
+const attrBlackList = [ATTR_KEY, ATTR_REF];
 
 function createElement(vNode: VirtualNode): DomElement {
   const map = {
@@ -58,12 +59,23 @@ function createDomLink(fiber: Fiber<Element>): DomElement {
   return createElement(vNode);
 }
 
+function applyRef(ref: MutableRef, element: Element) {
+  if (detectIsRef(ref)) {
+    ref.current = element;
+  }
+}
+
 function addAttributes(element: Element, vNode: VirtualNode) {
   if (!detectIsTagVirtualNode(vNode)) return;
   const attrNames = Object.keys(vNode.attrs);
 
   for (const attrName of attrNames) {
     const attrValue = getAttribute(vNode, attrName);
+
+    if (attrName === ATTR_REF) {
+      applyRef(attrValue as MutableRef, element);
+      continue;
+    }
 
     if (isFunction(attrValue)) {
       if (detectIsEvent(attrName)) {
@@ -88,6 +100,11 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
   for (const attrName of attrNames) {
     const attrValue = getAttribute(vNode, attrName);
     const nextAttrValue = getAttribute(nextVNode, attrName);
+
+    if (attrName === ATTR_REF) {
+      applyRef(attrValue as MutableRef, element);
+      continue;
+    }
 
     if (!isUndefined(nextAttrValue)) {
       if (isFunction(attrValue)) {
