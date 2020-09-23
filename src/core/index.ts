@@ -10,6 +10,7 @@ export { memo } from './memo';
 export { createContext } from './context';
 export { useUpdate } from './use-update';
 export { useState } from './use-state';
+export { Reducer, useReducer } from './use-reducer';
 export { useCallback } from './use-callback';
 export { useMemo } from './use-memo';
 export { useEffect } from './use-effect';
