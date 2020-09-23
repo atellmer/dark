@@ -191,45 +191,9 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-
-type State = {
-  count: number;
-};
-
-type Action = {
-  type: string;
-}
-
-const initialState = {count: 0};
-
-function reducer(state, action) {
-  switch (action.type) {
-    case 'increment':
-      return {count: state.count + 1};
-    case 'decrement':
-      return {count: state.count - 1};
-    default:
-      throw new Error();
-  }
-}
-
-const Counter = createComponent(() => {
-  const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, initialState);
-  const handleIncrement = useCallback(() => dispatch({type: 'decrement'}), []);
-  const handleDecrement = useCallback(() => dispatch({type: 'increment'}), []);
-
-  return (
-    <Fragment>
-      Count: {state.count}
-      <button onClick={handleIncrement}>-</button>
-      <button onClick={handleDecrement}>+</button>
-    </Fragment>
-  );
-});
-
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(100);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -295,7 +259,6 @@ const Bench = createComponent(() => {
             onToggleTheme={handleToggleTheme}
             onToggleLang={handleToggleLang}
           />
-          <Counter />
           <MemoList
             items={state.list}
             onRemove={handleRemove}

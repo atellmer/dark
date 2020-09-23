@@ -52,11 +52,11 @@ class Fiber<N = NativeElement> {
   public alternate: Fiber<N>;
   public effectTag: EffectTag;
   public instance: DarkElementInstance;
+  public hook: Hook;
+  public shadow: Fiber<N>;
+  public provider: Map<Context, ContextProviderValue>;
+  public transposition: boolean;
   public link: N;
-  public hook?: Hook;
-  public shadow?: Fiber<N>;
-  public provider?: Map<Context, ContextProviderValue>;
-  public transposition?: boolean;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || null;
@@ -67,6 +67,9 @@ class Fiber<N = NativeElement> {
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
     this.hook = options.hook || createHook();
+    this.shadow = options.shadow || null;
+    this.provider = options.provider || null;
+    this.transposition = options.transposition || false;
     this.link = options.link || null;
   }
 }
