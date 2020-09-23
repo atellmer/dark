@@ -2,6 +2,7 @@ import { Fiber } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { createComponent, detectIsComponentFactory } from '@core/component';
 import { componentFiberHelper, currentRootHelper } from '@core/scope';
+import { useEffect } from '@core/use-effect';
 import { error } from '@helpers';
 
 
@@ -46,9 +47,9 @@ function runPortalMutationObserver(rootLink: Element) {
 }
 
 const Portal = createComponent(({ slot }) => {
-  const fiber = componentFiberHelper.get() as Fiber<Element>;
 
-  setImmediate(() => {
+  useEffect(() => {
+    const fiber = componentFiberHelper.get() as Fiber<Element>;
     const rootElement = currentRootHelper.get().link as Element;
     const listenerMap = portalListenersMap.get(rootElement);
     const parentLink = getParentLink(fiber.parent);
@@ -59,7 +60,7 @@ const Portal = createComponent(({ slot }) => {
         fn: () => removeLinks(fiber),
       });
     }
-  });
+  }, []);
 
   return slot;
 }, { token: $$portal });

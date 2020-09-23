@@ -212,6 +212,10 @@ function mutateDom(fiber: Fiber<Element>) {
 function hasNextSibling(fiber: Fiber, rootFilber: Fiber) {
   let nextFiber = fiber;
 
+  if (nextFiber.nextSibling && detectIsPortal(nextFiber.nextSibling.instance)) {
+    return false;
+  }
+
   while (!nextFiber.nextSibling) {
     nextFiber = nextFiber.parent;
 
@@ -340,6 +344,9 @@ function commitDeletion(options: CommitDeletionOptions) {
   const hasLink = Boolean(fiber.link);
 
   if (hasLink && !isRemoved) {
+    console.log('parent', parent);
+    console.log('fiber', fiber);
+
     parent.removeChild(fiber.link);
   }
 

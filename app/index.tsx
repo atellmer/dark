@@ -249,4 +249,43 @@ function forceUpdate() {
   render(Bench(), domElement);
 }
 
-render(Bench(), domElement);
+// render(Bench(), domElement);
+
+const Child = forwardRef(createComponent<{}, HTMLInputElement>((props, ref) => {
+  const dom = useMemo(() => {
+    const dom = document.createElement('div');
+
+    document.body.appendChild(dom);
+    return dom;
+  }, []);
+  const [value, setValue] = useState('');
+
+  return [
+    <div>child: {value}</div>,
+    <input
+      ref={ref}
+      type='text'
+      value={value}
+      onInput={(e: InputEvent) => setValue((e.target as HTMLInputElement).value)}
+    />,
+    value !== 'del' &&
+    createPortal(
+      Text(`portal: ${value}`)
+    , dom),
+  ]
+}));
+
+const Parent = createComponent(() => {
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    ref.current.focus();
+    console.log('ref', ref.current);
+  }, []);
+
+  return [
+    <div>parent</div>,
+    <Child ref={ref} />,
+  ]
+})
+render(Parent(), domElement);
