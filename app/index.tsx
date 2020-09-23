@@ -251,13 +251,17 @@ function forceUpdate() {
 
 // render(Bench(), domElement);
 
-const Child = forwardRef(createComponent<{}, HTMLInputElement>((props, ref) => {
-  const dom = useMemo(() => {
-    const dom = document.createElement('div');
+const createDomElement = () => {
+  const dom = document.createElement('div');
 
-    document.body.appendChild(dom);
-    return dom;
-  }, []);
+  document.body.appendChild(dom);
+
+  return dom;
+}
+
+const Child = forwardRef(createComponent<{}, HTMLInputElement>((props, ref) => {
+  const dom = useMemo(() => createDomElement(), []);
+  const dom2 = useMemo(() => createDomElement(), []);
   const [value, setValue] = useState('');
 
   return [
@@ -269,9 +273,13 @@ const Child = forwardRef(createComponent<{}, HTMLInputElement>((props, ref) => {
       onInput={(e: InputEvent) => setValue((e.target as HTMLInputElement).value)}
     />,
     value !== 'del' &&
-    createPortal(
-      Text(`portal: ${value}`)
-    , dom),
+    createPortal([
+      <div>portal: {value}</div>,
+      createPortal([
+        <div>portal2: {value}</div>,
+      ], dom2)
+    ], dom),
+    <div>footer</div>
   ]
 }));
 

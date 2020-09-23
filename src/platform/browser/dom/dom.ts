@@ -343,10 +343,11 @@ function commitDeletion(options: CommitDeletionOptions) {
 
   const hasLink = Boolean(fiber.link);
 
-  if (hasLink && !isRemoved) {
-    console.log('parent', parent);
-    console.log('fiber', fiber);
+  if (detectIsPortal(fiber.instance)) {
+    const container = getPortalContainer(fiber.instance);
 
+    container.innerHTML = '';
+  } else if (hasLink && !isRemoved) {
     parent.removeChild(fiber.link);
   }
 
