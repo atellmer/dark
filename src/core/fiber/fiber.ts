@@ -110,21 +110,19 @@ function performUnitOfWork(fiber: Fiber) {
       if (hasChild) {
         const childFiber = performChild();
 
-        if (childFiber && childFiber.link) return childFiber;
+        if (childFiber) return childFiber;
       } else {
         const siblingFiber = performSibling();
 
-        if (siblingFiber && siblingFiber.link) return siblingFiber;
+        if (siblingFiber) return siblingFiber;
       }
     } else {
       const siblingFiber = performSibling();
 
-      if (siblingFiber && siblingFiber.link) return siblingFiber;
+      if (siblingFiber) return siblingFiber;
     }
 
-    if (nextFiber.parent === null) {
-      return null;
-    }
+    if (nextFiber.parent === null) return null;
   }
 
   function performChild() {

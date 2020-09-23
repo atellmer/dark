@@ -82,13 +82,9 @@ type HeaderProps = {
   onUpdateAll: Function;
   onSwap: Function;
   onClear: Function;
-  onToggleTheme: Function;
-  onToggleLang: Function;
 }
 
-const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleTheme, onToggleLang }) => {
-  const theme = useContext(ThemeContext);
-
+const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
@@ -112,10 +108,6 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         slot: Text('clear rows'),
         onClick: onClear,
       }),
-      button({
-        slot: Text(theme),
-        onClick: onToggleTheme,
-      }),
     ],
   });
 });
@@ -133,8 +125,7 @@ type RowProps = {
 const Row = createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const theme = useContext(ThemeContext);
-  const className = `${theme === 'dark' ? 'dark' : 'light'} ${selected ? 'selected' : ''}`;
+  const className = `${selected ? 'selected' : ''}`;
 
   // console.log('render', id);
 
@@ -193,7 +184,7 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
   const handleAdd = useCallback(() => {
-    state.list.push(...buildData(10, '!!!'));
+    state.list.push(...buildData(1000, '!!!'));
     state.list = [...state.list];
     measurer.start('add');
     forceUpdate();
@@ -235,36 +226,24 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const [theme, setTheme] = useState('dark');
-  const handleToggleTheme = useCallback(() => setTheme(theme => theme === 'dark' ? 'light' : 'dark'), []);
-  const [lang, setLang] = useState('ru');
-  const handleToggleLang = useCallback(() => setLang(lang => lang === 'ru' ? 'en' : 'ru'), []);
 
   return (
     <Fragment>
-      <ThemeContext.Provider value={theme}>
-        <MemoHeader
-          onCreate={handleCreate}
-          onAdd={handleAdd}
-          onUpdateAll={handleUpdateAll}
-          onSwap={handleSwap}
-          onClear={handleClear}
-          onToggleTheme={handleToggleTheme}
-          onToggleLang={handleToggleLang}
-        />
-        <MemoList
-          items={state.list}
-          onRemove={handleRemove}
-          onHighlight={handleHightlight}
-        />
-      </ThemeContext.Provider>
+      <MemoHeader
+        onCreate={handleCreate}
+        onAdd={handleAdd}
+        onUpdateAll={handleUpdateAll}
+        onSwap={handleSwap}
+        onClear={handleClear}
+      />
+      <MemoList
+        items={state.list}
+        onRemove={handleRemove}
+        onHighlight={handleHightlight}
+      />
     </Fragment>
   );
 });
-
-const ThemeContext = createContext('dark');
-
-ThemeContext.displayName = 'Theme';
 
 function forceUpdate() {
   render(Bench(), domElement);
