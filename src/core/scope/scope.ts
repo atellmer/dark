@@ -14,6 +14,7 @@ class Store {
     isDeepWalking: true,
   };
   public componentFiber: Fiber = null;
+  public effects: Array<() => void> = [];
 }
 
 let rootId = null;
@@ -106,6 +107,12 @@ const fiberMountHelper = {
   },
 };
 
+const effectsHelper = {
+  get: () => storeHelper.get().effects,
+  reset: () => storeHelper.get().effects = [],
+  add: (effect: () => void) => storeHelper.get().effects.push(effect),
+};
+
 export {
   getRootId,
   effectStoreHelper,
@@ -117,4 +124,5 @@ export {
   eventsHelper,
   deletionsHelper,
   fiberMountHelper,
+  effectsHelper,
 };

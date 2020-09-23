@@ -88,7 +88,6 @@ type HeaderProps = {
 
 const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear, onToggleTheme, onToggleLang }) => {
   const theme = useContext(ThemeContext);
-  const lang = useContext(I18nContext);
 
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
@@ -117,10 +116,6 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         slot: Text(theme),
         onClick: onToggleTheme,
       }),
-      button({
-        slot: Text(lang),
-        onClick: onToggleLang,
-      }),
     ],
   });
 });
@@ -135,30 +130,26 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Row = forwardRef(createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected, onRemove, onHighlight }, ref) => {
+const Row = createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const theme = useContext(ThemeContext);
-  const lang = useContext(I18nContext);
+  const className = `${theme === 'dark' ? 'dark' : 'light'} ${selected ? 'selected' : ''}`;
 
-  console.log('render', id, ref);
-
-  const themeClassName = theme === 'dark' ? 'dark' : 'light';
-  const selectedClassName = selected ? 'selected' : '';
-  const className = `${themeClassName} ${selectedClassName}`;
+  // console.log('render', id);
 
   return (
-    <tr ref={ref} class={className}>
+    <tr class={className}>
       <td class='cell'>{name}</td>
+      <td class='cell'>zzz</td>
       <td class='cell'>xxx</td>
-      <td class='cell'>{lang}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
       </td>
     </tr>
   );
-}, { displayName: 'Row' }));
+});
 
 const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
   props.name !== nextProps.name ||
@@ -172,15 +163,12 @@ type ListProps = {
 };
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-  const rowRef = useRef<HTMLTableRowElement>(null);
-
   return (
     <table class='table'>
       <tbody>
         {items.map((item) => {
           return (
             <MemoRow
-              ref={rowRef}
               key={item.id}
               id={item.id}
               name={item.name}
@@ -199,7 +187,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -254,24 +242,22 @@ const Bench = createComponent(() => {
 
   return (
     <Fragment>
-      <I18nContext.Provider value={lang}>
-        <ThemeContext.Provider value={theme}>
-          <MemoHeader
-            onCreate={handleCreate}
-            onAdd={handleAdd}
-            onUpdateAll={handleUpdateAll}
-            onSwap={handleSwap}
-            onClear={handleClear}
-            onToggleTheme={handleToggleTheme}
-            onToggleLang={handleToggleLang}
-          />
-          <MemoList
-            items={state.list}
-            onRemove={handleRemove}
-            onHighlight={handleHightlight}
-          />
-        </ThemeContext.Provider>
-      </I18nContext.Provider>
+      <ThemeContext.Provider value={theme}>
+        <MemoHeader
+          onCreate={handleCreate}
+          onAdd={handleAdd}
+          onUpdateAll={handleUpdateAll}
+          onSwap={handleSwap}
+          onClear={handleClear}
+          onToggleTheme={handleToggleTheme}
+          onToggleLang={handleToggleLang}
+        />
+        <MemoList
+          items={state.list}
+          onRemove={handleRemove}
+          onHighlight={handleHightlight}
+        />
+      </ThemeContext.Provider>
     </Fragment>
   );
 });
@@ -279,10 +265,6 @@ const Bench = createComponent(() => {
 const ThemeContext = createContext('dark');
 
 ThemeContext.displayName = 'Theme';
-
-const I18nContext = createContext('ru');
-
-ThemeContext.displayName = 'i18n';
 
 function forceUpdate() {
   render(Bench(), domElement);

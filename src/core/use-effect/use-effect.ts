@@ -1,5 +1,5 @@
 
-import { componentFiberHelper } from '../scope';
+import { componentFiberHelper, effectsHelper } from '../scope';
 import { Hook, HookValue } from '../fiber';
 import { isUndefined, isFunction } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
@@ -21,7 +21,7 @@ function useEffect(effect: Effect, deps?: Array<any>) {
       };
     };
 
-    setImmediate(run);
+    effectsHelper.add(() => setImmediate(run));
   };
 
   if (isUndefined(values[idx])) {

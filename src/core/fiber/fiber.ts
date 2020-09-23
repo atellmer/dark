@@ -15,6 +15,7 @@ import {
   fiberMountHelper,
   componentFiberHelper,
   fromHookUpdateHelper,
+  effectsHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import {
@@ -136,7 +137,7 @@ function performUnitOfWork(fiber: Fiber) {
       : alternate
         ? alternate.hook
         : createHook();
-    const provider =  shadow
+    const provider = shadow
       ? shadow.provider
       : alternate
         ? alternate.provider
@@ -178,7 +179,7 @@ function performUnitOfWork(fiber: Fiber) {
         : alternate
           ? alternate.hook
           : createHook();
-      const provider =  shadow
+      const provider = shadow
         ? shadow.provider
         : alternate
           ? alternate.provider
@@ -556,6 +557,12 @@ function commitChanges(onRender?: () => void) {
 
     deletionsHelper.set([]);
     wipRootHelper.set(null);
+
+    for (const effect of effectsHelper.get()) {
+      effect();
+    }
+
+    effectsHelper.reset();
 
     if (fromHook) {
       fromHookUpdateHelper.set(false);
