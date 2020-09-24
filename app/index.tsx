@@ -122,15 +122,19 @@ type RowProps = {
   onHighlight: Function;
 };
 
-const Row = createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = forwardRef(createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected, onRemove, onHighlight }, ref) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
 
   // console.log('render', id);
 
+  useEffect(() => {
+    id === 1 && console.log('ref', ref.current);
+  }, []);
+
   return (
-    <tr class={className}>
+    <tr ref={ref} class={className}>
       <td class='cell'>{name}</td>
       <td class='cell'>zzz</td>
       <td class='cell'>xxx</td>
@@ -140,7 +144,7 @@ const Row = createComponent<RowProps, HTMLTableRowElement>(({ id, name, selected
       </td>
     </tr>
   );
-});
+}));
 
 const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
   props.name !== nextProps.name ||
@@ -154,12 +158,15 @@ type ListProps = {
 };
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+  const ref = useRef<HTMLTableRowElement>(null);
+
   return (
     <table class='table'>
       <tbody>
         {items.map((item) => {
           return (
             <MemoRow
+              ref={item.id === 1 ? ref : null}
               key={item.id}
               id={item.id}
               name={item.name}
@@ -178,7 +185,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

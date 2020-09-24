@@ -1,6 +1,7 @@
 import {
   Component,
   StandardComponentProps,
+  RefProps,
   SlotProps,
   createComponent,
   detectIsComponentFactory,
@@ -31,7 +32,11 @@ function memo<T>(
   shouldUpdate: ShouldUpdate<T & SlotProps> = defaultShouldUpdate): Component<T & StandardComponentProps> {
   return forwardRef(
     createComponent(
-      (props, ref) => component(props, ref), { token: $$memo, shouldUpdate },
+      (props: T & RefProps, ref) => {
+        ref && (props.ref = ref);
+
+        return component(props);
+      }, { token: $$memo, shouldUpdate },
     ),
   );
 }
