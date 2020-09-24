@@ -12,8 +12,6 @@ type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
 
-const Memoize = createComponent(({ slot }) => slot, { token: $$memo });
-
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   const keys = Object.keys(nextProps);
 
@@ -26,25 +24,20 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   return false;
 }
 
-const detectIsMemo = (o: any) => detectIsComponentFactory(o) && o.token === $$memo;
+const detectIsMemo = (factory: unknown) => detectIsComponentFactory(factory) && factory.token === $$memo;
 
 function memo<T>(
   component: ReturnType<typeof createComponent>,
   shouldUpdate: ShouldUpdate<T & SlotProps> = defaultShouldUpdate): Component<T & StandardComponentProps> {
-  return forwardRef<T, any>(createComponent((props, ref) => {
-
-    ref && (props.ref = ref);
-
-    return Memoize({
-      [$$memo]: shouldUpdate,
-      slot: component(props),
-    });
-  }));
+  return forwardRef(
+    createComponent(
+      (props, ref) => component(props, ref), { token: $$memo, shouldUpdate },
+    ),
+  );
 }
 
 export {
   $$memo,
-  Memoize,
   memo,
   detectIsMemo,
 };

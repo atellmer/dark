@@ -1,24 +1,27 @@
-import { detectIsComponentFactory } from '@core/component';
+import { detectIsComponentFactory, createComponent } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
 import { componentFiberHelper } from '@core/scope';
 import { isUndefined, isArray } from '@helpers';
 import { detectIsDepsDifferent } from '@core/shared';
-import { $$memo, Memoize } from '@core/memo';
+import { $$memo } from '@core/memo';
 
 
-function wrap(value: any, isDepsDifferent: boolean) {
+const Memo = createComponent(({ slot }) => slot, { token: $$memo });
+
+function wrap(value: unknown, isDepsDifferent: boolean) {
   if (detectIsTagVirtualNode(value) || detectIsComponentFactory(value)) {
-    return Memoize({
-      [$$memo]: () => isDepsDifferent,
-      slot: value,
-    });
+    const factory = Memo({ slot: value });
+
+    factory.shouldUpdate = () => isDepsDifferent;
+
+    return factory;
   }
 
   return value;
 }
 
-function processValue(fn: () => any, isDepsDifferent: boolean = false) {
-  let value = fn();
+function processValue(getValue: () => any, isDepsDifferent: boolean = false) {
+  let value = getValue();
 
   if (isArray(value)) {
     value = value.map(x => wrap(x, isDepsDifferent));
@@ -29,13 +32,13 @@ function processValue(fn: () => any, isDepsDifferent: boolean = false) {
   return value;
 }
 
-function useMemo(fn: () => any, deps: Array<any>) {
+function useMemo(getValue: () => any, deps: Array<any>) {
   const fiber = componentFiberHelper.get();
   const  { hook } = fiber
   const { idx, values } = hook;
 
   if (isUndefined(values[idx])) {
-    const value = processValue(fn);
+    const value = processValue(getValue);
 
     values[idx] = {
       deps,
@@ -50,12 +53,10 @@ function useMemo(fn: () => any, deps: Array<any>) {
   const hookValue = values[idx];
   const prevDeps = hookValue.deps as Array<any>;
   const isDepsDifferent = detectIsDepsDifferent(deps, prevDeps);
+  const computedGetValue = isDepsDifferent ? getValue : () => hookValue.value;
 
-  if (isDepsDifferent) {
-    hookValue.deps = deps;
-    hookValue.value = processValue(fn, true);
-  }
-
+  hookValue.deps = deps;
+  hookValue.value = processValue(computedGetValue, isDepsDifferent);
   hook.idx++;
 
   return hookValue.value;

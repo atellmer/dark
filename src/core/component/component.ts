@@ -24,6 +24,7 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   public ref: MutableRef<R>;
   public displayName: string;
   public children: Array<VirtualNode | ComponentFactory> = [];
+  public shouldUpdate?: (props: P, nextProps: P) => boolean;
 
   constructor(options: ComponentFactory<P>) {
     this.type = options.type || null;
@@ -31,6 +32,7 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
     this.props = options.props || null;
     this.ref = options.ref || null;
     this.displayName = options.displayName || '';
+    this.shouldUpdate = options.shouldUpdate || null;
   }
 }
 
@@ -38,9 +40,10 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
   type Props = P & StandardComponentProps;
   const computedOptions = {...defaultOptions, ...options };
   const {
+    token,
     defaultProps,
     displayName,
-    token,
+    shouldUpdate,
   } = computedOptions;
 
   return (props = {} as Props, ref?: MutableRef<R>): ComponentFactory<Props> => {
@@ -49,6 +52,7 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
       token,
       ref,
       displayName,
+      shouldUpdate,
       props: computedProps,
       type: createElement,
       children: [],

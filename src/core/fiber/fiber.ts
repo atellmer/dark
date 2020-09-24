@@ -148,6 +148,7 @@ function performUnitOfWork(fiber: Fiber) {
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
     mutateFiber(fiber, element, alternate);
+
     alternate && performMemo(fiber, alternate);
 
     nextFiber.child = fiber;
@@ -339,11 +340,14 @@ function performUnitOfWork(fiber: Fiber) {
 
   function performMemo(fiber: Fiber, alternate: Fiber) {
     if (detectIsMemo(fiber.instance)) {
-      const factory = element as ComponentWrapper;
-      const alternateFactory = alternate.instance as ComponentWrapper;
-      const props = alternateFactory.props.slot.props;
-      const nextProps = factory.props.slot.props;
-      const skip = !factory.props[$$memo](props, nextProps);
+      const factory = element as ComponentFactory;
+      const alternateFactory = alternate.instance as ComponentFactory;
+
+      if (factory.type !== alternateFactory.type) return;
+
+      const props = alternateFactory.props;
+      const nextProps = factory.props;
+      const skip = !factory.shouldUpdate(props, nextProps);
 
       if (skip) {
         fiberMountHelper.deepWalking.set(false);
@@ -354,6 +358,7 @@ function performUnitOfWork(fiber: Fiber) {
           }
         }
 
+        fiber.alternate = alternate;
         fiber.effectTag = EffectTag.SKIP;
 
         if (fiber.child) {
