@@ -248,9 +248,7 @@ function performUnitOfWork(fiber: Fiber) {
     if (!isSameType) {
       alternate.effectTag = EffectTag.DELETION;
       deletionsHelper.get().push(alternate);
-    }
-
-    if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
+    } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
       const isRequestedKeys = alternate.instance.children.length !== element.children.length;
 
       if (isRequestedKeys) {
@@ -260,11 +258,6 @@ function performUnitOfWork(fiber: Fiber) {
         const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
         if (detectIsDevEnvironment() && !hasAnyKeys) {
-          console.log('keys', keys);
-          console.log('nextKeys', nextKeys);
-          console.log('alternate', alternate);
-          console.log('element', element);
-
           error(UNIQ_KEY_ERROR);
         }
 
@@ -335,10 +328,8 @@ function performUnitOfWork(fiber: Fiber) {
           }
         }
 
-        if (isSameType) {
-          performRemovingNodes();
-          performInsertingNodes();
-        }
+        performRemovingNodes();
+        performInsertingNodes();
       }
     }
   }

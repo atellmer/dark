@@ -251,15 +251,14 @@ const domElement = document.getElementById('root');
 
 // render(Bench(), domElement);
 
-let nextId = 0;
-
 class TodoTask {
+  private static nextId: number = 0;
   public id: number;
   public name: string;
   public completed: boolean;
 
   constructor(name: string, completed: boolean = false) {
-    this.id = ++nextId;
+    this.id = ++TodoTask.nextId;
     this.name = name;
     this.completed = completed;
   }
@@ -272,29 +271,32 @@ type TextFieldProps = {
   onChange: (e: InputEvent, value: string) => void;
 };
 
-const TextField = createComponent<TextFieldProps>(({ value, fulllWidth, onEnter, onChange }) => {
-  const handleChange = (e: InputEvent) => {
-    const value = (e.target as HTMLInputElement).value;
+const TextField = forwardRef(
+  createComponent<TextFieldProps, HTMLInputElement>(({ value, fulllWidth, onEnter, onChange }, ref) => {
+    const handleChange = (e: InputEvent) => {
+      const value = (e.target as HTMLInputElement).value;
 
-    onChange(e, value);
-  };
+      onChange(e, value);
+    };
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!onEnter) return;
-    if (e.key === 'Enter') {
-      onEnter(e);
-    }
-  };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!onEnter) return;
+      if (e.key === 'Enter') {
+        onEnter(e);
+      }
+    };
 
-  return (
-    <input
-      style={`width: ${fulllWidth ? '100%' : 'auto'}`}
-      value={value}
-      onInput={handleChange}
-      onKeyDown={handleKeyDown}
-    />
-  )
-}, { displayName: 'TextField' });
+    return (
+      <input
+        ref={ref}
+        style={`width: ${fulllWidth ? '100%' : 'auto'}`}
+        value={value}
+        onInput={handleChange}
+        onKeyDown={handleKeyDown}
+      />
+    )
+  }, { displayName: 'TextField' }),
+);
 
 type CheckboxProps = {
   value: boolean;
@@ -303,10 +305,7 @@ type CheckboxProps = {
 };
 
 const Checkbox = createComponent<CheckboxProps>(({ value, label, onChange }) => {
-
-  const handleInput = (e: InputEvent) => {
-    onChange(e, !value);
-  };
+  const handleInput = (e: InputEvent) => onChange(e, !value);
 
   return (
     <label>
@@ -327,10 +326,7 @@ type TaskItemProps = {
 };
 
 const TaskItem = createComponent<TaskItemProps>(({ task, onComplete }) => {
-
-  const handleCompleted = (_, completed: boolean) => {
-    onComplete(task, completed);
-  };
+  const handleCompleted = (_, completed: boolean) => onComplete(task, completed);
 
   return (
     <div style='display: flex; border-bottom: 1px solid yellow; padding: 6px;'>
@@ -346,16 +342,16 @@ const TaskItem = createComponent<TaskItemProps>(({ task, onComplete }) => {
   )
 }, { displayName: 'TaskItem' });
 
-const taskList = [
-  new TodoTask('Learn Dark', true),
-  new TodoTask('Learn React', true),
-  new TodoTask('Learn Angular'),
-  new TodoTask('Learn Vue'),
-];
-
 const TodoApp = createComponent(() => {
-  const [tasks, setTasks] = useState<Array<TodoTask>>(taskList);
+  const sourseTasks = useMemo(() => [
+    new TodoTask('Learn Dark', true),
+    new TodoTask('Learn React', true),
+    new TodoTask('Learn Angular'),
+    new TodoTask('Learn Vue'),
+  ], []);
+  const [tasks, setTasks] = useState<Array<TodoTask>>(sourseTasks);
   const [taskName, setTaskName] = useState('');
+  const textFieldRef = useRef<HTMLInputElement>(null);
 
   const handleChangeTaskName = (_, value: string) => setTaskName(value);
 
@@ -367,6 +363,7 @@ const TodoApp = createComponent(() => {
       ]);
 
       setTaskName('');
+      textFieldRef.current.focus();
     }
   };
 
@@ -378,12 +375,11 @@ const TodoApp = createComponent(() => {
     setTasks([...tasks]);
   };
 
-  console.log('tasks', tasks);
-
   return (
     <div style='padding: 16px'>
       <div style='display: flex; margin-bottom: 20px;'>
         <TextField
+          ref={textFieldRef}
           value={taskName}
           fulllWidth
           onEnter={handleAddTask}
@@ -391,15 +387,17 @@ const TodoApp = createComponent(() => {
         />
         <button onClick={handleAddTask}>Add</button>
       </div>
-      {tasks.map(task => {
-        return (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onComplete={handleComplete}
-          />
-        )
-      })}
+      <div>
+        {tasks.map(task => {
+          return (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onComplete={handleComplete}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }, { displayName: 'TodoApp' });
