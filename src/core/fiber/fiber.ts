@@ -358,6 +358,7 @@ function performUnitOfWork(fiber: Fiber) {
           }
         }
 
+        alternate.alternate = null;
         fiber.alternate = alternate;
         fiber.effectTag = EffectTag.SKIP;
 
