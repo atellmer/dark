@@ -206,6 +206,14 @@ function mutateDom(fiber: Fiber<Element>) {
       fiber,
       parent: parentLink,
     });
+
+    if (fiber.parent.child === fiber) {
+      fiber.parent.child = null;
+
+      if (detectIsTagVirtualNode(fiber.parent.instance)) {
+        fiber.parent.instance.children = [];
+      }
+    }
   }
 }
 

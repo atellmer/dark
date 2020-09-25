@@ -3,7 +3,7 @@ import {
   effectStoreHelper,
   componentFiberHelper,
 } from '@core/scope';
-import { useUpdate } from '../use-update';
+import { useUpdate } from '@core/use-update';
 import { isUndefined, isFunction } from '@helpers';
 
 

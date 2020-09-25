@@ -248,9 +248,7 @@ function performUnitOfWork(fiber: Fiber) {
     if (!isSameType) {
       alternate.effectTag = EffectTag.DELETION;
       deletionsHelper.get().push(alternate);
-    }
-
-    if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
+    } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
       const isRequestedKeys = alternate.instance.children.length !== element.children.length;
 
       if (isRequestedKeys) {
@@ -330,10 +328,8 @@ function performUnitOfWork(fiber: Fiber) {
           }
         }
 
-        if (isSameType) {
-          performRemovingNodes();
-          performInsertingNodes();
-        }
+        performRemovingNodes();
+        performInsertingNodes();
       }
     }
   }
@@ -358,6 +354,7 @@ function performUnitOfWork(fiber: Fiber) {
           }
         }
 
+        alternate.alternate = null;
         fiber.alternate = alternate;
         fiber.effectTag = EffectTag.SKIP;
 
