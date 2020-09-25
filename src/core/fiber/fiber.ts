@@ -260,6 +260,11 @@ function performUnitOfWork(fiber: Fiber) {
         const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
         if (detectIsDevEnvironment() && !hasAnyKeys) {
+          console.log('keys', keys);
+          console.log('nextKeys', nextKeys);
+          console.log('alternate', alternate);
+          console.log('element', element);
+
           error(UNIQ_KEY_ERROR);
         }
 
