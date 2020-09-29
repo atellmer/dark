@@ -57,6 +57,7 @@ class Fiber<N = NativeElement> {
   public shadow: Fiber<N>;
   public provider: Map<Context, ContextProviderValue>;
   public transposition: boolean;
+  public intersecting: boolean;
   public link: N;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -71,6 +72,7 @@ class Fiber<N = NativeElement> {
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
     this.transposition = options.transposition || false;
+    this.intersecting = options.intersecting || true;
     this.link = options.link || null;
   }
 }

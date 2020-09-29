@@ -22,7 +22,31 @@ import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 
 
+const $$data = Symbol('dark-data');
 const attrBlackList = [ATTR_KEY, ATTR_REF];
+const observer = createIntersectionObserver();
+
+function createIntersectionObserver() {
+  return new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      const intersecting = entry.isIntersecting;
+      const fiber = entry.target[$$data] as Fiber<Element>;
+      let nextFiber = fiber.parent;
+
+      fiber.intersecting = intersecting;
+
+      while (!nextFiber.link) {
+        nextFiber.intersecting = intersecting;
+        nextFiber = nextFiber.parent;
+      }
+    }
+  }, { threshold: 0 });
+}
+
+function observeFiberIntersection(fiber: Fiber<Element>) {
+  fiber.link[$$data] = fiber;
+  observer.observe(fiber.link);
+}
 
 function createElement(vNode: VirtualNode): DomElement {
   const map = {
@@ -159,6 +183,7 @@ function mutateDom(fiber: Fiber<Element>) {
   const parentLink = nextFiber.link;
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
+    const isTag = detectIsTagVirtualNode(fiber.instance);
     const cachedNode = nodeCacheMap.get(parentLink);
     const node = nextFiber.alternate
       ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
@@ -171,6 +196,7 @@ function mutateDom(fiber: Fiber<Element>) {
         : null;
 
     nodeCacheMap.set(parentLink, node);
+    isTag && observeFiberIntersection(fiber);
 
     if (node) {
       parentLink.insertBefore(fiber.link, node);
