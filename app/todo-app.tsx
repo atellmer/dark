@@ -12,8 +12,6 @@ import {
 import { render } from '../src/platform/browser';
 
 
-const domElement = document.getElementById('root');
-
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
 const input = (props = {}) => View({ ...props, isVoid: true, as: 'input' });
@@ -39,7 +37,9 @@ type TextFieldProps = {
   onChange: (e: InputEvent, value: string) => void;
 };
 
-const TextField = forwardRef(createComponent<TextFieldProps, HTMLInputElement>(({ value, fulllWidth, onEnter, onChange }, ref) => {
+const TextField = forwardRef(
+  createComponent<TextFieldProps, HTMLInputElement>((props, ref) => {
+    const { value, fulllWidth, onEnter, onChange } = props;
     const handleChange = (e: InputEvent) => onChange(e, (e.target as HTMLInputElement).value);
     const handleKeyDown = (e: KeyboardEvent) => onEnter && e.key === 'Enter' && onEnter(e);
 
@@ -52,7 +52,8 @@ const TextField = forwardRef(createComponent<TextFieldProps, HTMLInputElement>((
         onKeyDown: handleKeyDown,
       })
     )
-  }, { displayName: 'TextField' }));
+  }),
+);
 
 type CheckboxProps = {
   value: boolean;
@@ -60,7 +61,8 @@ type CheckboxProps = {
   onChange: (e, value: boolean) => void;
 };
 
-const Checkbox = createComponent<CheckboxProps>(({ value, labelText, onChange }) => {
+const Checkbox = createComponent<CheckboxProps>(props => {
+  const { value, labelText, onChange } = props;
   const handleInput = (e: InputEvent) => onChange(e, !value);
 
   return (
@@ -76,7 +78,7 @@ const Checkbox = createComponent<CheckboxProps>(({ value, labelText, onChange })
       ],
     })
   )
-}, { displayName: 'Checkbox' });
+});
 
 type TaskItemProps = {
   task: TodoTask;
@@ -84,7 +86,8 @@ type TaskItemProps = {
   onRemove: (id: number) => void;
 };
 
-const TaskItem = createComponent<TaskItemProps>(({ task, onComplete, onRemove }) => {
+const TaskItem = createComponent<TaskItemProps>(props => {
+  const { task, onComplete, onRemove } = props;
   const handleCompleted = (_, completed: boolean) => onComplete(task.id, completed);
   const handleRemove = () => onRemove(task.id);
 
@@ -115,7 +118,7 @@ const TaskItem = createComponent<TaskItemProps>(({ task, onComplete, onRemove })
       ],
     })
   )
-}, { displayName: 'TaskItem' });
+});
 
 const TodoApp = createComponent(() => {
   const sourseTasks = useMemo(() => [
@@ -178,6 +181,6 @@ const TodoApp = createComponent(() => {
       ],
     })
   )
-}, { displayName: 'TodoApp' });
+});
 
-render(TodoApp(), domElement);
+render(TodoApp(), document.getElementById('root'));

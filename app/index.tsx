@@ -179,7 +179,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -228,22 +228,20 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
-  return (
-    <Fragment>
+  return [
       <MemoHeader
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
-      />
+      />,
       <MemoList
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
-      />
-    </Fragment>
-  );
+      />,
+    ]
 });
 
 function forceUpdate() {

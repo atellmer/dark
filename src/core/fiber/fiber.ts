@@ -20,7 +20,6 @@ import {
 import { platform } from '@core/global';
 import {
   ComponentFactory,
-  ComponentWrapper,
   detectIsComponentFactory,
   getComponentFactoryKey,
 } from '@core/component';
@@ -41,7 +40,7 @@ import {
   takeListFromEnd,
   detectIsDevEnvironment,
 } from '@helpers';
-import { $$memo, detectIsMemo } from '../memo';
+import { detectIsMemo } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 
@@ -150,7 +149,6 @@ function performUnitOfWork(fiber: Fiber) {
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
     mutateFiber(fiber, element, alternate);
-
     alternate && performMemo(fiber, alternate);
 
     nextFiber.child = fiber;
@@ -213,6 +211,34 @@ function performUnitOfWork(fiber: Fiber) {
     }
 
     return null;
+  }
+
+  function performIntersection(alternate: Fiber, isChild: boolean) {
+
+    if (!alternate.intersecting) {
+      fiberMountHelper.deepWalking.set(false);
+
+      const fiber = alternate;
+
+      alternate.alternate = null;
+      fiber.alternate = alternate;
+      fiber.effectTag = EffectTag.SKIP;
+
+      if (isChild) {
+        nextFiber.child = fiber;
+        fiber.parent = nextFiber;
+      } else {
+        fiber.prevSibling = nextFiber;
+        fiber.parent = nextFiber.parent;
+        nextFiber.nextSibling = fiber;
+      }
+
+      nextFiber = fiber;
+
+      return true;
+    }
+
+    return false;
   }
 
   function getRootShadow(element: DarkElementInstance, alternate: Fiber) {
@@ -549,7 +575,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  // console.log('wip', wipFiber);
+  console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
 
@@ -647,4 +673,5 @@ export {
   workLoop,
   mountInstance,
   createHook,
+  hasChildrenProp,
 };

@@ -1,5 +1,5 @@
 import { DomElement } from './model';
-import { Fiber, EffectTag } from '@core/fiber';
+import { Fiber, EffectTag, hasChildrenProp } from '@core/fiber';
 import { isFunction, isUndefined } from '@helpers';
 import {
   NodeType,
@@ -30,21 +30,30 @@ function createIntersectionObserver() {
   return new IntersectionObserver(entries => {
     for (const entry of entries) {
       const intersecting = entry.isIntersecting;
-      const fiber = entry.target[$$data] as Fiber<Element>;
-      let nextFiber = fiber.parent;
+      let nextFiber = entry.target[$$data] as Fiber<Element>;
 
-      fiber.intersecting = intersecting;
+      nextFiber.intersecting = intersecting;
+      nextFiber = nextFiber.parent;
 
-      while (!nextFiber.link) {
-        nextFiber.intersecting = intersecting;
-        nextFiber = nextFiber.parent;
+      while (nextFiber) {
+        if (nextFiber && !nextFiber.link && hasChildrenProp(nextFiber.instance)) {
+          const canUpdateIntersecting = nextFiber.instance.children.length === 1;
+
+          if (canUpdateIntersecting) {
+            nextFiber.intersecting = intersecting;
+            nextFiber = nextFiber.parent;
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
       }
     }
   }, { threshold: 0 });
 }
 
 function observeFiberIntersection(fiber: Fiber<Element>) {
-  fiber.link[$$data] = fiber;
   observer.observe(fiber.link);
 }
 
@@ -181,6 +190,10 @@ function mutateDom(fiber: Fiber<Element>) {
   const fromHookUpdate = fromHookUpdateHelper.get();
   const nextFiber = getFiberWithLink(fiber);
   const parentLink = nextFiber.link;
+
+  if (fiber.link) {
+    fiber.link[$$data] = fiber;
+  }
 
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
     const isTag = detectIsTagVirtualNode(fiber.instance);
