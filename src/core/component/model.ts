@@ -30,8 +30,6 @@ export type RefProps<T = any> = {
 export type Component<T extends Pick<StandardComponentProps, 'slot'>, R = any>
   = (props: T, ref?: MutableRef<R>) => ComponentFactory;
 
-export type ComponentWrapper<T = {}> = ComponentFactory<{slot: ComponentFactory<T>}>;
-
 export type ComponentFactoryReturnType = DarkElement;
 
 export type CreateElement<P extends StandardComponentProps, R = any>

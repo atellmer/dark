@@ -1,5 +1,5 @@
 import { DomElement } from './model';
-import { Fiber, EffectTag } from '@core/fiber';
+import { Fiber, EffectTag, hasChildrenProp } from '@core/fiber';
 import { isFunction, isUndefined } from '@helpers';
 import {
   NodeType,
@@ -22,7 +22,40 @@ import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 
 
+const $$data = Symbol('dark-data');
 const attrBlackList = [ATTR_KEY, ATTR_REF];
+const observer = createIntersectionObserver();
+
+function createIntersectionObserver() {
+  return new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      const intersecting = entry.isIntersecting;
+      let nextFiber = entry.target[$$data] as Fiber<Element>;
+
+      nextFiber.intersecting = intersecting;
+      nextFiber = nextFiber.parent;
+
+      while (nextFiber) {
+        if (nextFiber && !nextFiber.link && hasChildrenProp(nextFiber.instance)) {
+          const canUpdateIntersecting = nextFiber.instance.children.length === 1;
+
+          if (canUpdateIntersecting) {
+            nextFiber.intersecting = intersecting;
+            nextFiber = nextFiber.parent;
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+    }
+  }, { threshold: 0 });
+}
+
+function observeFiberIntersection(fiber: Fiber<Element>) {
+  observer.observe(fiber.link);
+}
 
 function createElement(vNode: VirtualNode): DomElement {
   const map = {
@@ -158,7 +191,12 @@ function mutateDom(fiber: Fiber<Element>) {
   const nextFiber = getFiberWithLink(fiber);
   const parentLink = nextFiber.link;
 
+  if (fiber.link) {
+    fiber.link[$$data] = fiber;
+  }
+
   if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
+    const isTag = detectIsTagVirtualNode(fiber.instance);
     const cachedNode = nodeCacheMap.get(parentLink);
     const node = nextFiber.alternate
       ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
@@ -171,6 +209,7 @@ function mutateDom(fiber: Fiber<Element>) {
         : null;
 
     nodeCacheMap.set(parentLink, node);
+    isTag && observeFiberIntersection(fiber);
 
     if (node) {
       parentLink.insertBefore(fiber.link, node);

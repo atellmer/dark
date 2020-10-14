@@ -20,7 +20,6 @@ import {
 import { platform } from '@core/global';
 import {
   ComponentFactory,
-  ComponentWrapper,
   detectIsComponentFactory,
   getComponentFactoryKey,
 } from '@core/component';
@@ -41,9 +40,8 @@ import {
   takeListFromEnd,
   detectIsDevEnvironment,
 } from '@helpers';
-import { $$memo, detectIsMemo } from '../memo';
+import { detectIsMemo } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
-
 
 class Fiber<N = NativeElement> {
   public parent: Fiber<N>;
@@ -57,6 +55,7 @@ class Fiber<N = NativeElement> {
   public shadow: Fiber<N>;
   public provider: Map<Context, ContextProviderValue>;
   public transposition: boolean;
+  public intersecting: boolean;
   public link: N;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -71,6 +70,7 @@ class Fiber<N = NativeElement> {
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
     this.transposition = options.transposition || false;
+    this.intersecting = options.intersecting || true;
     this.link = options.link || null;
   }
 }
@@ -130,6 +130,10 @@ function performUnitOfWork(fiber: Fiber) {
 
     shadow = shadow ? shadow.child : null;
     const alternate = getChildAlternate(nextFiber);
+    const skip = alternate ? performIntersection(alternate, true) : false;
+
+    if (skip) return nextFiber;
+
     const hook = shadow
       ? shadow.hook
       : alternate
@@ -148,7 +152,6 @@ function performUnitOfWork(fiber: Fiber) {
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
     mutateFiber(fiber, element, alternate);
-
     alternate && performMemo(fiber, alternate);
 
     nextFiber.child = fiber;
@@ -173,6 +176,10 @@ function performUnitOfWork(fiber: Fiber) {
 
       shadow = shadow ? shadow.nextSibling : null;
       const alternate = getNextSiblingAlternate(nextFiber);
+      const skip = alternate ? performIntersection(alternate, false) : false;
+
+      if (skip) return nextFiber;
+
       const hook = shadow
         ? shadow.hook
         : alternate
@@ -211,6 +218,44 @@ function performUnitOfWork(fiber: Fiber) {
     }
 
     return null;
+  }
+
+  function performIntersection(alternate: Fiber, isChild: boolean) {
+    if (alternate && !alternate.intersecting) {
+      fiberMountHelper.deepWalking.set(false);
+
+      const fiber = alternate;
+
+      alternate.alternate = null;
+      fiber.alternate = alternate;
+      fiber.effectTag = EffectTag.SKIP;
+
+      if (fiber.child) {
+        let nextFiber = fiber.child.nextSibling;
+
+        fiber.child.parent = fiber;
+
+        while (nextFiber) {
+          nextFiber.parent = fiber;
+          nextFiber = nextFiber.nextSibling;
+        }
+      }
+
+      if (isChild) {
+        nextFiber.child = fiber;
+        fiber.parent = nextFiber;
+      } else {
+        fiber.prevSibling = nextFiber;
+        fiber.parent = nextFiber.parent;
+        nextFiber.nextSibling = fiber;
+      }
+
+      nextFiber = fiber;
+
+      return true;
+    }
+
+    return false;
   }
 
   function getRootShadow(element: DarkElementInstance, alternate: Fiber) {
@@ -645,4 +690,5 @@ export {
   workLoop,
   mountInstance,
   createHook,
+  hasChildrenProp,
 };

@@ -41,7 +41,7 @@ const Dot = createComponent((props) => {
   }, []);
 
   return (
-    <div style={style} onMouseOver={enter} onMouseOut={leave}>
+    <div style={style} onMouseEnter={enter} onMouseLeave={leave}>
       {hover ? `* ${Text(props.slot)} *` : Text(props.slot)}
     </div>
   );
@@ -89,8 +89,8 @@ const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
   );
 });
 
-const MemoSierpinskiTriangle = memo(SierpinskiTriangle, (p, n) => 
-  p.x !== n.x || p.y !== n.y || p.s !== n.s || p.slot.value !== n.slot.value);
+const MemoSierpinskiTriangle = memo(SierpinskiTriangle, (p, n) =>
+  p.x !== n.x || p.y !== n.y || p.s !== n.s || Text(p.slot) !== Text(n.slot));
 
 const App = createComponent((props) => {
   const [seconds, setSeconds] = useState(0);
