@@ -43,7 +43,6 @@ import {
 import { detectIsMemo } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
-
 class Fiber<N = NativeElement> {
   public parent: Fiber<N>;
   public child: Fiber<N>;
@@ -131,6 +130,10 @@ function performUnitOfWork(fiber: Fiber) {
 
     shadow = shadow ? shadow.child : null;
     const alternate = getChildAlternate(nextFiber);
+    const skip = alternate ? performIntersection(alternate, true) : false;
+
+    if (skip) return nextFiber;
+
     const hook = shadow
       ? shadow.hook
       : alternate
@@ -173,6 +176,10 @@ function performUnitOfWork(fiber: Fiber) {
 
       shadow = shadow ? shadow.nextSibling : null;
       const alternate = getNextSiblingAlternate(nextFiber);
+      const skip = alternate ? performIntersection(alternate, false) : false;
+
+      if (skip) return nextFiber;
+
       const hook = shadow
         ? shadow.hook
         : alternate
@@ -214,8 +221,7 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performIntersection(alternate: Fiber, isChild: boolean) {
-
-    if (!alternate.intersecting) {
+    if (alternate && !alternate.intersecting) {
       fiberMountHelper.deepWalking.set(false);
 
       const fiber = alternate;
@@ -223,6 +229,17 @@ function performUnitOfWork(fiber: Fiber) {
       alternate.alternate = null;
       fiber.alternate = alternate;
       fiber.effectTag = EffectTag.SKIP;
+
+      if (fiber.child) {
+        let nextFiber = fiber.child.nextSibling;
+
+        fiber.child.parent = fiber;
+
+        while (nextFiber) {
+          nextFiber.parent = fiber;
+          nextFiber = nextFiber.nextSibling;
+        }
+      }
 
       if (isChild) {
         nextFiber.child = fiber;
@@ -575,7 +592,7 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
 
-  console.log('wip', wipFiber);
+  // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
 
