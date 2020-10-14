@@ -144,7 +144,7 @@ function performUnitOfWork(fiber: Fiber) {
       : alternate
         ? alternate.provider
         : null;
-    const fiber = new Fiber({ hook, provider });
+    let fiber = new Fiber({ hook, provider });
 
     componentFiberHelper.set(fiber);
     fiber.parent = nextFiber;
@@ -152,7 +152,7 @@ function performUnitOfWork(fiber: Fiber) {
     pertformInstance(element, 0, alternate);
     alternate && performAlternate(alternate);
     mutateFiber(fiber, element, alternate);
-    alternate && performMemo(fiber, alternate);
+    fiber = alternate ? performMemo(fiber, alternate) : fiber;
 
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
@@ -190,7 +190,7 @@ function performUnitOfWork(fiber: Fiber) {
         : alternate
           ? alternate.provider
           : null;
-      const fiber = new Fiber({ hook, provider });
+      let fiber = new Fiber({ hook, provider });
 
       componentFiberHelper.set(fiber);
       fiber.parent = nextFiber.parent;
@@ -198,7 +198,7 @@ function performUnitOfWork(fiber: Fiber) {
       pertformInstance(parent, childrenIdx, alternate);
       alternate && performAlternate(alternate);
       mutateFiber(fiber, element, alternate);
-      alternate && performMemo(fiber, alternate);
+      fiber = alternate ? performMemo(fiber, alternate) : fiber;
 
       fiber.prevSibling = nextFiber;
       fiber.parent = nextFiber.parent;
@@ -380,11 +380,13 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performMemo(fiber: Fiber, alternate: Fiber) {
-    if (detectIsMemo(fiber.instance)) {
+    let memoFiber = fiber;
+
+    if (detectIsMemo(memoFiber.instance)) {
       const factory = element as ComponentFactory;
       const alternateFactory = alternate.instance as ComponentFactory;
 
-      if (factory.type !== alternateFactory.type) return;
+      if (factory.type !== alternateFactory.type) return memoFiber;
 
       const props = alternateFactory.props;
       const nextProps = factory.props;
@@ -393,28 +395,26 @@ function performUnitOfWork(fiber: Fiber) {
       if (skip) {
         fiberMountHelper.deepWalking.set(false);
 
-        for (const key in alternate) {
-          if (alternate.hasOwnProperty(key)) {
-            fiber[key] = alternate[key];
-          }
-        }
+        memoFiber = alternate;
 
         alternate.alternate = null;
-        fiber.alternate = alternate;
-        fiber.effectTag = EffectTag.SKIP;
+        memoFiber.alternate = alternate;
+        memoFiber.effectTag = EffectTag.SKIP;
 
-        if (fiber.child) {
-          let nextFiber = fiber.child.nextSibling;
+        if (memoFiber.child) {
+          let nextFiber = memoFiber.child.nextSibling;
 
-          fiber.child.parent = fiber;
+          memoFiber.child.parent = memoFiber;
 
           while (nextFiber) {
-            nextFiber.parent = fiber;
+            nextFiber.parent = memoFiber;
             nextFiber = nextFiber.nextSibling;
           }
         }
       }
     }
+
+    return memoFiber;
   }
 }
 

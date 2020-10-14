@@ -249,4 +249,3 @@ function forceUpdate() {
 }
 
 render(Bench(), domElement);
-
