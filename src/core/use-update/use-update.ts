@@ -7,6 +7,7 @@ import {
   fromHookUpdateHelper,
   fiberMountHelper,
   deletionsHelper,
+  outsideViewportHelper,
 } from '@core/scope';
 import {
   EffectTag,
@@ -25,6 +26,7 @@ function useUpdate() {
       run: (deadline: IdleDeadline) => {
         effectStoreHelper.set(rootId); // important order!
         fromHookUpdateHelper.set(true);
+        outsideViewportHelper.set(false);
 
         fiber.alternate = fiber;
         fiber.effectTag = EffectTag.UPDATE;

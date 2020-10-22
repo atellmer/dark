@@ -88,14 +88,14 @@ function workLoop(options: WorkLoopOptions) {
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     nextUnitOfWorkHelper.set(nextUnitOfWork);
-    //shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
+    shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
   }
 
   if (!nextUnitOfWork && wipFiber) {
     commitChanges(onRender);
   }
 
-  //shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
+  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
 function performUnitOfWork(fiber: Fiber) {
