@@ -16,6 +16,8 @@ import {
   componentFiberHelper,
   fromHookUpdateHelper,
   effectsHelper,
+  updatesHelper,
+  outsideViewportHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
 import {
@@ -42,6 +44,8 @@ import {
 } from '@helpers';
 import { detectIsMemo } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
+import { scheduler, UpdatorZone } from '@core/scheduler';
+
 
 class Fiber<N = NativeElement> {
   public parent: Fiber<N>;
@@ -84,14 +88,14 @@ function workLoop(options: WorkLoopOptions) {
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     nextUnitOfWorkHelper.set(nextUnitOfWork);
-    shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
+    //shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
   }
 
   if (!nextUnitOfWork && wipFiber) {
     commitChanges(onRender);
   }
 
-  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
+  //shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
 function performUnitOfWork(fiber: Fiber) {
@@ -129,6 +133,7 @@ function performUnitOfWork(fiber: Fiber) {
     fiberMountHelper.jumpToChild();
 
     shadow = shadow ? shadow.child : null;
+
     const alternate = getChildAlternate(nextFiber);
     const skip = alternate ? performIntersection(alternate, true) : false;
 
@@ -175,6 +180,7 @@ function performUnitOfWork(fiber: Fiber) {
       fiberMountHelper.deepWalking.set(true);
 
       shadow = shadow ? shadow.nextSibling : null;
+
       const alternate = getNextSiblingAlternate(nextFiber);
       const skip = alternate ? performIntersection(alternate, false) : false;
 
@@ -221,7 +227,12 @@ function performUnitOfWork(fiber: Fiber) {
   }
 
   function performIntersection(alternate: Fiber, isChild: boolean) {
-    if (alternate && !alternate.intersecting) {
+    const isOutsideViewportPhase = outsideViewportHelper.get();
+    const canProcessIntersection = isOutsideViewportPhase
+      ? false
+      : !alternate.intersecting;
+
+    if (canProcessIntersection) {
       fiberMountHelper.deepWalking.set(false);
 
       const fiber = alternate;
@@ -276,12 +287,15 @@ function performUnitOfWork(fiber: Fiber) {
 
   function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
     if (hasChildrenProp(instance)) {
+      const isOutsideViewportPhase = outsideViewportHelper.get();
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
       shadow = alternate ? getRootShadow(element, alternate) : shadow;
-      element = mountInstance(element);
+      const canReuse = isOutsideViewportPhase && alternate && hasChildrenProp(element) ? alternate.intersecting : false;
+
+      element = canReuse ? alternate.instance : mountInstance(element);
     }
   }
 
@@ -385,12 +399,16 @@ function performUnitOfWork(fiber: Fiber) {
     if (detectIsMemo(memoFiber.instance)) {
       const factory = element as ComponentFactory;
       const alternateFactory = alternate.instance as ComponentFactory;
+      const isOutsideViewportPhase = outsideViewportHelper.get();
 
       if (factory.type !== alternateFactory.type) return memoFiber;
 
       const props = alternateFactory.props;
       const nextProps = factory.props;
       const skip = !factory.shouldUpdate(props, nextProps);
+      const forceUpdate = isOutsideViewportPhase && skip && alternate.intersecting;
+
+      if (forceUpdate) return memoFiber;
 
       if (skip) {
         fiberMountHelper.deepWalking.set(false);
@@ -595,7 +613,6 @@ function commitChanges(onRender?: () => void) {
   // console.log('wip', wipFiber);
 
   commitWork(wipFiber.child, () => {
-
     for (const fiber of deletionsHelper.get()) {
       platform.applyCommits(fiber);
     }
@@ -614,6 +631,18 @@ function commitChanges(onRender?: () => void) {
     } else {
       currentRootHelper.set(wipFiber);
       isFunction(onRender) && onRender();
+    }
+
+    const updates = updatesHelper.get();
+
+    if (updates.length > 0) {
+      const update = updates.shift();
+
+      outsideViewportHelper.set(true);
+      scheduler.scheduleTask({
+        zone: UpdatorZone.ROOT,
+        run: update,
+      });
     }
   });
 }

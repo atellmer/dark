@@ -15,6 +15,8 @@ class Store {
   };
   public componentFiber: Fiber = null;
   public effects: Array<() => void> = [];
+  public updates: Array<(deadline: IdleDeadline) => void> = [];
+  public isOutsideViewportPhase: boolean = false;
 }
 
 let rootId = null;
@@ -113,6 +115,15 @@ const effectsHelper = {
   add: (effect: () => void) => storeHelper.get().effects.push(effect),
 };
 
+const updatesHelper = {
+  get: () => storeHelper.get().updates,
+};
+
+const outsideViewportHelper = {
+  get: () => storeHelper.get().isOutsideViewportPhase,
+  set: (value: boolean) => storeHelper.get().isOutsideViewportPhase = value,
+};
+
 export {
   getRootId,
   effectStoreHelper,
@@ -125,4 +136,6 @@ export {
   deletionsHelper,
   fiberMountHelper,
   effectsHelper,
+  updatesHelper,
+  outsideViewportHelper,
 };

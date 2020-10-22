@@ -11,6 +11,8 @@ import {
   getRootId,
   deletionsHelper,
   fiberMountHelper,
+  updatesHelper,
+  outsideViewportHelper,
 } from '@core/scope';
 import { createDomLink, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
@@ -49,31 +51,38 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
 
   const rootId = getRootId();
 
+  const update = (deadline: IdleDeadline) => {
+    effectStoreHelper.set(rootId);
+    resetNodeCache();
+
+    const currentRootFiber = currentRootHelper.get();
+    const fiber = new Fiber({
+      link: container,
+      instance: new TagVirtualNode({
+        name: ROOT,
+        children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
+      }),
+      alternate: currentRootFiber,
+      effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
+    });
+
+    currentRootFiber && (currentRootFiber.alternate = null);
+    fiberMountHelper.reset();
+    wipRootHelper.set(fiber);
+    nextUnitOfWorkHelper.set(fiber);
+    deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
+    deletionsHelper.set([]);
+    workLoop({ deadline, onRender });
+  };
+
+  if (isMounted) {
+    updatesHelper.get().push(update);
+  }
+
+  outsideViewportHelper.set(false);
   scheduler.scheduleTask({
     zone: UpdatorZone.ROOT,
-    run: (deadline: IdleDeadline) => {
-      effectStoreHelper.set(rootId);
-      resetNodeCache();
-
-      const currentRootFiber = currentRootHelper.get();
-      const fiber = new Fiber({
-        link: container,
-        instance: new TagVirtualNode({
-          name: ROOT,
-          children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
-        }),
-        alternate: currentRootFiber,
-        effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
-      });
-
-      currentRootFiber && (currentRootFiber.alternate = null);
-      fiberMountHelper.reset();
-      wipRootHelper.set(fiber);
-      nextUnitOfWorkHelper.set(fiber);
-      deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
-      deletionsHelper.set([]);
-      workLoop({ deadline, onRender });
-    },
+    run: update,
   });
 }
 
