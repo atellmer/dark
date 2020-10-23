@@ -127,22 +127,13 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const timerId = setInterval(() => {
-      setCount(count => count + 1);
-    }, 1000);
-
-    return () => clearInterval(timerId);
-  }, []);
 
   // console.log('render', id);
 
   return (
     <tr class={className}>
       <td class='cell'>{name}</td>
-      <td class='cell'>{count}</td>
+      <td class='cell'>zzz</td>
       <td class='cell'>xxx</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
@@ -188,7 +179,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(100);
+    state.list = buildData(100000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

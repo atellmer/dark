@@ -117,6 +117,7 @@ const effectsHelper = {
 
 const updatesHelper = {
   get: () => storeHelper.get().updates,
+  reset: () => storeHelper.get().updates = [],
 };
 
 const outsideViewportHelper = {

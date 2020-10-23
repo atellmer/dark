@@ -634,18 +634,23 @@ function commitChanges(onRender?: () => void) {
     }
 
     const updates = updatesHelper.get();
+    const update = updates[updates.length - 1];
 
-    if (updates.length > 0) {
-      const update = updates.shift();
-
-      outsideViewportHelper.set(true);
-      scheduler.scheduleTask({
-        zone: UpdatorZone.ROOT,
-        run: update,
-      });
+    if (update) {
+      updatesHelper.reset();
+      clearTimeout(updateTimerId);
+      updateTimerId = setTimeout(() => {
+        outsideViewportHelper.set(true);
+        scheduler.scheduleTask({
+          zone: UpdatorZone.ROOT,
+          run: update,
+        });
+      }, 3000);
     }
   });
 }
+
+let updateTimerId = null;
 
 function commitWork(fiber: Fiber, onComplete: Function) {
   let nextFiber = fiber;
