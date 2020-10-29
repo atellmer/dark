@@ -39,6 +39,7 @@ import {
   isFunction,
   takeListFromEnd,
   detectIsDevEnvironment,
+  isUndefined,
 } from '@helpers';
 import { detectIsMemo } from '../memo';
 import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
@@ -69,8 +70,8 @@ class Fiber<N = NativeElement> {
     this.hook = options.hook || createHook();
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
-    this.transposition = options.transposition || false;
-    this.intersecting = options.intersecting || true;
+    this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
+    this.intersecting = !isUndefined(options.intersecting) ? options.intersecting : true;
     this.link = options.link || null;
   }
 }
