@@ -131,10 +131,6 @@ function performUnitOfWork(fiber: Fiber) {
 
     shadow = shadow ? shadow.child : null;
     const alternate = getChildAlternate(nextFiber);
-    const skip = alternate ? performIntersection(alternate, true) : false;
-
-    if (skip) return nextFiber;
-
     const hook = shadow
       ? shadow.hook
       : alternate
@@ -150,7 +146,12 @@ function performUnitOfWork(fiber: Fiber) {
     componentFiberHelper.set(fiber);
     fiber.parent = nextFiber;
 
-    pertformInstance(element, 0, alternate);
+    pertformInstance({
+      instance: element,
+      idx: 0,
+      fiber,
+      alternate,
+    });
     alternate && performAlternate(alternate);
     mutateFiber(fiber, element, alternate);
     fiber = alternate ? performMemo(fiber, alternate) : fiber;
@@ -177,10 +178,6 @@ function performUnitOfWork(fiber: Fiber) {
 
       shadow = shadow ? shadow.nextSibling : null;
       const alternate = getNextSiblingAlternate(nextFiber);
-      const skip = alternate ? performIntersection(alternate, false) : false;
-
-      if (skip) return nextFiber;
-
       const hook = shadow
         ? shadow.hook
         : alternate
@@ -196,7 +193,12 @@ function performUnitOfWork(fiber: Fiber) {
       componentFiberHelper.set(fiber);
       fiber.parent = nextFiber.parent;
 
-      pertformInstance(parent, childrenIdx, alternate);
+      pertformInstance({
+        instance: parent,
+        idx: childrenIdx,
+        fiber,
+        alternate,
+      });
       alternate && performAlternate(alternate);
       mutateFiber(fiber, element, alternate);
       fiber = alternate ? performMemo(fiber, alternate) : fiber;
@@ -221,45 +223,7 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function performIntersection(alternate: Fiber, isChild: boolean) {
-    if (alternate && !alternate.intersecting) {
-      fiberMountHelper.deepWalking.set(false);
-
-      const fiber = alternate;
-
-      alternate.alternate = null;
-      fiber.alternate = alternate;
-      fiber.effectTag = EffectTag.SKIP;
-
-      if (fiber.child) {
-        let nextFiber = fiber.child.nextSibling;
-
-        fiber.child.parent = fiber;
-
-        while (nextFiber) {
-          nextFiber.parent = fiber;
-          nextFiber = nextFiber.nextSibling;
-        }
-      }
-
-      if (isChild) {
-        nextFiber.child = fiber;
-        fiber.parent = nextFiber;
-      } else {
-        fiber.prevSibling = nextFiber;
-        fiber.parent = nextFiber.parent;
-        nextFiber.nextSibling = fiber;
-      }
-
-      nextFiber = fiber;
-
-      return true;
-    }
-
-    return false;
-  }
-
-  function getRootShadow(element: DarkElementInstance, alternate: Fiber) {
+  function getRootShadow(element: DarkElementInstance, fiber: Fiber, alternate: Fiber) {
     const key = getElementKey(alternate.instance);
     const nextKey = getElementKey(element);
     let shadow: Fiber = null;
@@ -268,6 +232,8 @@ function performUnitOfWork(fiber: Fiber) {
       shadow = getAlternateByKey(nextKey, alternate.parent.child);
 
       if (shadow) {
+        fiber.hook = shadow.hook;
+        fiber.provider = shadow.provider;
         alternate.transposition = true;
       }
     }
@@ -275,13 +241,27 @@ function performUnitOfWork(fiber: Fiber) {
     return shadow;
   }
 
-  function pertformInstance(instance: DarkElementInstance, idx: number, alternate: Fiber) {
+  type PerformInstanceOptions = {
+    instance: DarkElementInstance;
+    idx: number;
+    fiber: Fiber;
+    alternate: Fiber;
+  };
+
+  function pertformInstance(options: PerformInstanceOptions) {
+    const {
+      instance,
+      idx,
+      fiber,
+      alternate,
+    } = options;;
+
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-      shadow = alternate ? getRootShadow(element, alternate) : shadow;
+      shadow = alternate ? getRootShadow(element, fiber, alternate) : shadow;
       element = mountInstance(element);
     }
   }
@@ -396,7 +376,9 @@ function performUnitOfWork(fiber: Fiber) {
       if (skip) {
         fiberMountHelper.deepWalking.set(false);
 
-        memoFiber = alternate;
+        memoFiber = new Fiber({
+          ...alternate,
+        });
 
         alternate.alternate = null;
         memoFiber.alternate = alternate;

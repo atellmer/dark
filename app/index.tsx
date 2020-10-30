@@ -162,7 +162,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
       <tbody>
         {items.map((item) => {
           return (
-            <MemoRow
+            <Row
               key={item.id}
               id={item.id}
               name={item.name}
@@ -238,7 +238,7 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />,
-      <MemoList
+      <List
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
