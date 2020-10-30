@@ -127,7 +127,6 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-  const [count, setCount] = useState(0);
 
   // console.log('render', id);
 
@@ -135,11 +134,10 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     <tr class={className}>
       <td class='cell'>{name}</td>
       <td class='cell'>zzz</td>
-      <td class='cell'>{count}</td>
+      <td class='cell'>xxx</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        <button onClick={() => setCount(x => x + 1)}>increm</button>
       </td>
     </tr>
   );
@@ -162,7 +160,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
       <tbody>
         {items.map((item) => {
           return (
-            <Row
+            <MemoRow
               key={item.id}
               id={item.id}
               name={item.name}
@@ -181,7 +179,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -238,7 +236,7 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />,
-      <List
+      <MemoList
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
