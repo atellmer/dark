@@ -23,7 +23,6 @@ import {
   useImperativeHandle,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
-import { createElement } from '../src/core/element';
 
 
 const domElement = document.getElementById('root');
@@ -179,7 +178,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -228,20 +227,22 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
-  return [
+  return (
+    <Fragment>
       <MemoHeader
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
-      />,
+      />
       <MemoList
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
-      />,
-    ]
+      />
+    </Fragment>
+  );
 });
 
 function forceUpdate() {

@@ -6,6 +6,7 @@ import { createElement } from '@core/element/element';
 import { useState } from './use-state';
 import { render } from '../../platform/browser/render';
 import { dom } from '../../../test/utils';
+import { EMPTY_NODE } from '@core/constants';
 
 
 let host: HTMLElement = null;
@@ -58,7 +59,10 @@ test('[use-state]: state saves when nodes swapped', () => {
   const content = (items: Array<Item>) => dom`
     ${items.map(x => {
       return `
-        <div>id: ${x.id}, count: ${x.count}</div>
+        <div>
+          <div>id: ${x.id}, count: ${x.count}</div>
+          <div>${x.count}</div>
+        </div>
       `
     }).join('')}
   `;
@@ -68,20 +72,35 @@ test('[use-state]: state saves when nodes swapped', () => {
     count: 0,
   }));
 
-  let setCounts = [];
-  const Counter = createComponent<{id: number}>(({ id }) => {
+  let setCountsOne = [];
+  let setCountsTwo = [];
+
+  const CounterOne = createComponent<{id: number}>(({ id }) => {
     const [count, setCount] = useState(0);
 
-    setCounts.push(setCount);
+    setCountsOne.push(setCount);
 
     return (
-      <div>id: {id}, count: {count}</div>
+      <div>
+        <div>id: {id}, count: {count}</div>
+        <CounterTwo />
+      </div>
+    );
+  });
+
+  const CounterTwo = createComponent(() => {
+    const [count, setCount] = useState(0);
+
+    setCountsTwo.push(setCount);
+
+    return (
+      <div>{count}</div>
     );
   });
 
   const List = createComponent(() => {
     return items.map(x => {
-      return <Counter key={x.id} id={x.id} />
+      return <CounterOne key={x.id} id={x.id} />
     })
   })
 
@@ -95,23 +114,64 @@ test('[use-state]: state saves when nodes swapped', () => {
   fireRenders();
   expect(host.innerHTML).toBe(content(items));
 
-  setCounts[1](1);
+  setCountsOne[1](1);
+  setCountsTwo[1](1);
   items[1].count = 1;
-  setCounts[items.length - 2](2);
+  setCountsOne[items.length - 2](2);
+  setCountsTwo[items.length - 2](2);
   items[items.length - 2].count = 2;
   fireRenders();
   expect(host.innerHTML).toBe(content(items));
-  setCounts = [];
+  setCountsOne = [];
+  setCountsTwo = [];
   swap();
 
   render(List(), host);
   fireRenders();
   expect(host.innerHTML).toBe(content(items));
-  setCounts = [];
+  setCountsOne = [];
+  setCountsTwo = [];
   swap();
 
   render(List(), host);
   fireRenders();
   expect(host.innerHTML).toBe(content(items));
-  setCounts = [];
+  setCountsOne = [];
+  setCountsTwo = [];
+});
+
+test('[use-state]: state saves after conditional rendering', () => {
+  const content = (count: number) => dom`
+    <div>count: ${count}</div>
+  `;
+  const emptyNode = `<!--${EMPTY_NODE}-->`;
+
+  let count;
+  let setCount;
+
+  const Counter = createComponent(() => {
+    [count, setCount] = useState(0);
+
+    return [
+      <div>count: {count}</div>,
+    ]
+  });
+
+  const App = createComponent<{isOpen: boolean}>(({ isOpen }) => {
+    return [
+      isOpen && <Counter />,
+    ];
+  });
+
+  render(App({ isOpen: true }), host);
+  fireRenders();
+  setCount(1);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(1));
+  render(App({ isOpen: false }), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(emptyNode);
+  render(App({ isOpen: true }), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(1));
 });
