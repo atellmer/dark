@@ -61,7 +61,9 @@ function createElement(vNode: VirtualNode): DomElement {
   const map = {
     [NodeType.TAG]: (vNode: VirtualNode) => {
       const tagNode = vNode as TagVirtualNode;
-      const node = document.createElement(tagNode.name);
+      const node = detectIsSvgElement(tagNode.name)
+        ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
+        : document.createElement(tagNode.name);
 
       return node;
     },
@@ -408,6 +410,36 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
       nextFiber = null;
     }
   }
+}
+
+function detectIsSvgElement(tagName) {
+  const tagMap = {
+    svg: true,
+    circle: true,
+    ellipse: true,
+    g: true,
+    text: true,
+    tspan: true,
+    textPath: true,
+    path: true,
+    polygon: true,
+    polyline: true,
+    line: true,
+    rect: true,
+    use: true,
+    image: true,
+    symbol: true,
+    defs: true,
+    linearGradient: true,
+    radialGradient: true,
+    stop: true,
+    clipPath: true,
+    pattern: true,
+    mask: true,
+    marker: true,
+  };
+
+  return Boolean(tagMap[tagName]);
 }
 
 export {
