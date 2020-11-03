@@ -254,7 +254,7 @@ function performUnitOfWork(fiber: Fiber) {
       idx,
       fiber,
       alternate,
-    } = options;;
+    } = options;
 
     if (hasChildrenProp(instance)) {
       const elements = flatten([instance.children[idx]]);

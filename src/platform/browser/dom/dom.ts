@@ -241,10 +241,7 @@ function mutateDom(fiber: Fiber<Element>) {
 
     updateDom(fiber.link, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
-    commitDeletion({
-      fiber,
-      parent: parentLink,
-    });
+    commitDeletion(fiber, parentLink);
 
     if (fiber.parent.child === fiber) {
       fiber.parent.child = null;
@@ -369,61 +366,52 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   return null;
 }
 
-type CommitDeletionOptions = {
-  fiber: Fiber<Element>;
-  parent: Element;
-  fromChild?: boolean;
-  isRemoved?: boolean;
-  isTransposition?: boolean;
-};
+function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
+  let nextFiber = fiber;
+  let isDeepWalking = true;
+  let isReturn = false;
 
-function commitDeletion(options: CommitDeletionOptions) {
-  const {
-    fiber,
-    parent,
-    fromChild = false,
-    isRemoved = false,
-    isTransposition = false,
-  } = options;
-
-  if (!fiber) return; // empty fiber without link for inserting
-
-  const hasLink = Boolean(fiber.link);
-
-  if (detectIsPortal(fiber.instance)) {
-    const container = getPortalContainer(fiber.instance);
-
-    container.innerHTML = '';
-  } else if (hasLink && !isRemoved) {
-    parent.removeChild(fiber.link);
+  if (detectIsCommentVirtualNode(nextFiber.instance) && !nextFiber.link) {
+    return;
   }
 
-  if (!isTransposition && !fiber.transposition && detectIsComponentFactory(fiber.instance)) {
-    runEffectCleanup(fiber.hook);
-  }
+  while (nextFiber) {
+    if (!isReturn) {
+      if (nextFiber.link) {
+        parentElement.removeChild(nextFiber.link);
+        isDeepWalking = false;
+      } else if (detectIsPortal(fiber.instance)) {
+        const container = getPortalContainer(fiber.instance);
 
-  commitDeletion({
-    fiber: fiber.child,
-    parent,
-    fromChild: true,
-    isRemoved: hasLink || isRemoved,
-    isTransposition: fiber.transposition || isTransposition,
-  });
+        container.innerHTML = '';
+        isDeepWalking = false;
+      }
 
-  if (fromChild && fiber.nextSibling) {
-    commitDeletion({
-      fiber: fiber.nextSibling,
-      parent,
-      fromChild: true,
-      isRemoved: hasLink || isRemoved,
-      isTransposition: fiber.transposition || isTransposition,
-    });
+      if (!fiber.transposition && detectIsComponentFactory(nextFiber.instance)) {
+        runEffectCleanup(nextFiber.hook);
+      }
+    }
+
+    if (nextFiber.child && isDeepWalking) {
+      nextFiber = nextFiber.child;
+      isReturn = false;
+    } else if (nextFiber.nextSibling) {
+      if (nextFiber.nextSibling.effectTag === EffectTag.DELETION) return;
+      isDeepWalking = true;
+      isReturn = false;
+      nextFiber = nextFiber.nextSibling;
+    } else if (nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
+      isDeepWalking = false;
+      isReturn = true;
+      nextFiber = nextFiber.parent;
+    } else {
+      nextFiber = null;
+    }
   }
 }
 
 export {
   createDomLink,
   mutateDom,
-  commitDeletion,
   resetNodeCache,
 };

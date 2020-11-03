@@ -129,17 +129,10 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
 
   // console.log('render', id);
 
-  return (
-    <tr class={className}>
-      <td class='cell'>{name}</td>
-      <td class='cell'>zzz</td>
-      <td class='cell'>xxx</td>
-      <td class='cell'>
-        <button onClick={handleRemove}>remove</button>
-        <button onClick={handleHighlight}>highlight</button>
-      </td>
-    </tr>
-  );
+  return [
+      <div class='item'>{id} 1</div>,
+      <div class='item'>2</div>,
+  ];
 });
 
 const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
@@ -155,8 +148,7 @@ type ListProps = {
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
-    <table class='table'>
-      <tbody>
+    <div>
         {items.map((item) => {
           return (
             <MemoRow
@@ -169,8 +161,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
             />
           );
         })}
-      </tbody>
-    </table>
+    </div>
   )
 });
 
@@ -184,7 +175,7 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
   const handleAdd = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+    state.list.push(...buildData(5, '!!!'));
     state.list = [...state.list];
     measurer.start('add');
     forceUpdate();
