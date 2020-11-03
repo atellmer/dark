@@ -131,8 +131,8 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
 
   return [
       <div class='item'>{id} 1</div>,
-      <div class='item'>2</div>,
-      <div class='item'>3</div>,
+      <div class='item'>{id} 2</div>,
+      <div class='item'>{id} 3</div>,
   ];
 });
 
@@ -149,16 +149,11 @@ type ListProps = {
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return items.map((item) => {
-          return (
-            <Row
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              selected={item.select}
-              onRemove={onRemove}
-              onHighlight={onHighlight}
-            />
-          );
+          return <Fragment key={item.id}>
+            <div class='item'>{item.id} 1</div>
+            <div class='item'>{item.id} 2</div>
+            <div class='item'>{item.id} 3</div>
+          </Fragment>
         })
 });
 
@@ -229,24 +224,9 @@ const Bench = createComponent(() => {
         onRemove={handleRemove}
         onHighlight={handleHightlight}
       />
-      <Star />
     </Fragment>
   );
 });
-
-const Star = createComponent(() => {
-  return (
-    <svg
-      width='256'
-      height='256'
-      viewBox='0 0 24 24'
-      fill='red'
-      fill-rule='evenodd'
-      clip-rule='evenodd'>
-      <path d='M15.668 8.626l8.332 1.159-6.065 5.874 1.48 8.341-7.416-3.997-7.416 3.997 1.481-8.341-6.064-5.874 8.331-1.159 3.668-7.626 3.669 7.626zm-6.67.925l-6.818.948 4.963 4.807-1.212 6.825 6.068-3.271 6.069 3.271-1.212-6.826 4.964-4.806-6.819-.948-3.002-6.241-3.001 6.241z'/>
-    </svg>
-  )
-})
 
 function forceUpdate() {
   render(Bench(), domElement);
