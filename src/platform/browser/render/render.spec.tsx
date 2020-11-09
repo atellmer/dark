@@ -485,3 +485,52 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
   expect(hostOne.innerHTML).toBe(content('Mark'));
   expect(hostTwo.innerHTML).toBe(content('Rebecka'));
 });
+
+test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
+  const items = generateItems(5);
+
+  const content = (items: Array<Item>) => {
+    return dom`
+      ${items.map(x => `
+        <div>1: ${x.id}</div>
+        <div>2: ${x.id}</div>
+      `).join('')}
+    `;
+  };
+
+  const swap = () => {
+    const temp = items[1];
+
+    items[1] = items[items.length - 2];
+    items[items.length - 2] = temp;
+  };
+
+  const ListItem = createComponent<Item>(({ id }) => {
+    return [
+      <div>1: {id}</div>,
+      <div>2: {id}</div>,
+    ];
+  });
+
+  const List = createComponent(() => {
+    return items.map(x => {
+      return (
+        <ListItem key={x.id} id={x.id} name={x.name} />
+      );
+    });
+  });
+
+  const forceUpdate = () => {
+    render(List(), host);
+    fireRenders();
+  };
+
+  forceUpdate();
+  expect(host.innerHTML).toBe(content(items));
+  swap();
+  forceUpdate();
+  expect(host.innerHTML).toBe(content(items));
+  swap();
+  forceUpdate();
+  expect(host.innerHTML).toBe(content(items));
+});
