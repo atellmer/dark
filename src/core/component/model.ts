@@ -19,15 +19,15 @@ export type KeyProps = Readonly<{
   key?: DarkElementKey;
 }>;
 
-export type SlotProps = Readonly<{
-  slot?: DarkElement;
+export type SlotProps<T = DarkElement> = Readonly<{
+  slot?: T;
 }>;
 
 export type RefProps<T = any> = {
   ref?: MutableRef<T>;
 };
 
-export type Component<T extends Pick<StandardComponentProps, 'slot'>, R = any>
+export type Component<T extends Pick<StandardComponentProps, 'slot'> = any, R = any>
   = (props: T, ref?: MutableRef<R>) => ComponentFactory;
 
 export type ComponentFactoryReturnType = DarkElement;

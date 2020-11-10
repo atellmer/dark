@@ -3,7 +3,7 @@ import { VirtualNode } from '../view';
 
 
 export type DarkElement = NestedArray<
-  ComponentFactory
+  | ComponentFactory
   | VirtualNode
   | RenderProps
   | Nullable

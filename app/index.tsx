@@ -112,7 +112,7 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
   });
 });
 
-const MemoHeader = memo(Header);
+const MemoHeader = memo<HeaderProps>(Header);
 
 type RowProps = {
   id: number,
@@ -130,7 +130,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   // console.log('render', id);
 
   return (
-    <tr class={className}>
+    <tr class={`${className}`}>
       <td class='cell'>{name}</td>
       <td class='cell'>zzz</td>
       <td class='cell'>xxx</td>
@@ -227,23 +227,25 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
-  return (
-    <Fragment>
+  return [
       <MemoHeader
         onCreate={handleCreate}
         onAdd={handleAdd}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
-      />
+      />,
       <MemoList
         items={state.list}
         onRemove={handleRemove}
         onHighlight={handleHightlight}
-      />
-    </Fragment>
-  );
+      />,
+  ];
 });
+
+const ThemeContext = createContext('light');
+
+const useTheme = () => useContext<string>(ThemeContext);
 
 function forceUpdate() {
   render(Bench(), domElement);

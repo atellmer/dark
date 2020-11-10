@@ -278,8 +278,18 @@ function performUnitOfWork(fiber: Fiber) {
       const isRequestedKeys = alternate.instance.children.length !== element.children.length;
 
       if (isRequestedKeys) {
-        const keys = alternate.instance.children.map(getElementKey).filter(Boolean);
-        const nextKeys = element.children.map(getElementKey).filter(Boolean);
+        const keys = [];
+        const nextKeys = [];
+        const max = Math.max(alternate.instance.children.length, element.children.length);
+
+        for (let i = 0; i < max; i++) {
+          const key = alternate.instance.children[i] && getElementKey(alternate.instance.children[i]);
+          const nextKey = element.children[i] && getElementKey(element.children[i]);
+
+          !isEmpty(key) && keys.push(key);
+          !isEmpty(nextKey) && nextKeys.push(nextKey);
+        }
+
         const hasKeys = keys.length > 0;
         const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
@@ -605,32 +615,13 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   let nextFiber = fiber;
   let isDeepWalking = true;
   let isReturn = false;
-  const fromHookUpdate = fromHookUpdateHelper.get();
 
   while (nextFiber) {
     const skip = nextFiber.effectTag === EffectTag.SKIP;
 
-    if (nextFiber.shadow) {
-      nextFiber.shadow = null;
-    }
-
     if (skip) {
-      if (nextFiber.nextSibling) {
-        isDeepWalking = true;
-        isReturn = false;
-        nextFiber = nextFiber.nextSibling;
-      } else if (nextFiber.parent && nextFiber !== fiber) {
-        isDeepWalking = false;
-        isReturn = true;
-        nextFiber = nextFiber.parent;
-      } else {
-        nextFiber = null;
-      }
-
-      continue;
-    }
-
-    if (!isReturn) {
+      isDeepWalking = false;
+    } else if (!isReturn) {
       platform.applyCommits(nextFiber);
     }
 
@@ -640,17 +631,16 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       isDeepWalking = true;
       isReturn = false;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent && nextFiber !== fiber) {
+    } else if (nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
-
-      if (fromHookUpdate && nextFiber === fiber.parent) {
-        nextFiber = null;
-      }
-
     } else {
       nextFiber = null;
+    }
+
+    if (nextFiber && nextFiber.shadow) {
+      nextFiber.shadow = null;
     }
   }
 
