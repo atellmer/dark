@@ -97,32 +97,41 @@ function workLoop(options: WorkLoopOptions) {
 
 function performUnitOfWork(fiber: Fiber) {
   let isDeepWalking = true;
-  let element = fiber.instance;
   let nextFiber = fiber;
   let shadow: Fiber = fiber.shadow;
+  let instance = fiber.instance;
 
   while (true) {
     isDeepWalking = fiberMountHelper.deepWalking.get();
     nextFiber.hook.idx = 0;
 
     if (isDeepWalking) {
-      const hasChild = hasChildrenProp(element) && element.children.length > 0;
+      const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
 
-      if (hasChild) {
-        const childFiber = performChild();
+      if (hasChildren) {
+        const {
+          performedFiber,
+          performedNextFiber,
+          performedShadow,
+          performedInstance,
+        } = performChild({ nextFiber, shadow, instance });
 
-        if (childFiber) return childFiber;
+        nextFiber = performedNextFiber;
+        shadow = performedShadow;
+        instance = performedInstance;
+
+        if (performedFiber) return performedFiber;
       } else {
         const {
           performedFiber,
           performedNextFiber,
           performedShadow,
           performedInstance,
-        } = performSibling({ nextFiber, shadow, instance: element  });
+        } = performSibling({ nextFiber, shadow, instance });
 
         nextFiber = performedNextFiber;
         shadow = performedShadow;
-        element = performedInstance;
+        instance = performedInstance;
 
         if (performedFiber) return performedFiber;
       }
@@ -132,65 +141,75 @@ function performUnitOfWork(fiber: Fiber) {
         performedNextFiber,
         performedShadow,
         performedInstance,
-      } = performSibling({ nextFiber, shadow, instance: element  });
+      } = performSibling({ nextFiber, shadow, instance });
 
       nextFiber = performedNextFiber;
       shadow = performedShadow;
-      element = performedInstance;
+      instance = performedInstance;
 
       if (performedFiber) return performedFiber;
     }
 
     if (nextFiber.parent === null) return null;
   }
+}
 
-  function performChild() {
-    fiberMountHelper.jumpToChild();
+type PerformChildOptions = {
+  nextFiber: Fiber;
+  shadow: Fiber;
+  instance: DarkElementInstance;
+};
 
-    shadow = shadow ? shadow.child : null;
-    const alternate = getChildAlternate(nextFiber);
-    const hook = shadow
-      ? shadow.hook
-      : alternate
-        ? alternate.hook
-        : createHook();
-    const provider = shadow
-      ? shadow.provider
-      : alternate
-        ? alternate.provider
-        : null;
-    let fiber = new Fiber({ hook, provider });
+function performChild(options: PerformChildOptions) {
+  fiberMountHelper.jumpToChild();
+  let nextFiber = options.nextFiber;
+  let shadow = options.shadow;
+  let instance = options.instance;
 
-    componentFiberHelper.set(fiber);
-    fiber.parent = nextFiber;
+  shadow = shadow ? shadow.child : null;
+  const alternate = getChildAlternate(nextFiber);
+  const hook = shadow
+    ? shadow.hook
+    : alternate
+      ? alternate.hook
+      : createHook();
+  const provider = shadow
+    ? shadow.provider
+    : alternate
+      ? alternate.provider
+      : null;
+  let fiber = new Fiber({ hook, provider });
 
-    const { performedInstance, performedShadow } = pertformInstance({
-      instance: element,
-      idx: 0,
-      fiber,
-      alternate,
-    });
-    element = performedInstance || element;
-    shadow = performedShadow || shadow;
-    alternate && performAlternate({ alternate, instance: element });
-    mutateFiber({ fiber, alternate, instance: element });
-    fiber = alternate
-      ? performMemo({
-        fiber,
-        alternate,
-        instance: element,
-      })
-      : fiber;
+  componentFiberHelper.set(fiber);
+  fiber.parent = nextFiber;
 
-    nextFiber.child = fiber;
-    fiber.parent = nextFiber;
-    fiber.shadow = shadow;
-    nextFiber = fiber;
+  const { performedInstance, performedShadow } = pertformInstance({
+    instance,
+    idx: 0,
+    fiber,
+    alternate,
+  });
+  instance = performedInstance || instance;
+  shadow = performedShadow || shadow;
+  alternate && mutateAlternate({ alternate, instance });
+  mutateFiber({ fiber, alternate, instance });
+  fiber = alternate
+    ? performMemo({ fiber, alternate, instance })
+    : fiber;
 
-    cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
+  nextFiber.child = fiber;
+  fiber.parent = nextFiber;
+  fiber.shadow = shadow;
+  nextFiber = fiber;
 
-    return nextFiber;
-  }
+  cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
+
+  return {
+    performedFiber: nextFiber,
+    performedNextFiber: nextFiber,
+    performedShadow: shadow,
+    performedInstance: instance,
+  };
 }
 
 type PerformSiblingOptions = {
@@ -236,7 +255,7 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    alternate && performAlternate({ alternate, instance });
+    alternate && mutateAlternate({ alternate, instance });
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate
       ? performMemo({ fiber, alternate, instance })
@@ -277,7 +296,7 @@ type PerformAlternateOptions = {
   instance: DarkElementInstance;
 };
 
-function performAlternate(options: PerformAlternateOptions) {
+function mutateAlternate(options: PerformAlternateOptions) {
   const {
     alternate,
     instance,
