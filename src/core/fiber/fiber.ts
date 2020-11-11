@@ -223,24 +223,6 @@ function performUnitOfWork(fiber: Fiber) {
     return null;
   }
 
-  function getRootShadow(element: DarkElementInstance, fiber: Fiber, alternate: Fiber) {
-    const key = getElementKey(alternate.instance);
-    const nextKey = getElementKey(element);
-    let shadow: Fiber = null;
-
-    if (key !== nextKey) {
-      shadow = getAlternateByKey(nextKey, alternate.parent.child);
-
-      if (shadow) {
-        fiber.hook = shadow.hook;
-        fiber.provider = shadow.provider;
-        alternate.transposition = true;
-      }
-    }
-
-    return shadow;
-  }
-
   type PerformInstanceOptions = {
     instance: DarkElementInstance;
     idx: number;
@@ -261,7 +243,13 @@ function performUnitOfWork(fiber: Fiber) {
 
       instance.children.splice(idx, 1, ...elements);
       element = instance.children[idx];
-      shadow = alternate ? getRootShadow(element, fiber, alternate) : shadow;
+      shadow = alternate
+        ? getRootShadow({
+            instance:  element,
+            fiber,
+            alternate,
+          })
+        : shadow;
       element = mountInstance(element);
     }
   }
@@ -409,6 +397,35 @@ function performUnitOfWork(fiber: Fiber) {
 
     return memoFiber;
   }
+}
+
+type GetRootShadowOptions = {
+  instance: DarkElementInstance;
+  fiber: Fiber;
+  alternate: Fiber;
+};
+
+function getRootShadow(options: GetRootShadowOptions) {
+  const {
+    instance,
+    fiber,
+    alternate,
+  } = options;
+  const key = getElementKey(alternate.instance);
+  const nextKey = getElementKey(instance);
+  let shadow: Fiber = null;
+
+  if (key !== nextKey) {
+    shadow = getAlternateByKey(nextKey, alternate.parent.child);
+
+    if (shadow) {
+      fiber.hook = shadow.hook;
+      fiber.provider = shadow.provider;
+      alternate.transposition = true;
+    }
+  }
+
+  return shadow;
 }
 
 function mountInstance(instance: DarkElementInstance) {
