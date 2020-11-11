@@ -154,8 +154,8 @@ function performUnitOfWork(fiber: Fiber) {
     });
     element = performedInstance || element;
     shadow = performedShadow || shadow;
-    alternate && performAlternate(alternate);
-    mutateFiber(fiber, element, alternate);
+    alternate && performAlternate({ alternate, instance: element });
+    mutateFiber({ fiber, alternate, instance: element });
     fiber = alternate
       ? performMemo({
         fiber,
@@ -209,8 +209,8 @@ function performUnitOfWork(fiber: Fiber) {
       });
       element = performedInstance || element;
       shadow = performedShadow || shadow;
-      alternate && performAlternate(alternate);
-      mutateFiber(fiber, element, alternate);
+      alternate && performAlternate({ alternate, instance: element });
+      mutateFiber({ fiber, alternate, instance: element });
       fiber = alternate
         ? performMemo({
           fiber,
@@ -238,108 +238,117 @@ function performUnitOfWork(fiber: Fiber) {
 
     return null;
   }
+}
 
-  function performAlternate(alternate: Fiber) {
-    const alternateType = getInstanceType(alternate.instance);
-    const elementType = getInstanceType(element);
-    const isSameType = elementType === alternateType;
+type PerformAlternateOptions = {
+  alternate: Fiber;
+  instance: DarkElementInstance;
+};
 
-    if (!isSameType) {
-      alternate.effectTag = EffectTag.DELETION;
-      deletionsHelper.get().push(alternate);
-    } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(element)) {
-      const isRequestedKeys = alternate.instance.children.length !== element.children.length;
+function performAlternate(options: PerformAlternateOptions) {
+  const {
+    alternate,
+    instance,
+  } = options;
+  const alternateType = getInstanceType(alternate.instance);
+  const elementType = getInstanceType(instance);
+  const isSameType = elementType === alternateType;
 
-      if (isRequestedKeys) {
-        const keys = [];
-        const nextKeys = [];
-        const max = Math.max(alternate.instance.children.length, element.children.length);
+  if (!isSameType) {
+    alternate.effectTag = EffectTag.DELETION;
+    deletionsHelper.get().push(alternate);
+  } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
+    const isRequestedKeys = alternate.instance.children.length !== instance.children.length;
 
-        for (let i = 0; i < max; i++) {
-          const key = alternate.instance.children[i] && getElementKey(alternate.instance.children[i]);
-          const nextKey = element.children[i] && getElementKey(element.children[i]);
+    if (isRequestedKeys) {
+      const keys = [];
+      const nextKeys = [];
+      const max = Math.max(alternate.instance.children.length, instance.children.length);
 
-          !isEmpty(key) && keys.push(key);
-          !isEmpty(nextKey) && nextKeys.push(nextKey);
-        }
+      for (let i = 0; i < max; i++) {
+        const key = alternate.instance.children[i] && getElementKey(alternate.instance.children[i]);
+        const nextKey = instance.children[i] && getElementKey(instance.children[i]);
 
-        const hasKeys = keys.length > 0;
-        const hasAnyKeys = hasKeys || nextKeys.length > 0;
-
-        if (detectIsDevEnvironment() && !hasAnyKeys) {
-          error(UNIQ_KEY_ERROR);
-        }
-
-        const performRemovingNodes = () => {
-          const diffKeys = getDiffKeys(keys, nextKeys);
-
-          if (diffKeys.length > 0) {
-            for (const key of diffKeys) {
-              const childAlternate = getAlternateByKey(key, alternate.child);
-
-              if (childAlternate) {
-                childAlternate.effectTag = EffectTag.DELETION;
-                deletionsHelper.get().push(childAlternate);
-              }
-            }
-          } else if (!hasKeys) {
-            const diffCount = getInstanceChildDiffCount(alternate.instance, element);
-            const fibers: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount).map(
-              x => ((x.effectTag = EffectTag.DELETION), x),
-            );
-
-            deletionsHelper.get().push(...fibers);
-          }
-        }
-
-        const performInsertingNodes = () => {
-          const diffKeys = getDiffKeys(nextKeys, keys);
-
-          if (diffKeys.length > 0) {
-            const diffKeyMap = keyBy(diffKeys, x => x);
-            const usedKeyMap = {};
-            let keyIdx = 0;
-
-            for (const nextKey of nextKeys) {
-              if (usedKeyMap[nextKey]) {
-                if (detectIsDevEnvironment()) {
-                  error(IS_ALREADY_USED_KEY_ERROR);
-                }
-              }
-
-              usedKeyMap[nextKey] = true;
-
-              if (nextKey !== keys[keyIdx] && diffKeyMap[nextKey]) {
-                const insertionFiber = new Fiber({
-                  instance: createEmptyVirtualNode(),
-                  parent: alternate,
-                  effectTag: EffectTag.PLACEMENT,
-                });
-
-                if (keyIdx === 0) {
-                  insertionFiber.nextSibling = alternate.child;
-                  alternate.child = insertionFiber;
-                  insertionFiber.nextSibling && (insertionFiber.nextSibling.prevSibling = insertionFiber);
-                } else {
-                  const fiber = getChildFiberByIdx(alternate, keyIdx);
-
-                  if (fiber) {
-                    insertionFiber.nextSibling = fiber;
-                    insertionFiber.prevSibling = fiber.prevSibling;
-                    fiber.prevSibling && (fiber.prevSibling.nextSibling = insertionFiber);
-                    fiber.prevSibling = insertionFiber;
-                  }
-                }
-              }
-
-              keyIdx++;
-            }
-          }
-        }
-
-        performRemovingNodes();
-        performInsertingNodes();
+        !isEmpty(key) && keys.push(key);
+        !isEmpty(nextKey) && nextKeys.push(nextKey);
       }
+
+      const hasKeys = keys.length > 0;
+      const hasAnyKeys = hasKeys || nextKeys.length > 0;
+
+      if (detectIsDevEnvironment() && !hasAnyKeys) {
+        error(UNIQ_KEY_ERROR);
+      }
+
+      const performRemovingNodes = () => {
+        const diffKeys = getDiffKeys(keys, nextKeys);
+
+        if (diffKeys.length > 0) {
+          for (const key of diffKeys) {
+            const childAlternate = getAlternateByKey(key, alternate.child);
+
+            if (childAlternate) {
+              childAlternate.effectTag = EffectTag.DELETION;
+              deletionsHelper.get().push(childAlternate);
+            }
+          }
+        } else if (!hasKeys) {
+          const diffCount = getInstanceChildDiffCount(alternate.instance, instance);
+          const fibers: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount).map(
+            x => ((x.effectTag = EffectTag.DELETION), x),
+          );
+
+          deletionsHelper.get().push(...fibers);
+        }
+      }
+
+      const performInsertingNodes = () => {
+        const diffKeys = getDiffKeys(nextKeys, keys);
+
+        if (diffKeys.length > 0) {
+          const diffKeyMap = keyBy(diffKeys, x => x);
+          const usedKeyMap = {};
+          let keyIdx = 0;
+
+          for (const nextKey of nextKeys) {
+            if (usedKeyMap[nextKey]) {
+              if (detectIsDevEnvironment()) {
+                error(IS_ALREADY_USED_KEY_ERROR);
+              }
+            }
+
+            usedKeyMap[nextKey] = true;
+
+            if (nextKey !== keys[keyIdx] && diffKeyMap[nextKey]) {
+              const insertionFiber = new Fiber({
+                instance: createEmptyVirtualNode(),
+                parent: alternate,
+                effectTag: EffectTag.PLACEMENT,
+              });
+
+              if (keyIdx === 0) {
+                insertionFiber.nextSibling = alternate.child;
+                alternate.child = insertionFiber;
+                insertionFiber.nextSibling && (insertionFiber.nextSibling.prevSibling = insertionFiber);
+              } else {
+                const fiber = getChildFiberByIdx(alternate, keyIdx);
+
+                if (fiber) {
+                  insertionFiber.nextSibling = fiber;
+                  insertionFiber.prevSibling = fiber.prevSibling;
+                  fiber.prevSibling && (fiber.prevSibling.nextSibling = insertionFiber);
+                  fiber.prevSibling = insertionFiber;
+                }
+              }
+            }
+
+            keyIdx++;
+          }
+        }
+      }
+
+      performRemovingNodes();
+      performInsertingNodes();
     }
   }
 }
@@ -492,7 +501,18 @@ function mountInstance(instance: DarkElementInstance) {
   return instance;
 }
 
-function mutateFiber(fiber: Fiber, instance: VirtualNode | ComponentFactory, alternate: Fiber) {
+type MutateFiberOptions = {
+  fiber: Fiber;
+  alternate: Fiber;
+  instance: VirtualNode | ComponentFactory;
+};
+
+function mutateFiber(options: MutateFiberOptions) {
+  const {
+    fiber,
+    alternate,
+    instance,
+  } = options;
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
