@@ -69,3 +69,60 @@ test('context renders correctly', () => {
   fireRenders();
   expect(host.innerHTML).toBe(content(theme));
 });
+
+
+test('nestedcontext works correctly', () => {
+  const content = (theme, lang) => dom`
+    <div>${theme}:${lang}</div>
+  `;
+
+  const ThemeContext = createContext('light');
+  const LangContext = createContext('ru');
+
+  const Item = createComponent(() => {
+    return (
+      <ThemeContext.Consumer>
+        {theme =>
+          <LangContext.Consumer>
+            {lang => <div>{theme}:{lang}</div>}
+          </LangContext.Consumer>
+        }
+      </ThemeContext.Consumer>
+    );
+  });
+
+  const Content = createComponent(() => {
+    return [
+      <Item />,
+    ];
+  });
+
+  let theme;
+  let setTheme;
+  let lang;
+  let setLang;
+
+  const App = createComponent(() => {
+    [theme, setTheme] = useState('light');
+    [lang, setLang] = useState('ru');
+
+    return [
+      <ThemeContext.Provider value={theme}>
+        <LangContext.Provider value={lang}>
+          <Content />
+        </LangContext.Provider>
+      </ThemeContext.Provider>,
+    ]
+  });
+
+  render(App(), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(theme, lang));
+  setTheme('dark');
+  setLang('en');
+  fireRenders();
+  expect(host.innerHTML).toBe(content(theme, lang));
+  setTheme('light');
+  fireRenders();
+  expect(host.innerHTML).toBe(content(theme, lang));
+});
