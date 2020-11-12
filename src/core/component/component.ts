@@ -5,7 +5,7 @@ import {
   StandardComponentProps,
   SlotProps,
 } from './model';
-import { ATTR_KEY, REF_ERROR } from '@core/constants';
+import { ATTR_KEY } from '@core/constants';
 import { VirtualNode } from '@core/view';
 import { MutableRef } from '../ref';
 import { error } from '@helpers';
@@ -60,7 +60,10 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
 
     if (computedProps.ref) {
       delete computedProps.ref;
-      error(REF_ERROR);
+
+      if (process.env.NODE_ENV === 'development') {
+        error(`[Dark]: To use ref you need to wrap the createComponent with forwardRef!`);
+      }
     }
 
     return factory;

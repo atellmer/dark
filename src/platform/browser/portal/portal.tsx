@@ -68,7 +68,10 @@ const Portal = createComponent(({ slot }) => {
 function createPortal(slot: DarkElement, container: Element) {
 
   if (!(container instanceof Element)) {
-    error(`[Dark]: createPortal receives only Element as container!`);
+    if (process.env.NODE_ENV === 'development') {
+      error(`[Dark]: createPortal receives only Element as container!`);
+    }
+
     return null;
   }
 

@@ -1,17 +1,8 @@
 import { componentFiberHelper } from '@core/scope';
-import { isUndefined, isFunction, isArray, error } from '@helpers';
+import { isUndefined } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
 
 function useCallback(callback: Function, deps: Array<any>): Function {
-  if (!isFunction(callback)) {
-    error('[Dark]: useCallback takes only function as first argument!');
-    return;
-  }
-  if (isUndefined(deps) || !isArray(deps)) {
-    error('[Dark]: useCallback takes only array as deps!');
-    return;
-  }
-
   const fiber = componentFiberHelper.get();
   const { hook } = fiber;
   const { idx, values } = hook;

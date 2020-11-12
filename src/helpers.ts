@@ -7,7 +7,7 @@ const isNumber = o => typeof o === 'number';
 const isString = o => typeof o === 'string';
 const isObject = o => typeof o === 'object';
 const isBoolean = o => typeof o === 'boolean';
-const isArray = (o: unknown): o is Array<any> => Array.isArray(o);
+const isArray = Array.isArray;
 const isNull = o => o === null;
 const isEmpty = o => isNull(o) || isUndefined(o);
 
@@ -60,14 +60,6 @@ function takeListFromEnd(source: Array<any>, count: number) {
   return [...source].splice(-count);
 }
 
-function detectIsTestEnvironment() {
-  return process.env.NODE_ENV === 'test';
-}
-
-function detectIsDevEnvironment() {
-  return process.env.NODE_ENV === 'development';
-}
-
 export {
   isFunction,
   isUndefined,
@@ -83,6 +75,4 @@ export {
   getTime,
   keyBy,
   takeListFromEnd,
-  detectIsTestEnvironment,
-  detectIsDevEnvironment,
 };

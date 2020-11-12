@@ -1,5 +1,6 @@
 const path = require('path');
-const TerserPlugin = require('terser-webpack-plugin')
+const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const { alias } = require('./webpack.alias');
 
@@ -43,7 +44,11 @@ const config = env => ({
       },
     ],
   },
-  plugins: [],
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    }),
+  ],
 });
 
 module.exports = config;

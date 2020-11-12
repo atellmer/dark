@@ -38,11 +38,9 @@ import {
   keyBy,
   isFunction,
   takeListFromEnd,
-  detectIsDevEnvironment,
   isUndefined,
 } from '@helpers';
 import { detectIsMemo } from '../memo';
-import { UNIQ_KEY_ERROR, IS_ALREADY_USED_KEY_ERROR } from '../constants';
 
 class Fiber<N = NativeElement> {
   public parent: Fiber<N>;
@@ -327,8 +325,12 @@ function mutateAlternate(options: PerformAlternateOptions) {
       const hasKeys = keys.length > 0;
       const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
-      if (detectIsDevEnvironment() && !hasAnyKeys) {
-        error(UNIQ_KEY_ERROR);
+      if (process.env.NODE_ENV === 'development') {
+        if (!hasAnyKeys) {
+          error(`
+            [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index), otherwise the comparison algorithm won't work optimally!
+          `);
+        }
       }
 
       const performRemovingNodes = () => {
@@ -362,9 +364,9 @@ function mutateAlternate(options: PerformAlternateOptions) {
           let keyIdx = 0;
 
           for (const nextKey of nextKeys) {
-            if (usedKeyMap[nextKey]) {
-              if (detectIsDevEnvironment()) {
-                error(IS_ALREADY_USED_KEY_ERROR);
+            if (process.env.NODE_ENV === 'development') {
+              if (usedKeyMap[nextKey]) {
+                error(`Some key of node already has been used!`);
               }
             }
 
