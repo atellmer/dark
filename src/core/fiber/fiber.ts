@@ -90,7 +90,7 @@ function workLoop(options: WorkLoopOptions) {
     commitChanges(onRender);
   }
 
-  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }), { timeout: 16 });
+  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
 }
 
 function performUnitOfWork(fiber: Fiber) {
@@ -337,8 +337,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
         const diffKeys = getDiffKeys(keys, nextKeys);
 
         if (diffKeys.length > 0) {
+          const fibersMap = createFibersByKeyMap(alternate.child);
+
           for (const key of diffKeys) {
-            const childAlternate = getAlternateByKey(key, alternate.child);
+            const childAlternate = fibersMap[key] || null;
 
             if (childAlternate) {
               childAlternate.effectTag = EffectTag.DELETION;
@@ -360,8 +362,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
 
         if (diffKeys.length > 0) {
           const diffKeyMap = keyBy(diffKeys, x => x);
+          const fibersByPositionsMap = createFibersByPositionMap(alternate.child);
           const usedKeyMap = {};
           let keyIdx = 0;
+
 
           for (const nextKey of nextKeys) {
             if (process.env.NODE_ENV === 'development') {
@@ -384,7 +388,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
                 alternate.child = insertionFiber;
                 insertionFiber.nextSibling && (insertionFiber.nextSibling.prevSibling = insertionFiber);
               } else {
-                const fiber = getChildFiberByIdx(alternate, keyIdx);
+                const fiber = fibersByPositionsMap[keyIdx] || null;
 
                 if (fiber) {
                   insertionFiber.nextSibling = fiber;
@@ -488,10 +492,10 @@ function pertformInstance(options: PerformInstanceOptions) {
     performedInstance = instance.children[idx];
     performedShadow = alternate
       ? getRootShadow({
-          instance:  performedInstance,
-          fiber,
-          alternate,
-        })
+        instance: performedInstance,
+        fiber,
+        alternate,
+      })
       : performedShadow;
     performedInstance = mountInstance(performedInstance);
   }
@@ -599,23 +603,36 @@ function mutateFiber(options: MutateFiberOptions) {
   }
 }
 
-function getChildFiberByIdx(fiber: Fiber, idx: number) {
+function createFibersByPositionMap(fiber: Fiber) {
+  let nextFiber = fiber;
   let position = 0;
-  let nextFiber = fiber.child;
+  const map: Record<string, Fiber> = {};
 
-  if (idx === 0) {
-    return nextFiber;
-  } else {
-    while (nextFiber) {
-      nextFiber = nextFiber.nextSibling;
-      position++;
-      if (position === idx) {
-        return nextFiber;
-      }
-    }
+  while (nextFiber) {
+    map[position] = nextFiber;
+
+    position++;
+    nextFiber = nextFiber.nextSibling;
   }
 
-  return null;
+  return map;
+}
+
+function createFibersByKeyMap(fiber: Fiber) {
+  let nextFiber = fiber;
+  const map: Record<string, Fiber> = {};
+
+  while (nextFiber) {
+    const key = getElementKey(nextFiber.instance);
+
+    if (!isEmpty(key)) {
+      map[key] = nextFiber;
+    }
+
+    nextFiber = nextFiber.nextSibling;
+  }
+
+  return map;
 }
 
 function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {

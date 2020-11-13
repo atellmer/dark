@@ -211,7 +211,7 @@ function mutateDom(fiber: Fiber<Element>) {
         : null;
 
     nodeCacheMap.set(parentLink, node);
-    isTag && observeFiberIntersection(fiber);
+    // isTag && observeFiberIntersection(fiber);
 
     if (node) {
       parentLink.insertBefore(fiber.link, node);

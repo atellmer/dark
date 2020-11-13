@@ -256,7 +256,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
     const newNode = newNodes[count];
 
-    expect(node).toBe(newNode);
+    expect(node).toStrictEqual(newNode);
     expect(node.textContent).toBe(expected);
   });
 
