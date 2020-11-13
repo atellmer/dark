@@ -45,13 +45,13 @@ const createMeasurer = () => {
     const last = lastMeasureName;
 
     if (lastMeasureName) {
-      setTimeout(() => {
+      setImmediate(() => {
         lastMeasureName = null;
         const stopTime = performance.now();
         const diff = stopTime - startTime;
 
         console.log(`${last}: ${diff}`);
-      }, 0);
+      });
     }
   };
 

@@ -90,7 +90,7 @@ function workLoop(options: WorkLoopOptions) {
     commitChanges(onRender);
   }
 
-  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
+  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }), { timeout: 16 });
 }
 
 function performUnitOfWork(fiber: Fiber) {
@@ -418,13 +418,13 @@ function performMemo(options: PerformMemoOptions) {
     alternate,
     instance,
   } = options;
-  let memoFiber = fiber;
 
-  if (detectIsMemo(memoFiber.instance)) {
+  if (detectIsMemo(fiber.instance)) {
+    let memoFiber = null;
     const factory = instance as ComponentFactory;
     const alternateFactory = alternate.instance as ComponentFactory;
 
-    if (factory.type !== alternateFactory.type) return memoFiber;
+    if (factory.type !== alternateFactory.type) return fiber;
 
     const props = alternateFactory.props;
     const nextProps = factory.props;
@@ -437,6 +437,11 @@ function performMemo(options: PerformMemoOptions) {
         ...alternate,
         alternate,
         effectTag: EffectTag.SKIP,
+        nextSibling: alternate.nextSibling
+          ? alternate.nextSibling.effectTag === EffectTag.DELETION
+            ? null
+            : alternate.nextSibling
+          : null,
       });
 
       alternate.alternate = null;
@@ -451,10 +456,12 @@ function performMemo(options: PerformMemoOptions) {
           nextFiber = nextFiber.nextSibling;
         }
       }
+
+      return memoFiber;
     }
   }
 
-  return memoFiber;
+  return fiber;
 }
 
 type PerformInstanceOptions = {

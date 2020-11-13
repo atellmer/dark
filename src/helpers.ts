@@ -57,7 +57,14 @@ function keyBy<T = any>(list: Array<T>, fn: (o: T) => string | number, value = f
 }
 
 function takeListFromEnd(source: Array<any>, count: number) {
-  return [...source].splice(-count);
+  const list = [];
+
+  for (let i = 0; i <= count; i++) {
+    const idx = source.length - i - 1;
+    list.push(source[idx]);
+  }
+
+  return list;
 }
 
 export {
