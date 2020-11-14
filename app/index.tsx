@@ -21,6 +21,7 @@ import {
   createContext,
   useRef,
   useImperativeHandle,
+  lazy,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
 
@@ -235,17 +236,16 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />,
-      <MemoList
-        items={state.list}
-        onRemove={handleRemove}
-        onHighlight={handleHightlight}
-      />,
+      <LazySomeComponent />,
+      // <MemoList
+      //   items={state.list}
+      //   onRemove={handleRemove}
+      //   onHighlight={handleHightlight}
+      // />,
   ];
 });
 
-const ThemeContext = createContext('light');
-
-const useTheme = () => useContext<string>(ThemeContext);
+const LazySomeComponent = lazy(() => import('./lazy-component'));
 
 function forceUpdate() {
   render(Bench(), domElement);
