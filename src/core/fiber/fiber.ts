@@ -55,7 +55,8 @@ class Fiber<N = NativeElement> {
   public provider: Map<Context, ContextProviderValue>;
   public transposition: boolean;
   public intersecting: boolean;
-  public link: N;
+  public mountedToHost: boolean;
+  public nativeElement: N;
 
   constructor(options: Partial<Fiber<N>>) {
     this.parent = options.parent || null;
@@ -70,7 +71,8 @@ class Fiber<N = NativeElement> {
     this.provider = options.provider || null;
     this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
     this.intersecting = !isUndefined(options.intersecting) ? options.intersecting : true;
-    this.link = options.link || null;
+    this.mountedToHost = options.mountedToHost || false;
+    this.nativeElement = options.nativeElement || null;
   }
 }
 
@@ -585,7 +587,7 @@ function mutateFiber(options: MutateFiberOptions) {
 
   fiber.instance = instance;
   fiber.alternate = alternate || null;
-  fiber.link = isUpdate ? alternate.link : null;
+  fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
 
   if (isSameType && isDifferentKeys) {
@@ -598,8 +600,8 @@ function mutateFiber(options: MutateFiberOptions) {
     fiber.alternate.alternate = null;
   }
 
-  if (!fiber.link && detectIsVirtualNode(fiber.instance)) {
-    fiber.link = platform.createLink(fiber);
+  if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
+    fiber.nativeElement = platform.createNativeElement(fiber);
   }
 }
 

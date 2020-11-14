@@ -12,7 +12,7 @@ import {
   deletionsHelper,
   fiberMountHelper,
 } from '@core/scope';
-import { createDomLink, mutateDom, resetNodeCache } from '../dom';
+import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 import { scheduler, UpdatorZone } from '@core/scheduler';
@@ -21,7 +21,7 @@ import { runPortalMutationObserver } from '../portal';
 
 platform.raf = window.requestAnimationFrame.bind(this);
 platform.ric = window.requestIdleCallback.bind(this);
-platform.createLink = createDomLink as typeof platform.createLink;
+platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
 
 const roots: Map<Element, number> = new Map();
@@ -57,7 +57,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
 
       const currentRootFiber = currentRootHelper.get();
       const fiber = new Fiber({
-        link: container,
+        nativeElement: container,
         instance: new TagVirtualNode({
           name: ROOT,
           children: flatten([element]) as Array<VirtualNode | ComponentFactory>,

@@ -36,7 +36,7 @@ function createIntersectionObserver() {
       nextFiber = nextFiber.parent;
 
       while (nextFiber) {
-        if (nextFiber && !nextFiber.link && hasChildrenProp(nextFiber.instance)) {
+        if (nextFiber && !nextFiber.nativeElement && hasChildrenProp(nextFiber.instance)) {
           const canUpdateIntersecting = nextFiber.instance.children.length === 1;
 
           if (canUpdateIntersecting) {
@@ -54,7 +54,7 @@ function createIntersectionObserver() {
 }
 
 function observeFiberIntersection(fiber: Fiber<Element>) {
-  observer.observe(fiber.link);
+  observer.observe(fiber.nativeElement);
 }
 
 function createElement(vNode: VirtualNode): DomElement {
@@ -84,9 +84,9 @@ function createElement(vNode: VirtualNode): DomElement {
   return map[vNode.type](vNode);
 }
 
-function createDomLink(fiber: Fiber<Element>): DomElement {
+function createDomElement(fiber: Fiber<Element>): DomElement {
   if (!detectIsVirtualNode(fiber.instance)) {
-    throw new Error('createDomLink receives only Element into fiber!');
+    throw new Error('createDomElement receives only Element into fiber!');
   }
 
   const vNode: VirtualNode = fiber.instance;
@@ -190,60 +190,56 @@ function resetNodeCache() {
 
 function mutateDom(fiber: Fiber<Element>) {
   const fromHookUpdate = fromHookUpdateHelper.get();
-  const nextFiber = getFiberWithLink(fiber);
-  const parentLink = nextFiber.link;
+  const nextFiber = getFiberWithnativeElement(fiber);
+  const parentNativeElement = nextFiber.nativeElement;
 
-  if (fiber.link) {
-    fiber.link[$$data] = fiber;
-  }
-
-  if (fiber.link !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    const isTag = detectIsTagVirtualNode(fiber.instance);
-    const cachedNode = nodeCacheMap.get(parentLink);
+  if (fiber.nativeElement !== null && fiber.effectTag === EffectTag.PLACEMENT) {
+    const cachedNode = nodeCacheMap.get(parentNativeElement);
     const node = nextFiber.alternate
       ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
           ? cachedNode
           : cachedNode === null
             ? null
-            : getNodeOnTheRight(fiber, parentLink)
+            : getNodeOnTheRight(fiber, parentNativeElement)
       : fromHookUpdate
-        ? getNodeOnTheRight(fiber, parentLink)
+        ? getNodeOnTheRight(fiber, parentNativeElement)
         : null;
 
-    nodeCacheMap.set(parentLink, node);
-    // isTag && observeFiberIntersection(fiber);
+    nodeCacheMap.set(parentNativeElement, node);
 
     if (node) {
-      parentLink.insertBefore(fiber.link, node);
+      parentNativeElement.insertBefore(fiber.nativeElement, node);
+      fiber.mountedToHost = true;
       if (isEndOfInsertion(fiber, nextFiber)) {
-        nodeCacheMap.delete(parentLink);
+        nodeCacheMap.delete(parentNativeElement);
       }
     } else {
-      let fragment = fragmentMap.get(parentLink);
+      let fragment = fragmentMap.get(parentNativeElement);
 
       if (isUndefined(fragment)) {
         fragment = document.createDocumentFragment();
-        fragmentMap.set(parentLink, fragment);
+        fragmentMap.set(parentNativeElement, fragment);
       }
 
-      fragment.appendChild(fiber.link);
+      fragment.appendChild(fiber.nativeElement);
+      fiber.mountedToHost = true;
 
       if (!hasNextSibling(fiber, nextFiber)) {
-        parentLink.appendChild(fragment);
-        fragmentMap.delete(parentLink);
-        nodeCacheMap.delete(parentLink);
+        parentNativeElement.appendChild(fragment);
+        fragmentMap.delete(parentNativeElement);
+        nodeCacheMap.delete(parentNativeElement);
       }
     }
 
-    addAttributes(fiber.link, fiber.instance as VirtualNode);
-  } else if (fiber.link !== null && fiber.effectTag === EffectTag.UPDATE) {
+    addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
+  } else if (fiber.nativeElement !== null && fiber.effectTag === EffectTag.UPDATE) {
     if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsVirtualNode(fiber.instance)) return;
     const vNode: VirtualNode = fiber.alternate.instance;
     const nextVNode: VirtualNode = fiber.instance;
 
-    updateDom(fiber.link, vNode, nextVNode);
+    updateDom(fiber.nativeElement, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
-    commitDeletion(fiber, parentLink);
+    commitDeletion(fiber, parentNativeElement);
 
     if (fiber.parent.child === fiber) {
       fiber.parent.child = null;
@@ -265,7 +261,7 @@ function hasNextSibling(fiber: Fiber, rootFilber: Fiber) {
   while (!nextFiber.nextSibling) {
     nextFiber = nextFiber.parent;
 
-    if (nextFiber === rootFilber || nextFiber.link) {
+    if (nextFiber === rootFilber || nextFiber.nativeElement) {
       return false;
     }
   }
@@ -273,7 +269,7 @@ function hasNextSibling(fiber: Fiber, rootFilber: Fiber) {
   return true;
 }
 
-function getFiberWithLink(fiber: Fiber<Element>): Fiber<Element> {
+function getFiberWithnativeElement(fiber: Fiber<Element>): Fiber<Element> {
 
   if (detectIsPortal(fiber.instance)) {
     return fiber;
@@ -281,9 +277,9 @@ function getFiberWithLink(fiber: Fiber<Element>): Fiber<Element> {
 
   let nextFiber = fiber.parent;
 
-  while (!nextFiber.link) {
+  while (!nextFiber.nativeElement) {
     if (detectIsPortal(nextFiber.instance)) {
-      nextFiber.link = getPortalContainer(nextFiber.instance);
+      nextFiber.nativeElement = getPortalContainer(nextFiber.instance);
     } else {
       nextFiber = nextFiber.parent;
     }
@@ -332,15 +328,15 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let skipFiber = null;
 
   while (nextFiber) {
-    if (nextFiber.link && nextFiber.link.parentElement === parentElement) {
-      return nextFiber.link;
+    if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
+      return nextFiber.nativeElement;
     }
 
     if (nextFiber.effectTag === EffectTag.SKIP) {
       skipFiber = nextFiber;
     }
 
-    if (!skipFiber && nextFiber.effectTag === EffectTag.PLACEMENT) {
+    if (!skipFiber && nextFiber.nativeElement && !nextFiber.mountedToHost) {
       isDeepWalking = false;
     }
 
@@ -357,7 +353,7 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
         skipFiber = null;
       }
 
-      if (nextFiber.link) {
+      if (nextFiber.nativeElement) {
         return null;
       }
     } else {
@@ -373,14 +369,14 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
   let isDeepWalking = true;
   let isReturn = false;
 
-  if (detectIsCommentVirtualNode(nextFiber.instance) && !nextFiber.link) {
+  if (detectIsCommentVirtualNode(nextFiber.instance) && !nextFiber.nativeElement) {
     return;
   }
 
   while (nextFiber) {
     if (!isReturn) {
-      if (nextFiber.link) {
-        parentElement.removeChild(nextFiber.link);
+      if (nextFiber.nativeElement) {
+        parentElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
       } else if (detectIsPortal(fiber.instance)) {
         const container = getPortalContainer(fiber.instance);
@@ -443,7 +439,7 @@ function detectIsSvgElement(tagName) {
 }
 
 export {
-  createDomLink,
+  createDomElement,
   mutateDom,
   resetNodeCache,
 };

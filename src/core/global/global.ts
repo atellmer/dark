@@ -8,8 +8,8 @@ export const platform: Platform = {
   ric:  () => {
     throw new Error('ric doesn\'t install by renderer');
   },
-  createLink: () => {
-    throw new Error('createLink doesn\'t install by renderer');
+  createNativeElement: () => {
+    throw new Error('createNativeElement doesn\'t install by renderer');
   },
   applyCommits: () => {
     throw new Error('applyCommits doesn\'t install by renderer');

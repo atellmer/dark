@@ -8,26 +8,26 @@ import { error } from '@helpers';
 
 type PortalListener = {
   fn: () => void;
-  link: Element;
+  nativeElement: Element;
 };
 
 const $$portal = Symbol('portal');
 const portalListenersMap = new Map<Element, Map<Element, PortalListener>>();
 
-function runPortalMutationObserver(rootLink: Element) {
+function runPortalMutationObserver(rootNativeElement: Element) {
   const listenerMap = new Map();
   const observer = new MutationObserver(mutationsList => {
     const removedListenersMap = new Map();
 
     for (const mutation of mutationsList) {
       if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-        const removedLinks = Array.from(mutation.removedNodes) as Array<Element>;
+        const removednativeElements = Array.from(mutation.removedNodes) as Array<Element>;
 
-        for (const link of removedLinks) {
+        for (const nativeElement of removednativeElements) {
           for (const listener of listenerMap.values()) {
-            if (link.contains(listener.link)) {
+            if (nativeElement.contains(listener.nativeElement)) {
               listener.fn();
-              removedListenersMap.set(listener.link, true);
+              removedListenersMap.set(listener.nativeElement, true);
             }
           }
         }
@@ -39,8 +39,8 @@ function runPortalMutationObserver(rootLink: Element) {
     }
   });
 
-  portalListenersMap.set(rootLink, listenerMap);
-  observer.observe(rootLink, {
+  portalListenersMap.set(rootNativeElement, listenerMap);
+  observer.observe(rootNativeElement, {
     childList: true,
     subtree: true,
   });
@@ -50,14 +50,14 @@ const Portal = createComponent(({ slot }) => {
 
   useEffect(() => {
     const fiber = componentFiberHelper.get() as Fiber<Element>;
-    const rootElement = currentRootHelper.get().link as Element;
+    const rootElement = currentRootHelper.get().nativeElement as Element;
     const listenerMap = portalListenersMap.get(rootElement);
-    const parentLink = getParentLink(fiber.parent);
+    const parentNativeElement = getParentNativeElement(fiber.parent);
 
-    if (!listenerMap.get(parentLink)) {
-      listenerMap.set(parentLink, {
-        link: parentLink,
-        fn: () => removeLinks(fiber),
+    if (!listenerMap.get(parentNativeElement)) {
+      listenerMap.set(parentNativeElement, {
+        nativeElement: parentNativeElement,
+        fn: () => removeNativeElements(fiber),
       });
     }
   }, []);
@@ -86,25 +86,25 @@ function createPortal(slot: DarkElement, container: Element) {
 const detectIsPortal = (factory: any): boolean => detectIsComponentFactory(factory) && factory.token === $$portal;
 const getPortalContainer = (factory: any): Element => detectIsPortal(factory) ? factory.props[$$portal] : null;
 
-function getParentLink(fiber: Fiber<Element>) {
+function getParentNativeElement(fiber: Fiber<Element>) {
   let nextFiber = fiber;
 
   while (nextFiber) {
-    if (nextFiber.link) return nextFiber.link;
+    if (nextFiber.nativeElement) return nextFiber.nativeElement;
     nextFiber = nextFiber.parent;
   }
 
   return null;
 }
 
-function removeLinks(fiber: Fiber<Element>) {
-  const parentLink = fiber.link;
+function removeNativeElements(fiber: Fiber<Element>) {
+  const parentnativeElement = fiber.nativeElement;
   let nextFiber = fiber;
   let isDeepWalking = true;
 
   while (nextFiber) {
-    if (nextFiber.link && nextFiber.link.parentElement === parentLink) {
-      parentLink.removeChild(nextFiber.link);
+    if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentnativeElement) {
+      parentnativeElement.removeChild(nextFiber.nativeElement);
 
       if (nextFiber.nextSibling) {
         isDeepWalking = true;

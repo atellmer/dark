@@ -236,12 +236,12 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />,
-      <LazySomeComponent />,
-      // <MemoList
-      //   items={state.list}
-      //   onRemove={handleRemove}
-      //   onHighlight={handleHightlight}
-      // />,
+      // <LazySomeComponent />,
+      <MemoList
+        items={state.list}
+        onRemove={handleRemove}
+        onHighlight={handleHightlight}
+      />,
   ];
 });
 
