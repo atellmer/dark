@@ -8,6 +8,7 @@ export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   defaultProps?: Partial<P>;
   token?: Symbol;
   shouldUpdate?: (props: P, nextProps: P) => boolean;
+  dynamic?: () => Promise<{default: Component<P>}>;
 }>;
 
 export type StandardComponentProps = Readonly<Partial<{[key: string]: any}>>

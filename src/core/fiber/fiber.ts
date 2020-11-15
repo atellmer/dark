@@ -330,7 +330,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
       if (process.env.NODE_ENV === 'development') {
         if (!hasAnyKeys) {
           error(`
-            [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index), otherwise the comparison algorithm won't work optimally!
+            [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!
           `);
         }
       }

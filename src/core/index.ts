@@ -19,3 +19,4 @@ export { useContext } from './use-context';
 export { useRef } from './use-ref';
 export { useImperativeHandle } from './use-imperative-handle';
 export { lazy } from './lazy';
+export { Suspense } from './suspense';

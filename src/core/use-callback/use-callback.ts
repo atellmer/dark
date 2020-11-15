@@ -2,7 +2,7 @@ import { componentFiberHelper } from '@core/scope';
 import { isUndefined } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
 
-function useCallback(callback: Function, deps: Array<any>): Function {
+function useCallback<T = Function>(callback: T, deps: Array<any>): T {
   const fiber = componentFiberHelper.get();
   const { hook } = fiber;
   const { idx, values } = hook;

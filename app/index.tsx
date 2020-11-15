@@ -22,6 +22,7 @@ import {
   useRef,
   useImperativeHandle,
   lazy,
+  Suspense,
 } from '../src/core';
 import { render, createPortal } from '../src/platform/browser';
 
@@ -158,7 +159,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
     <table class='table'>
       <tbody>
-        {items.map((item) => {
+        {items.map((item, idx) => {
           return (
             <MemoRow
               key={item.id}
@@ -179,7 +180,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -227,6 +228,13 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
+  const [isTriggered, setIsTriggered] = useState(false);
+
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setIsTriggered(true);
+  //   }, 3000);
+  // }, []);
 
   return [
       <MemoHeader
@@ -236,16 +244,22 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />,
-      // <LazySomeComponent />,
-      <MemoList
-        items={state.list}
-        onRemove={handleRemove}
-        onHighlight={handleHightlight}
-      />,
+      <Suspense fallback={<div>loading...</div>}>
+        <LazyComponent1 />
+      </Suspense>,
+      <Suspense fallback={<div>loading...</div>}>
+        <LazyComponent2 />
+      </Suspense>,
+      // <MemoList
+      //   items={state.list}
+      //   onRemove={handleRemove}
+      //   onHighlight={handleHightlight}
+      // />,
   ];
 });
 
-const LazySomeComponent = lazy(() => import('./lazy-component'));
+const LazyComponent1 = lazy(() => import('./lazy-component'));
+const LazyComponent2 = lazy(() => import('./lazy-component2'));
 
 function forceUpdate() {
   render(Bench(), domElement);
