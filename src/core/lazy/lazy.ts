@@ -33,9 +33,9 @@ function lazy<P, R = unknown>(dynamic: () => Promise<{default: Component<P>}>) {
 
         if (component) {
           setScope({ component });
+          components.splice(0, 1);
         }
 
-        components.splice(0, 1);
       }, [components]);
 
       return scope.component ? scope.component(props, ref) : null;

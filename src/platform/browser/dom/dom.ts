@@ -393,7 +393,7 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
     if (nextFiber.child && isDeepWalking) {
       nextFiber = nextFiber.child;
       isReturn = false;
-    } else if (nextFiber.nextSibling) {
+    } else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
       if (nextFiber.nextSibling.effectTag === EffectTag.DELETION) return;
       isDeepWalking = true;
       isReturn = false;

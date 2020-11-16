@@ -1,10 +1,16 @@
-import { createComponent, ComponentFactory, Component } from '../component';
+import {
+  createComponent,
+  ComponentFactory,
+  Component,
+  getComponentFactoryKey,
+  KeyProps,
+} from '../component';
 import { useState } from '../use-state';
 import { createContext } from '../context';
 import { useEffect } from '@core/use-effect';
 import { useMemo } from '../use-memo';
 import { detectIsLazy, fetchModule } from '../lazy';
-import { flatten } from '@helpers';
+import { flatten, isEmpty } from '@helpers';
 
 
 type SuspenseProps = {
@@ -42,10 +48,18 @@ const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
   useEffect(() => {
     const elements = flatten([slot]);
     const asycQueue: Array<Promise<Component>> = [];
+    let idx = 0;
 
     for (const element of elements) {
       if (detectIsLazy(element)) {
-        const { dynamic } = element as ComponentFactory;
+        idx++;
+        const factory = element as ComponentFactory;
+        const { dynamic } = factory;
+        const key = getComponentFactoryKey(factory);
+
+        if (isEmpty(key)) {
+          (factory.props as KeyProps).key = idx;
+        }
 
         asycQueue.push(
           new Promise<Component>(resolve => {

@@ -156,10 +156,11 @@ type ListProps = {
 };
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+
   return (
     <table class='table'>
       <tbody>
-        {items.map((item, idx) => {
+        {items.map((item) => {
           return (
             <MemoRow
               key={item.id}
@@ -180,7 +181,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -228,33 +229,20 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const [isTriggered, setIsTriggered] = useState(false);
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setIsTriggered(true);
-  //   }, 3000);
-  // }, []);
 
   return [
-      <MemoHeader
-        onCreate={handleCreate}
-        onAdd={handleAdd}
-        onUpdateAll={handleUpdateAll}
-        onSwap={handleSwap}
-        onClear={handleClear}
-      />,
-      <Suspense fallback={<div>loading...</div>}>
-        <LazyComponent1 />
-      </Suspense>,
-      <Suspense fallback={<div>loading...</div>}>
-        <LazyComponent2 />
-      </Suspense>,
-      // <MemoList
-      //   items={state.list}
-      //   onRemove={handleRemove}
-      //   onHighlight={handleHightlight}
-      // />,
+    <MemoHeader
+      onCreate={handleCreate}
+      onAdd={handleAdd}
+      onUpdateAll={handleUpdateAll}
+      onSwap={handleSwap}
+      onClear={handleClear}
+    />,
+    <MemoList
+      items={state.list}
+      onRemove={handleRemove}
+      onHighlight={handleHightlight}
+    />,
   ];
 });
 

@@ -16,9 +16,9 @@ export type StandardComponentProps = Readonly<Partial<{[key: string]: any}>>
   & SlotProps
   & RefProps;
 
-export type KeyProps = Readonly<{
+export type KeyProps = {
   key?: DarkElementKey;
-}>;
+};
 
 export type SlotProps<T = DarkElement> = Readonly<{
   slot?: T;

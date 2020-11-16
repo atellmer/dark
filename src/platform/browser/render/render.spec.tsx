@@ -54,7 +54,7 @@ test(`${TEST_MARKER}: render text correctly`, () => {
 });
 
 test(`${TEST_MARKER}: render tag correctly`, () => {
-  const content = '<div></div>';
+  const content = `<div></div>`;
   const Component = createComponent(() => div());
 
   render(Component(), host);
