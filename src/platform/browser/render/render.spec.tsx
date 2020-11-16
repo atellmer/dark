@@ -309,6 +309,15 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     expect(node.textContent).toBe(expected);
   });
 
+  test('last nodes removed correctly', () => {
+    items = generateItems(10);
+    renderApp();
+    items.pop();
+    items.pop();
+    renderApp();
+    expect(host.innerHTML).toBe(content(items));
+  });
+
   test('nodes swapped correctly', () => {
     items = generateItems(10);
     renderApp();
