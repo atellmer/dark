@@ -15,31 +15,20 @@ type LazyScope<P, R> = {
 function lazy<P, R = unknown>(dynamic: () => Promise<{default: Component<P>}>) {
   return forwardRef(
     createComponent<P, R>((props, ref) => {
-      const { fromSuspense, components } = useContext(SuspenseContext);
+      const { fallback, trigger } = useContext(SuspenseContext);
       const [scope, setScope] = useState<LazyScope<P, R>>({
         component: null,
       });
 
       useEffect(() => {
-        if (fromSuspense) return;
         fetchModule(dynamic).then(component => {
           setScope({ component });
+          trigger();
         });
       }, []);
 
-      useEffect(() => {
-        if (!fromSuspense) return;
-        const [component] = components;
-
-        if (component) {
-          setScope({ component });
-          components.splice(0, 1);
-        }
-
-      }, [components]);
-
-      return scope.component ? scope.component(props, ref) : null;
-    }, { token: $$lazy, dynamic }),
+      return scope.component ? scope.component(props, ref) : fallback;
+    }, { token: $$lazy }),
   );
 }
 
@@ -61,5 +50,4 @@ function fetchModule(dynamic: () => Promise<{default: Component}>) {
 export {
   lazy,
   detectIsLazy,
-  fetchModule,
 };

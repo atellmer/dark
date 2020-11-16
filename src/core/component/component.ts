@@ -1,7 +1,6 @@
 import { DarkElementKey } from '@core/shared/model';
 import {
   CreateElement,
-  Component,
   ComponentOptions,
   StandardComponentProps,
   SlotProps,
@@ -26,7 +25,6 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   public displayName: string;
   public children: Array<VirtualNode | ComponentFactory> = [];
   public shouldUpdate?: (props: P, nextProps: P) => boolean;
-  public dynamic?: () => Promise<{default: Component<P>}>;
 
   constructor(options: ComponentFactory<P>) {
     this.type = options.type || null;
@@ -35,7 +33,6 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
     this.ref = options.ref || null;
     this.displayName = options.displayName || '';
     this.shouldUpdate = options.shouldUpdate || null;
-    this.dynamic = options.dynamic || null;
   }
 }
 
@@ -47,7 +44,6 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
     defaultProps,
     displayName,
     shouldUpdate,
-    dynamic,
   } = computedOptions;
 
   return (props = {} as Props, ref?: MutableRef<R>): ComponentFactory<Props> => {
@@ -57,7 +53,6 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
       ref,
       displayName,
       shouldUpdate,
-      dynamic,
       props: computedProps,
       type: createElement,
       children: [],
