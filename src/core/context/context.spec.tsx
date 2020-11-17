@@ -70,8 +70,7 @@ test('context renders correctly', () => {
   expect(host.innerHTML).toBe(content(theme));
 });
 
-
-test('nestedcontext works correctly', () => {
+test('different nested context works correctly', () => {
   const content = (theme, lang) => dom`
     <div>${theme}:${lang}</div>
   `;
@@ -125,4 +124,42 @@ test('nestedcontext works correctly', () => {
   setTheme('light');
   fireRenders();
   expect(host.innerHTML).toBe(content(theme, lang));
+});
+
+
+test('same nested context works correctly', () => {
+  const content = (value) => dom`
+    <div>${value}</div>
+  `;
+
+  const FormContext = createContext(1);
+  const value = 20;
+
+  const Item = createComponent(() => {
+    return (
+      <FormContext.Consumer>
+        {value => <div>{value}</div>}
+      </FormContext.Consumer>
+    );
+  });
+
+  const Content = createComponent(() => {
+    return [
+      <FormContext.Provider value={value}>
+        <Item />
+      </FormContext.Provider>,
+    ];
+  });
+
+  const App = createComponent(() => {
+    return [
+      <FormContext.Provider value={10}>
+        <Content />
+      </FormContext.Provider>,
+    ]
+  });
+
+  render(App(), host);
+  fireRenders();
+  expect(host.innerHTML).toBe(content(value));
 });

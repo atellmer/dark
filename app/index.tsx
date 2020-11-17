@@ -238,12 +238,12 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    <Suspense fallback={<div>loading...</div>}>
-      <LazyComponent1 />
-      <Suspense fallback={<div>loading...</div>}>
-        <LazyComponent2 />
-      </Suspense>
-    </Suspense>,
+    // <Suspense fallback={<div>loading...</div>}>
+    //   <LazyComponent1 />
+    //   <Suspense fallback={<div>loading...</div>}>
+    //     <LazyComponent2 />
+    //   </Suspense>
+    // </Suspense>,
     <MemoList
       items={state.list}
       onRemove={handleRemove}
