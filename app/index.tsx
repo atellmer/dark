@@ -75,7 +75,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [...buildData(1)],
+  list: [],
 };
 
 type HeaderProps = {
@@ -156,7 +156,6 @@ type ListProps = {
 };
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
-
   return (
     <table class='table'>
       <tbody>
@@ -238,12 +237,6 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    // <Suspense fallback={<div>loading...</div>}>
-    //   <LazyComponent1 />
-    //   <Suspense fallback={<div>loading...</div>}>
-    //     <LazyComponent2 />
-    //   </Suspense>
-    // </Suspense>,
     <MemoList
       items={state.list}
       onRemove={handleRemove}

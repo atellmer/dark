@@ -23,9 +23,12 @@ function lazy<P, R = unknown>(dynamic: () => Promise<{default: Component<P>}>) {
       useEffect(() => {
         fetchModule(dynamic).then(component => {
           setScope({ component });
-          trigger();
         });
       }, []);
+
+      useEffect(() => {
+        scope.component && trigger();
+      }, [scope.component]);
 
       return scope.component ? scope.component(props, ref) : fallback;
     }, { token: $$lazy }),

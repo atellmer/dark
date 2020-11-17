@@ -325,18 +325,13 @@ function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let nextFiber = fiber;
   let isDeepWalking = true;
-  let skipFiber = null;
 
   while (nextFiber) {
     if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
       return nextFiber.nativeElement;
     }
 
-    if (nextFiber.effectTag === EffectTag.SKIP) {
-      skipFiber = nextFiber;
-    }
-
-    if (!skipFiber && nextFiber.nativeElement && !nextFiber.mountedToHost) {
+    if (nextFiber.nativeElement && !nextFiber.mountedToHost) {
       isDeepWalking = false;
     }
 
@@ -345,17 +340,9 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
     } else if (nextFiber.nextSibling) {
       isDeepWalking = true;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent) {
+    } else if (nextFiber.parent && nextFiber.parent.nativeElement !== parentElement) {
       isDeepWalking = false;
       nextFiber = nextFiber.parent;
-
-      if (nextFiber === skipFiber) {
-        skipFiber = null;
-      }
-
-      if (nextFiber.nativeElement) {
-        return null;
-      }
     } else {
       nextFiber = null;
     }
