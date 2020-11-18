@@ -28,6 +28,7 @@ import { render, createPortal } from '../src/platform/browser';
 
 
 const domElement = document.getElementById('root');
+const portalElement = document.getElementById('portal');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -75,7 +76,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [],
+  list: [...buildData(3)],
 };
 
 type HeaderProps = {
@@ -159,7 +160,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
     <table class='table'>
       <tbody>
-        {items.map((item) => {
+        {items.map((item, idx) => {
           return (
             <MemoRow
               key={item.id}
@@ -180,7 +181,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(2);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -229,6 +230,8 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
+  const isOpen = state.list.length === 2;
+
   return [
     <MemoHeader
       onCreate={handleCreate}
@@ -237,6 +240,7 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
+    isOpen && createPortal(<div>hello from portal</div>, portalElement),
     <MemoList
       items={state.list}
       onRemove={handleRemove}

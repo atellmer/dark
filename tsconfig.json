@@ -20,9 +20,10 @@
     "paths": {
       "@helpers": ["./src/helpers"],
       "@core": ["./src/core/index"],
-      "@core/*":["./src/core/*"],
+      "@core/*": ["./src/core/*"],
       "@platform": ["./src/platform/index"],
-      "@platform/*":["./src/plarform/*"]
+      "@platform/*": ["./src/plarform/*"],
+      "@test-utils": ["./test/utils"]
     }
 	},
 	"include": [

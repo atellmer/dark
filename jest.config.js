@@ -78,6 +78,7 @@ module.exports = {
     '^@helpers(.*)$': '<rootDir>/src/helpers$1',
     '^@core(.*)$': '<rootDir>/src/core$1',
     '^@platform(.*)$': '<rootDir>/src/platform$1',
+    '^@test-utils$': '<rootDir>/test/utils',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

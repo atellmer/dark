@@ -362,13 +362,13 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
 
   while (nextFiber) {
     if (!isReturn) {
-      if (nextFiber.nativeElement) {
-        parentElement.removeChild(nextFiber.nativeElement);
-        isDeepWalking = false;
-      } else if (detectIsPortal(fiber.instance)) {
-        const container = getPortalContainer(fiber.instance);
+      if (detectIsPortal(nextFiber.instance)) {
+        const container = getPortalContainer(nextFiber.instance);
 
         container.innerHTML = '';
+        isDeepWalking = false;
+      } else if (nextFiber.nativeElement) {
+        parentElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
       }
 
