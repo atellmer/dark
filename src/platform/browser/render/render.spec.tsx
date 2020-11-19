@@ -1,12 +1,15 @@
 /** @jsx createElement */
-import { requestIdleCallback } from '@shopify/jest-dom-mocks';
-
 import { render } from './render';
 import { createComponent } from '@core/component/component';
 import { View, Text, Comment } from '@core/view/view';
 import { createElement } from '@core/element/element';
 import { EMPTY_NODE } from '@core/constants';
-import { dom } from '../../../../test/utils';
+import {
+  dom,
+  waitNextIdle,
+  createEmptyCommentString,
+  createTestHostNode,
+} from '@test-utils';
 
 
 type Item = { id: number; name: string };
@@ -14,7 +17,6 @@ type Item = { id: number; name: string };
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
-const fireRenders = () => requestIdleCallback.runIdleCallbacks();
 const TEST_MARKER = '[RENDER]';
 let nextId = 0;
 
@@ -25,14 +27,9 @@ const generateItems = (count: number) => {
   }));
 }
 
-beforeAll(() => {
-  jest.useFakeTimers();
-});
-
 beforeEach(() => {
   nextId = 0;
-  host = document.createElement('div');
-  jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: Function) => cb());
+  host = createTestHostNode();
 });
 
 test(`${TEST_MARKER}: render do not throws error`, () => {
@@ -49,7 +46,7 @@ test(`${TEST_MARKER}: render text correctly`, () => {
   const Component = createComponent(() => Text(content));
 
   render(Component(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content);
 });
 
@@ -58,7 +55,7 @@ test(`${TEST_MARKER}: render tag correctly`, () => {
   const Component = createComponent(() => div());
 
   render(Component(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content);
 });
 
@@ -67,7 +64,7 @@ test(`${TEST_MARKER}: render comment correctly`, () => {
   const Component = createComponent(() => Comment(content));
 
   render(Component(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(`<!--${content}-->`);
 });
 
@@ -82,7 +79,7 @@ test('[Render]: render array of items correctly', () => {
   );
 
   render(Component(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content);
 });
 
@@ -135,28 +132,23 @@ test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
   let items = generateItems(3);
 
   render(App({ one: true, items }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
 
   items = generateItems(3);
   render(App({ one: false, items }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
 
-  jest.advanceTimersByTime(10);
 
   items = generateItems(4);
   render(App({ one: true, items }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
-
-  jest.advanceTimersByTime(10);
 
   items = generateItems(2);
   render(App({ one: false, items }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
 });
 
@@ -191,7 +183,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     ]
   });
 
-  const renderApp = () => (render(App({ items }), host), fireRenders());
+  const renderApp = () => (render(App({ items }), host), waitNextIdle());
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
@@ -229,12 +221,10 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     renderApp();
     expect(host.innerHTML).toBe(content(items));
 
-    jest.advanceTimersByTime(100);
     addItemsToEnd(5);
     renderApp();
     expect(host.innerHTML).toBe(content(items));
 
-    jest.advanceTimersByTime(100);
     addItemsToStart(6);
     renderApp();
     expect(host.innerHTML).toBe(content(items));
@@ -249,7 +239,6 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     const expected = node.textContent;
     const count = 4;
 
-    jest.advanceTimersByTime(100);
     addItemsToStart(count);
     renderApp();
 
@@ -264,7 +253,6 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     items = generateItems(10);
     renderApp();
     expect(host.innerHTML).toBe(content(items));
-    jest.advanceTimersByTime(100);
     insertNodesInDifferentPlaces();
     renderApp();
     expect(host.innerHTML).toBe(content(items));
@@ -275,18 +263,15 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     renderApp();
     expect(host.innerHTML).toBe(content(items));
 
-    jest.advanceTimersByTime(100);
     removeItem(6);
     renderApp();
     expect(host.innerHTML).toBe(content(items));
 
-    jest.advanceTimersByTime(100);
     removeItem(5);
     removeItem(1);
     renderApp();
     expect(host.innerHTML).toBe(content(items));
 
-    jest.advanceTimersByTime(100);
     items = [];
     renderApp();
     expect(host.innerHTML).toBe(content(items));
@@ -300,7 +285,6 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     const node = nodes[8];
     const expected = node.textContent;
 
-    jest.advanceTimersByTime(100);
     removeItem(6);
     renderApp();
     const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
@@ -353,7 +337,7 @@ describe(`${TEST_MARKER} list of items`, () => {
     );
 
     render(Component(), host);
-    fireRenders();
+    waitNextIdle();
     expect(host.innerHTML).toBe(content);
   });
 
@@ -384,7 +368,7 @@ describe(`${TEST_MARKER} list of items`, () => {
     );
 
     render(App(), host);
-    fireRenders();
+    waitNextIdle();
     expect(host.innerHTML).toBe(content);
   });
 });
@@ -411,13 +395,13 @@ test('render nested array as components correctly', () => {
   );
 
   render(Component({ count: 3 }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(3));
   render(Component({ count: 5 }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(5));
   render(Component({ count: 1 }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(1));
 });
 
@@ -430,11 +414,11 @@ test(`${TEST_MARKER} dynamic tag render correcrly`, () => {
   });
 
   render(App({ dynamic: false }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
   render(App({ dynamic: true }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
 });
 
@@ -452,11 +436,11 @@ test(`${TEST_MARKER} JSX works`, () => {
   });
 
   render(App({ dynamic: false }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
   render(App({ dynamic: true }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
 });
 
@@ -484,13 +468,12 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
 
   render(App({ name: 'Alex' }), hostOne);
   render(App({ name: 'Rebecka' }), hostTwo);
-  fireRenders();
+  waitNextIdle();
   expect(hostOne.innerHTML).toBe(content('Alex'));
   expect(hostTwo.innerHTML).toBe(content('Rebecka'));
-  jest.advanceTimersByTime(100);
   render(App({ name: 'Mark' }), hostOne);
   render(App({ name: 'Rebecka' }), hostTwo);
-  fireRenders();
+  waitNextIdle();
   expect(hostOne.innerHTML).toBe(content('Mark'));
   expect(hostTwo.innerHTML).toBe(content('Rebecka'));
 });
@@ -531,7 +514,7 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
 
   const forceUpdate = () => {
     render(List(), host);
-    fireRenders();
+    waitNextIdle();
   };
 
   forceUpdate();
@@ -542,4 +525,46 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
   swap();
   forceUpdate();
   expect(host.innerHTML).toBe(content(items));
+});
+
+
+test(`${TEST_MARKER} remove idexed nodes correctly`, () => {
+  let items = generateItems(5);
+
+  const content = (items: Array<Item>) => {
+    return dom`
+      ${items.map(x => `
+        <div>1: ${x.id}</div>
+      `).join('')}
+    `;
+  };
+
+  const remove = () => {
+    items = [];
+  };
+
+  const ListItem = createComponent<Item>(({ id }) => {
+    return [
+      <div>1: {id}</div>,
+    ];
+  });
+
+  const List = createComponent(() => {
+    return items.map((x, idx) => {
+      return (
+        <ListItem key={idx} id={x.id} name={x.name} />
+      );
+    });
+  });
+
+  const forceUpdate = () => {
+    render(List(), host);
+    waitNextIdle();
+  };
+
+  forceUpdate();
+  expect(host.innerHTML).toBe(content(items));
+  remove();
+  forceUpdate();
+  expect(host.innerHTML).toBe(createEmptyCommentString());
 });

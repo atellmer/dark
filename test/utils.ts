@@ -1,5 +1,7 @@
 import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 
+import { EMPTY_NODE } from '@core/constants';
+
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number>) => {
   const markup =  strings
@@ -13,7 +15,13 @@ const dom = (strings: TemplateStringsArray, ...args: Array<string | number>) => 
 
 const waitNextIdle = () => requestIdleCallback.runIdleCallbacks();
 
+const createEmptyCommentString = () => `<!--${EMPTY_NODE}-->`;
+
+const createTestHostNode = () => document.createElement('div');
+
 export {
   dom,
   waitNextIdle,
+  createEmptyCommentString,
+  createTestHostNode,
 };

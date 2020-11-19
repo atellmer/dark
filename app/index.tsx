@@ -76,7 +76,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [...buildData(2)],
+  list: [],
 };
 
 type HeaderProps = {
@@ -181,7 +181,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(2);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
