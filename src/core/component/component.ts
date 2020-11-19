@@ -8,7 +8,7 @@ import {
 import { ATTR_KEY } from '@core/constants';
 import { VirtualNode } from '@core/view';
 import { MutableRef } from '../ref';
-import { error } from '@helpers';
+import { error, isEmpty } from '@helpers';
 
 
 const $$component = Symbol('component');
@@ -72,7 +72,9 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
 
 const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory => factory instanceof ComponentFactory;
 
-const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey => factory.props[ATTR_KEY] || null;
+const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey => !isEmpty(factory.props[ATTR_KEY])
+  ? factory.props[ATTR_KEY]
+  : null;
 
 export {
   ComponentFactory,

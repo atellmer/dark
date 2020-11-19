@@ -659,7 +659,7 @@ function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
       ? getVirtualNodeKey(instance)
       : null;
 
-  return key || null;
+  return key;
 }
 
 function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey> {

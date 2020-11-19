@@ -76,7 +76,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [...buildData(3)],
+  list: [...buildData(2)],
 };
 
 type HeaderProps = {
@@ -163,7 +163,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {items.map((item, idx) => {
           return (
             <MemoRow
-              key={item.id}
+              key={idx}
               id={item.id}
               name={item.name}
               selected={item.select}
@@ -240,7 +240,7 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    isOpen && createPortal(<div>hello from portal</div>, portalElement),
+    //isOpen && createPortal(<div>hello from portal</div>, portalElement),
     <MemoList
       items={state.list}
       onRemove={handleRemove}
