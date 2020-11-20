@@ -385,7 +385,7 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
       isDeepWalking = true;
       isReturn = false;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
+    } else if (nextFiber.parent && nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;

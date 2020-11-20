@@ -70,13 +70,13 @@ let nextId = 0;
 const buildData = (count, prefix = '') => {
   return Array(count).fill(0).map((_, idx) => ({
     id: ++nextId,
-    name: `item: ${idx + 1} ${prefix}`,
+    name: `item: ${nextId} ${prefix}`,
     select: false,
   }))
 }
 
 const state = {
-  list: [],
+  list: [...buildData(2)],
 };
 
 type HeaderProps = {
@@ -129,6 +129,12 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
+  const portalContainer = useMemo(() => {
+    const element = document.createElement('div');
+
+    document.body.appendChild(element);
+    return element;
+  }, []);
 
   // console.log('render', id);
 
@@ -163,7 +169,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         {items.map((item, idx) => {
           return (
             <MemoRow
-              key={idx}
+              key={item.id}
               id={item.id}
               name={item.name}
               selected={item.select}
@@ -240,7 +246,7 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    //isOpen && createPortal(<div>hello from portal</div>, portalElement),
+    isOpen && createPortal(<div>hello from portal</div>, portalElement),
     <MemoList
       items={state.list}
       onRemove={handleRemove}

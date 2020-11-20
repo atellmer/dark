@@ -4,6 +4,7 @@ import { createComponent, detectIsComponentFactory } from '@core/component';
 import { componentFiberHelper, currentRootHelper } from '@core/scope';
 import { useEffect } from '@core/use-effect';
 import { error } from '@helpers';
+import { useMemo } from '@core';
 
 
 type PortalListener = {
@@ -21,9 +22,9 @@ function runPortalMutationObserver(rootNativeElement: Element) {
 
     for (const mutation of mutationsList) {
       if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-        const removednativeElements = Array.from(mutation.removedNodes) as Array<Element>;
+        const removedNativeElements = Array.from(mutation.removedNodes) as Array<Element>;
 
-        for (const nativeElement of removednativeElements) {
+        for (const nativeElement of removedNativeElements) {
           for (const listener of listenerMap.values()) {
             if (nativeElement.contains(listener.nativeElement)) {
               listener.fn();
@@ -47,9 +48,9 @@ function runPortalMutationObserver(rootNativeElement: Element) {
 }
 
 const Portal = createComponent(({ slot }) => {
+  const fiber = componentFiberHelper.get() as Fiber<Element>;
 
   useEffect(() => {
-    const fiber = componentFiberHelper.get() as Fiber<Element>;
     const rootElement = currentRootHelper.get().nativeElement as Element;
     const listenerMap = portalListenersMap.get(rootElement);
     const parentNativeElement = getParentNativeElement(fiber.parent);
@@ -75,10 +76,7 @@ function createPortal(slot: DarkElement, container: Element) {
     return null;
   }
 
-  if (!container[$$portal]) {
-    container.innerHTML = '';
-    container[$$portal] = true;
-  }
+  useMemo(() => container.innerHTML = '', []);
 
   return Portal({ [$$portal]: container, slot });
 }
@@ -98,36 +96,33 @@ function getParentNativeElement(fiber: Fiber<Element>) {
 }
 
 function removeNativeElements(fiber: Fiber<Element>) {
-  const parentnativeElement = fiber.nativeElement;
+  const parentNativeElement = fiber.nativeElement;
   let nextFiber = fiber;
   let isDeepWalking = true;
+  let isReturn = false;
 
   while (nextFiber) {
-    if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentnativeElement) {
-      parentnativeElement.removeChild(nextFiber.nativeElement);
-
-      if (nextFiber.nextSibling) {
-        isDeepWalking = true;
-        nextFiber = nextFiber.nextSibling;
-      } else if (nextFiber.parent) {
+    if (!isReturn) {
+      if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentNativeElement) {
+        parentNativeElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
-        nextFiber = nextFiber.parent;
       }
-
-      continue;
     }
 
     if (nextFiber.child && isDeepWalking) {
       nextFiber = nextFiber.child;
+      isReturn = false;
     } else if (nextFiber.nextSibling) {
       isDeepWalking = true;
+      isReturn = false;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent) {
+    } else if (nextFiber.parent && nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
       isDeepWalking = false;
+      isReturn = true;
       nextFiber = nextFiber.parent;
+    } else {
+      nextFiber = null;
     }
-
-    if (nextFiber === fiber) return;
   }
 }
 
