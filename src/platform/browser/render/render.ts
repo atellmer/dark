@@ -16,7 +16,7 @@ import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 import { scheduler, UpdatorZone } from '@core/scheduler';
-import { runPortalMutationObserver } from '../portal';
+import { runMutationObserver } from '../portal';
 
 
 platform.raf = window.requestAnimationFrame.bind(this);
@@ -24,7 +24,8 @@ platform.ric = window.requestIdleCallback.bind(this);
 platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
 
-const roots: Map<Element, number> = new Map();
+const roots = new Map<Element, number>();
+runMutationObserver();
 
 function render(element: DarkElement, container: Element, onRender?: () => void) {
   if (!(container instanceof Element)) {
@@ -40,7 +41,6 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
     roots.set(container, rootId);
     effectStoreHelper.set(rootId);
     container.innerHTML = '';
-    runPortalMutationObserver(container);
   } else {
     const rootId = roots.get(container);
 

@@ -135,13 +135,45 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     document.body.appendChild(element);
     return element;
   }, []);
+  const subPortalContainer = useMemo(() => {
+    const element = document.createElement('div');
+
+    document.body.appendChild(element);
+    return element;
+  }, []);
+  const subPortalContainer2 = useMemo(() => {
+    const element = document.createElement('div');
+
+    document.body.appendChild(element);
+    return element;
+  }, []);
+  const portalContainer2 = useMemo(() => {
+    const element = document.createElement('div');
+
+    document.body.appendChild(element);
+    return element;
+  }, []);
 
   // console.log('render', id);
 
   return (
     <tr class={`${className}`}>
       <td class='cell'>{name}</td>
-      <td class='cell'>zzz</td>
+      <td class='cell'>
+        portal: {createPortal(
+        [
+          <div>
+            hello {id}
+          </div>,
+          createPortal(
+          [
+            <div>subportal #1: {id}</div>,
+          createPortal(<div>subportal #2: {id} {selected ? 'seleted' : ''}</div>, subPortalContainer2),
+          ], subPortalContainer),
+          createPortal(<div>portal #2: {id}</div>, portalContainer2),
+        ]
+        , portalContainer)}
+      </td>
       <td class='cell'>xxx</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
@@ -246,7 +278,6 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    isOpen && createPortal(<div>hello from portal</div>, portalElement),
     <MemoList
       items={state.list}
       onRemove={handleRemove}
