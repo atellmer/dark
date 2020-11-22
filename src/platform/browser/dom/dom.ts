@@ -1,5 +1,5 @@
 import { DomElement } from './model';
-import { Fiber, EffectTag, hasChildrenProp } from '@core/fiber';
+import { Fiber, EffectTag } from '@core/fiber';
 import { isFunction, isUndefined } from '@helpers';
 import {
   NodeType,
@@ -22,40 +22,7 @@ import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 
 
-const $$data = Symbol('dark-data');
 const attrBlackList = [ATTR_KEY, ATTR_REF];
-const observer = createIntersectionObserver();
-
-function createIntersectionObserver() {
-  return new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      const intersecting = entry.isIntersecting;
-      let nextFiber = entry.target[$$data] as Fiber<Element>;
-
-      nextFiber.intersecting = intersecting;
-      nextFiber = nextFiber.parent;
-
-      while (nextFiber) {
-        if (nextFiber && !nextFiber.nativeElement && hasChildrenProp(nextFiber.instance)) {
-          const canUpdateIntersecting = nextFiber.instance.children.length === 1;
-
-          if (canUpdateIntersecting) {
-            nextFiber.intersecting = intersecting;
-            nextFiber = nextFiber.parent;
-          } else {
-            break;
-          }
-        } else {
-          break;
-        }
-      }
-    }
-  }, { threshold: 0 });
-}
-
-function observeFiberIntersection(fiber: Fiber<Element>) {
-  observer.observe(fiber.nativeElement);
-}
 
 function createElement(vNode: VirtualNode): DomElement {
   const map = {
@@ -362,12 +329,7 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
 
   while (nextFiber) {
     if (!isReturn) {
-      if (detectIsPortal(nextFiber.instance)) {
-        const container = getPortalContainer(nextFiber.instance);
-
-        container.innerHTML = '';
-        isDeepWalking = false;
-      } else if (nextFiber.nativeElement) {
+      if (nextFiber.nativeElement) {
         parentElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
       }

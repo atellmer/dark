@@ -16,16 +16,16 @@ import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 import { scheduler, UpdatorZone } from '@core/scheduler';
-import { runMutationObserver } from '../portal';
+import { detectIsPortal } from '../portal';
 
 
 platform.raf = window.requestAnimationFrame.bind(this);
 platform.ric = window.requestIdleCallback.bind(this);
 platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
+platform.detectIsPortal = detectIsPortal as typeof platform.detectIsPortal;
 
 const roots = new Map<Element, number>();
-runMutationObserver();
 
 function render(element: DarkElement, container: Element, onRender?: () => void) {
   if (!(container instanceof Element)) {

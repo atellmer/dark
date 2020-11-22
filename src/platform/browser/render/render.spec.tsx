@@ -527,7 +527,6 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
   expect(host.innerHTML).toBe(content(items));
 });
 
-
 test(`${TEST_MARKER} remove idexed nodes correctly`, () => {
   let items = generateItems(5);
 

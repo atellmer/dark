@@ -43,6 +43,7 @@ import {
 import { detectIsMemo } from '../memo';
 
 class Fiber<N = NativeElement> {
+  public nativeElement: N;
   public parent: Fiber<N>;
   public child: Fiber<N>;
   public prevSibling: Fiber<N>;
@@ -54,11 +55,12 @@ class Fiber<N = NativeElement> {
   public shadow: Fiber<N>;
   public provider: Map<Context, ContextProviderValue>;
   public transposition: boolean;
-  public intersecting: boolean;
   public mountedToHost: boolean;
-  public nativeElement: N;
+  public hasPortal: boolean;
+  public markPortal: () => void;
 
   constructor(options: Partial<Fiber<N>>) {
+    this.nativeElement = options.nativeElement || null;
     this.parent = options.parent || null;
     this.child = options.child || null;
     this.prevSibling = options.prevSibling || null;
@@ -70,9 +72,12 @@ class Fiber<N = NativeElement> {
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
     this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
-    this.intersecting = !isUndefined(options.intersecting) ? options.intersecting : true;
     this.mountedToHost = options.mountedToHost || false;
-    this.nativeElement = options.nativeElement || null;
+    this.hasPortal = !isUndefined(options.hasPortal) ? options.hasPortal : false;
+    this.markPortal = () => {
+      this.hasPortal = true;
+      this.parent && !this.parent.hasPortal && this.parent.markPortal();
+    }
   }
 }
 
@@ -500,6 +505,10 @@ function pertformInstance(options: PerformInstanceOptions) {
       })
       : performedShadow;
     performedInstance = mountInstance(performedInstance);
+  }
+
+  if (detectIsComponentFactory(performedInstance) && platform.detectIsPortal(performedInstance)) {
+    fiber.markPortal();
   }
 
   return {

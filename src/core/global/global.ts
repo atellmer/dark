@@ -14,4 +14,7 @@ export const platform: Platform = {
   applyCommits: () => {
     throw new Error('applyCommits doesn\'t install by renderer');
   },
+  detectIsPortal: () => {
+    throw new Error('detectIsPortal doesn\'t install by renderer');
+  },
 };

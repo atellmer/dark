@@ -128,13 +128,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-  const portalContainer1 = useMemo(() => {
-    const element = document.createElement('div');
-
-    document.body.appendChild(element);
-    return element;
-  }, []);
-  const portalContainer2 = useMemo(() => {
+  const portalContainer = useMemo(() => {
     const element = document.createElement('div');
 
     document.body.appendChild(element);
@@ -148,17 +142,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
       <td class='cell'>{name}</td>
       <td class='cell'>
         portal:
-        {
-          createPortal(
-            [
-              <div>portal: {id}</div>,
-              selected && createPortal(
-              [
-                <div>subportal: {id}</div>,
-              ], portalContainer2),
-            ]
-            , portalContainer1)
-        }
+        {createPortal(<div>portal: {id}</div>, portalContainer)}
       </td>
       <td class='cell'>xxx</td>
       <td class='cell'>
