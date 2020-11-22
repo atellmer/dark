@@ -28,7 +28,6 @@ import { render, createPortal } from '../src/platform/browser';
 
 
 const domElement = document.getElementById('root');
-const portalElement = document.getElementById('portal');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -129,19 +128,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-  const portalContainer = useMemo(() => {
-    const element = document.createElement('div');
-
-    document.body.appendChild(element);
-    return element;
-  }, []);
-  const subPortalContainer = useMemo(() => {
-    const element = document.createElement('div');
-
-    document.body.appendChild(element);
-    return element;
-  }, []);
-  const subPortalContainer2 = useMemo(() => {
+  const portalContainer1 = useMemo(() => {
     const element = document.createElement('div');
 
     document.body.appendChild(element);
@@ -160,19 +147,18 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     <tr class={`${className}`}>
       <td class='cell'>{name}</td>
       <td class='cell'>
-        portal: {createPortal(
-        [
-          <div>
-            hello {id}
-          </div>,
+        portal:
+        {
           createPortal(
-          [
-            <div>subportal #1: {id}</div>,
-          createPortal(<div>subportal #2: {id} {selected ? 'seleted' : ''}</div>, subPortalContainer2),
-          ], subPortalContainer),
-          createPortal(<div>portal #2: {id}</div>, portalContainer2),
-        ]
-        , portalContainer)}
+            [
+              <div>portal: {id}</div>,
+              selected && createPortal(
+              [
+                <div>subportal: {id}</div>,
+              ], portalContainer2),
+            ]
+            , portalContainer1)
+        }
       </td>
       <td class='cell'>xxx</td>
       <td class='cell'>
@@ -267,8 +253,6 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-
-  const isOpen = state.list.length === 2;
 
   return [
     <MemoHeader

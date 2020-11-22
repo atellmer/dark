@@ -28,17 +28,14 @@ function createPortal(slot: DarkElement, container: Element) {
     return null;
   }
 
-  useMemo(() => container.innerHTML = '', []);
-
-  return Portal({
-    [$$portal]: container,
-    slot,
-  });
+  return Portal({ [$$portal]: container, slot });
 }
 
-const Portal = createComponent(({ slot }) => {
+const Portal = createComponent(({ slot, ...rest }) => {
   const fiber = componentFiberHelper.get() as Fiber<Element>;
   const nativeElement = getParentNativeElement(fiber.parent);
+
+  useMemo(() => rest[$$portal].innerHTML = '', []);
 
   useEffect(() => {
     if (!listenersMap.get(nativeElement)) {
@@ -72,15 +69,14 @@ function getParentNativeElement(fiber: Fiber<Element>) {
 }
 
 function removeNativeElements(fiber: Fiber<Element>) {
-  const parentNativeElement = fiber.nativeElement;
   let nextFiber = fiber;
   let isDeepWalking = true;
   let isReturn = false;
 
   while (nextFiber) {
     if (!isReturn) {
-      if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentNativeElement) {
-        parentNativeElement.removeChild(nextFiber.nativeElement);
+      if (nextFiber.nativeElement) {
+        nextFiber.nativeElement.parentElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
       }
     }
@@ -114,7 +110,9 @@ function runMutationObserver() {
         for (const nativeElement of removedNativeElements) {
           for (const listener of listeners) {
             if (nativeElement.contains(listener.nativeElement)) {
-              listener.fibers.forEach(x => removeNativeElements(x));
+              for (const fiber of listener.fibers) {
+                removeNativeElements(fiber);
+              }
               deletions.push(listener.nativeElement);
             }
           }
