@@ -75,7 +75,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [...buildData(2)],
+  list: [],
 };
 
 type HeaderProps = {
@@ -134,12 +134,6 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     document.body.appendChild(element);
     return element;
   }, []);
-  const portalContainer2 = useMemo(() => {
-    const element = document.createElement('div');
-
-    document.body.appendChild(element);
-    return element;
-  }, []);
 
   // console.log('render', id);
 
@@ -150,7 +144,6 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
         portal:
         {createPortal([
           <div>portal: {id}</div>,
-          createPortal(<div>subportal: {id}</div>, portalContainer2),
         ], portalContainer)}
       </td>
       <td class='cell'>xxx</td>
@@ -198,7 +191,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

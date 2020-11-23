@@ -57,7 +57,6 @@ class Fiber<N = NativeElement> {
   public transposition: boolean;
   public mountedToHost: boolean;
   public portalHost: boolean;
-  public markPortalHost: () => void;
 
   constructor(options: Partial<Fiber<N>>) {
     this.nativeElement = options.nativeElement || null;
@@ -74,10 +73,11 @@ class Fiber<N = NativeElement> {
     this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !isUndefined(options.mountedToHost) || false;
     this.portalHost = !isUndefined(options.portalHost) ? options.portalHost : false;
-    this.markPortalHost = () => {
-      this.portalHost = true;
-      this.parent && !this.parent.portalHost && this.parent.markPortalHost();
-    }
+  }
+
+  public markPortalHost() {
+    this.portalHost = true;
+    this.parent && !this.parent.portalHost && this.parent.markPortalHost();
   }
 }
 
@@ -196,7 +196,7 @@ function performChild(options: PerformChildOptions) {
   });
   instance = performedInstance || instance;
   shadow = performedShadow || shadow;
-  alternate && mutateAlternate({ alternate, instance });
+  alternate && mutateAlternate({ fiber, alternate, instance });
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate
     ? performMemo({ fiber, alternate, instance })
@@ -260,7 +260,7 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    alternate && mutateAlternate({ alternate, instance });
+    alternate && mutateAlternate({ fiber, alternate, instance });
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate
       ? performMemo({ fiber, alternate, instance })
@@ -297,12 +297,14 @@ function performSibling(options: PerformSiblingOptions) {
 }
 
 type PerformAlternateOptions = {
+  fiber: Fiber;
   alternate: Fiber;
   instance: DarkElementInstance;
 };
 
 function mutateAlternate(options: PerformAlternateOptions) {
   const {
+    fiber,
     alternate,
     instance,
   } = options;
@@ -352,15 +354,25 @@ function mutateAlternate(options: PerformAlternateOptions) {
             if (childAlternate) {
               childAlternate.effectTag = EffectTag.DELETION;
               deletionsHelper.get().push(childAlternate);
+
+              if (childAlternate.portalHost) {
+                fiber.markPortalHost();
+              }
             }
           }
         } else if (!hasKeys) {
           const diffCount = getInstanceChildDiffCount(alternate.instance, instance);
-          const fibers: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount).map(
-            x => ((x.effectTag = EffectTag.DELETION), x),
-          );
+          const childAlternates: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
-          deletionsHelper.get().push(...fibers);
+          for (const childAlternate of childAlternates) {
+            childAlternate.effectTag = EffectTag.DELETION;
+
+            if (childAlternate.portalHost) {
+              fiber.markPortalHost();
+            }
+          }
+
+          deletionsHelper.get().push(...childAlternates);
         }
       }
 
@@ -431,7 +443,7 @@ function performMemo(options: PerformMemoOptions) {
   } = options;
 
   if (detectIsMemo(fiber.instance)) {
-    let memoFiber = null;
+    let memoFiber: Fiber = null;
     const factory = instance as ComponentFactory;
     const alternateFactory = alternate.instance as ComponentFactory;
 
@@ -745,11 +757,14 @@ function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
   const deletions = deletionsHelper.get();
+  const hasPortals = wipFiber.alternate && wipFiber.alternate.portalHost;
 
   // console.log('wip', wipFiber);
 
-  for (const fiber of deletions) {
-    fiber.portalHost && platform.unmountPortal(fiber);
+  if (hasPortals) {
+    for (const fiber of deletions) {
+      fiber.portalHost && platform.unmountPortal(fiber);
+    }
   }
 
   commitWork(wipFiber.child, () => {
