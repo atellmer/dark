@@ -8,4 +8,5 @@ export type Platform = {
   createNativeElement: <N>(fiber: Fiber<N>) => N;
   applyCommits: <N>(fiber: Fiber<N>) => void;
   detectIsPortal: (factory: ComponentFactory) => boolean;
+  unmountPortal: <N>(fiber: Fiber<N>) => void;
 };

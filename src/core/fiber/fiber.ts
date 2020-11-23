@@ -56,8 +56,8 @@ class Fiber<N = NativeElement> {
   public provider: Map<Context, ContextProviderValue>;
   public transposition: boolean;
   public mountedToHost: boolean;
-  public hasPortal: boolean;
-  public markPortal: () => void;
+  public portalHost: boolean;
+  public markPortalHost: () => void;
 
   constructor(options: Partial<Fiber<N>>) {
     this.nativeElement = options.nativeElement || null;
@@ -72,11 +72,11 @@ class Fiber<N = NativeElement> {
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
     this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
-    this.mountedToHost = options.mountedToHost || false;
-    this.hasPortal = !isUndefined(options.hasPortal) ? options.hasPortal : false;
-    this.markPortal = () => {
-      this.hasPortal = true;
-      this.parent && !this.parent.hasPortal && this.parent.markPortal();
+    this.mountedToHost = !isUndefined(options.mountedToHost) || false;
+    this.portalHost = !isUndefined(options.portalHost) ? options.portalHost : false;
+    this.markPortalHost = () => {
+      this.portalHost = true;
+      this.parent && !this.parent.portalHost && this.parent.markPortalHost();
     }
   }
 }
@@ -508,7 +508,7 @@ function pertformInstance(options: PerformInstanceOptions) {
   }
 
   if (detectIsComponentFactory(performedInstance) && platform.detectIsPortal(performedInstance)) {
-    fiber.markPortal();
+    fiber.markPortalHost();
   }
 
   return {
@@ -598,6 +598,7 @@ function mutateFiber(options: MutateFiberOptions) {
   fiber.alternate = alternate || null;
   fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
+  fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
 
   if (isSameType && isDifferentKeys) {
     alternate.effectTag = EffectTag.DELETION;
@@ -743,12 +744,16 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
 function commitChanges(onRender?: () => void) {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
+  const deletions = deletionsHelper.get();
 
   // console.log('wip', wipFiber);
 
-  commitWork(wipFiber.child, () => {
+  for (const fiber of deletions) {
+    fiber.portalHost && platform.unmountPortal(fiber);
+  }
 
-    for (const fiber of deletionsHelper.get()) {
+  commitWork(wipFiber.child, () => {
+    for (const fiber of deletions) {
       platform.applyCommits(fiber);
     }
 

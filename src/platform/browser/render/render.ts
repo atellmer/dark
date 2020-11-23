@@ -16,7 +16,7 @@ import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 import { scheduler, UpdatorZone } from '@core/scheduler';
-import { detectIsPortal } from '../portal';
+import { detectIsPortal, unmountPortal } from '../portal';
 
 
 platform.raf = window.requestAnimationFrame.bind(this);
@@ -24,6 +24,7 @@ platform.ric = window.requestIdleCallback.bind(this);
 platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
 platform.detectIsPortal = detectIsPortal as typeof platform.detectIsPortal;
+platform.unmountPortal = unmountPortal as typeof platform.unmountPortal;
 
 const roots = new Map<Element, number>();
 

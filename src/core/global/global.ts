@@ -17,4 +17,7 @@ export const platform: Platform = {
   detectIsPortal: () => {
     throw new Error('detectIsPortal doesn\'t install by renderer');
   },
+  unmountPortal: () => {
+    throw new Error('unmountPortal doesn\'t install by renderer');
+  },
 };

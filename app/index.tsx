@@ -134,6 +134,12 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
     document.body.appendChild(element);
     return element;
   }, []);
+  const portalContainer2 = useMemo(() => {
+    const element = document.createElement('div');
+
+    document.body.appendChild(element);
+    return element;
+  }, []);
 
   // console.log('render', id);
 
@@ -142,7 +148,10 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
       <td class='cell'>{name}</td>
       <td class='cell'>
         portal:
-        {createPortal(<div>portal: {id}</div>, portalContainer)}
+        {createPortal([
+          <div>portal: {id}</div>,
+          createPortal(<div>subportal: {id}</div>, portalContainer2),
+        ], portalContainer)}
       </td>
       <td class='cell'>xxx</td>
       <td class='cell'>

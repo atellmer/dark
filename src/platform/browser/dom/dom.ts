@@ -157,7 +157,7 @@ function resetNodeCache() {
 
 function mutateDom(fiber: Fiber<Element>) {
   const fromHookUpdate = fromHookUpdateHelper.get();
-  const nextFiber = getFiberWithnativeElement(fiber);
+  const nextFiber = getFiberWithNativeElement(fiber);
   const parentNativeElement = nextFiber.nativeElement;
 
   if (fiber.nativeElement !== null && fiber.effectTag === EffectTag.PLACEMENT) {
@@ -236,7 +236,7 @@ function hasNextSibling(fiber: Fiber, rootFilber: Fiber) {
   return true;
 }
 
-function getFiberWithnativeElement(fiber: Fiber<Element>): Fiber<Element> {
+function getFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
 
   if (detectIsPortal(fiber.instance)) {
     return fiber;
