@@ -330,7 +330,9 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
   while (nextFiber) {
     if (!isReturn) {
       if (nextFiber.nativeElement) {
-        parentElement.removeChild(nextFiber.nativeElement);
+        const isPortal = detectIsPortal(nextFiber.instance);
+
+        !isPortal && parentElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
       }
 

@@ -1,8 +1,7 @@
 /** @jsx h */
-import { waitNextIdle, dom, createEmptyCommentString } from '@test-utils';
+import { waitNextIdle, dom } from '@test-utils';
 import { createElement as h } from '@core/element/element';
 import { createComponent } from '@core/component/component';
-import { useMemo } from '@core/use-memo';
 import { render } from '../render';
 import { createPortal } from './portal';
 
@@ -22,11 +21,9 @@ beforeEach(() => {
   nextId = 0;
   host = document.createElement('div');
   portal = document.createElement('div');
-  document.body.innerHTML = '';
-  document.body.appendChild(host);
 });
 
-test(`createPortal renders correctly`, () => {
+test(`portal renders correctly`, () => {
   const value = 'hello from portal';
 
   const content = (value: string) => {
@@ -50,7 +47,7 @@ test(`createPortal renders correctly`, () => {
   expect(portal.innerHTML).toBe(content(value));
 });
 
-test(`createPortal works correctly with conditional rendering`, () => {
+test(`portal works correctly with conditional rendering`, () => {
   const value = 'hello from portal';
 
   const content = (value: string) => {
@@ -79,4 +76,41 @@ test(`createPortal works correctly with conditional rendering`, () => {
   expect(portal.innerHTML).toBe(content(value));
   compile({ isOpen: false });
   expect(portal.innerHTML).toBe('');
+});
+
+test(`any nested portal works correctly`, () => {
+  const portalOne = document.createElement('div');
+  const portalTwo = document.createElement('div');
+  const portalThree = document.createElement('div');
+
+  const content = (value: string) => {
+    return dom`
+      <div>${value}</div>
+    `;
+  };
+  const compile = () => {
+    render(Component(), host);
+    waitNextIdle();
+  };
+
+  const Component = createComponent(() => {
+    return [
+      <div>header</div>,
+      createPortal([
+        <div>portal 1</div>,
+        createPortal([
+          <div>portal 2</div>,
+          createPortal([
+            <div>portal 3</div>,
+          ], portalThree),
+        ], portalTwo),
+      ], portalOne),
+      <div>footer</div>,
+    ]
+  });
+
+  compile();
+  expect(portalOne.innerHTML).toBe(content('portal 1'));
+  expect(portalTwo.innerHTML).toBe(content('portal 2'));
+  expect(portalThree.innerHTML).toBe(content('portal 3'));
 });

@@ -75,7 +75,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [],
+  list: [...buildData(3)],
 };
 
 type HeaderProps = {
@@ -128,24 +128,13 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-  const portalContainer = useMemo(() => {
-    const element = document.createElement('div');
-
-    document.body.appendChild(element);
-    return element;
-  }, []);
 
   // console.log('render', id);
 
   return (
     <tr class={`${className}`}>
       <td class='cell'>{name}</td>
-      <td class='cell'>
-        portal:
-        {createPortal([
-          <div>portal: {id}</div>,
-        ], portalContainer)}
-      </td>
+      <td class='cell'>zzz</td>
       <td class='cell'>xxx</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
@@ -191,7 +180,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -239,6 +228,14 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
+  const portalContainer = useMemo(() => {
+    const element = document.createElement('div');
+
+    document.body.appendChild(element);
+    return element;
+  }, []);
+
+  const isOpen = state.list.length === 2;
 
   return [
     <MemoHeader
@@ -248,6 +245,7 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
+    isOpen && createPortal(<div>portal</div>, portalContainer),
     <MemoList
       items={state.list}
       onRemove={handleRemove}
