@@ -46,7 +46,6 @@ class Fiber<N = NativeElement> {
   public nativeElement: N;
   public parent: Fiber<N>;
   public child: Fiber<N>;
-  public prevSibling: Fiber<N>;
   public nextSibling: Fiber<N>;
   public alternate: Fiber<N>;
   public effectTag: EffectTag;
@@ -62,7 +61,6 @@ class Fiber<N = NativeElement> {
     this.nativeElement = options.nativeElement || null;
     this.parent = options.parent || null;
     this.child = options.child || null;
-    this.prevSibling = options.prevSibling || null;
     this.nextSibling = options.nextSibling || null;
     this.alternate = options.alternate || null;
     this.effectTag = options.effectTag || null;
@@ -266,7 +264,6 @@ function performSibling(options: PerformSiblingOptions) {
       ? performMemo({ fiber, alternate, instance })
       : fiber;
 
-    fiber.prevSibling = nextFiber;
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
     fiber.shadow = shadow;
@@ -405,15 +402,11 @@ function mutateAlternate(options: PerformAlternateOptions) {
               if (keyIdx === 0) {
                 insertionFiber.nextSibling = alternate.child;
                 alternate.child = insertionFiber;
-                insertionFiber.nextSibling && (insertionFiber.nextSibling.prevSibling = insertionFiber);
               } else {
                 const fiber = fibersByPositionsMap[keyIdx] || null;
 
                 if (fiber) {
                   insertionFiber.nextSibling = fiber;
-                  insertionFiber.prevSibling = fiber.prevSibling;
-                  fiber.prevSibling && (fiber.prevSibling.nextSibling = insertionFiber);
-                  fiber.prevSibling = insertionFiber;
                 }
               }
             }
@@ -810,7 +803,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       isDeepWalking = true;
       isReturn = false;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
+    } else if (nextFiber.parent && nextFiber !== fiber && nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
@@ -832,7 +825,6 @@ function createHook(): Hook {
   return {
     idx: 0,
     values: [],
-    updateScheduled: false,
     update: null,
   };
 }

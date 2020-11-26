@@ -21,7 +21,6 @@ export type HookValue<T = any> = {
 export type Hook<T = any> = {
   idx: number;
   values: Array<T>;
-  updateScheduled: boolean;
   update: () => void;
 };
 

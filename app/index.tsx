@@ -75,7 +75,7 @@ const buildData = (count, prefix = '') => {
 }
 
 const state = {
-  list: [...buildData(3)],
+  list: [],
 };
 
 type HeaderProps = {
@@ -180,7 +180,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -228,14 +228,6 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const portalContainer = useMemo(() => {
-    const element = document.createElement('div');
-
-    document.body.appendChild(element);
-    return element;
-  }, []);
-
-  const isOpen = state.list.length === 2;
 
   return [
     <MemoHeader
@@ -245,7 +237,6 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    isOpen && createPortal(<div>portal</div>, portalContainer),
     <MemoList
       items={state.list}
       onRemove={handleRemove}
