@@ -382,7 +382,7 @@ test('render nested array as components correctly', () => {
   `;
 
   const NestedArray = createComponent<{count: number}>(({ count }) => {
-    return Array(count).fill(0).map((x, idx) => (<p>{idx}</p>))
+    return Array(count).fill(0).map((x, idx) => (<p key={idx}>{idx}</p>))
   });
 
   const Component = createComponent<{count: number}>(

@@ -31,10 +31,6 @@ const domElement = document.getElementById('root');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
-const table = (props = {}) => View({ ...props, as: 'table' });
-const tbody = (props = {}) => View({ ...props, as: 'tbody' });
-const tr = (props = {}) => View({ ...props, as: 'tr' });
-const td = (props = {}) => View({ ...props, as: 'td' });
 
 const createMeasurer = () => {
   let startTime;
@@ -159,7 +155,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
     <table class='table'>
       <tbody>
-        {items.map((item, idx) => {
+        {items.map((item) => {
           return (
             <MemoRow
               key={item.id}
@@ -244,9 +240,6 @@ const Bench = createComponent(() => {
     />,
   ];
 });
-
-const LazyComponent1 = lazy(() => import('./lazy-component'));
-const LazyComponent2 = lazy(() => import('./lazy-component2'));
 
 function forceUpdate() {
   render(Bench(), domElement);

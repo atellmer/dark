@@ -39,6 +39,7 @@ import {
   isFunction,
   takeListFromEnd,
   isUndefined,
+  isArray,
 } from '@helpers';
 import { detectIsMemo } from '../memo';
 
@@ -56,6 +57,7 @@ class Fiber<N = NativeElement> {
   public transposition: boolean;
   public mountedToHost: boolean;
   public portalHost: boolean;
+  public childrenCount: number;
 
   constructor(options: Partial<Fiber<N>>) {
     this.nativeElement = options.nativeElement || null;
@@ -71,6 +73,7 @@ class Fiber<N = NativeElement> {
     this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !isUndefined(options.mountedToHost) || false;
     this.portalHost = !isUndefined(options.portalHost) ? options.portalHost : false;
+    this.childrenCount = options.childrenCount || 0;
   }
 
   public markPortalHost() {
@@ -194,6 +197,7 @@ function performChild(options: PerformChildOptions) {
   });
   instance = performedInstance || instance;
   shadow = performedShadow || shadow;
+  fiber.childrenCount = hasChildrenProp(instance) ? instance.children.length : 0;
   alternate && mutateAlternate({ fiber, alternate, instance });
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate
@@ -258,6 +262,7 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
+    fiber.childrenCount = hasChildrenProp(instance) ? instance.children.length : 0;
     alternate && mutateAlternate({ fiber, alternate, instance });
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate
@@ -283,6 +288,10 @@ function performSibling(options: PerformSiblingOptions) {
     shadow = shadow ? shadow.parent : null;
     nextFiber = nextFiber.parent;
     instance = nextFiber.instance;
+
+    if (hasChildrenProp(instance)) {
+      instance.children = [];
+    }
   }
 
   return {
@@ -313,21 +322,11 @@ function mutateAlternate(options: PerformAlternateOptions) {
     alternate.effectTag = EffectTag.DELETION;
     deletionsHelper.get().push(alternate);
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
-    const isRequestedKeys = alternate.instance.children.length !== instance.children.length;
+    const isRequestedKeys = alternate.childrenCount !== fiber.childrenCount;
 
     if (isRequestedKeys) {
-      const keys = [];
-      const nextKeys = [];
-      const max = Math.max(alternate.instance.children.length, instance.children.length);
-
-      for (let i = 0; i < max; i++) {
-        const key = alternate.instance.children[i] && getElementKey(alternate.instance.children[i]);
-        const nextKey = instance.children[i] && getElementKey(instance.children[i]);
-
-        !isEmpty(key) && keys.push(key);
-        !isEmpty(nextKey) && nextKeys.push(nextKey);
-      }
-
+      const children = hasChildrenProp(instance) ? instance.children : [];
+      const { keys, nextKeys } = extractKeys(alternate.child, children);
       const hasKeys = keys.length > 0;
       const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
@@ -498,7 +497,9 @@ function pertformInstance(options: PerformInstanceOptions) {
   let performedShadow: Fiber = null;
 
   if (hasChildrenProp(instance)) {
-    const elements = flatten([instance.children[idx]]);
+    const elements = isArray(instance.children[idx])
+      ? flatten([instance.children[idx]])
+      : [instance.children[idx]];
 
     instance.children.splice(idx, 1, ...elements);
     performedInstance = instance.children[idx];
@@ -557,7 +558,11 @@ function mountInstance(instance: DarkElementInstance) {
 
   if (isFactory) {
     try {
-      factory.children = flatten([factory.type(factory.props, factory.ref)]) as Array<DarkElementInstance>;
+      const result = factory.type(factory.props, factory.ref);
+
+      factory.children = isArray(result)
+        ? flatten([result]) as Array<DarkElementInstance>
+        : [result] as Array<DarkElementInstance>;
     } catch (err) {
       factory.children = [];
       error(err);
@@ -571,7 +576,11 @@ function mountInstance(instance: DarkElementInstance) {
       }
     }
 
-    instance.children = isFactory ? instance.children : flatten([instance.children]);
+    instance.children = isFactory
+      ? instance.children
+      : isArray(instance.children)
+        ? flatten([instance.children])
+        : [instance.children];
 
     if (isFactory && factory.children.length === 0) {
       factory.children.push(createEmptyVirtualNode());
@@ -650,6 +659,34 @@ function createFibersByKeyMap(fiber: Fiber) {
   }
 
   return map;
+}
+
+function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
+  let nextFiber = alternate;
+  let idx = 0;
+  const keys: Array<DarkElementKey> = [];
+  const nextKeys: Array<DarkElementKey> = [];
+
+  while (nextFiber || idx < children.length) {
+    const key = nextFiber && getElementKey(nextFiber.instance);
+    const nextKey = children[idx] && getElementKey(children[idx]);
+
+    if (!isEmpty(key)) {
+      keys.push(key);
+    }
+
+    if (!isEmpty(nextKey)) {
+      nextKeys.push(nextKey);
+    }
+
+    nextFiber = nextFiber ? nextFiber.nextSibling : null;
+    idx++;
+  }
+
+  return {
+    keys,
+    nextKeys,
+  };
 }
 
 function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {
@@ -799,7 +836,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
 
     if (nextFiber.child && isDeepWalking) {
       nextFiber = nextFiber.child;
-    } else if (nextFiber.nextSibling) {
+    } else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
       isDeepWalking = true;
       isReturn = false;
       nextFiber = nextFiber.nextSibling;

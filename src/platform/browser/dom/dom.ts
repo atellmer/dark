@@ -210,10 +210,6 @@ function mutateDom(fiber: Fiber<Element>) {
 
     if (fiber.parent.child === fiber) {
       fiber.parent.child = null;
-
-      if (detectIsTagVirtualNode(fiber.parent.instance)) {
-        fiber.parent.instance.children = [];
-      }
     }
   }
 }
