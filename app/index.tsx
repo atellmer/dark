@@ -176,7 +176,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -224,6 +224,8 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
+
+  const isOpen = state.list.length === 2;
 
   return [
     <MemoHeader

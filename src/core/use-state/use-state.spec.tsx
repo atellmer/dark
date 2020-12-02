@@ -6,7 +6,6 @@ import { createElement } from '@core/element/element';
 import { useState } from './use-state';
 import { render } from '../../platform/browser/render';
 import { dom } from '../../../test/utils';
-import { EMPTY_NODE } from '@core/constants';
 
 
 let host: HTMLElement = null;
@@ -144,7 +143,6 @@ test('[use-state]: state saves after conditional rendering', () => {
   const content = (count: number) => dom`
     <div>count: ${count}</div>
   `;
-  const emptyNode = `<!--${EMPTY_NODE}-->`;
 
   let count;
   let setCount;
@@ -170,7 +168,7 @@ test('[use-state]: state saves after conditional rendering', () => {
   expect(host.innerHTML).toBe(content(1));
   render(App({ isOpen: false }), host);
   fireRenders();
-  expect(host.innerHTML).toBe(emptyNode);
+  expect(host.innerHTML).toBe('');
   render(App({ isOpen: true }), host);
   fireRenders();
   expect(host.innerHTML).toBe(content(1));

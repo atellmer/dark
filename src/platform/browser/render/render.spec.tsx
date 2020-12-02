@@ -3,11 +3,9 @@ import { render } from './render';
 import { createComponent } from '@core/component/component';
 import { View, Text, Comment } from '@core/view/view';
 import { createElement } from '@core/element/element';
-import { EMPTY_NODE } from '@core/constants';
 import {
   dom,
   waitNextIdle,
-  createEmptyCommentString,
   createTestHostNode,
 } from '@test-utils';
 
@@ -189,7 +187,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     <div>header</div>
     ${items.length > 0
       ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')
-      : `<!--${EMPTY_NODE}-->`
+      : ''
     }
     <div>footer</div>
   `;
@@ -527,7 +525,7 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
   expect(host.innerHTML).toBe(content(items));
 });
 
-test(`${TEST_MARKER} remove idexed nodes correctly`, () => {
+test(`${TEST_MARKER} remove indexed nodes correctly`, () => {
   let items = generateItems(5);
 
   const content = (items: Array<Item>) => {
@@ -565,5 +563,5 @@ test(`${TEST_MARKER} remove idexed nodes correctly`, () => {
   expect(host.innerHTML).toBe(content(items));
   remove();
   forceUpdate();
-  expect(host.innerHTML).toBe(createEmptyCommentString());
+  expect(host.innerHTML).toBe('');
 });
