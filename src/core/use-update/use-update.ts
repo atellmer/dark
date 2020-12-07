@@ -9,6 +9,7 @@ import {
   deletionsHelper,
 } from '@core/scope';
 import {
+  Fiber,
   EffectTag,
   mountInstance,
   workLoop,
@@ -18,7 +19,7 @@ import { scheduler, UpdatorZone } from '../scheduler';
 
 function useUpdate() {
   const rootId = getRootId();
-  const fiber = componentFiberHelper.get();
+  const rootFiber = componentFiberHelper.get();
   const update = () => {
     scheduler.scheduleTask({
       zone: UpdatorZone.LOCAL,
@@ -26,8 +27,23 @@ function useUpdate() {
         effectStoreHelper.set(rootId); // important order!
         fromHookUpdateHelper.set(true);
 
-        fiber.alternate = fiber;
-        fiber.effectTag = EffectTag.UPDATE;
+        const fiber = new Fiber({
+          ...rootFiber,
+          alternate: rootFiber,
+          effectTag: EffectTag.UPDATE,
+        });
+
+        if (fiber.child) {
+          fiber.child.parent = fiber;
+          fiber.alternate.child.parent = null;
+
+          let nextFiber = fiber.child.nextSibling;
+
+          while (nextFiber) {
+            nextFiber.parent = fiber;
+            nextFiber = nextFiber.nextSibling;
+          }
+        }
 
         wipRootHelper.set(fiber);
         componentFiberHelper.set(fiber);
