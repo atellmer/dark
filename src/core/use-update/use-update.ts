@@ -14,7 +14,7 @@ import {
   mountInstance,
   workLoop,
 } from '@core/fiber';
-import { scheduler, UpdatorZone } from '../scheduler';
+import { scheduler } from '../scheduler';
 
 
 function useUpdate() {
@@ -22,8 +22,7 @@ function useUpdate() {
   const rootFiber = componentFiberHelper.get();
   const update = () => {
     scheduler.scheduleTask({
-      zone: UpdatorZone.LOCAL,
-      run: (deadline: IdleDeadline) => {
+      calllback: (deadline: IdleDeadline) => {
         effectStoreHelper.set(rootId); // important order!
         fromHookUpdateHelper.set(true);
 

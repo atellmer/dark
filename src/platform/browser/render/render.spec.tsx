@@ -34,6 +34,7 @@ test(`${TEST_MARKER}: render do not throws error`, () => {
   const Component = createComponent(() => null);
   const compile = () => {
     render(Component(), host);
+    waitNextIdle();
   };
 
   expect(compile).not.toThrowError();
@@ -66,7 +67,7 @@ test(`${TEST_MARKER}: render comment correctly`, () => {
   expect(host.innerHTML).toBe(`<!--${content}-->`);
 });
 
-test('[Render]: render array of items correctly', () => {
+test(`${TEST_MARKER}: render array of items correctly`, () => {
   const content = dom`
     <div></div>
     <div></div>
@@ -181,7 +182,10 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
     ]
   });
 
-  const renderApp = () => (render(App({ items }), host), waitNextIdle());
+  const renderApp = () => {
+    render(App({ items }), host);
+    waitNextIdle();
+  };
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
@@ -465,11 +469,13 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
   `;
 
   render(App({ name: 'Alex' }), hostOne);
+  waitNextIdle();
   render(App({ name: 'Rebecka' }), hostTwo);
   waitNextIdle();
   expect(hostOne.innerHTML).toBe(content('Alex'));
   expect(hostTwo.innerHTML).toBe(content('Rebecka'));
   render(App({ name: 'Mark' }), hostOne);
+  waitNextIdle();
   render(App({ name: 'Rebecka' }), hostTwo);
   waitNextIdle();
   expect(hostOne.innerHTML).toBe(content('Mark'));

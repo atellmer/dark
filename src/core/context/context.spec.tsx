@@ -6,11 +6,10 @@ import { createElement } from '@core/element/element';
 import { useState } from '../use-state';
 import { createContext } from './context';
 import { render } from '../../platform/browser/render';
-import { dom } from '../../../test/utils';
+import { dom, waitNextIdle } from '../../../test/utils';
 
 
 let host: HTMLElement = null;
-const fireRenders = () => requestIdleCallback.runIdleCallbacks();
 
 beforeAll(() => {
   jest.useFakeTimers();
@@ -63,10 +62,10 @@ test('context renders correctly', () => {
   });
 
   render(App(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(theme));
   setTheme('dark');
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(theme));
 });
 
@@ -115,14 +114,15 @@ test('different nested context works correctly', () => {
   });
 
   render(App(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(theme, lang));
   setTheme('dark');
+  waitNextIdle();
   setLang('en');
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(theme, lang));
   setTheme('light');
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(theme, lang));
 });
 
@@ -160,6 +160,6 @@ test('same nested context works correctly', () => {
   });
 
   render(App(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(value));
 });

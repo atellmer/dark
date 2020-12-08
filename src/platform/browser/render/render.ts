@@ -15,7 +15,7 @@ import {
 import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
-import { scheduler, UpdatorZone } from '@core/scheduler';
+import { scheduler } from '@core/scheduler';
 import { detectIsPortal, unmountPortal } from '../portal';
 
 
@@ -25,6 +25,8 @@ platform.createNativeElement = createDomElement as typeof platform.createNativeE
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
 platform.detectIsPortal = detectIsPortal as typeof platform.detectIsPortal;
 platform.unmountPortal = unmountPortal as typeof platform.unmountPortal;
+
+scheduler.run();
 
 const roots = new Map<Element, number>();
 
@@ -36,7 +38,6 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
   const isMounted = !isUndefined(roots.get(container));
 
   if (!isMounted) {
-    scheduler.run();
     const rootId = roots.size;
 
     roots.set(container, rootId);
@@ -51,8 +52,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
   const rootId = getRootId();
 
   scheduler.scheduleTask({
-    zone: UpdatorZone.ROOT,
-    run: (deadline: IdleDeadline) => {
+    calllback: (deadline: IdleDeadline) => {
       effectStoreHelper.set(rootId);
       resetNodeCache();
 

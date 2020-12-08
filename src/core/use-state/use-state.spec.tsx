@@ -5,11 +5,10 @@ import { createComponent } from '@core/component/component';
 import { createElement } from '@core/element/element';
 import { useState } from './use-state';
 import { render } from '../../platform/browser/render';
-import { dom } from '../../../test/utils';
+import { dom, waitNextIdle } from '../../../test/utils';
 
 
 let host: HTMLElement = null;
-const fireRenders = () => requestIdleCallback.runIdleCallbacks();
 
 beforeAll(() => {
   jest.useFakeTimers();
@@ -35,17 +34,18 @@ test('[use-state]: use-state works correctly', () => {
   });
 
   render(Component(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(0));
   setCount(count + 1);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(1));
   setCount(x => x + 1);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(2));
   setCount(x => x + 1);
+  waitNextIdle();
   setCount(x => x + 1);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(4));
 });
 
@@ -110,30 +110,33 @@ test('[use-state]: state saves when nodes swapped', () => {
   };
 
   render(List(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
 
   setCountsOne[1](1);
+  waitNextIdle();
   setCountsTwo[1](1);
+  waitNextIdle();
   items[1].count = 1;
   setCountsOne[items.length - 2](2);
+  waitNextIdle();
   setCountsTwo[items.length - 2](2);
   items[items.length - 2].count = 2;
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
   setCountsOne = [];
   setCountsTwo = [];
   swap();
 
   render(List(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
   setCountsOne = [];
   setCountsTwo = [];
   swap();
 
   render(List(), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
   setCountsOne = [];
   setCountsTwo = [];
@@ -162,14 +165,14 @@ test('[use-state]: state saves after conditional rendering', () => {
   });
 
   render(App({ isOpen: true }), host);
-  fireRenders();
+  waitNextIdle();
   setCount(1);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(1));
   render(App({ isOpen: false }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe('');
   render(App({ isOpen: true }), host);
-  fireRenders();
+  waitNextIdle();
   expect(host.innerHTML).toBe(content(1));
 });
