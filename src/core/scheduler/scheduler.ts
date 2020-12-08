@@ -6,7 +6,7 @@ class Scheduler {
   private queue: Array<Task> = [];
 
   public run  = () => {
-    platform.ric(this.executeTasks);
+    platform.ric(this.executeTasks, { timeout: 16 });
   };
 
   public scheduleTask = (task: Task) => {
@@ -22,7 +22,7 @@ class Scheduler {
       asyncUpdator.calllback(deadline);
     }
 
-    platform.ric(this.executeTasks);
+    platform.ric(this.executeTasks, { timeout: 16 });
   };
 }
 
