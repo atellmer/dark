@@ -1,3 +1,3 @@
 export type Task = {
-  calllback: (deadline: IdleDeadline) => void;
+  calllback: () => void;
 };

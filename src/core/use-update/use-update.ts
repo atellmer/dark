@@ -12,7 +12,6 @@ import {
   Fiber,
   EffectTag,
   mountInstance,
-  workLoop,
 } from '@core/fiber';
 import { scheduler } from '../scheduler';
 
@@ -22,7 +21,7 @@ function useUpdate() {
   const rootFiber = componentFiberHelper.get();
   const update = () => {
     scheduler.scheduleTask({
-      calllback: (deadline: IdleDeadline) => {
+      calllback: () => {
         effectStoreHelper.set(rootId); // important order!
         fromHookUpdateHelper.set(true);
 
@@ -51,7 +50,6 @@ function useUpdate() {
         nextUnitOfWorkHelper.set(fiber);
         deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
         deletionsHelper.set([]);
-        workLoop({ deadline });
       },
     });
   };

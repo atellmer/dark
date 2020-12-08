@@ -1,4 +1,4 @@
-import { Fiber, workLoop, EffectTag } from '@core/fiber';
+import { Fiber, EffectTag } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
@@ -17,16 +17,16 @@ import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 import { scheduler } from '@core/scheduler';
 import { detectIsPortal, unmountPortal } from '../portal';
+import { requestCallback, shouldYeildToHost } from '../scheduling';
 
 
 platform.raf = window.requestAnimationFrame.bind(this);
-platform.ric = window.requestIdleCallback.bind(this);
+platform.requestCallback = requestCallback;
+platform.shouldYeildToHost = shouldYeildToHost;
 platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
 platform.applyCommits = mutateDom as typeof platform.applyCommits;
 platform.detectIsPortal = detectIsPortal as typeof platform.detectIsPortal;
 platform.unmountPortal = unmountPortal as typeof platform.unmountPortal;
-
-scheduler.run();
 
 const roots = new Map<Element, number>();
 
@@ -52,7 +52,7 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
   const rootId = getRootId();
 
   scheduler.scheduleTask({
-    calllback: (deadline: IdleDeadline) => {
+    calllback: () => {
       effectStoreHelper.set(rootId);
       resetNodeCache();
 
@@ -73,7 +73,6 @@ function render(element: DarkElement, container: Element, onRender?: () => void)
       nextUnitOfWorkHelper.set(fiber);
       deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
       deletionsHelper.set([]);
-      workLoop({ deadline, onRender });
     },
   });
 }

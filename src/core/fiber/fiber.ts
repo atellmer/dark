@@ -1,7 +1,6 @@
 import {
   EffectTag,
   NativeElement,
-  WorkLoopOptions,
   Hook,
   cloneTagMap,
 } from './model';
@@ -82,23 +81,24 @@ class Fiber<N = NativeElement> {
   }
 }
 
-function workLoop(options: WorkLoopOptions) {
-  const { deadline, onRender } = options;
+function workLoop() {
   const wipFiber = wipRootHelper.get();
   let nextUnitOfWork = nextUnitOfWorkHelper.get();
   let shouldYield = false;
+  let hasMoreWork = Boolean(nextUnitOfWork);
 
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
     nextUnitOfWorkHelper.set(nextUnitOfWork);
-    shouldYield = deadline ? deadline.timeRemaining() < 1 : false;
+    hasMoreWork = Boolean(nextUnitOfWork);
+    shouldYield = platform.shouldYeildToHost();
   }
 
   if (!nextUnitOfWork && wipFiber) {
-    commitChanges(onRender);
+    commitChanges();
   }
 
-  shouldYield && platform.ric(deadline => workLoop({ deadline, onRender }));
+  return hasMoreWork;
 }
 
 function performUnitOfWork(fiber: Fiber) {
@@ -783,7 +783,7 @@ function hasChildrenProp(element: VirtualNode | ComponentFactory): element is Ta
   return detectIsTagVirtualNode(element) || detectIsComponentFactory(element);
 }
 
-function commitChanges(onRender?: () => void) {
+function commitChanges() {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
   const deletions = deletionsHelper.get();
@@ -815,7 +815,6 @@ function commitChanges(onRender?: () => void) {
       fromHookUpdateHelper.set(false);
     } else {
       currentRootHelper.set(wipFiber);
-      isFunction(onRender) && onRender();
     }
   });
 }
@@ -862,7 +861,6 @@ function createHook(): Hook {
   return {
     idx: 0,
     values: [],
-    update: null,
   };
 }
 

@@ -7,11 +7,6 @@ export enum EffectTag {
 
 export type NativeElement = unknown;
 
-export type WorkLoopOptions = {
-  deadline?: IdleDeadline;
-  onRender?: () => void;
-};
-
 export type HookValue<T = any> = {
   token?: Symbol;
   deps: Array<any>;
@@ -21,7 +16,6 @@ export type HookValue<T = any> = {
 export type Hook<T = any> = {
   idx: number;
   values: Array<T>;
-  update: () => void;
 };
 
 export const cloneTagMap = {

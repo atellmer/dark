@@ -1,28 +1,25 @@
 import { platform } from '../global';
+import { workLoop } from '../fiber';
 import { nextUnitOfWorkHelper } from '../scope';
 import { Task } from './model';
 
 class Scheduler {
   private queue: Array<Task> = [];
 
-  public run  = () => {
-    platform.ric(this.executeTasks, { timeout: 16 });
-  };
-
   public scheduleTask = (task: Task) => {
     this.queue.push(task);
+    this.executeTasks();
   };
 
-  private executeTasks = (deadline: IdleDeadline) => {
+  public executeTasks = () => {
     const hasUnitOfWork = Boolean(nextUnitOfWorkHelper.get());
-    const [asyncUpdator] = this.queue;
+    const [task] = this.queue;
 
-    if (!hasUnitOfWork && asyncUpdator) {
+    if (!hasUnitOfWork && task) {
       this.queue.shift();
-      asyncUpdator.calllback(deadline);
+      task.calllback();
+      platform.requestCallback(workLoop);
     }
-
-    platform.ric(this.executeTasks, { timeout: 16 });
   };
 }
 

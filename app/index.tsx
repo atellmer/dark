@@ -128,7 +128,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
 
   useEffect(() => {
     const timerId = setTimeout(() => {
-      setCount(x => x + 1);
+      setCount(count + 1);
     }, 1000);
 
     return () => clearTimeout(timerId);
@@ -184,7 +184,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(3);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
