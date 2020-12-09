@@ -57,6 +57,7 @@ class Fiber<N = NativeElement> {
   public mountedToHost: boolean;
   public portalHost: boolean;
   public childrenCount: number;
+  public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
     this.nativeElement = options.nativeElement || null;
@@ -78,6 +79,14 @@ class Fiber<N = NativeElement> {
   public markPortalHost() {
     this.portalHost = true;
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
+  }
+
+  public setError(error: Error) {
+    if (typeof this.catchException === 'function') {
+      this.catchException(error);
+    } else if (this.parent) {
+      this.parent.setError(error);
+    }
   }
 }
 
@@ -510,7 +519,7 @@ function pertformInstance(options: PerformInstanceOptions) {
         alternate,
       })
       : performedShadow;
-    performedInstance = mountInstance(performedInstance);
+    performedInstance = mountInstance(fiber, performedInstance);
   }
 
   if (detectIsComponentFactory(performedInstance) && platform.detectIsPortal(performedInstance)) {
@@ -552,7 +561,7 @@ function getRootShadow(options: GetRootShadowOptions) {
   return shadow;
 }
 
-function mountInstance(instance: DarkElementInstance) {
+function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
   const isFactory = detectIsComponentFactory(instance);
   const factory = instance as ComponentFactory;
 
@@ -563,9 +572,9 @@ function mountInstance(instance: DarkElementInstance) {
       factory.children = isArray(result)
         ? flatten([result]) as Array<DarkElementInstance>
         : [result] as Array<DarkElementInstance>;
-    } catch (err) {
+    } catch (error) {
       factory.children = [];
-      error(err);
+      fiber.setError(error);
     }
   }
 

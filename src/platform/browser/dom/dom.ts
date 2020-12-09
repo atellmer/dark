@@ -234,14 +234,11 @@ function hasNextSibling(fiber: Fiber, rootFilber: Fiber) {
 }
 
 function getFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
-
-  if (detectIsPortal(fiber.instance)) {
-    return fiber;
-  }
-
   let nextFiber = fiber.parent;
 
-  while (!nextFiber.nativeElement) {
+  if (detectIsPortal(fiber.instance)) return fiber;
+
+  while (nextFiber && !nextFiber.nativeElement) {
     if (detectIsPortal(nextFiber.instance)) {
       nextFiber.nativeElement = getPortalContainer(nextFiber.instance);
     } else {
