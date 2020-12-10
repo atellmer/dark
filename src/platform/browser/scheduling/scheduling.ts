@@ -1,4 +1,5 @@
 import { scheduler } from '@core/scheduler';
+import { getTime } from '@helpers';
 
 
 type Callback = () => boolean;
@@ -8,13 +9,11 @@ let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
 
-const getCurrentTime = () => performance.now();
-
-const shouldYeildToHost = () => getCurrentTime() >= deadline;
+const shouldYeildToHost = () => getTime() >= deadline;
 
 function performWorkUntilDeadline() {
   if (scheduledCallback) {
-    deadline = getCurrentTime() + yeildInterval;
+    deadline = getTime() + yeildInterval;
 
     try {
       const hasMoreWork = scheduledCallback();
