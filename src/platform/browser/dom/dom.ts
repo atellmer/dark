@@ -208,10 +208,6 @@ function mutateDom(fiber: Fiber<Element>) {
     updateDom(fiber.nativeElement, vNode, nextVNode);
   } else if (fiber.effectTag === EffectTag.DELETION) {
     commitDeletion(fiber, parentNativeElement);
-
-    if (fiber.parent.child === fiber) {
-      fiber.parent.child = null;
-    }
   }
 }
 

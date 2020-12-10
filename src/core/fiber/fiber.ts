@@ -29,6 +29,7 @@ import {
   getVirtualNodeKey,
   TagVirtualNode,
   detectIsVirtualNode,
+  detectIsCommentVirtualNode,
 } from '../view';
 import {
   flatten,
@@ -206,7 +207,6 @@ function performChild(options: PerformChildOptions) {
   });
   instance = performedInstance || instance;
   shadow = performedShadow || shadow;
-  fiber.childrenCount = hasChildrenProp(instance) ? instance.children.length : 0;
   alternate && mutateAlternate({ fiber, alternate, instance });
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate
@@ -271,7 +271,6 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    fiber.childrenCount = hasChildrenProp(instance) ? instance.children.length : 0;
     alternate && mutateAlternate({ fiber, alternate, instance });
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate
@@ -328,8 +327,13 @@ function mutateAlternate(options: PerformAlternateOptions) {
   const isSameType = elementType === alternateType;
 
   if (!isSameType) {
-    alternate.effectTag = EffectTag.DELETION;
-    deletionsHelper.get().push(alternate);
+    let nextFiber = alternate;
+
+    while (nextFiber) {
+      nextFiber.effectTag = EffectTag.DELETION;
+      deletionsHelper.get().push(nextFiber);
+      nextFiber = !detectIsCommentVirtualNode(nextFiber.instance) ? nextFiber.nextSibling : null;
+    }
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const isRequestedKeys = alternate.childrenCount !== fiber.childrenCount;
 
@@ -366,7 +370,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
             }
           }
         } else if (!hasKeys) {
-          const diffCount = getInstanceChildDiffCount(alternate.instance, instance);
+          const diffCount = alternate.childrenCount - fiber.childrenCount;
           const childAlternates: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const childAlternate of childAlternates) {
@@ -455,6 +459,7 @@ function performMemo(options: PerformMemoOptions) {
     const skip = !factory.shouldUpdate(props, nextProps);
 
     if (skip) {
+      let nextFiber: Fiber = null;
       fiberMountHelper.deepWalking.set(false);
 
       memoFiber = new Fiber({
@@ -469,16 +474,11 @@ function performMemo(options: PerformMemoOptions) {
       });
 
       alternate.alternate = null;
+      nextFiber = memoFiber.child;
 
-      if (memoFiber.child) {
-        let nextFiber = memoFiber.child.nextSibling;
-
-        memoFiber.child.parent = memoFiber;
-
-        while (nextFiber) {
-          nextFiber.parent = memoFiber;
-          nextFiber = nextFiber.nextSibling;
-        }
+      while (nextFiber) {
+        nextFiber.parent = memoFiber;
+        nextFiber = nextFiber.nextSibling;
       }
 
       return memoFiber;
@@ -595,6 +595,8 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       factory.children.push(createEmptyVirtualNode());
     }
   }
+
+  fiber.childrenCount = hasChildrenProp(instance) ? instance.children.length : 0;
 
   return instance;
 }
@@ -768,12 +770,6 @@ function getInstanceType(instance: DarkElementInstance): string | Function {
       : detectIsComponentFactory(instance)
         ? instance.type
         : null;
-}
-
-function getInstanceChildDiffCount(alternateInstance: DarkElementInstance, instance: DarkElementInstance): number {
-  return hasChildrenProp(alternateInstance) && hasChildrenProp(instance)
-    ? alternateInstance.children.length - instance.children.length
-    : 0;
 }
 
 function getSiblingFibers(fiber: Fiber): Array<Fiber> {

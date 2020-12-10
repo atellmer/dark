@@ -8,6 +8,7 @@ import {
   fiberMountHelper,
 } from '@core/scope';
 import {
+  Fiber,
   EffectTag,
   mountInstance,
 } from '@core/fiber';
@@ -16,15 +17,27 @@ import { scheduler } from '../scheduler';
 
 function useUpdate() {
   const rootId = getRootId();
-  const fiber = componentFiberHelper.get();
+  const currentFiber = componentFiberHelper.get();
   const update = () => {
     scheduler.scheduleTask({
       calllback: () => {
+        let nextFiber: Fiber = null;
         effectStoreHelper.set(rootId); // important order!
         fromHookUpdateHelper.set(true);
 
-        fiber.alternate = fiber;
-        fiber.effectTag = EffectTag.UPDATE;
+        const fiber = new Fiber({
+          ...currentFiber,
+          alternate: currentFiber,
+          effectTag: EffectTag.UPDATE,
+        });
+
+        currentFiber.alternate = null;
+        nextFiber = fiber.child;
+
+        while (nextFiber) {
+          nextFiber.parent = fiber;
+          nextFiber = nextFiber.nextSibling;
+        }
 
         wipRootHelper.set(fiber);
         componentFiberHelper.set(fiber);

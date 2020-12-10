@@ -81,9 +81,10 @@ type HeaderProps = {
   onUpdateAll: Function;
   onSwap: Function;
   onClear: Function;
+  onInsertInDifferentPlaces: Function;
 }
 
-const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
+const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear, onInsertInDifferentPlaces }) => {
   return div({
     style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
@@ -107,6 +108,10 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         slot: Text('clear rows'),
         onClick: onClear,
       }),
+      button({
+        slot: Text('insert rows in different places'),
+        onClick: onInsertInDifferentPlaces,
+      }),
     ],
   });
 });
@@ -126,9 +131,9 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
 
-  if (id === 2) {
-    undefined.id
-  }
+  // if (id === 1) {
+  //   undefined.id
+  // }
 
   // const [count, setCount] = useState(0);
 
@@ -190,7 +195,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -238,15 +243,23 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
+  const handleInsertInDifferentPlaces = useCallback(() => {
+    const [item1, item2, item3, ...rest] = state.list;
 
-  const error = useError();
+    state.list = [...buildData(5), item1, item2, ...buildData(2), ...rest];
+    measurer.start('in different');
+    forceUpdate();
+    measurer.stop();
+  }, []);
 
-  if (error) {
-    console.error(error);
-    return (
-      <div>Error happened {error.stack}</div>
-    );
-  }
+  // const error = useError();
+
+  // if (error) {
+  //   console.error(error);
+  //   return (
+  //     <div>Error happened {error.stack}</div>
+  //   );
+  // }
 
   return [
     <MemoHeader
@@ -255,6 +268,7 @@ const Bench = createComponent(() => {
       onUpdateAll={handleUpdateAll}
       onSwap={handleSwap}
       onClear={handleClear}
+      onInsertInDifferentPlaces={handleInsertInDifferentPlaces}
     />,
     <MemoList
       items={state.list}

@@ -1,14 +1,28 @@
 import { componentFiberHelper } from '@core/scope';
-import { useState } from '@core/use-state';
+import { useEffect } from '@core/use-effect';
+import { useUpdate } from '@core/use-update';
+import { useMemo } from '@core/use-memo';
 
+
+type ErrorScope = {
+  error: Error;
+};
 
 function useError(): Error | null {
   const fiber = componentFiberHelper.get();
-  const [error, setError] = useState<Error>(null);
+  const [update] = useUpdate();
+  const scope: ErrorScope = useMemo(() => ({ error: null }), []);
 
-  fiber.catchException = (error: Error) => setError(error);;
+  fiber.catchException = (error: Error) => {
+    scope.error = error;
+    update();
+  };
 
-  return error;
+  useEffect(() => {
+    scope.error = null;
+  }, [scope.error]);
+
+  return scope.error;
 }
 
 export {
