@@ -25,7 +25,7 @@ import {
   Suspense,
   useError,
 } from '../src/core';
-import { render, createPortal } from '../src/platform/browser';
+import { render, createPortal, DarkSyntheticEvent } from '../src/platform/browser';
 
 
 const domElement = document.getElementById('root');
@@ -125,7 +125,6 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-
   // const [count, setCount] = useState(0);
 
   // useEffect(() => {

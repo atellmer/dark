@@ -1,6 +1,27 @@
-import { isFunction, error } from '@helpers';
+import { isFunction } from '@helpers';
 import { eventsHelper } from '@core/scope';
 
+class DarkSyntheticEvent<E extends Event, T = EventTarget> {
+  public sourceEvent: E;
+  public type: string;
+  public target: T;
+  public _stopPropagation: boolean = false;
+
+  constructor(options: Partial<DarkSyntheticEvent<E, T>>) {
+    this.sourceEvent = options.sourceEvent || null;
+    this.type = options.type || null;
+    this.target = options.target || null;
+  }
+
+  public stopPropagation() {
+    this._stopPropagation = true;
+    this.sourceEvent.stopPropagation();
+  }
+
+  public preventDefault() {
+    this.sourceEvent.preventDefault();
+  }
+}
 
 type DelegateEventOptions = {
   target: Element,
@@ -21,10 +42,21 @@ function delegateEvent(options: DelegateEventOptions) {
     const rootHandler = (e: Event) => {
       const fireEvent =  eventsStore.get(eventName).get(e.target);
 
-      try {
-        isFunction(fireEvent) && fireEvent(e);
-      } catch (err) {
-        error(err);
+      if (isFunction(fireEvent)) {
+        const event  = new DarkSyntheticEvent({
+          sourceEvent: e,
+          type: e.type,
+          target: e.target,
+        });
+        const target = e.target as Element;
+
+        fireEvent(event);
+
+        if (!event._stopPropagation && target.parentElement) {
+          const event = new (e as any).constructor(e.type, e);
+
+          target.parentElement.dispatchEvent(event);
+        }
       }
     };
 
@@ -40,6 +72,7 @@ const detectIsEvent = (attrName: string) => attrName.startsWith('on');
 const getEventName = (attrName: string) => attrName.slice(2, attrName.length).toLowerCase();
 
 export {
+  DarkSyntheticEvent,
   delegateEvent,
   detectIsEvent,
   getEventName,
