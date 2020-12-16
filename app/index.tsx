@@ -125,16 +125,6 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-  // const [count, setCount] = useState(0);
-
-  // useEffect(() => {
-  //   const timerId = setTimeout(() => {
-  //     setCount(count + 1);
-  //   }, 1000);
-
-  //   return () => clearTimeout(timerId);
-  // }, [count]);
-  // // console.log('render', id);
 
   return (
     <tr class={`${className}`}>

@@ -1,25 +1,29 @@
-import { isFunction } from '@helpers';
 import { eventsHelper } from '@core/scope';
+import { isFunction } from '@helpers';
 
-class DarkSyntheticEvent<E extends Event, T = EventTarget> {
-  public sourceEvent: E;
-  public type: string;
-  public target: T;
-  public _stopPropagation: boolean = false;
+class DarkSyntheticEvent<E extends Event, T = Element> {
+  public type: string = '';
+  public sourceEvent: E = null;
+  public target: T = null;
+  private propagation: boolean = false;
 
-  constructor(options: Partial<DarkSyntheticEvent<E, T>>) {
-    this.sourceEvent = options.sourceEvent || null;
-    this.type = options.type || null;
-    this.target = options.target || null;
+  constructor(options: Pick<DarkSyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
+    this.type = options.sourceEvent.type;
+    this.sourceEvent = options.sourceEvent;
+    this.target = options.target;
   }
 
   public stopPropagation() {
-    this._stopPropagation = true;
+    this.propagation = true;
     this.sourceEvent.stopPropagation();
   }
 
   public preventDefault() {
     this.sourceEvent.preventDefault();
+  }
+
+  public getPropagation() {
+    return this.propagation;
   }
 }
 
@@ -39,23 +43,22 @@ function delegateEvent(options: DelegateEventOptions) {
   const handlerMap = eventsStore.get(eventName);
 
   if (!handlerMap) {
-    const rootHandler = (e: Event) => {
-      const fireEvent =  eventsStore.get(eventName).get(e.target);
+    const rootHandler = (event: Event) => {
+      const fireEvent =  eventsStore.get(eventName).get(event.target);
 
       if (isFunction(fireEvent)) {
-        const event  = new DarkSyntheticEvent({
-          sourceEvent: e,
-          type: e.type,
-          target: e.target,
+        const syntheticEvent  = new DarkSyntheticEvent({
+          sourceEvent: event,
+          target: event.target,
         });
-        const target = e.target as Element;
+        const target = event.target as Element;
 
-        fireEvent(event);
+        fireEvent(syntheticEvent);
 
-        if (!event._stopPropagation && target.parentElement) {
-          const event = new (e as any).constructor(e.type, e);
+        if (!syntheticEvent.getPropagation() && target.parentElement) {
+          const eventReplay = new (event as any).constructor(event.type, event);
 
-          target.parentElement.dispatchEvent(event);
+          target.parentElement.dispatchEvent(eventReplay);
         }
       }
     };

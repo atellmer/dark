@@ -572,9 +572,10 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       factory.children = isArray(result)
         ? flatten([result]) as Array<DarkElementInstance>
         : [result] as Array<DarkElementInstance>;
-    } catch (error) {
+    } catch (err) {
       factory.children = [];
-      fiber.setError(error);
+      fiber.setError(err);
+      error(err);
     }
   }
 
