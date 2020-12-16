@@ -36,7 +36,6 @@ import {
   isEmpty,
   error,
   keyBy,
-  isFunction,
   takeListFromEnd,
   isUndefined,
   isArray,

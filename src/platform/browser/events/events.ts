@@ -5,7 +5,7 @@ class DarkSyntheticEvent<E extends Event, T = Element> {
   public type: string = '';
   public sourceEvent: E = null;
   public target: T = null;
-  private propagation: boolean = false;
+  private propagation: boolean = true;
 
   constructor(options: Pick<DarkSyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
     this.type = options.sourceEvent.type;
@@ -14,7 +14,7 @@ class DarkSyntheticEvent<E extends Event, T = Element> {
   }
 
   public stopPropagation() {
-    this.propagation = true;
+    this.propagation = false;
     this.sourceEvent.stopPropagation();
   }
 
@@ -44,22 +44,23 @@ function delegateEvent(options: DelegateEventOptions) {
 
   if (!handlerMap) {
     const rootHandler = (event: Event) => {
-      const fireEvent =  eventsStore.get(eventName).get(event.target);
+      const fireEvent = eventsStore.get(eventName).get(event.target);
+      const target = event.target as Element;
+      let syntheticEvent: DarkSyntheticEvent<Event> = null;
 
       if (isFunction(fireEvent)) {
-        const syntheticEvent  = new DarkSyntheticEvent({
+        syntheticEvent = new DarkSyntheticEvent({
           sourceEvent: event,
-          target: event.target,
+          target,
         });
-        const target = event.target as Element;
-
         fireEvent(syntheticEvent);
+      }
 
-        if (!syntheticEvent.getPropagation() && target.parentElement) {
-          const eventReplay = new (event as any).constructor(event.type, event);
+      if (syntheticEvent ? syntheticEvent.getPropagation() : target.parentElement) {
+        const SourceEvent = event.constructor as (type: string, event: Event) => void;
+        const eventReplay = new SourceEvent(event.type, event);
 
-          target.parentElement.dispatchEvent(eventReplay);
-        }
+        target.parentElement.dispatchEvent(eventReplay);
       }
     };
 
