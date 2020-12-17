@@ -1,6 +1,8 @@
 import { eventsHelper } from '@core/scope';
 import { isFunction } from '@helpers';
 
+
+type BrowserEventConstructor = (type: string, event: Event) => void;
 class DarkSyntheticEvent<E extends Event, T = Element> {
   public type: string = '';
   public sourceEvent: E = null;
@@ -57,10 +59,9 @@ function delegateEvent(options: DelegateEventOptions) {
       }
 
       if (syntheticEvent ? syntheticEvent.getPropagation() : target.parentElement) {
-        const SourceEvent = event.constructor as (type: string, event: Event) => void;
-        const eventReplay = new SourceEvent(event.type, event);
-
-        target.parentElement.dispatchEvent(eventReplay);
+        target.parentElement.dispatchEvent(
+          new (event.constructor as BrowserEventConstructor)(event.type, event),
+        );
       }
     };
 

@@ -1,15 +1,50 @@
-import { scheduler } from '@core/scheduler';
+import { workLoop } from '@core/fiber';
+import { nextUnitOfWorkHelper } from '@core/scope';
+import { Callback, TaskPriority } from './model';
 import { getTime } from '@helpers';
 
 
-type Callback = () => boolean;
-
+const queue: Array<Task> = [];
 const yeildInterval = 5;
 let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
+class Task {
+  public static nextTaskId: number = 0;
+  public id: number;
+  public priority: TaskPriority;
+  public callback: () => void;
+
+  constructor(options: Pick<Task, 'priority' | 'callback'>) {
+    this.id = ++Task.nextTaskId;
+    this.priority = options.priority;
+    this.callback = options.callback;
+  }
+}
 
 const shouldYeildToHost = () => getTime() >= deadline;
+
+function scheduleCallback(callback: () => void, priority: TaskPriority = TaskPriority.NORMAL) {
+  const task = new Task({ priority, callback });
+
+  if (priority === TaskPriority.HIGHT) {
+    queue.unshift(task);
+  } else {
+    queue.push(task);
+  }
+  executeTasks();
+}
+
+function executeTasks() {
+  const hasMoreWork = Boolean(nextUnitOfWorkHelper.get());
+
+  if (!hasMoreWork && queue.length > 0) {
+    const task = queue.shift();
+
+    task.callback();
+    requestCallback(workLoop);
+  }
+};
 
 function performWorkUntilDeadline() {
   if (scheduledCallback) {
@@ -21,7 +56,7 @@ function performWorkUntilDeadline() {
       if (!hasMoreWork) {
         isMessageLoopRunning = false;
         scheduledCallback = null;
-        scheduler.executeTasks();
+        executeTasks();
       } else {
         port.postMessage(null);
       }
@@ -50,7 +85,7 @@ function requestCallback(callback: Callback) {
 
 function requestCallbackSync(callback: Callback) {
   while (callback()) {}
-  scheduler.executeTasks();
+  executeTasks();
 }
 
 let channel: MessageChannel = null;
@@ -71,5 +106,5 @@ setup();
 
 export {
   shouldYeildToHost,
-  requestCallback,
+  scheduleCallback,
 };

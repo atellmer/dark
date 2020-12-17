@@ -5,8 +5,8 @@ export const platform: Platform = {
   raf: () => {
     throw new Error('raf doesn\'t install by renderer');
   },
-  requestCallback:  () => {
-    throw new Error('requestCallback doesn\'t install by renderer');
+  scheduleCallback:  () => {
+    throw new Error('scheduleCallback doesn\'t install by renderer');
   },
   shouldYeildToHost: () => {
     throw new Error('shouldYeildToHost doesn\'t install by renderer');

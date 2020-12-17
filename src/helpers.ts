@@ -49,7 +49,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
 }
 
 function getTime() {
-  return Date.now();
+  return performance.now();
 }
 
 function keyBy<T = any>(list: Array<T>, fn: (o: T) => string | number, value = false): Record<string | number, T | boolean> {
