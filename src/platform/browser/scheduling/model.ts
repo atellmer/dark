@@ -7,6 +7,6 @@ export type Task = {
 };
 
 export enum TaskPriority {
-  HIGHT = 'HIGHT',
-  NORMAL = 'NORMAL',
+  HIGH = 2,
+  NORMAL = 1,
 };

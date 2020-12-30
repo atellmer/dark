@@ -6,9 +6,10 @@ import {
   SlotProps,
 } from './model';
 import { ATTR_KEY } from '@core/constants';
-import { VirtualNode } from '@core/view';
+import { detectIsTagVirtualNode, VirtualNode } from '@core/view';
 import { MutableRef } from '../ref';
-import { error, isEmpty } from '@helpers';
+import { error, isArray, isEmpty } from '@helpers';
+import { componentFiberHelper } from '@core/scope';
 
 
 const $$component = Symbol('component');
@@ -57,6 +58,17 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
       type: createElement,
       children: [],
     });
+    const slot = computedProps.slot;
+
+    if (slot) {
+      const elements = isArray(slot) ? slot : [slot];
+
+      for (const element of elements) {
+        if (detectIsTagVirtualNode(element)) {
+          element.isSlot = true;
+        }
+      }
+    }
 
     if (computedProps.ref) {
       delete computedProps.ref;

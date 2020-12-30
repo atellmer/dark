@@ -72,7 +72,7 @@ function render(element: DarkElement, container: Element) {
     deletionsHelper.set([]);
   };
 
-  platform.scheduleCallback(callback, TaskPriority.HIGHT);
+  platform.scheduleCallback(callback, TaskPriority.HIGH);
 }
 
 export {

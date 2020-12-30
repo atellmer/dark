@@ -3,12 +3,12 @@ import { nextUnitOfWorkHelper } from '@core/scope';
 import { Callback, TaskPriority } from './model';
 import { getTime } from '@helpers';
 
-
 const queue: Array<Task> = [];
 const yeildInterval = 5;
 let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
+let currentTask: Task = null;
 class Task {
   public static nextTaskId: number = 0;
   public id: number;
@@ -27,22 +27,19 @@ const shouldYeildToHost = () => getTime() >= deadline;
 function scheduleCallback(callback: () => void, priority: TaskPriority = TaskPriority.NORMAL) {
   const task = new Task({ priority, callback });
 
-  if (priority === TaskPriority.HIGHT) {
-    queue.unshift(task);
-  } else {
-    queue.push(task);
-  }
+  queue.push(task);
   executeTasks();
 }
 
 function executeTasks() {
   const hasMoreWork = Boolean(nextUnitOfWorkHelper.get());
 
-  if (!hasMoreWork && queue.length > 0) {
-    const task = queue.shift();
-
-    task.callback();
-    requestCallback(workLoop);
+  if (!hasMoreWork) {
+    if (queue.length > 0) {
+      currentTask = queue.shift();
+      currentTask.callback();
+      requestCallback(workLoop);
+    }
   }
 };
 
@@ -54,6 +51,7 @@ function performWorkUntilDeadline() {
       const hasMoreWork = scheduledCallback();
 
       if (!hasMoreWork) {
+        currentTask = null;
         isMessageLoopRunning = false;
         scheduledCallback = null;
         executeTasks();
@@ -64,7 +62,6 @@ function performWorkUntilDeadline() {
       port.postMessage(null);
       throw error;
     }
-
   } else {
     isMessageLoopRunning = false;
   }

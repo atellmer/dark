@@ -20,7 +20,6 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   const rootId = getRootId();
   const fiber = componentFiberHelper.get();
   const [update] = useUpdate();
-
   const scope: Scope = useMemo(() => ({
     idx: fiber.hook.idx,
     values: fiber.hook.values,

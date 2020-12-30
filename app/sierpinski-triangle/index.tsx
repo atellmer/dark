@@ -92,7 +92,11 @@ const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
 const MemoSierpinskiTriangle = memo(SierpinskiTriangle, (p, n) =>
   p.x !== n.x || p.y !== n.y || p.s !== n.s || Text(p.slot) !== Text(n.slot));
 
-const App = createComponent((props) => {
+type AppProps = {
+  elapsed: number;
+};
+
+const App = createComponent<AppProps>((props) => {
   const [seconds, setSeconds] = useState(0);
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;

@@ -296,8 +296,11 @@ function performSibling(options: PerformSiblingOptions) {
     nextFiber = nextFiber.parent;
     instance = nextFiber.instance;
 
-    if (hasChildrenProp(instance)) {
-      instance.children = [];
+    const isComponentFactory = detectIsComponentFactory(nextFiber.instance);
+    const isNotInSlotVirtualTagNode = detectIsTagVirtualNode(nextFiber.instance) && !nextFiber.instance.isSlot;
+
+    if ((isComponentFactory || isNotInSlotVirtualTagNode) && hasChildrenProp(nextFiber.instance)) {
+      nextFiber.instance.children = [];
     }
   }
 
@@ -334,7 +337,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
       nextFiber = !detectIsCommentVirtualNode(nextFiber.instance) ? nextFiber.nextSibling : null;
     }
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
-    const isRequestedKeys = alternate.childrenCount !== fiber.childrenCount;
+    const isRequestedKeys = alternate.childrenCount !== instance.children.length;
 
     if (isRequestedKeys) {
       const children = hasChildrenProp(instance) ? instance.children : [];
@@ -369,7 +372,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
             }
           }
         } else if (!hasKeys) {
-          const diffCount = alternate.childrenCount - fiber.childrenCount;
+          const diffCount = alternate.childrenCount - instance.children.length;
           const childAlternates: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const childAlternate of childAlternates) {
@@ -596,8 +599,6 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
     }
   }
 
-  fiber.childrenCount = hasChildrenProp(instance) ? instance.children.length : 0;
-
   return instance;
 }
 
@@ -624,6 +625,10 @@ function mutateFiber(options: MutateFiberOptions) {
   fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
   fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
+
+  if (hasChildrenProp(fiber.instance)) {
+    fiber.childrenCount = fiber.instance.children.length;
+  }
 
   if (isSameType && isDifferentKeys) {
     alternate.effectTag = EffectTag.DELETION;

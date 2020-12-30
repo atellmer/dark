@@ -17,6 +17,7 @@ class TagVirtualNode extends VirtualNode {
   public type = NodeType.TAG;
   public name: string = null;
   public isVoid: boolean = false;
+  public isSlot: boolean = false;
   public attrs: Record<string, any> = {};
   public children: Array<VirtualNode | ComponentFactory> = [];
 
@@ -24,6 +25,7 @@ class TagVirtualNode extends VirtualNode {
     super(options);
     this.name = options.name || this.name;
     this.isVoid = options.isVoid || this.isVoid;
+    this.isSlot = options.isSlot || this.isSlot;
     this.attrs = options.attrs || this.attrs;
     this.children = options.children || this.children;
   }
