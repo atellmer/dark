@@ -20,24 +20,17 @@ function useUpdate() {
   const currentFiber = componentFiberHelper.get();
   const update = () => {
     const callback = () => {
-      let nextFiber: Fiber = null;
       effectStoreHelper.set(rootId); // important order!
       fromHookUpdateHelper.set(true);
 
       const fiber = new Fiber({
         ...currentFiber,
+        child: null,
         alternate: currentFiber,
         effectTag: EffectTag.UPDATE,
       });
 
       currentFiber.alternate = null;
-      nextFiber = fiber.child;
-
-      while (nextFiber) {
-        nextFiber.parent = fiber;
-        nextFiber = nextFiber.nextSibling;
-      }
-
       wipRootHelper.set(fiber);
       componentFiberHelper.set(fiber);
       fiber.instance = mountInstance(fiber, fiber.instance);
