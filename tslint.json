@@ -35,6 +35,7 @@
     "object-literal-sort-keys": false,
     "ban-types": false,
     "indent": false,
-    "max-classes-per-file": false
+    "max-classes-per-file": false,
+    "prefer-for-of": false
   }
 }

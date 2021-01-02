@@ -7,6 +7,7 @@ import {
 import { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import { Context, ContextProviderValue } from '../context/model';
 import {
+  getRootId,
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
@@ -14,6 +15,7 @@ import {
   fiberMountHelper,
   componentFiberHelper,
   fromHookUpdateHelper,
+  effectStoreHelper,
   effectsHelper,
 } from '@core/scope';
 import { platform } from '@core/global';
@@ -39,6 +41,7 @@ import {
   takeListFromEnd,
   isUndefined,
   isArray,
+  isFunction,
 } from '@helpers';
 import { detectIsMemo } from '../memo';
 
@@ -180,6 +183,16 @@ function performChild(options: PerformChildOptions) {
   let nextFiber = options.nextFiber;
   let shadow = options.shadow;
   let instance = options.instance;
+  const optimizedFiber = tryOptimizeChildrenWalking({ fiber: nextFiber });
+
+  if (optimizedFiber) {
+    return {
+      performedFiber: optimizedFiber,
+      performedNextFiber: optimizedFiber,
+      performedShadow: shadow,
+      performedInstance: instance,
+    };
+  }
 
   shadow = shadow ? shadow.child : null;
   const alternate = getChildAlternate(nextFiber);
@@ -225,6 +238,100 @@ function performChild(options: PerformChildOptions) {
     performedShadow: shadow,
     performedInstance: instance,
   };
+}
+
+type TryOptimizeChildrenWalkingOptions = {
+  fiber: Fiber;
+};
+
+function tryOptimizeChildrenWalking(options: TryOptimizeChildrenWalkingOptions) {
+  const { fiber } = options;
+  const { instance, alternate } = fiber;
+  if (!alternate) return null;
+  const children = hasChildrenProp(instance) ? instance.children : [];
+  const childrenCountPrev = hasChildrenProp(alternate.instance) ? alternate.childrenCount : -1;
+  const chilrenCount = children.length;
+  const canOptimize = childrenCountPrev === chilrenCount && chilrenCount > 1;
+
+  if (canOptimize) {
+    let childAlternate = alternate.child;
+    const rootId = getRootId();
+    const canOptimizeMemo = detectCanOptimizeMemoChildren(childAlternate, children);
+    let idx = 0;
+
+    if (!canOptimizeMemo) return null;
+
+    const fibersByPositionsMap = createFibersByPositionMap(childAlternate);
+
+    for (const child of children) {
+      const factory = child as ComponentFactory;
+      const alternateFactory = childAlternate.instance as ComponentFactory;
+      const props = alternateFactory.props;
+      const nextProps = factory.props;
+      const shouldUpdate = factory.shouldUpdate(props, nextProps);
+
+      if (shouldUpdate) {
+        childAlternate.instance = factory;
+        const callback = createUpdateCallback({
+          rootId,
+          currentFiber: childAlternate,
+          replacingFiberIdx: idx,
+          onCreateFiber: (fiber, idx) => {
+            const replacingFiberPrev = fibersByPositionsMap[idx - 1];
+            const replacingFiber = fibersByPositionsMap[idx];
+
+            fiber.parent = replacingFiber.parent;
+            fiber.nextSibling = replacingFiber.nextSibling;
+
+            if (replacingFiberPrev) {
+              replacingFiberPrev.nextSibling = fiber;
+            }
+          },
+        });
+
+        platform.scheduleCallback(callback);
+      }
+
+      childAlternate = childAlternate.nextSibling;
+      idx++;
+    }
+
+    fiberMountHelper.deepWalking.set(false);
+    fiber.effectTag = EffectTag.SKIP;
+    fiber.child = fiber.alternate.child;
+
+    let nextFiber = fiber.child;
+
+    while (nextFiber) {
+      nextFiber.parent = fiber;
+      nextFiber = nextFiber.nextSibling;
+    }
+
+    fiberMountHelper.jumpToParent();
+
+    return fiber;
+  }
+
+  return null;
+}
+
+function detectCanOptimizeMemoChildren(alternate: Fiber, children: Array<DarkElementInstance>) {
+  let nextFiber = alternate;
+  let idx = 0;
+
+  while (nextFiber || idx < children.length) {
+    const key = nextFiber && getElementKey(nextFiber.instance);
+    const nextKey = children[idx] && getElementKey(children[idx]);
+    const isMemoPrev = detectIsMemo(nextFiber.instance);
+    const isMemo = detectIsMemo(children[idx]);
+
+    if (key !== nextKey || !isMemoPrev || !isMemo) return false;
+
+    nextFiber = nextFiber ? nextFiber.nextSibling : null;
+    idx++;
+  }
+
+  return true;
 }
 
 type PerformSiblingOptions = {
@@ -874,10 +981,48 @@ function createHook(): Hook {
   };
 }
 
+type CreateUpdateCallbackOptions = {
+  rootId: number;
+  currentFiber: Fiber;
+  replacingFiberIdx?: number;
+  onCreateFiber?: (fiber: Fiber, idx: number) => void;
+};
+
+function createUpdateCallback(options: CreateUpdateCallbackOptions) {
+  const {
+    rootId,
+    currentFiber,
+    replacingFiberIdx,
+    onCreateFiber,
+  } = options;
+  const callback = () => {
+    effectStoreHelper.set(rootId); // important order!
+    fromHookUpdateHelper.set(true);
+
+    const fiber = new Fiber({
+      ...currentFiber,
+      child: null,
+      alternate: currentFiber,
+      effectTag: EffectTag.UPDATE,
+    });
+
+    isFunction(onCreateFiber) && onCreateFiber(fiber, replacingFiberIdx);
+
+    currentFiber.alternate = null;
+    wipRootHelper.set(fiber);
+    componentFiberHelper.set(fiber);
+    fiber.instance = mountInstance(fiber, fiber.instance);
+    fiberMountHelper.reset();
+    nextUnitOfWorkHelper.set(fiber);
+  };
+
+  return callback;
+}
+
 export {
   Fiber,
   workLoop,
-  mountInstance,
   createHook,
   hasChildrenProp,
+  createUpdateCallback,
 };
