@@ -183,7 +183,7 @@ function performChild(options: PerformChildOptions) {
   let nextFiber = options.nextFiber;
   let shadow = options.shadow;
   let instance = options.instance;
-  const optimizedFiber = tryOptimizeChildrenWalking({ fiber: nextFiber });
+  const optimizedFiber = nextFiber.alternate ? tryOptimizeFiber(nextFiber) : null;
 
   if (optimizedFiber) {
     return {
@@ -240,26 +240,18 @@ function performChild(options: PerformChildOptions) {
   };
 }
 
-type TryOptimizeChildrenWalkingOptions = {
-  fiber: Fiber;
-};
-
-function tryOptimizeChildrenWalking(options: TryOptimizeChildrenWalkingOptions) {
-  const { fiber } = options;
+function tryOptimizeFiber(fiber: Fiber): Fiber | null {
   const { instance, alternate } = fiber;
-  if (!alternate) return null;
   const children = hasChildrenProp(instance) ? instance.children : [];
-  const childrenCountPrev = hasChildrenProp(alternate.instance) ? alternate.childrenCount : -1;
-  const chilrenCount = children.length;
-  const canOptimize = childrenCountPrev === chilrenCount && chilrenCount > 1;
+  const canTryOptimize = alternate.childrenCount === children.length && children.length > 1;
 
-  if (canOptimize) {
-    let childAlternate = alternate.child;
+  if (canTryOptimize) {
     const rootId = getRootId();
-    const canOptimizeMemo = detectCanOptimizeMemoChildren(childAlternate, children);
+    const canOptimize = detectCanOptimizeFiber(alternate.child, children);
+    let childAlternate = alternate.child;
     let idx = 0;
 
-    if (!canOptimizeMemo) return null;
+    if (!canOptimize) return null;
 
     const fibersByPositionsMap = createFibersByPositionMap(childAlternate);
 
@@ -282,10 +274,7 @@ function tryOptimizeChildrenWalking(options: TryOptimizeChildrenWalkingOptions) 
 
             fiber.parent = replacingFiber.parent;
             fiber.nextSibling = replacingFiber.nextSibling;
-
-            if (replacingFiberPrev) {
-              replacingFiberPrev.nextSibling = fiber;
-            }
+            replacingFiberPrev && (replacingFiberPrev.nextSibling = fiber);
           },
         });
 
@@ -315,7 +304,7 @@ function tryOptimizeChildrenWalking(options: TryOptimizeChildrenWalkingOptions) 
   return null;
 }
 
-function detectCanOptimizeMemoChildren(alternate: Fiber, children: Array<DarkElementInstance>) {
+function detectCanOptimizeFiber(alternate: Fiber, children: Array<DarkElementInstance>) {
   let nextFiber = alternate;
   let idx = 0;
 
