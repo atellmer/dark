@@ -4,7 +4,7 @@ import {
   getComponentFactoryKey,
 } from './component';
 import { View, detectIsVirtualNode } from '../view/view';
-import { VirtualNode } from '../view';
+import { VirtualNodeFactory } from '../view';
 
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -27,12 +27,12 @@ test('[Component]: type do not throws error', () => {
   expect(compile).not.toThrowError();
 });
 
-test('[Component]: type returns virtual node correctly', () => {
+test('[Component]: type returns virtual node factory correctly', () => {
   const Component = createComponent(() => div());
-  const vNode = Component().type({}) as VirtualNode;
+  const vNodeFactory = Component().type({}) as VirtualNodeFactory;
 
-  expect(vNode).toBeTruthy();
-  expect(detectIsVirtualNode(vNode)).toBeTruthy();
+  expect(typeof vNodeFactory).toBe('function');
+  expect(detectIsVirtualNode(vNodeFactory())).toBeTruthy();
 });
 
 test('[Component]: type returns null correctly', () => {

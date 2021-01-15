@@ -1,5 +1,5 @@
 import { ComponentFactory } from '../component';
-import { VirtualNode } from '../view';
+import { VirtualNode, VirtualNodeFactory } from '../view';
 
 
 export type DarkElement = NestedArray<
@@ -20,4 +20,4 @@ export type RenderProps = (...args: Array<any>) => DarkElement;
 
 export type DarkElementKey = string | number;
 
-export type DarkElementInstance = VirtualNode | ComponentFactory;
+export type DarkElementInstance = VirtualNode | VirtualNodeFactory | ComponentFactory;
