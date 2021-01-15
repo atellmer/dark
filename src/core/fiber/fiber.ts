@@ -25,13 +25,13 @@ import {
   getComponentFactoryKey,
 } from '@core/component';
 import {
-  VirtualNode,
   detectIsTagVirtualNode,
   createEmptyVirtualNode,
   getVirtualNodeKey,
   TagVirtualNode,
   detectIsVirtualNode,
   detectIsCommentVirtualNode,
+  detectIsVirtualNodeFactory,
 } from '../view';
 import {
   flatten,
@@ -392,10 +392,7 @@ function performSibling(options: PerformSiblingOptions) {
     nextFiber = nextFiber.parent;
     instance = nextFiber.instance;
 
-    const isComponentFactory = detectIsComponentFactory(nextFiber.instance);
-    const isNotInSlotVirtualTagNode = detectIsTagVirtualNode(nextFiber.instance) && !nextFiber.instance.isSlot;
-
-    if ((isComponentFactory || isNotInSlotVirtualTagNode) && hasChildrenProp(nextFiber.instance)) {
+    if (hasChildrenProp(nextFiber.instance)) {
       nextFiber.instance.children = [];
     }
   }
@@ -660,10 +657,10 @@ function getRootShadow(options: GetRootShadowOptions) {
 }
 
 function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
-  const isFactory = detectIsComponentFactory(instance);
+  const isComponentFactory = detectIsComponentFactory(instance);
   const factory = instance as ComponentFactory;
 
-  if (isFactory) {
+  if (isComponentFactory) {
     try {
       const result = factory.type(factory.props, factory.ref);
 
@@ -675,6 +672,8 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       fiber.setError(err);
       error(err);
     }
+  } else if (detectIsVirtualNodeFactory(instance)) {
+    instance = instance();
   }
 
   if (hasChildrenProp(instance)) {
@@ -684,13 +683,13 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       }
     }
 
-    instance.children = isFactory
+    instance.children = isComponentFactory
       ? instance.children
       : isArray(instance.children)
         ? flatten([instance.children])
         : [instance.children];
 
-    if (isFactory && factory.children.length === 0) {
+    if (isComponentFactory && factory.children.length === 0) {
       factory.children.push(createEmptyVirtualNode());
     }
   }
@@ -701,7 +700,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
 type MutateFiberOptions = {
   fiber: Fiber;
   alternate: Fiber;
-  instance: VirtualNode | ComponentFactory;
+  instance: DarkElementInstance;
 };
 
 function mutateFiber(options: MutateFiberOptions) {
@@ -859,8 +858,10 @@ function getNextSiblingAlternate(fiber: Fiber): Fiber | null {
   return alternate;
 }
 
-function transformElementInstance(instance: DarkElement): DarkElement {
-  return isEmpty(instance) || instance === false ? createEmptyVirtualNode() : instance;
+function transformElementInstance(instance: DarkElement) {
+  return isEmpty(instance) || instance === false
+    ? createEmptyVirtualNode()
+    : instance;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
@@ -885,7 +886,7 @@ function getSiblingFibers(fiber: Fiber): Array<Fiber> {
   return list;
 }
 
-function hasChildrenProp(element: VirtualNode | ComponentFactory): element is TagVirtualNode | ComponentFactory {
+function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | ComponentFactory {
   return detectIsTagVirtualNode(element) || detectIsComponentFactory(element);
 }
 
@@ -904,6 +905,7 @@ function commitChanges() {
   }
 
   commitWork(wipFiber.child, () => {
+
     for (const fiber of deletions) {
       platform.applyCommits(fiber);
     }
@@ -939,6 +941,10 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       platform.applyCommits(nextFiber);
     }
 
+    if (nextFiber && nextFiber.shadow) {
+      nextFiber.shadow = null;
+    }
+
     if (nextFiber.child && isDeepWalking) {
       nextFiber = nextFiber.child;
     } else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
@@ -951,10 +957,6 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       nextFiber = nextFiber.parent;
     } else {
       nextFiber = null;
-    }
-
-    if (nextFiber && nextFiber.shadow) {
-      nextFiber.shadow = null;
     }
   }
 

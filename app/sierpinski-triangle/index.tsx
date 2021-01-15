@@ -51,6 +51,11 @@ const MemoDot = memo(Dot, (p, n) =>
   p.x !== n.x || p.y !== n.y || p.size !== n.size || Text(p.slot) !== Text(n.slot));
 
 const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
+
+  if (s === 1000) {
+    console.log('render');
+  }
+
   if (s <= targetSize) {
 
     return (
@@ -64,15 +69,6 @@ const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
   }
 
   s /= 2;
-
-  // const slowDown = true;
-
-  // if (slowDown) {
-  //   const e = performance.now() + 0.8;
-  //   while (performance.now() < e) {
-  //     // Artificially long execution time.
-  //   }
-  // }
 
   return (
     <div>

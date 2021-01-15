@@ -25,6 +25,7 @@ import {
   Suspense,
   useError,
 } from '../src/core';
+import { DarkElementInstance } from '../src/core/shared';
 import { render, createPortal, DarkSyntheticEvent } from '../src/platform/browser';
 
 

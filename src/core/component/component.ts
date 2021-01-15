@@ -1,4 +1,4 @@
-import { DarkElementKey } from '@core/shared/model';
+import { DarkElementKey, DarkElementInstance } from '@core/shared/model';
 import {
   CreateElement,
   ComponentOptions,
@@ -6,10 +6,8 @@ import {
   SlotProps,
 } from './model';
 import { ATTR_KEY } from '@core/constants';
-import { detectIsTagVirtualNode, VirtualNode } from '@core/view';
 import { MutableRef } from '../ref';
-import { error, isArray, isEmpty } from '@helpers';
-import { componentFiberHelper } from '@core/scope';
+import { error, isEmpty } from '@helpers';
 
 
 const $$component = Symbol('component');
@@ -24,7 +22,7 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   public props: P;
   public ref: MutableRef<R>;
   public displayName: string;
-  public children: Array<VirtualNode | ComponentFactory> = [];
+  public children: Array<DarkElementInstance> = [];
   public shouldUpdate?: (props: P, nextProps: P) => boolean;
 
   constructor(options: ComponentFactory<P>) {
@@ -58,17 +56,6 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
       type: createElement,
       children: [],
     });
-    const slot = computedProps.slot;
-
-    if (slot) {
-      const elements = isArray(slot) ? slot : [slot];
-
-      for (const element of elements) {
-        if (detectIsTagVirtualNode(element)) {
-          element.isSlot = true;
-        }
-      }
-    }
 
     if (computedProps.ref) {
       delete computedProps.ref;
