@@ -1,9 +1,9 @@
-import { createComponent } from '../component';
-import { View } from '../view';
-import { useMemo } from '../use-memo';
-import { useEffect } from '../use-effect';
+import { createComponent } from '../src/core/component';
+import { View } from '../src/core/view';
+import { useMemo } from '../src/core/use-memo';
+import { useEffect } from '../src/core/use-effect';
+import { render } from '../src/platform/browser';
 
-// just for fun)))
 const div = props => View({ ...props, as: 'div' });
 let staticClassNameId = 0;
 let dynamicClassNameId = 0;
@@ -93,3 +93,5 @@ const DivStyled = styled.div<DivStyledProps>`
     color: pink;
   `}
 `;
+
+render(DivStyled(), document.getElementById('root'));
