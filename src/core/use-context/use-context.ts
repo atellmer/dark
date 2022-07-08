@@ -5,7 +5,6 @@ import { useMemo } from '@core/use-memo';
 import { componentFiberHelper } from '@core/scope';
 import { useUpdate } from '@core/use-update';
 
-
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;
   const fiber = componentFiberHelper.get();
@@ -55,6 +54,4 @@ function getProvider<T>(context: Context<T>, fiber: Fiber): ContextProviderValue
   return null;
 }
 
-export {
-  useContext,
-};
+export { useContext };

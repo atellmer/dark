@@ -3,7 +3,6 @@ import { createComponent } from '../component';
 import { useCallback } from './use-callback';
 import { waitNextIdle } from '@test-utils';
 
-
 let host: HTMLElement = null;
 
 beforeEach(() => {

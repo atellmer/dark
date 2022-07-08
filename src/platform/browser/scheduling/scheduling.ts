@@ -3,7 +3,6 @@ import { nextUnitOfWorkHelper } from '@core/scope';
 import { Callback, TaskPriority } from './model';
 import { getTime } from '@helpers';
 
-
 const queue: Array<Task> = [];
 const yeildInterval = 5;
 let scheduledCallback: Callback = null;
@@ -11,7 +10,7 @@ let deadline = 0;
 let isMessageLoopRunning = false;
 let currentTask: Task = null;
 class Task {
-  public static nextTaskId: number = 0;
+  public static nextTaskId = 0;
   public id: number;
   public priority: TaskPriority;
   public callback: () => void;
@@ -42,7 +41,7 @@ function executeTasks() {
       requestCallback(workLoop);
     }
   }
-};
+}
 
 function performWorkUntilDeadline() {
   if (scheduledCallback) {
@@ -82,7 +81,9 @@ function requestCallback(callback: Callback) {
 }
 
 function requestCallbackSync(callback: Callback) {
-  while (callback()) {}
+  while (callback()) {
+    //
+  }
   executeTasks();
 }
 
@@ -102,7 +103,4 @@ function setup() {
 
 setup();
 
-export {
-  shouldYeildToHost,
-  scheduleCallback,
-};
+export { shouldYeildToHost, scheduleCallback };

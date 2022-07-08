@@ -13,10 +13,9 @@ function useReducer<R extends Reducer>(
     return isFunction(initializer) ? initializer(initialState) : initialState;
   }, []);
   const [state, setState] = useState<ReducerState<R>>(initialValue);
-  const dispatch = useCallback(
-    (action: ReducerAction<R>) => setState((state) => reducer(state, action)),
-    [],
-  ) as Dispatch<ReducerAction<R>>;
+  const dispatch = useCallback((action: ReducerAction<R>) => setState(state => reducer(state, action)), []) as Dispatch<
+    ReducerAction<R>
+  >;
 
   return [state, dispatch];
 }

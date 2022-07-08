@@ -1,10 +1,6 @@
-import {
-  getRootId,
-  componentFiberHelper,
-} from '@core/scope';
+import { getRootId, componentFiberHelper } from '@core/scope';
 import { createUpdateCallback } from '@core/fiber';
 import { platform } from '@core/global';
-
 
 function useUpdate() {
   const rootId = getRootId();
@@ -18,6 +14,4 @@ function useUpdate() {
   return [update];
 }
 
-export {
-  useUpdate,
-};
+export { useUpdate };

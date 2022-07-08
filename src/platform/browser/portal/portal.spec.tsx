@@ -5,17 +5,18 @@ import { createComponent } from '@core/component/component';
 import { render } from '../render';
 import { createPortal } from './portal';
 
-
 let host: HTMLElement = null;
 let portal: HTMLElement = null;
 let nextId = 0;
 
 const generateItems = (count: number) => {
-  return Array(count).fill(0).map(x => ({
-    id: ++nextId,
-    name: nextId.toString(),
-  }));
-}
+  return Array(count)
+    .fill(0)
+    .map(x => ({
+      id: ++nextId,
+      name: nextId.toString(),
+    }));
+};
 
 beforeEach(() => {
   nextId = 0;
@@ -29,7 +30,7 @@ test(`portal renders correctly`, () => {
   const content = (value: string) => {
     return dom`
       <div>${value}</div>
-    `
+    `;
   };
   const compile = () => {
     render(Component(), host);
@@ -37,10 +38,7 @@ test(`portal renders correctly`, () => {
   };
 
   const Component = createComponent(() => {
-    return [
-      <div>app</div>,
-      createPortal(<div>{value}</div>, portal),
-    ]
+    return [<div>app</div>, createPortal(<div>{value}</div>, portal)];
   });
 
   compile();
@@ -53,19 +51,15 @@ test(`portal works correctly with conditional rendering`, () => {
   const content = (value: string) => {
     return dom`
       <div>${value}</div>
-    `
+    `;
   };
-  const compile = (props) => {
+  const compile = props => {
     render(Component(props), host);
     waitNextIdle();
   };
 
-  const Component = createComponent<{isOpen: boolean}>(({ isOpen }) => {
-    return [
-      <div>header</div>,
-      isOpen && createPortal(<div>{value}</div>, portal),
-      <div>footer</div>,
-    ]
+  const Component = createComponent<{ isOpen: boolean }>(({ isOpen }) => {
+    return [<div>header</div>, isOpen && createPortal(<div>{value}</div>, portal), <div>footer</div>];
   });
 
   compile({ isOpen: true });
@@ -96,17 +90,15 @@ test(`any nested portals work correctly`, () => {
   const Component = createComponent(() => {
     return [
       <div>header</div>,
-      createPortal([
-        <div>portal 1</div>,
-        createPortal([
-          <div>portal 2</div>,
-          createPortal([
-            <div>portal 3</div>,
-          ], portalThree),
-        ], portalTwo),
-      ], portalOne),
+      createPortal(
+        [
+          <div>portal 1</div>,
+          createPortal([<div>portal 2</div>, createPortal([<div>portal 3</div>], portalThree)], portalTwo),
+        ],
+        portalOne,
+      ),
       <div>footer</div>,
-    ]
+    ];
   });
 
   compile();
@@ -114,7 +106,6 @@ test(`any nested portals work correctly`, () => {
   expect(portalTwo.innerHTML).toBe(content('portal 2'));
   expect(portalThree.innerHTML).toBe(content('portal 3'));
 });
-
 
 test(`any nested portals work correctly with conditional rendering`, () => {
   const portalOne = document.createElement('div');
@@ -126,25 +117,24 @@ test(`any nested portals work correctly with conditional rendering`, () => {
       <div>${value}</div>
     `;
   };
-  const compile = (props) => {
+  const compile = props => {
     render(Component(props), host);
     waitNextIdle();
   };
 
-  const Component = createComponent<{isOpen: boolean}>(({ isOpen }) => {
+  const Component = createComponent<{ isOpen: boolean }>(({ isOpen }) => {
     return [
       <div>header</div>,
-      isOpen && createPortal([
-        <div>portal 1</div>,
-        createPortal([
-          <div>portal 2</div>,
-          createPortal([
-            <div>portal 3</div>,
-          ], portalThree),
-        ], portalTwo),
-      ], portalOne),
+      isOpen &&
+        createPortal(
+          [
+            <div>portal 1</div>,
+            createPortal([<div>portal 2</div>, createPortal([<div>portal 3</div>], portalThree)], portalTwo),
+          ],
+          portalOne,
+        ),
       <div>footer</div>,
-    ]
+    ];
   });
 
   compile({ isOpen: true });

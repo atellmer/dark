@@ -1,1 +1,1 @@
-export type DomElement = {} & Element | Text | Comment;
+export type DomElement = {} & (Element | Text | Comment);

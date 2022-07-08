@@ -4,12 +4,10 @@ import { ComponentFactory, StandardComponentProps } from '@core/component';
 import { ViewDef, NodeType } from './model';
 import { isArray, isEmpty, isFunction } from '@helpers';
 
-
 export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;
 export type TextVirtualNodeFactory = () => TextVirtualNode;
 export type CommentVirtualNodeFactory = () => CommentVirtualNode;
-
 
 const $$virtualNode = Symbol('virtual-node');
 class VirtualNode {
@@ -23,7 +21,7 @@ class VirtualNode {
 class TagVirtualNode extends VirtualNode {
   public type = NodeType.TAG;
   public name: string = null;
-  public isVoid: boolean = false;
+  public isVoid = false;
   public attrs: Record<string, any> = {};
   public children: Array<VirtualNodeFactory | ComponentFactory> = [];
 
@@ -101,19 +99,8 @@ function Comment(text: string): CommentVirtualNodeFactory {
 
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
-    const {
-      as,
-      slot,
-      isVoid = false,
-      ...rest
-    } = def;
-    const children = isVoid
-      ? []
-      : isArray(slot)
-        ? slot
-        : Boolean(slot)
-          ? [slot]
-          : [];
+    const { as, slot, isVoid = false, ...rest } = def;
+    const children = isVoid ? [] : isArray(slot) ? slot : slot ? [slot] : [];
 
     return new TagVirtualNode({
       name: as,
@@ -121,12 +108,12 @@ function View(def: ViewDef): TagVirtualNodeFactory {
       attrs: { ...rest },
       children: children as Array<VirtualNodeFactory>,
     });
-  }
+  };
 
   factory[$$virtualNode] = true;
 
   return factory;
-};
+}
 
 const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
 

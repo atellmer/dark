@@ -35,6 +35,8 @@
     "no-async-promise-executor": "off",
     "no-case-declarations": "off",
     "no-useless-escape": "off",
+    "no-constant-condition": "off",
+    "no-prototype-builtins": "off",
     "prettier/prettier": [
       "warn",
       {
@@ -87,6 +89,9 @@
       "off"
     ],
     "@typescript-eslint/restrict-plus-operands": [
+      "off"
+    ],
+    "@typescript-eslint/no-var-requires": [
       "off"
     ]
   }

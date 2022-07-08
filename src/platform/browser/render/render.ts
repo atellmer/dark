@@ -2,7 +2,7 @@ import { Fiber, EffectTag } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
 import { platform } from '@core/global';
 import { flatten, isUndefined } from '@helpers';
-import { TagVirtualNode, VirtualNode } from '@core/view';
+import { TagVirtualNode, VirtualNodeFactory } from '@core/view';
 import {
   effectStoreHelper,
   wipRootHelper,
@@ -17,7 +17,6 @@ import { ComponentFactory } from '@core/component';
 import { ROOT } from '@core/constants';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost, TaskPriority } from '../scheduling';
-
 
 platform.raf = window.requestAnimationFrame.bind(this);
 platform.scheduleCallback = scheduleCallback;
@@ -58,7 +57,7 @@ function render(element: DarkElement, container: Element) {
       nativeElement: container,
       instance: new TagVirtualNode({
         name: ROOT,
-        children: flatten([element]) as Array<VirtualNode | ComponentFactory>,
+        children: flatten([element]) as Array<VirtualNodeFactory | ComponentFactory>,
       }),
       alternate: currentRootFiber,
       effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
@@ -75,6 +74,4 @@ function render(element: DarkElement, container: Element) {
   platform.scheduleCallback(callback, TaskPriority.HIGH);
 }
 
-export {
-  render,
-};
+export { render };

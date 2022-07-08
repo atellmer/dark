@@ -4,7 +4,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 const { alias } = require('./webpack.alias');
 
-
 const library = 'Dark';
 const coreFileName = library.toLowerCase();
 const config = env => ({

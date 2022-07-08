@@ -7,7 +7,6 @@ import { useState } from './use-state';
 import { render } from '../../platform/browser/render';
 import { dom, waitNextIdle } from '../../../test/utils';
 
-
 let host: HTMLElement = null;
 
 beforeAll(() => {
@@ -28,9 +27,7 @@ test('[use-state]: use-state works correctly', () => {
   const Component = createComponent(() => {
     [count, setCount] = useState(0);
 
-    return (
-      <div>{count}</div>
-    );
+    return <div>{count}</div>;
   });
 
   render(Component(), host);
@@ -56,32 +53,38 @@ test('[use-state]: state saves when nodes swapped', () => {
   };
 
   const content = (items: Array<Item>) => dom`
-    ${items.map(x => {
-      return `
+    ${items
+      .map(x => {
+        return `
         <div>
           <div>id: ${x.id}, count: ${x.count}</div>
           <div>${x.count}</div>
         </div>
-      `
-    }).join('')}
+      `;
+      })
+      .join('')}
   `;
 
-  const items = Array(5).fill(null).map((_, idx) => ({
-    id: idx + 1,
-    count: 0,
-  }));
+  const items = Array(5)
+    .fill(null)
+    .map((_, idx) => ({
+      id: idx + 1,
+      count: 0,
+    }));
 
   let setCountsOne = [];
   let setCountsTwo = [];
 
-  const CounterOne = createComponent<{id: number}>(({ id }) => {
+  const CounterOne = createComponent<{ id: number }>(({ id }) => {
     const [count, setCount] = useState(0);
 
     setCountsOne.push(setCount);
 
     return (
       <div>
-        <div>id: {id}, count: {count}</div>
+        <div>
+          id: {id}, count: {count}
+        </div>
         <CounterTwo />
       </div>
     );
@@ -92,16 +95,14 @@ test('[use-state]: state saves when nodes swapped', () => {
 
     setCountsTwo.push(setCount);
 
-    return (
-      <div>{count}</div>
-    );
+    return <div>{count}</div>;
   });
 
   const List = createComponent(() => {
     return items.map(x => {
-      return <CounterOne key={x.id} id={x.id} />
-    })
-  })
+      return <CounterOne key={x.id} id={x.id} />;
+    });
+  });
 
   const swap = () => {
     const temp = items[1];
@@ -153,15 +154,11 @@ test('[use-state]: state saves after conditional rendering', () => {
   const Counter = createComponent(() => {
     [count, setCount] = useState(0);
 
-    return [
-      <div>count: {count}</div>,
-    ]
+    return [<div>count: {count}</div>];
   });
 
-  const App = createComponent<{isOpen: boolean}>(({ isOpen }) => {
-    return [
-      isOpen && <Counter />,
-    ];
+  const App = createComponent<{ isOpen: boolean }>(({ isOpen }) => {
+    return [isOpen && <Counter />];
   });
 
   render(App({ isOpen: true }), host);

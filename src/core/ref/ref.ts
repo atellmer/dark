@@ -21,9 +21,6 @@ const detectIsRef = (ref: unknown) => {
   }
 
   return false;
-}
-
-export {
-  forwardRef,
-  detectIsRef,
 };
+
+export { forwardRef, detectIsRef };

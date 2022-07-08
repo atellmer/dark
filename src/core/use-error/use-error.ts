@@ -3,7 +3,6 @@ import { useEffect } from '@core/use-effect';
 import { useUpdate } from '@core/use-update';
 import { useMemo } from '@core/use-memo';
 
-
 type ErrorScope = {
   error: Error;
 };
@@ -25,6 +24,4 @@ function useError(): Error | null {
   return scope.error;
 }
 
-export {
-  useError,
-};
+export { useError };

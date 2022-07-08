@@ -1,13 +1,8 @@
 import { Fiber } from '@core/fiber';
 import { DarkElement } from '@core/shared/model';
-import {
-  createComponent,
-  detectIsComponentFactory,
-  ComponentFactory,
-} from '@core/component';
+import { createComponent, detectIsComponentFactory, ComponentFactory } from '@core/component';
 import { error } from '@helpers';
 import { useMemo } from '@core';
-
 
 const $$portal = Symbol('portal');
 
@@ -23,15 +18,18 @@ function createPortal(slot: DarkElement, container: Element) {
   return Portal({ [$$portal]: container, slot });
 }
 
-const Portal = createComponent(({ slot, ...rest }) => {
-  useMemo(() => rest[$$portal].innerHTML = '', []);
+const Portal = createComponent(
+  ({ slot, ...rest }) => {
+    useMemo(() => (rest[$$portal].innerHTML = ''), []);
 
-  return slot;
-}, { token: $$portal });
+    return slot;
+  },
+  { token: $$portal },
+);
 
-const detectIsPortal = (factory: unknown): factory is ComponentFactory => detectIsComponentFactory(factory)
-  && factory.token === $$portal;
-const getPortalContainer = (factory: unknown): Element => detectIsPortal(factory) ? factory.props[$$portal] : null;
+const detectIsPortal = (factory: unknown): factory is ComponentFactory =>
+  detectIsComponentFactory(factory) && factory.token === $$portal;
+const getPortalContainer = (factory: unknown): Element => (detectIsPortal(factory) ? factory.props[$$portal] : null);
 
 function unmountPortal(fiber: Fiber<Element>) {
   let nextFiber = fiber;
@@ -56,7 +54,12 @@ function unmountPortal(fiber: Fiber<Element>) {
       isDeepWalking = true;
       isReturn = false;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent && nextFiber !== fiber && nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
+    } else if (
+      nextFiber.parent &&
+      nextFiber !== fiber &&
+      nextFiber.parent !== fiber &&
+      nextFiber.parent !== fiber.parent
+    ) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
@@ -66,9 +69,4 @@ function unmountPortal(fiber: Fiber<Element>) {
   }
 }
 
-export {
-  createPortal,
-  detectIsPortal,
-  getPortalContainer,
-  unmountPortal,
-};
+export { createPortal, detectIsPortal, getPortalContainer, unmountPortal };

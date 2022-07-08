@@ -1,13 +1,8 @@
-import {
-  getRootId,
-  effectStoreHelper,
-  componentFiberHelper,
-} from '@core/scope';
+import { getRootId, effectStoreHelper, componentFiberHelper } from '@core/scope';
 import { useUpdate } from '@core/use-update';
 import { useMemo } from '@core/use-memo';
 import { useCallback } from '@core/use-callback';
 import { isUndefined, isFunction } from '@helpers';
-
 
 type Value<T> = T | ((prevValue: T) => T);
 type Scope = {
@@ -20,11 +15,14 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   const rootId = getRootId();
   const fiber = componentFiberHelper.get();
   const [update] = useUpdate();
-  const scope: Scope = useMemo(() => ({
-    idx: fiber.hook.idx,
-    values: fiber.hook.values,
-    update,
-  }), []);
+  const scope: Scope = useMemo(
+    () => ({
+      idx: fiber.hook.idx,
+      values: fiber.hook.values,
+      update,
+    }),
+    [],
+  );
   const setState = useCallback((sourceValue: Value<T>) => {
     effectStoreHelper.set(rootId);
     const value = scope.values[scope.idx];
@@ -48,6 +46,4 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   return [value, setState];
 }
 
-export {
-  useState,
-};
+export { useState };

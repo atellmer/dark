@@ -1,6 +1,5 @@
 import { NestedArray } from '@core/shared';
 
-
 const isFunction = (o): o is Function => typeof o === 'function';
 const isUndefined = o => typeof o === 'undefined';
 const isNumber = o => typeof o === 'number';
@@ -43,7 +42,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
       list.push(item);
       levelMap[level].idx++;
     }
-  } while (!(level === 0 && levelMap[level].idx >= levelMap[level].source.length))
+  } while (!(level === 0 && levelMap[level].idx >= levelMap[level].source.length));
 
   return list;
 }
@@ -52,8 +51,12 @@ function getTime() {
   return performance.now();
 }
 
-function keyBy<T = any>(list: Array<T>, fn: (o: T) => string | number, value = false): Record<string | number, T | boolean> {
-  return list.reduce((acc, x) => (acc[fn(x)] = value ? x : true, acc), {});
+function keyBy<T = any>(
+  list: Array<T>,
+  fn: (o: T) => string | number,
+  value = false,
+): Record<string | number, T | boolean> {
+  return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
 }
 
 function takeListFromEnd(source: Array<any>, count: number) {

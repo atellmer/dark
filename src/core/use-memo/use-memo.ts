@@ -5,7 +5,6 @@ import { isUndefined, isArray } from '@helpers';
 import { detectIsDepsDifferent } from '@core/shared';
 import { $$memo } from '@core/memo';
 
-
 const Memo = createComponent(({ slot }) => slot, { token: $$memo });
 
 function wrap(value: unknown, isDepsDifferent: boolean) {
@@ -20,7 +19,7 @@ function wrap(value: unknown, isDepsDifferent: boolean) {
   return value;
 }
 
-function processValue(getValue: () => any, isDepsDifferent: boolean = false) {
+function processValue(getValue: () => any, isDepsDifferent = false) {
   let value = getValue();
 
   if (isArray(value)) {
@@ -34,7 +33,7 @@ function processValue(getValue: () => any, isDepsDifferent: boolean = false) {
 
 function useMemo(getValue: () => any, deps: Array<any>) {
   const fiber = componentFiberHelper.get();
-  const  { hook } = fiber
+  const { hook } = fiber;
   const { idx, values } = hook;
 
   if (isUndefined(values[idx])) {
@@ -62,6 +61,4 @@ function useMemo(getValue: () => any, deps: Array<any>) {
   return hookValue.value;
 }
 
-export {
-  useMemo,
-};
+export { useMemo };

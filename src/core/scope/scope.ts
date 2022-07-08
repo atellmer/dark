@@ -1,11 +1,10 @@
-import { Fiber, NativeElement } from '../fiber';
-
+import { Fiber } from '../fiber';
 
 class Store {
   public wipRoot: Fiber = null;
   public currentRoot: Fiber = null;
   public nextUnitOfWork: Fiber = null;
-  public fromHookUpdate: boolean = false;
+  public fromHookUpdate = false;
   public events: Map<string, WeakMap<object, Function>> = new Map();
   public deletions: Array<Fiber> = [];
   public fiberMount = {
@@ -66,7 +65,7 @@ const eventsHelper = {
 
 const deletionsHelper = {
   get: () => storeHelper.get().deletions,
-  set: (deletions: Array<Fiber>) => storeHelper.get().deletions = deletions,
+  set: (deletions: Array<Fiber>) => (storeHelper.get().deletions = deletions),
 };
 
 const fiberMountHelper = {
@@ -103,13 +102,13 @@ const fiberMountHelper = {
   },
   deepWalking: {
     get: () => storeHelper.get().fiberMount.isDeepWalking,
-    set: (value: boolean) => storeHelper.get().fiberMount.isDeepWalking = value,
+    set: (value: boolean) => (storeHelper.get().fiberMount.isDeepWalking = value),
   },
 };
 
 const effectsHelper = {
   get: () => storeHelper.get().effects,
-  reset: () => storeHelper.get().effects = [],
+  reset: () => (storeHelper.get().effects = []),
   add: (effect: () => void) => storeHelper.get().effects.push(effect),
 };
 

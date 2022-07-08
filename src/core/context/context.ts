@@ -5,7 +5,6 @@ import { componentFiberHelper } from '@core/scope';
 import { useContext } from '@core/use-context';
 import { isFunction } from '@helpers';
 
-
 function createContext<T>(defaultValue: T): Context<T> {
   let displayName = 'Context';
   const context: Context<T> = {
@@ -31,7 +30,7 @@ function createContext<T>(defaultValue: T): Context<T> {
 function mutateContext<T>(context: Context<T>, defaultValue: T, displayName: string) {
   context.Provider = createProvider(context, defaultValue, displayName);
   context.Consumer = createConsumer(context, displayName);
-};
+}
 
 function createProvider<T>(context: Context<T>, defaultValue: T, displayName: string) {
   return createComponent<ContexProviderProps<T>>(
@@ -63,7 +62,7 @@ function createProvider<T>(context: Context<T>, defaultValue: T, displayName: st
     },
     { displayName: `${displayName}.Provider` },
   );
-};
+}
 
 function createConsumer<T>(context: Context<T>, displayName: string) {
   return createComponent(
@@ -74,8 +73,6 @@ function createConsumer<T>(context: Context<T>, displayName: string) {
     },
     { displayName: `${displayName}.Consumer` },
   );
-};
+}
 
-export {
-  createContext,
-};
+export { createContext };

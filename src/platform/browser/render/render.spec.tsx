@@ -3,12 +3,7 @@ import { render } from './render';
 import { createComponent } from '@core/component/component';
 import { View, Text, Comment } from '@core/view/view';
 import { createElement } from '@core/element/element';
-import {
-  dom,
-  waitNextIdle,
-  createTestHostNode,
-} from '@test-utils';
-
+import { dom, waitNextIdle, createTestHostNode } from '@test-utils';
 
 type Item = { id: number; name: string };
 
@@ -19,11 +14,13 @@ const TEST_MARKER = '[RENDER]';
 let nextId = 0;
 
 const generateItems = (count: number) => {
-  return Array(count).fill(0).map(x => ({
-    id: ++nextId,
-    name: nextId.toString(),
-  }));
-}
+  return Array(count)
+    .fill(0)
+    .map(x => ({
+      id: ++nextId,
+      name: nextId.toString(),
+    }));
+};
 
 beforeEach(() => {
   nextId = 0;
@@ -73,9 +70,7 @@ test(`${TEST_MARKER}: render array of items correctly`, () => {
     <div></div>
     <div></div>
   `;
-  const Component = createComponent(
-    () => [div(), div(), div()],
-  );
+  const Component = createComponent(() => [div(), div(), div()]);
 
   render(Component(), host);
   waitNextIdle();
@@ -92,34 +87,32 @@ test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
     return div({
       slot,
     });
-  })
+  });
 
   const ListOne = createComponent<{ items: AppProps['items'] }>(({ items }) => {
-    return items.map((x => {
+    return items.map(x => {
       return ListItem({
         key: x.id,
         slot: Text(x.name),
-      })
-    }))
+      });
+    });
   });
 
   const ListTwo = createComponent<{ items: AppProps['items'] }>(({ items }) => {
-    return items.map((x => {
+    return items.map(x => {
       return ListItem({
         key: x.id,
         slot: Text(x.name),
-      })
-    }))
+      });
+    });
   });
 
   const App = createComponent<AppProps>(({ one, items }) => {
     return [
       div({ slot: Text('header') }),
-      one
-        ? ListOne({ items })
-        : ListTwo({ items }),
+      one ? ListOne({ items }) : ListTwo({ items }),
       div({ slot: Text('footer') }),
-    ]
+    ];
   });
 
   const content = (items: AppProps['items']) => dom`
@@ -138,7 +131,6 @@ test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
   render(App({ one: false, items }), host);
   waitNextIdle();
   expect(host.innerHTML).toBe(content(items));
-
 
   items = generateItems(4);
   render(App({ one: true, items }), host);
@@ -163,23 +155,19 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
       [itemAttrName]: true,
       slot,
     });
-  })
+  });
 
   const List = createComponent<AppProps>(({ items }) => {
-    return items.map((x => {
+    return items.map(x => {
       return ListItem({
         key: x.id,
         slot: Text(x.name),
-      })
-    }))
+      });
+    });
   });
 
   const App = createComponent<AppProps>(({ items }) => {
-    return [
-      div({ slot: Text('header') }),
-      List({ items }),
-      div({ slot: Text('footer') }),
-    ]
+    return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
   });
 
   const renderApp = () => {
@@ -189,10 +177,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
-    ${items.length > 0
-      ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')
-      : ''
-    }
+    ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : ''}
     <div>footer</div>
   `;
 
@@ -334,15 +319,12 @@ describe(`${TEST_MARKER} list of items`, () => {
       <div></div>
       <div></div>
     `;
-    const Component = createComponent(
-      () => [div(), div(), div()],
-    );
+    const Component = createComponent(() => [div(), div(), div()]);
 
     render(Component(), host);
     waitNextIdle();
     expect(host.innerHTML).toBe(content);
   });
-
 
   test('render arrays of any nesting correctly', () => {
     const content = dom`
@@ -355,19 +337,10 @@ describe(`${TEST_MARKER} list of items`, () => {
     `;
 
     const Item = createComponent(() => {
-      return [
-        [[div({ id: 'one' })]],
-        div({ id: 'two' }),
-      ]
-    })
+      return [[[div({ id: 'one' })]], div({ id: 'two' })];
+    });
 
-    const App = createComponent(
-      () => [
-        [[[div()], [[div()]], div()]],
-        [Item()],
-        div(),
-      ],
-    );
+    const App = createComponent(() => [[[[div()], [[div()]], div()]], [Item()], div()]);
 
     render(App(), host);
     waitNextIdle();
@@ -379,22 +352,25 @@ test('render nested array as components correctly', () => {
   const content = (count: number) => dom`
     <div>1</div>
     <div>2</div>
-    ${Array(count).fill(0).map((x, idx) => `<p>${idx}</p>`).join('')}
+    ${Array(count)
+      .fill(0)
+      .map((x, idx) => `<p>${idx}</p>`)
+      .join('')}
     <div>3</div>
   `;
 
-  const NestedArray = createComponent<{count: number}>(({ count }) => {
-    return Array(count).fill(0).map((x, idx) => (<p key={idx}>{idx}</p>))
+  const NestedArray = createComponent<{ count: number }>(({ count }) => {
+    return Array(count)
+      .fill(0)
+      .map((x, idx) => <p key={idx}>{idx}</p>);
   });
 
-  const Component = createComponent<{count: number}>(
-    ({ count }) => [
-      <div>1</div>,
-      <div>2</div>,
-      <NestedArray count={count} />,
-      <div>3</div>,
-    ],
-  );
+  const Component = createComponent<{ count: number }>(({ count }) => [
+    <div>1</div>,
+    <div>2</div>,
+    <NestedArray count={count} />,
+    <div>3</div>,
+  ]);
 
   render(Component({ count: 3 }), host);
   waitNextIdle();
@@ -409,7 +385,7 @@ test('render nested array as components correctly', () => {
 
 test(`${TEST_MARKER} dynamic tag render correcrly`, () => {
   const text = 'I am dynamic tag';
-  const App = createComponent<{dynamic: boolean}>(({ dynamic }) => {
+  const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
     const Tag = dynamic ? span : div;
 
     return Tag({ slot: Text(text) });
@@ -431,7 +407,7 @@ test(`${TEST_MARKER} JSX works`, () => {
     return <span>{slot}</span>;
   });
 
-  const App = createComponent<{dynamic: boolean}>(({ dynamic }) => {
+  const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
     const Tag = dynamic ? CustomItem : 'div';
 
     return <Tag>{text}</Tag>;
@@ -452,7 +428,7 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
 
   const Hello = createComponent(() => <span>hello</span>);
   const Name = createComponent(({ slot }) => <span>{slot}</span>);
-  const App = createComponent<{name: string}>(({ name }) => {
+  const App = createComponent<{ name: string }>(({ name }) => {
     return (
       <div>
         <Hello />
@@ -487,10 +463,14 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
 
   const content = (items: Array<Item>) => {
     return dom`
-      ${items.map(x => `
+      ${items
+        .map(
+          x => `
         <div>1: ${x.id}</div>
         <div>2: ${x.id}</div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     `;
   };
 
@@ -502,17 +482,12 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
   };
 
   const ListItem = createComponent<Item>(({ id }) => {
-    return [
-      <div>1: {id}</div>,
-      <div>2: {id}</div>,
-    ];
+    return [<div>1: {id}</div>, <div>2: {id}</div>];
   });
 
   const List = createComponent(() => {
     return items.map(x => {
-      return (
-        <ListItem key={x.id} id={x.id} name={x.name} />
-      );
+      return <ListItem key={x.id} id={x.id} name={x.name} />;
     });
   });
 
@@ -536,9 +511,13 @@ test(`${TEST_MARKER} remove indexed nodes correctly`, () => {
 
   const content = (items: Array<Item>) => {
     return dom`
-      ${items.map(x => `
+      ${items
+        .map(
+          x => `
         <div>1: ${x.id}</div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     `;
   };
 
@@ -547,16 +526,12 @@ test(`${TEST_MARKER} remove indexed nodes correctly`, () => {
   };
 
   const ListItem = createComponent<Item>(({ id }) => {
-    return [
-      <div>1: {id}</div>,
-    ];
+    return [<div>1: {id}</div>];
   });
 
   const List = createComponent(() => {
     return items.map((x, idx) => {
-      return (
-        <ListItem key={idx} id={x.id} name={x.name} />
-      );
+      return <ListItem key={idx} id={x.id} name={x.name} />;
     });
   });
 

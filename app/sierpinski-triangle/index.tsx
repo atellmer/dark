@@ -1,20 +1,11 @@
-import {
-  h,
-  Text,
-  createComponent,
-  memo,
-  useState,
-  useEffect,
-  useCallback,
-} from '../../src/core';
+import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '../../src/core';
 import { render } from '../../src/platform/browser';
 
 const domElement = document.getElementById('app');
 
-
 const targetSize = 25;
 
-const Dot = createComponent((props) => {
+const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
   const [hover, setHover] = useState(false);
   const s = props.size * 1.3;
   const style = `
@@ -47,22 +38,16 @@ const Dot = createComponent((props) => {
   );
 });
 
-const MemoDot = memo(Dot, (p, n) =>
-  p.x !== n.x || p.y !== n.y || p.size !== n.size || Text(p.slot) !== Text(n.slot));
+const MemoDot = memo(Dot, (p, n) => p.x !== n.x || p.y !== n.y || p.size !== n.size || Text(p.slot) !== Text(n.slot));
 
-const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
-
+const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(({ x, y, s, slot }) => {
   if (s === 1000) {
     console.log('render');
   }
 
   if (s <= targetSize) {
-
     return (
-      <MemoDot
-        x={x - (targetSize / 2)}
-        y={y - (targetSize / 2)}
-        size={targetSize}>
+      <MemoDot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
         {slot}
       </MemoDot>
     );
@@ -72,27 +57,29 @@ const SierpinskiTriangle = createComponent(({ x, y, s, slot }) => {
 
   return (
     <div>
-      <MemoSierpinskiTriangle x={x} y={y - (s / 2)} s={s}>
+      <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s}>
         {slot}
       </MemoSierpinskiTriangle>
-      <MemoSierpinskiTriangle x={x - s} y={y + (s / 2)} s={s}>
+      <MemoSierpinskiTriangle x={x - s} y={y + s / 2} s={s}>
         {slot}
       </MemoSierpinskiTriangle>
-      <MemoSierpinskiTriangle x={x + s} y={y + (s / 2)} s={s}>
+      <MemoSierpinskiTriangle x={x + s} y={y + s / 2} s={s}>
         {slot}
       </MemoSierpinskiTriangle>
     </div>
   );
 });
 
-const MemoSierpinskiTriangle = memo(SierpinskiTriangle, (p, n) =>
-  p.x !== n.x || p.y !== n.y || p.s !== n.s || Text(p.slot) !== Text(n.slot));
+const MemoSierpinskiTriangle = memo(
+  SierpinskiTriangle,
+  (p, n) => p.x !== n.x || p.y !== n.y || p.s !== n.s || Text(p.slot) !== Text(n.slot),
+);
 
 type AppProps = {
   elapsed: number;
 };
 
-const App = createComponent<AppProps>((props) => {
+const App = createComponent<AppProps>(props => {
   const [seconds, setSeconds] = useState(0);
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
@@ -112,7 +99,7 @@ const App = createComponent<AppProps>((props) => {
     width: 10px;
     height: 10px;
     background-color: #eee;
-    transform: ${'scaleX(' + (scale / 2.1) + ') scaleY(0.7) translateZ(0.1px)'};
+    transform: ${'scaleX(' + scale / 2.1 + ') scaleY(0.7) translateZ(0.1px)'};
     zoom: 0.8;
   `;
 
@@ -127,14 +114,10 @@ const App = createComponent<AppProps>((props) => {
   );
 });
 
-
 const start = new Date().getTime();
 
 function update() {
-  render(
-    <App elapsed={new Date().getTime() - start} />,
-    domElement,
-  );
+  render(<App elapsed={new Date().getTime() - start} />, domElement);
 
   requestAnimationFrame(update);
 }
@@ -143,6 +126,4 @@ function run() {
   requestAnimationFrame(update);
 }
 
-export {
-  run,
-};
+export { run };

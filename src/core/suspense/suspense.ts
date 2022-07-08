@@ -6,7 +6,6 @@ import { useContext } from '../use-context';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
 
-
 type SuspenseProps = {
   fallback: DarkElement;
 };
@@ -30,7 +29,7 @@ const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
   const { isLoaded: isSuspenseLoaded } = useContext(SuspenseContext);
   const [isLoaded, setIsLoaded] = useState(false);
   const trigger = useCallback(() => setIsLoaded(true), []);
-  const value = useMemo(() => ({ fallback, isLoaded, trigger }), [fallback, isLoaded ]);
+  const value = useMemo(() => ({ fallback, isLoaded, trigger }), [fallback, isLoaded]);
 
   return SuspenseContext.Provider({
     value,
@@ -38,7 +37,4 @@ const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
   });
 });
 
-export {
-  SuspenseContext,
-  Suspense,
-};
+export { SuspenseContext, Suspense };

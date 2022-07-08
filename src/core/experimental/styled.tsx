@@ -3,9 +3,8 @@ import { View } from '../view';
 import { useMemo } from '../use-memo';
 import { useEffect } from '../use-effect';
 
-
 // just for fun)))
-const div = (props) => View({ ...props, as: 'div' });
+const div = props => View({ ...props, as: 'div' });
 let staticClassNameId = 0;
 let dynamicClassNameId = 0;
 
@@ -22,18 +21,21 @@ function createStyledComponent<P>(tag) {
   return (literals: TemplateStringsArray, ...args) => {
     const staticArgs = args.filter(x => typeof x !== 'function');
     const dynamicArgs = args.filter(x => typeof x === 'function');
-    const css = literals.map((x, idx) => x + (staticArgs[idx] || '')).join('').trim();
+    const css = literals
+      .map((x, idx) => x + (staticArgs[idx] || ''))
+      .join('')
+      .trim();
     const staticClassName = `ss-${++staticClassNameId}`;
     const dynamicClassNamesMap = {};
 
     injectStyle(staticClassName, css);
 
-    const StyledComponent = createComponent<P>((props) => {
+    const StyledComponent = createComponent<P>(props => {
       const { slot } = props;
-      const css = dynamicArgs.map((fn) => fn(props) || '').join('');
+      const css = dynamicArgs.map(fn => fn(props) || '').join('');
       const dynamicClassName = useMemo(() => {
-        return css ? (dynamicClassNamesMap[css] || `sd-${++dynamicClassNameId}`) : '';
-      }, [css]) ;
+        return css ? dynamicClassNamesMap[css] || `sd-${++dynamicClassNameId}` : '';
+      }, [css]);
       const className = `${staticClassName} ${dynamicClassName} ${props['class'] || ''}`.trim();
       const fromMap = dynamicClassNamesMap[css] === dynamicClassName;
 
@@ -55,7 +57,7 @@ function createStyledComponent<P>(tag) {
     });
 
     return StyledComponent;
-  }
+  };
 }
 
 function styled<P>(component?) {
@@ -64,24 +66,30 @@ function styled<P>(component?) {
 
 styled.div = function anonymous<P>(literals: TemplateStringsArray, ...args) {
   return createStyledComponent<P>(div)(literals, ...args);
-}
+};
 
 type DivStyledProps = {
   appearance: 'red' | 'yellow' | 'pink';
-}
+};
 
 const DivStyled = styled.div<DivStyledProps>`
   font-size: 60px;
 
-  ${(p: DivStyledProps) => p.appearance === 'red' && `
+  ${(p: DivStyledProps) =>
+    p.appearance === 'red' &&
+    `
     color: red;
   `}
 
-  ${(p: DivStyledProps) => p.appearance === 'yellow' && `
+  ${(p: DivStyledProps) =>
+    p.appearance === 'yellow' &&
+    `
     color: yellow;
   `}
 
-  ${(p: DivStyledProps) => p.appearance === 'pink' && `
+  ${(p: DivStyledProps) =>
+    p.appearance === 'pink' &&
+    `
     color: pink;
   `}
 `;

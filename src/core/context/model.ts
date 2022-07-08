@@ -1,7 +1,6 @@
 import { Component, SlotProps } from '../component/model';
 import { DarkElement } from '../shared/model';
 
-
 export type ContexProviderProps<T> = {
   value: T;
 } & SlotProps;

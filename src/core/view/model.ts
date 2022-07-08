@@ -9,4 +9,4 @@ export enum NodeType {
   TAG = 'TAG',
   TEXT = 'TEXT',
   COMMENT = 'COMMENT',
-};
+}

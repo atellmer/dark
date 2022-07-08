@@ -1,13 +1,10 @@
 /** @jsx createElement */
-import { requestIdleCallback } from '@shopify/jest-dom-mocks';
-
 import { createComponent } from '@core/component/component';
 import { createElement } from '@core/element/element';
 import { useState } from '../use-state';
 import { createContext } from './context';
 import { render } from '../../platform/browser/render';
 import { dom, waitNextIdle } from '../../../test/utils';
-
 
 let host: HTMLElement = null;
 
@@ -28,24 +25,18 @@ test('context creates correctly', () => {
 });
 
 test('context renders correctly', () => {
-  const content = (theme) => dom`
+  const content = theme => dom`
     <div>${theme}</div>
   `;
 
   const ThemeContext = createContext('light');
 
   const Item = createComponent(() => {
-    return (
-      <ThemeContext.Consumer>
-        {value => <div>{value}</div>}
-      </ThemeContext.Consumer>
-    )
+    return <ThemeContext.Consumer>{value => <div>{value}</div>}</ThemeContext.Consumer>;
   });
 
   const Content = createComponent(() => {
-    return [
-      <Item />,
-    ];
+    return [<Item />];
   });
 
   let theme;
@@ -58,7 +49,7 @@ test('context renders correctly', () => {
       <ThemeContext.Provider value={theme}>
         <Content />
       </ThemeContext.Provider>,
-    ]
+    ];
   });
 
   render(App(), host);
@@ -80,19 +71,21 @@ test('different nested context works correctly', () => {
   const Item = createComponent(() => {
     return (
       <ThemeContext.Consumer>
-        {theme =>
+        {theme => (
           <LangContext.Consumer>
-            {lang => <div>{theme}:{lang}</div>}
+            {lang => (
+              <div>
+                {theme}:{lang}
+              </div>
+            )}
           </LangContext.Consumer>
-        }
+        )}
       </ThemeContext.Consumer>
     );
   });
 
   const Content = createComponent(() => {
-    return [
-      <Item />,
-    ];
+    return [<Item />];
   });
 
   let theme;
@@ -110,7 +103,7 @@ test('different nested context works correctly', () => {
           <Content />
         </LangContext.Provider>
       </ThemeContext.Provider>,
-    ]
+    ];
   });
 
   render(App(), host);
@@ -126,9 +119,8 @@ test('different nested context works correctly', () => {
   expect(host.innerHTML).toBe(content(theme, lang));
 });
 
-
 test('same nested context works correctly', () => {
-  const content = (value) => dom`
+  const content = value => dom`
     <div>${value}</div>
   `;
 
@@ -136,11 +128,7 @@ test('same nested context works correctly', () => {
   const value = 20;
 
   const Item = createComponent(() => {
-    return (
-      <FormContext.Consumer>
-        {value => <div>{value}</div>}
-      </FormContext.Consumer>
-    );
+    return <FormContext.Consumer>{value => <div>{value}</div>}</FormContext.Consumer>;
   });
 
   const Content = createComponent(() => {
@@ -156,7 +144,7 @@ test('same nested context works correctly', () => {
       <FormContext.Provider value={10}>
         <Content />
       </FormContext.Provider>,
-    ]
+    ];
   });
 
   render(App(), host);

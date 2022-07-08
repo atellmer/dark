@@ -1,11 +1,6 @@
-import {
-  createComponent,
-  detectIsComponentFactory,
-  getComponentFactoryKey,
-} from './component';
+import { createComponent, detectIsComponentFactory, getComponentFactoryKey } from './component';
 import { View, detectIsVirtualNode } from '../view/view';
 import { VirtualNodeFactory } from '../view';
-
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 
@@ -44,7 +39,7 @@ test('[Component]: type returns null correctly', () => {
 
 test('[Component]: pass props to component correctly', () => {
   const compile = () => {
-    const Component = createComponent(({ one, two }) => {
+    const Component = createComponent<{ one: string; two: string }>(({ one, two }) => {
       expect(one).toBe('hello');
       expect(two).toBe('world');
       return null;

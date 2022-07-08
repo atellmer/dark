@@ -1,15 +1,10 @@
-import {
-  isNumber,
-  isString,
-  isFunction,
-} from '@helpers';
+import { isNumber, isString, isFunction } from '@helpers';
 import { View, Text } from '@core/view';
-
 
 function getChildren(children: Array<any>) {
   children = children.map(x => (isString(x) || isNumber(x) ? Text(x.toString()) : x));
 
-  return Boolean(children) ? (Array.isArray(children) ? [...children] : [children]) : [];
+  return children ? (Array.isArray(children) ? [...children] : [children]) : [];
 }
 
 function createElement(tag: string | Function, props: any, ...children: Array<any>) {
@@ -32,6 +27,4 @@ function createElement(tag: string | Function, props: any, ...children: Array<an
   return null;
 }
 
-export {
-  createElement,
-};
+export { createElement };

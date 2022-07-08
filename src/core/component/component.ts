@@ -1,14 +1,8 @@
 import { DarkElementKey, DarkElementInstance } from '@core/shared/model';
-import {
-  CreateElement,
-  ComponentOptions,
-  StandardComponentProps,
-  SlotProps,
-} from './model';
+import { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './model';
 import { ATTR_KEY } from '@core/constants';
 import { MutableRef } from '../ref';
 import { error, isEmpty } from '@helpers';
-
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {
@@ -35,15 +29,13 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   }
 }
 
-function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps, R>, options: ComponentOptions<P> = {}) {
+function createComponent<P, R = any>(
+  createElement: CreateElement<P & SlotProps, R>,
+  options: ComponentOptions<P> = {},
+) {
   type Props = P & StandardComponentProps;
-  const computedOptions = {...defaultOptions, ...options };
-  const {
-    token,
-    defaultProps,
-    displayName,
-    shouldUpdate,
-  } = computedOptions;
+  const computedOptions = { ...defaultOptions, ...options };
+  const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
 
   return (props = {} as Props, ref?: MutableRef<R>): ComponentFactory<Props> => {
     const computedProps = { ...defaultProps, ...props };
@@ -71,13 +63,7 @@ function createComponent<P, R = any>(createElement: CreateElement<P & SlotProps,
 
 const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory => factory instanceof ComponentFactory;
 
-const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey => !isEmpty(factory.props[ATTR_KEY])
-  ? factory.props[ATTR_KEY]
-  : null;
+const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey =>
+  !isEmpty(factory.props[ATTR_KEY]) ? factory.props[ATTR_KEY] : null;
 
-export {
-  ComponentFactory,
-  createComponent,
-  detectIsComponentFactory,
-  getComponentFactoryKey,
-};
+export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey };

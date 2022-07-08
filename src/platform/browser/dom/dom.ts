@@ -21,7 +21,6 @@ import { fromHookUpdateHelper } from '@core/scope';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 
-
 const attrBlackList = [ATTR_KEY, ATTR_REF];
 
 function createElement(vNode: VirtualNode): DomElement {
@@ -95,10 +94,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
 }
 
 function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
-  const attrNames = new Set([
-    ...Object.keys(vNode.attrs),
-    ...Object.keys(nextVNode.attrs),
-  ]);
+  const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
 
   for (const attrName of attrNames) {
     const attrValue = getAttribute(vNode, attrName);
@@ -119,7 +115,6 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
           });
         }
       } else if (!isUndefined(nextAttrValue) && attrValue !== nextAttrValue && !attrBlackList.includes(attrName)) {
-
         if (nextVNode.name === 'input') {
           const input = element as HTMLInputElement;
           const inputType = input.type.toLowerCase();
@@ -140,7 +135,11 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
 }
 
 function updateDom(element: Element, instance: VirtualNode, nextInstance: VirtualNode) {
-  if (detectIsTextVirtualNode(instance) && detectIsTextVirtualNode(nextInstance) && instance.value !== nextInstance.value) {
+  if (
+    detectIsTextVirtualNode(instance) &&
+    detectIsTextVirtualNode(nextInstance) &&
+    instance.value !== nextInstance.value
+  ) {
     return (element.textContent = nextInstance.value);
   }
 
@@ -165,13 +164,13 @@ function mutateDom(fiber: Fiber<Element>) {
     const cachedNode = nodeCacheMap.get(parentNativeElement);
     const node = nextFiber.alternate
       ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
-          ? cachedNode
-          : cachedNode === null
-            ? null
-            : getNodeOnTheRight(fiber, parentNativeElement)
+        ? cachedNode
+        : cachedNode === null
+        ? null
+        : getNodeOnTheRight(fiber, parentNativeElement)
       : fromHookUpdate
-        ? getNodeOnTheRight(fiber, parentNativeElement)
-        : null;
+      ? getNodeOnTheRight(fiber, parentNativeElement)
+      : null;
 
     nodeCacheMap.set(parentNativeElement, node);
 
@@ -270,7 +269,7 @@ function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
     if (!nextFiber) return false;
     nextFiber = nextFiber.nextSibling || nextFiber.parent.nextSibling;
     if (nextFiber && nextFiber.parent === parentFiber) break;
-  } while (!nextFiber)
+  } while (!nextFiber);
 
   if (nextFiber.effectTag === EffectTag.UPDATE) {
     return true;
@@ -339,7 +338,12 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
       isDeepWalking = true;
       isReturn = false;
       nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent && nextFiber !== fiber && nextFiber.parent !== fiber && nextFiber.parent !== fiber.parent) {
+    } else if (
+      nextFiber.parent &&
+      nextFiber !== fiber &&
+      nextFiber.parent !== fiber &&
+      nextFiber.parent !== fiber.parent
+    ) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
@@ -379,8 +383,4 @@ function detectIsSvgElement(tagName) {
   return Boolean(tagMap[tagName]);
 }
 
-export {
-  createDomElement,
-  mutateDom,
-  resetNodeCache,
-};
+export { createDomElement, mutateDom, resetNodeCache };

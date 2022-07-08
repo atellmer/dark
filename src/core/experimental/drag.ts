@@ -1,4 +1,3 @@
-
 // const DraggableZone = createComponent(({ slot }) => {
 //   const style = `
 //     position: relative;
