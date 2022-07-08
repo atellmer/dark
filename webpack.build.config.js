@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const TerserPlugin = require('terser-webpack-plugin');
 
 const { alias } = require('./webpack.alias');
 
@@ -8,16 +7,6 @@ const library = 'Dark';
 const coreFileName = library.toLowerCase();
 const config = env => ({
   mode: 'production',
-  optimization: {
-    minimizer: [
-      new TerserPlugin({
-        cache: true,
-        parallel: true,
-        sourceMap: true,
-        terserOptions: {},
-      }),
-    ],
-  },
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -36,9 +25,6 @@ const config = env => ({
       {
         test: /\.(ts|tsx)$/,
         loader: 'ts-loader',
-        options: {
-          transpileOnly: true,
-        },
         exclude: /node_modules/,
       },
     ],
