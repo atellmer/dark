@@ -3,7 +3,6 @@ import { createComponent } from '../component';
 import { memo } from './memo';
 import { waitNextIdle } from '@test-utils';
 
-
 let host: HTMLElement = null;
 
 beforeEach(() => {
@@ -27,7 +26,7 @@ test('memo component works correctly by default', () => {
 });
 
 test('memo component works correctly with custom props comparer', () => {
-  type Props = {name: string; age: number};
+  type Props = { name: string; age: number };
   const mockFn = jest.fn();
   const App = createComponent<Props>(() => {
     mockFn();

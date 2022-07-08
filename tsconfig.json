@@ -1,32 +1,48 @@
 {
-	"compilerOptions": {
-		"target": "es5",
-		"moduleResolution": "node",
-		"module": "esnext",
-		"outDir": "./lib/",
-		"sourceMap": true,
-		"noImplicitAny": false,
-		"removeComments": false,
-		"downlevelIteration": true,
+  "compilerOptions": {
+    "target": "es5",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "outDir": "./lib/",
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "removeComments": false,
+    "downlevelIteration": true,
     "allowJs": true,
     "jsx": "react",
     "jsxFactory": "h",
-		"lib": [
-			"es6",
-			"es7",
-			"dom"
+    "lib": [
+      "es6",
+      "es7",
+      "dom"
     ],
     "baseUrl": ".",
     "paths": {
-      "@helpers": ["./src/helpers"],
-      "@core": ["./src/core/index"],
-      "@core/*": ["./src/core/*"],
-      "@platform": ["./src/platform/index"],
-      "@platform/*": ["./src/plarform/*"],
-      "@test-utils": ["./test/utils"]
+      "@helpers": [
+        "./src/helpers"
+      ],
+      "@core": [
+        "./src/core/index"
+      ],
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@platform": [
+        "./src/platform/index"
+      ],
+      "@platform/*": [
+        "./src/plarform/*"
+      ],
+      "@test-utils": [
+        "./test/utils"
+      ]
     }
-	},
-	"include": [
-		"./src/**/*"
-	]
+  },
+  "include": [
+    "./src/**/*",
+    "./app/**/*",
+    "./test/**/*",
+    "./*.js"
+  ]
 }

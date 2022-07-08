@@ -1,7 +1,6 @@
 import { Component, RefProps, ComponentFactory } from '../component';
-import { MutableRef } from './model';
+import type { MutableRef } from './model';
 import { isObject, isNull } from '@helpers';
-
 
 function forwardRef<P, R>(component: Component<P, R>) {
   type Props = P & RefProps<R>;

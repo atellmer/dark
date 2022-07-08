@@ -9,7 +9,6 @@ import {
 } from '../component';
 import { forwardRef, MutableRef } from '@core/ref';
 
-
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
@@ -24,26 +23,24 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   }
 
   return false;
-}
+};
 
 const detectIsMemo = (factory: unknown) => detectIsComponentFactory(factory) && factory.token === $$memo;
 
 function memo<T>(
   component: (props: T, ref?: MutableRef<unknown>) => ComponentFactory<T, unknown>,
-  shouldUpdate: ShouldUpdate<T & SlotProps> = defaultShouldUpdate): Component<T & StandardComponentProps> {
+  shouldUpdate: ShouldUpdate<T & SlotProps> = defaultShouldUpdate,
+): Component<T & StandardComponentProps> {
   return forwardRef(
     createComponent(
       (props: T & RefProps, ref) => {
         ref && (props.ref = ref);
 
         return component(props);
-      }, { token: $$memo, shouldUpdate },
+      },
+      { token: $$memo, shouldUpdate },
     ),
   );
 }
 
-export {
-  $$memo,
-  memo,
-  detectIsMemo,
-};
+export { $$memo, memo, detectIsMemo };

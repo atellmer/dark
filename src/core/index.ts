@@ -1,17 +1,15 @@
-export {
-  Text,
-  Comment,
-  View,
-} from './view';
+export { Text, Comment, View } from './view';
 export { createElement as h } from './element';
 export { createComponent } from './component';
 export { Fragment } from './fragment';
 export { memo } from './memo';
 export { createContext } from './context';
-export { MutableRef, forwardRef } from './ref';
+export type { MutableRef } from './ref';
+export { forwardRef } from './ref';
 export { useUpdate } from './use-update';
 export { useState } from './use-state';
-export { Reducer, useReducer } from './use-reducer';
+export type { Reducer } from './use-reducer';
+export { useReducer } from './use-reducer';
 export { useCallback } from './use-callback';
 export { useMemo } from './use-memo';
 export { useEffect } from './use-effect';

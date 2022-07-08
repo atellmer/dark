@@ -1,10 +1,8 @@
-
 import { componentFiberHelper, effectsHelper } from '../scope';
 import { Hook, HookValue } from '../fiber';
 import { isUndefined, isFunction } from '@helpers';
 import { detectIsDepsDifferent } from '../shared';
 import { Effect, EffectCleanup } from './model';
-
 
 const $$useEffect = Symbol('use-effect');
 
@@ -21,16 +19,13 @@ function useEffect(effect: Effect, deps?: Array<any>) {
       };
     };
 
-    effectsHelper.add(() => setImmediate(run));
+    effectsHelper.add(() => setTimeout(run));
   };
 
   if (isUndefined(values[idx])) {
     runEffect();
   } else {
-    const {
-      deps: prevDeps,
-      value: cleanup,
-    } = values[idx];
+    const { deps: prevDeps, value: cleanup } = values[idx];
     const isDepsDifferent = deps ? detectIsDepsDifferent(deps, prevDeps) : true;
 
     if (isDepsDifferent) {
@@ -54,7 +49,4 @@ function runEffectCleanup(hook: Hook<HookValue<EffectCleanup>>) {
   }
 }
 
-export {
-  useEffect,
-  runEffectCleanup,
-};
+export { useEffect, runEffectCleanup };

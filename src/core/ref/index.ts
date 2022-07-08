@@ -1,2 +1,2 @@
 export * from './ref';
-export { MutableRef } from './model';
+export type { MutableRef } from './model';

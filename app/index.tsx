@@ -28,7 +28,6 @@ import {
 import { DarkElementInstance } from '../src/core/shared';
 import { render, createPortal, DarkSyntheticEvent } from '../src/platform/browser';
 
-
 const domElement = document.getElementById('root');
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -36,7 +35,7 @@ const button = (props = {}) => View({ ...props, as: 'button' });
 
 const createMeasurer = () => {
   let startTime;
-  let lastMeasureName;
+  let lastMeasureName: string;
   const start = (name: string) => {
     startTime = performance.now();
     lastMeasureName = name;
@@ -45,7 +44,7 @@ const createMeasurer = () => {
     const last = lastMeasureName;
 
     if (lastMeasureName) {
-      setImmediate(() => {
+      setTimeout(() => {
         lastMeasureName = null;
         const stopTime = performance.now();
         const diff = stopTime - startTime;
@@ -65,28 +64,31 @@ const measurer = createMeasurer();
 
 let nextId = 0;
 const buildData = (count, prefix = '') => {
-  return Array(count).fill(0).map((_, idx) => ({
-    id: ++nextId,
-    name: `item: ${nextId} ${prefix}`,
-    select: false,
-  }))
-}
+  return Array(count)
+    .fill(0)
+    .map(() => ({
+      id: ++nextId,
+      name: `item: ${nextId} ${prefix}`,
+      select: false,
+    }));
+};
 
 const state = {
   list: [],
 };
 
 type HeaderProps = {
-  onCreate: Function;
-  onAdd: Function;
-  onUpdateAll: Function;
-  onSwap: Function;
-  onClear: Function;
-}
+  onCreate: () => void;
+  onAdd: () => void;
+  onUpdateAll: () => void;
+  onSwap: () => void;
+  onClear: () => void;
+};
 
 const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
   return div({
-    style: 'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
+    style:
+      'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
     slot: [
       button({
         slot: Text('create 10000 rows'),
@@ -115,11 +117,11 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
 const MemoHeader = memo<HeaderProps>(Header);
 
 type RowProps = {
-  id: number,
+  id: number;
   name: string;
   selected: boolean;
-  onRemove: Function;
-  onHighlight: Function;
+  onRemove: (id: number) => void;
+  onHighlight: (id: number) => void;
 };
 
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
@@ -140,22 +142,22 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   );
 });
 
-const MemoRow = memo<RowProps>(Row, (props, nextProps) =>
-  props.name !== nextProps.name ||
-  props.selected !== nextProps.selected,
+const MemoRow = memo<RowProps>(
+  Row,
+  (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected,
 );
 
 type ListProps = {
-  items: Array<{ id: number, name: string; select: boolean }>;
-  onRemove: Function;
-  onHighlight: Function;
+  items: Array<{ id: number; name: string; select: boolean }>;
+  onRemove: (id: number) => void;
+  onHighlight: (id: number) => void;
 };
 
 const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
     <table class='table'>
       <tbody>
-        {items.map((item) => {
+        {items.map(item => {
           return (
             <MemoRow
               key={item.id}
@@ -169,7 +171,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
         })}
       </tbody>
     </table>
-  )
+  );
 });
 
 const MemoList = memo(List);
@@ -194,14 +196,14 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const handleRemove = useCallback((id) => {
-    state.list = state.list.filter((z) => z.id !== id);
+  const handleRemove = useCallback(id => {
+    state.list = state.list.filter(x => x.id !== id);
     measurer.start('remove');
     forceUpdate();
     measurer.stop();
   }, []);
-  const handleHightlight = useCallback((id) => {
-    const idx = state.list.findIndex(z => z.id === id);
+  const handleHightlight = useCallback(id => {
+    const idx = state.list.findIndex(x => x.id === id);
     state.list[idx].select = !state.list[idx].select;
     state.list = [...state.list];
     measurer.start('highlight');
@@ -233,11 +235,7 @@ const Bench = createComponent(() => {
       onSwap={handleSwap}
       onClear={handleClear}
     />,
-    <MemoList
-      items={state.list}
-      onRemove={handleRemove}
-      onHighlight={handleHightlight}
-    />,
+    <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />,
   ];
 });
 

@@ -1,2 +1,2 @@
 export * from './use-reducer';
-export { Reducer } from './model';
+export type { Reducer } from './model';
