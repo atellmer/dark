@@ -1,8 +1,9 @@
 import { h, createComponent, useState, useEffect } from '../src/core';
+import { TagVirtualNodeFactory } from '../src/core/view';
 import { render } from '../src/platform/browser';
 
 type TimerProps = {
-  slot?: (value: number) => any;
+  slot?: (value: number) => TagVirtualNodeFactory;
 };
 
 const Timer = createComponent<TimerProps>(({ slot }) => {
@@ -21,8 +22,8 @@ const Timer = createComponent<TimerProps>(({ slot }) => {
 
 const App = createComponent(() => {
   return [
-    <div>Timer component is just logic without view...</div>,
-    <Timer>{seconds => <div>timer: {seconds}</div>}</Timer>,
+    <div>Timer component is just logic component without view...</div>,
+    <Timer>{(seconds: number) => <div>timer: {seconds}</div>}</Timer>,
   ];
 });
 

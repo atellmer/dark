@@ -1,5 +1,5 @@
-import { h, View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '../../src/core';
-import { render } from '../../src/platform/browser';
+import { View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '../../src/core';
+import { render, DarkSyntheticEvent } from '../../src/platform/browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -22,15 +22,19 @@ class TodoTask {
 type TextFieldProps = {
   value: string;
   fulllWidth?: boolean;
-  onEnter?: (e: KeyboardEvent) => void;
-  onChange: (e: InputEvent, value: string) => void;
+  onEnter?: (e: DarkSyntheticEvent<KeyboardEvent, HTMLInputElement>) => void;
+  onChange: (e: DarkSyntheticEvent<InputEvent, HTMLInputElement>, value: string) => void;
 };
 
 const TextField = forwardRef(
   createComponent<TextFieldProps, HTMLInputElement>((props, ref) => {
     const { value, fulllWidth, onEnter, onChange } = props;
-    const handleChange = (e: InputEvent) => onChange(e, (e.target as HTMLInputElement).value);
-    const handleKeyDown = (e: KeyboardEvent) => onEnter && e.key === 'Enter' && onEnter(e);
+    const handleChange = (e: DarkSyntheticEvent<InputEvent, HTMLInputElement>) => {
+      onChange(e, e.target.value);
+    };
+    const handleKeyDown = (e: DarkSyntheticEvent<KeyboardEvent, HTMLInputElement>) => {
+      onEnter && e.sourceEvent.key === 'Enter' && onEnter(e);
+    };
 
     return input({
       ref,
@@ -77,7 +81,7 @@ const TaskItem = createComponent<TaskItemProps>(props => {
   const handleRemove = () => onRemove(task.id);
 
   return div({
-    style: 'display: flex; justify-content: space-between; border-bottom: 1px solid yellow; padding: 6px;',
+    style: 'display: flex; justify-content: space-between; border-bottom: 1px solid #666; padding: 6px;',
     slot: [
       div({
         style: 'display: flex;',
