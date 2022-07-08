@@ -1,7 +1,7 @@
 import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '../../src/core';
 import { render } from '../../src/platform/browser';
 
-const domElement = document.getElementById('app');
+const domElement = document.getElementById('root');
 
 const targetSize = 25;
 
@@ -122,4 +122,4 @@ function run() {
   requestAnimationFrame(update);
 }
 
-export { run };
+run();

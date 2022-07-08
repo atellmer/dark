@@ -1,5 +1,5 @@
-import { h, View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '../src/core';
-import { render } from '../src/platform/browser';
+import { h, View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '../../src/core';
+import { render } from '../../src/platform/browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -57,7 +57,7 @@ const Checkbox = createComponent<CheckboxProps>(props => {
       input({
         style: 'margin-right: 10px',
         type: 'checkbox',
-        checked: value || undefined,
+        checked: value,
         onInput: handleInput,
       }),
       Text(labelText),

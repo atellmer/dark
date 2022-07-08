@@ -88,6 +88,13 @@ function addAttributes(element: Element, vNode: VirtualNode) {
         });
       }
     } else if (!isUndefined(attrValue) && !attrBlackList.includes(attrName)) {
+      upgradeInputAttributes({
+        tagName: vNode.name,
+        value: attrValue,
+        attrName,
+        element,
+      });
+
       element.setAttribute(attrName, attrValue);
     }
   }
@@ -115,16 +122,12 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
           });
         }
       } else if (!isUndefined(nextAttrValue) && attrValue !== nextAttrValue && !attrBlackList.includes(attrName)) {
-        if (nextVNode.name === 'input') {
-          const input = element as HTMLInputElement;
-          const inputType = input.type.toLowerCase();
-
-          if (inputType === 'text' && attrName === 'value') {
-            input.value = nextAttrValue;
-          } else if (inputType === 'checkbox' && attrName === 'checked') {
-            input.checked = nextAttrValue;
-          }
-        }
+        upgradeInputAttributes({
+          tagName: nextVNode.name,
+          value: nextAttrValue,
+          attrName,
+          element,
+        });
 
         element.setAttribute(attrName, nextAttrValue);
       }
@@ -132,6 +135,40 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
       element.removeAttribute(attrName);
     }
   }
+}
+
+type UpdareInputAttributesOptions = {
+  tagName: string;
+  element: Element;
+  attrName: string;
+  value: string | boolean;
+};
+
+function upgradeInputAttributes(options: UpdareInputAttributesOptions) {
+  const { tagName, element, attrName, value } = options;
+  const map = {
+    input: () => {
+      const attrsMap = {
+        value: true,
+        checked: true,
+      };
+
+      if (attrsMap[attrName]) {
+        element[attrName] = value;
+      }
+    },
+    option: () => {
+      const attrsMap = {
+        selected: true,
+      };
+
+      if (attrsMap[attrName]) {
+        element[attrName] = value;
+      }
+    },
+  };
+
+  map[tagName] && map[tagName]();
 }
 
 function updateDom(element: Element, instance: VirtualNode, nextInstance: VirtualNode) {

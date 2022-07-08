@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const { alias } = require('./webpack.alias');
+const { alias } = require('../../webpack.alias');
 
 const config = {
   mode: 'development',
@@ -11,13 +11,13 @@ const config = {
     alias,
   },
   devtool: 'source-map',
-  entry: path.resolve(__dirname, 'examples/bench/index.tsx'),
+  entry: path.resolve(__dirname, './index.tsx'),
   output: {
-    path: path.resolve(__dirname, 'examples/bench'),
+    path: path.resolve(__dirname, './'),
     filename: 'build.js',
   },
   devServer: {
-    contentBase: path.join(__dirname, 'examples/bench'),
+    contentBase: path.join(__dirname, './'),
     compress: false,
     port: 9000,
   },
