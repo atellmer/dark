@@ -75,16 +75,9 @@ function setAttribute(vNode: VirtualNode, name: string, value: any) {
   detectIsTagVirtualNode(vNode) && (vNode.attrs[name] = value);
 }
 
-function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNodeFactory {
-  if (typeof source === 'string') {
-    const factory = () => new TextVirtualNode(source);
-
-    factory[$$virtualNode] = true;
-
-    return factory;
-  }
-
-  const text = detectIsTextVirtualNode(source) ? source.value : '';
+function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNode {
+  const text =
+    typeof source === 'string' ? new TextVirtualNode(source) : detectIsTextVirtualNode(source) ? source.value : '';
 
   return text;
 }

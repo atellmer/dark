@@ -41,10 +41,6 @@ const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
 const MemoDot = memo(Dot, (p, n) => p.x !== n.x || p.y !== n.y || p.size !== n.size || Text(p.slot) !== Text(n.slot));
 
 const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(({ x, y, s, slot }) => {
-  if (s === 1000) {
-    console.log('render');
-  }
-
   if (s <= targetSize) {
     return (
       <MemoDot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
