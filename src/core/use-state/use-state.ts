@@ -1,8 +1,8 @@
-import { getRootId, effectStoreHelper, componentFiberHelper } from '@core/scope';
-import { useUpdate } from '@core/use-update';
-import { useMemo } from '@core/use-memo';
-import { useCallback } from '@core/use-callback';
-import { detectIsUndefined, detectIsFunction } from '@core/internal/helpers';
+import { getRootId, effectStoreHelper, componentFiberHelper } from '@dark/core/scope';
+import { useUpdate } from '@dark/core/use-update';
+import { useMemo } from '@dark/core/use-memo';
+import { useCallback } from '@dark/core/use-callback';
+import { detectIsUndefined, detectIsFunction } from '@dark/core/internal/helpers';
 
 type Value<T> = T | ((prevValue: T) => T);
 type Scope = {
@@ -14,7 +14,7 @@ type Scope = {
 function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] {
   const rootId = getRootId();
   const fiber = componentFiberHelper.get();
-  const [update] = useUpdate();
+  const update = useUpdate();
   const scope: Scope = useMemo(
     () => ({
       idx: fiber.hook.idx,

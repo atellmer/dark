@@ -1,7 +1,7 @@
 /** @jsx h */
 import { waitNextIdle, dom } from '@test-utils';
-import { createElement as h } from '@core/element/element';
-import { createComponent } from '@core/component/component';
+import { createElement as h } from '@dark/core/element/element';
+import { createComponent } from '@dark/core/component/component';
 import { render } from '../render';
 import { createPortal } from './portal';
 

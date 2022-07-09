@@ -1,6 +1,5 @@
 import { createComponent, detectIsComponentFactory, getComponentFactoryKey } from './component';
-import { View, detectIsVirtualNode } from '../view/view';
-import { VirtualNodeFactory } from '../view';
+import { View, detectIsVirtualNode, VirtualNodeFactory } from '../view';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 

@@ -1,3 +1,4 @@
+export type { TagVirtualNodeFactory, TextVirtualNodeFactory, CommentVirtualNodeFactory } from './view';
 export { Text, Comment, View } from './view';
 export { createElement as h } from './element';
 export { createComponent } from './component';

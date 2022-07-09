@@ -1,16 +1,16 @@
-import { Fiber } from '@core/fiber';
-import { Context, ContextProviderValue } from '@core/context/model';
-import { useEffect } from '@core/use-effect';
-import { useMemo } from '@core/use-memo';
-import { componentFiberHelper } from '@core/scope';
-import { useUpdate } from '@core/use-update';
+import { useEffect } from '@dark/core/use-effect';
+import { useMemo } from '@dark/core/use-memo';
+import { componentFiberHelper } from '@dark/core/scope';
+import { useUpdate } from '@dark/core/use-update';
+import type { Fiber } from '@dark/core/fiber';
+import type { Context, ContextProviderValue } from '@dark/core/context/model';
 
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;
   const fiber = componentFiberHelper.get();
   const provider = getProvider<T>(context, fiber);
   const value = provider ? provider.value : defaultValue;
-  const [update] = useUpdate();
+  const update = useUpdate();
   const scope = useMemo(() => ({ prevValue: value, update }), []);
   const hasProvider = Boolean(provider);
 

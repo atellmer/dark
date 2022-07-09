@@ -1,7 +1,7 @@
-import { workLoop } from '@core/fiber';
-import { nextUnitOfWorkHelper } from '@core/scope';
+import { workLoop } from '@dark/core/fiber';
+import { nextUnitOfWorkHelper } from '@dark/core/scope';
 import { Callback, TaskPriority } from './model';
-import { getTime } from '@core/internal/helpers';
+import { getTime } from '@dark/core/internal/helpers';
 
 const queue: Array<Task> = [];
 const yeildInterval = 5;

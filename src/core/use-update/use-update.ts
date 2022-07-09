@@ -1,6 +1,6 @@
-import { getRootId, componentFiberHelper } from '@core/scope';
-import { createUpdateCallback } from '@core/fiber';
-import { platform } from '@core/global';
+import { getRootId, componentFiberHelper } from '@dark/core/scope';
+import { createUpdateCallback } from '@dark/core/fiber';
+import { platform } from '@dark/core/global';
 
 function useUpdate() {
   const rootId = getRootId();
@@ -11,7 +11,7 @@ function useUpdate() {
     platform.scheduleCallback(callback);
   };
 
-  return [update];
+  return update;
 }
 
 export { useUpdate };

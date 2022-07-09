@@ -1,5 +1,5 @@
-import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '../../src/core';
-import { render } from '../../src/platform/browser';
+import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '@dark/core';
+import { render } from '@dark/platform-browser';
 
 const domElement = document.getElementById('root');
 
@@ -82,7 +82,7 @@ const App = createComponent<AppProps>(props => {
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;
 
   useEffect(() => {
-    setInterval(tick, 1000);
+    setInterval(() => tick(), 1000);
   }, []);
 
   const tick = useCallback(() => setSeconds(seconds => (seconds % 10) + 1), []);

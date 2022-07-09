@@ -1,5 +1,5 @@
-import { useMemo } from '@core/use-memo';
-import { MutableRef } from '../ref/model';
+import { useMemo } from '@dark/core/use-memo';
+import type { MutableRef } from '@dark/core/ref/model';
 
 function useRef<T>(initialValue: T = null): MutableRef<T> {
   const ref = useMemo(() => ({ current: initialValue }), []) as MutableRef<T>;

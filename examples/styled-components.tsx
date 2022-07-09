@@ -1,8 +1,5 @@
-import { createComponent } from '../src/core/component';
-import { View } from '../src/core/view';
-import { useMemo } from '../src/core/use-memo';
-import { useEffect } from '../src/core/use-effect';
-import { render } from '../src/platform/browser';
+import { createComponent, View, useMemo, useEffect } from '@dark/core';
+import { render } from '@dark/platform-browser';
 
 const div = props => View({ ...props, as: 'div' });
 let staticClassNameId = 0;
@@ -72,7 +69,7 @@ type DivStyledProps = {
   appearance: 'red' | 'yellow' | 'pink';
 };
 
-const DivStyled = styled.div<DivStyledProps>`
+const MyPrettyDiv = styled.div<DivStyledProps>`
   font-size: 60px;
 
   ${(p: DivStyledProps) =>
@@ -94,4 +91,4 @@ const DivStyled = styled.div<DivStyledProps>`
   `}
 `;
 
-render(DivStyled(), document.getElementById('root'));
+render(MyPrettyDiv({ appearance: 'pink' }), document.getElementById('root'));

@@ -1,9 +1,9 @@
-import { createComponent } from '@core/component';
-import { Context, ContexProviderProps } from './model';
-import { useEffect } from '@core/use-effect';
-import { componentFiberHelper } from '@core/scope';
-import { useContext } from '@core/use-context';
-import { detectIsFunction } from '@core/internal/helpers';
+import { createComponent } from '@dark/core/component';
+import { useEffect } from '@dark/core/use-effect';
+import { componentFiberHelper } from '@dark/core/scope';
+import { useContext } from '@dark/core/use-context';
+import { detectIsFunction } from '@dark/core/internal/helpers';
+import type { Context, ContexProviderProps } from './model';
 
 function createContext<T>(defaultValue: T): Context<T> {
   let displayName = 'Context';

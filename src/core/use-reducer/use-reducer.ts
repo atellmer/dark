@@ -1,7 +1,7 @@
-import { useState } from '@core/use-state';
-import { useCallback } from '@core/use-callback';
-import { useMemo } from '@core/use-memo';
-import { detectIsFunction } from '@core/internal/helpers';
+import { useState } from '@dark/core/use-state';
+import { useCallback } from '@dark/core/use-callback';
+import { useMemo } from '@dark/core/use-memo';
+import { detectIsFunction } from '@dark/core/internal/helpers';
 import type { Reducer, Dispatch, ReducerAction, ReducerState } from './model';
 
 function useReducer<R extends Reducer>(

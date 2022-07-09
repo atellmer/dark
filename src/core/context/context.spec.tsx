@@ -1,10 +1,10 @@
 /** @jsx createElement */
-import { createComponent } from '@core/component/component';
-import { createElement } from '@core/element/element';
-import { useState } from '../use-state';
+import { createComponent } from '@dark/core/component/component';
+import { createElement } from '@dark/core/element/element';
+import { useState } from '@dark/core/use-state';
+import { render } from '@dark/platform-browser/render';
+import { dom, waitNextIdle } from '@test-utils';
 import { createContext } from './context';
-import { render } from '../../platform/browser/render';
-import { dom, waitNextIdle } from '../../../test/utils';
 
 let host: HTMLElement = null;
 

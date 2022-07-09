@@ -1,4 +1,4 @@
-import { NestedArray } from '@core/shared';
+import type { NestedArray } from '@dark/core/shared';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
 const detectIsUndefined = (o: any) => typeof o === 'undefined';

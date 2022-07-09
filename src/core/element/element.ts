@@ -1,5 +1,6 @@
-import { detectIsNumber, detectIsString, detectIsFunction } from '@core/internal/helpers';
-import { View, Text, TagVirtualNodeFactory } from '@core/view';
+import { detectIsNumber, detectIsString, detectIsFunction } from '@dark/core/internal/helpers';
+import { View, Text } from '@dark/core/view';
+import type { TagVirtualNodeFactory } from '@dark/core/view';
 
 function getChildren(children: Array<any>) {
   children = children.map(x => (detectIsString(x) || detectIsNumber(x) ? Text(x.toString()) : x));

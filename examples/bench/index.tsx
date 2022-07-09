@@ -1,5 +1,5 @@
-import { h, View, Text, createComponent, memo, useCallback } from '../../src/core';
-import { render } from '../../src/platform/browser';
+import { h, View, Text, createComponent, memo, useCallback } from '@dark/core';
+import { render } from '@dark/platform-browser';
 
 const domElement = document.getElementById('root');
 

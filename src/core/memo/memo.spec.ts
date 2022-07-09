@@ -1,7 +1,7 @@
-import { render } from '../../platform/browser/render';
-import { createComponent } from '../component';
-import { memo } from './memo';
+import { createComponent } from '@dark/core/component';
+import { render } from '@dark/platform-browser/render';
 import { waitNextIdle } from '@test-utils';
+import { memo } from './memo';
 
 let host: HTMLElement = null;
 

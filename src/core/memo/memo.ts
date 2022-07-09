@@ -1,13 +1,7 @@
-import {
-  Component,
-  ComponentFactory,
-  StandardComponentProps,
-  RefProps,
-  SlotProps,
-  createComponent,
-  detectIsComponentFactory,
-} from '../component';
-import { forwardRef, MutableRef } from '@core/ref';
+import { createComponent, detectIsComponentFactory } from '@dark/core/component';
+import { forwardRef } from '@dark/core/ref';
+import type { Component, ComponentFactory, StandardComponentProps, RefProps, SlotProps } from '@dark/core/component';
+import type { MutableRef } from '@dark/core/ref';
 
 type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 

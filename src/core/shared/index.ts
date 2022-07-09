@@ -1,4 +1,4 @@
-import { detectIsUndefined } from '@core/internal/helpers';
+import { detectIsUndefined } from '@dark/core/internal/helpers';
 
 function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {
   if (!detectIsUndefined(deps) && !detectIsUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {

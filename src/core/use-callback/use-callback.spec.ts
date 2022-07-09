@@ -1,7 +1,7 @@
-import { render } from '../../platform/browser/render';
-import { createComponent } from '../component';
-import { useCallback } from './use-callback';
+import { createComponent } from '@dark/core/component';
+import { render } from '@dark/platform-browser/render';
 import { waitNextIdle } from '@test-utils';
+import { useCallback } from './use-callback';
 
 let host: HTMLElement = null;
 

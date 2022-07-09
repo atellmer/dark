@@ -1,8 +1,8 @@
-import { Fiber } from '@core/fiber';
-import { DarkElement } from '@core/shared/model';
-import { createComponent, detectIsComponentFactory, ComponentFactory } from '@core/component';
-import { error } from '@core/internal/helpers';
-import { useMemo } from '@core';
+import { Fiber } from '@dark/core/fiber';
+import { DarkElement } from '@dark/core/shared/model';
+import { createComponent, detectIsComponentFactory, ComponentFactory } from '@dark/core/component';
+import { error } from '@dark/core/internal/helpers';
+import { useMemo } from '@dark/core';
 
 const $$portal = Symbol('portal');
 

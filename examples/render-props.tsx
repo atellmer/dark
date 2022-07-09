@@ -1,6 +1,5 @@
-import { h, createComponent, useState, useEffect } from '../src/core';
-import { TagVirtualNodeFactory } from '../src/core/view';
-import { render } from '../src/platform/browser';
+import { h, createComponent, useState, useEffect, TagVirtualNodeFactory } from '@dark/core';
+import { render } from '@dark/platform-browser';
 
 type TimerProps = {
   slot?: (value: number) => TagVirtualNodeFactory;

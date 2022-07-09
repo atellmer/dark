@@ -1,7 +1,7 @@
-import { componentFiberHelper } from '@core/scope';
-import { useEffect } from '@core/use-effect';
-import { useUpdate } from '@core/use-update';
-import { useMemo } from '@core/use-memo';
+import { componentFiberHelper } from '@dark/core/scope';
+import { useEffect } from '@dark/core/use-effect';
+import { useUpdate } from '@dark/core/use-update';
+import { useMemo } from '@dark/core/use-memo';
 
 type ErrorScope = {
   error: Error;
@@ -9,7 +9,7 @@ type ErrorScope = {
 
 function useError(): Error | null {
   const fiber = componentFiberHelper.get();
-  const [update] = useUpdate();
+  const update = useUpdate();
   const scope: ErrorScope = useMemo(() => ({ error: null }), []);
 
   fiber.catchException = (error: Error) => {

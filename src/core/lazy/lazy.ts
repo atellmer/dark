@@ -1,9 +1,9 @@
-import { createComponent, Component, detectIsComponentFactory } from '../component';
-import { useState } from '../use-state';
-import { useEffect } from '../use-effect';
-import { forwardRef } from '../ref';
-import { SuspenseContext } from '../suspense';
-import { useContext } from '../use-context';
+import { createComponent, Component, detectIsComponentFactory } from '@dark/core/component';
+import { useState } from '@dark/core/use-state';
+import { useEffect } from '@dark/core/use-effect';
+import { forwardRef } from '@dark/core/ref';
+import { SuspenseContext } from '@dark/core/suspense';
+import { useContext } from '@dark/core/use-context';
 
 const $$lazy = Symbol('lazy');
 

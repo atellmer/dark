@@ -1,8 +1,8 @@
-import { Fiber, EffectTag } from '@core/fiber';
-import { DarkElement } from '@core/shared/model';
-import { platform } from '@core/global';
-import { flatten, detectIsUndefined } from '@core/internal/helpers';
-import { TagVirtualNode, VirtualNodeFactory } from '@core/view';
+import { Fiber, EffectTag } from '@dark/core/fiber';
+import { DarkElement } from '@dark/core/shared/model';
+import { platform } from '@dark/core/global';
+import { flatten, detectIsUndefined } from '@dark/core/internal/helpers';
+import { TagVirtualNode, VirtualNodeFactory } from '@dark/core/view';
 import {
   effectStoreHelper,
   wipRootHelper,
@@ -11,10 +11,10 @@ import {
   getRootId,
   deletionsHelper,
   fiberMountHelper,
-} from '@core/scope';
+} from '@dark/core/scope';
 import { createDomElement, mutateDom, resetNodeCache } from '../dom';
-import { ComponentFactory } from '@core/component';
-import { ROOT } from '@core/constants';
+import { ComponentFactory } from '@dark/core/component';
+import { ROOT } from '@dark/core/constants';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost, TaskPriority } from '../scheduling';
 

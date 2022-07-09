@@ -1,8 +1,8 @@
-import { componentFiberHelper, effectsHelper } from '../scope';
-import { Hook, HookValue } from '../fiber';
-import { detectIsUndefined, detectIsFunction } from '@core/internal/helpers';
-import { detectIsDepsDifferent } from '../shared';
-import { Effect, EffectCleanup } from './model';
+import { componentFiberHelper, effectsHelper } from '@dark/core/scope';
+import { Hook, HookValue } from '@dark/core/fiber';
+import { detectIsUndefined, detectIsFunction } from '@dark/core/internal/helpers';
+import { detectIsDepsDifferent } from '@dark/core/shared';
+import type { Effect, EffectCleanup } from './model';
 
 const $$useEffect = Symbol('use-effect');
 

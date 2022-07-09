@@ -1,5 +1,5 @@
-import { h, createComponent, useState, useRef, useEffect } from '../src/core';
-import { render, SyntheticEvent } from '../src/platform/browser';
+import { h, createComponent, useState, useRef, useEffect } from '@dark/core';
+import { render, SyntheticEvent } from '@dark/platform-browser';
 
 const DraggableZone = createComponent(({ slot }) => {
   const style = `

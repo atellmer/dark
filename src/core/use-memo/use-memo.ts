@@ -1,9 +1,9 @@
-import { detectIsComponentFactory, createComponent } from '@core/component';
-import { detectIsTagVirtualNode } from '@core/view';
-import { componentFiberHelper } from '@core/scope';
-import { detectIsUndefined, detectIsArray } from '@core/internal/helpers';
-import { detectIsDepsDifferent } from '@core/shared';
-import { $$memo } from '@core/memo';
+import { detectIsComponentFactory, createComponent } from '@dark/core/component';
+import { detectIsTagVirtualNode } from '@dark/core/view';
+import { componentFiberHelper } from '@dark/core/scope';
+import { detectIsUndefined, detectIsArray } from '@dark/core/internal/helpers';
+import { detectIsDepsDifferent } from '@dark/core/shared';
+import { $$memo } from '@dark/core/memo';
 
 const Memo = createComponent(({ slot }) => slot, { token: $$memo });
 

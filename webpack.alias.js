@@ -1,9 +1,8 @@
 const { resolve } = require('path');
 
 const alias = {
-  '@helpers': resolve(__dirname, './src/helpers'),
-  '@core': resolve(__dirname, './src/core'),
-  '@platform': resolve(__dirname, './src/platform'),
+  '@dark/core': resolve(__dirname, './src/core'),
+  '@dark/platform-browser': resolve(__dirname, './src/platform/browser'),
 };
 
 module.exports = {

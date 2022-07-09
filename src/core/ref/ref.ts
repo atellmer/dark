@@ -1,6 +1,6 @@
-import { Component, RefProps, ComponentFactory } from '../component';
+import { detectIsObject, detectIsNull } from '@dark/core/internal/helpers';
+import type { Component, RefProps, ComponentFactory } from '@dark/core/component';
 import type { MutableRef } from './model';
-import { detectIsObject, detectIsNull } from '@core/internal/helpers';
 
 function forwardRef<P, R>(component: Component<P, R>) {
   type Props = P & RefProps<R>;

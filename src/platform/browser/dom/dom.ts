@@ -1,6 +1,6 @@
 import { DomElement } from './model';
-import { Fiber, EffectTag } from '@core/fiber';
-import { detectIsFunction, detectIsUndefined } from '@core/internal/helpers';
+import { Fiber, EffectTag } from '@dark/core/fiber';
+import { detectIsFunction, detectIsUndefined } from '@dark/core/internal/helpers';
 import {
   NodeType,
   VirtualNode,
@@ -12,12 +12,12 @@ import {
   detectIsTextVirtualNode,
   getAttribute,
   detectIsCommentVirtualNode,
-} from '@core/view';
-import { detectIsComponentFactory } from '@core/component';
-import { runEffectCleanup } from '@core/use-effect';
-import { MutableRef, detectIsRef } from '@core/ref';
-import { ATTR_KEY, ATTR_REF, EMPTY_NODE } from '@core/constants';
-import { fromHookUpdateHelper } from '@core/scope';
+} from '@dark/core/view';
+import { detectIsComponentFactory } from '@dark/core/component';
+import { runEffectCleanup } from '@dark/core/use-effect';
+import { MutableRef, detectIsRef } from '@dark/core/ref';
+import { ATTR_KEY, ATTR_REF, EMPTY_NODE } from '@dark/core/constants';
+import { fromHookUpdateHelper } from '@dark/core/scope';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 

@@ -19,20 +19,17 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@helpers": [
-        "./src/helpers"
-      ],
-      "@core": [
+      "@dark/core": [
         "./src/core/index"
       ],
-      "@core/*": [
+      "@dark/core/*": [
         "./src/core/*"
       ],
-      "@platform": [
-        "./src/platform/index"
+      "@dark/platform-browser": [
+        "./src/platform/browser/index"
       ],
-      "@platform/*": [
-        "./src/plarform/*"
+      "@dark/platform-browser/*": [
+        "./src/platform/browser/*"
       ],
       "@test-utils": [
         "./test/utils"

@@ -1,5 +1,5 @@
-import { createComponent, detectIsComponentFactory } from '@core/component';
-import { KeyProps } from '../component';
+import { createComponent, detectIsComponentFactory } from '@dark/core/component';
+import type { KeyProps } from '@dark/core/component';
 
 const $$fragment = Symbol('fragment');
 

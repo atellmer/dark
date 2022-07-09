@@ -1,8 +1,8 @@
-import { DarkElementKey, DarkElementInstance } from '@core/shared/model';
-import { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './model';
-import { ATTR_KEY } from '@core/constants';
-import { MutableRef } from '../ref';
-import { error, detectIsEmpty } from '@core/internal/helpers';
+import { ATTR_KEY } from '@dark/core/constants';
+import { error, detectIsEmpty } from '@dark/core/internal/helpers';
+import type { DarkElementKey, DarkElementInstance } from '@dark/core/shared/model';
+import type { MutableRef } from '@dark/core/ref';
+import type { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './model';
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {

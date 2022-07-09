@@ -1,6 +1,6 @@
-import { componentFiberHelper } from '@core/scope';
-import { detectIsUndefined } from '@core/internal/helpers';
-import { detectIsDepsDifferent } from '../shared';
+import { componentFiberHelper } from '@dark/core/scope';
+import { detectIsUndefined } from '@dark/core/internal/helpers';
+import { detectIsDepsDifferent } from '@dark/core/shared';
 
 function useCallback<T = Function>(callback: T, deps: Array<any>): T {
   const fiber = componentFiberHelper.get();

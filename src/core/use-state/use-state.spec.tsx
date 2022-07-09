@@ -1,11 +1,9 @@
 /** @jsx createElement */
-import { requestIdleCallback } from '@shopify/jest-dom-mocks';
-
-import { createComponent } from '@core/component/component';
-import { createElement } from '@core/element/element';
+import { createComponent } from '@dark/core/component/component';
+import { createElement } from '@dark/core/element/element';
+import { render } from '@dark/platform-browser/render';
+import { dom, waitNextIdle } from '@test-utils';
 import { useState } from './use-state';
-import { render } from '../../platform/browser/render';
-import { dom, waitNextIdle } from '../../../test/utils';
 
 let host: HTMLElement = null;
 

@@ -80,9 +80,8 @@ module.exports = {
 
   // A map from regular expressions to module names that allow to stub out resources with a single module
   moduleNameMapper: {
-    '^@helpers(.*)$': '<rootDir>/src/helpers$1',
-    '^@core(.*)$': '<rootDir>/src/core$1',
-    '^@platform(.*)$': '<rootDir>/src/platform$1',
+    '^@dark/core(.*)$': '<rootDir>/src/core$1',
+    '^@dark/platform-browser(.*)$': '<rootDir>/src/platform/browser$1',
     '^@test-utils$': '<rootDir>/test/utils',
   },
 

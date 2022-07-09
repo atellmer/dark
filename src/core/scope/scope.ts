@@ -1,4 +1,4 @@
-import { Fiber } from '../fiber';
+import type { Fiber } from '@dark/core/fiber';
 
 class Store {
   public wipRoot: Fiber = null;
