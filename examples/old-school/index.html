@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Old School</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      color: black;
+      background-color: #222;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="portal"></div>
+  <!-- deps start -->
+  <script src='./js/core.prod.umd.min.js'></script>
+  <script src='./js/browser.prod.umd.min.js'></script>
+  <!-- deps end -->
+  <script>
+    // export from global variables
+    const { View, Text, createComponent, useState, useEffect } = DarkCore;
+    const { render, createPortal } = DarkPlatformBrowser;
+
+    // start coding...
+    const div = props => View({ ...props, as: 'div' });
+
+    // Timer component
+    const Timer = createComponent(({ slot }) => {
+    const [seconds, setSeconds] = useState(0);
+
+    useEffect(() => {
+      const timerId = setInterval(() => {
+        setSeconds(x => x + 1);
+      }, 1000);
+
+      return () => clearInterval(timerId);
+    }, []);
+
+    return slot(seconds);
+  });
+
+  // App component
+  const App = createComponent(() => {
+    return [
+      div({
+        slot: Text('Timer component...')
+      }),
+      Timer({
+        slot: seconds => div({
+          slot: [
+            Text(`timer: ${seconds}`),
+            createPortal(Text(`hello from portal! ${seconds}`), document.getElementById('portal')),
+          ]
+        })
+      })
+    ];
+  });
+
+  // render app
+  render(App(), document.getElementById('root'));
+  </script>
+</body>
+</html>
