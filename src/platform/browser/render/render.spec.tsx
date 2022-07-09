@@ -1,9 +1,9 @@
 /** @jsx createElement */
-import { render } from './render';
+import { dom, waitNextIdle, createTestHostNode } from '@test-utils';
 import { createComponent } from '@dark/core/component/component';
 import { View, Text, Comment } from '@dark/core/view/view';
 import { createElement } from '@dark/core/element/element';
-import { dom, waitNextIdle, createTestHostNode } from '@test-utils';
+import { render } from './render';
 
 type Item = { id: number; name: string };
 

@@ -2,24 +2,13 @@
 import { waitNextIdle, dom } from '@test-utils';
 import { createElement as h } from '@dark/core/element/element';
 import { createComponent } from '@dark/core/component/component';
-import { render } from '../render';
+import { render } from '@dark/platform-browser/render';
 import { createPortal } from './portal';
 
 let host: HTMLElement = null;
 let portal: HTMLElement = null;
-let nextId = 0;
-
-const generateItems = (count: number) => {
-  return Array(count)
-    .fill(0)
-    .map(x => ({
-      id: ++nextId,
-      name: nextId.toString(),
-    }));
-};
 
 beforeEach(() => {
-  nextId = 0;
   host = document.createElement('div');
   portal = document.createElement('div');
 });

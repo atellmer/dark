@@ -1,12 +1,11 @@
-import { DomElement } from './model';
-import { Fiber, EffectTag } from '@dark/core/fiber';
 import { detectIsFunction, detectIsUndefined } from '@dark/core/internal/helpers';
+import { EffectTag, type Fiber } from '@dark/core/fiber';
 import {
+  type VirtualNode,
+  type TagVirtualNode,
+  type TextVirtualNode,
+  type CommentVirtualNode,
   NodeType,
-  VirtualNode,
-  TagVirtualNode,
-  TextVirtualNode,
-  CommentVirtualNode,
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
@@ -15,11 +14,12 @@ import {
 } from '@dark/core/view';
 import { detectIsComponentFactory } from '@dark/core/component';
 import { runEffectCleanup } from '@dark/core/use-effect';
-import { MutableRef, detectIsRef } from '@dark/core/ref';
+import { detectIsRef, type MutableRef } from '@dark/core/ref';
 import { ATTR_KEY, ATTR_REF, EMPTY_NODE } from '@dark/core/constants';
 import { fromHookUpdateHelper } from '@dark/core/scope';
-import { detectIsPortal, getPortalContainer } from '../portal';
-import { delegateEvent, detectIsEvent, getEventName } from '../events';
+import { detectIsPortal, getPortalContainer } from '@dark/platform-browser/portal';
+import { delegateEvent, detectIsEvent, getEventName } from '@dark/platform-browser/events';
+import type { DomElement } from './model';
 
 const attrBlackList = [ATTR_KEY, ATTR_REF];
 

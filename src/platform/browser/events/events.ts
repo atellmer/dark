@@ -1,5 +1,5 @@
-import { eventsHelper } from '@dark/core/scope';
 import { detectIsFunction } from '@dark/core/internal/helpers';
+import { eventsHelper } from '@dark/core/scope';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;
 

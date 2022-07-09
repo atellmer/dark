@@ -1,8 +1,8 @@
 import { Fiber, EffectTag } from '@dark/core/fiber';
-import { DarkElement } from '@dark/core/shared/model';
+import type { DarkElement } from '@dark/core/shared/model';
 import { platform } from '@dark/core/global';
 import { flatten, detectIsUndefined } from '@dark/core/internal/helpers';
-import { TagVirtualNode, VirtualNodeFactory } from '@dark/core/view';
+import { TagVirtualNode, type VirtualNodeFactory } from '@dark/core/view';
 import {
   effectStoreHelper,
   wipRootHelper,
@@ -12,11 +12,11 @@ import {
   deletionsHelper,
   fiberMountHelper,
 } from '@dark/core/scope';
-import { createDomElement, mutateDom, resetNodeCache } from '../dom';
-import { ComponentFactory } from '@dark/core/component';
+import type { ComponentFactory } from '@dark/core/component';
 import { ROOT } from '@dark/core/constants';
-import { detectIsPortal, unmountPortal } from '../portal';
-import { scheduleCallback, shouldYeildToHost, TaskPriority } from '../scheduling';
+import { createDomElement, mutateDom, resetNodeCache } from '@dark/platform-browser/dom';
+import { detectIsPortal, unmountPortal } from '@dark/platform-browser/portal';
+import { scheduleCallback, shouldYeildToHost, TaskPriority } from '@dark/platform-browser/scheduling';
 
 platform.raf = window.requestAnimationFrame.bind(this);
 platform.scheduleCallback = scheduleCallback;
