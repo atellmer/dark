@@ -1,5 +1,5 @@
 {
-  "name": "@dark/core",
+  "name": "@dark-engine/core",
   "version": "0.0.1",
   "description": "Dark is UI rendering engine for javascript apps",
   "author": "AlexPlex",

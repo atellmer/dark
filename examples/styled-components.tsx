@@ -1,5 +1,5 @@
-import { createComponent, View, useMemo, useEffect } from '@dark/core';
-import { render } from '@dark/platform-browser';
+import { createComponent, View, useMemo, useEffect } from '@dark-engine/core';
+import { render } from '@dark-engine/platform-browser';
 
 const div = props => View({ ...props, as: 'div' });
 let staticClassNameId = 0;

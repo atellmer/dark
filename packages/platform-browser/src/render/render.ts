@@ -16,7 +16,7 @@ import {
   deletionsHelper,
   fiberMountHelper,
   ROOT,
-} from '@dark/core';
+} from '@dark-engine/core';
 import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost, TaskPriority } from '../scheduling';

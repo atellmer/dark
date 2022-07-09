@@ -1,6 +1,6 @@
 /** @jsx createElement */
 import { dom, waitNextIdle } from '@test-utils';
-import { render } from '@dark/platform-browser/render';
+import { render } from '@dark-engine/platform-browser/render';
 import { createComponent } from '../component';
 import { createElement } from '../element';
 import { useState } from '../use-state';

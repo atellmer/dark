@@ -1,5 +1,4 @@
-import { createComponent, detectIsComponentFactory } from '../component';
-import type { KeyProps } from '../component';
+import { type KeyProps, createComponent, detectIsComponentFactory } from '../component';
 
 const $$fragment = Symbol('fragment');
 

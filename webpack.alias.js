@@ -1,8 +1,8 @@
 const { resolve } = require('path');
 
 const alias = {
-  '@dark/core': resolve(__dirname, './packages/core/src'),
-  '@dark/platform-browser': resolve(__dirname, './packages/platform-browser/src'),
+  '@dark-engine/core': resolve(__dirname, './packages/core/src'),
+  '@dark-engine/platform-browser': resolve(__dirname, './packages/platform-browser/src'),
 };
 
 module.exports = {

@@ -6,7 +6,7 @@ import {
   detectIsComponentFactory,
   error,
   useMemo,
-} from '@dark/core';
+} from '@dark-engine/core';
 
 const $$portal = Symbol('portal');
 

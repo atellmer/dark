@@ -19,16 +19,16 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@dark/core": [
+      "@dark-engine/core": [
         "./packages/core/src/index"
       ],
-      "@dark/core/*": [
+      "@dark-engine/core/*": [
         "./packages/core/src/*"
       ],
-      "@dark/platform-browser": [
+      "@dark-engine/platform-browser": [
         "./packages/platform-browser/src/index"
       ],
-      "@dark/platform-browser/*": [
+      "@dark-engine/platform-browser/*": [
         "./packages/platform-browser/src/*"
       ],
       "@test-utils": [

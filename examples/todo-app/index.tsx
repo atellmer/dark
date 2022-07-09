@@ -1,5 +1,5 @@
-import { View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '@dark/core';
-import { render, type SyntheticEvent } from '@dark/platform-browser';
+import { View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '@dark-engine/core';
+import { render, type SyntheticEvent } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });

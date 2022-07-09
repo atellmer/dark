@@ -1,4 +1,4 @@
-import { detectIsFunction, eventsHelper } from '@dark/core';
+import { detectIsFunction, eventsHelper } from '@dark-engine/core';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;
 

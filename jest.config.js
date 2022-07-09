@@ -11,8 +11,8 @@ module.exports = {
   },
   moduleFileExtensions: ['js', 'json', 'jsx', 'ts', 'tsx', 'node'],
   moduleNameMapper: {
-    '^@dark/core(.*)$': '<rootDir>/packages/core/src$1',
-    '^@dark/platform-browser(.*)$': '<rootDir>/packages/platform-browser/src$1',
+    '^@dark-engine/core(.*)$': '<rootDir>/packages/core/src$1',
+    '^@dark-engine/platform-browser(.*)$': '<rootDir>/packages/platform-browser/src$1',
     '^@test-utils$': '<rootDir>/test/utils',
   },
   setupFiles: ['./test/setup.ts'],

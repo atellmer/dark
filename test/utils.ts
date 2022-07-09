@@ -1,6 +1,6 @@
 import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 
-import { EMPTY_NODE } from '@dark/core/constants';
+import { EMPTY_NODE } from '@dark-engine/core/constants';
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number>) => {
   const markup = strings

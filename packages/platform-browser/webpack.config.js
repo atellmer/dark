@@ -6,11 +6,11 @@ const { alias } = require('../../webpack.alias');
 const library = 'DarkPlatformBrowser';
 const config = env => ({
   externals: {
-    '@dark/core': {
+    '@dark-engine/core': {
       root: 'DarkCore',
-      commonjs2: '@dark/core',
-      commonjs: '@dark/core',
-      amd: '@dark/core',
+      commonjs2: '@dark-engine/core',
+      commonjs: '@dark-engine/core',
+      amd: '@dark-engine/core',
     },
   },
   mode: env.production ? 'production' : 'development',

@@ -1,8 +1,8 @@
 /** @jsx h */
 import { waitNextIdle, dom } from '@test-utils';
-import { createElement as h } from '@dark/core/element/element';
-import { createComponent } from '@dark/core/component/component';
-import { render } from '@dark/platform-browser/render';
+import { createElement as h } from '@dark-engine/core/element/element';
+import { createComponent } from '@dark-engine/core/component/component';
+import { render } from '@dark-engine/platform-browser/render';
 import { createPortal } from './portal';
 
 let host: HTMLElement = null;

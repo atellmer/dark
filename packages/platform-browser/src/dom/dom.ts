@@ -21,7 +21,7 @@ import {
   ATTR_REF,
   EMPTY_NODE,
   fromHookUpdateHelper,
-} from '@dark/core';
+} from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import type { DomElement } from './model';

@@ -1,5 +1,5 @@
-import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '@dark/core';
-import { render } from '@dark/platform-browser';
+import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '@dark-engine/core';
+import { render } from '@dark-engine/platform-browser';
 
 const domElement = document.getElementById('root');
 

@@ -1,4 +1,4 @@
-import { getTime, workLoop, nextUnitOfWorkHelper } from '@dark/core';
+import { getTime, workLoop, nextUnitOfWorkHelper } from '@dark-engine/core';
 import { TaskPriority, type Callback } from './model';
 
 const queue: Array<Task> = [];
