@@ -1,4 +1,15 @@
 import {
+  flatten,
+  detectIsEmpty,
+  error,
+  keyBy,
+  takeListFromEnd,
+  detectIsUndefined,
+  detectIsArray,
+  detectIsFunction,
+} from '@dark/core/internal/helpers';
+import { platform } from '@dark/core/global';
+import {
   getRootId,
   wipRootHelper,
   currentRootHelper,
@@ -10,9 +21,9 @@ import {
   effectStoreHelper,
   effectsHelper,
 } from '@dark/core/scope';
-import { platform } from '@dark/core/global';
-import { detectIsComponentFactory, getComponentFactoryKey } from '@dark/core/component';
+import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '@dark/core/component';
 import {
+  type TagVirtualNode,
   detectIsTagVirtualNode,
   createEmptyVirtualNode,
   getVirtualNodeKey,
@@ -20,23 +31,10 @@ import {
   detectIsCommentVirtualNode,
   detectIsVirtualNodeFactory,
 } from '@dark/core/view';
-import {
-  flatten,
-  detectIsEmpty,
-  error,
-  keyBy,
-  takeListFromEnd,
-  detectIsUndefined,
-  detectIsArray,
-  detectIsFunction,
-} from '@dark/core/internal/helpers';
 import { detectIsMemo } from '@dark/core/memo';
-import { EffectTag, cloneTagMap } from './model';
-import type { TagVirtualNode } from '@dark/core/view';
-import type { ComponentFactory } from '@dark/core/component';
 import type { Context, ContextProviderValue } from '@dark/core/context/model';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '@dark/core/shared/model';
-import type { NativeElement, Hook } from './model';
+import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './model';
 
 class Fiber<N = NativeElement> {
   public nativeElement: N;

@@ -1,9 +1,8 @@
 import { EMPTY_NODE, ATTR_KEY } from '@dark/core/constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction } from '@dark/core/internal/helpers';
-import { NodeType } from './model';
 import type { DarkElementKey } from '@dark/core/shared/model';
 import type { ComponentFactory, StandardComponentProps } from '@dark/core/component';
-import type { ViewDef } from './model';
+import { NodeType, type ViewDef } from './model';
 
 export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;

@@ -1,7 +1,7 @@
+import { detectIsUndefined, detectIsArray } from '@dark/core/internal/helpers';
 import { detectIsComponentFactory, createComponent } from '@dark/core/component';
 import { detectIsTagVirtualNode } from '@dark/core/view';
 import { componentFiberHelper } from '@dark/core/scope';
-import { detectIsUndefined, detectIsArray } from '@dark/core/internal/helpers';
 import { detectIsDepsDifferent } from '@dark/core/shared';
 import { $$memo } from '@dark/core/memo';
 

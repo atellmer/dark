@@ -1,4 +1,4 @@
-import { Platform } from './model';
+import type { Platform } from './model';
 
 export const platform: Platform = {
   raf: () => {

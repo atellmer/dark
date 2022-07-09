@@ -1,8 +1,8 @@
+import { detectIsUndefined, detectIsFunction } from '@dark/core/internal/helpers';
 import { getRootId, effectStoreHelper, componentFiberHelper } from '@dark/core/scope';
 import { useUpdate } from '@dark/core/use-update';
 import { useMemo } from '@dark/core/use-memo';
 import { useCallback } from '@dark/core/use-callback';
-import { detectIsUndefined, detectIsFunction } from '@dark/core/internal/helpers';
 
 type Value<T> = T | ((prevValue: T) => T);
 type Scope = {

@@ -1,6 +1,6 @@
-import { componentFiberHelper, effectsHelper } from '@dark/core/scope';
-import { Hook, HookValue } from '@dark/core/fiber';
 import { detectIsUndefined, detectIsFunction } from '@dark/core/internal/helpers';
+import { componentFiberHelper, effectsHelper } from '@dark/core/scope';
+import type { Hook, HookValue } from '@dark/core/fiber';
 import { detectIsDepsDifferent } from '@dark/core/shared';
 import type { Effect, EffectCleanup } from './model';
 

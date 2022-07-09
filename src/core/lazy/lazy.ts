@@ -1,4 +1,4 @@
-import { createComponent, Component, detectIsComponentFactory } from '@dark/core/component';
+import { type Component, createComponent, detectIsComponentFactory } from '@dark/core/component';
 import { useState } from '@dark/core/use-state';
 import { useEffect } from '@dark/core/use-effect';
 import { forwardRef } from '@dark/core/ref';

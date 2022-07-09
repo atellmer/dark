@@ -1,5 +1,5 @@
-import { ComponentFactory } from '../component';
-import { VirtualNode, VirtualNodeFactory } from '../view';
+import type { ComponentFactory } from '../component';
+import type { VirtualNode, VirtualNodeFactory } from '../view';
 
 export type DarkElement = NestedArray<ComponentFactory | VirtualNode | RenderProps | Nullable | string>;
 
