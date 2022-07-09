@@ -1,5 +1,5 @@
 import { h, createComponent, useState, useRef, useEffect } from '../src/core';
-import { render, DarkSyntheticEvent } from '../src/platform/browser';
+import { render, SyntheticEvent } from '../src/platform/browser';
 
 const DraggableZone = createComponent(({ slot }) => {
   const style = `
@@ -28,13 +28,13 @@ const DraggableItem = createComponent(({ slot }) => {
     setRect(rootRef.current.getBoundingClientRect());
   }, []);
 
-  const handleDragStart = (e: DarkSyntheticEvent<MouseEvent>) => {
+  const handleDragStart = (e: SyntheticEvent<MouseEvent>) => {
     const target = e.target as HTMLElement;
 
     target.style.setProperty('opacity', '0');
   };
 
-  const handleDrag = (e: DarkSyntheticEvent<MouseEvent>) => {
+  const handleDrag = (e: SyntheticEvent<MouseEvent>) => {
     const x = e.sourceEvent.x - rect.width / 2 - rect.left;
     const y = e.sourceEvent.y - rect.height / 2 - rect.top;
 
@@ -44,7 +44,7 @@ const DraggableItem = createComponent(({ slot }) => {
     });
   };
 
-  const onDragEnd = (e: DarkSyntheticEvent<MouseEvent>) => {
+  const onDragEnd = (e: SyntheticEvent<MouseEvent>) => {
     const target = e.target as HTMLElement;
     const x = e.sourceEvent.x - rect.width / 2 - rect.left;
     const y = e.sourceEvent.y - rect.height / 2 - rect.top;

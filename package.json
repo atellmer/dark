@@ -23,7 +23,7 @@
     "husky": "^0.13.1",
     "jest": "28.1.2",
     "jest-environment-jsdom": "28.1.2",
-    "node-fetch": "2.6.1",
+    "node-fetch": "2.6.7",
     "prettier": "^2.2.1",
     "ts-jest": "28.0.5",
     "ts-loader": "9.3.1",

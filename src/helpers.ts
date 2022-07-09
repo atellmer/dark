@@ -16,7 +16,6 @@ function error(str: string) {
   }
 }
 
-// flatten without recursion
 function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
   const list = [];
   const levelMap = { 0: { idx: 0, source } };

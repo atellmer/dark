@@ -1,5 +1,5 @@
 import { View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '../../src/core';
-import { render, DarkSyntheticEvent } from '../../src/platform/browser';
+import { render, SyntheticEvent } from '../../src/platform/browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -22,17 +22,17 @@ class TodoTask {
 type TextFieldProps = {
   value: string;
   fulllWidth?: boolean;
-  onEnter?: (e: DarkSyntheticEvent<KeyboardEvent, HTMLInputElement>) => void;
-  onChange: (e: DarkSyntheticEvent<InputEvent, HTMLInputElement>, value: string) => void;
+  onEnter?: (e: SyntheticEvent<KeyboardEvent, HTMLInputElement>) => void;
+  onChange: (e: SyntheticEvent<InputEvent, HTMLInputElement>, value: string) => void;
 };
 
 const TextField = forwardRef(
   createComponent<TextFieldProps, HTMLInputElement>((props, ref) => {
     const { value, fulllWidth, onEnter, onChange } = props;
-    const handleChange = (e: DarkSyntheticEvent<InputEvent, HTMLInputElement>) => {
+    const handleChange = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => {
       onChange(e, e.target.value);
     };
-    const handleKeyDown = (e: DarkSyntheticEvent<KeyboardEvent, HTMLInputElement>) => {
+    const handleKeyDown = (e: SyntheticEvent<KeyboardEvent, HTMLInputElement>) => {
       onEnter && e.sourceEvent.key === 'Enter' && onEnter(e);
     };
 

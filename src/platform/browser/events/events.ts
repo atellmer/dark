@@ -2,13 +2,14 @@ import { eventsHelper } from '@core/scope';
 import { isFunction } from '@helpers';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;
-class DarkSyntheticEvent<E extends Event, T = Element> {
+
+class SyntheticEvent<E extends Event, T = Element> {
   public type = '';
   public sourceEvent: E = null;
   public target: T = null;
   private propagation = true;
 
-  constructor(options: Pick<DarkSyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
+  constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
     this.type = options.sourceEvent.type;
     this.sourceEvent = options.sourceEvent;
     this.target = options.target;
@@ -43,10 +44,10 @@ function delegateEvent(options: DelegateEventOptions) {
     const rootHandler = (event: Event) => {
       const fireEvent = eventsStore.get(eventName).get(event.target);
       const target = event.target as Element;
-      let syntheticEvent: DarkSyntheticEvent<Event> = null;
+      let syntheticEvent: SyntheticEvent<Event> = null;
 
       if (isFunction(fireEvent)) {
-        syntheticEvent = new DarkSyntheticEvent({
+        syntheticEvent = new SyntheticEvent({
           sourceEvent: event,
           target,
         });
@@ -69,4 +70,4 @@ const detectIsEvent = (attrName: string) => attrName.startsWith('on');
 
 const getEventName = (attrName: string) => attrName.slice(2, attrName.length).toLowerCase();
 
-export { DarkSyntheticEvent, delegateEvent, detectIsEvent, getEventName };
+export { SyntheticEvent, delegateEvent, detectIsEvent, getEventName };
