@@ -1,7 +1,7 @@
-import { isUndefined } from '@helpers';
+import { detectIsUndefined } from '@core/internal/helpers';
 
 function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {
-  if (!isUndefined(deps) && !isUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
+  if (!detectIsUndefined(deps) && !detectIsUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
     for (let i = 0; i < prevDeps.length; i++) {
       if (prevDeps[i] !== deps[i]) {
         return true;

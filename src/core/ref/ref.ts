@@ -1,6 +1,6 @@
 import { Component, RefProps, ComponentFactory } from '../component';
 import type { MutableRef } from './model';
-import { isObject, isNull } from '@helpers';
+import { detectIsObject, detectIsNull } from '@core/internal/helpers';
 
 function forwardRef<P, R>(component: Component<P, R>) {
   type Props = P & RefProps<R>;
@@ -11,7 +11,7 @@ function forwardRef<P, R>(component: Component<P, R>) {
 }
 
 const detectIsRef = (ref: unknown) => {
-  if (!isObject(ref) || isNull(ref)) return false;
+  if (!detectIsObject(ref) || detectIsNull(ref)) return false;
   const mutableRef = ref as MutableRef;
 
   for (const key in mutableRef) {

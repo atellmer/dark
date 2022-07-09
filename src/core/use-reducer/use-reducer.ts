@@ -1,7 +1,7 @@
 import { useState } from '@core/use-state';
 import { useCallback } from '@core/use-callback';
 import { useMemo } from '@core/use-memo';
-import { isFunction } from '@helpers';
+import { detectIsFunction } from '@core/internal/helpers';
 import type { Reducer, Dispatch, ReducerAction, ReducerState } from './model';
 
 function useReducer<R extends Reducer>(
@@ -10,7 +10,7 @@ function useReducer<R extends Reducer>(
   initializer?: (state: ReducerState<R>) => ReducerState<R>,
 ): [ReducerState<R>, Dispatch<ReducerAction<R>>] {
   const initialValue = useMemo(() => {
-    return isFunction(initializer) ? initializer(initialState) : initialState;
+    return detectIsFunction(initializer) ? initializer(initialState) : initialState;
   }, []);
   const [state, setState] = useState<ReducerState<R>>(initialValue);
   const dispatch = useCallback((action: ReducerAction<R>) => setState(state => reducer(state, action)), []) as Dispatch<

@@ -1,8 +1,8 @@
-import { isNumber, isString, isFunction } from '@helpers';
+import { detectIsNumber, detectIsString, detectIsFunction } from '@core/internal/helpers';
 import { View, Text, TagVirtualNodeFactory } from '@core/view';
 
 function getChildren(children: Array<any>) {
-  children = children.map(x => (isString(x) || isNumber(x) ? Text(x.toString()) : x));
+  children = children.map(x => (detectIsString(x) || detectIsNumber(x) ? Text(x.toString()) : x));
 
   return children ? (Array.isArray(children) ? [...children] : [children]) : [];
 }
@@ -12,7 +12,7 @@ function createElement(
   props: any,
   ...children: Array<any>
 ): TagVirtualNodeFactory | Function | null {
-  if (isString(tag)) {
+  if (detectIsString(tag)) {
     return View({
       ...props,
       as: tag,
@@ -20,7 +20,7 @@ function createElement(
     });
   }
 
-  if (isFunction(tag)) {
+  if (detectIsFunction(tag)) {
     let slot = getChildren(children);
 
     slot = slot.length === 1 ? slot[0] : slot;

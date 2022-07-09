@@ -2,7 +2,7 @@ import { getRootId, effectStoreHelper, componentFiberHelper } from '@core/scope'
 import { useUpdate } from '@core/use-update';
 import { useMemo } from '@core/use-memo';
 import { useCallback } from '@core/use-callback';
-import { isUndefined, isFunction } from '@helpers';
+import { detectIsUndefined, detectIsFunction } from '@core/internal/helpers';
 
 type Value<T> = T | ((prevValue: T) => T);
 type Scope = {
@@ -26,7 +26,7 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   const setState = useCallback((sourceValue: Value<T>) => {
     effectStoreHelper.set(rootId);
     const value = scope.values[scope.idx];
-    const newValue = isFunction(sourceValue) ? sourceValue(value) : sourceValue;
+    const newValue = detectIsFunction(sourceValue) ? sourceValue(value) : sourceValue;
 
     if (!Object.is(value, newValue)) {
       scope.values[scope.idx] = newValue; // important order
@@ -35,7 +35,7 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
   }, []);
   const { hook } = fiber;
   const { idx, values } = hook;
-  const value: T = !isUndefined(values[idx]) ? values[idx] : initialValue;
+  const value: T = !detectIsUndefined(values[idx]) ? values[idx] : initialValue;
 
   values[idx] = value;
   scope.idx = idx;

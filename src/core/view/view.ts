@@ -2,7 +2,7 @@ import { DarkElementKey } from '@core/shared/model';
 import { EMPTY_NODE, ATTR_KEY } from '@core/constants';
 import { ComponentFactory, StandardComponentProps } from '@core/component';
 import { ViewDef, NodeType } from './model';
-import { isArray, isEmpty, isFunction } from '@helpers';
+import { detectIsArray, detectIsEmpty, detectIsFunction } from '@core/internal/helpers';
 
 export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;
@@ -64,11 +64,11 @@ const detectIsEmptyVirtualNode = (vNode: CommentVirtualNode): boolean =>
 function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
   const key = vNode && vNode.attrs[ATTR_KEY];
 
-  return !isEmpty(key) ? key : null;
+  return !detectIsEmpty(key) ? key : null;
 }
 
 function getAttribute(vNode: VirtualNode, attrName: string) {
-  return detectIsTagVirtualNode(vNode) && !isEmpty(vNode.attrs[attrName]) ? vNode.attrs[attrName] : undefined;
+  return detectIsTagVirtualNode(vNode) && !detectIsEmpty(vNode.attrs[attrName]) ? vNode.attrs[attrName] : undefined;
 }
 
 function setAttribute(vNode: VirtualNode, name: string, value: any) {
@@ -93,7 +93,7 @@ function Comment(text: string): CommentVirtualNodeFactory {
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
     const { as, slot, isVoid = false, ...rest } = def;
-    const children = isVoid ? [] : isArray(slot) ? slot : slot ? [slot] : [];
+    const children = isVoid ? [] : detectIsArray(slot) ? slot : slot ? [slot] : [];
 
     return new TagVirtualNode({
       name: as,
@@ -111,7 +111,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
 const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
 
 const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
-  isFunction(factory) && factory[$$virtualNode] === true;
+  detectIsFunction(factory) && factory[$$virtualNode] === true;
 
 export {
   VirtualNode,

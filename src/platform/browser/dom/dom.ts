@@ -1,6 +1,6 @@
 import { DomElement } from './model';
 import { Fiber, EffectTag } from '@core/fiber';
-import { isFunction, isUndefined } from '@helpers';
+import { detectIsFunction, detectIsUndefined } from '@core/internal/helpers';
 import {
   NodeType,
   VirtualNode,
@@ -79,7 +79,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
       continue;
     }
 
-    if (isFunction(attrValue)) {
+    if (detectIsFunction(attrValue)) {
       if (detectIsEvent(attrName)) {
         delegateEvent({
           target: element,
@@ -87,7 +87,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
           eventName: getEventName(attrName),
         });
       }
-    } else if (!isUndefined(attrValue) && !attrBlackList.includes(attrName)) {
+    } else if (!detectIsUndefined(attrValue) && !attrBlackList.includes(attrName)) {
       upgradeInputAttributes({
         tagName: vNode.name,
         value: attrValue,
@@ -112,8 +112,8 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
       continue;
     }
 
-    if (!isUndefined(nextAttrValue)) {
-      if (isFunction(attrValue)) {
+    if (!detectIsUndefined(nextAttrValue)) {
+      if (detectIsFunction(attrValue)) {
         if (detectIsEvent(attrName) && attrValue !== nextAttrValue) {
           delegateEvent({
             target: element,
@@ -121,7 +121,11 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
             eventName: getEventName(attrName),
           });
         }
-      } else if (!isUndefined(nextAttrValue) && attrValue !== nextAttrValue && !attrBlackList.includes(attrName)) {
+      } else if (
+        !detectIsUndefined(nextAttrValue) &&
+        attrValue !== nextAttrValue &&
+        !attrBlackList.includes(attrName)
+      ) {
         upgradeInputAttributes({
           tagName: nextVNode.name,
           value: nextAttrValue,
@@ -200,7 +204,7 @@ function mutateDom(fiber: Fiber<Element>) {
   if (fiber.nativeElement !== null && fiber.effectTag === EffectTag.PLACEMENT) {
     const cachedNode = nodeCacheMap.get(parentNativeElement);
     const node = nextFiber.alternate
-      ? !isUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
+      ? !detectIsUndefined(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
         ? cachedNode
         : cachedNode === null
         ? null
@@ -220,7 +224,7 @@ function mutateDom(fiber: Fiber<Element>) {
     } else {
       let fragment = fragmentMap.get(parentNativeElement);
 
-      if (isUndefined(fragment)) {
+      if (detectIsUndefined(fragment)) {
         fragment = document.createDocumentFragment();
         fragmentMap.set(parentNativeElement, fragment);
       }

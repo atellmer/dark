@@ -1,7 +1,7 @@
 import { workLoop } from '@core/fiber';
 import { nextUnitOfWorkHelper } from '@core/scope';
 import { Callback, TaskPriority } from './model';
-import { getTime } from '@helpers';
+import { getTime } from '@core/internal/helpers';
 
 const queue: Array<Task> = [];
 const yeildInterval = 5;

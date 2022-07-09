@@ -24,7 +24,16 @@ import {
   detectIsCommentVirtualNode,
   detectIsVirtualNodeFactory,
 } from '../view';
-import { flatten, isEmpty, error, keyBy, takeListFromEnd, isUndefined, isArray, isFunction } from '@helpers';
+import {
+  flatten,
+  detectIsEmpty,
+  error,
+  keyBy,
+  takeListFromEnd,
+  detectIsUndefined,
+  detectIsArray,
+  detectIsFunction,
+} from '@core/internal/helpers';
 import { detectIsMemo } from '../memo';
 
 class Fiber<N = NativeElement> {
@@ -55,9 +64,9 @@ class Fiber<N = NativeElement> {
     this.hook = options.hook || createHook();
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
-    this.transposition = !isUndefined(options.transposition) ? options.transposition : false;
-    this.mountedToHost = !isUndefined(options.mountedToHost) || false;
-    this.portalHost = !isUndefined(options.portalHost) ? options.portalHost : false;
+    this.transposition = !detectIsUndefined(options.transposition) ? options.transposition : false;
+    this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
+    this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.childrenCount = options.childrenCount || 0;
   }
 
@@ -546,7 +555,9 @@ function pertformInstance(options: PerformInstanceOptions) {
   let performedShadow: Fiber = null;
 
   if (hasChildrenProp(instance)) {
-    const elements = isArray(instance.children[idx]) ? flatten([instance.children[idx]]) : [instance.children[idx]];
+    const elements = detectIsArray(instance.children[idx])
+      ? flatten([instance.children[idx]])
+      : [instance.children[idx]];
 
     instance.children.splice(idx, 1, ...elements);
     performedInstance = instance.children[idx];
@@ -603,7 +614,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
     try {
       const result = factory.type(factory.props, factory.ref);
 
-      factory.children = isArray(result)
+      factory.children = detectIsArray(result)
         ? (flatten([result]) as Array<DarkElementInstance>)
         : ([result] as Array<DarkElementInstance>);
     } catch (err) {
@@ -624,7 +635,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
 
     instance.children = isComponentFactory
       ? instance.children
-      : isArray(instance.children)
+      : detectIsArray(instance.children)
       ? flatten([instance.children])
       : [instance.children];
 
@@ -697,7 +708,7 @@ function createFibersByKeyMap(fiber: Fiber) {
   while (nextFiber) {
     const key = getElementKey(nextFiber.instance);
 
-    if (!isEmpty(key)) {
+    if (!detectIsEmpty(key)) {
       map[key] = nextFiber;
     }
 
@@ -717,11 +728,11 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
     const key = nextFiber && getElementKey(nextFiber.instance);
     const nextKey = children[idx] && getElementKey(children[idx]);
 
-    if (!isEmpty(key)) {
+    if (!detectIsEmpty(key)) {
       keys.push(key);
     }
 
-    if (!isEmpty(nextKey)) {
+    if (!detectIsEmpty(nextKey)) {
       nextKeys.push(nextKey);
     }
 
@@ -736,7 +747,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
 }
 
 function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {
-  if (isEmpty(key)) return null;
+  if (detectIsEmpty(key)) return null;
   let nextFiber = fiber;
 
   while (nextFiber) {
@@ -795,7 +806,7 @@ function getNextSiblingAlternate(fiber: Fiber): Fiber | null {
 }
 
 function transformElementInstance(instance: DarkElement) {
-  return isEmpty(instance) || instance === false ? createEmptyVirtualNode() : instance;
+  return detectIsEmpty(instance) || instance === false ? createEmptyVirtualNode() : instance;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
@@ -930,7 +941,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
       effectTag: EffectTag.UPDATE,
     });
 
-    isFunction(onCreateFiber) && onCreateFiber(fiber, replacingFiberIdx);
+    detectIsFunction(onCreateFiber) && onCreateFiber(fiber, replacingFiberIdx);
 
     currentFiber.alternate = null;
     wipRootHelper.set(fiber);

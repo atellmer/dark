@@ -1,14 +1,14 @@
 import { NestedArray } from '@core/shared';
 
-const isFunction = (o): o is Function => typeof o === 'function';
-const isUndefined = o => typeof o === 'undefined';
-const isNumber = o => typeof o === 'number';
-const isString = o => typeof o === 'string';
-const isObject = o => typeof o === 'object';
-const isBoolean = o => typeof o === 'boolean';
-const isArray = Array.isArray;
-const isNull = o => o === null;
-const isEmpty = o => isNull(o) || isUndefined(o);
+const detectIsFunction = (o: any): o is Function => typeof o === 'function';
+const detectIsUndefined = (o: any) => typeof o === 'undefined';
+const detectIsNumber = (o: any) => typeof o === 'number';
+const detectIsString = (o: any) => typeof o === 'string';
+const detectIsObject = (o: any) => typeof o === 'object';
+const detectIsBoolean = (o: any) => typeof o === 'boolean';
+const detectIsArray = (o: any): o is Array<any> => Array.isArray(o);
+const detectIsNull = (o: any) => o === null;
+const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
 function error(str: string) {
   if (typeof console !== 'undefined') {
@@ -31,7 +31,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
       continue;
     }
 
-    if (isArray(item)) {
+    if (detectIsArray(item)) {
       level++;
       levelMap[level] = {
         idx: 0,
@@ -70,15 +70,15 @@ function takeListFromEnd(source: Array<any>, count: number) {
 }
 
 export {
-  isFunction,
-  isUndefined,
-  isNumber,
-  isString,
-  isObject,
-  isBoolean,
-  isArray,
-  isNull,
-  isEmpty,
+  detectIsFunction,
+  detectIsUndefined,
+  detectIsNumber,
+  detectIsString,
+  detectIsObject,
+  detectIsBoolean,
+  detectIsArray,
+  detectIsNull,
+  detectIsEmpty,
   error,
   flatten,
   getTime,

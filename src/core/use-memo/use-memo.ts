@@ -1,7 +1,7 @@
 import { detectIsComponentFactory, createComponent } from '@core/component';
 import { detectIsTagVirtualNode } from '@core/view';
 import { componentFiberHelper } from '@core/scope';
-import { isUndefined, isArray } from '@helpers';
+import { detectIsUndefined, detectIsArray } from '@core/internal/helpers';
 import { detectIsDepsDifferent } from '@core/shared';
 import { $$memo } from '@core/memo';
 
@@ -22,7 +22,7 @@ function wrap(value: unknown, isDepsDifferent: boolean) {
 function processValue(getValue: () => any, isDepsDifferent = false) {
   let value = getValue();
 
-  if (isArray(value)) {
+  if (detectIsArray(value)) {
     value = value.map(x => wrap(x, isDepsDifferent));
   } else {
     value = wrap(value, isDepsDifferent);
@@ -36,7 +36,7 @@ function useMemo(getValue: () => any, deps: Array<any>) {
   const { hook } = fiber;
   const { idx, values } = hook;
 
-  if (isUndefined(values[idx])) {
+  if (detectIsUndefined(values[idx])) {
     const value = processValue(getValue);
 
     values[idx] = {

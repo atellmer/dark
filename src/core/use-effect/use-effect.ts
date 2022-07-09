@@ -1,6 +1,6 @@
 import { componentFiberHelper, effectsHelper } from '../scope';
 import { Hook, HookValue } from '../fiber';
-import { isUndefined, isFunction } from '@helpers';
+import { detectIsUndefined, detectIsFunction } from '@core/internal/helpers';
 import { detectIsDepsDifferent } from '../shared';
 import { Effect, EffectCleanup } from './model';
 
@@ -22,14 +22,14 @@ function useEffect(effect: Effect, deps?: Array<any>) {
     effectsHelper.add(() => setTimeout(run));
   };
 
-  if (isUndefined(values[idx])) {
+  if (detectIsUndefined(values[idx])) {
     runEffect();
   } else {
     const { deps: prevDeps, value: cleanup } = values[idx];
     const isDepsDifferent = deps ? detectIsDepsDifferent(deps, prevDeps) : true;
 
     if (isDepsDifferent) {
-      isFunction(cleanup) && cleanup();
+      detectIsFunction(cleanup) && cleanup();
       runEffect();
     }
   }
@@ -44,7 +44,7 @@ function runEffectCleanup(hook: Hook<HookValue<EffectCleanup>>) {
     if (hookValue.token === $$useEffect) {
       const cleanup = hookValue.value;
 
-      isFunction(cleanup) && cleanup();
+      detectIsFunction(cleanup) && cleanup();
     }
   }
 }

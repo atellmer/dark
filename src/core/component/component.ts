@@ -2,7 +2,7 @@ import { DarkElementKey, DarkElementInstance } from '@core/shared/model';
 import { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './model';
 import { ATTR_KEY } from '@core/constants';
 import { MutableRef } from '../ref';
-import { error, isEmpty } from '@helpers';
+import { error, detectIsEmpty } from '@core/internal/helpers';
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {
@@ -64,6 +64,6 @@ function createComponent<P, R = any>(
 const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory => factory instanceof ComponentFactory;
 
 const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey =>
-  !isEmpty(factory.props[ATTR_KEY]) ? factory.props[ATTR_KEY] : null;
+  !detectIsEmpty(factory.props[ATTR_KEY]) ? factory.props[ATTR_KEY] : null;
 
 export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey };

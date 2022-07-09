@@ -1,5 +1,5 @@
 import { componentFiberHelper } from '@core/scope';
-import { isUndefined } from '@helpers';
+import { detectIsUndefined } from '@core/internal/helpers';
 import { detectIsDepsDifferent } from '../shared';
 
 function useCallback<T = Function>(callback: T, deps: Array<any>): T {
@@ -7,7 +7,7 @@ function useCallback<T = Function>(callback: T, deps: Array<any>): T {
   const { hook } = fiber;
   const { idx, values } = hook;
 
-  if (isUndefined(values[idx])) {
+  if (detectIsUndefined(values[idx])) {
     values[idx] = {
       deps,
       value: callback,

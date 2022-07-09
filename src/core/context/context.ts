@@ -3,7 +3,7 @@ import { Context, ContexProviderProps } from './model';
 import { useEffect } from '@core/use-effect';
 import { componentFiberHelper } from '@core/scope';
 import { useContext } from '@core/use-context';
-import { isFunction } from '@helpers';
+import { detectIsFunction } from '@core/internal/helpers';
 
 function createContext<T>(defaultValue: T): Context<T> {
   let displayName = 'Context';
@@ -69,7 +69,7 @@ function createConsumer<T>(context: Context<T>, displayName: string) {
     ({ slot }) => {
       const value = useContext(context);
 
-      return isFunction(slot) ? slot(value) : null;
+      return detectIsFunction(slot) ? slot(value) : null;
     },
     { displayName: `${displayName}.Consumer` },
   );

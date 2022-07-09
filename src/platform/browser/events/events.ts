@@ -1,5 +1,5 @@
 import { eventsHelper } from '@core/scope';
-import { isFunction } from '@helpers';
+import { detectIsFunction } from '@core/internal/helpers';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;
 
@@ -46,7 +46,7 @@ function delegateEvent(options: DelegateEventOptions) {
       const target = event.target as Element;
       let syntheticEvent: SyntheticEvent<Event> = null;
 
-      if (isFunction(fireEvent)) {
+      if (detectIsFunction(fireEvent)) {
         syntheticEvent = new SyntheticEvent({
           sourceEvent: event,
           target,
