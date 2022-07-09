@@ -20,16 +20,16 @@
     "baseUrl": ".",
     "paths": {
       "@dark/core": [
-        "./src/core/index"
+        "./packages/core/src/index"
       ],
       "@dark/core/*": [
-        "./src/core/*"
+        "./packages/core/src/*"
       ],
       "@dark/platform-browser": [
-        "./src/platform/browser/index"
+        "./packages/platform-browser/src/index"
       ],
       "@dark/platform-browser/*": [
-        "./src/platform/browser/*"
+        "./packages/platform-browser/src/*"
       ],
       "@test-utils": [
         "./test/utils"
@@ -37,7 +37,7 @@
     }
   },
   "include": [
-    "./src/**/*",
+    "./packages/**/*",
     "./examples/**/*",
     "./test/**/*",
     "./*.js"
