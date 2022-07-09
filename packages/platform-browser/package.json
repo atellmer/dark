@@ -9,6 +9,10 @@
   "scripts": {
     "build": "webpack --config webpack.config --env production"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atellmer/dark.git"
+  },
   "keywords": [
     "dark",
     "react",
