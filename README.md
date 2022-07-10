@@ -47,9 +47,9 @@ import { render, createPortal } from '@dark-engine/platform-browser';
 
 For example this is timer component
 
-```typescript
+```tsx
 import {
-  h, // for JSX support
+  h,
   createComponent,
   useState,
   useEffect,
@@ -147,7 +147,7 @@ This is the function you need to enable JSX support and write in a React-like st
 }
 
 ```
-```typescript
+```tsx
 import { h } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
@@ -173,7 +173,7 @@ render(
 #### createComponent
 This is a fundamental function that creates components with their own logic and possibly nested components.
 
-```typescript
+```tsx
 import { h, createComponent } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
@@ -190,7 +190,7 @@ render(<Sky color='deepskyblue' />, document.getElementById('root'));
 
 A component can return an array of elements or components:
 
-```typescript
+```tsx
 const App = createComponent(props => {
   return [
     <header>Header</header>,
@@ -202,7 +202,7 @@ const App = createComponent(props => {
 
 If a child element is passed to the component, it will appear in props as slot:
 
-```typescript
+```tsx
 const App = createComponent(({ slot }) => {
   return [
     <header>Header</header>,
