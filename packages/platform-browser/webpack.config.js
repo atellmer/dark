@@ -3,8 +3,11 @@ const webpack = require('webpack');
 
 const { alias } = require('../../webpack.alias');
 
-const library = 'DarkPlatformBrowser';
+const libraryName = 'DarkPlatformBrowser';
+const libraryNameKebabCase = 'dark-platform-browser';
 const config = env => ({
+  mode: env.production ? 'production' : 'development',
+  devtool: 'source-map',
   externals: {
     '@dark-engine/core': {
       root: 'DarkCore',
@@ -13,7 +16,6 @@ const config = env => ({
       amd: '@dark-engine/core',
     },
   },
-  mode: env.production ? 'production' : 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -21,9 +23,9 @@ const config = env => ({
   },
   entry: path.resolve(__dirname, 'src/index.ts'),
   output: {
-    path: path.resolve(__dirname, 'lib'),
-    filename: env.production ? `browser.prod.umd.min.js` : `browser.dev.umd.js`,
-    library: library,
+    path: path.resolve(__dirname, 'umd'),
+    filename: env.production ? `${libraryNameKebabCase}.production.min.js` : `${libraryNameKebabCase}.development.js`,
+    library: libraryName,
     libraryTarget: 'umd',
     umdNamedDefine: true,
   },
@@ -38,7 +40,7 @@ const config = env => ({
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+      'process.env.NODE_ENV': env.production ? JSON.stringify('production') : JSON.stringify('development'),
     }),
   ],
 });

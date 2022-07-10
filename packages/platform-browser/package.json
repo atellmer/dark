@@ -1,13 +1,15 @@
 {
   "name": "@dark-engine/platform-browser",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Dark package for working at browser",
   "author": "AlexPlex",
   "license": "MIT",
-  "main": "./lib/browser.prod.umd.min.js",
-  "typings": "./index.d.ts",
+  "main": "./index.js",
+  "typings": "./src/index.ts",
   "scripts": {
-    "build": "webpack --config webpack.config --env production"
+    "build": "npm run build:dev && npm run build:prod",
+    "build:dev": "webpack --config webpack.config --env development",
+    "build:prod": "webpack --config webpack.config --env production"
   },
   "repository": {
     "type": "git",

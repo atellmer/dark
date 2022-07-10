@@ -4,8 +4,10 @@ const webpack = require('webpack');
 const { alias } = require('../../webpack.alias');
 
 const library = 'DarkCore';
+const libraryNameKebabCase = 'dark-core';
 const config = env => ({
   mode: env.production ? 'production' : 'development',
+  devtool: 'source-map',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -13,8 +15,8 @@ const config = env => ({
   },
   entry: path.resolve(__dirname, 'src/index.ts'),
   output: {
-    path: path.resolve(__dirname, 'lib'),
-    filename: env.production ? `core.prod.umd.min.js` : `core.dev.umd.js`,
+    path: path.resolve(__dirname, 'umd'),
+    filename: env.production ? `${libraryNameKebabCase}.production.min.js` : `${libraryNameKebabCase}.development.js`,
     library: library,
     libraryTarget: 'umd',
     umdNamedDefine: true,
@@ -30,7 +32,7 @@ const config = env => ({
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+      'process.env.NODE_ENV': env.production ? JSON.stringify('production') : JSON.stringify('development'),
     }),
   ],
 });
