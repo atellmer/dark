@@ -23,11 +23,11 @@ import {
   View,
   Text,
   Comment,
+  Fragment,
   createComponent,
   createContext,
-  Fragment,
-  lazy,
   memo,
+  lazy,
   forwardRef,
   Suspense,
   useCallback,
@@ -39,7 +39,6 @@ import {
   useReducer,
   useRef,
   useState,
-  useUpdate,
 } from '@dark-engine/core';
 import { render, createPortal } from '@dark-engine/platform-browser';
 ```
@@ -230,6 +229,51 @@ const App = createComponent(({ slot }) => {
 render(<App>Content</App>, document.getElementById('root'));
 ```
 
+#### memo
+This buddy is needed in order to optimize rerendering performance and tell Dark when to skip rendering.
+
+```tsx
+const HardComponent = createComponent(() => {
+  console.log('HardComponent render!');
+
+  return <div>I'm too complicated</div>;
+});
+
+const MemoHardComponent = memo(HardComponent);
+
+const App = createComponent(() => {
+  console.log('App render!');
+
+  useEffect(() => {
+    setInterval(() => {
+      render(<App />, document.getElementById('root'));
+    }, 1000);
+  }, []);
+
+  return [<div>app</div>, <MemoHardComponent />];
+});
+
+render(<App />, document.getElementById('root'));
+```
+```
+App render!
+HardComponent render!
+App render!
+App render!
+App render!
+...
+```
+As the second argument, it takes a function that answers the question of when to re-render the component.
+
+```typescript
+type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
+
+const MemoHardComponent = memo(HardComponent, (p , n) => p.one !== n.one);
+```
+
+### Hooks
+Hooks are needed to bring components to life: give them an internal state, start some actions, and so on. The basic rule for using hooks is to use them at the top level of the component, i.e. do not nest them inside other functions, cycles, conditions. This is a necessary condition, because hooks are not magic, but work based on array indices.
+
 #### useState
 This is a hook to store the state and call to update a piece of the interface
 
@@ -243,6 +287,110 @@ const App = createComponent(() => {
     <div>count: {count}</div>,
     <button onClick={handleClick}>Click me</button>,
   ];
+});
+```
+
+setter can pass function as argument:
+
+```tsx
+const handleClick = () => setCount(x => x + 1);
+```
+
+#### useEffect
+Needed to run side effects in a component, such as asynchronous requests to the server or calling timers
+
+```tsx
+import { h, createComponent, useState, useEffect } from '@dark-engine/core';
+import { render } from '@dark-engine/platform-browser';
+
+type Album = {
+  id: number;
+  title: string;
+  userId: number;
+};
+
+const App = createComponent(() => {
+  const [albums, setAlbums] = useState<Array<Album>>([]);
+
+  useEffect(() => {
+    fetch('https://jsonplaceholder.typicode.com/albums')
+      .then(x => x.json())
+      .then(x => setAlbums(x.splice(0, 10)));
+  }, []);
+
+  if (albums.length === 0) return <div>loading...</div>;
+
+  return (
+    <ul>
+      {albums.map(x => (
+        <li key={x.id}>{x.title}</li>
+      ))}
+    </ul>
+  );
+});
+
+render(<App />, document.getElementById('root'));
+```
+The second argument to this hook is an array of dependencies that tells it when to restart. This parameter is optional, then the effect will be restarted on every render.
+
+#### useMemo 
+it's needed to draw complex parts of the interface, if their rerender may depend on external variables. Or for complex calculations that can be remembered. Stores the last result of a calculation in memory. Also accepts an array of dependencies.
+
+```tsx
+const App = createComponent(() => {
+  const complexComputation = useMemo(() => Math.random(), []);
+  const complexUI = useMemo(() => <div>I will rerender when dependencies change</div>, []);
+
+  return [<div>{complexComputation}</div>, complexUI];
+});
+
+```
+
+#### useRef
+Needed to catch a link to a DOM element or another component.
+
+```tsx
+const TextField = createComponent(() => {
+  const rootRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    rootRef.current.focus();
+  }, []);
+
+  return <input ref={rootRef} />;
+});
+```
+
+#### useImperativeHandle
+This hook needed to populate a component ref with an object, Used in conjunction with forwardRef.
+
+```tsx
+type MyComponentRef = {
+  log: () => void;
+};
+
+const MyComponent = forwardRef<{}, MyComponentRef>(
+  createComponent((_, ref) => {
+    useImperativeHandle(
+      ref,
+      () => ({
+        log: () => console.log('rrrr!'),
+      }),
+      [],
+    );
+
+    return <div>component</div>;
+  }),
+);
+
+const App = createComponent(() => {
+  const rootRef = useRef<MyComponentRef>(null);
+
+  useEffect(() => {
+    rootRef.current.log();
+  }, []);
+
+  return <MyComponent ref={rootRef} />;
 });
 ```
 
