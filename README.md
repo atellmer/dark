@@ -156,7 +156,7 @@ render(<h1>Hello world</h1>, document.getElementById('root'));
 
 #### View, Text, Comment
 
-These are the basic entities corresponding to tags, text and comments.
+These are the basic entities corresponding to tags, text and comments if you are not using JSX.
 
 ```typescript
 import { View, Text } from '@dark-engine/core';
