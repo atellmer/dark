@@ -870,47 +870,85 @@ function commitChanges() {
     }
   });
 }
-
 function commitWork(fiber: Fiber, onComplete: Function) {
+  walkFiber({
+    fiber,
+    onLoop: ({ nextFiber, isReturn, resetIsDeepWalking }) => {
+      const skip = nextFiber.effectTag === EffectTag.SKIP;
+
+      if (skip) {
+        resetIsDeepWalking();
+      } else if (!isReturn) {
+        platform.applyCommits(nextFiber);
+      }
+
+      if (nextFiber && nextFiber.shadow) {
+        nextFiber.shadow = null;
+      }
+    },
+  });
+
+  onComplete();
+}
+
+type WalkFiberOptions<T> = {
+  fiber: Fiber;
+  onLoop: (options: OnLoopOptions<T>) => void;
+};
+
+type OnLoopOptions<T> = {
+  nextFiber: Fiber<T>;
+  isReturn: boolean;
+  resetIsDeepWalking: () => void;
+};
+
+function walkFiber<T = unknown>(options: WalkFiberOptions<T>) {
+  const { fiber, onLoop } = options;
   let nextFiber = fiber;
   let isDeepWalking = true;
   let isReturn = false;
+  const visitedMap = new Map<Fiber, true>();
+  const detectCanVisit = (fiber: Fiber) => !visitedMap.get(fiber);
 
   while (nextFiber) {
-    const skip = nextFiber.effectTag === EffectTag.SKIP;
+    onLoop({
+      nextFiber: nextFiber as Fiber<T>,
+      isReturn,
+      resetIsDeepWalking: () => (isDeepWalking = false),
+    });
 
-    if (skip) {
-      isDeepWalking = false;
-    } else if (!isReturn) {
-      platform.applyCommits(nextFiber);
-    }
+    if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
+      const newFiber = nextFiber.child;
 
-    if (nextFiber && nextFiber.shadow) {
-      nextFiber.shadow = null;
-    }
+      isReturn = false;
+      nextFiber = newFiber;
+      visitedMap.set(newFiber, true);
+    } else if (nextFiber.nextSibling && detectCanVisit(nextFiber.nextSibling)) {
+      const newFiber = nextFiber.nextSibling;
 
-    if (nextFiber.child && isDeepWalking) {
-      nextFiber = nextFiber.child;
-    } else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
       isDeepWalking = true;
       isReturn = false;
-      nextFiber = nextFiber.nextSibling;
+      nextFiber = newFiber;
+      visitedMap.set(newFiber, true);
     } else if (
       nextFiber.parent &&
-      nextFiber !== fiber &&
-      nextFiber.parent !== fiber &&
-      nextFiber.parent !== fiber.parent
+      nextFiber.parent === fiber &&
+      nextFiber.parent.nextSibling &&
+      detectCanVisit(nextFiber.parent.nextSibling)
     ) {
+      const newFiber = nextFiber.parent.nextSibling;
+
+      isDeepWalking = true;
+      isReturn = false;
+      nextFiber = newFiber;
+      visitedMap.set(newFiber, true);
+    } else if (nextFiber.parent && nextFiber.parent !== fiber) {
       isDeepWalking = false;
       isReturn = true;
       nextFiber = nextFiber.parent;
     } else {
       nextFiber = null;
     }
-  }
-
-  if (!nextFiber) {
-    onComplete();
   }
 }
 

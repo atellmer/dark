@@ -200,6 +200,22 @@ const App = createComponent(props => {
 });
 ```
 
+You can also use Fragment as an alias for an array
+
+```tsx
+import { h, createComponent, Fragment } from '@dark-engine/core';
+
+const App = createComponent(props => {
+  return (
+    <Fragment>
+      <header>Header</header>
+      <div>Content</div>
+      <footer>Footer</footer>
+    </Fragment>
+  );
+});
+```
+
 If a child element is passed to the component, it will appear in props as slot:
 
 ```tsx
@@ -212,6 +228,22 @@ const App = createComponent(({ slot }) => {
 });
 
 render(<App>Content</App>, document.getElementById('root'));
+```
+
+#### useState
+This is a hook to store the state and call to update a piece of the interface
+
+```tsx
+const App = createComponent(() => {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => setCount(count + 1);
+
+  return [
+    <div>count: {count}</div>,
+    <button onClick={handleClick}>Click me</button>,
+  ];
+});
 ```
 
 # LICENSE

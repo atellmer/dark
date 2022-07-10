@@ -44,6 +44,30 @@ test('[use-state]: use-state works correctly', () => {
   expect(host.innerHTML).toBe(content(4));
 });
 
+test('[use-state]: use-state works correctly when component returns array of elements', () => {
+  const content = (count: number) => dom`
+    <div>text</div>
+    <div>${count}</div>
+  `;
+  let count;
+  let setCount;
+  const Component = createComponent(() => {
+    [count, setCount] = useState(0);
+
+    return [<div>text</div>, <div>{count}</div>];
+  });
+
+  render(Component(), host);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(0));
+  setCount(count + 1);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(1));
+  setCount(count + 1);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(2));
+});
+
 test('[use-state]: state saves when nodes swapped', () => {
   type Item = {
     id: number;
