@@ -103,9 +103,9 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const className = `${selected ? 'selected' : ''}`;
 
   return (
-    <tr class={`${className}`}>
+    <tr class={className}>
       <td class='cell'>{name}</td>
-      <td class='cell'>zzz</td>
+      <td class='cell'>qqq</td>
       <td class='cell'>xxx</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>

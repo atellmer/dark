@@ -529,15 +529,6 @@ function performChild(options) {
     var nextFiber = options.nextFiber;
     var shadow = options.shadow;
     var instance = options.instance;
-    var optimizedFiber = nextFiber.alternate ? tryOptimizeFiber(nextFiber) : null;
-    if (optimizedFiber) {
-        return {
-            performedFiber: optimizedFiber,
-            performedNextFiber: optimizedFiber,
-            performedShadow: shadow,
-            performedInstance: instance,
-        };
-    }
     shadow = shadow ? shadow.child : null;
     var alternate = getChildAlternate(nextFiber);
     var hook = shadow ? shadow.hook : alternate ? alternate.hook : createHook();
@@ -567,82 +558,6 @@ function performChild(options) {
         performedShadow: shadow,
         performedInstance: instance,
     };
-}
-function tryOptimizeFiber(fiber) {
-    var e_1, _a;
-    var instance = fiber.instance, alternate = fiber.alternate;
-    var children = hasChildrenProp(instance) ? instance.children : [];
-    var canTryOptimize = alternate.childrenCount === children.length && children.length > 1;
-    if (canTryOptimize) {
-        var rootId = (0,_scope__WEBPACK_IMPORTED_MODULE_2__.getRootId)();
-        var canOptimize = detectCanOptimizeFiber(alternate.child, children);
-        var childAlternate = alternate.child;
-        var idx = 0;
-        if (!canOptimize)
-            return null;
-        var fibersByPositionsMap_1 = createFibersByPositionMap(childAlternate);
-        try {
-            for (var children_1 = __values(children), children_1_1 = children_1.next(); !children_1_1.done; children_1_1 = children_1.next()) {
-                var child = children_1_1.value;
-                var factory = child;
-                var alternateFactory = childAlternate.instance;
-                var props = alternateFactory.props;
-                var nextProps = factory.props;
-                var shouldUpdate = factory.shouldUpdate(props, nextProps);
-                if (shouldUpdate) {
-                    childAlternate.instance = factory;
-                    var callback = createUpdateCallback({
-                        rootId: rootId,
-                        currentFiber: childAlternate,
-                        replacingFiberIdx: idx,
-                        onCreateFiber: function (fiber, idx) {
-                            var replacingFiberPrev = fibersByPositionsMap_1[idx - 1];
-                            var replacingFiber = fibersByPositionsMap_1[idx];
-                            fiber.parent = replacingFiber.parent;
-                            fiber.nextSibling = replacingFiber.nextSibling;
-                            replacingFiberPrev && (replacingFiberPrev.nextSibling = fiber);
-                        },
-                    });
-                    _global__WEBPACK_IMPORTED_MODULE_1__.platform.scheduleCallback(callback);
-                }
-                childAlternate = childAlternate.nextSibling;
-                idx++;
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (children_1_1 && !children_1_1.done && (_a = children_1.return)) _a.call(children_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.deepWalking.set(false);
-        fiber.effectTag = _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.SKIP;
-        fiber.child = fiber.alternate.child;
-        var nextFiber = fiber.child;
-        while (nextFiber) {
-            nextFiber.parent = fiber;
-            nextFiber = nextFiber.nextSibling;
-        }
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.jumpToParent();
-        return fiber;
-    }
-    return null;
-}
-function detectCanOptimizeFiber(alternate, children) {
-    var nextFiber = alternate;
-    var idx = 0;
-    while (nextFiber || idx < children.length) {
-        var key = nextFiber && getElementKey(nextFiber.instance);
-        var nextKey = children[idx] && getElementKey(children[idx]);
-        var isMemoPrev = (0,_memo__WEBPACK_IMPORTED_MODULE_5__.detectIsMemo)(nextFiber.instance);
-        var isMemo = (0,_memo__WEBPACK_IMPORTED_MODULE_5__.detectIsMemo)(children[idx]);
-        if (key !== nextKey || !isMemoPrev || !isMemo)
-            return false;
-        nextFiber = nextFiber ? nextFiber.nextSibling : null;
-        idx++;
-    }
-    return true;
 }
 function performSibling(options) {
     _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.jumpToSibling();
@@ -727,7 +642,7 @@ function mutateAlternate(options) {
                 }
             }
             var performRemovingNodes = function () {
-                var e_2, _a, e_3, _b, _c;
+                var e_1, _a, e_2, _b, _c;
                 var diffKeys = getDiffKeys(keys_1, nextKeys_1);
                 if (diffKeys.length > 0) {
                     var fibersMap = createFibersByKeyMap(alternate.child);
@@ -744,12 +659,12 @@ function mutateAlternate(options) {
                             }
                         }
                     }
-                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
                     finally {
                         try {
                             if (diffKeys_1_1 && !diffKeys_1_1.done && (_a = diffKeys_1.return)) _a.call(diffKeys_1);
                         }
-                        finally { if (e_2) throw e_2.error; }
+                        finally { if (e_1) throw e_1.error; }
                     }
                 }
                 else if (!hasKeys_1) {
@@ -764,18 +679,18 @@ function mutateAlternate(options) {
                             }
                         }
                     }
-                    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
                     finally {
                         try {
                             if (childAlternates_1_1 && !childAlternates_1_1.done && (_b = childAlternates_1.return)) _b.call(childAlternates_1);
                         }
-                        finally { if (e_3) throw e_3.error; }
+                        finally { if (e_2) throw e_2.error; }
                     }
                     (_c = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get()).push.apply(_c, __spreadArray([], __read(childAlternates), false));
                 }
             };
             var performInsertingNodes = function () {
-                var e_4, _a;
+                var e_3, _a;
                 var diffKeys = getDiffKeys(nextKeys_1, keys_1);
                 if (diffKeys.length > 0) {
                     var diffKeyMap = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.keyBy)(diffKeys, function (x) { return x; });
@@ -811,12 +726,12 @@ function mutateAlternate(options) {
                             keyIdx++;
                         }
                     }
-                    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                    catch (e_3_1) { e_3 = { error: e_3_1 }; }
                     finally {
                         try {
                             if (nextKeys_2_1 && !nextKeys_2_1.done && (_a = nextKeys_2.return)) _a.call(nextKeys_2);
                         }
-                        finally { if (e_4) throw e_4.error; }
+                        finally { if (e_3) throw e_3.error; }
                     }
                 }
             };
@@ -1027,7 +942,7 @@ function getElementKey(instance) {
     return key;
 }
 function getDiffKeys(keys, nextKeys) {
-    var e_5, _a;
+    var e_4, _a;
     var nextKeysMap = nextKeys.reduce(function (acc, key) { return ((acc[key] = true), acc); }, {});
     var diff = [];
     try {
@@ -1038,12 +953,12 @@ function getDiffKeys(keys, nextKeys) {
             }
         }
     }
-    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
             if (keys_2_1 && !keys_2_1.done && (_a = keys_2.return)) _a.call(keys_2);
         }
-        finally { if (e_5) throw e_5.error; }
+        finally { if (e_4) throw e_4.error; }
     }
     return diff;
 }
@@ -1086,12 +1001,11 @@ function hasChildrenProp(element) {
     return (0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsTagVirtualNode)(element) || (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(element);
 }
 function commitChanges() {
-    var e_6, _a;
+    var e_5, _a;
     var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.get();
     var fromHook = _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.get();
     var deletions = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get();
     var hasPortals = wipFiber.alternate && wipFiber.alternate.portalHost;
-    // console.log('wip', wipFiber);
     if (hasPortals) {
         try {
             for (var deletions_1 = __values(deletions), deletions_1_1 = deletions_1.next(); !deletions_1_1.done; deletions_1_1 = deletions_1.next()) {
@@ -1099,28 +1013,28 @@ function commitChanges() {
                 fiber.portalHost && _global__WEBPACK_IMPORTED_MODULE_1__.platform.unmountPortal(fiber);
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
                 if (deletions_1_1 && !deletions_1_1.done && (_a = deletions_1.return)) _a.call(deletions_1);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_5) throw e_5.error; }
         }
     }
     commitWork(wipFiber.child, function () {
-        var e_7, _a, e_8, _b;
+        var e_6, _a, e_7, _b;
         try {
             for (var deletions_2 = __values(deletions), deletions_2_1 = deletions_2.next(); !deletions_2_1.done; deletions_2_1 = deletions_2.next()) {
                 var fiber = deletions_2_1.value;
                 _global__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommits(fiber);
             }
         }
-        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (deletions_2_1 && !deletions_2_1.done && (_a = deletions_2.return)) _a.call(deletions_2);
             }
-            finally { if (e_7) throw e_7.error; }
+            finally { if (e_6) throw e_6.error; }
         }
         _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.set([]);
         _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(null);
@@ -1130,12 +1044,12 @@ function commitChanges() {
                 effect();
             }
         }
-        catch (e_8_1) { e_8 = { error: e_8_1 }; }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
         finally {
             try {
                 if (_d && !_d.done && (_b = _c.return)) _b.call(_c);
             }
-            finally { if (e_8) throw e_8.error; }
+            finally { if (e_7) throw e_7.error; }
         }
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectsHelper.reset();
         if (fromHook) {
@@ -1147,32 +1061,61 @@ function commitChanges() {
     });
 }
 function commitWork(fiber, onComplete) {
+    walkFiber({
+        fiber: fiber,
+        onLoop: function (_a) {
+            var nextFiber = _a.nextFiber, isReturn = _a.isReturn, resetIsDeepWalking = _a.resetIsDeepWalking;
+            var skip = nextFiber.effectTag === _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.SKIP;
+            if (skip) {
+                resetIsDeepWalking();
+            }
+            else if (!isReturn) {
+                _global__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommits(nextFiber);
+            }
+            if (nextFiber && nextFiber.shadow) {
+                nextFiber.shadow = null;
+            }
+        },
+    });
+    onComplete();
+}
+function walkFiber(options) {
+    var fiber = options.fiber, onLoop = options.onLoop;
     var nextFiber = fiber;
     var isDeepWalking = true;
     var isReturn = false;
+    var visitedMap = new Map();
+    var detectCanVisit = function (fiber) { return !visitedMap.get(fiber); };
     while (nextFiber) {
-        var skip = nextFiber.effectTag === _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.SKIP;
-        if (skip) {
-            isDeepWalking = false;
+        onLoop({
+            nextFiber: nextFiber,
+            isReturn: isReturn,
+            resetIsDeepWalking: function () { return (isDeepWalking = false); },
+        });
+        if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
+            var newFiber = nextFiber.child;
+            isReturn = false;
+            nextFiber = newFiber;
+            visitedMap.set(newFiber, true);
         }
-        else if (!isReturn) {
-            _global__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommits(nextFiber);
-        }
-        if (nextFiber && nextFiber.shadow) {
-            nextFiber.shadow = null;
-        }
-        if (nextFiber.child && isDeepWalking) {
-            nextFiber = nextFiber.child;
-        }
-        else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
+        else if (nextFiber.nextSibling && detectCanVisit(nextFiber.nextSibling)) {
+            var newFiber = nextFiber.nextSibling;
             isDeepWalking = true;
             isReturn = false;
-            nextFiber = nextFiber.nextSibling;
+            nextFiber = newFiber;
+            visitedMap.set(newFiber, true);
         }
         else if (nextFiber.parent &&
-            nextFiber !== fiber &&
-            nextFiber.parent !== fiber &&
-            nextFiber.parent !== fiber.parent) {
+            nextFiber.parent === fiber &&
+            nextFiber.parent.nextSibling &&
+            detectCanVisit(nextFiber.parent.nextSibling)) {
+            var newFiber = nextFiber.parent.nextSibling;
+            isDeepWalking = true;
+            isReturn = false;
+            nextFiber = newFiber;
+            visitedMap.set(newFiber, true);
+        }
+        else if (nextFiber.parent && nextFiber.parent !== fiber) {
             isDeepWalking = false;
             isReturn = true;
             nextFiber = nextFiber.parent;
@@ -1180,9 +1123,6 @@ function commitWork(fiber, onComplete) {
         else {
             nextFiber = null;
         }
-    }
-    if (!nextFiber) {
-        onComplete();
     }
 }
 function createHook() {

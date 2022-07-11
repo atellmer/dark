@@ -1,4 +1,4 @@
-import { createComponent, View, useMemo, useEffect } from '@dark-engine/core';
+import { createComponent, View, useMemo, useEffect, useState } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 const div = props => View({ ...props, as: 'div' });
@@ -22,7 +22,7 @@ function createStyledComponent<P>(tag) {
       .map((x, idx) => x + (staticArgs[idx] || ''))
       .join('')
       .trim();
-    const staticClassName = `ss-${++staticClassNameId}`;
+    const staticClassName = `dx-${++staticClassNameId}`;
     const dynamicClassNamesMap = {};
 
     injectStyle(staticClassName, css);
@@ -31,15 +31,14 @@ function createStyledComponent<P>(tag) {
       const { slot } = props;
       const css = dynamicArgs.map(fn => fn(props) || '').join('');
       const dynamicClassName = useMemo(() => {
-        return css ? dynamicClassNamesMap[css] || `sd-${++dynamicClassNameId}` : '';
+        return css ? dynamicClassNamesMap[css] || `dxx-${++dynamicClassNameId}` : '';
       }, [css]);
       const className = `${staticClassName} ${dynamicClassName} ${props['class'] || ''}`.trim();
-      const fromMap = dynamicClassNamesMap[css] === dynamicClassName;
 
       dynamicClassNamesMap[css] = dynamicClassName;
 
       useEffect(() => {
-        if (!css || fromMap) return;
+        if (!css) return;
         const dispose = injectStyle(dynamicClassName, css);
 
         return () => dispose();
@@ -66,29 +65,50 @@ styled.div = function anonymous<P>(literals: TemplateStringsArray, ...args) {
 };
 
 type DivStyledProps = {
-  appearance: 'red' | 'yellow' | 'pink';
+  variant: 'red' | 'yellow' | 'green';
 };
 
-const MyPrettyDiv = styled.div<DivStyledProps>`
+const DivStyled = styled.div<DivStyledProps>`
+  width: 100px;
+  height: 100px;
   font-size: 60px;
+  transition: background-color 0.2s ease-in-out;
 
   ${(p: DivStyledProps) =>
-    p.appearance === 'red' &&
+    p.variant === 'red' &&
     `
-    color: red;
+    background-color: red;
   `}
 
   ${(p: DivStyledProps) =>
-    p.appearance === 'yellow' &&
+    p.variant === 'yellow' &&
     `
-    color: yellow;
+    background-color: yellow;
   `}
 
   ${(p: DivStyledProps) =>
-    p.appearance === 'pink' &&
+    p.variant === 'green' &&
     `
-    color: pink;
+    background-color: green;
   `}
 `;
 
-render(MyPrettyDiv({ appearance: 'pink' }), document.getElementById('root'));
+const App = createComponent(() => {
+  const [count, setCount] = useState(0);
+  const colors = ['red', 'yellow', 'green'];
+  const colorOne = colors[(count + 1) % 3] as DivStyledProps['variant'];
+  const colorTwo = colors[(count + 2) % 3] as DivStyledProps['variant'];
+  const colorThree = colors[(count + 3) % 3] as DivStyledProps['variant'];
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setCount(count + 1);
+    }, 1000);
+
+    return () => clearTimeout(timerId);
+  }, [count]);
+
+  return [DivStyled({ variant: colorOne }), DivStyled({ variant: colorTwo }), DivStyled({ variant: colorThree })];
+});
+
+render(App(), document.getElementById('root'));

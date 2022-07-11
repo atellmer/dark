@@ -10,7 +10,6 @@ import {
 } from '../helpers';
 import { platform } from '../global';
 import {
-  getRootId,
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
@@ -171,18 +170,9 @@ function performChild(options: PerformChildOptions) {
   let nextFiber = options.nextFiber;
   let shadow = options.shadow;
   let instance = options.instance;
-  const optimizedFiber = nextFiber.alternate ? tryOptimizeFiber(nextFiber) : null;
-
-  if (optimizedFiber) {
-    return {
-      performedFiber: optimizedFiber,
-      performedNextFiber: optimizedFiber,
-      performedShadow: shadow,
-      performedInstance: instance,
-    };
-  }
 
   shadow = shadow ? shadow.child : null;
+
   const alternate = getChildAlternate(nextFiber);
   const hook = shadow ? shadow.hook : alternate ? alternate.hook : createHook();
   const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
@@ -216,89 +206,6 @@ function performChild(options: PerformChildOptions) {
     performedShadow: shadow,
     performedInstance: instance,
   };
-}
-
-function tryOptimizeFiber(fiber: Fiber): Fiber | null {
-  const { instance, alternate } = fiber;
-  const children = hasChildrenProp(instance) ? instance.children : [];
-  const canTryOptimize = alternate.childrenCount === children.length && children.length > 1;
-
-  if (canTryOptimize) {
-    const rootId = getRootId();
-    const canOptimize = detectCanOptimizeFiber(alternate.child, children);
-    let childAlternate = alternate.child;
-    let idx = 0;
-
-    if (!canOptimize) return null;
-
-    const fibersByPositionsMap = createFibersByPositionMap(childAlternate);
-
-    for (const child of children) {
-      const factory = child as ComponentFactory;
-      const alternateFactory = childAlternate.instance as ComponentFactory;
-      const props = alternateFactory.props;
-      const nextProps = factory.props;
-      const shouldUpdate = factory.shouldUpdate(props, nextProps);
-
-      if (shouldUpdate) {
-        childAlternate.instance = factory;
-        const callback = createUpdateCallback({
-          rootId,
-          currentFiber: childAlternate,
-          replacingFiberIdx: idx,
-          onCreateFiber: (fiber, idx) => {
-            const replacingFiberPrev = fibersByPositionsMap[idx - 1];
-            const replacingFiber = fibersByPositionsMap[idx];
-
-            fiber.parent = replacingFiber.parent;
-            fiber.nextSibling = replacingFiber.nextSibling;
-            replacingFiberPrev && (replacingFiberPrev.nextSibling = fiber);
-          },
-        });
-
-        platform.scheduleCallback(callback);
-      }
-
-      childAlternate = childAlternate.nextSibling;
-      idx++;
-    }
-
-    fiberMountHelper.deepWalking.set(false);
-    fiber.effectTag = EffectTag.SKIP;
-    fiber.child = fiber.alternate.child;
-
-    let nextFiber = fiber.child;
-
-    while (nextFiber) {
-      nextFiber.parent = fiber;
-      nextFiber = nextFiber.nextSibling;
-    }
-
-    fiberMountHelper.jumpToParent();
-
-    return fiber;
-  }
-
-  return null;
-}
-
-function detectCanOptimizeFiber(alternate: Fiber, children: Array<DarkElementInstance>) {
-  let nextFiber = alternate;
-  let idx = 0;
-
-  while (nextFiber || idx < children.length) {
-    const key = nextFiber && getElementKey(nextFiber.instance);
-    const nextKey = children[idx] && getElementKey(children[idx]);
-    const isMemoPrev = detectIsMemo(nextFiber.instance);
-    const isMemo = detectIsMemo(children[idx]);
-
-    if (key !== nextKey || !isMemoPrev || !isMemo) return false;
-
-    nextFiber = nextFiber ? nextFiber.nextSibling : null;
-    idx++;
-  }
-
-  return true;
 }
 
 type PerformSiblingOptions = {
@@ -840,8 +747,6 @@ function commitChanges() {
   const fromHook = fromHookUpdateHelper.get();
   const deletions = deletionsHelper.get();
   const hasPortals = wipFiber.alternate && wipFiber.alternate.portalHost;
-
-  // console.log('wip', wipFiber);
 
   if (hasPortals) {
     for (const fiber of deletions) {
