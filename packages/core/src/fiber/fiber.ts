@@ -27,12 +27,12 @@ import {
   createEmptyVirtualNode,
   getVirtualNodeKey,
   detectIsVirtualNode,
-  detectIsCommentVirtualNode,
   detectIsVirtualNodeFactory,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context/model';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
+import { PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './model';
 
 class Fiber<N = NativeElement> {
@@ -50,6 +50,7 @@ class Fiber<N = NativeElement> {
   public mountedToHost: boolean;
   public portalHost: boolean;
   public childrenCount: number;
+  public marker: string;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -67,6 +68,7 @@ class Fiber<N = NativeElement> {
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.childrenCount = options.childrenCount || 0;
+    this.marker = options.marker || '';
   }
 
   public markPortalHost() {
@@ -280,6 +282,40 @@ function performSibling(options: PerformSiblingOptions) {
   };
 }
 
+type MutateFiberOptions = {
+  fiber: Fiber;
+  alternate: Fiber;
+  instance: DarkElementInstance;
+};
+
+function mutateFiber(options: MutateFiberOptions) {
+  const { fiber, alternate, instance } = options;
+  const key = alternate ? getElementKey(alternate.instance) : null;
+  const nextKey = alternate ? getElementKey(instance) : null;
+  const isDifferentKeys = key !== nextKey;
+  const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const isUpdate = isSameType && !isDifferentKeys;
+
+  fiber.instance = instance;
+  fiber.alternate = alternate || null;
+  fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
+  fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
+  fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
+
+  if (hasChildrenProp(fiber.instance)) {
+    fiber.childrenCount = fiber.instance.children.length;
+  }
+
+  if (fiber.alternate) {
+    fiber.alternate.shadow = null;
+    fiber.alternate.alternate = null;
+  }
+
+  if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
+    fiber.nativeElement = platform.createNativeElement(fiber);
+  }
+}
+
 type PerformAlternateOptions = {
   fiber: Fiber;
   alternate: Fiber;
@@ -291,15 +327,28 @@ function mutateAlternate(options: PerformAlternateOptions) {
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
+  const prevKey = getElementKey(alternate.instance);
+  const nextKey = getElementKey(instance);
+  const isSameKeys = prevKey === nextKey;
 
-  if (!isSameType) {
-    let nextFiber = alternate;
+  if (fiber.parent && fiber.parent.marker === PARTIAL_UPDATE) {
+    if (alternate.nextSibling && !fiber.nextSibling) {
+      let nextFiber = alternate.nextSibling;
+      const deletions: Array<Fiber> = [];
 
-    while (nextFiber) {
-      nextFiber.effectTag = EffectTag.DELETION;
-      deletionsHelper.get().push(nextFiber);
-      nextFiber = !detectIsCommentVirtualNode(nextFiber.instance) ? nextFiber.nextSibling : null;
+      while (nextFiber) {
+        nextFiber.effectTag = EffectTag.DELETION;
+        deletions.push(nextFiber);
+        nextFiber = nextFiber.nextSibling;
+      }
+
+      deletionsHelper.get().push(...deletions);
     }
+  }
+
+  if (!isSameType || !isSameKeys) {
+    alternate.effectTag = EffectTag.DELETION;
+    deletionsHelper.get().push(alternate);
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const isRequestedKeys = alternate.childrenCount !== instance.children.length;
 
@@ -552,45 +601,6 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
   }
 
   return instance;
-}
-
-type MutateFiberOptions = {
-  fiber: Fiber;
-  alternate: Fiber;
-  instance: DarkElementInstance;
-};
-
-function mutateFiber(options: MutateFiberOptions) {
-  const { fiber, alternate, instance } = options;
-  const key = alternate ? getElementKey(alternate.instance) : null;
-  const nextKey = alternate ? getElementKey(instance) : null;
-  const isDifferentKeys = key !== nextKey;
-  const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
-  const isUpdate = isSameType && !isDifferentKeys;
-
-  fiber.instance = instance;
-  fiber.alternate = alternate || null;
-  fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
-  fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
-  fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
-
-  if (hasChildrenProp(fiber.instance)) {
-    fiber.childrenCount = fiber.instance.children.length;
-  }
-
-  if (isSameType && isDifferentKeys) {
-    alternate.effectTag = EffectTag.DELETION;
-    deletionsHelper.get().push(alternate);
-  }
-
-  if (fiber.alternate) {
-    fiber.alternate.shadow = null;
-    fiber.alternate.alternate = null;
-  }
-
-  if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
-    fiber.nativeElement = platform.createNativeElement(fiber);
-  }
 }
 
 function createFibersByPositionMap(fiber: Fiber) {
@@ -879,6 +889,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
 
     const fiber = new Fiber({
       ...currentFiber,
+      marker: PARTIAL_UPDATE,
       child: null,
       alternate: currentFiber,
       effectTag: EffectTag.UPDATE,

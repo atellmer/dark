@@ -195,3 +195,33 @@ test('[use-state]: state saves after conditional rendering', () => {
   waitNextIdle();
   expect(host.innerHTML).toBe(content(1));
 });
+
+test('[use-state]: nodes remove correctly after use-state when rendering a different number of elements', () => {
+  const content = (hasFlag: boolean) =>
+    hasFlag
+      ? dom`<div>flag</div>`
+      : dom`
+    <div>1</div>
+    <div>2</div>
+    <div>3</div>
+  `;
+  let hasFlag;
+  let setHasFlag;
+  const Component = createComponent(() => {
+    [hasFlag, setHasFlag] = useState(false);
+
+    if (hasFlag) return <div>flag</div>;
+
+    return [<div>1</div>, <div>2</div>, <div>3</div>];
+  });
+
+  render(Component(), host);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(false));
+  setHasFlag(true);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(true));
+  setHasFlag(false);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(false));
+});
