@@ -405,12 +405,67 @@ const App = createComponent(() => {
   }
 
   return (
-    <div>
+    <Fragment>
       <div>Text 1</div>
       <BrokenComponent hasError={hasError} />
+    </Fragment>
+  );
+});
+```
+
+### Context
+Context is needed when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
+In Dark, the context works with the createContext method and useContext hook.
+Note that memoized intermediate components do not necessarily participate in re-rendering.
+
+```tsx
+type Theme = 'light' | 'dark';
+
+const ThemeContext = createContext<Theme>('light');
+
+const useTheme = () => useContext(ThemeContext);
+
+const ThemeConsumer = createComponent(() => {
+  const theme = useTheme();
+  console.log('render ThemeConsumer!');
+
+  return <div style='font-size: 20vw;'>{theme === 'light' ? '☀️' : '🌙'}</div>;
+});
+
+const Proxy = createComponent(() => {
+  console.log('render Proxy!');
+
+  return (
+    <div>
+      I won't re-render myself when theme changes
+      <ThemeConsumer />
     </div>
   );
 });
+
+const MemoProxy = memo(Proxy);
+
+const App = createComponent(() => {
+  const [theme, setTheme] = useState<Theme>('light');
+
+  const handleToggleTheme = () => setTheme(x => (x === 'dark' ? 'light' : 'dark'));
+
+  return (
+    <ThemeContext.Provider value={theme}>
+      <MemoProxy />
+      <button onClick={handleToggleTheme}>Toggle theme: {theme}</button>
+    </ThemeContext.Provider>
+  );
+});
+
+```
+```
+render Proxy!
+render ThemeConsumer!
+render ThemeConsumer!
+render ThemeConsumer!
+render ThemeConsumer!
+...
 ```
 
 # LICENSE
