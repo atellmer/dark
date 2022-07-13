@@ -2,11 +2,12 @@ import { getTime, workLoop, nextUnitOfWorkHelper } from '@dark-engine/core';
 import { TaskPriority, type Callback } from './model';
 
 const queue: Array<Task> = [];
-const yeildInterval = 5;
+const YEILD_INTERVAL = 5;
 let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
 let currentTask: Task = null;
+
 class Task {
   public static nextTaskId = 0;
   public id: number;
@@ -43,7 +44,7 @@ function executeTasks() {
 
 function performWorkUntilDeadline() {
   if (scheduledCallback) {
-    deadline = getTime() + yeildInterval;
+    deadline = getTime() + YEILD_INTERVAL;
 
     try {
       const hasMoreWork = scheduledCallback();
@@ -83,6 +84,7 @@ function requestCallbackSync(callback: Callback) {
     //
   }
   executeTasks();
+  currentTask = null;
 }
 
 let channel: MessageChannel = null;

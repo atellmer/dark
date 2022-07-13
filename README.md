@@ -411,9 +411,12 @@ const App = createComponent(() => {
 });
 ```
 
-#### useError
-Catches rendering errors:
+### Catching errors
+Error catching is done using the useError hook. When you get an error, you can log it and show an alternate UI.
 
+```tsx
+import { useError } from '@dark-engine/core';
+```
 ```tsx
 type BrokenComponentProps = {
   hasError: boolean;
@@ -455,6 +458,9 @@ Context is needed when you need to synchronize state between deeply nested eleme
 In Dark, the context works with the createContext method and useContext hook.
 Note that memoized intermediate components do not necessarily participate in re-rendering.
 
+```tsx
+import { createContext, useContext } from '@dark-engine/core';
+```
 ```tsx
 type Theme = 'light' | 'dark';
 
@@ -509,6 +515,9 @@ render ThemeConsumer!
 Code splitting is required when you have separate modules that can be lazily loaded when needed. For example, jumping to a new page with a new URL using the Browser History API. To use components lazy loading, you need to wrap dynamic imports of component in a special function - lazy. You will also need a Suspense component that will show a stub until the module is loaded.
 
 ```tsx
+import { lazy, Suspense } from '@dark-engine/core';
+```
+```tsx
 type NewPageProps = {};
 
 const NewPage = lazy<NewPageProps>(() => import('./new-page'));
@@ -529,6 +538,44 @@ const App = createComponent(() => {
     </Fragment>
   );
 });
+```
+
+### Portals
+
+This is a browser environment-specific ability to redirect the rendering thread to another element in the DOM tree. The main purpose is modal windows, dropdown menus and everything where it is necessary to avoid the possibility of being overlapped by the parent container due to configured css overflow.
+
+```tsx
+import { createPortal } from '@dark-engine/platform-browser';
+```
+
+```tsx
+const App = createComponent(() => {
+  const portalHost = useMemo(() => {
+    const host = document.createElement('div');
+
+    document.body.append(host);
+
+    return host;
+  }, []);
+
+  return (
+    <Fragment>
+      <div>Some text</div>
+      {createPortal(<div>I will be placed in a new container</div>, portalHost)}
+    </Fragment>
+  );
+});
+```
+
+### Main Render
+
+Mounting the application and possibly re-rendering is done by executing the render function. Note that Dark supports rendering multiple independent applications to different DOM elements. This can be useful for creating custom widgets that don't affect how the main application works.
+```tsx
+import { render } from '@dark-engine/platform-browser';
+```
+```tsx
+render(<PaymentWidget />, document.getElementById('payment-widget-root'));
+render(<WeatherWidget />, document.getElementById('weather-widget-root'));
 ```
 
 # LICENSE

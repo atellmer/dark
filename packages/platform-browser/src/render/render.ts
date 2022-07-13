@@ -12,7 +12,6 @@ import {
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
-  getRootId,
   deletionsHelper,
   fiberMountHelper,
   ROOT,
@@ -37,22 +36,19 @@ function render(element: DarkElement, container: Element) {
   }
 
   const isMounted = !detectIsUndefined(roots.get(container));
+  let rootId = null;
 
   if (!isMounted) {
-    const rootId = roots.size;
+    rootId = roots.size;
 
     roots.set(container, rootId);
-    effectStoreHelper.set(rootId);
     container.innerHTML = '';
   } else {
-    const rootId = roots.get(container);
-
-    effectStoreHelper.set(rootId);
+    rootId = roots.get(container);
   }
 
-  const rootId = getRootId();
   const callback = () => {
-    effectStoreHelper.set(rootId);
+    effectStoreHelper.set(rootId); // important order!
     resetNodeCache();
 
     const currentRootFiber = currentRootHelper.get();
