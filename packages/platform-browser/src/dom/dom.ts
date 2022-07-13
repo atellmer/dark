@@ -357,10 +357,6 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
   let isDeepWalking = true;
   let isReturn = false;
 
-  if (detectIsCommentVirtualNode(nextFiber.instance) && !nextFiber.nativeElement) {
-    return;
-  }
-
   while (nextFiber) {
     if (!isReturn) {
       if (nextFiber.nativeElement) {

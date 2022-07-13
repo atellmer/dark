@@ -28,8 +28,6 @@ import {
   getVirtualNodeKey,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
-  detectIsEmptyVirtualNode,
-  CommentVirtualNode,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context/model';
@@ -770,8 +768,6 @@ function commitChanges() {
   const deletions = deletionsHelper.get();
   const hasPortals = wipFiber.alternate && wipFiber.alternate.portalHost;
 
-  // console.log('wipFiber', wipFiber)
-
   if (hasPortals) {
     for (const fiber of deletions) {
       fiber.portalHost && platform.unmountPortal(fiber);
@@ -891,12 +887,10 @@ function createHook(): Hook {
 type CreateUpdateCallbackOptions = {
   rootId: number;
   currentFiber: Fiber;
-  replacingFiberIdx?: number;
-  onCreateFiber?: (fiber: Fiber, idx: number) => void;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, currentFiber, replacingFiberIdx, onCreateFiber } = options;
+  const { rootId, currentFiber } = options;
   const callback = () => {
     effectStoreHelper.set(rootId); // important order!
     fromHookUpdateHelper.set(true);
@@ -908,10 +902,24 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
       alternate: currentFiber,
       effectTag: EffectTag.UPDATE,
     });
+    const parentFiber = currentFiber.parent;
 
-    console.log('fiber', fiber)
+    if (parentFiber.child === currentFiber) {
+      parentFiber.child = fiber;
+    } else {
+      let prevSiblingFiber = parentFiber.child;
+      let nextSiblingFiber = parentFiber.child.nextSibling;
 
-    detectIsFunction(onCreateFiber) && onCreateFiber(fiber, replacingFiberIdx);
+      while (nextSiblingFiber) {
+        if (nextSiblingFiber === currentFiber) {
+          prevSiblingFiber.nextSibling = fiber;
+          break;
+        }
+
+        prevSiblingFiber = nextSiblingFiber;
+        nextSiblingFiber = nextSiblingFiber.nextSibling;
+      }
+    }
 
     currentFiber.alternate = null;
     wipRootHelper.set(fiber);
