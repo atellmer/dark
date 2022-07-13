@@ -21,7 +21,7 @@ const Timer = createComponent<TimerProps>(({ slot }) => {
 
 const App = createComponent(() => {
   return [
-    <div>Timer component is just logic component without view...</div>,
+    <div>Timer component is just a logic component without view...</div>,
     <Timer>{(seconds: number) => <div>timer: {seconds}</div>}</Timer>,
   ];
 });

@@ -5,6 +5,8 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 ## Notice
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. It took me about 4 years to bring it to an acceptable quality (but this is not accurate). It would probably take you much less time to do it. I rewrote it many times from scratch because I didn't like a lot of it. In the end, I decided to bring it to release, since the "ideal" is still unattainable. In addition, it is necessary to bring the work started to the end. I didn't get to do a lot of what I wanted to do. That is life. You can use the code at your own risk.
 
+The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really difficult task.
+
 ## Installation
 npm:
 ```
@@ -44,7 +46,7 @@ import { render, createPortal } from '@dark-engine/platform-browser';
 ```
 ## Shut up and show me your code!
 
-For example this is timer component
+For example this is timer component:
 
 ```tsx
 import {
@@ -76,7 +78,7 @@ const Timer = createComponent<TimerProps>(({ slot }) => {
 
 const App = createComponent(() => {
   return [
-    <div>Timer component is just logic without view...</div>,
+    <div>Timer component is just a logic without view...</div>,
     <Timer>{(seconds: number) => <div>timer: {seconds}</div>}</Timer>,
   ];
 });
@@ -84,7 +86,7 @@ const App = createComponent(() => {
 render(<App />, document.getElementById('root'));
 ```
 
-Here's the same code but without using JSX
+Here's the same code but without using JSX (Flutter style:)
 
 ```tsx
 import {
@@ -120,7 +122,7 @@ const Timer = createComponent<TimerProps>(({ slot }) => {
 const App = createComponent(() => {
   return [
     div({
-      slot: Text('Timer component is just logic without view...')
+      slot: Text('Timer component is just a logic without view...')
     }),
     Timer({
       slot: (seconds: number) => div({
@@ -135,7 +137,16 @@ render(App(), document.getElementById('root'));
 
 ## A little more about the API...
 
+### Elements
+
+Elements are a collection of platform-specific primitives and components. For the browser platform, these are tags, text, and comments.
+
 #### h
+
+```tsx
+import { h } from '@dark-engine/platform-browser';
+```
+
 This is the function you need to enable JSX support and write in a React-like style. If you are writing in typescript you need to enable custom JSX support in tsconfig.json like this:
 ```json
 {
@@ -147,9 +158,7 @@ This is the function you need to enable JSX support and write in a React-like st
 
 ```
 ```tsx
-import { h } from '@dark-engine/core';
-
-render(<h1>Hello world</h1>, document.getElementById('root'));
+render(<h1>I'm Dark</h1>, document.getElementById('root'));
 ```
 
 #### View, Text, Comment
@@ -160,15 +169,107 @@ const h1 = props => View({ ...props, as: 'h1' });
 
 render(
   [
-    h1({ slot: Text('Hello world') }),
-    Comment('I am comment in DOM'),
+    h1({ slot: Text(`I'm Dark`) }),
+    Comment(`I'm comment in DOM`),
   ],
   document.getElementById('root')
 );
 ```
 
+### Mounting and rerender root
+
+Mounting the application and possibly re-rendering is done by executing the render function. Note that Dark supports rendering multiple independent applications to different DOM elements. This can be useful for creating custom widgets that don't affect how the main application works.
+
+```tsx
+import { render } from '@dark-engine/platform-browser';
+```
+```tsx
+render(<App />, document.getElementById('root'));
+```
+render two apps
+
+```tsx
+render(<AppOne />, document.getElementById('root-1'));
+render(<AppTwo />, document.getElementById('root-2'));
+```
+rerender root
+
+```tsx
+setInterval(() => {
+  count++;
+  render(<App count={count} />, document.getElementById('root'));
+}, 1000);
+```
+
+### Conditional rendering
+
+A couple of examples of working with conditions:
+
+```tsx
+const Component = createComponent(({ isOpen }) => {
+  return isOpen ? <div>Hello</div> : null
+});
+```
+
+```tsx
+const Component = createComponent(({ isOpen }) => {
+  return (
+    <Fragment>
+      <div>Hello</div>
+      {isOpen && <div>Content</div>}
+    </Fragment>
+  );
+});
+```
+
+```tsx
+const Component = createComponent(({ isOpen }) => {
+  return (
+    <Fragment>
+      <div>Hello</div>
+      {isOpen ? <ComponentOne> : <ComponentTwo>}
+      <div>world</div>
+    </Fragment>
+  );
+});
+```
+
+### List rendering
+
+```tsx
+const List = createComponent(({ items }) => {
+  return (
+    <Fragment>
+      {
+        items.map(x => {
+          return <div key={item.id}>{item.name}</div>
+        })
+      }
+    </Fragment>
+  );
+});
+```
+
+or without Fragment
+
+```tsx
+const List = createComponent(({ items }) => {
+  return albums.map(x => <div key={x.id}>{x.title}</div>);
+});
+```
+
+### Components
+
+Components are the reusable building blocks of your application, encapsulating the presentation and logic of how they work.
+
 #### createComponent
+
+```tsx
+import { createComponent } from '@dark-engine/core';
+```
+
 This is a fundamental function that creates components with their own logic and possibly nested components.
+Components can accept props and change their logic based on their values.
 
 ```tsx
 type SkyProps = {
@@ -182,7 +283,7 @@ const Sky = createComponent<SkyProps>(({ color }) => {
 render(<Sky color='deepskyblue' />, document.getElementById('root'));
 ```
 
-A component can return an array of elements or components:
+A component can return an array of elements:
 
 ```tsx
 const App = createComponent(props => {
@@ -220,50 +321,18 @@ const App = createComponent(({ slot }) => {
 render(<App>Content</App>, document.getElementById('root'));
 ```
 
-#### memo
-This buddy is needed in order to optimize rerendering performance and tell Dark when to skip rendering.
-
-```tsx
-const HardComponent = createComponent(() => {
-  console.log('HardComponent render!');
-
-  return <div>I'm too complicated</div>;
-});
-
-const MemoHardComponent = memo(HardComponent);
-
-const App = createComponent(() => {
-  console.log('App render!');
-
-  useEffect(() => {
-    setInterval(() => {
-      render(<App />, document.getElementById('root'));
-    }, 1000);
-  }, []);
-
-  return [<div>app</div>, <MemoHardComponent />];
-});
-
-render(<App />, document.getElementById('root'));
-```
-```
-App render!
-HardComponent render!
-App render!
-App render!
-App render!
-...
-```
-As the second argument, it takes a function that answers the question of when to re-render the component:
-
-```tsx
-const MemoComponent = memo(Component, (prevProps, nextProps) => prevProps.one !== nextProps.one);
-```
-
 ### Hooks
 Hooks are needed to bring components to life: give them an internal state, start some actions, and so on. The basic rule for using hooks is to use them at the top level of the component, i.e. do not nest them inside other functions, cycles, conditions. This is a necessary condition, because hooks are not magic, but work based on array indices.
 
+### State
+Components should be able to store their state between renders. There are useState and useReducer hooks for this.
+
 #### useState
+
+```tsx
+import { useState } from '@dark-engine/core';
+```
+
 This is a hook to store the state and call to update a piece of the interface.
 
 ```tsx
@@ -279,13 +348,18 @@ const App = createComponent(() => {
 });
 ```
 
-Setter can pass function as argument:
+The setter can take a function as an argument to which the previous state is passed:
 
 ```tsx
 const handleClick = () => setCount(x => x + 1);
 ```
 
 #### useReducer
+
+```tsx
+import { useReducer } from '@dark-engine/core';
+```
+
 useReducer is used when a component has multiple values in the same complex state, or when the state needs to be updated based on its previous value.
 
 ```tsx
@@ -318,8 +392,15 @@ const App = createComponent(() => {
 });
 ```
 
+### Side Effects
+
+Side Effects are useful actions that take place outside of the interface rendering. For example, side effects can be fetch data from the server, calling timers, subscribing.
+
 #### useEffect
-Needed to run side effects in a component, such as asynchronous requests to the server or calling timers.
+
+```tsx
+import { useEffect } from '@dark-engine/core';
+```
 
 ```tsx
 const App = createComponent(() => {
@@ -344,18 +425,93 @@ const App = createComponent(() => {
 ```
 The second argument to this hook is an array of dependencies that tells it when to restart. This parameter is optional, then the effect will be restarted on every render.
 
-#### useMemo 
-It's needed to draw complex parts of the interface, if their rerender may depend on external variables. Or for complex calculations that can be remembered. Stores the last result of a calculation in memory. Also accepts an array of dependencies.
+Also this hook can return a reset function:
 
 ```tsx
-const memoizedValue = useMemo(() => Math.random(), []);
-const memoizedUI = useMemo(() => <div>I will rerender when dependencies change</div>, []);
+ useEffect(() => {
+    const timerId = setTimeout(() => {
+      console.log('hey!');
+    }, 1000);
 
-return [<div>{memoizedValue}</div>, memoizedUI];
+    return () => clearTimeout(timerId);
+  }, []);
+```
+
+### Performance optimization
+
+In Dark, redraw optimization can be configured using the memo function, as well as the useMemo and useCallback hooks. Optimization occurs due to the memoization of the results of the previous calculation or render.
+
+### memo
+
+```tsx
+import { memo } from '@dark-engine/core';
+```
+
+```tsx
+const HardComponent = createComponent(() => {
+  console.log('HardComponent render!');
+
+  return <div>I'm too complicated</div>;
+});
+
+const MemoHardComponent = memo(HardComponent);
+
+const App = createComponent(() => {
+  console.log('App render!');
+
+  useEffect(() => {
+    setInterval(() => {
+      render(<App />, document.getElementById('root'));
+    }, 1000);
+  }, []);
+
+  return [<div>app</div>, <MemoHardComponent />];
+});
+
+render(<App />, document.getElementById('root'));
+```
+```
+App render!
+HardComponent render!
+App render!
+App render!
+App render!
+...
+```
+
+As the second argument, it takes a function that answers the question of when to re-render the component:
+
+```tsx
+const MemoComponent = memo(Component, (prevProps, nextProps) => prevProps.color !== nextProps.color);
+```
+
+#### useMemo 
+
+```tsx
+import { useMemo } from '@dark-engine/core';
+```
+
+For memoization of heavy calculations or heavy pieces of the interface:
+
+```tsx
+const memoizedOne = useMemo(() => Math.random(), []);
+const memoizedTwo = useMemo(() => <div>I will rerender when dependencies change</div>, []);
+
+return (
+  <Fragment>
+    {memoizedOne}
+    {memoizedTwo}
+  </Fragment>
+);
 ```
 
 #### useCallback
-useCallback saves the last value of the function so as not to cause a re-render of the memoized component that receives this callback.
+
+```tsx
+import { useCallback } from '@dark-engine/core';
+```
+
+Suitable for memoizing handler functions descending down the component tree:
 
 ```tsx
  const handleClick = useCallback(() => setCount(count + 1), [count]);
@@ -365,8 +521,16 @@ useCallback saves the last value of the function so as not to cause a re-render 
   );
 ```
 
+### Refs
+
+Refs are needed to be able to get a reference to a DOM element or a reference to a component in order to interact with them more subtly.
+In Dark, work with refs is done using the forwardRef function and the useRef and useImperativeHandle hooks.
+
 #### useRef
-Needed to catch a link to a DOM element or another component.
+
+```tsx
+import { useRef } from '@dark-engine/core';
+```
 
 ```tsx
 const rootRef = useRef<HTMLInputElement>(null);
@@ -378,8 +542,13 @@ useEffect(() => {
 return <input ref={rootRef} />;
 ```
 
-#### useImperativeHandle
-This hook needed to populate a component ref with an object, Used in conjunction with forwardRef.
+#### forwardRef and useImperativeHandle
+
+```tsx
+import { forwardRef, useImperativeHandle } from '@dark-engine/core';
+```
+
+They are needed to create an object inside the reference to the component in order to access the component from outside:
 
 ```tsx
 type DogRef = {
@@ -412,6 +581,7 @@ const App = createComponent(() => {
 ```
 
 ### Catching errors
+
 Error catching is done using the useError hook. When you get an error, you can log it and show an alternate UI.
 
 ```tsx
@@ -454,6 +624,7 @@ const App = createComponent(() => {
 ```
 
 ### Context
+
 Context is needed when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
 In Dark, the context works with the createContext method and useContext hook.
 Note that memoized intermediate components do not necessarily participate in re-rendering.
@@ -512,6 +683,7 @@ render ThemeConsumer!
 ```
 
 ### Code splitting
+
 Code splitting is required when you have separate modules that can be lazily loaded when needed. For example, jumping to a new page with a new URL using the Browser History API. To use components lazy loading, you need to wrap dynamic imports of component in a special function - lazy. You will also need a Suspense component that will show a stub until the module is loaded.
 
 ```tsx
@@ -567,17 +739,7 @@ const App = createComponent(() => {
 });
 ```
 
-### Main Render
-
-Mounting the application and possibly re-rendering is done by executing the render function. Note that Dark supports rendering multiple independent applications to different DOM elements. This can be useful for creating custom widgets that don't affect how the main application works.
-
-```tsx
-import { render } from '@dark-engine/platform-browser';
-```
-```tsx
-render(<PaymentWidget />, document.getElementById('payment-widget-root'));
-render(<WeatherWidget />, document.getElementById('weather-widget-root'));
-```
+Thanks everyone!
 
 # LICENSE
 

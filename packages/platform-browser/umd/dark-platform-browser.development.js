@@ -709,19 +709,17 @@ function render(element, container) {
         throw new Error("render expects to receive container as Element!");
     }
     var isMounted = !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(roots.get(container));
+    var rootId = null;
     if (!isMounted) {
-        var rootId_1 = roots.size;
-        roots.set(container, rootId_1);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper.set(rootId_1);
+        rootId = roots.size;
+        roots.set(container, rootId);
         container.innerHTML = '';
     }
     else {
-        var rootId_2 = roots.get(container);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper.set(rootId_2);
+        rootId = roots.get(container);
     }
-    var rootId = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getRootId)();
     var callback = function () {
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper.set(rootId);
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper.set(rootId); // important order!
         (0,_dom__WEBPACK_IMPORTED_MODULE_1__.resetNodeCache)();
         var currentRootFiber = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.currentRootHelper.get();
         var fiber = new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.Fiber({
@@ -803,7 +801,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var queue = [];
-var yeildInterval = 5;
+var YEILD_INTERVAL = 5;
 var scheduledCallback = null;
 var deadline = 0;
 var isMessageLoopRunning = false;
@@ -836,7 +834,7 @@ function executeTasks() {
 }
 function performWorkUntilDeadline() {
     if (scheduledCallback) {
-        deadline = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() + yeildInterval;
+        deadline = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() + YEILD_INTERVAL;
         try {
             var hasMoreWork = scheduledCallback();
             if (!hasMoreWork) {
@@ -871,6 +869,7 @@ function requestCallbackSync(callback) {
         //
     }
     executeTasks();
+    currentTask = null;
 }
 var channel = null;
 var port = null;

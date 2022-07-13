@@ -536,7 +536,7 @@ function performPartialUpdateEffects(nextFiber) {
     if (nextFiber.marker === _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE) {
         var alternate = ((_b = nextFiber.child) === null || _b === void 0 ? void 0 : _b.alternate) || null;
         var fiber = nextFiber.child || null;
-        if (alternate.nextSibling && !fiber.nextSibling) {
+        if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
             var nextFiber_1 = alternate.nextSibling;
             var deletions = [];
             while (nextFiber_1) {
@@ -2469,7 +2469,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function useState(initialValue) {
-    var rootId = (0,_scope__WEBPACK_IMPORTED_MODULE_1__.getRootId)();
     var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
     var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)();
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({
@@ -2478,11 +2477,10 @@ function useState(initialValue) {
         update: update,
     }); }, []);
     var setState = (0,_use_callback__WEBPACK_IMPORTED_MODULE_4__.useCallback)(function (sourceValue) {
-        _scope__WEBPACK_IMPORTED_MODULE_1__.effectStoreHelper.set(rootId);
         var value = scope.values[scope.idx];
         var newValue = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(sourceValue) ? sourceValue(value) : sourceValue;
         if (!Object.is(value, newValue)) {
-            scope.values[scope.idx] = newValue; // important order
+            scope.values[scope.idx] = newValue;
             scope.update();
         }
     }, []);
