@@ -46,7 +46,6 @@ function createElement(vNode: VirtualNode): DomElement {
     },
     [NodeType.COMMENT]: (vNode: VirtualNode) => {
       const commentNode = vNode as CommentVirtualNode;
-      if (commentNode.value === EMPTY_NODE) return null;
       const node = document.createComment(commentNode.value);
 
       return node;

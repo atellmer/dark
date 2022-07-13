@@ -31,7 +31,7 @@ function processValue(getValue: () => any, isDepsDifferent = false) {
   return value;
 }
 
-function useMemo(getValue: () => any, deps: Array<any>) {
+function useMemo<T>(getValue: () => T, deps: Array<any>): T {
   const fiber = componentFiberHelper.get();
   const { hook } = fiber;
   const { idx, values } = hook;

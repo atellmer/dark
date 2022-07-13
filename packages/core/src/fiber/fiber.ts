@@ -350,9 +350,13 @@ function mutateAlternate(options: PerformAlternateOptions) {
     alternate.effectTag = EffectTag.DELETION;
     deletionsHelper.get().push(alternate);
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
-    const isRequestedKeys = alternate.childrenCount !== instance.children.length;
+    const prevElementsCount = alternate.childrenCount;
+    const nextElementsCount = instance.children.length;
+    const isRequestedKeys = prevElementsCount !== nextElementsCount;
 
     if (isRequestedKeys) {
+      const isRemovingCase = nextElementsCount < prevElementsCount;
+      const isInsertingCase = nextElementsCount > prevElementsCount;
       const children = hasChildrenProp(instance) ? instance.children : [];
       const { keys, nextKeys } = extractKeys(alternate.child, children);
       const hasKeys = keys.length > 0;
@@ -385,7 +389,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
             }
           }
         } else if (!hasKeys) {
-          const diffCount = alternate.childrenCount - instance.children.length;
+          const diffCount = prevElementsCount - nextElementsCount;
           const childAlternates: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const childAlternate of childAlternates) {
@@ -442,8 +446,8 @@ function mutateAlternate(options: PerformAlternateOptions) {
         }
       };
 
-      performRemovingNodes();
-      performInsertingNodes();
+      isRemovingCase && performRemovingNodes();
+      isInsertingCase && performInsertingNodes();
     }
   }
 }

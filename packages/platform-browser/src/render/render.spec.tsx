@@ -1,5 +1,5 @@
 /** @jsx createElement */
-import { dom, waitNextIdle, createTestHostNode } from '@test-utils';
+import { dom, waitNextIdle, createTestHostNode, createEmptyCommentString } from '@test-utils';
 import { createComponent } from '@dark-engine/core/component/component';
 import { View, Text, Comment } from '@dark-engine/core/view/view';
 import { createElement } from '@dark-engine/core/element/element';
@@ -11,6 +11,7 @@ let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
 const TEST_MARKER = '[RENDER]';
+const emptyComment = createEmptyCommentString();
 let nextId = 0;
 
 const generateItems = (count: number) => {
@@ -77,7 +78,7 @@ test(`${TEST_MARKER}: render array of items correctly`, () => {
   expect(host.innerHTML).toBe(content);
 });
 
-test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
+test(`${TEST_MARKER}: conditional rendering works correctly with replacing components`, () => {
   type AppProps = {
     items: Array<Item>;
     one: boolean;
@@ -143,6 +144,38 @@ test(`${TEST_MARKER}: conditional rendering works correctly`, () => {
   expect(host.innerHTML).toBe(content(items));
 });
 
+test(`${TEST_MARKER}: conditional rendering works correctly with nullable elements`, () => {
+  type AppProps = {
+    hasFlag: boolean;
+  };
+
+  const App = createComponent<AppProps>(({ hasFlag }) => {
+    return [div({ slot: Text('header') }), hasFlag && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
+  });
+
+  const content = (hasFlag: boolean) => dom`
+    <div>header</div>
+    ${hasFlag ? '<div>hello</div>' : emptyComment}
+    <div>footer</div>
+  `;
+
+  render(App({ hasFlag: false }), host);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(false));
+
+  render(App({ hasFlag: true }), host);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(true));
+
+  render(App({ hasFlag: false }), host);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(false));
+
+  render(App({ hasFlag: true }), host);
+  waitNextIdle();
+  expect(host.innerHTML).toBe(content(true));
+});
+
 describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
   type AppProps = {
     items: Array<Item>;
@@ -177,7 +210,7 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
 
   const content = (items: Array<Item>) => dom`
     <div>header</div>
-    ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : ''}
+    ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
     <div>footer</div>
   `;
 
@@ -544,5 +577,5 @@ test(`${TEST_MARKER} remove indexed nodes correctly`, () => {
   expect(host.innerHTML).toBe(content(items));
   remove();
   forceUpdate();
-  expect(host.innerHTML).toBe('');
+  expect(host.innerHTML).toBe(emptyComment);
 });

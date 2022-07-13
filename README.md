@@ -285,6 +285,39 @@ Setter can pass function as argument:
 const handleClick = () => setCount(x => x + 1);
 ```
 
+#### useReducer
+useReducer is used when a component has multiple values in the same complex state, or when the state needs to be updated based on its previous value.
+
+```tsx
+type State = { count: number };
+type Action = { type: string };
+
+const initialState: State = { count: 0 };
+
+function reducer(state: State, action: Action) {
+  switch (action.type) {
+    case 'increment':
+      return { count: state.count + 1 };
+    case 'decrement':
+      return { count: state.count - 1 };
+    default:
+      throw new Error();
+  }
+}
+
+const App = createComponent(() => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <Fragment>
+      Count: {state.count}
+      <button onClick={() => dispatch({ type: 'decrement' })}>-</button>
+      <button onClick={() => dispatch({ type: 'increment' })}>+</button>
+    </Fragment>
+  );
+});
+```
+
 #### useEffect
 Needed to run side effects in a component, such as asynchronous requests to the server or calling timers.
 
@@ -382,7 +415,11 @@ const App = createComponent(() => {
 Catches rendering errors:
 
 ```tsx
-const BrokenComponent = createComponent<BrokenComponent>(({ hasError }) => {
+type BrokenComponentProps = {
+  hasError: boolean;
+};
+
+const BrokenComponent = createComponent<BrokenComponentProps>(({ hasError }) => {
   if (hasError) {
     throw new Error('oh no!');
   }
@@ -467,6 +504,8 @@ render ThemeConsumer!
 render ThemeConsumer!
 ...
 ```
+
+### Code splitting
 
 # LICENSE
 

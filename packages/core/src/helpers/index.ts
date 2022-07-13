@@ -11,9 +11,7 @@ const detectIsNull = (o: any) => o === null;
 const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
 function error(str: string) {
-  if (typeof console !== 'undefined') {
-    console.error(str);
-  }
+  !detectIsUndefined(console) && console.error(str);
 }
 
 function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
@@ -41,7 +39,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
       list.push(item);
       levelMap[level].idx++;
     }
-  } while (!(level === 0 && levelMap[level].idx >= levelMap[level].source.length));
+  } while (level > 0 || levelMap[level].idx < levelMap[level].source.length);
 
   return list;
 }
@@ -59,14 +57,7 @@ function keyBy<T = any>(
 }
 
 function takeListFromEnd(source: Array<any>, count: number) {
-  const list = [];
-
-  for (let i = 0; i <= count; i++) {
-    const idx = source.length - i - 1;
-    list.push(source[idx]);
-  }
-
-  return list;
+  return source.slice(source.length - count, source.length);
 }
 
 export {

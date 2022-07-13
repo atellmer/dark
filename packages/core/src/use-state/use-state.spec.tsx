@@ -1,11 +1,12 @@
 /** @jsx createElement */
-import { dom, waitNextIdle } from '@test-utils';
+import { dom, waitNextIdle, createEmptyCommentString } from '@test-utils';
 import { render } from '@dark-engine/platform-browser/render';
 import { createComponent } from '../component/component';
 import { createElement } from '../element/element';
 import { useState } from './use-state';
 
 let host: HTMLElement = null;
+const emptyComment = createEmptyCommentString();
 
 beforeAll(() => {
   jest.useFakeTimers();
@@ -190,7 +191,7 @@ test('[use-state]: state saves after conditional rendering', () => {
   expect(host.innerHTML).toBe(content(1));
   render(App({ isOpen: false }), host);
   waitNextIdle();
-  expect(host.innerHTML).toBe('');
+  expect(host.innerHTML).toBe(emptyComment);
   render(App({ isOpen: true }), host);
   waitNextIdle();
   expect(host.innerHTML).toBe(content(1));
