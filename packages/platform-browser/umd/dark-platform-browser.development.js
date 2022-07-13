@@ -85,8 +85,6 @@ function createElement(vNode) {
         },
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.COMMENT] = function (vNode) {
             var commentNode = vNode;
-            if (commentNode.value === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EMPTY_NODE)
-                return null;
             var node = document.createComment(commentNode.value);
             return node;
         },
@@ -367,9 +365,6 @@ function commitDeletion(fiber, parentElement) {
     var nextFiber = fiber;
     var isDeepWalking = true;
     var isReturn = false;
-    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsCommentVirtualNode)(nextFiber.instance) && !nextFiber.nativeElement) {
-        return;
-    }
     while (nextFiber) {
         if (!isReturn) {
             if (nextFiber.nativeElement) {

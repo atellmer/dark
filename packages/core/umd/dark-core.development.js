@@ -136,12 +136,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "ATTR_KEY": () => (/* binding */ ATTR_KEY),
 /* harmony export */   "ATTR_REF": () => (/* binding */ ATTR_REF),
 /* harmony export */   "EMPTY_NODE": () => (/* binding */ EMPTY_NODE),
+/* harmony export */   "PARTIAL_UPDATE": () => (/* binding */ PARTIAL_UPDATE),
 /* harmony export */   "ROOT": () => (/* binding */ ROOT)
 /* harmony export */ });
 var ROOT = 'root';
 var EMPTY_NODE = 'dark:matter';
 var ATTR_KEY = 'key';
 var ATTR_REF = 'ref';
+var PARTIAL_UPDATE = 'partial-update';
 
 
 /***/ }),
@@ -371,7 +373,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../component */ "./src/component/index.ts");
 /* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../view */ "./src/view/index.ts");
 /* harmony import */ var _memo__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../memo */ "./src/memo/index.ts");
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./model */ "./src/fiber/model.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
+/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./model */ "./src/fiber/model.ts");
 var __assign = (undefined && undefined.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -382,17 +385,6 @@ var __assign = (undefined && undefined.__assign) || function () {
         return t;
     };
     return __assign.apply(this, arguments);
-};
-var __values = (undefined && undefined.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (undefined && undefined.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -419,6 +411,18 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var __values = (undefined && undefined.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+
 
 
 
@@ -442,6 +446,7 @@ var Fiber = /** @class */ (function () {
         this.mountedToHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.mountedToHost) || false;
         this.portalHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.portalHost) ? options.portalHost : false;
         this.childrenCount = options.childrenCount || 0;
+        this.marker = options.marker || '';
     }
     Fiber.prototype.markPortalHost = function () {
         this.portalHost = true;
@@ -520,8 +525,27 @@ function performUnitOfWork(fiber) {
             if (performedFiber)
                 return performedFiber;
         }
+        performPartialUpdateEffects(nextFiber);
         if (nextFiber.parent === null)
             return null;
+    }
+}
+function performPartialUpdateEffects(nextFiber) {
+    var _a;
+    var _b;
+    if (nextFiber.marker === _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE) {
+        var alternate = ((_b = nextFiber.child) === null || _b === void 0 ? void 0 : _b.alternate) || null;
+        var fiber = nextFiber.child || null;
+        if (alternate.nextSibling && !fiber.nextSibling) {
+            var nextFiber_1 = alternate.nextSibling;
+            var deletions = [];
+            while (nextFiber_1) {
+                nextFiber_1.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+                deletions.push(nextFiber_1);
+                nextFiber_1 = nextFiber_1.nextSibling;
+            }
+            (_a = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get()).push.apply(_a, __spreadArray([], __read(deletions), false));
+        }
     }
 }
 function performChild(options) {
@@ -551,7 +575,7 @@ function performChild(options) {
     fiber.parent = nextFiber;
     fiber.shadow = shadow;
     nextFiber = fiber;
-    _model__WEBPACK_IMPORTED_MODULE_6__.cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
+    _model__WEBPACK_IMPORTED_MODULE_7__.cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
     return {
         performedFiber: nextFiber,
         performedNextFiber: nextFiber,
@@ -591,7 +615,7 @@ function performSibling(options) {
         nextFiber.nextSibling = fiber;
         fiber.shadow = shadow;
         nextFiber = fiber;
-        _model__WEBPACK_IMPORTED_MODULE_6__.cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
+        _model__WEBPACK_IMPORTED_MODULE_7__.cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
         return {
             performedFiber: nextFiber,
             performedNextFiber: nextFiber,
@@ -616,22 +640,48 @@ function performSibling(options) {
         performedInstance: instance,
     };
 }
+function mutateFiber(options) {
+    var fiber = options.fiber, alternate = options.alternate, instance = options.instance;
+    var key = alternate ? getElementKey(alternate.instance) : null;
+    var nextKey = alternate ? getElementKey(instance) : null;
+    var isDifferentKeys = key !== nextKey;
+    var isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
+    var isUpdate = isSameType && !isDifferentKeys;
+    fiber.instance = instance;
+    fiber.alternate = alternate || null;
+    fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
+    fiber.effectTag = isUpdate ? _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE : _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT;
+    fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
+    if (hasChildrenProp(fiber.instance)) {
+        fiber.childrenCount = fiber.instance.children.length;
+    }
+    if (fiber.alternate) {
+        fiber.alternate.shadow = null;
+        fiber.alternate.alternate = null;
+    }
+    if (!fiber.nativeElement && (0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsVirtualNode)(fiber.instance)) {
+        fiber.nativeElement = _global__WEBPACK_IMPORTED_MODULE_1__.platform.createNativeElement(fiber);
+    }
+}
 function mutateAlternate(options) {
     var fiber = options.fiber, alternate = options.alternate, instance = options.instance;
     var alternateType = getInstanceType(alternate.instance);
     var elementType = getInstanceType(instance);
     var isSameType = elementType === alternateType;
-    if (!isSameType) {
-        var nextFiber = alternate;
-        while (nextFiber) {
-            nextFiber.effectTag = _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION;
-            _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(nextFiber);
-            nextFiber = !(0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsCommentVirtualNode)(nextFiber.instance) ? nextFiber.nextSibling : null;
-        }
+    var prevKey = getElementKey(alternate.instance);
+    var nextKey = getElementKey(instance);
+    var isSameKeys = prevKey === nextKey;
+    if (!isSameType || !isSameKeys) {
+        alternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+        _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(alternate);
     }
     else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
-        var isRequestedKeys = alternate.childrenCount !== instance.children.length;
+        var prevElementsCount_1 = alternate.childrenCount;
+        var nextElementsCount_1 = instance.children.length;
+        var isRequestedKeys = prevElementsCount_1 !== nextElementsCount_1;
         if (isRequestedKeys) {
+            var isRemovingCase = nextElementsCount_1 < prevElementsCount_1;
+            var isInsertingCase = nextElementsCount_1 > prevElementsCount_1;
             var children = hasChildrenProp(instance) ? instance.children : [];
             var _a = extractKeys(alternate.child, children), keys_1 = _a.keys, nextKeys_1 = _a.nextKeys;
             var hasKeys_1 = keys_1.length > 0;
@@ -651,7 +701,7 @@ function mutateAlternate(options) {
                             var key = diffKeys_1_1.value;
                             var childAlternate = fibersMap[key] || null;
                             if (childAlternate) {
-                                childAlternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION;
+                                childAlternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
                                 _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(childAlternate);
                                 if (childAlternate.portalHost) {
                                     fiber.markPortalHost();
@@ -668,12 +718,12 @@ function mutateAlternate(options) {
                     }
                 }
                 else if (!hasKeys_1) {
-                    var diffCount = alternate.childrenCount - instance.children.length;
+                    var diffCount = prevElementsCount_1 - nextElementsCount_1;
                     var childAlternates = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.takeListFromEnd)(getSiblingFibers(alternate.child), diffCount);
                     try {
                         for (var childAlternates_1 = __values(childAlternates), childAlternates_1_1 = childAlternates_1.next(); !childAlternates_1_1.done; childAlternates_1_1 = childAlternates_1.next()) {
                             var childAlternate = childAlternates_1_1.value;
-                            childAlternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION;
+                            childAlternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
                             if (childAlternate.portalHost) {
                                 fiber.markPortalHost();
                             }
@@ -699,18 +749,18 @@ function mutateAlternate(options) {
                     var keyIdx = 0;
                     try {
                         for (var nextKeys_2 = __values(nextKeys_1), nextKeys_2_1 = nextKeys_2.next(); !nextKeys_2_1.done; nextKeys_2_1 = nextKeys_2.next()) {
-                            var nextKey = nextKeys_2_1.value;
+                            var nextKey_1 = nextKeys_2_1.value;
                             if (true) {
-                                if (usedKeyMap[nextKey]) {
+                                if (usedKeyMap[nextKey_1]) {
                                     (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.error)("Some key of node already has been used!");
                                 }
                             }
-                            usedKeyMap[nextKey] = true;
-                            if (nextKey !== keys_1[keyIdx] && diffKeyMap[nextKey]) {
+                            usedKeyMap[nextKey_1] = true;
+                            if (nextKey_1 !== keys_1[keyIdx] && diffKeyMap[nextKey_1]) {
                                 var insertionFiber = new Fiber({
                                     instance: (0,_view__WEBPACK_IMPORTED_MODULE_4__.createEmptyVirtualNode)(),
                                     parent: alternate,
-                                    effectTag: _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.PLACEMENT,
+                                    effectTag: _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT,
                                 });
                                 if (keyIdx === 0) {
                                     insertionFiber.nextSibling = alternate.child;
@@ -735,8 +785,8 @@ function mutateAlternate(options) {
                     }
                 }
             };
-            performRemovingNodes();
-            performInsertingNodes();
+            isRemovingCase && performRemovingNodes();
+            isInsertingCase && performInsertingNodes();
         }
     }
 }
@@ -754,8 +804,8 @@ function performMemo(options) {
         if (skip) {
             var nextFiber = null;
             _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.deepWalking.set(false);
-            memoFiber = new Fiber(__assign(__assign({}, alternate), { alternate: alternate, effectTag: _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.SKIP, nextSibling: alternate.nextSibling
-                    ? alternate.nextSibling.effectTag === _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION
+            memoFiber = new Fiber(__assign(__assign({}, alternate), { alternate: alternate, effectTag: _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.SKIP, nextSibling: alternate.nextSibling
+                    ? alternate.nextSibling.effectTag === _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION
                         ? null
                         : alternate.nextSibling
                     : null }));
@@ -849,33 +899,6 @@ function mountInstance(fiber, instance) {
     }
     return instance;
 }
-function mutateFiber(options) {
-    var fiber = options.fiber, alternate = options.alternate, instance = options.instance;
-    var key = alternate ? getElementKey(alternate.instance) : null;
-    var nextKey = alternate ? getElementKey(instance) : null;
-    var isDifferentKeys = key !== nextKey;
-    var isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
-    var isUpdate = isSameType && !isDifferentKeys;
-    fiber.instance = instance;
-    fiber.alternate = alternate || null;
-    fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
-    fiber.effectTag = isUpdate ? _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.UPDATE : _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.PLACEMENT;
-    fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
-    if (hasChildrenProp(fiber.instance)) {
-        fiber.childrenCount = fiber.instance.children.length;
-    }
-    if (isSameType && isDifferentKeys) {
-        alternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION;
-        _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(alternate);
-    }
-    if (fiber.alternate) {
-        fiber.alternate.shadow = null;
-        fiber.alternate.alternate = null;
-    }
-    if (!fiber.nativeElement && (0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsVirtualNode)(fiber.instance)) {
-        fiber.nativeElement = _global__WEBPACK_IMPORTED_MODULE_1__.platform.createNativeElement(fiber);
-    }
-}
 function createFibersByPositionMap(fiber) {
     var nextFiber = fiber;
     var position = 0;
@@ -963,15 +986,16 @@ function getDiffKeys(keys, nextKeys) {
     return diff;
 }
 function getChildAlternate(fiber) {
-    var alternate = (fiber.alternate && fiber.alternate.effectTag !== _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION && fiber.alternate.child) || null;
-    while (alternate && alternate.effectTag === _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION) {
+    var alternate = fiber.alternate && fiber.alternate.effectTag !== _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION ? fiber.alternate.child : null;
+    while (alternate && alternate.effectTag === _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION) {
         alternate = alternate.nextSibling;
     }
     return alternate;
 }
 function getNextSiblingAlternate(fiber) {
-    var alternate = (fiber.alternate && fiber.alternate.nextSibling) || null;
-    while (alternate && alternate.effectTag === _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.DELETION) {
+    var _a;
+    var alternate = ((_a = fiber.alternate) === null || _a === void 0 ? void 0 : _a.nextSibling) || null;
+    while (alternate && alternate.effectTag === _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION) {
         alternate = alternate.nextSibling;
     }
     return alternate;
@@ -1065,7 +1089,7 @@ function commitWork(fiber, onComplete) {
         fiber: fiber,
         onLoop: function (_a) {
             var nextFiber = _a.nextFiber, isReturn = _a.isReturn, resetIsDeepWalking = _a.resetIsDeepWalking;
-            var skip = nextFiber.effectTag === _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.SKIP;
+            var skip = nextFiber.effectTag === _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.SKIP;
             if (skip) {
                 resetIsDeepWalking();
             }
@@ -1132,12 +1156,27 @@ function createHook() {
     };
 }
 function createUpdateCallback(options) {
-    var rootId = options.rootId, currentFiber = options.currentFiber, replacingFiberIdx = options.replacingFiberIdx, onCreateFiber = options.onCreateFiber;
+    var rootId = options.rootId, currentFiber = options.currentFiber;
     var callback = function () {
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
-        var fiber = new Fiber(__assign(__assign({}, currentFiber), { child: null, alternate: currentFiber, effectTag: _model__WEBPACK_IMPORTED_MODULE_6__.EffectTag.UPDATE }));
-        (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(onCreateFiber) && onCreateFiber(fiber, replacingFiberIdx);
+        var fiber = new Fiber(__assign(__assign({}, currentFiber), { marker: _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE, child: null, alternate: currentFiber, effectTag: _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE }));
+        var parentFiber = currentFiber.parent;
+        if (parentFiber.child === currentFiber) {
+            parentFiber.child = fiber;
+        }
+        else {
+            var prevSiblingFiber = parentFiber.child;
+            var nextSiblingFiber = parentFiber.child.nextSibling;
+            while (nextSiblingFiber) {
+                if (nextSiblingFiber === currentFiber) {
+                    prevSiblingFiber.nextSibling = fiber;
+                    break;
+                }
+                prevSiblingFiber = nextSiblingFiber;
+                nextSiblingFiber = nextSiblingFiber.nextSibling;
+            }
+        }
         currentFiber.alternate = null;
         _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(fiber);
         _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.set(fiber);
@@ -1332,9 +1371,7 @@ var detectIsArray = function (o) { return Array.isArray(o); };
 var detectIsNull = function (o) { return o === null; };
 var detectIsEmpty = function (o) { return detectIsNull(o) || detectIsUndefined(o); };
 function error(str) {
-    if (typeof console !== 'undefined') {
-        console.error(str);
-    }
+    !detectIsUndefined(console) && console.error(str);
 }
 function flatten(source) {
     var list = [];
@@ -1359,7 +1396,7 @@ function flatten(source) {
             list.push(item);
             levelMap[level].idx++;
         }
-    } while (!(level === 0 && levelMap[level].idx >= levelMap[level].source.length));
+    } while (level > 0 || levelMap[level].idx < levelMap[level].source.length);
     return list;
 }
 function getTime() {
@@ -1370,12 +1407,7 @@ function keyBy(list, fn, value) {
     return list.reduce(function (acc, x) { return ((acc[fn(x)] = value ? x : true), acc); }, {});
 }
 function takeListFromEnd(source, count) {
-    var list = [];
-    for (var i = 0; i <= count; i++) {
-        var idx = source.length - i - 1;
-        list.push(source[idx]);
-    }
-    return list;
+    return source.slice(source.length - count, source.length);
 }
 
 
@@ -1451,7 +1483,9 @@ function lazy(dynamic) {
             });
         }, []);
         (0,_use_effect__WEBPACK_IMPORTED_MODULE_2__.useEffect)(function () {
-            scope.component && trigger();
+            if (!scope.component)
+                return;
+            trigger();
         }, [scope.component]);
         return scope.component ? scope.component(props, ref) : fallback;
     }, { token: $$lazy }));
@@ -2808,6 +2842,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "Fiber": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.Fiber),
 /* harmony export */   "Fragment": () => (/* reexport safe */ _fragment__WEBPACK_IMPORTED_MODULE_4__.Fragment),
 /* harmony export */   "NodeType": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.NodeType),
+/* harmony export */   "PARTIAL_UPDATE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.PARTIAL_UPDATE),
 /* harmony export */   "ROOT": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.ROOT),
 /* harmony export */   "Suspense": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.Suspense),
 /* harmony export */   "SuspenseContext": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.SuspenseContext),
