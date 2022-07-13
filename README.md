@@ -506,6 +506,30 @@ render ThemeConsumer!
 ```
 
 ### Code splitting
+Code splitting is required when you have separate modules that can be lazily loaded when needed. For example, jumping to a new page with a new URL using the Browser History API. To use components lazy loading, you need to wrap dynamic imports of component in a special function - lazy. You will also need a Suspense component that will show a stub until the module is loaded.
+
+```tsx
+type NewPageProps = {};
+
+const NewPage = lazy<NewPageProps>(() => import('./new-page'));
+
+const App = createComponent(() => {
+  const [isNewPage, setIsNewPage] = useState(false);
+
+  const handleToggle = () => setIsNewPage(x => !x);
+
+  return (
+    <Fragment>
+      <button onClick={handleToggle}>Toggle new page</button>
+      {isNewPage && (
+        <Suspense fallback={<div>Loading...</div>}>
+          <NewPage />
+        </Suspense>
+      )}
+    </Fragment>
+  );
+});
+```
 
 # LICENSE
 

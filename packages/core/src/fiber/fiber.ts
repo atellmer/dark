@@ -1,13 +1,4 @@
-import {
-  flatten,
-  detectIsEmpty,
-  error,
-  keyBy,
-  takeListFromEnd,
-  detectIsUndefined,
-  detectIsArray,
-  detectIsFunction,
-} from '../helpers';
+import { flatten, detectIsEmpty, error, keyBy, takeListFromEnd, detectIsUndefined, detectIsArray } from '../helpers';
 import { platform } from '../global';
 import {
   wipRootHelper,
