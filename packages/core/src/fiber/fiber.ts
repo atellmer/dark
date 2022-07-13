@@ -28,6 +28,8 @@ import {
   getVirtualNodeKey,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
+  detectIsEmptyVirtualNode,
+  CommentVirtualNode,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context/model';
@@ -157,7 +159,29 @@ function performUnitOfWork(fiber: Fiber) {
       if (performedFiber) return performedFiber;
     }
 
+    performPartialUpdateEffects(nextFiber);
+
     if (nextFiber.parent === null) return null;
+  }
+}
+
+function performPartialUpdateEffects(nextFiber: Fiber) {
+  if (nextFiber.marker === PARTIAL_UPDATE) {
+    const alternate = nextFiber.child?.alternate || null;
+    const fiber = nextFiber.child || null;
+
+    if (alternate.nextSibling && !fiber.nextSibling) {
+      let nextFiber = alternate.nextSibling;
+      const deletions: Array<Fiber> = [];
+
+      while (nextFiber) {
+        nextFiber.effectTag = EffectTag.DELETION;
+        deletions.push(nextFiber);
+        nextFiber = nextFiber.nextSibling;
+      }
+
+      deletionsHelper.get().push(...deletions);
+    }
   }
 }
 
@@ -330,21 +354,6 @@ function mutateAlternate(options: PerformAlternateOptions) {
   const prevKey = getElementKey(alternate.instance);
   const nextKey = getElementKey(instance);
   const isSameKeys = prevKey === nextKey;
-
-  if (fiber.parent && fiber.parent.marker === PARTIAL_UPDATE) {
-    if (alternate.nextSibling && !fiber.nextSibling) {
-      let nextFiber = alternate.nextSibling;
-      const deletions: Array<Fiber> = [];
-
-      while (nextFiber) {
-        nextFiber.effectTag = EffectTag.DELETION;
-        deletions.push(nextFiber);
-        nextFiber = nextFiber.nextSibling;
-      }
-
-      deletionsHelper.get().push(...deletions);
-    }
-  }
 
   if (!isSameType || !isSameKeys) {
     alternate.effectTag = EffectTag.DELETION;
@@ -706,8 +715,7 @@ function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey
 }
 
 function getChildAlternate(fiber: Fiber): Fiber | null {
-  let alternate =
-    (fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETION && fiber.alternate.child) || null;
+  let alternate = fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETION ? fiber.alternate.child : null;
 
   while (alternate && alternate.effectTag === EffectTag.DELETION) {
     alternate = alternate.nextSibling;
@@ -717,7 +725,7 @@ function getChildAlternate(fiber: Fiber): Fiber | null {
 }
 
 function getNextSiblingAlternate(fiber: Fiber): Fiber | null {
-  let alternate = (fiber.alternate && fiber.alternate.nextSibling) || null;
+  let alternate = fiber.alternate?.nextSibling || null;
 
   while (alternate && alternate.effectTag === EffectTag.DELETION) {
     alternate = alternate.nextSibling;
@@ -761,6 +769,8 @@ function commitChanges() {
   const fromHook = fromHookUpdateHelper.get();
   const deletions = deletionsHelper.get();
   const hasPortals = wipFiber.alternate && wipFiber.alternate.portalHost;
+
+  // console.log('wipFiber', wipFiber)
 
   if (hasPortals) {
     for (const fiber of deletions) {
@@ -898,6 +908,8 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
       alternate: currentFiber,
       effectTag: EffectTag.UPDATE,
     });
+
+    console.log('fiber', fiber)
 
     detectIsFunction(onCreateFiber) && onCreateFiber(fiber, replacingFiberIdx);
 

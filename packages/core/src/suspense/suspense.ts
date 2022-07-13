@@ -6,6 +6,8 @@ import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
 import type { DarkElement } from '../shared';
 
+const $$suspense = Symbol('suspense');
+
 type SuspenseProps = {
   fallback: DarkElement;
 };
@@ -22,19 +24,22 @@ const SuspenseContext = createContext<SuspenseContextValue>({
   trigger: () => {},
 });
 
-const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
-  if (!fallback) {
-    throw new Error(`Suspense fallback doesn't found`);
-  }
-  const { isLoaded: isSuspenseLoaded } = useContext(SuspenseContext);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const trigger = useCallback(() => setIsLoaded(true), []);
-  const value = useMemo(() => ({ fallback, isLoaded, trigger }), [fallback, isLoaded]);
+const Suspense = createComponent<SuspenseProps>(
+  ({ fallback, slot }) => {
+    if (!fallback) {
+      throw new Error(`Suspense fallback doesn't found`);
+    }
+    const { isLoaded: isSuspenseLoaded } = useContext(SuspenseContext);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const trigger = useCallback(() => setIsLoaded(true), []);
+    const value = useMemo(() => ({ fallback, isLoaded, trigger }), [fallback, isLoaded]);
 
-  return SuspenseContext.Provider({
-    value,
-    slot: isSuspenseLoaded ? slot : null,
-  });
-});
+    return SuspenseContext.Provider({
+      value,
+      slot: isSuspenseLoaded ? slot : null,
+    });
+  },
+  { token: $$suspense },
+);
 
 export { SuspenseContext, Suspense };
