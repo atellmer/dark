@@ -159,7 +159,7 @@ function performPartialUpdateEffects(nextFiber: Fiber) {
     const alternate = nextFiber.child?.alternate || null;
     const fiber = nextFiber.child || null;
 
-    if (alternate.nextSibling && !fiber.nextSibling) {
+    if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
       let nextFiber = alternate.nextSibling;
       const deletions: Array<Fiber> = [];
 

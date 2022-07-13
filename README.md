@@ -570,6 +570,7 @@ const App = createComponent(() => {
 ### Main Render
 
 Mounting the application and possibly re-rendering is done by executing the render function. Note that Dark supports rendering multiple independent applications to different DOM elements. This can be useful for creating custom widgets that don't affect how the main application works.
+
 ```tsx
 import { render } from '@dark-engine/platform-browser';
 ```

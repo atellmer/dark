@@ -1,5 +1,5 @@
 import { detectIsUndefined, detectIsFunction } from '../helpers';
-import { getRootId, effectStoreHelper, componentFiberHelper } from '../scope';
+import { componentFiberHelper } from '../scope';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
@@ -12,7 +12,6 @@ type Scope = {
 };
 
 function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] {
-  const rootId = getRootId();
   const fiber = componentFiberHelper.get();
   const update = useUpdate();
   const scope: Scope = useMemo(
@@ -24,12 +23,11 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
     [],
   );
   const setState = useCallback((sourceValue: Value<T>) => {
-    effectStoreHelper.set(rootId);
     const value = scope.values[scope.idx];
     const newValue = detectIsFunction(sourceValue) ? sourceValue(value) : sourceValue;
 
     if (!Object.is(value, newValue)) {
-      scope.values[scope.idx] = newValue; // important order
+      scope.values[scope.idx] = newValue;
       scope.update();
     }
   }, []);
