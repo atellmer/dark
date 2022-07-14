@@ -152,7 +152,7 @@ Elements are a collection of platform-specific primitives and components. For th
 #### h
 
 ```tsx
-import { h } from '@dark-engine/platform-browser';
+import { h } from '@dark-engine/core';
 ```
 
 This is the function you need to enable JSX support and write in a React-like style. If you are writing in typescript you need to enable custom JSX support in tsconfig.json like this:
@@ -170,6 +170,11 @@ render(<h1>I'm Dark</h1>, document.getElementById('root'));
 ```
 
 #### View, Text, Comment
+
+```tsx
+import { View, Text, Comment } from '@dark-engine/core';
+```
+
 These are the basic entities corresponding to tags, text and comments if you are not using JSX.
 
 ```tsx
