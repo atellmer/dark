@@ -10,14 +10,11 @@
       box-sizing: border-box;
     }
     html, body {
-      position: relative;
       width: 100%;
-      min-height: 100vh;
       margin: 0;
       padding: 0;
     }
     body {
-      color: black;
       background-color: #222;
       color: white;
     }
@@ -25,53 +22,38 @@
 </head>
 <body>
   <div id="root"></div>
-  <div id="portal"></div>
   <!-- deps start -->
-  <script src='./js/core.prod.umd.min.js'></script>
-  <script src='./js/browser.prod.umd.min.js'></script>
+  <script src="https://unpkg.com/@dark-engine/core/umd/dark-core.production.min.js"></script>
+  <script src="https://unpkg.com/@dark-engine/platform-browser/umd/dark-platform-browser.production.min.js"></script>
   <!-- deps end -->
   <script>
     // export from global variables
-    const { View, Text, createComponent, useState, useEffect } = DarkCore;
-    const { render, createPortal } = DarkPlatformBrowser;
+    const { View, Text, createComponent, useState } = DarkCore;
+    const { render } = DarkPlatformBrowser;
 
     // start coding...
     const div = props => View({ ...props, as: 'div' });
+    const input = props => View({ ...props, void: true, as: 'input' });
 
-    // Timer component
-    const Timer = createComponent(({ slot }) => {
-    const [seconds, setSeconds] = useState(0);
+    // App component
+    const App = createComponent(() => {
+      const [value, setValue] = useState('xxx');
 
-    useEffect(() => {
-      const timerId = setInterval(() => {
-        setSeconds(x => x + 1);
-      }, 1000);
+      const handleInput = e => setValue(e.target.value);
 
-      return () => clearInterval(timerId);
-    }, []);
+      return [
+        div({
+          slot: Text(`Hello: ${value}`),
+        }),
+        input({
+          value,
+          onInput: handleInput,
+        }),
+      ];
+    });
 
-    return slot(seconds);
-  });
-
-  // App component
-  const App = createComponent(() => {
-    return [
-      div({
-        slot: Text('Timer component...')
-      }),
-      Timer({
-        slot: seconds => div({
-          slot: [
-            Text(`timer: ${seconds}`),
-            createPortal(Text(`hello from portal! ${seconds}`), document.getElementById('portal')),
-          ]
-        })
-      })
-    ];
-  });
-
-  // render app
-  render(App(), document.getElementById('root'));
+    // render app
+    render(App(), document.getElementById('root'));
   </script>
 </body>
 </html>

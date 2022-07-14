@@ -1,11 +1,13 @@
-# Dark
+# Dark 🌒
 
 Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in Typescript 💫
+
+![Dark](./assets/cover.jpg)
 
 ## Notice
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. It took me about 4 years to bring it to an acceptable quality (but this is not accurate). It would probably take you much less time to do it. I rewrote it many times from scratch because I didn't like a lot of it. In the end, I decided to bring it to release, since the "ideal" is still unattainable. In addition, it is necessary to bring the work started to the end. I didn't get to do a lot of what I wanted to do. That is life. You can use the code at your own risk.
 
-The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really difficult task.
+The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
 
 ## Installation
 npm:
@@ -16,6 +18,12 @@ yarn:
 ```
 yarn add @dark-engine/core @dark-engine/platform-browser
 ```
+CDN:
+```html
+<script src="https://unpkg.com/@dark-engine/core/umd/dark-core.production.min.js"></script>
+<script src="https://unpkg.com/@dark-engine/platform-browser/umd/dark-platform-browser.production.min.js"></script>
+```
+
 ## API overview
 The public API is partially similar to the React API and includes 2 packages - core and browser support.
 
@@ -227,7 +235,7 @@ const Component = createComponent(({ isOpen }) => {
   return (
     <Fragment>
       <div>Hello</div>
-      {isOpen ? <ComponentOne> : <ComponentTwo>}
+      {isOpen ? <ComponentOne /> : <ComponentTwo />}
       <div>world</div>
     </Fragment>
   );
