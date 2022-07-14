@@ -113,7 +113,7 @@ const App = createComponent(() => {
 });
 ```
 
-## A little more about the API...
+## A little more about the core concepts...
 
 ### Elements
 
