@@ -130,7 +130,8 @@ This is the function you need to enable JSX support and write in a React-like st
 {
   "compilerOptions": {
     "jsx": "react",
-    "jsxFactory": "h"
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment"
   }
 }
 
@@ -290,6 +291,18 @@ return (
 );
 ```
 
+or just
+
+```tsx
+return (
+  <>
+    <header>Header</header>
+    <div>Content</div>
+    <footer>Footer</footer>
+  </>
+);
+```
+
 If a child element is passed to the component, it will appear in props as slot:
 
 ```tsx
@@ -366,11 +379,11 @@ const App = createComponent(() => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
-    <Fragment>
+    <>
       Count: {state.count}
       <button onClick={() => dispatch({ type: 'decrement' })}>-</button>
       <button onClick={() => dispatch({ type: 'increment' })}>+</button>
-    </Fragment>
+    </>
   );
 });
 ```
@@ -481,10 +494,10 @@ const memoizedOne = useMemo(() => Math.random(), []);
 const memoizedTwo = useMemo(() => <div>I will rerender when dependencies change</div>, []);
 
 return (
-  <Fragment>
+  <>
     {memoizedOne}
     {memoizedTwo}
-  </Fragment>
+  </>
 );
 ```
 
@@ -598,10 +611,10 @@ const App = createComponent(() => {
   }
 
   return (
-    <Fragment>
+    <>
       <div>Text 1</div>
       <BrokenComponent hasError={hasError} />
-    </Fragment>
+    </>
   );
 });
 ```
@@ -683,14 +696,14 @@ const App = createComponent(() => {
   const handleToggle = () => setIsNewPage(x => !x);
 
   return (
-    <Fragment>
+    <>
       <button onClick={handleToggle}>Toggle new page</button>
       {isNewPage && (
         <Suspense fallback={<div>Loading...</div>}>
           <NewPage />
         </Suspense>
       )}
-    </Fragment>
+    </>
   );
 });
 ```
@@ -714,10 +727,10 @@ const App = createComponent(() => {
   }, []);
 
   return (
-    <Fragment>
+    <>
       <div>Some text</div>
       {createPortal(<div>I will be placed in a new container</div>, portalHost)}
-    </Fragment>
+    </>
   );
 });
 ```

@@ -78,19 +78,17 @@ const Modal = createComponent<ModalProps>(({ isOpen, slot, onRequestClose }) => 
 
   const renderModal = () => {
     return (
-      <Fragment>
-        <div style={containerStyle}>
-          <Overlay />
-          <div style={modalStyle}>
-            <div style={modalHeaderStyle}>
-              <button style={closeButtonStyle} onClick={onRequestClose}>
-                X
-              </button>
-            </div>
-            <div style={modalBodyStyle}>{slot}</div>
+      <div style={containerStyle}>
+        <Overlay />
+        <div style={modalStyle}>
+          <div style={modalHeaderStyle}>
+            <button style={closeButtonStyle} onClick={onRequestClose}>
+              X
+            </button>
           </div>
+          <div style={modalBodyStyle}>{slot}</div>
         </div>
-      </Fragment>
+      </div>
     );
   };
 
@@ -114,14 +112,14 @@ const App = createComponent(() => {
   const handleCloseModal = () => setIsOpen(false);
 
   return (
-    <Fragment>
+    <>
       <Modal isOpen={isOpen} onRequestClose={handleCloseModal}>
         Hello from modal window! {timer}
       </Modal>
       timer: {timer}
       <br />
       <button onClick={handleOpenModal}>Open modal</button>
-    </Fragment>
+    </>
   );
 });
 
