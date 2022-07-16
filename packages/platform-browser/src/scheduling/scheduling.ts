@@ -1,5 +1,5 @@
 import { getTime, workLoop, nextUnitOfWorkHelper } from '@dark-engine/core';
-import { TaskPriority, type Callback } from './model';
+import { type Callback } from './model';
 
 const queue: Array<Task> = [];
 const YEILD_INTERVAL = 5;
@@ -11,20 +11,18 @@ let currentTask: Task = null;
 class Task {
   public static nextTaskId = 0;
   public id: number;
-  public priority: TaskPriority;
   public callback: () => void;
 
-  constructor(options: Pick<Task, 'priority' | 'callback'>) {
+  constructor(options: Pick<Task, 'callback'>) {
     this.id = ++Task.nextTaskId;
-    this.priority = options.priority;
     this.callback = options.callback;
   }
 }
 
 const shouldYeildToHost = () => getTime() >= deadline;
 
-function scheduleCallback(callback: () => void, priority: TaskPriority = TaskPriority.NORMAL) {
-  const task = new Task({ priority, callback });
+function scheduleCallback(callback: () => void) {
+  const task = new Task({ callback });
 
   queue.push(task);
   executeTasks();

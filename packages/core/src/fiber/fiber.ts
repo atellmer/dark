@@ -881,42 +881,23 @@ type CreateUpdateCallbackOptions = {
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, currentFiber } = options;
+  const { rootId, currentFiber: fiber } = options;
   const callback = () => {
     effectStoreHelper.set(rootId); // important order!
     fromHookUpdateHelper.set(true);
+    fiberMountHelper.reset();
 
-    const fiber = new Fiber({
-      ...currentFiber,
-      marker: PARTIAL_UPDATE,
-      child: null,
-      alternate: currentFiber,
-      effectTag: EffectTag.UPDATE,
+    fiber.alternate = new Fiber({
+      ...fiber,
+      alternate: null,
     });
-    const parentFiber = currentFiber.parent;
+    fiber.marker = PARTIAL_UPDATE;
+    fiber.effectTag = EffectTag.UPDATE;
+    fiber.child = null;
 
-    if (parentFiber.child === currentFiber) {
-      parentFiber.child = fiber;
-    } else {
-      let prevSiblingFiber = parentFiber.child;
-      let nextSiblingFiber = parentFiber.child.nextSibling;
-
-      while (nextSiblingFiber) {
-        if (nextSiblingFiber === currentFiber) {
-          prevSiblingFiber.nextSibling = fiber;
-          break;
-        }
-
-        prevSiblingFiber = nextSiblingFiber;
-        nextSiblingFiber = nextSiblingFiber.nextSibling;
-      }
-    }
-
-    currentFiber.alternate = null;
     wipRootHelper.set(fiber);
     componentFiberHelper.set(fiber);
     fiber.instance = mountInstance(fiber, fiber.instance);
-    fiberMountHelper.reset();
     nextUnitOfWorkHelper.set(fiber);
   };
 

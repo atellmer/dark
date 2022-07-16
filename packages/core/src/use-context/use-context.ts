@@ -11,7 +11,7 @@ function useContext<T>(context: Context<T>): T {
   const provider = getProvider<T>(context, fiber);
   const value = provider ? provider.value : defaultValue;
   const update = useUpdate();
-  const scope = useMemo(() => ({ prevValue: value, update }), []);
+  const scope = useMemo(() => ({ prevValue: value }), []);
   const hasProvider = Boolean(provider);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ function useContext<T>(context: Context<T>): T {
 
     const subscriber = (newValue: T) => {
       if (!Object.is(scope.prevValue, newValue)) {
-        scope.update();
+        update();
       }
     };
 
@@ -35,7 +35,6 @@ function useContext<T>(context: Context<T>): T {
   }, [hasProvider]);
 
   scope.prevValue = value;
-  scope.update = update;
 
   return value;
 }

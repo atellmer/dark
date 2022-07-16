@@ -1,9 +1,6 @@
 import type { Platform } from './model';
 
 export const platform: Platform = {
-  raf: () => {
-    throw new Error('raf not installed by renderer');
-  },
   scheduleCallback: () => {
     throw new Error('scheduleCallback not installed by renderer');
   },

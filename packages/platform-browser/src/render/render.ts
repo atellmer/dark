@@ -18,9 +18,8 @@ import {
 } from '@dark-engine/core';
 import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
-import { scheduleCallback, shouldYeildToHost, TaskPriority } from '../scheduling';
+import { scheduleCallback, shouldYeildToHost } from '../scheduling';
 
-platform.raf = window.requestAnimationFrame.bind(this);
 platform.scheduleCallback = scheduleCallback;
 platform.shouldYeildToHost = shouldYeildToHost;
 platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
@@ -70,7 +69,7 @@ function render(element: DarkElement, container: Element) {
     deletionsHelper.set([]);
   };
 
-  platform.scheduleCallback(callback, TaskPriority.HIGH);
+  platform.scheduleCallback(callback);
 }
 
 export { render };

@@ -8,7 +8,6 @@ type Value<T> = T | ((prevValue: T) => T);
 type Scope = {
   idx: number;
   values: Array<any>;
-  update: () => void;
 };
 
 function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] {
@@ -18,7 +17,6 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
     () => ({
       idx: fiber.hook.idx,
       values: fiber.hook.values,
-      update,
     }),
     [],
   );
@@ -28,7 +26,7 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
 
     if (!Object.is(value, newValue)) {
       scope.values[scope.idx] = newValue;
-      scope.update();
+      update();
     }
   }, []);
   const { hook } = fiber;
@@ -37,7 +35,6 @@ function useState<T = unknown>(initialValue: T): [T, (value: Value<T>) => void] 
 
   values[idx] = value;
   scope.idx = idx;
-  scope.update = update;
   scope.values = values;
   hook.idx++;
 

@@ -11,12 +11,13 @@ function useEffect(effect: Effect, deps?: Array<any>) {
   const hook = fiber.hook as Hook<HookValue<EffectCleanup>>;
   const { idx, values } = hook;
   const runEffect = () => {
+    values[idx] = {
+      deps,
+      value: undefined,
+      token: $$useEffect,
+    };
     const run = () => {
-      values[idx] = {
-        deps,
-        value: effect(),
-        token: $$useEffect,
-      };
+      values[idx].value = effect();
     };
 
     effectsHelper.add(() => setTimeout(run));

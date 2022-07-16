@@ -2,7 +2,6 @@ import { Fiber } from '../fiber';
 import { ComponentFactory } from '../component';
 
 export type Platform = {
-  raf: typeof requestAnimationFrame;
   scheduleCallback: (callback: () => void, priority?: number) => void;
   shouldYeildToHost: () => boolean;
   createNativeElement: <N>(fiber: Fiber<N>) => N;
