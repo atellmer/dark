@@ -2,7 +2,7 @@ import { getTime, workLoop, nextUnitOfWorkHelper } from '@dark-engine/core';
 import { type Callback } from './model';
 
 const queue: Array<Task> = [];
-const YEILD_INTERVAL = 5;
+const YEILD_INTERVAL = 10;
 let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
