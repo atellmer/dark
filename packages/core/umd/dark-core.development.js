@@ -1156,32 +1156,18 @@ function createHook() {
     };
 }
 function createUpdateCallback(options) {
-    var rootId = options.rootId, currentFiber = options.currentFiber;
+    var rootId = options.rootId, fiber = options.currentFiber;
     var callback = function () {
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
-        var fiber = new Fiber(__assign(__assign({}, currentFiber), { marker: _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE, child: null, alternate: currentFiber, effectTag: _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE }));
-        var parentFiber = currentFiber.parent;
-        if (parentFiber.child === currentFiber) {
-            parentFiber.child = fiber;
-        }
-        else {
-            var prevSiblingFiber = parentFiber.child;
-            var nextSiblingFiber = parentFiber.child.nextSibling;
-            while (nextSiblingFiber) {
-                if (nextSiblingFiber === currentFiber) {
-                    prevSiblingFiber.nextSibling = fiber;
-                    break;
-                }
-                prevSiblingFiber = nextSiblingFiber;
-                nextSiblingFiber = nextSiblingFiber.nextSibling;
-            }
-        }
-        currentFiber.alternate = null;
+        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
+        fiber.alternate = new Fiber(__assign(__assign({}, fiber), { alternate: null }));
+        fiber.marker = _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE;
+        fiber.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE;
+        fiber.child = null;
         _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(fiber);
         _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.set(fiber);
         fiber.instance = mountInstance(fiber, fiber.instance);
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
         _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkHelper.set(fiber);
     };
     return callback;
@@ -1296,9 +1282,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "platform": () => (/* binding */ platform)
 /* harmony export */ });
 var platform = {
-    raf: function () {
-        throw new Error('raf not installed by renderer');
-    },
     scheduleCallback: function () {
         throw new Error('scheduleCallback not installed by renderer');
     },
@@ -2019,14 +2002,14 @@ function useContext(context) {
     var provider = getProvider(context, fiber);
     var value = provider ? provider.value : defaultValue;
     var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_3__.useUpdate)();
-    var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_1__.useMemo)(function () { return ({ prevValue: value, update: update }); }, []);
+    var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_1__.useMemo)(function () { return ({ prevValue: value }); }, []);
     var hasProvider = Boolean(provider);
     (0,_use_effect__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
         if (!hasProvider)
             return;
         var subscriber = function (newValue) {
             if (!Object.is(scope.prevValue, newValue)) {
-                scope.update();
+                update();
             }
         };
         provider.subscribers.push(subscriber);
@@ -2038,7 +2021,6 @@ function useContext(context) {
         };
     }, [hasProvider]);
     scope.prevValue = value;
-    scope.update = update;
     return value;
 }
 function getProvider(context, fiber) {
@@ -2107,12 +2089,13 @@ function useEffect(effect, deps) {
     var hook = fiber.hook;
     var idx = hook.idx, values = hook.values;
     var runEffect = function () {
+        values[idx] = {
+            deps: deps,
+            value: undefined,
+            token: $$useEffect,
+        };
         var run = function () {
-            values[idx] = {
-                deps: deps,
-                value: effect(),
-                token: $$useEffect,
-            };
+            values[idx].value = effect();
         };
         _scope__WEBPACK_IMPORTED_MODULE_1__.effectsHelper.add(function () { return setTimeout(run); });
     };
@@ -2474,14 +2457,13 @@ function useState(initialValue) {
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({
         idx: fiber.hook.idx,
         values: fiber.hook.values,
-        update: update,
     }); }, []);
     var setState = (0,_use_callback__WEBPACK_IMPORTED_MODULE_4__.useCallback)(function (sourceValue) {
         var value = scope.values[scope.idx];
         var newValue = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(sourceValue) ? sourceValue(value) : sourceValue;
         if (!Object.is(value, newValue)) {
             scope.values[scope.idx] = newValue;
-            scope.update();
+            update();
         }
     }, []);
     var hook = fiber.hook;
@@ -2489,7 +2471,6 @@ function useState(initialValue) {
     var value = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(values[idx]) ? values[idx] : initialValue;
     values[idx] = value;
     scope.idx = idx;
-    scope.update = update;
     scope.values = values;
     hook.idx++;
     return [value, setState];
@@ -2528,14 +2509,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../global */ "./src/global/index.ts");
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
 /* harmony import */ var _fiber__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../fiber */ "./src/fiber/index.ts");
+/* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../use-memo */ "./src/use-memo/index.ts");
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
 
 
 
 function useUpdate() {
     var rootId = (0,_scope__WEBPACK_IMPORTED_MODULE_1__.getRootId)();
     var currentFiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
+    var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ rootId: rootId, currentFiber: currentFiber }); }, []);
+    scope.rootId = rootId;
+    scope.currentFiber = currentFiber;
     var update = function () {
-        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({ rootId: rootId, currentFiber: currentFiber });
+        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)(__assign({}, scope));
         _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback);
     };
     return update;

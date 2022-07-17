@@ -696,7 +696,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.raf = window.requestAnimationFrame.bind(undefined);
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback = _scheduling__WEBPACK_IMPORTED_MODULE_3__.scheduleCallback;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.shouldYeildToHost = _scheduling__WEBPACK_IMPORTED_MODULE_3__.shouldYeildToHost;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.createNativeElement = _dom__WEBPACK_IMPORTED_MODULE_1__.createDomElement;
@@ -738,7 +737,7 @@ function render(element, container) {
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.get().forEach(function (x) { return (x.effectTag = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE); });
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.set([]);
     };
-    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, _scheduling__WEBPACK_IMPORTED_MODULE_3__.TaskPriority.HIGH);
+    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback);
 }
 
 
@@ -797,11 +796,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/scheduling/model.ts");
-
 
 var queue = [];
-var YEILD_INTERVAL = 5;
+var YEILD_INTERVAL = 10;
 var scheduledCallback = null;
 var deadline = 0;
 var isMessageLoopRunning = false;
@@ -809,16 +806,14 @@ var currentTask = null;
 var Task = /** @class */ (function () {
     function Task(options) {
         this.id = ++Task.nextTaskId;
-        this.priority = options.priority;
         this.callback = options.callback;
     }
     Task.nextTaskId = 0;
     return Task;
 }());
 var shouldYeildToHost = function () { return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline; };
-function scheduleCallback(callback, priority) {
-    if (priority === void 0) { priority = _model__WEBPACK_IMPORTED_MODULE_1__.TaskPriority.NORMAL; }
-    var task = new Task({ priority: priority, callback: callback });
+function scheduleCallback(callback) {
+    var task = new Task({ callback: callback });
     queue.push(task);
     executeTasks();
 }
