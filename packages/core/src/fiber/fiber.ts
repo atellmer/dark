@@ -42,6 +42,7 @@ class Fiber<N = NativeElement> {
   public portalHost: boolean;
   public childrenCount: number;
   public marker: string;
+  public isUsed: boolean;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -60,6 +61,7 @@ class Fiber<N = NativeElement> {
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
+    this.isUsed = options.isUsed || false;
   }
 
   public markPortalHost() {
@@ -343,6 +345,8 @@ function mutateAlternate(options: PerformAlternateOptions) {
   const prevKey = getElementKey(alternate.instance);
   const nextKey = getElementKey(instance);
   const isSameKeys = prevKey === nextKey;
+
+  alternate.isUsed = true;
 
   if (!isSameType || !isSameKeys) {
     alternate.effectTag = EffectTag.DELETION;
@@ -877,12 +881,13 @@ function createHook(): Hook {
 
 type CreateUpdateCallbackOptions = {
   rootId: number;
-  currentFiber: Fiber;
+  fiber: Fiber;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, currentFiber: fiber } = options;
+  const { rootId, fiber } = options;
   const callback = () => {
+    if (fiber.isUsed) return;
     effectStoreHelper.set(rootId); // important order!
     fromHookUpdateHelper.set(true);
     fiberMountHelper.reset();

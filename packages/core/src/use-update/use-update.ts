@@ -2,19 +2,19 @@ import { platform } from '../global';
 import { getRootId, componentFiberHelper } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';
+import { type TaskPriority } from '../constants';
 
-function useUpdate() {
+function useUpdate(priority?: TaskPriority) {
   const rootId = getRootId();
-  const currentFiber = componentFiberHelper.get();
-  const scope = useMemo(() => ({ rootId, currentFiber }), []);
+  const fiber = componentFiberHelper.get();
+  const scope = useMemo(() => ({ fiber }), []);
 
-  scope.rootId = rootId;
-  scope.currentFiber = currentFiber;
+  scope.fiber = fiber;
 
   const update = () => {
-    const callback = createUpdateCallback({ ...scope });
+    const callback = createUpdateCallback({ rootId, fiber: scope.fiber });
 
-    platform.scheduleCallback(callback);
+    platform.scheduleCallback(callback, priority);
   };
 
   return update;

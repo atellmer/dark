@@ -10,6 +10,7 @@ export type TextVirtualNodeFactory = () => TextVirtualNode;
 export type CommentVirtualNodeFactory = () => CommentVirtualNode;
 
 const $$virtualNode = Symbol('virtual-node');
+
 class VirtualNode {
   public type: NodeType = null;
 
@@ -67,14 +68,6 @@ function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
   return !detectIsEmpty(key) ? key : null;
 }
 
-function getAttribute(vNode: VirtualNode, attrName: string) {
-  return detectIsTagVirtualNode(vNode) && !detectIsEmpty(vNode.attrs[attrName]) ? vNode.attrs[attrName] : undefined;
-}
-
-function setAttribute(vNode: VirtualNode, name: string, value: any) {
-  detectIsTagVirtualNode(vNode) && (vNode.attrs[name] = value);
-}
-
 function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNode {
   const text =
     typeof source === 'string' ? new TextVirtualNode(source) : detectIsTextVirtualNode(source) ? source.value : '';
@@ -123,8 +116,6 @@ export {
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
   detectIsEmptyVirtualNode,
-  getAttribute,
-  setAttribute,
   getVirtualNodeKey,
   Text,
   Comment,

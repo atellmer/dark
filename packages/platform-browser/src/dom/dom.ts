@@ -12,7 +12,6 @@ import {
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
-  getAttribute,
   detectIsCommentVirtualNode,
   detectIsComponentFactory,
   runEffectCleanup,
@@ -26,7 +25,10 @@ import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import type { DomElement } from './model';
 
-const attrBlackList = [ATTR_KEY, ATTR_REF];
+const attrBlackListMap = {
+  [ATTR_KEY]: true,
+  [ATTR_REF]: true,
+};
 
 function createElement(vNode: VirtualNode): DomElement {
   const map = {
@@ -76,7 +78,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
   const attrNames = Object.keys(vNode.attrs);
 
   for (const attrName of attrNames) {
-    const attrValue = getAttribute(vNode, attrName);
+    const attrValue = vNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
       applyRef(attrValue as MutableRef, element);
@@ -91,7 +93,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
           eventName: getEventName(attrName),
         });
       }
-    } else if (!detectIsUndefined(attrValue) && !attrBlackList.includes(attrName)) {
+    } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
       upgradeInputAttributes({
         tagName: vNode.name,
         value: attrValue,
@@ -108,8 +110,8 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
   const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
 
   for (const attrName of attrNames) {
-    const attrValue = getAttribute(vNode, attrName);
-    const nextAttrValue = getAttribute(nextVNode, attrName);
+    const attrValue = vNode.attrs[attrName];
+    const nextAttrValue = nextVNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
       applyRef(attrValue as MutableRef, element);
@@ -125,11 +127,7 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
             eventName: getEventName(attrName),
           });
         }
-      } else if (
-        !detectIsUndefined(nextAttrValue) &&
-        attrValue !== nextAttrValue &&
-        !attrBlackList.includes(attrName)
-      ) {
+      } else if (!attrBlackListMap[attrName] && attrValue !== nextAttrValue) {
         upgradeInputAttributes({
           tagName: nextVNode.name,
           value: nextAttrValue,

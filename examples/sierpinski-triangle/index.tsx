@@ -1,12 +1,17 @@
-import { h, Text, createComponent, memo, useState, useEffect, useCallback } from '@dark-engine/core';
+import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
+
+import { h, Text, createComponent, memo, useState, useEffect, useCallback, TaskPriority } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
+
+startFPSMonitor();
+startMemMonitor();
 
 const domElement = document.getElementById('root');
 
 const targetSize = 25;
 
 const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
-  const [hover, setHover] = useState(false);
+  const [hover, setHover] = useState(false, TaskPriority.HIGH);
   const s = props.size * 1.3;
   const style = `
     position: absolute;
@@ -76,7 +81,7 @@ type AppProps = {
 };
 
 const App = createComponent<AppProps>(props => {
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(0, TaskPriority.LOW);
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;
@@ -96,7 +101,7 @@ const App = createComponent<AppProps>(props => {
     height: 10px;
     background-color: #eee;
     transform: ${'scaleX(' + scale / 2.1 + ') scaleY(0.7) translateZ(0.1px)'};
-    zoom: 0.8;
+    zoom: 1;
   `;
 
   return (

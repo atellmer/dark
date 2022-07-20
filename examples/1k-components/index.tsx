@@ -1,15 +1,14 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, createComponent, useState, useMemo, useEffect, useUpdate } from '@dark-engine/core';
+import { h, createComponent, useState, useMemo, useEffect, useUpdate, TaskPriority } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
 startMemMonitor();
 
 const Demo = createComponent(() => {
-  const [numPoints, setNumPoints] = useState(1000);
-  const update = useUpdate();
+  const [numPoints, setNumPoints] = useState(1000, TaskPriority.HIGH);
 
   const updateCount = e => {
     setNumPoints(Number(e.target.value));
@@ -17,10 +16,10 @@ const Demo = createComponent(() => {
 
   return (
     <div class='app-wrapper'>
-      <VizDemo count={numPoints} update={update} />
+      <VizDemo count={numPoints} />
       <div class='controls'>
         # Points
-        <input type='range' min={10} max={1000} value={numPoints} onInput={updateCount} />
+        <input type='range' min={10} max={10000} value={numPoints} onInput={updateCount} />
         {numPoints}
       </div>
       <div class='about'>
@@ -45,10 +44,10 @@ const LAYOUT_ORDER = [Layout.PHYLLOTAXIS, Layout.SPIRAL, Layout.PHYLLOTAXIS, Lay
 
 type VizDemoProps = {
   count: number;
-  update: () => void;
 };
 
-const VizDemo = createComponent<VizDemoProps>(({ count, update }) => {
+const VizDemo = createComponent<VizDemoProps>(({ count }) => {
+  const update = useUpdate();
   const scope = useMemo(() => {
     return {
       layout: 0,

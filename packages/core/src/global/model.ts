@@ -1,8 +1,9 @@
-import { Fiber } from '../fiber';
-import { ComponentFactory } from '../component';
+import { type Fiber } from '../fiber';
+import { type TaskPriority } from '../constants';
+import { type ComponentFactory } from '../component';
 
 export type Platform = {
-  scheduleCallback: (callback: () => void, priority?: number) => void;
+  scheduleCallback: (callback: () => void, priority?: TaskPriority) => void;
   shouldYeildToHost: () => boolean;
   createNativeElement: <N>(fiber: Fiber<N>) => N;
   applyCommits: <N>(fiber: Fiber<N>) => void;

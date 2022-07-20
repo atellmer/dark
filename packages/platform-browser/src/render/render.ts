@@ -15,6 +15,7 @@ import {
   deletionsHelper,
   fiberMountHelper,
   ROOT,
+  TaskPriority,
 } from '@dark-engine/core';
 import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
@@ -69,7 +70,7 @@ function render(element: DarkElement, container: Element) {
     deletionsHelper.set([]);
   };
 
-  platform.scheduleCallback(callback);
+  platform.scheduleCallback(callback, TaskPriority.HIGH);
 }
 
 export { render };
