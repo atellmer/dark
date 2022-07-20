@@ -3194,8 +3194,8 @@ terser-webpack-plugin@^4.1.0:
     webpack-sources "^1.4.3"
 
 terser@^5.3.4:
-  version "5.14.1"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.14.1.tgz#7c95eec36436cb11cf1902cc79ac564741d19eca"
+  version "5.14.2"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.14.2.tgz#9ac9f22b06994d736174f4091aa368db896f1c10"
   dependencies:
     "@jridgewell/source-map" "^0.3.2"
     acorn "^8.5.0"
