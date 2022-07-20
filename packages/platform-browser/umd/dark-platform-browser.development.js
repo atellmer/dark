@@ -64,10 +64,14 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var _a;
 
 
 
-var attrBlackList = [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY, _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF];
+var attrBlackListMap = (_a = {},
+    _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY] = true,
+    _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
+    _a);
 function createElement(vNode) {
     var _a;
     var map = (_a = {},
@@ -111,7 +115,7 @@ function addAttributes(element, vNode) {
     try {
         for (var attrNames_1 = __values(attrNames), attrNames_1_1 = attrNames_1.next(); !attrNames_1_1.done; attrNames_1_1 = attrNames_1.next()) {
             var attrName = attrNames_1_1.value;
-            var attrValue = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getAttribute)(vNode, attrName);
+            var attrValue = vNode.attrs[attrName];
             if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
                 applyRef(attrValue, element);
                 continue;
@@ -125,7 +129,7 @@ function addAttributes(element, vNode) {
                     });
                 }
             }
-            else if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(attrValue) && !attrBlackList.includes(attrName)) {
+            else if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(attrValue) && !attrBlackListMap[attrName]) {
                 upgradeInputAttributes({
                     tagName: vNode.name,
                     value: attrValue,
@@ -150,8 +154,8 @@ function updateAttributes(element, vNode, nextVNode) {
     try {
         for (var attrNames_2 = __values(attrNames), attrNames_2_1 = attrNames_2.next(); !attrNames_2_1.done; attrNames_2_1 = attrNames_2.next()) {
             var attrName = attrNames_2_1.value;
-            var attrValue = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getAttribute)(vNode, attrName);
-            var nextAttrValue = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getAttribute)(nextVNode, attrName);
+            var attrValue = vNode.attrs[attrName];
+            var nextAttrValue = nextVNode.attrs[attrName];
             if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
                 applyRef(attrValue, element);
                 continue;
@@ -166,9 +170,7 @@ function updateAttributes(element, vNode, nextVNode) {
                         });
                     }
                 }
-                else if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(nextAttrValue) &&
-                    attrValue !== nextAttrValue &&
-                    !attrBlackList.includes(attrName)) {
+                else if (!attrBlackListMap[attrName] && attrValue !== nextAttrValue) {
                     upgradeInputAttributes({
                         tagName: nextVNode.name,
                         value: nextAttrValue,
@@ -737,7 +739,7 @@ function render(element, container) {
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.get().forEach(function (x) { return (x.effectTag = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE); });
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.set([]);
     };
-    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback);
+    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH);
 }
 
 
@@ -797,7 +799,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
 
-var queue = [];
+var queueByPriority = {
+    hight: [],
+    normal: [],
+    low: [],
+};
 var YEILD_INTERVAL = 10;
 var scheduledCallback = null;
 var deadline = 0;
@@ -806,25 +812,37 @@ var currentTask = null;
 var Task = /** @class */ (function () {
     function Task(options) {
         this.id = ++Task.nextTaskId;
+        this.priority = options.priority;
         this.callback = options.callback;
     }
     Task.nextTaskId = 0;
     return Task;
 }());
 var shouldYeildToHost = function () { return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline; };
-function scheduleCallback(callback) {
-    var task = new Task({ callback: callback });
-    queue.push(task);
+function scheduleCallback(callback, priority) {
+    var _a;
+    if (priority === void 0) { priority = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL; }
+    var task = new Task({ priority: priority, callback: callback });
+    var map = (_a = {},
+        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH] = function () { return queueByPriority.hight.push(task); },
+        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL] = function () { return queueByPriority.normal.push(task); },
+        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.LOW] = function () { return queueByPriority.low.push(task); },
+        _a);
+    map[task.priority]();
     executeTasks();
+}
+function pick(queue) {
+    if (!queue.length)
+        return false;
+    currentTask = queue.shift();
+    currentTask.callback();
+    requestCallback(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.workLoop);
+    return true;
 }
 function executeTasks() {
     var hasMoreWork = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper.get());
     if (!hasMoreWork) {
-        if (queue.length > 0) {
-            currentTask = queue.shift();
-            currentTask.callback();
-            requestCallback(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.workLoop);
-        }
+        pick(queueByPriority.hight) || pick(queueByPriority.normal) || pick(queueByPriority.low);
     }
 }
 function performWorkUntilDeadline() {

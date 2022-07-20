@@ -137,13 +137,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "ATTR_REF": () => (/* binding */ ATTR_REF),
 /* harmony export */   "EMPTY_NODE": () => (/* binding */ EMPTY_NODE),
 /* harmony export */   "PARTIAL_UPDATE": () => (/* binding */ PARTIAL_UPDATE),
-/* harmony export */   "ROOT": () => (/* binding */ ROOT)
+/* harmony export */   "ROOT": () => (/* binding */ ROOT),
+/* harmony export */   "TaskPriority": () => (/* binding */ TaskPriority)
 /* harmony export */ });
 var ROOT = 'root';
 var EMPTY_NODE = 'dark:matter';
 var ATTR_KEY = 'key';
 var ATTR_REF = 'ref';
 var PARTIAL_UPDATE = 'partial-update';
+var TaskPriority;
+(function (TaskPriority) {
+    TaskPriority[TaskPriority["HIGH"] = 2] = "HIGH";
+    TaskPriority[TaskPriority["NORMAL"] = 1] = "NORMAL";
+    TaskPriority[TaskPriority["LOW"] = 0] = "LOW";
+})(TaskPriority || (TaskPriority = {}));
 
 
 /***/ }),
@@ -447,6 +454,7 @@ var Fiber = /** @class */ (function () {
         this.portalHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.portalHost) ? options.portalHost : false;
         this.childrenCount = options.childrenCount || 0;
         this.marker = options.marker || '';
+        this.isUsed = options.isUsed || false;
     }
     Fiber.prototype.markPortalHost = function () {
         this.portalHost = true;
@@ -671,6 +679,7 @@ function mutateAlternate(options) {
     var prevKey = getElementKey(alternate.instance);
     var nextKey = getElementKey(instance);
     var isSameKeys = prevKey === nextKey;
+    alternate.isUsed = true;
     if (!isSameType || !isSameKeys) {
         alternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
         _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(alternate);
@@ -1156,8 +1165,10 @@ function createHook() {
     };
 }
 function createUpdateCallback(options) {
-    var rootId = options.rootId, fiber = options.currentFiber;
+    var rootId = options.rootId, fiber = options.fiber;
     var callback = function () {
+        if (fiber.isUsed)
+            return;
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
         _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
@@ -2451,9 +2462,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function useState(initialValue) {
+function useState(initialValue, priority) {
     var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
-    var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)();
+    var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)(priority);
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({
         idx: fiber.hook.idx,
         values: fiber.hook.values,
@@ -2510,30 +2521,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
 /* harmony import */ var _fiber__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../fiber */ "./src/fiber/index.ts");
 /* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../use-memo */ "./src/use-memo/index.ts");
-var __assign = (undefined && undefined.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 
 
 
 
-function useUpdate() {
+function useUpdate(priority) {
     var rootId = (0,_scope__WEBPACK_IMPORTED_MODULE_1__.getRootId)();
-    var currentFiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
-    var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ rootId: rootId, currentFiber: currentFiber }); }, []);
-    scope.rootId = rootId;
-    scope.currentFiber = currentFiber;
+    var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
+    var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ fiber: fiber }); }, []);
+    scope.fiber = fiber;
     var update = function () {
-        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)(__assign({}, scope));
-        _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback);
+        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({ rootId: rootId, fiber: scope.fiber });
+        _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, priority);
     };
     return update;
 }
@@ -2565,9 +2564,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsTextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.detectIsTextVirtualNode),
 /* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode),
 /* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNodeFactory),
-/* harmony export */   "getAttribute": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.getAttribute),
-/* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.getVirtualNodeKey),
-/* harmony export */   "setAttribute": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.setAttribute)
+/* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_0__.getVirtualNodeKey)
 /* harmony export */ });
 /* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./view */ "./src/view/view.ts");
 /* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/view/model.ts");
@@ -2619,9 +2616,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsTextVirtualNode": () => (/* binding */ detectIsTextVirtualNode),
 /* harmony export */   "detectIsVirtualNode": () => (/* binding */ detectIsVirtualNode),
 /* harmony export */   "detectIsVirtualNodeFactory": () => (/* binding */ detectIsVirtualNodeFactory),
-/* harmony export */   "getAttribute": () => (/* binding */ getAttribute),
-/* harmony export */   "getVirtualNodeKey": () => (/* binding */ getVirtualNodeKey),
-/* harmony export */   "setAttribute": () => (/* binding */ setAttribute)
+/* harmony export */   "getVirtualNodeKey": () => (/* binding */ getVirtualNodeKey)
 /* harmony export */ });
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
@@ -2723,12 +2718,6 @@ var detectIsEmptyVirtualNode = function (vNode) {
 function getVirtualNodeKey(vNode) {
     var key = vNode && vNode.attrs[_constants__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY];
     return !(0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsEmpty)(key) ? key : null;
-}
-function getAttribute(vNode, attrName) {
-    return detectIsTagVirtualNode(vNode) && !(0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsEmpty)(vNode.attrs[attrName]) ? vNode.attrs[attrName] : undefined;
-}
-function setAttribute(vNode, name, value) {
-    detectIsTagVirtualNode(vNode) && (vNode.attrs[name] = value);
 }
 function Text(source) {
     var text = typeof source === 'string' ? new TextVirtualNode(source) : detectIsTextVirtualNode(source) ? source.value : '';
@@ -2842,6 +2831,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "Suspense": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.Suspense),
 /* harmony export */   "SuspenseContext": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.SuspenseContext),
 /* harmony export */   "TagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.TagVirtualNode),
+/* harmony export */   "TaskPriority": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.TaskPriority),
 /* harmony export */   "Text": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.Text),
 /* harmony export */   "TextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.TextVirtualNode),
 /* harmony export */   "View": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.View),
@@ -2884,7 +2874,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "flatten": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.flatten),
 /* harmony export */   "forwardRef": () => (/* reexport safe */ _ref__WEBPACK_IMPORTED_MODULE_9__.forwardRef),
 /* harmony export */   "fromHookUpdateHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.fromHookUpdateHelper),
-/* harmony export */   "getAttribute": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.getAttribute),
 /* harmony export */   "getComponentFactoryKey": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.getComponentFactoryKey),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.getRootId),
 /* harmony export */   "getTime": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.getTime),
@@ -2897,7 +2886,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkHelper),
 /* harmony export */   "platform": () => (/* reexport safe */ _global__WEBPACK_IMPORTED_MODULE_5__.platform),
 /* harmony export */   "runEffectCleanup": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_15__.runEffectCleanup),
-/* harmony export */   "setAttribute": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.setAttribute),
 /* harmony export */   "takeListFromEnd": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.takeListFromEnd),
 /* harmony export */   "useCallback": () => (/* reexport safe */ _use_callback__WEBPACK_IMPORTED_MODULE_13__.useCallback),
 /* harmony export */   "useContext": () => (/* reexport safe */ _use_context__WEBPACK_IMPORTED_MODULE_14__.useContext),
