@@ -462,7 +462,12 @@ const App = createComponent(() => {
     }, 1000);
   }, []);
 
-  return [<div>app</div>, <MemoHardComponent />];
+  return (
+    <>
+      <div>app</div>
+      <MemoHardComponent />
+    </>
+  );
 });
 
 render(<App />, document.getElementById('root'));
@@ -516,6 +521,27 @@ Suitable for memoizing handler functions descending down the component tree:
  return (
     <button onClick={handleClick}>add</button>
   );
+```
+
+#### useDeferredValue
+
+Dark under the hood performs all recalculations in asynchronous mode so as not to block the main thread. Due to the task scheduler, you can achieve prioritization of interface updates. For example, make some updates more important than others, and vice versa - less important.
+
+```tsx
+import { useDeferredValue } from '@dark-engine/core';
+```
+This fixes an issue with an unresponsive interface when user input occurs, based on which heavy calculations or heavy rendering is recalculated.
+Returns a delayed value that may lag behind the main value. It can be combined with each other and with useMemo and memo for amazing responsiveness results...
+
+```tsx
+const Items = createComponent(({ items }) => {
+  const deferredItems = useDeferredValue(items);
+  const items = useMemo(() => {
+    return deferredItems.map(item => <li key={item.id}>{item.name}</li>);
+  }, [deferredItems]);
+
+  return <ul>{items}</ul>;
+});
 ```
 
 ### Refs
@@ -706,27 +732,6 @@ const App = createComponent(() => {
       )}
     </>
   );
-});
-```
-
-### Concurrent
-
-Dark under the hood performs all recalculations in asynchronous mode so as not to block the main thread. Due to the task scheduler, you can achieve prioritization of interface updates. For example, make some updates more important than others, and vice versa - less important.
-
-```tsx
-import { useDeferredValue } from '@dark-engine/core';
-```
-This fixes an issue with an unresponsive interface when user input occurs, based on which heavy calculations or heavy rendering is recalculated.
-Returns a delayed value that may lag behind the main value. It can be combined with each other and with useMemo and memo for amazing responsiveness results...
-
-```tsx
-const Items = createComponent(({ items }) => {
-  const deferredItems = useDeferredValue(items);
-  const items = useMemo(() => {
-    return deferredItems.map(item => <li key={item.id}>{item.name}</li>);
-  }, [deferredItems.length]);
-
-  return <ul>{items}</ul>;
 });
 ```
 

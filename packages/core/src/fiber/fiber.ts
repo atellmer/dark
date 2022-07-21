@@ -19,7 +19,6 @@ import {
   getVirtualNodeKey,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
-  detectIsEmptyVirtualNode,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context/model';
@@ -366,9 +365,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
       const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
       if (process.env.NODE_ENV === 'development') {
-        const isEmptyNode = alternate.child && detectIsEmptyVirtualNode(alternate.child.instance);
-
-        if (!hasAnyKeys && prevElementsCount !== 0 && !isEmptyNode) {
+        if (!hasAnyKeys && prevElementsCount !== 0 && nextElementsCount !== 0) {
           error(`
             [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!
           `);

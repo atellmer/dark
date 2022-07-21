@@ -696,7 +696,7 @@ function mutateAlternate(options) {
             var hasKeys_1 = keys_1.length > 0;
             var hasAnyKeys = hasKeys_1 || nextKeys_1.length > 0;
             if (true) {
-                if (!hasAnyKeys) {
+                if (!hasAnyKeys && prevElementsCount_1 !== 0 && nextElementsCount_1 !== 0) {
                     (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.error)("\n            [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!\n          ");
                 }
             }
@@ -2045,6 +2045,78 @@ function getProvider(context, fiber) {
 
 /***/ }),
 
+/***/ "./src/use-deferred-value/index.ts":
+/*!*****************************************!*\
+  !*** ./src/use-deferred-value/index.ts ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "useDeferredValue": () => (/* reexport safe */ _use_deferred_value__WEBPACK_IMPORTED_MODULE_0__.useDeferredValue)
+/* harmony export */ });
+/* harmony import */ var _use_deferred_value__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./use-deferred-value */ "./src/use-deferred-value/use-deferred-value.ts");
+
+
+
+/***/ }),
+
+/***/ "./src/use-deferred-value/use-deferred-value.ts":
+/*!******************************************************!*\
+  !*** ./src/use-deferred-value/use-deferred-value.ts ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "useDeferredValue": () => (/* binding */ useDeferredValue)
+/* harmony export */ });
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
+/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../use-state */ "./src/use-state/index.ts");
+/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
+var __read = (undefined && undefined.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+
+
+
+
+function useDeferredValue(value, options) {
+    var timeoutMs = (options || {}).timeoutMs;
+    var _a = __read((0,_use_state__WEBPACK_IMPORTED_MODULE_1__.useState)(value, _constants__WEBPACK_IMPORTED_MODULE_3__.TaskPriority.LOW), 2), deferredValue = _a[0], setDeferredValue = _a[1];
+    (0,_use_effect__WEBPACK_IMPORTED_MODULE_2__.useEffect)(function () {
+        var timerId = null;
+        if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsNumber)(timeoutMs)) {
+            timerId = setTimeout(function () {
+                setDeferredValue(value);
+            }, timeoutMs);
+        }
+        else {
+            setDeferredValue(value);
+        }
+        return function () { return timerId && clearTimeout(timerId); };
+    }, [value]);
+    return deferredValue;
+}
+
+
+
+/***/ }),
+
 /***/ "./src/use-effect/index.ts":
 /*!*********************************!*\
   !*** ./src/use-effect/index.ts ***!
@@ -2261,7 +2333,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../component */ "./src/component/index.ts");
 /* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../view */ "./src/view/index.ts");
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
-/* harmony import */ var _memo__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../memo */ "./src/memo/index.ts");
+/* harmony import */ var _fragment__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../fragment */ "./src/fragment/index.ts");
+/* harmony import */ var _memo__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../memo */ "./src/memo/index.ts");
+
 
 
 
@@ -2270,10 +2344,14 @@ __webpack_require__.r(__webpack_exports__);
 var Memo = (0,_component__WEBPACK_IMPORTED_MODULE_1__.createComponent)(function (_a) {
     var slot = _a.slot;
     return slot;
-}, { token: _memo__WEBPACK_IMPORTED_MODULE_4__.$$memo });
+}, { token: _memo__WEBPACK_IMPORTED_MODULE_5__.$$memo });
 function wrap(value, isDepsDifferent) {
-    if ((0,_view__WEBPACK_IMPORTED_MODULE_2__.detectIsTagVirtualNode)(value) || (0,_component__WEBPACK_IMPORTED_MODULE_1__.detectIsComponentFactory)(value)) {
-        var factory = Memo({ slot: value });
+    var check = function (value) { return (0,_view__WEBPACK_IMPORTED_MODULE_2__.detectIsVirtualNodeFactory)(value) || (0,_component__WEBPACK_IMPORTED_MODULE_1__.detectIsComponentFactory)(value); };
+    if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsArray)(value) ? check(value[0]) : check(value)) {
+        var slot = value;
+        var factory = Memo({
+            slot: (0,_fragment__WEBPACK_IMPORTED_MODULE_4__.Fragment)({ slot: slot }),
+        });
         factory.shouldUpdate = function () { return isDepsDifferent; };
         return factory;
     }
@@ -2281,14 +2359,7 @@ function wrap(value, isDepsDifferent) {
 }
 function processValue(getValue, isDepsDifferent) {
     if (isDepsDifferent === void 0) { isDepsDifferent = false; }
-    var value = getValue();
-    if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsArray)(value)) {
-        value = value.map(function (x) { return wrap(x, isDepsDifferent); });
-    }
-    else {
-        value = wrap(value, isDepsDifferent);
-    }
-    return value;
+    return wrap(getValue(), isDepsDifferent);
 }
 function useMemo(getValue, deps) {
     var fiber = _scope__WEBPACK_IMPORTED_MODULE_3__.componentFiberHelper.get();
@@ -2820,42 +2891,42 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "$$memo": () => (/* reexport safe */ _memo__WEBPACK_IMPORTED_MODULE_8__.$$memo),
-/* harmony export */   "ATTR_KEY": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.ATTR_KEY),
-/* harmony export */   "ATTR_REF": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.ATTR_REF),
-/* harmony export */   "Comment": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.Comment),
-/* harmony export */   "CommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.CommentVirtualNode),
+/* harmony export */   "ATTR_KEY": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_25__.ATTR_KEY),
+/* harmony export */   "ATTR_REF": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_25__.ATTR_REF),
+/* harmony export */   "Comment": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.Comment),
+/* harmony export */   "CommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.CommentVirtualNode),
 /* harmony export */   "ComponentFactory": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.ComponentFactory),
-/* harmony export */   "EMPTY_NODE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.EMPTY_NODE),
+/* harmony export */   "EMPTY_NODE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_25__.EMPTY_NODE),
 /* harmony export */   "EffectTag": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.EffectTag),
 /* harmony export */   "Fiber": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.Fiber),
 /* harmony export */   "Fragment": () => (/* reexport safe */ _fragment__WEBPACK_IMPORTED_MODULE_4__.Fragment),
-/* harmony export */   "NodeType": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.NodeType),
-/* harmony export */   "PARTIAL_UPDATE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.PARTIAL_UPDATE),
-/* harmony export */   "ROOT": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.ROOT),
+/* harmony export */   "NodeType": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.NodeType),
+/* harmony export */   "PARTIAL_UPDATE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_25__.PARTIAL_UPDATE),
+/* harmony export */   "ROOT": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_25__.ROOT),
 /* harmony export */   "Suspense": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.Suspense),
 /* harmony export */   "SuspenseContext": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.SuspenseContext),
-/* harmony export */   "TagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.TagVirtualNode),
-/* harmony export */   "TaskPriority": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_24__.TaskPriority),
-/* harmony export */   "Text": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.Text),
-/* harmony export */   "TextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.TextVirtualNode),
-/* harmony export */   "View": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.View),
-/* harmony export */   "VirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.VirtualNode),
+/* harmony export */   "TagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.TagVirtualNode),
+/* harmony export */   "TaskPriority": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_25__.TaskPriority),
+/* harmony export */   "Text": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.Text),
+/* harmony export */   "TextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.TextVirtualNode),
+/* harmony export */   "View": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.View),
+/* harmony export */   "VirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.VirtualNode),
 /* harmony export */   "cloneTagMap": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.cloneTagMap),
 /* harmony export */   "componentFiberHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.componentFiberHelper),
 /* harmony export */   "createComponent": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.createComponent),
 /* harmony export */   "createContext": () => (/* reexport safe */ _context__WEBPACK_IMPORTED_MODULE_1__.createContext),
-/* harmony export */   "createEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.createEmptyVirtualNode),
+/* harmony export */   "createEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.createEmptyVirtualNode),
 /* harmony export */   "createHook": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.createHook),
 /* harmony export */   "createUpdateCallback": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.createUpdateCallback),
 /* harmony export */   "currentRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.currentRootHelper),
 /* harmony export */   "deletionsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.deletionsHelper),
 /* harmony export */   "detectIsArray": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsArray),
 /* harmony export */   "detectIsBoolean": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsBoolean),
-/* harmony export */   "detectIsCommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsCommentVirtualNode),
+/* harmony export */   "detectIsCommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.detectIsCommentVirtualNode),
 /* harmony export */   "detectIsComponentFactory": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory),
 /* harmony export */   "detectIsDepsDifferent": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsDepsDifferent),
 /* harmony export */   "detectIsEmpty": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsEmpty),
-/* harmony export */   "detectIsEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsEmptyVirtualNode),
+/* harmony export */   "detectIsEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.detectIsEmptyVirtualNode),
 /* harmony export */   "detectIsFragment": () => (/* reexport safe */ _fragment__WEBPACK_IMPORTED_MODULE_4__.detectIsFragment),
 /* harmony export */   "detectIsFunction": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsFunction),
 /* harmony export */   "detectIsLazy": () => (/* reexport safe */ _lazy__WEBPACK_IMPORTED_MODULE_7__.detectIsLazy),
@@ -2865,11 +2936,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsObject": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsObject),
 /* harmony export */   "detectIsRef": () => (/* reexport safe */ _ref__WEBPACK_IMPORTED_MODULE_9__.detectIsRef),
 /* harmony export */   "detectIsString": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsString),
-/* harmony export */   "detectIsTagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsTagVirtualNode),
-/* harmony export */   "detectIsTextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsTextVirtualNode),
+/* harmony export */   "detectIsTagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.detectIsTagVirtualNode),
+/* harmony export */   "detectIsTextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.detectIsTextVirtualNode),
 /* harmony export */   "detectIsUndefined": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsUndefined),
-/* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsVirtualNode),
-/* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsVirtualNodeFactory),
+/* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.detectIsVirtualNode),
+/* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.detectIsVirtualNodeFactory),
 /* harmony export */   "dummyFn": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.dummyFn),
 /* harmony export */   "effectStoreHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectStoreHelper),
 /* harmony export */   "effectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectsHelper),
@@ -2882,7 +2953,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "getComponentFactoryKey": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.getComponentFactoryKey),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.getRootId),
 /* harmony export */   "getTime": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.getTime),
-/* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.getVirtualNodeKey),
+/* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_24__.getVirtualNodeKey),
 /* harmony export */   "h": () => (/* reexport safe */ _element__WEBPACK_IMPORTED_MODULE_2__.createElement),
 /* harmony export */   "hasChildrenProp": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.hasChildrenProp),
 /* harmony export */   "keyBy": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.keyBy),
@@ -2890,18 +2961,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "memo": () => (/* reexport safe */ _memo__WEBPACK_IMPORTED_MODULE_8__.memo),
 /* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkHelper),
 /* harmony export */   "platform": () => (/* reexport safe */ _global__WEBPACK_IMPORTED_MODULE_5__.platform),
-/* harmony export */   "runEffectCleanup": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_15__.runEffectCleanup),
+/* harmony export */   "runEffectCleanup": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_16__.runEffectCleanup),
 /* harmony export */   "takeListFromEnd": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.takeListFromEnd),
 /* harmony export */   "useCallback": () => (/* reexport safe */ _use_callback__WEBPACK_IMPORTED_MODULE_13__.useCallback),
 /* harmony export */   "useContext": () => (/* reexport safe */ _use_context__WEBPACK_IMPORTED_MODULE_14__.useContext),
-/* harmony export */   "useEffect": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_15__.useEffect),
-/* harmony export */   "useError": () => (/* reexport safe */ _use_error__WEBPACK_IMPORTED_MODULE_16__.useError),
-/* harmony export */   "useImperativeHandle": () => (/* reexport safe */ _use_imperative_handle__WEBPACK_IMPORTED_MODULE_17__.useImperativeHandle),
-/* harmony export */   "useMemo": () => (/* reexport safe */ _use_memo__WEBPACK_IMPORTED_MODULE_18__.useMemo),
-/* harmony export */   "useReducer": () => (/* reexport safe */ _use_reducer__WEBPACK_IMPORTED_MODULE_19__.useReducer),
-/* harmony export */   "useRef": () => (/* reexport safe */ _use_ref__WEBPACK_IMPORTED_MODULE_20__.useRef),
-/* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_21__.useState),
-/* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_22__.useUpdate),
+/* harmony export */   "useDeferredValue": () => (/* reexport safe */ _use_deferred_value__WEBPACK_IMPORTED_MODULE_15__.useDeferredValue),
+/* harmony export */   "useEffect": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_16__.useEffect),
+/* harmony export */   "useError": () => (/* reexport safe */ _use_error__WEBPACK_IMPORTED_MODULE_17__.useError),
+/* harmony export */   "useImperativeHandle": () => (/* reexport safe */ _use_imperative_handle__WEBPACK_IMPORTED_MODULE_18__.useImperativeHandle),
+/* harmony export */   "useMemo": () => (/* reexport safe */ _use_memo__WEBPACK_IMPORTED_MODULE_19__.useMemo),
+/* harmony export */   "useReducer": () => (/* reexport safe */ _use_reducer__WEBPACK_IMPORTED_MODULE_20__.useReducer),
+/* harmony export */   "useRef": () => (/* reexport safe */ _use_ref__WEBPACK_IMPORTED_MODULE_21__.useRef),
+/* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_22__.useState),
+/* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_23__.useUpdate),
 /* harmony export */   "wipRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.wipRootHelper),
 /* harmony export */   "workLoop": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.workLoop)
 /* harmony export */ });
@@ -2920,16 +2992,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _suspense__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./suspense */ "./src/suspense/index.ts");
 /* harmony import */ var _use_callback__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./use-callback */ "./src/use-callback/index.ts");
 /* harmony import */ var _use_context__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./use-context */ "./src/use-context/index.ts");
-/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./use-effect */ "./src/use-effect/index.ts");
-/* harmony import */ var _use_error__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./use-error */ "./src/use-error/index.ts");
-/* harmony import */ var _use_imperative_handle__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./use-imperative-handle */ "./src/use-imperative-handle/index.ts");
-/* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./use-memo */ "./src/use-memo/index.ts");
-/* harmony import */ var _use_reducer__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./use-reducer */ "./src/use-reducer/index.ts");
-/* harmony import */ var _use_ref__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./use-ref */ "./src/use-ref/index.ts");
-/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./use-state */ "./src/use-state/index.ts");
-/* harmony import */ var _use_update__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./use-update */ "./src/use-update/index.ts");
-/* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./view */ "./src/view/index.ts");
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./constants */ "./src/constants.ts");
+/* harmony import */ var _use_deferred_value__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./use-deferred-value */ "./src/use-deferred-value/index.ts");
+/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./use-effect */ "./src/use-effect/index.ts");
+/* harmony import */ var _use_error__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./use-error */ "./src/use-error/index.ts");
+/* harmony import */ var _use_imperative_handle__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./use-imperative-handle */ "./src/use-imperative-handle/index.ts");
+/* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./use-memo */ "./src/use-memo/index.ts");
+/* harmony import */ var _use_reducer__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./use-reducer */ "./src/use-reducer/index.ts");
+/* harmony import */ var _use_ref__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./use-ref */ "./src/use-ref/index.ts");
+/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./use-state */ "./src/use-state/index.ts");
+/* harmony import */ var _use_update__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./use-update */ "./src/use-update/index.ts");
+/* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./view */ "./src/view/index.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./constants */ "./src/constants.ts");
+
 
 
 

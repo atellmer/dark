@@ -1,14 +1,21 @@
-import { detectIsUndefined, detectIsDepsDifferent } from '../helpers';
+import { type DarkElement } from '../shared';
+import { detectIsUndefined, detectIsArray, detectIsDepsDifferent } from '../helpers';
 import { detectIsComponentFactory, createComponent } from '../component';
-import { detectIsTagVirtualNode } from '../view';
+import { detectIsVirtualNodeFactory } from '../view';
 import { componentFiberHelper } from '../scope';
+import { Fragment } from '../fragment';
 import { $$memo } from '../memo';
 
 const Memo = createComponent(({ slot }) => slot, { token: $$memo });
 
 function wrap<T>(value: T, isDepsDifferent: boolean) {
-  if (detectIsTagVirtualNode(value) || detectIsComponentFactory(value)) {
-    const factory = Memo({ slot: value });
+  const check = (value: T) => detectIsVirtualNodeFactory(value) || detectIsComponentFactory(value);
+
+  if (detectIsArray(value) ? check(value[0]) : check(value)) {
+    const slot = value as unknown as DarkElement;
+    const factory = Memo({
+      slot: Fragment({ slot }),
+    });
 
     factory.shouldUpdate = () => isDepsDifferent;
 
