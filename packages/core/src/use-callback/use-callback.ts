@@ -1,6 +1,5 @@
-import { detectIsUndefined } from '../helpers';
+import { detectIsUndefined, detectIsDepsDifferent } from '../helpers';
 import { componentFiberHelper } from '../scope';
-import { detectIsDepsDifferent } from '../shared';
 
 function useCallback<T = Function>(callback: T, deps: Array<any>): T {
   const fiber = componentFiberHelper.get();

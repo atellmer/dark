@@ -1,7 +1,6 @@
-import { detectIsUndefined, detectIsFunction } from '../helpers';
+import { detectIsUndefined, detectIsFunction, detectIsDepsDifferent } from '../helpers';
 import { componentFiberHelper, effectsHelper } from '../scope';
 import type { Hook, HookValue } from '../fiber';
-import { detectIsDepsDifferent } from '../shared';
 import type { Effect, EffectCleanup } from './model';
 
 const $$useEffect = Symbol('use-effect');

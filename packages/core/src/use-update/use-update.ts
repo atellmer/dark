@@ -2,6 +2,7 @@ import { platform } from '../global';
 import { getRootId, componentFiberHelper } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';
+import { dummyFn } from '../helpers';
 import { type TaskPriority } from '../constants';
 
 function useUpdate(priority?: TaskPriority) {
@@ -11,8 +12,8 @@ function useUpdate(priority?: TaskPriority) {
 
   scope.fiber = fiber;
 
-  const update = () => {
-    const callback = createUpdateCallback({ rootId, fiber: scope.fiber });
+  const update = (onStart?: () => void) => {
+    const callback = createUpdateCallback({ rootId, fiber: scope.fiber, onStart: onStart || dummyFn });
 
     platform.scheduleCallback(callback, priority);
   };

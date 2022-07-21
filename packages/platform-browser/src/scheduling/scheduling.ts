@@ -59,7 +59,7 @@ function executeTasks() {
   const hasMoreWork = Boolean(nextUnitOfWorkHelper.get());
 
   if (!hasMoreWork) {
-    pick(queueByPriority.hight) || pick(queueByPriority.normal) || pick(queueByPriority.low);
+    pick(queueByPriority.hight) || pick(queueByPriority.normal) || requestIdleCallback(() => pick(queueByPriority.low));
   }
 }
 

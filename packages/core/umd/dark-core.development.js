@@ -1165,10 +1165,11 @@ function createHook() {
     };
 }
 function createUpdateCallback(options) {
-    var rootId = options.rootId, fiber = options.fiber;
+    var rootId = options.rootId, fiber = options.fiber, onStart = options.onStart;
     var callback = function () {
         if (fiber.isUsed)
             return;
+        onStart();
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
         _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
@@ -1342,6 +1343,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "detectIsArray": () => (/* binding */ detectIsArray),
 /* harmony export */   "detectIsBoolean": () => (/* binding */ detectIsBoolean),
+/* harmony export */   "detectIsDepsDifferent": () => (/* binding */ detectIsDepsDifferent),
 /* harmony export */   "detectIsEmpty": () => (/* binding */ detectIsEmpty),
 /* harmony export */   "detectIsFunction": () => (/* binding */ detectIsFunction),
 /* harmony export */   "detectIsNull": () => (/* binding */ detectIsNull),
@@ -1349,6 +1351,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsObject": () => (/* binding */ detectIsObject),
 /* harmony export */   "detectIsString": () => (/* binding */ detectIsString),
 /* harmony export */   "detectIsUndefined": () => (/* binding */ detectIsUndefined),
+/* harmony export */   "dummyFn": () => (/* binding */ dummyFn),
 /* harmony export */   "error": () => (/* binding */ error),
 /* harmony export */   "flatten": () => (/* binding */ flatten),
 /* harmony export */   "getTime": () => (/* binding */ getTime),
@@ -1394,7 +1397,7 @@ function flatten(source) {
     return list;
 }
 function getTime() {
-    return performance.now();
+    return Date.now();
 }
 function keyBy(list, fn, value) {
     if (value === void 0) { value = false; }
@@ -1402,6 +1405,17 @@ function keyBy(list, fn, value) {
 }
 function takeListFromEnd(source, count) {
     return source.slice(source.length - count, source.length);
+}
+var dummyFn = function () { };
+function detectIsDepsDifferent(deps, prevDeps) {
+    if (!detectIsUndefined(deps) && !detectIsUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
+        for (var i = 0; i < prevDeps.length; i++) {
+            if (prevDeps[i] !== deps[i]) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 
@@ -1800,23 +1814,7 @@ var effectsHelper = {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "detectIsDepsDifferent": () => (/* binding */ detectIsDepsDifferent)
-/* harmony export */ });
-/* harmony import */ var _dark_engine_core_helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core/helpers */ "./src/helpers/index.ts");
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/shared/model.ts");
-
-function detectIsDepsDifferent(deps, prevDeps) {
-    if (!(0,_dark_engine_core_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(deps) && !(0,_dark_engine_core_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
-        for (var i = 0; i < prevDeps.length; i++) {
-            if (prevDeps[i] !== deps[i]) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
+/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./model */ "./src/shared/model.ts");
 
 
 
@@ -1942,8 +1940,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
-/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared */ "./src/shared/index.ts");
-
 
 
 function useCallback(callback, deps) {
@@ -1960,7 +1956,7 @@ function useCallback(callback, deps) {
     }
     var hookValue = values[idx];
     var prevDeps = hookValue.deps;
-    var isDepsDifferent = (0,_shared__WEBPACK_IMPORTED_MODULE_2__.detectIsDepsDifferent)(deps, prevDeps);
+    var isDepsDifferent = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsDepsDifferent)(deps, prevDeps);
     if (isDepsDifferent) {
         hookValue.deps = deps;
         hookValue.value = callback;
@@ -2079,7 +2075,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
-/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../shared */ "./src/shared/index.ts");
 var __values = (undefined && undefined.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -2091,7 +2086,6 @@ var __values = (undefined && undefined.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-
 
 
 var $$useEffect = Symbol('use-effect');
@@ -2115,7 +2109,7 @@ function useEffect(effect, deps) {
     }
     else {
         var _a = values[idx], prevDeps = _a.deps, cleanup = _a.value;
-        var isDepsDifferent = deps ? (0,_shared__WEBPACK_IMPORTED_MODULE_2__.detectIsDepsDifferent)(deps, prevDeps) : true;
+        var isDepsDifferent = deps ? (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsDepsDifferent)(deps, prevDeps) : true;
         if (isDepsDifferent) {
             (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(cleanup) && cleanup();
             runEffect();
@@ -2267,9 +2261,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../component */ "./src/component/index.ts");
 /* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../view */ "./src/view/index.ts");
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
-/* harmony import */ var _shared__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../shared */ "./src/shared/index.ts");
-/* harmony import */ var _memo__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../memo */ "./src/memo/index.ts");
-
+/* harmony import */ var _memo__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../memo */ "./src/memo/index.ts");
 
 
 
@@ -2278,7 +2270,7 @@ __webpack_require__.r(__webpack_exports__);
 var Memo = (0,_component__WEBPACK_IMPORTED_MODULE_1__.createComponent)(function (_a) {
     var slot = _a.slot;
     return slot;
-}, { token: _memo__WEBPACK_IMPORTED_MODULE_5__.$$memo });
+}, { token: _memo__WEBPACK_IMPORTED_MODULE_4__.$$memo });
 function wrap(value, isDepsDifferent) {
     if ((0,_view__WEBPACK_IMPORTED_MODULE_2__.detectIsTagVirtualNode)(value) || (0,_component__WEBPACK_IMPORTED_MODULE_1__.detectIsComponentFactory)(value)) {
         var factory = Memo({ slot: value });
@@ -2313,7 +2305,7 @@ function useMemo(getValue, deps) {
     }
     var hookValue = values[idx];
     var prevDeps = hookValue.deps;
-    var isDepsDifferent = (0,_shared__WEBPACK_IMPORTED_MODULE_4__.detectIsDepsDifferent)(deps, prevDeps);
+    var isDepsDifferent = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsDepsDifferent)(deps, prevDeps);
     var computedGetValue = isDepsDifferent ? getValue : function () { return hookValue.value; };
     hookValue.deps = deps;
     hookValue.value = processValue(computedGetValue, isDepsDifferent);
@@ -2457,6 +2449,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _use_update__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../use-update */ "./src/use-update/index.ts");
 /* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../use-memo */ "./src/use-memo/index.ts");
 /* harmony import */ var _use_callback__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../use-callback */ "./src/use-callback/index.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
+
 
 
 
@@ -2473,8 +2467,16 @@ function useState(initialValue, priority) {
         var value = scope.values[scope.idx];
         var newValue = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(sourceValue) ? sourceValue(value) : sourceValue;
         if (!Object.is(value, newValue)) {
-            scope.values[scope.idx] = newValue;
-            update();
+            var setValue_1 = function () {
+                scope.values[scope.idx] = newValue;
+            };
+            if (priority === _constants__WEBPACK_IMPORTED_MODULE_5__.TaskPriority.LOW) {
+                update(function () { return setValue_1(); });
+            }
+            else {
+                setValue_1();
+                update();
+            }
         }
     }, []);
     var hook = fiber.hook;
@@ -2521,6 +2523,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
 /* harmony import */ var _fiber__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../fiber */ "./src/fiber/index.ts");
 /* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../use-memo */ "./src/use-memo/index.ts");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
+
 
 
 
@@ -2530,8 +2534,8 @@ function useUpdate(priority) {
     var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ fiber: fiber }); }, []);
     scope.fiber = fiber;
-    var update = function () {
-        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({ rootId: rootId, fiber: scope.fiber });
+    var update = function (onStart) {
+        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({ rootId: rootId, fiber: scope.fiber, onStart: onStart || _helpers__WEBPACK_IMPORTED_MODULE_4__.dummyFn });
         _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, priority);
     };
     return update;
@@ -2849,7 +2853,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsBoolean": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsBoolean),
 /* harmony export */   "detectIsCommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsCommentVirtualNode),
 /* harmony export */   "detectIsComponentFactory": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory),
-/* harmony export */   "detectIsDepsDifferent": () => (/* reexport safe */ _shared__WEBPACK_IMPORTED_MODULE_11__.detectIsDepsDifferent),
+/* harmony export */   "detectIsDepsDifferent": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsDepsDifferent),
 /* harmony export */   "detectIsEmpty": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsEmpty),
 /* harmony export */   "detectIsEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsEmptyVirtualNode),
 /* harmony export */   "detectIsFragment": () => (/* reexport safe */ _fragment__WEBPACK_IMPORTED_MODULE_4__.detectIsFragment),
@@ -2866,6 +2870,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsUndefined": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsUndefined),
 /* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsVirtualNode),
 /* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_23__.detectIsVirtualNodeFactory),
+/* harmony export */   "dummyFn": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.dummyFn),
 /* harmony export */   "effectStoreHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectStoreHelper),
 /* harmony export */   "effectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectsHelper),
 /* harmony export */   "error": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.error),

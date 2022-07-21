@@ -45,7 +45,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
 }
 
 function getTime() {
-  return performance.now();
+  return Date.now();
 }
 
 function keyBy<T = any>(
@@ -58,6 +58,20 @@ function keyBy<T = any>(
 
 function takeListFromEnd(source: Array<any>, count: number) {
   return source.slice(source.length - count, source.length);
+}
+
+const dummyFn = () => {};
+
+function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {
+  if (!detectIsUndefined(deps) && !detectIsUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
+    for (let i = 0; i < prevDeps.length; i++) {
+      if (prevDeps[i] !== deps[i]) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 export {
@@ -75,4 +89,6 @@ export {
   getTime,
   keyBy,
   takeListFromEnd,
+  dummyFn,
+  detectIsDepsDifferent,
 };

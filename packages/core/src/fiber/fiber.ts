@@ -19,6 +19,7 @@ import {
   getVirtualNodeKey,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
+  detectIsEmptyVirtualNode,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context/model';
@@ -365,7 +366,9 @@ function mutateAlternate(options: PerformAlternateOptions) {
       const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
       if (process.env.NODE_ENV === 'development') {
-        if (!hasAnyKeys) {
+        const isEmptyNode = alternate.child && detectIsEmptyVirtualNode(alternate.child.instance);
+
+        if (!hasAnyKeys && prevElementsCount !== 0 && !isEmptyNode) {
           error(`
             [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!
           `);
@@ -882,12 +885,14 @@ function createHook(): Hook {
 type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
+  onStart: () => void;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, fiber } = options;
+  const { rootId, fiber, onStart } = options;
   const callback = () => {
     if (fiber.isUsed) return;
+    onStart();
     effectStoreHelper.set(rootId); // important order!
     fromHookUpdateHelper.set(true);
     fiberMountHelper.reset();

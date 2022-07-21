@@ -49,6 +49,7 @@ import {
   useReducer,
   useRef,
   useState,
+  useDeferredValue,
 } from '@dark-engine/core';
 import { render, createPortal } from '@dark-engine/platform-browser';
 ```
@@ -708,9 +709,30 @@ const App = createComponent(() => {
 });
 ```
 
+### Concurrent
+
+Dark under the hood performs all recalculations in asynchronous mode so as not to block the main thread. Due to the task scheduler, you can achieve prioritization of interface updates. For example, make some updates more important than others, and vice versa - less important.
+
+```tsx
+import { useDeferredValue } from '@dark-engine/core';
+```
+This fixes an issue with an unresponsive interface when user input occurs, based on which heavy calculations or heavy rendering is recalculated.
+Returns a delayed value that may lag behind the main value. It can be combined with each other and with useMemo and memo for amazing responsiveness results...
+
+```tsx
+const Items = createComponent(({ items }) => {
+  const deferredItems = useDeferredValue(items);
+  const items = useMemo(() => {
+    return deferredItems.map(item => <li key={item.id}>{item.name}</li>);
+  }, [deferredItems.length]);
+
+  return <ul>{items}</ul>;
+});
+```
+
 ### Portals
 
-This is a browser environment-specific ability to redirect the rendering thread to another element in the DOM tree. The main purpose is modal windows, dropdown menus and everything where it is necessary to avoid the possibility of being overlapped by the parent container due to configured css overflow.
+This is a browser environment-specific ability to redirect the rendering flow to another element in the DOM tree. The main purpose is modal windows, dropdown menus and everything where it is necessary to avoid the possibility of being overlapped by the parent container due to configured css overflow.
 
 ```tsx
 import { createPortal } from '@dark-engine/platform-browser';

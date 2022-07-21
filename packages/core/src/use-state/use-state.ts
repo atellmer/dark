@@ -3,7 +3,7 @@ import { componentFiberHelper } from '../scope';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
-import { type TaskPriority } from '../constants';
+import { TaskPriority } from '../constants';
 
 type Value<T> = T | ((prevValue: T) => T);
 type Scope = {
@@ -26,8 +26,16 @@ function useState<T = unknown>(initialValue: T, priority?: TaskPriority): [T, (v
     const newValue = detectIsFunction(sourceValue) ? sourceValue(value) : sourceValue;
 
     if (!Object.is(value, newValue)) {
-      scope.values[scope.idx] = newValue;
-      update();
+      const setValue = () => {
+        scope.values[scope.idx] = newValue;
+      };
+
+      if (priority === TaskPriority.LOW) {
+        update(() => setValue());
+      } else {
+        setValue();
+        update();
+      }
     }
   }, []);
   const { hook } = fiber;

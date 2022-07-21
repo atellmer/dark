@@ -1,13 +1,12 @@
-import { detectIsUndefined, detectIsArray } from '../helpers';
+import { detectIsUndefined, detectIsDepsDifferent } from '../helpers';
 import { detectIsComponentFactory, createComponent } from '../component';
 import { detectIsTagVirtualNode } from '../view';
 import { componentFiberHelper } from '../scope';
-import { detectIsDepsDifferent } from '../shared';
 import { $$memo } from '../memo';
 
 const Memo = createComponent(({ slot }) => slot, { token: $$memo });
 
-function wrap(value: unknown, isDepsDifferent: boolean) {
+function wrap<T>(value: T, isDepsDifferent: boolean) {
   if (detectIsTagVirtualNode(value) || detectIsComponentFactory(value)) {
     const factory = Memo({ slot: value });
 
@@ -19,16 +18,8 @@ function wrap(value: unknown, isDepsDifferent: boolean) {
   return value;
 }
 
-function processValue(getValue: () => any, isDepsDifferent = false) {
-  let value = getValue();
-
-  if (detectIsArray(value)) {
-    value = value.map(x => wrap(x, isDepsDifferent));
-  } else {
-    value = wrap(value, isDepsDifferent);
-  }
-
-  return value;
+function processValue<T>(getValue: () => T, isDepsDifferent = false) {
+  return wrap(getValue(), isDepsDifferent);
 }
 
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
@@ -46,7 +37,7 @@ function useMemo<T>(getValue: () => T, deps: Array<any>): T {
 
     hook.idx++;
 
-    return value;
+    return value as T;
   }
 
   const hookValue = values[idx];
@@ -56,6 +47,7 @@ function useMemo<T>(getValue: () => T, deps: Array<any>): T {
 
   hookValue.deps = deps;
   hookValue.value = processValue(computedGetValue, isDepsDifferent);
+
   hook.idx++;
 
   return hookValue.value;

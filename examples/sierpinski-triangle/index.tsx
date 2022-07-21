@@ -1,6 +1,16 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 
-import { h, Text, createComponent, memo, useState, useEffect, useCallback, TaskPriority } from '@dark-engine/core';
+import {
+  h,
+  Text,
+  createComponent,
+  memo,
+  useState,
+  useEffect,
+  useCallback,
+  Fragment,
+  TaskPriority,
+} from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
@@ -57,7 +67,7 @@ const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(
   s /= 2;
 
   return (
-    <div>
+    <>
       <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s}>
         {slot}
       </MemoSierpinskiTriangle>
@@ -67,7 +77,7 @@ const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(
       <MemoSierpinskiTriangle x={x + s} y={y + s / 2} s={s}>
         {slot}
       </MemoSierpinskiTriangle>
-    </div>
+    </>
   );
 });
 
@@ -105,13 +115,11 @@ const App = createComponent<AppProps>(props => {
   `;
 
   return (
-    <main style={containerStyle}>
-      <div>
-        <MemoSierpinskiTriangle x={0} y={0} s={1000}>
-          {seconds}
-        </MemoSierpinskiTriangle>
-      </div>
-    </main>
+    <div style={containerStyle}>
+      <MemoSierpinskiTriangle x={0} y={0} s={1000}>
+        {seconds}
+      </MemoSierpinskiTriangle>
+    </div>
   );
 });
 

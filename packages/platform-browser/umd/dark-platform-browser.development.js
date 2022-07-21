@@ -739,7 +739,7 @@ function render(element, container) {
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.get().forEach(function (x) { return (x.effectTag = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE); });
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.set([]);
     };
-    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH);
+    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL);
 }
 
 
@@ -842,7 +842,7 @@ function pick(queue) {
 function executeTasks() {
     var hasMoreWork = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper.get());
     if (!hasMoreWork) {
-        pick(queueByPriority.hight) || pick(queueByPriority.normal) || pick(queueByPriority.low);
+        pick(queueByPriority.hight) || pick(queueByPriority.normal) || requestIdleCallback(function () { return pick(queueByPriority.low); });
     }
 }
 function performWorkUntilDeadline() {

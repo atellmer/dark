@@ -13,6 +13,7 @@ export * from './shared';
 export * from './suspense';
 export * from './use-callback';
 export * from './use-context';
+export * from './use-deferred-value';
 export * from './use-effect';
 export * from './use-error';
 export * from './use-imperative-handle';

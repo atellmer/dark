@@ -59,7 +59,7 @@ const detectIsVirtualNode = (vNode: unknown): vNode is VirtualNode => vNode inst
 const detectIsTagVirtualNode = (vNode: unknown): vNode is TagVirtualNode => vNode instanceof TagVirtualNode;
 const detectIsCommentVirtualNode = (vNode: unknown): vNode is CommentVirtualNode => vNode instanceof CommentVirtualNode;
 const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vNode instanceof TextVirtualNode;
-const detectIsEmptyVirtualNode = (vNode: CommentVirtualNode): boolean =>
+const detectIsEmptyVirtualNode = (vNode: unknown): boolean =>
   detectIsCommentVirtualNode(vNode) && vNode.value === EMPTY_NODE;
 
 function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
