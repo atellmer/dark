@@ -536,11 +536,11 @@ Returns a delayed value that may lag behind the main value. It can be combined w
 ```tsx
 const Items = createComponent(({ items }) => {
   const deferredItems = useDeferredValue(items);
-  const items = useMemo(() => {
+  const elements = useMemo(() => {
     return deferredItems.map(item => <li key={item.id}>{item.name}</li>);
   }, [deferredItems]);
 
-  return <ul>{items}</ul>;
+  return <ul>{elements}</ul>;
 });
 ```
 
