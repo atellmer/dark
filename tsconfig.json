@@ -18,29 +18,9 @@
       "es7",
       "dom"
     ],
-    "baseUrl": ".",
-    "paths": {
-      "@dark-engine/core": [
-        "./packages/core/src/index"
-      ],
-      "@dark-engine/core/*": [
-        "./packages/core/src/*"
-      ],
-      "@dark-engine/platform-browser": [
-        "./packages/platform-browser/src/index"
-      ],
-      "@dark-engine/platform-browser/*": [
-        "./packages/platform-browser/src/*"
-      ],
-      "@test-utils": [
-        "./test/utils"
-      ]
-    }
+    "baseUrl": "."
   },
   "include": [
-    "./packages/**/*",
-    "./examples/**/*",
-    "./test/**/*",
-    "./*.js"
+    "./examples/**/*"
   ]
 }
