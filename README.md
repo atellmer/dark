@@ -118,6 +118,8 @@ const App = createComponent(() => {
     }),
   ];
 });
+
+render(App(), document.getElementById('root'));
 ```
 
 ## A little more about the core concepts...
