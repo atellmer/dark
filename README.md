@@ -30,6 +30,26 @@ CDN:
 <script src="https://unpkg.com/@dark-engine/platform-browser/umd/dark-platform-browser.production.min.js"></script>
 ```
 
+## Table of contents
+- [Overview](#overview)
+- [Elements](#elements)
+- [Mounting](#mounting)
+- [Conditional rendering](#conditional-rendering)
+- [List rendering](#list-rendering)
+- [Components](#components)
+- [Events](#events)
+- [Hooks](#hooks)
+- [State](#state)
+- [Effects](#effects)
+- [Performance optimization](#optimization)
+- [Refs](#refs)
+- [Catching errors](#errors)
+- [Context](#context)
+- [Code splitting](#code-splitting)
+- [Styles](#styles)
+- [Portals](#portals)
+
+<a name="overview"></a>
 ## API overview
 The public API is partially similar to the React API and includes 2 packages - core and browser support.
 
@@ -124,7 +144,8 @@ render(App(), document.getElementById('root'));
 
 ## A little more about the core concepts...
 
-### Elements
+<a name="elements"></a>
+## Elements
 
 Elements are a collection of platform-specific primitives and components. For the browser platform, these are tags, text, and comments.
 
@@ -168,8 +189,8 @@ render(
   document.getElementById('root')
 );
 ```
-
-### Mounting and rerender root
+<a name="mounting"></a>
+## Mounting
 
 Mounting the application and possibly re-rendering is done by executing the render function. Note that Dark supports rendering multiple independent applications to different DOM elements. This can be useful for creating custom widgets that don't affect how the main application works.
 
@@ -193,8 +214,8 @@ setInterval(() => {
   render(<App count={count} />, document.getElementById('root'));
 }, 1000);
 ```
-
-### Conditional rendering
+<a name="conditional-rendering"></a>
+## Conditional rendering
 
 A couple of examples of working with conditions:
 
@@ -226,8 +247,8 @@ const Component = createComponent(({ isOpen }) => {
   );
 });
 ```
-
-### List rendering
+<a name="list-rendering"></a>
+## List rendering
 
 ```tsx
 const List = createComponent(({ items }) => {
@@ -250,8 +271,8 @@ const List = createComponent(({ items }) => {
   return albums.map(x => <div key={x.id}>{x.title}</div>);
 });
 ```
-
-### Components
+<a name="components"></a>
+## Components
 
 Components are the reusable building blocks of your application, encapsulating the presentation and logic of how they work.
 
@@ -327,8 +348,8 @@ const App = createComponent(({ slot }) => {
 
 render(<App>Content</App>, document.getElementById('root'));
 ```
-
-### Events
+<a name="events"></a>
+## Events
 Dark uses the standard DOM event system, but written in camelCase. A handler is passed to the event attribute in the form of a function, which receives a synthetic event containing a native event. Synthetic events are needed in order to emulate the operation of stopPropagation. The emulation is required because, for performance reasons, Dark uses native event delegation to the document element instead of the original element. For example, if you subscribe to a button click event, the event will be tracked on the entire document, not on that button.
 
 ```tsx
@@ -343,11 +364,11 @@ const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => consol
 <br />
 <button onClick={handleClick}>Click me</button>
 ```
-
-### Hooks
+<a name="hooks"></a>
+## Hooks
 Hooks are needed to bring components to life: give them an internal state, start some actions, and so on. The basic rule for using hooks is to use them at the top level of the component, i.e. do not nest them inside other functions, cycles, conditions. This is a necessary condition, because hooks are not magic, but work based on array indices.
-
-### State
+<a name="state"></a>
+## State
 Components should be able to store their state between renders. There are useState and useReducer hooks for this.
 
 #### useState
@@ -414,10 +435,10 @@ const App = createComponent(() => {
   );
 });
 ```
+<a name="effects"></a>
+## Effects
 
-### Side Effects
-
-Side Effects are useful actions that take place outside of the interface rendering. For example, side effects can be fetch data from the server, calling timers, subscribing.
+Side effects are useful actions that take place outside of the interface rendering. For example, side effects can be fetch data from the server, calling timers, subscribing.
 
 #### useEffect
 
@@ -459,8 +480,8 @@ Also this hook can return a reset function:
     return () => clearTimeout(timerId);
   }, []);
 ```
-
-### Performance optimization
+<a name="optimization"></a>
+## Performance optimization
 
 In Dark, redraw optimization can be configured using the memo function, as well as the useMemo and useCallback hooks. Optimization occurs due to the memoization of the results of the previous calculation or render.
 
@@ -569,8 +590,8 @@ const Items = createComponent(({ items }) => {
   return <ul>{elements}</ul>;
 });
 ```
-
-### Refs
+<a name="refs"></a>
+## Refs
 
 Refs are needed to be able to get a reference to a DOM element or a reference to a component in order to interact with them more subtly.
 In Dark, work with refs is done using the forwardRef function and the useRef and useImperativeHandle hooks.
@@ -628,8 +649,8 @@ const App = createComponent(() => {
   return <Dog ref={dogRef} />;
 });
 ```
-
-### Catching errors
+<a name="errors"></a>
+## Catching errors
 
 Error catching is done using the useError hook. When you get an error, you can log it and show an alternate UI.
 
@@ -671,8 +692,8 @@ const App = createComponent(() => {
   );
 });
 ```
-
-### Context
+<a name="context"></a>
+## Context
 
 Context is needed when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
 In Dark, the context works with the createContext method and useContext hook.
@@ -730,8 +751,8 @@ render ThemeConsumer!
 render ThemeConsumer!
 ...
 ```
-
-### Code splitting
+<a name="code-splitting"></a>
+## Code splitting
 
 Code splitting is required when you have separate modules that can be lazily loaded when needed. For example, jumping to a new page with a new URL using the Browser History API. To use components lazy loading, you need to wrap dynamic imports of component in a special function - lazy. You will also need a Suspense component that will show a stub until the module is loaded.
 
@@ -760,8 +781,8 @@ const App = createComponent(() => {
   );
 });
 ```
-
-### Styles
+<a name="styles"></a>
+## Styles
 In Dark for the Browser, styling is done just like in normal HTML using the style and class attributes. You can also use the useStyle hook, which returns an object with styles. This hook differs from the usual template literals in that it internally minifies the style by removing extra spaces (memoization is used), and also, if you have the syntax highlighting plugin for styled-components installed, highlights the style.
 
 ```tsx
@@ -783,8 +804,8 @@ const styles = useStyle(styled => ({
   <span style={styles.item}>I'm styled!</span>
 </div>
 ```
-
-### Portals
+<a name="portals"></a>
+## Portals
 
 This is a browser environment-specific ability to redirect the rendering flow to another element in the DOM tree. The main purpose is modal windows, dropdown menus and everything where it is necessary to avoid the possibility of being overlapped by the parent container due to configured css overflow.
 
