@@ -790,7 +790,7 @@ import { useStyle } from '@dark-engine/platform-browser';
 ```
 
 ```tsx
-const styles = useStyle(styled => ({
+const style = useStyle(styled => ({
   container: styled`
     width: 100%;
     background-color: ${color};
@@ -800,8 +800,8 @@ const styles = useStyle(styled => ({
   `,
 }));
 
-<div style={styles.container}>
-  <span style={styles.item}>I'm styled!</span>
+<div style={style.container}>
+  <span style={style.item}>I'm styled!</span>
 </div>
 ```
 <a name="portals"></a>
