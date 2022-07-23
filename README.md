@@ -779,7 +779,7 @@ const styles = useStyle(styled => ({
 }));
 
 <div style={styles.container}>
-  <span style={styled.item}>I'm styled!</span>
+  <span style={styles.item}>I'm styled!</span>
 </div>
 ```
 
