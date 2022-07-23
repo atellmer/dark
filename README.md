@@ -340,6 +340,7 @@ const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setValu
 const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => console.log('click');
 
 <input value={value} onInput={handleInput} />
+<br />
 <button onClick={handleClick}>Click me</button>
 ```
 
