@@ -21,4 +21,4 @@ function useStyle<T extends Style>(config: Config<T>) {
   return config(styled);
 }
 
-export { useStyle, styled };
+export { useStyle };

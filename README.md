@@ -761,7 +761,7 @@ const App = createComponent(() => {
 ```
 
 ### Styles
-In Dark for the Browser, styling is done just like in normal HTML using the style and class attributes. You can also use the useStyles hook, which returns an object with styles. This hook differs from the usual template literals in that it internally minifies the style by removing extra spaces (memoization is used), and also, if you have the syntax highlighting plugin for styled-components installed, highlights the style.
+In Dark for the Browser, styling is done just like in normal HTML using the style and class attributes. You can also use the useStyle hook, which returns an object with styles. This hook differs from the usual template literals in that it internally minifies the style by removing extra spaces (memoization is used), and also, if you have the syntax highlighting plugin for styled-components installed, highlights the style.
 
 ```tsx
 import { useStyle } from '@dark-engine/platform-browser';
