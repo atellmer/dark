@@ -898,6 +898,85 @@ setup();
 
 /***/ }),
 
+/***/ "./src/use-style/index.ts":
+/*!********************************!*\
+  !*** ./src/use-style/index.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "styled": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_0__.styled),
+/* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_0__.useStyle)
+/* harmony export */ });
+/* harmony import */ var _use_style__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./use-style */ "./src/use-style/use-style.ts");
+
+
+
+/***/ }),
+
+/***/ "./src/use-style/use-style.ts":
+/*!************************************!*\
+  !*** ./src/use-style/use-style.ts ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "styled": () => (/* binding */ styled),
+/* harmony export */   "useStyle": () => (/* binding */ useStyle)
+/* harmony export */ });
+/* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
+/* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
+var __read = (undefined && undefined.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+
+function styled(strings) {
+    var args = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        args[_i - 1] = arguments[_i];
+    }
+    var style = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
+        return strings
+            .map(function (x, idx) { return x + (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(args[idx]) ? args[idx] : ''); })
+            .join('')
+            .replace(/;\s*/gm, ';')
+            .replace(/:\s*/gm, ':')
+            .trim();
+    }, __spreadArray([strings], __read(args), false));
+    return style;
+}
+function useStyle(config) {
+    return config(styled);
+}
+
+
+
+/***/ }),
+
 /***/ "@dark-engine/core":
 /*!*****************************************************************************************************************************!*\
   !*** external {"root":"DarkCore","commonjs2":"@dark-engine/core","commonjs":"@dark-engine/core","amd":"@dark-engine/core"} ***!
@@ -985,10 +1064,13 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "createPortal": () => (/* reexport safe */ _portal__WEBPACK_IMPORTED_MODULE_1__.createPortal),
-/* harmony export */   "render": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */   "render": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_2__.useStyle)
 /* harmony export */ });
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./render */ "./src/render/index.ts");
 /* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./portal */ "./src/portal/index.ts");
+/* harmony import */ var _use_style__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./use-style */ "./src/use-style/index.ts");
+
 
 
 

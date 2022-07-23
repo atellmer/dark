@@ -22,7 +22,7 @@ function createPortal(slot: DarkElement, container: Element) {
   return Portal({ [$$portal]: container, slot });
 }
 
-const Portal = createComponent(
+const Portal = createComponent<any>(
   ({ slot, ...rest }) => {
     useMemo(() => (rest[$$portal].innerHTML = ''), []);
 

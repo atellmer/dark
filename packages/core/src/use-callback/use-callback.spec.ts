@@ -59,7 +59,7 @@ test('use-callback returns function', () => {
     return null;
   });
 
-  render(App({ count: 1 }), host);
+  render(App(), host);
   waitNextIdle();
   expect(typeof handler).toBe('function');
 });

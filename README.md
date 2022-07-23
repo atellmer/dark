@@ -57,7 +57,7 @@ import {
   useState,
   useDeferredValue,
 } from '@dark-engine/core';
-import { render, createPortal } from '@dark-engine/platform-browser';
+import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
 ## Shut up and show me your code!
 
@@ -316,14 +316,31 @@ If a child element is passed to the component, it will appear in props as slot:
 
 ```tsx
 const App = createComponent(({ slot }) => {
-  return [
-    <header>Header</header>,
-    <div>{slot}</div>,
-    <footer>Footer</footer>,
-  ];
+  return (
+    <>
+      <header>Header</header>
+      <div>{slot}</div>
+      <footer>Footer</footer>
+    </>
+  );
 });
 
 render(<App>Content</App>, document.getElementById('root'));
+```
+
+### Events
+Dark uses the standard DOM event system, but written in camelCase. A handler is passed to the event attribute in the form of a function, which receives a synthetic event containing a native event. Synthetic events are needed in order to emulate the operation of stopPropagation. The emulation is required because, for performance reasons, Dark uses native event delegation to the document element instead of the original element. For example, if you subscribe to a button click event, the event will be tracked on the entire document, not on that button.
+
+```tsx
+import { type SyntheticEvent } from '@dark-engine/platform-browser';
+```
+
+```tsx
+const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setValue(e.target.value);
+const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => console.log('click');
+
+<input value={value} onInput={handleInput} />
+<button onClick={handleClick}>Click me</button>
 ```
 
 ### Hooks
@@ -741,6 +758,29 @@ const App = createComponent(() => {
     </>
   );
 });
+```
+
+### Styles
+In Dark for the Browser, styling is done just like in normal HTML using the style and class attributes. You can also use the useStyles hook, which returns an object with styles. This hook differs from the usual template literals in that it internally minifies the style by removing extra spaces (memoization is used), and also, if you have the syntax highlighting plugin for styled-components installed, highlights the style.
+
+```tsx
+import { useStyle } from '@dark-engine/platform-browser';
+```
+
+```tsx
+const styles = useStyle(styled => ({
+  container: styled`
+    width: 100%;
+    background-color: ${color};
+  `,
+  item: styled`
+    color: purple;
+  `,
+}));
+
+<div style={styles.container}>
+  <span style={styled.item}>I'm styled!</span>
+</div>
 ```
 
 ### Portals

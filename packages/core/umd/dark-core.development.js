@@ -1896,7 +1896,7 @@ var SuspenseContext = (0,_context__WEBPACK_IMPORTED_MODULE_2__.createContext)({
 var Suspense = (0,_component__WEBPACK_IMPORTED_MODULE_0__.createComponent)(function (_a) {
     var fallback = _a.fallback, slot = _a.slot;
     if (!fallback) {
-        throw new Error("Suspense fallback doesn't found");
+        throw new Error("Suspense fallback not found");
     }
     var isSuspenseLoaded = (0,_use_context__WEBPACK_IMPORTED_MODULE_3__.useContext)(SuspenseContext).isLoaded;
     var _b = __read((0,_use_state__WEBPACK_IMPORTED_MODULE_1__.useState)(false), 2), isLoaded = _b[0], setIsLoaded = _b[1];

@@ -9,7 +9,7 @@ export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   shouldUpdate?: (props: P, nextProps: P) => boolean;
 }>;
 
-export type StandardComponentProps = Readonly<Partial<{ [key: string]: any }>> & KeyProps & SlotProps & RefProps;
+export type StandardComponentProps = KeyProps & SlotProps & RefProps;
 
 export type KeyProps = {
   key?: DarkElementKey;

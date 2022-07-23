@@ -24,7 +24,7 @@ const SuspenseContext = createContext<SuspenseContextValue>({
 
 const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
   if (!fallback) {
-    throw new Error(`Suspense fallback doesn't found`);
+    throw new Error(`Suspense fallback not found`);
   }
   const { isLoaded: isSuspenseLoaded } = useContext(SuspenseContext);
   const [isLoaded, setIsLoaded] = useState(false);
