@@ -273,7 +273,7 @@ or without Fragment
 
 ```tsx
 const List = createComponent(({ items }) => {
-  return albums.map(x => <div key={x.id}>{x.title}</div>);
+  return items.map(x => <div key={x.id}>{x.title}</div>);
 });
 ```
 <a name="components"></a>
