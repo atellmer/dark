@@ -11,7 +11,7 @@ import {
   Fragment,
   TaskPriority,
 } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import { render, useStyle } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
 startMemMonitor();
@@ -21,22 +21,24 @@ const domElement = document.getElementById('root');
 const targetSize = 25;
 
 const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
-  const [hover, setHover] = useState(false, TaskPriority.HIGH);
+  const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
   const s = props.size * 1.3;
-  const style = `
-    position: absolute;
-    background-color: #61dafb;
-    font: normal 15px sans-serif;
-    text-align: center;
-    cursor: pointer;
-    width: ${s}px;
-    height: ${s}px;
-    left: ${props.x}px;
-    top: ${props.y}px;
-    border-radius: ${s / 2}px;
-    line-height: ${s}px;
-    background-color: ${hover ? 'yellow' : '#61dafb'};
-  `;
+  const style = useStyle(styled => ({
+    dot: styled`
+      position: absolute;
+      background-color: #61dafb;
+      font: normal 15px sans-serif;
+      text-align: center;
+      cursor: pointer;
+      width: ${s}px;
+      height: ${s}px;
+      left: ${props.x}px;
+      top: ${props.y}px;
+      border-radius: ${s / 2}px;
+      line-height: ${s}px;
+      background-color: ${hover ? 'yellow' : '#61dafb'};
+    `,
+  }));
 
   const enter = useCallback(() => {
     setHover(true);
@@ -47,7 +49,7 @@ const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
   }, []);
 
   return (
-    <div style={style} onMouseEnter={enter} onMouseLeave={leave}>
+    <div style={style.dot} onMouseEnter={enter} onMouseLeave={leave}>
       {hover ? `* ${Text(props.slot)} *` : Text(props.slot)}
     </div>
   );
@@ -91,7 +93,7 @@ type AppProps = {
 };
 
 const App = createComponent<AppProps>(props => {
-  const [seconds, setSeconds] = useState(0, TaskPriority.LOW);
+  const [seconds, setSeconds] = useState(0, { priority: TaskPriority.LOW });
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;
@@ -102,20 +104,22 @@ const App = createComponent<AppProps>(props => {
 
   const tick = useCallback(() => setSeconds(seconds => (seconds % 10) + 1), []);
 
-  const containerStyle = `
-    position: absolute;
-    transform-origin: 0 0;
-    left: 50%;
-    top: 50%;
-    width: 10px;
-    height: 10px;
-    background-color: #eee;
-    transform: ${'scaleX(' + scale / 2.1 + ') scaleY(0.7) translateZ(0.1px)'};
-    zoom: 1;
-  `;
+  const style = useStyle(styled => ({
+    container: styled`
+      position: absolute;
+      transform-origin: 0 0;
+      left: 50%;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      background-color: #eee;
+      transform: ${'scaleX(' + scale / 2.1 + ') scaleY(0.7) translateZ(0.1px)'};
+      zoom: 1;
+    `,
+  }));
 
   return (
-    <div style={containerStyle}>
+    <div style={style.container}>
       <MemoSierpinskiTriangle x={0} y={0} s={1000}>
         {seconds}
       </MemoSierpinskiTriangle>

@@ -1,5 +1,5 @@
 {
-  "name": "dark-todo-app",
+  "name": "dark-modal-window",
   "scripts": {
     "build": "npx webpack --config webpack.config --env.production"
   },

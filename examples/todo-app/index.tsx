@@ -54,7 +54,7 @@ type CheckboxProps = {
 
 const Checkbox = createComponent<CheckboxProps>(props => {
   const { value, labelText, onChange } = props;
-  const handleInput = (e: InputEvent) => onChange(e, !value);
+  const handleInput = (e: SyntheticEvent<KeyboardEvent, HTMLInputElement>) => onChange(e, !value);
 
   return label({
     slot: [

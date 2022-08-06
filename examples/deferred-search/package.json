@@ -1,5 +1,5 @@
 {
-  "name": "dark-todo-app",
+  "name": "dark-deferred-search",
   "scripts": {
     "build": "npx webpack --config webpack.config --env.production"
   },
@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@dark-engine/core": "^0.4.1",
-    "@dark-engine/platform-browser": "^0.4.1"
+    "@dark-engine/platform-browser": "^0.4.1",
+    "d3-scale-chromatic": "^3.0.0",
+    "perf-monitor": "^0.4.1"
   }
 }

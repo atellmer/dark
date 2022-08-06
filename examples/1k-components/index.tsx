@@ -1,30 +1,46 @@
-import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
-import { interpolateViridis } from 'd3-scale-chromatic';
+import { startFPSMonitor, startMemMonitor } from "perf-monitor";
+import { interpolateViridis } from "d3-scale-chromatic";
 
-import { h, createComponent, useState, useMemo, useEffect, useUpdate, TaskPriority } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import {
+  h,
+  createComponent,
+  useState,
+  useMemo,
+  useEffect,
+  useUpdate,
+  TaskPriority,
+} from "@dark-engine/core";
+import { render } from "@dark-engine/platform-browser";
 
 startFPSMonitor();
 startMemMonitor();
 
 const Demo = createComponent(() => {
-  const [numPoints, setNumPoints] = useState(1000, TaskPriority.HIGH);
+  const [numPoints, setNumPoints] = useState(1000, {
+    priority: TaskPriority.HIGH,
+  });
 
-  const updateCount = e => {
+  const updateCount = (e) => {
     setNumPoints(Number(e.target.value));
   };
 
   return (
-    <div class='app-wrapper'>
+    <div class="app-wrapper">
       <VizDemo count={numPoints} />
-      <div class='controls'>
+      <div class="controls">
         # Points
-        <input type='range' min={10} max={10000} value={numPoints} onInput={updateCount} />
+        <input
+          type="range"
+          min={10}
+          max={10000}
+          value={numPoints}
+          onInput={updateCount}
+        />
         {numPoints}
       </div>
-      <div class='about'>
-        Dark 1k Components Demo based on the Glimmer demo by{' '}
-        <a href='http://mlange.io' target='_blank'>
+      <div class="about">
+        Dark 1k Components Demo based on the Glimmer demo by{" "}
+        <a href="http://mlange.io" target="_blank">
           Michael Lange
         </a>
         .
@@ -40,7 +56,13 @@ const Layout = {
   SPIRAL: 3,
 };
 
-const LAYOUT_ORDER = [Layout.PHYLLOTAXIS, Layout.SPIRAL, Layout.PHYLLOTAXIS, Layout.GRID, Layout.WAVE];
+const LAYOUT_ORDER = [
+  Layout.PHYLLOTAXIS,
+  Layout.SPIRAL,
+  Layout.PHYLLOTAXIS,
+  Layout.GRID,
+  Layout.WAVE,
+];
 
 type VizDemoProps = {
   count: number;
@@ -93,7 +115,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     const pyProp = yForLayout(currentLayout);
     const nyProp = yForLayout(nextLayout);
 
-    scope.points = scope.points.map(point => {
+    scope.points = scope.points.map((point) => {
       const newPoint = { ...point };
       newPoint.x = lerp(newPoint, pct, pxProp, nxProp);
       newPoint.y = lerp(newPoint, pct, pyProp, nyProp);
@@ -105,7 +127,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     requestAnimationFrame(() => next());
   };
 
-  const setAnchors = arr => {
+  const setAnchors = (arr) => {
     arr.map((p, index) => {
       const [gx, gy] = project(scope.grid(index));
       const [wx, wy] = project(scope.wave(index));
@@ -118,7 +140,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     scope.points = arr;
   };
 
-  const makePoints = count => {
+  const makePoints = (count) => {
     const newPoints = [];
     for (let i = 0; i < count; i++) {
       newPoints.push({
@@ -135,7 +157,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
   };
 
   return (
-    <svg class='demo'>
+    <svg class="demo">
       <g>{scope.points.map((x, idx) => renderPoint(x, idx))}</g>
     </svg>
   );
@@ -148,7 +170,13 @@ type PointProps = {
 };
 
 const Point = createComponent<PointProps>(({ x, y, color }) => {
-  return <rect class='point' transform={`translate(${Math.floor(x)}, ${Math.floor(y)})`} fill={color} />;
+  return (
+    <rect
+      class="point"
+      transform={`translate(${Math.floor(x)}, ${Math.floor(y)})`}
+      fill={color}
+    />
+  );
 });
 
 const theta = Math.PI * (3 - Math.sqrt(5));
@@ -156,26 +184,26 @@ const theta = Math.PI * (3 - Math.sqrt(5));
 function xForLayout(layout) {
   switch (layout) {
     case Layout.PHYLLOTAXIS:
-      return 'px';
+      return "px";
     case Layout.GRID:
-      return 'gx';
+      return "gx";
     case Layout.WAVE:
-      return 'wx';
+      return "wx";
     case Layout.SPIRAL:
-      return 'sx';
+      return "sx";
   }
 }
 
 function yForLayout(layout) {
   switch (layout) {
     case Layout.PHYLLOTAXIS:
-      return 'py';
+      return "py";
     case Layout.GRID:
-      return 'gy';
+      return "gy";
     case Layout.WAVE:
-      return 'wy';
+      return "wy";
     case Layout.SPIRAL:
-      return 'sy';
+      return "sy";
   }
 }
 
@@ -186,7 +214,7 @@ function lerp(obj, percent, startProp, endProp) {
 }
 
 function genPhyllotaxis(n) {
-  return i => {
+  return (i) => {
     const r = Math.sqrt(i / n);
     const th = i * theta;
 
@@ -197,12 +225,15 @@ function genPhyllotaxis(n) {
 function genGrid(n) {
   const rowLength = Math.round(Math.sqrt(n));
 
-  return i => [-0.8 + (1.6 / rowLength) * (i % rowLength), -0.8 + (1.6 / rowLength) * Math.floor(i / rowLength)];
+  return (i) => [
+    -0.8 + (1.6 / rowLength) * (i % rowLength),
+    -0.8 + (1.6 / rowLength) * Math.floor(i / rowLength),
+  ];
 }
 
 function genWave(n) {
   const xScale = 2 / (n - 1);
-  return i => {
+  return (i) => {
     const x = -1 + i * xScale;
 
     return [x, Math.sin(x * Math.PI * 3) * 0.3];
@@ -210,7 +241,7 @@ function genWave(n) {
 }
 
 function genSpiral(n) {
-  return i => {
+  return (i) => {
     const t = Math.sqrt(i / (n - 1));
     const phi = t * Math.PI * 10;
 
@@ -219,7 +250,7 @@ function genSpiral(n) {
 }
 
 function scale(magnitude, vector) {
-  return vector.map(p => p * magnitude);
+  return vector.map((p) => p * magnitude);
 }
 
 function translate(translation, vector) {
@@ -233,4 +264,4 @@ function project(vector) {
   return translate([ww, wh], scale(Math.min(wh, ww), vector));
 }
 
-render(<Demo />, document.getElementById('root'));
+render(<Demo />, document.getElementById("root"));
