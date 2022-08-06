@@ -59,7 +59,7 @@ function createElement(vNode: VirtualNode): DomElement {
 
 function createDomElement(fiber: Fiber<Element>): DomElement {
   if (!detectIsVirtualNode(fiber.instance)) {
-    throw new Error('createDomElement receives only Element into fiber!');
+    throw new Error('createDomElement receives only Element!');
   }
 
   const vNode: VirtualNode = fiber.instance;
@@ -143,14 +143,14 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
   }
 }
 
-type UpdareInputAttributesOptions = {
+type UpgradeInputAttributesOptions = {
   tagName: string;
   element: Element;
   attrName: string;
   value: string | boolean;
 };
 
-function upgradeInputAttributes(options: UpdareInputAttributesOptions) {
+function upgradeInputAttributes(options: UpgradeInputAttributesOptions) {
   const { tagName, element, attrName, value } = options;
   const map = {
     input: () => {

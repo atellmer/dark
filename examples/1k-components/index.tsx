@@ -8,7 +8,9 @@ startFPSMonitor();
 startMemMonitor();
 
 const Demo = createComponent(() => {
-  const [numPoints, setNumPoints] = useState(1000, TaskPriority.HIGH);
+  const [numPoints, setNumPoints] = useState(1000, {
+    priority: TaskPriority.HIGH,
+  });
 
   const updateCount = e => {
     setNumPoints(Number(e.target.value));
@@ -136,10 +138,20 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
 
   return (
     <svg class='demo'>
-      <g>{scope.points.map((x, idx) => renderPoint(x, idx))}</g>
+      <g>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });
+
+const map = (items: Array<any>, cb: (x: any, idx: number) => any) => {
+  const points = [];
+
+  for (let i = 0; i < items.length; i++) {
+    points.push(cb(items[i], i));
+  }
+
+  return points;
+};
 
 type PointProps = {
   x: number;

@@ -1,4 +1,3 @@
-import { detectIsNumber } from '../helpers';
 import { useState } from '../use-state';
 import { useEffect } from '../use-effect';
 import { TaskPriority } from '../constants';
@@ -9,20 +8,13 @@ type UseDeferredValueOprions = {
 
 function useDeferredValue<T>(value: T, options?: UseDeferredValueOprions): T {
   const { timeoutMs } = options || {};
-  const [deferredValue, setDeferredValue] = useState(value, TaskPriority.LOW);
+  const [deferredValue, setDeferredValue] = useState(value, {
+    priority: TaskPriority.LOW,
+    timeoutMs,
+  });
 
   useEffect(() => {
-    let timerId = null;
-
-    if (detectIsNumber(timeoutMs)) {
-      timerId = setTimeout(() => {
-        setDeferredValue(value);
-      }, timeoutMs);
-    } else {
-      setDeferredValue(value);
-    }
-
-    return () => timerId && clearTimeout(timerId);
+    setDeferredValue(value);
   }, [value]);
 
   return deferredValue;

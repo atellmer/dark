@@ -1,4 +1,4 @@
-import { getTime, workLoop, nextUnitOfWorkHelper, TaskPriority } from '@dark-engine/core';
+import { type ScheduleCallbackOptions, getTime, workLoop, wipRootHelper, TaskPriority } from '@dark-engine/core';
 import { type Callback } from './model';
 
 type QueueByPriority = {
@@ -21,11 +21,15 @@ let currentTask: Task = null;
 class Task {
   public static nextTaskId = 0;
   public id: number;
+  public time: number;
+  public timeoutMs: number;
   public priority: TaskPriority;
   public callback: () => void;
 
-  constructor(options: Pick<Task, 'priority' | 'callback'>) {
+  constructor(options: Omit<Task, 'id'>) {
     this.id = ++Task.nextTaskId;
+    this.time = options.time;
+    this.timeoutMs = options.timeoutMs;
     this.priority = options.priority;
     this.callback = options.callback;
   }
@@ -33,8 +37,9 @@ class Task {
 
 const shouldYeildToHost = () => getTime() >= deadline;
 
-function scheduleCallback(callback: () => void, priority: TaskPriority = TaskPriority.NORMAL) {
-  const task = new Task({ priority, callback });
+function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
+  const { priority = TaskPriority.NORMAL, timeoutMs } = options || {};
+  const task = new Task({ time: getTime(), timeoutMs, priority, callback });
   const map: Record<TaskPriority, () => void> = {
     [TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
     [TaskPriority.NORMAL]: () => queueByPriority.normal.push(task),
@@ -56,11 +61,25 @@ function pick(queue: Array<Task>) {
 }
 
 function executeTasks() {
-  const hasMoreWork = Boolean(nextUnitOfWorkHelper.get());
+  const isBusy = Boolean(wipRootHelper.get());
 
-  if (!hasMoreWork) {
-    pick(queueByPriority.hight) || pick(queueByPriority.normal) || requestIdleCallback(() => pick(queueByPriority.low));
+  if (!isBusy) {
+    checkOverdueTasks() ||
+      pick(queueByPriority.hight) ||
+      pick(queueByPriority.normal) ||
+      requestIdleCallback(() => pick(queueByPriority.low));
   }
+}
+
+function checkOverdueTasks() {
+  const [task] = queueByPriority.low;
+
+  if (task && task.timeoutMs > 0 && getTime() - task.time > task.timeoutMs) {
+    pick(queueByPriority.low);
+    return true;
+  }
+
+  return false;
 }
 
 function performWorkUntilDeadline() {

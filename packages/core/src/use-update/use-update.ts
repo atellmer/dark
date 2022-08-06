@@ -1,11 +1,10 @@
-import { platform } from '../global';
+import { platform, type ScheduleCallbackOptions } from '../global';
 import { getRootId, componentFiberHelper } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';
 import { dummyFn } from '../helpers';
-import { type TaskPriority } from '../constants';
 
-function useUpdate(priority?: TaskPriority) {
+function useUpdate(options?: ScheduleCallbackOptions) {
   const rootId = getRootId();
   const fiber = componentFiberHelper.get();
   const scope = useMemo(() => ({ fiber }), []);
@@ -15,7 +14,7 @@ function useUpdate(priority?: TaskPriority) {
   const update = (onStart?: () => void) => {
     const callback = createUpdateCallback({ rootId, fiber: scope.fiber, onStart: onStart || dummyFn });
 
-    platform.scheduleCallback(callback, priority);
+    platform.scheduleCallback(callback, options);
   };
 
   return update;

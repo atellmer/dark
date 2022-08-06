@@ -12,7 +12,6 @@ import {
   wipRootHelper,
   currentRootHelper,
   nextUnitOfWorkHelper,
-  deletionsHelper,
   fiberMountHelper,
   ROOT,
   TaskPriority,
@@ -66,11 +65,9 @@ function render(element: DarkElement, container: Element) {
     fiberMountHelper.reset();
     wipRootHelper.set(fiber);
     nextUnitOfWorkHelper.set(fiber);
-    deletionsHelper.get().forEach(x => (x.effectTag = EffectTag.UPDATE));
-    deletionsHelper.set([]);
   };
 
-  platform.scheduleCallback(callback, TaskPriority.NORMAL);
+  platform.scheduleCallback(callback, { priority: TaskPriority.NORMAL });
 }
 
 export { render };

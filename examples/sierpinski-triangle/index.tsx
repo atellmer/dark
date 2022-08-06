@@ -21,7 +21,7 @@ const domElement = document.getElementById('root');
 const targetSize = 25;
 
 const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
-  const [hover, setHover] = useState(false, TaskPriority.HIGH);
+  const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
   const s = props.size * 1.3;
   const style = useStyle(styled => ({
     dot: styled`
@@ -93,7 +93,7 @@ type AppProps = {
 };
 
 const App = createComponent<AppProps>(props => {
-  const [seconds, setSeconds] = useState(0, TaskPriority.LOW);
+  const [seconds, setSeconds] = useState(0, { priority: TaskPriority.LOW });
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;

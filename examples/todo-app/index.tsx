@@ -29,9 +29,11 @@ type TextFieldProps = {
 const TextField = forwardRef(
   createComponent<TextFieldProps, HTMLInputElement>((props, ref) => {
     const { value, fulllWidth, onEnter, onChange } = props;
+
     const handleChange = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => {
       onChange(e, e.target.value);
     };
+
     const handleKeyDown = (e: SyntheticEvent<KeyboardEvent, HTMLInputElement>) => {
       onEnter && e.sourceEvent.key === 'Enter' && onEnter(e);
     };
@@ -54,7 +56,8 @@ type CheckboxProps = {
 
 const Checkbox = createComponent<CheckboxProps>(props => {
   const { value, labelText, onChange } = props;
-  const handleInput = (e: InputEvent) => onChange(e, !value);
+
+  const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => onChange(e, !value);
 
   return label({
     slot: [
@@ -77,7 +80,9 @@ type TaskItemProps = {
 
 const TaskItem = createComponent<TaskItemProps>(props => {
   const { task, onComplete, onRemove } = props;
+
   const handleCompleted = (_, completed: boolean) => onComplete(task.id, completed);
+
   const handleRemove = () => onRemove(task.id);
 
   return div({
@@ -120,17 +125,21 @@ const TodoApp = createComponent(() => {
   const [tasks, setTasks] = useState<Array<TodoTask>>(sourseTasks);
   const [taskName, setTaskName] = useState('');
   const textFieldRef = useRef<HTMLInputElement>(null);
+
   const handleChangeTaskName = (_, value: string) => setTaskName(value);
+
   const handleAddTask = () => {
     if (!taskName) return;
     setTasks([new TodoTask(taskName), ...tasks]);
     setTaskName('');
     textFieldRef.current.focus();
   };
+
   const handleComplete = (id: number, completed: boolean) => {
     tasks.find(x => x.id === id).completed = completed;
     setTasks([...tasks]);
   };
+
   const handleRemove = (id: number) => setTasks(tasks.filter(x => x.id !== id));
 
   return div({

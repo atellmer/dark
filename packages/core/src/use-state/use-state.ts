@@ -1,3 +1,4 @@
+import { type ScheduleCallbackOptions } from '../global';
 import { detectIsUndefined, detectIsFunction } from '../helpers';
 import { componentFiberHelper } from '../scope';
 import { useUpdate } from '../use-update';
@@ -11,9 +12,9 @@ type Scope = {
   values: Array<any>;
 };
 
-function useState<T = unknown>(initialValue: T, priority?: TaskPriority): [T, (value: Value<T>) => void] {
+function useState<T = unknown>(initialValue: T, options?: ScheduleCallbackOptions): [T, (value: Value<T>) => void] {
   const fiber = componentFiberHelper.get();
-  const update = useUpdate(priority);
+  const update = useUpdate(options);
   const scope: Scope = useMemo(
     () => ({
       idx: fiber.hook.idx,
@@ -30,7 +31,7 @@ function useState<T = unknown>(initialValue: T, priority?: TaskPriority): [T, (v
         scope.values[scope.idx] = newValue;
       };
 
-      if (priority === TaskPriority.LOW) {
+      if (options?.priority === TaskPriority.LOW) {
         update(() => setValue());
       } else {
         setValue();
