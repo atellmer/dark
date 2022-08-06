@@ -86,7 +86,7 @@ import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
 ## Shut up and show me your code!
 
-For example this is timer component:
+For example this is a timer component:
 
 ```tsx
 import {
@@ -126,7 +126,7 @@ const App = createComponent(() => {
 render(<App />, document.getElementById('root'));
 ```
 
-Part of this code can be rewritten without using JSX like this (Flutter style:)
+Part of this code can be rewritten without using JSX like this:
 
 ```tsx
 const div = props => View({ ...props, as: 'div' });
@@ -172,7 +172,7 @@ This is the function you need to enable JSX support and write in a React-like st
 
 ```
 ```tsx
-render(<h1>I'm Dark</h1>, document.getElementById('root'));
+render(<div>I'm Dark</div>, document.getElementById('root'));
 ```
 
 #### View, Text, Comment
@@ -273,7 +273,7 @@ or without Fragment
 
 ```tsx
 const List = createComponent(({ items }) => {
-  return albums.map(x => <div key={x.id}>{x.title}</div>);
+  return items.map(x => <div key={x.id}>{x.title}</div>);
 });
 ```
 <a name="components"></a>
