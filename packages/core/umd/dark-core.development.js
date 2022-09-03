@@ -1165,11 +1165,12 @@ function createHook() {
     };
 }
 function createUpdateCallback(options) {
-    var rootId = options.rootId, fiber = options.fiber, onStart = options.onStart;
+    var rootId = options.rootId, fiber = options.fiber, _a = options.forceStart, forceStart = _a === void 0 ? false : _a, onStart = options.onStart;
     var callback = function () {
-        onStart();
+        forceStart && onStart();
         if (fiber.isUsed)
             return;
+        !forceStart && onStart();
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
         _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
@@ -2612,7 +2613,12 @@ function useUpdate(options) {
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ fiber: fiber }); }, []);
     scope.fiber = fiber;
     var update = function (onStart) {
-        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({ rootId: rootId, fiber: scope.fiber, onStart: onStart || _helpers__WEBPACK_IMPORTED_MODULE_4__.dummyFn });
+        var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({
+            rootId: rootId,
+            fiber: scope.fiber,
+            forceStart: Boolean(options === null || options === void 0 ? void 0 : options.timeoutMs),
+            onStart: onStart || _helpers__WEBPACK_IMPORTED_MODULE_4__.dummyFn,
+        });
         _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, options);
     };
     return update;

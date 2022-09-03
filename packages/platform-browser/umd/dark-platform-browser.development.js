@@ -154,15 +154,15 @@ function updateAttributes(element, vNode, nextVNode) {
     try {
         for (var attrNames_2 = __values(attrNames), attrNames_2_1 = attrNames_2.next(); !attrNames_2_1.done; attrNames_2_1 = attrNames_2.next()) {
             var attrName = attrNames_2_1.value;
-            var attrValue = vNode.attrs[attrName];
+            var prevAttrValue = vNode.attrs[attrName];
             var nextAttrValue = nextVNode.attrs[attrName];
             if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
-                applyRef(attrValue, element);
+                applyRef(prevAttrValue, element);
                 continue;
             }
             if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(nextAttrValue)) {
-                if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(attrValue)) {
-                    if ((0,_events__WEBPACK_IMPORTED_MODULE_2__.detectIsEvent)(attrName) && attrValue !== nextAttrValue) {
+                if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(prevAttrValue)) {
+                    if ((0,_events__WEBPACK_IMPORTED_MODULE_2__.detectIsEvent)(attrName) && prevAttrValue !== nextAttrValue) {
                         (0,_events__WEBPACK_IMPORTED_MODULE_2__.delegateEvent)({
                             target: element,
                             handler: nextAttrValue,
@@ -170,7 +170,7 @@ function updateAttributes(element, vNode, nextVNode) {
                         });
                     }
                 }
-                else if (!attrBlackListMap[attrName] && attrValue !== nextAttrValue) {
+                else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
                     upgradeInputAttributes({
                         tagName: nextVNode.name,
                         value: nextAttrValue,
