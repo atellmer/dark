@@ -367,7 +367,7 @@ const RecursiveItem = createComponent<RecursiveItemProps>(({ level, currentLevel
 
   return (
     <div style={`margin-left: ${currentLevel === 0 ? '0' : '10px'}`}>
-      <div>level: {currentLevel}</div>
+      <div>level: {currentLevel + 1}</div>
       <RecursiveItem level={level} currentLevel={currentLevel + 1} />
     </div>
   );
@@ -378,7 +378,6 @@ const App = createComponent(() => {
 });
 ```
 ```
-level: 0
  level: 1
   level: 2
    level: 3
