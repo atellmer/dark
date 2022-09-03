@@ -68,6 +68,14 @@ const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(
 
   s /= 2;
 
+  const slowDown = true;
+  if (slowDown) {
+    const e = performance.now() + 0.8;
+    while (performance.now() < e) {
+      // Artificially long execution time.
+    }
+  }
+
   return (
     <>
       <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s}>
