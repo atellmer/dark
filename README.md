@@ -363,15 +363,18 @@ You can put components into themself to get recursion if you want. But every rec
 
 ```tsx
 const RecursiveItem = createComponent<RecursiveItemProps>(({ level, currentLevel = 0 }) => {
-  if (currentLevel === level) {
-    return <div style={`margin-left: ${10 * level}px`}>level: {level}</div>;
-  }
+  if (currentLevel === level) return null;
 
-  return <RecursiveItem level={level} currentLevel={currentLevel + 1} />;
+  return (
+    <div style={`margin-left: ${currentLevel === 0 ? '0' : '10px'}`}>
+      <div>level: {currentLevel}</div>
+      <RecursiveItem level={level} currentLevel={currentLevel + 1} />
+    </div>
+  );
 });
 
 const App = createComponent(() => {
-  return [0, 1, 2, 3, 4].map(x => <RecursiveItem key={x} level={x} />);
+  return <RecursiveItem level={5} />;
 });
 ```
 ```
@@ -380,6 +383,7 @@ level: 0
   level: 2
    level: 3
     level: 4
+     level: 5
 ```
 
 <a name="events"></a>
