@@ -882,14 +882,16 @@ function createHook(): Hook {
 type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
+  forceStart?: boolean;
   onStart: () => void;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, fiber, onStart } = options;
+  const { rootId, fiber, forceStart = false, onStart } = options;
   const callback = () => {
-    onStart();
+    forceStart && onStart();
     if (fiber.isUsed) return;
+    !forceStart && onStart();
     effectStoreHelper.set(rootId); // important order!
     fromHookUpdateHelper.set(true);
     fiberMountHelper.reset();

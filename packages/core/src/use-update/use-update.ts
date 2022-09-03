@@ -12,7 +12,12 @@ function useUpdate(options?: ScheduleCallbackOptions) {
   scope.fiber = fiber;
 
   const update = (onStart?: () => void) => {
-    const callback = createUpdateCallback({ rootId, fiber: scope.fiber, onStart: onStart || dummyFn });
+    const callback = createUpdateCallback({
+      rootId,
+      fiber: scope.fiber,
+      forceStart: Boolean(options?.timeoutMs),
+      onStart: onStart || dummyFn,
+    });
 
     platform.scheduleCallback(callback, options);
   };

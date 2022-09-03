@@ -110,24 +110,24 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
   const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
 
   for (const attrName of attrNames) {
-    const attrValue = vNode.attrs[attrName];
+    const prevAttrValue = vNode.attrs[attrName];
     const nextAttrValue = nextVNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
-      applyRef(attrValue as MutableRef, element);
+      applyRef(prevAttrValue as MutableRef, element);
       continue;
     }
 
     if (!detectIsUndefined(nextAttrValue)) {
-      if (detectIsFunction(attrValue)) {
-        if (detectIsEvent(attrName) && attrValue !== nextAttrValue) {
+      if (detectIsFunction(prevAttrValue)) {
+        if (detectIsEvent(attrName) && prevAttrValue !== nextAttrValue) {
           delegateEvent({
             target: element,
             handler: nextAttrValue,
             eventName: getEventName(attrName),
           });
         }
-      } else if (!attrBlackListMap[attrName] && attrValue !== nextAttrValue) {
+      } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
         upgradeInputAttributes({
           tagName: nextVNode.name,
           value: nextAttrValue,

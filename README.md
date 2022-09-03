@@ -42,6 +42,7 @@ CDN:
 - [Conditional rendering](#conditional-rendering)
 - [List rendering](#list-rendering)
 - [Components](#components)
+- [Recursive components rendering](#recursive-rendering)
 - [Events](#events)
 - [Hooks](#hooks)
 - [State](#state)
@@ -254,7 +255,6 @@ const Component = createComponent(({ isOpen }) => {
 ```
 <a name="list-rendering"></a>
 ## List rendering
-
 ```tsx
 const List = createComponent(({ items }) => {
   return (
@@ -276,6 +276,8 @@ const List = createComponent(({ items }) => {
   return albums.map(x => <div key={x.id}>{x.title}</div>);
 });
 ```
+Note that every item must have key to identification itself. As key you can use string or number that must be uniqueness in list.
+
 <a name="components"></a>
 ## Components
 
@@ -353,6 +355,31 @@ const App = createComponent(({ slot }) => {
 
 render(<App>Content</App>, document.getElementById('root'));
 ```
+<a name="recursive-rendering"></a>
+## Recursive component rendering
+You can put components into themself to get recursion if you want. But every recursion must have return condition for out. In other case we will have infinity loop. Recursive rendering might be useful for tree building or something else.
+
+```tsx
+const RecursiveItem = createComponent<RecursiveItemProps>(({ level, currentLevel = 0 }) => {
+  if (currentLevel === level) {
+    return <div style={`margin-left: ${10 * level}px`}>level: {level}</div>;
+  }
+
+  return <RecursiveItem level={level} currentLevel={currentLevel + 1} />;
+});
+
+const App = createComponent(() => {
+  return [0, 1, 2, 3, 4].map(x => <RecursiveItem key={x} level={x} />);
+});
+```
+```
+level: 0
+ level: 1
+  level: 2
+   level: 3
+    level: 4
+```
+
 <a name="events"></a>
 ## Events
 Dark uses the standard DOM event system, but written in camelCase. A handler is passed to the event attribute in the form of a function, which receives a synthetic event containing a native event. Synthetic events are needed in order to emulate the operation of stopPropagation. The emulation is required because, for performance reasons, Dark uses native event delegation to the document element instead of the original element. For example, if you subscribe to a button click event, the event will be tracked on the entire document, not on that button.
@@ -488,7 +515,7 @@ Also this hook can return a reset function:
 <a name="optimization"></a>
 ## Performance optimization
 
-In Dark, redraw optimization can be configured using the memo function, as well as the useMemo and useCallback hooks. Optimization occurs due to the memoization of the results of the previous calculation or render.
+In Dark, render optimization can be configured using the memo function, as well as the useMemo and useCallback hooks. Optimization occurs due to the memoization of the results of the previous calculation or render.
 
 ### memo
 
@@ -549,7 +576,7 @@ For memoization of heavy calculations or heavy pieces of the interface:
 
 ```tsx
 const memoizedOne = useMemo(() => Math.random(), []);
-const memoizedTwo = useMemo(() => <div>I will rerender when dependencies change</div>, []);
+const memoizedTwo = useMemo(() => <div>{Math.random()}</div>, []);
 
 return (
   <>
@@ -598,8 +625,7 @@ const Items = createComponent(({ items }) => {
 <a name="refs"></a>
 ## Refs
 
-Refs are needed to be able to get a reference to a DOM element or a reference to a component in order to interact with them more subtly.
-In Dark, work with refs is done using the forwardRef function and the useRef and useImperativeHandle hooks.
+To get full control over components or DOM nodes Dark suggests using refs. Working with refs is done like this:
 
 #### useRef
 
@@ -657,7 +683,7 @@ const App = createComponent(() => {
 <a name="errors"></a>
 ## Catching errors
 
-Error catching is done using the useError hook. When you get an error, you can log it and show an alternate UI.
+Error catching is done using the useError hook. When you get an error, you can log it and show an alternate user interface.
 
 ```tsx
 import { useError } from '@dark-engine/core';
@@ -700,7 +726,7 @@ const App = createComponent(() => {
 <a name="context"></a>
 ## Context
 
-Context is needed when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
+Context might be useful when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
 In Dark, the context works with the createContext method and useContext hook.
 Note that memoized intermediate components do not necessarily participate in re-rendering.
 
@@ -759,7 +785,7 @@ render ThemeConsumer!
 <a name="code-splitting"></a>
 ## Code splitting
 
-Code splitting is required when you have separate modules that can be lazily loaded when needed. For example, jumping to a new page with a new URL using the Browser History API. To use components lazy loading, you need to wrap dynamic imports of component in a special function - lazy. You will also need a Suspense component that will show a stub until the module is loaded.
+If you have separated modules, you might want to lazy load them when needed. In this case you can use code splitting. To use components lazy loading, you need to wrap dynamic imports of component in a special function - lazy. You will also need a Suspense component that will show a stub until the module is loaded.
 
 ```tsx
 import { lazy, Suspense } from '@dark-engine/core';

@@ -1,7 +1,7 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, createComponent, useState, useMemo, useEffect, useUpdate, TaskPriority } from '@dark-engine/core';
+import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
@@ -50,8 +50,8 @@ type VizDemoProps = {
 
 const VizDemo = createComponent<VizDemoProps>(({ count }) => {
   const update = useUpdate();
-  const scope = useMemo(() => {
-    return {
+  const scope = useMemo(
+    () => ({
       layout: 0,
       phyllotaxis: genPhyllotaxis(100),
       grid: genGrid(100),
@@ -60,10 +60,9 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
       points: [],
       step: 0,
       numSteps: 60 * 2,
-    };
-  }, []);
-
-  useEffect(() => next(), []);
+    }),
+    [],
+  );
 
   useEffect(() => {
     if (count === 0) return;
@@ -104,8 +103,9 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     });
 
     update();
-    requestAnimationFrame(() => next());
   };
+
+  next();
 
   const setAnchors = arr => {
     arr.map((p, index) => {
