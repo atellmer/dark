@@ -14,6 +14,8 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 - [1k-components](https://atellmer.github.io/dark/examples/1k-components/)
 - [Sierpinski triangle](https://atellmer.github.io/dark/examples/sierpinski-triangle/)
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
+- [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
+- [Modal window](https://atellmer.github.io/dark/examples/modal-window/)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. It took me about 4 years to bring it to an acceptable quality (but this is not accurate). It would probably take you much less time to do it. I rewrote it many times from scratch because I didn't like a lot of it. In the end, I decided to bring it to release, since the "ideal" is still unattainable. In addition, it is necessary to bring the work started to the end. I didn't get to do a lot of what I wanted to do. That is life. You can use the code at your own risk.
@@ -87,7 +89,7 @@ import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
 ## Shut up and show me your code!
 
-For example this is timer component:
+For example this is a timer component:
 
 ```tsx
 import {
@@ -127,7 +129,7 @@ const App = createComponent(() => {
 render(<App />, document.getElementById('root'));
 ```
 
-Part of this code can be rewritten without using JSX like this (Flutter style:)
+Part of this code can be rewritten without using JSX like this:
 
 ```tsx
 const div = props => View({ ...props, as: 'div' });
@@ -173,7 +175,7 @@ This is the function you need to enable JSX support and write in a React-like st
 
 ```
 ```tsx
-render(<h1>I'm Dark</h1>, document.getElementById('root'));
+render(<div>I'm Dark</div>, document.getElementById('root'));
 ```
 
 #### View, Text, Comment
@@ -273,7 +275,7 @@ or without Fragment
 
 ```tsx
 const List = createComponent(({ items }) => {
-  return albums.map(x => <div key={x.id}>{x.title}</div>);
+  return items.map(x => <div key={x.id}>{x.title}</div>);
 });
 ```
 Note that every item must have key to identification itself. As key you can use string or number that must be uniqueness in list.

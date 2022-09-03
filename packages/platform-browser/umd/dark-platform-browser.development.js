@@ -97,7 +97,7 @@ function createElement(vNode) {
 }
 function createDomElement(fiber) {
     if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance)) {
-        throw new Error('createDomElement receives only Element into fiber!');
+        throw new Error('createDomElement receives only Element!');
     }
     var vNode = fiber.instance;
     return createElement(vNode);
@@ -736,10 +736,8 @@ function render(element, container) {
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fiberMountHelper.reset();
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootHelper.set(fiber);
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper.set(fiber);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.get().forEach(function (x) { return (x.effectTag = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE); });
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper.set([]);
     };
-    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL);
+    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, { priority: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL });
 }
 
 
@@ -798,6 +796,22 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
+var __read = (undefined && undefined.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 
 var queueByPriority = {
     hight: [],
@@ -812,6 +826,8 @@ var currentTask = null;
 var Task = /** @class */ (function () {
     function Task(options) {
         this.id = ++Task.nextTaskId;
+        this.time = options.time;
+        this.timeoutMs = options.timeoutMs;
         this.priority = options.priority;
         this.callback = options.callback;
     }
@@ -819,10 +835,10 @@ var Task = /** @class */ (function () {
     return Task;
 }());
 var shouldYeildToHost = function () { return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline; };
-function scheduleCallback(callback, priority) {
+function scheduleCallback(callback, options) {
     var _a;
-    if (priority === void 0) { priority = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL; }
-    var task = new Task({ priority: priority, callback: callback });
+    var _b = options || {}, _c = _b.priority, priority = _c === void 0 ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL : _c, timeoutMs = _b.timeoutMs;
+    var task = new Task({ time: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)(), timeoutMs: timeoutMs, priority: priority, callback: callback });
     var map = (_a = {},
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH] = function () { return queueByPriority.hight.push(task); },
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL] = function () { return queueByPriority.normal.push(task); },
@@ -840,10 +856,21 @@ function pick(queue) {
     return true;
 }
 function executeTasks() {
-    var hasMoreWork = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper.get());
-    if (!hasMoreWork) {
-        pick(queueByPriority.hight) || pick(queueByPriority.normal) || requestIdleCallback(function () { return pick(queueByPriority.low); });
+    var isBusy = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootHelper.get());
+    if (!isBusy) {
+        checkOverdueTasks() ||
+            pick(queueByPriority.hight) ||
+            pick(queueByPriority.normal) ||
+            requestIdleCallback(function () { return pick(queueByPriority.low); });
     }
+}
+function checkOverdueTasks() {
+    var _a = __read(queueByPriority.low, 1), task = _a[0];
+    if (task && task.timeoutMs > 0 && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() - task.time > task.timeoutMs) {
+        pick(queueByPriority.low);
+        return true;
+    }
+    return false;
 }
 function performWorkUntilDeadline() {
     if (scheduledCallback) {
@@ -906,7 +933,6 @@ setup();
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "styled": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_0__.styled),
 /* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_0__.useStyle)
 /* harmony export */ });
 /* harmony import */ var _use_style__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./use-style */ "./src/use-style/use-style.ts");
@@ -923,7 +949,6 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "styled": () => (/* binding */ styled),
 /* harmony export */   "useStyle": () => (/* binding */ useStyle)
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");

@@ -1167,9 +1167,9 @@ function createHook() {
 function createUpdateCallback(options) {
     var rootId = options.rootId, fiber = options.fiber, onStart = options.onStart;
     var callback = function () {
+        onStart();
         if (fiber.isUsed)
             return;
-        onStart();
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
         _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
@@ -1328,6 +1328,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "platform": () => (/* reexport safe */ _global__WEBPACK_IMPORTED_MODULE_0__.platform)
 /* harmony export */ });
 /* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./global */ "./src/global/global.ts");
+/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/global/model.ts");
+
+
+
+
+/***/ }),
+
+/***/ "./src/global/model.ts":
+/*!*****************************!*\
+  !*** ./src/global/model.ts ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
 
 
 
@@ -2071,10 +2085,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "useDeferredValue": () => (/* binding */ useDeferredValue)
 /* harmony export */ });
-/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
-/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../use-state */ "./src/use-state/index.ts");
-/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
+/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../use-state */ "./src/use-state/index.ts");
+/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
 var __read = (undefined && undefined.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -2094,21 +2107,14 @@ var __read = (undefined && undefined.__read) || function (o, n) {
 
 
 
-
 function useDeferredValue(value, options) {
     var timeoutMs = (options || {}).timeoutMs;
-    var _a = __read((0,_use_state__WEBPACK_IMPORTED_MODULE_1__.useState)(value, _constants__WEBPACK_IMPORTED_MODULE_3__.TaskPriority.LOW), 2), deferredValue = _a[0], setDeferredValue = _a[1];
-    (0,_use_effect__WEBPACK_IMPORTED_MODULE_2__.useEffect)(function () {
-        var timerId = null;
-        if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsNumber)(timeoutMs)) {
-            timerId = setTimeout(function () {
-                setDeferredValue(value);
-            }, timeoutMs);
-        }
-        else {
-            setDeferredValue(value);
-        }
-        return function () { return timerId && clearTimeout(timerId); };
+    var _a = __read((0,_use_state__WEBPACK_IMPORTED_MODULE_0__.useState)(value, {
+        priority: _constants__WEBPACK_IMPORTED_MODULE_2__.TaskPriority.LOW,
+        timeoutMs: timeoutMs,
+    }), 2), deferredValue = _a[0], setDeferredValue = _a[1];
+    (0,_use_effect__WEBPACK_IMPORTED_MODULE_1__.useEffect)(function () {
+        setDeferredValue(value);
     }, [value]);
     return deferredValue;
 }
@@ -2527,9 +2533,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function useState(initialValue, priority) {
+function useState(initialValue, options) {
     var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
-    var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)(priority);
+    var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)(options);
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({
         idx: fiber.hook.idx,
         values: fiber.hook.values,
@@ -2541,7 +2547,7 @@ function useState(initialValue, priority) {
             var setValue_1 = function () {
                 scope.values[scope.idx] = newValue;
             };
-            if (priority === _constants__WEBPACK_IMPORTED_MODULE_5__.TaskPriority.LOW) {
+            if ((options === null || options === void 0 ? void 0 : options.priority) === _constants__WEBPACK_IMPORTED_MODULE_5__.TaskPriority.LOW) {
                 update(function () { return setValue_1(); });
             }
             else {
@@ -2600,14 +2606,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function useUpdate(priority) {
+function useUpdate(options) {
     var rootId = (0,_scope__WEBPACK_IMPORTED_MODULE_1__.getRootId)();
     var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ fiber: fiber }); }, []);
     scope.fiber = fiber;
     var update = function (onStart) {
         var callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({ rootId: rootId, fiber: scope.fiber, onStart: onStart || _helpers__WEBPACK_IMPORTED_MODULE_4__.dummyFn });
-        _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, priority);
+        _global__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, options);
     };
     return update;
 }
