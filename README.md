@@ -358,7 +358,7 @@ const App = createComponent(({ slot }) => {
 render(<App>Content</App>, document.getElementById('root'));
 ```
 <a name="recursive-rendering"></a>
-## Recursive component rendering
+## Recursive components rendering
 You can put components into themself to get recursion if you want. But every recursion must have return condition for out. In other case we will have infinity loop. Recursive rendering might be useful for tree building or something else.
 
 ```tsx
