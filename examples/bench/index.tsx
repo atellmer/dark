@@ -7,7 +7,7 @@ const Item = createComponent(() => {
     return () => console.log('unmount');
   }, []);
 
-  return null;
+  return <input />;
 });
 
 const App = createComponent(() => {
@@ -15,7 +15,9 @@ const App = createComponent(() => {
 
   return (
     <>
-      <Item key={key} />
+      <div key={key}>
+        <Item />
+      </div>
       <div>{key}</div>
       <button onClick={() => setKey(key + 1)}>next key</button>
     </>

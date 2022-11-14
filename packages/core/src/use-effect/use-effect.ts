@@ -1,6 +1,6 @@
 import { detectIsUndefined, detectIsFunction, detectIsDepsDifferent } from '../helpers';
 import { componentFiberHelper, effectsHelper } from '../scope';
-import type { Hook, HookValue } from '../fiber';
+import type { Fiber, Hook, HookValue } from '../fiber';
 import type { Effect, EffectCleanup } from './model';
 
 const $$useEffect = Symbol('use-effect');
@@ -36,16 +36,23 @@ function useEffect(effect: Effect, deps?: Array<any>) {
   hook.idx++;
 }
 
-function runEffectCleanup(hook: Hook<HookValue<EffectCleanup>>) {
+function hasEffects(fiber: Fiber) {
+  const { values } = fiber.hook as Hook<HookValue>;
+  const hasEffect = values.some(x => x.token === $$useEffect);
+
+  return hasEffect;
+}
+
+function cleanupEffects(hook: Hook<HookValue<EffectCleanup>>) {
   const { values } = hook;
 
-  for (const hookValue of values) {
-    if (hookValue.token === $$useEffect) {
-      const cleanup = hookValue.value;
+  for (const value of values) {
+    if (value.token === $$useEffect) {
+      const cleanup = value.value;
 
       detectIsFunction(cleanup) && cleanup();
     }
   }
 }
 
-export { useEffect, runEffectCleanup };
+export { useEffect, hasEffects, cleanupEffects };

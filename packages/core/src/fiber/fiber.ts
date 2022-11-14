@@ -25,6 +25,7 @@ import type { Context, ContextProviderValue } from '../context/model';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import { PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './model';
+import { hasEffects, cleanupEffects } from '../use-effect';
 
 class Fiber<N = NativeElement> {
   public nativeElement: N;
@@ -37,9 +38,9 @@ class Fiber<N = NativeElement> {
   public hook: Hook;
   public shadow: Fiber<N>;
   public provider: Map<Context, ContextProviderValue>;
-  public transposition: boolean;
   public mountedToHost: boolean;
   public portalHost: boolean;
+  public effectHost: boolean;
   public childrenCount: number;
   public marker: string;
   public isUsed: boolean;
@@ -56,9 +57,9 @@ class Fiber<N = NativeElement> {
     this.hook = options.hook || createHook();
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
-    this.transposition = !detectIsUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
+    this.effectHost = !detectIsUndefined(options.effectHost) ? options.effectHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
     this.isUsed = options.isUsed || false;
@@ -67,6 +68,11 @@ class Fiber<N = NativeElement> {
   public markPortalHost() {
     this.portalHost = true;
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
+  }
+
+  public markEffectHost() {
+    this.effectHost = true;
+    this.parent && !this.parent.effectHost && this.parent.markEffectHost();
   }
 
   public setError(error: Error) {
@@ -403,6 +409,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
               childAlternate.effectTag = EffectTag.DELETION;
               deletionsHelper.get().push(childAlternate);
 
+              if (childAlternate.effectHost) {
+                fiber.markEffectHost();
+              }
+
               if (childAlternate.portalHost) {
                 fiber.markPortalHost();
               }
@@ -414,6 +424,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
 
           for (const childAlternate of childAlternates) {
             childAlternate.effectTag = EffectTag.DELETION;
+
+            if (childAlternate.effectHost) {
+              fiber.markEffectHost();
+            }
 
             if (childAlternate.portalHost) {
               fiber.markPortalHost();
@@ -551,8 +565,14 @@ function pertformInstance(options: PerformInstanceOptions) {
     performedInstance = mountInstance(fiber, performedInstance);
   }
 
-  if (detectIsComponentFactory(performedInstance) && platform.detectIsPortal(performedInstance)) {
-    fiber.markPortalHost();
+  if (detectIsComponentFactory(performedInstance)) {
+    if (hasEffects(fiber)) {
+      fiber.markEffectHost();
+    }
+
+    if (platform.detectIsPortal(performedInstance)) {
+      fiber.markPortalHost();
+    }
   }
 
   return {
@@ -579,7 +599,6 @@ function getRootShadow(options: GetRootShadowOptions) {
     if (shadow) {
       fiber.hook = shadow.hook;
       fiber.provider = shadow.provider;
-      alternate.transposition = true;
     }
   }
 
@@ -779,23 +798,35 @@ function commitChanges() {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
   const deletions = deletionsHelper.get();
-  const hasPortals = wipFiber.alternate && wipFiber.alternate.portalHost;
+  const hasEffects = Boolean(wipFiber.alternate?.effectHost);
+  const hasPortals = Boolean(wipFiber.alternate?.portalHost);
 
-  if (hasPortals) {
+  if (hasEffects || hasPortals) {
     for (const fiber of deletions) {
       fiber.portalHost && platform.unmountPortal(fiber);
+
+      if (fiber.effectHost) {
+        walkFiber({
+          fiber,
+          onLoop: ({ nextFiber, isReturn }) => {
+            if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
+              cleanupEffects(nextFiber.hook);
+            }
+          },
+        });
+      }
     }
   }
 
   commitWork(wipFiber.child, () => {
+    const effects = effectsHelper.get();
+
     for (const fiber of deletions) {
       platform.applyCommits(fiber);
     }
 
     deletionsHelper.set([]);
     wipRootHelper.set(null);
-
-    const effects = effectsHelper.get();
 
     setTimeout(() => {
       for (const effect of effects) {

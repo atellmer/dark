@@ -13,8 +13,6 @@ import {
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
   detectIsCommentVirtualNode,
-  detectIsComponentFactory,
-  runEffectCleanup,
   detectIsRef,
   ATTR_KEY,
   ATTR_REF,
@@ -362,10 +360,6 @@ function commitDeletion(fiber: Fiber<Element>, parentElement: Element) {
 
         !isPortal && parentElement.removeChild(nextFiber.nativeElement);
         isDeepWalking = false;
-      }
-
-      if (!fiber.transposition && detectIsComponentFactory(nextFiber.instance)) {
-        runEffectCleanup(nextFiber.hook);
       }
     }
 
