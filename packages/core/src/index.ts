@@ -16,6 +16,7 @@ export * from './use-context';
 export * from './use-deferred-value';
 export * from './use-effect';
 export * from './use-error';
+export * from './use-event';
 export * from './use-imperative-handle';
 export * from './use-memo';
 export * from './use-reducer';

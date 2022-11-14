@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/platform-browser",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in Typescript 💫",
   "author": "AlexPlex",
   "license": "MIT",

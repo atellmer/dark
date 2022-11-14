@@ -1,34 +1,9 @@
-import { detectIsUndefined, detectIsDepsDifferent } from '../helpers';
-import { componentFiberHelper } from '../scope';
+import { useMemo } from '../use-memo';
 
 function useCallback<T = Function>(callback: T, deps: Array<any>): T {
-  const fiber = componentFiberHelper.get();
-  const { hook } = fiber;
-  const { idx, values } = hook;
+  const value = useMemo(() => callback, deps);
 
-  if (detectIsUndefined(values[idx])) {
-    values[idx] = {
-      deps,
-      value: callback,
-    };
-
-    hook.idx++;
-
-    return callback;
-  }
-
-  const hookValue = values[idx];
-  const prevDeps = hookValue.deps as Array<any>;
-  const isDepsDifferent = detectIsDepsDifferent(deps, prevDeps);
-
-  if (isDepsDifferent) {
-    hookValue.deps = deps;
-    hookValue.value = callback;
-  }
-
-  hook.idx++;
-
-  return hookValue.value;
+  return value;
 }
 
 export { useCallback };

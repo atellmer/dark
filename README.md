@@ -75,6 +75,7 @@ import {
   forwardRef,
   Suspense,
   useCallback,
+  useEvent,
   useContext,
   useEffect,
   useError,
@@ -601,6 +602,22 @@ Suitable for memoizing handler functions descending down the component tree:
 
 ```tsx
  const handleClick = useCallback(() => setCount(count + 1), [count]);
+
+ return (
+    <button onClick={handleClick}>add</button>
+  );
+```
+
+#### useEvent
+
+```tsx
+import { useEvent } from '@dark-engine/core';
+```
+
+Similar to useCallback but has no dependencies. Ensures the return of the same function, with the closures always corresponding to the last render. In most cases, it eliminates the need to track dependencies in useCallback.
+
+```tsx
+ const handleClick = useEvent(() => setCount(count + 1));
 
  return (
     <button onClick={handleClick}>add</button>

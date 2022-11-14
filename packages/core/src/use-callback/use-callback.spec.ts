@@ -21,7 +21,8 @@ test('use-callback works correctly by default', () => {
 
   render(App(), host);
   waitNextIdle();
-  expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
+  render(App(), host);
+  waitNextIdle();
   render(App(), host);
   waitNextIdle();
   expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
