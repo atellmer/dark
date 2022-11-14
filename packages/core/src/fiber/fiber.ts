@@ -38,6 +38,7 @@ class Fiber<N = NativeElement> {
   public hook: Hook;
   public shadow: Fiber<N>;
   public provider: Map<Context, ContextProviderValue>;
+  public transposition: boolean;
   public mountedToHost: boolean;
   public portalHost: boolean;
   public effectHost: boolean;
@@ -57,6 +58,7 @@ class Fiber<N = NativeElement> {
     this.hook = options.hook || createHook();
     this.shadow = options.shadow || null;
     this.provider = options.provider || null;
+    this.transposition = !detectIsUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.effectHost = !detectIsUndefined(options.effectHost) ? options.effectHost : false;
@@ -599,6 +601,7 @@ function getRootShadow(options: GetRootShadowOptions) {
     if (shadow) {
       fiber.hook = shadow.hook;
       fiber.provider = shadow.provider;
+      alternate.transposition = true;
     }
   }
 
@@ -808,7 +811,9 @@ function commitChanges() {
       if (fiber.effectHost) {
         walkFiber({
           fiber,
-          onLoop: ({ nextFiber, isReturn }) => {
+          onLoop: ({ nextFiber, isReturn, stop }) => {
+            if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
+
             if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
               cleanupEffects(nextFiber.hook);
             }
@@ -873,6 +878,7 @@ type OnLoopOptions<T> = {
   nextFiber: Fiber<T>;
   isReturn: boolean;
   resetIsDeepWalking: () => void;
+  stop: () => void;
 };
 
 function walkFiber<T = unknown>(options: WalkFiberOptions<T>) {
@@ -880,6 +886,7 @@ function walkFiber<T = unknown>(options: WalkFiberOptions<T>) {
   let nextFiber = fiber;
   let isDeepWalking = true;
   let isReturn = false;
+  let isStopped = false;
   const visitedMap = new Map<Fiber, true>();
   const detectCanVisit = (fiber: Fiber) => !visitedMap.get(fiber);
 
@@ -888,7 +895,12 @@ function walkFiber<T = unknown>(options: WalkFiberOptions<T>) {
       nextFiber: nextFiber as Fiber<T>,
       isReturn,
       resetIsDeepWalking: () => (isDeepWalking = false),
+      stop: () => (isStopped = true),
     });
+
+    if (isStopped) {
+      break;
+    }
 
     if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
       const newFiber = nextFiber.child;
