@@ -451,6 +451,7 @@ var Fiber = /** @class */ (function () {
         this.hook = options.hook || createHook();
         this.shadow = options.shadow || null;
         this.provider = options.provider || null;
+        this.transposition = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.transposition) ? options.transposition : false;
         this.mountedToHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.mountedToHost) || false;
         this.portalHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.portalHost) ? options.portalHost : false;
         this.effectHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.effectHost) ? options.effectHost : false;
@@ -893,6 +894,7 @@ function getRootShadow(options) {
         if (shadow) {
             fiber.hook = shadow.hook;
             fiber.provider = shadow.provider;
+            alternate.transposition = true;
         }
     }
     return shadow;
@@ -1067,21 +1069,26 @@ function commitChanges() {
     var hasEffects = Boolean((_b = wipFiber.alternate) === null || _b === void 0 ? void 0 : _b.effectHost);
     var hasPortals = Boolean((_c = wipFiber.alternate) === null || _c === void 0 ? void 0 : _c.portalHost);
     if (hasEffects || hasPortals) {
+        var _loop_1 = function (fiber) {
+            fiber.portalHost && _global__WEBPACK_IMPORTED_MODULE_1__.platform.unmountPortal(fiber);
+            if (fiber.effectHost) {
+                walkFiber({
+                    fiber: fiber,
+                    onLoop: function (_a) {
+                        var nextFiber = _a.nextFiber, isReturn = _a.isReturn, stop = _a.stop;
+                        if (nextFiber === fiber.nextSibling || fiber.transposition)
+                            return stop();
+                        if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(nextFiber.instance)) {
+                            (0,_use_effect__WEBPACK_IMPORTED_MODULE_8__.cleanupEffects)(nextFiber.hook);
+                        }
+                    },
+                });
+            }
+        };
         try {
             for (var deletions_1 = __values(deletions), deletions_1_1 = deletions_1.next(); !deletions_1_1.done; deletions_1_1 = deletions_1.next()) {
                 var fiber = deletions_1_1.value;
-                fiber.portalHost && _global__WEBPACK_IMPORTED_MODULE_1__.platform.unmountPortal(fiber);
-                if (fiber.effectHost) {
-                    walkFiber({
-                        fiber: fiber,
-                        onLoop: function (_a) {
-                            var nextFiber = _a.nextFiber, isReturn = _a.isReturn;
-                            if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(nextFiber.instance)) {
-                                (0,_use_effect__WEBPACK_IMPORTED_MODULE_8__.cleanupEffects)(nextFiber.hook);
-                            }
-                        },
-                    });
-                }
+                _loop_1(fiber);
             }
         }
         catch (e_5_1) { e_5 = { error: e_5_1 }; }
@@ -1159,6 +1166,7 @@ function walkFiber(options) {
     var nextFiber = fiber;
     var isDeepWalking = true;
     var isReturn = false;
+    var isStopped = false;
     var visitedMap = new Map();
     var detectCanVisit = function (fiber) { return !visitedMap.get(fiber); };
     while (nextFiber) {
@@ -1166,7 +1174,11 @@ function walkFiber(options) {
             nextFiber: nextFiber,
             isReturn: isReturn,
             resetIsDeepWalking: function () { return (isDeepWalking = false); },
+            stop: function () { return (isStopped = true); },
         });
+        if (isStopped) {
+            break;
+        }
         if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
             var newFiber = nextFiber.child;
             isReturn = false;
