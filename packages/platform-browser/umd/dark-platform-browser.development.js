@@ -374,9 +374,6 @@ function commitDeletion(fiber, parentElement) {
                 !isPortal && parentElement.removeChild(nextFiber.nativeElement);
                 isDeepWalking = false;
             }
-            if (!fiber.transposition && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory)(nextFiber.instance)) {
-                (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.runEffectCleanup)(nextFiber.hook);
-            }
         }
         if (nextFiber.child && isDeepWalking) {
             nextFiber = nextFiber.child;
