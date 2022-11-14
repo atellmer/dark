@@ -78,6 +78,7 @@ import {
   useEvent,
   useContext,
   useEffect,
+  useLayoutEffect,
   useError,
   useImperativeHandle,
   useMemo,
@@ -480,6 +481,8 @@ Side effects are useful actions that take place outside of the interface renderi
 
 #### useEffect
 
+Executed asynchronously, after rendering.
+
 ```tsx
 import { useEffect } from '@dark-engine/core';
 ```
@@ -518,6 +521,21 @@ Also this hook can return a reset function:
     return () => clearTimeout(timerId);
   }, []);
 ```
+#### useLayoutEffect
+
+```tsx
+import { useLayoutEffect } from '@dark-engine/core';
+```
+
+This type of effect is similar to useEffect, however, it is executed synchronously right after the commit phase of new changes. Use this to read layout from the DOM and synchronously re-render.
+
+```tsx
+useLayoutEffect(() => {
+    const height = document.body.clientHeight;
+    // todo something with it...
+  }, []);
+```
+
 <a name="optimization"></a>
 ## Performance optimization
 

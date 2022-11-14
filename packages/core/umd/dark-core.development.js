@@ -383,6 +383,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
 /* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./model */ "./src/fiber/model.ts");
 /* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
+/* harmony import */ var _use_layout_effect__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../use-layout-effect */ "./src/use-layout-effect/index.ts");
 var __assign = (undefined && undefined.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -439,6 +440,7 @@ var __values = (undefined && undefined.__values) || function(o) {
 
 
 
+
 var Fiber = /** @class */ (function () {
     function Fiber(options) {
         this.nativeElement = options.nativeElement || null;
@@ -455,6 +457,7 @@ var Fiber = /** @class */ (function () {
         this.mountedToHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.mountedToHost) || false;
         this.portalHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.portalHost) ? options.portalHost : false;
         this.effectHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.effectHost) ? options.effectHost : false;
+        this.layoutEffectHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.layoutEffectHost) ? options.layoutEffectHost : false;
         this.childrenCount = options.childrenCount || 0;
         this.marker = options.marker || '';
         this.isUsed = options.isUsed || false;
@@ -466,6 +469,10 @@ var Fiber = /** @class */ (function () {
     Fiber.prototype.markEffectHost = function () {
         this.effectHost = true;
         this.parent && !this.parent.effectHost && this.parent.markEffectHost();
+    };
+    Fiber.prototype.markLayoutEffectHost = function () {
+        this.layoutEffectHost = true;
+        this.parent && !this.parent.layoutEffectHost && this.parent.markLayoutEffectHost();
     };
     Fiber.prototype.setError = function (error) {
         if (typeof this.catchException === 'function') {
@@ -731,6 +738,9 @@ function mutateAlternate(options) {
                                 if (childAlternate.effectHost) {
                                     fiber.markEffectHost();
                                 }
+                                if (childAlternate.layoutEffectHost) {
+                                    fiber.markLayoutEffectHost();
+                                }
                                 if (childAlternate.portalHost) {
                                     fiber.markPortalHost();
                                 }
@@ -754,6 +764,9 @@ function mutateAlternate(options) {
                             childAlternate.effectTag = _model__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
                             if (childAlternate.effectHost) {
                                 fiber.markEffectHost();
+                            }
+                            if (childAlternate.layoutEffectHost) {
+                                fiber.markLayoutEffectHost();
                             }
                             if (childAlternate.portalHost) {
                                 fiber.markPortalHost();
@@ -874,6 +887,9 @@ function pertformInstance(options) {
     if ((0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(performedInstance)) {
         if ((0,_use_effect__WEBPACK_IMPORTED_MODULE_8__.hasEffects)(fiber)) {
             fiber.markEffectHost();
+        }
+        if ((0,_use_layout_effect__WEBPACK_IMPORTED_MODULE_9__.hasLayoutEffects)(fiber)) {
+            fiber.markLayoutEffectHost();
         }
         if (_global__WEBPACK_IMPORTED_MODULE_1__.platform.detectIsPortal(performedInstance)) {
             fiber.markPortalHost();
@@ -1062,16 +1078,17 @@ function hasChildrenProp(element) {
 }
 function commitChanges() {
     var e_5, _a;
-    var _b, _c;
+    var _b, _c, _d;
     var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.get();
     var fromHook = _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.get();
     var deletions = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get();
     var hasEffects = Boolean((_b = wipFiber.alternate) === null || _b === void 0 ? void 0 : _b.effectHost);
-    var hasPortals = Boolean((_c = wipFiber.alternate) === null || _c === void 0 ? void 0 : _c.portalHost);
-    if (hasEffects || hasPortals) {
+    var hasLayoutEffects = Boolean((_c = wipFiber.alternate) === null || _c === void 0 ? void 0 : _c.layoutEffectHost);
+    var hasPortals = Boolean((_d = wipFiber.alternate) === null || _d === void 0 ? void 0 : _d.portalHost);
+    if (hasEffects || hasLayoutEffects || hasPortals) {
         var _loop_1 = function (fiber) {
             fiber.portalHost && _global__WEBPACK_IMPORTED_MODULE_1__.platform.unmountPortal(fiber);
-            if (fiber.effectHost) {
+            if (fiber.effectHost || fiber.layoutEffectHost) {
                 walkFiber({
                     fiber: fiber,
                     onLoop: function (_a) {
@@ -1079,6 +1096,7 @@ function commitChanges() {
                         if (nextFiber === fiber.nextSibling || fiber.transposition)
                             return stop();
                         if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(nextFiber.instance)) {
+                            (0,_use_layout_effect__WEBPACK_IMPORTED_MODULE_9__.cleanupLayoutEffects)(nextFiber.hook);
                             (0,_use_effect__WEBPACK_IMPORTED_MODULE_8__.cleanupEffects)(nextFiber.hook);
                         }
                     },
@@ -1100,7 +1118,8 @@ function commitChanges() {
         }
     }
     commitWork(wipFiber.child, function () {
-        var e_6, _a;
+        var e_6, _a, e_7, _b;
+        var layoutEffects = _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsHelper.get();
         var effects = _scope__WEBPACK_IMPORTED_MODULE_2__.effectsHelper.get();
         try {
             for (var deletions_2 = __values(deletions), deletions_2_1 = deletions_2.next(); !deletions_2_1.done; deletions_2_1 = deletions_2.next()) {
@@ -1117,22 +1136,36 @@ function commitChanges() {
         }
         _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.set([]);
         _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(null);
+        try {
+            for (var layoutEffects_1 = __values(layoutEffects), layoutEffects_1_1 = layoutEffects_1.next(); !layoutEffects_1_1.done; layoutEffects_1_1 = layoutEffects_1.next()) {
+                var layoutEffect = layoutEffects_1_1.value;
+                layoutEffect();
+            }
+        }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        finally {
+            try {
+                if (layoutEffects_1_1 && !layoutEffects_1_1.done && (_b = layoutEffects_1.return)) _b.call(layoutEffects_1);
+            }
+            finally { if (e_7) throw e_7.error; }
+        }
         setTimeout(function () {
-            var e_7, _a;
+            var e_8, _a;
             try {
                 for (var effects_1 = __values(effects), effects_1_1 = effects_1.next(); !effects_1_1.done; effects_1_1 = effects_1.next()) {
                     var effect = effects_1_1.value;
                     effect();
                 }
             }
-            catch (e_7_1) { e_7 = { error: e_7_1 }; }
+            catch (e_8_1) { e_8 = { error: e_8_1 }; }
             finally {
                 try {
                     if (effects_1_1 && !effects_1_1.done && (_a = effects_1.return)) _a.call(effects_1);
                 }
-                finally { if (e_7) throw e_7.error; }
+                finally { if (e_8) throw e_8.error; }
             }
         });
+        _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsHelper.reset();
         _scope__WEBPACK_IMPORTED_MODULE_2__.effectsHelper.reset();
         if (fromHook) {
             _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(false);
@@ -1742,6 +1775,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "fiberMountHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.fiberMountHelper),
 /* harmony export */   "fromHookUpdateHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.fromHookUpdateHelper),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.getRootId),
+/* harmony export */   "layoutEffectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsHelper),
 /* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper),
 /* harmony export */   "wipRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.wipRootHelper)
 /* harmony export */ });
@@ -1768,6 +1802,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "fiberMountHelper": () => (/* binding */ fiberMountHelper),
 /* harmony export */   "fromHookUpdateHelper": () => (/* binding */ fromHookUpdateHelper),
 /* harmony export */   "getRootId": () => (/* binding */ getRootId),
+/* harmony export */   "layoutEffectsHelper": () => (/* binding */ layoutEffectsHelper),
 /* harmony export */   "nextUnitOfWorkHelper": () => (/* binding */ nextUnitOfWorkHelper),
 /* harmony export */   "wipRootHelper": () => (/* binding */ wipRootHelper)
 /* harmony export */ });
@@ -1786,6 +1821,7 @@ var Store = /** @class */ (function () {
         };
         this.componentFiber = null;
         this.effects = [];
+        this.layoutEffects = [];
     }
     return Store;
 }());
@@ -1870,6 +1906,11 @@ var effectsHelper = {
     get: function () { return storeHelper.get().effects; },
     reset: function () { return (storeHelper.get().effects = []); },
     add: function (effect) { return storeHelper.get().effects.push(effect); },
+};
+var layoutEffectsHelper = {
+    get: function () { return storeHelper.get().layoutEffects; },
+    reset: function () { return (storeHelper.get().layoutEffects = []); },
+    add: function (effect) { return storeHelper.get().layoutEffects.push(effect); },
 };
 
 
@@ -2167,6 +2208,7 @@ function useDeferredValue(value, options) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "cleanupEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.cleanupEffects),
+/* harmony export */   "createEffectFunctions": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.createEffectFunctions),
 /* harmony export */   "hasEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.hasEffects),
 /* harmony export */   "useEffect": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.useEffect)
 /* harmony export */ });
@@ -2185,6 +2227,7 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "cleanupEffects": () => (/* binding */ cleanupEffects),
+/* harmony export */   "createEffectFunctions": () => (/* binding */ createEffectFunctions),
 /* harmony export */   "hasEffects": () => (/* binding */ hasEffects),
 /* harmony export */   "useEffect": () => (/* binding */ useEffect)
 /* harmony export */ });
@@ -2204,57 +2247,65 @@ var __values = (undefined && undefined.__values) || function(o) {
 
 
 var $$useEffect = Symbol('use-effect');
-function useEffect(effect, deps) {
-    var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
-    var hook = fiber.hook;
-    var idx = hook.idx, values = hook.values;
-    var runEffect = function () {
-        values[idx] = {
-            deps: deps,
-            value: undefined,
-            token: $$useEffect,
+var _a = createEffectFunctions($$useEffect, _scope__WEBPACK_IMPORTED_MODULE_1__.effectsHelper), useEffect = _a.useEffect, hasEffects = _a.hasEffects, cleanupEffects = _a.cleanupEffects;
+function createEffectFunctions(token, store) {
+    function useEffect(effect, deps) {
+        var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
+        var hook = fiber.hook;
+        var idx = hook.idx, values = hook.values;
+        var runEffect = function () {
+            values[idx] = {
+                deps: deps,
+                token: token,
+                value: undefined,
+            };
+            store.add(function () {
+                values[idx].value = effect();
+            });
         };
-        _scope__WEBPACK_IMPORTED_MODULE_1__.effectsHelper.add(function () {
-            values[idx].value = effect();
-        });
-    };
-    if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(values[idx])) {
-        runEffect();
-    }
-    else {
-        var _a = values[idx], prevDeps = _a.deps, cleanup = _a.value;
-        var isDepsDifferent = deps ? (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsDepsDifferent)(deps, prevDeps) : true;
-        if (isDepsDifferent) {
-            (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(cleanup) && cleanup();
+        if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(values[idx])) {
             runEffect();
         }
-    }
-    hook.idx++;
-}
-function hasEffects(fiber) {
-    var values = fiber.hook.values;
-    var hasEffect = values.some(function (x) { return x.token === $$useEffect; });
-    return hasEffect;
-}
-function cleanupEffects(hook) {
-    var e_1, _a;
-    var values = hook.values;
-    try {
-        for (var values_1 = __values(values), values_1_1 = values_1.next(); !values_1_1.done; values_1_1 = values_1.next()) {
-            var value = values_1_1.value;
-            if (value.token === $$useEffect) {
-                var cleanup = value.value;
+        else {
+            var _a = values[idx], prevDeps = _a.deps, cleanup = _a.value;
+            var isDepsDifferent = deps ? (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsDepsDifferent)(deps, prevDeps) : true;
+            if (isDepsDifferent) {
                 (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(cleanup) && cleanup();
+                runEffect();
             }
         }
+        hook.idx++;
     }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
+    function hasEffects(fiber) {
+        var values = fiber.hook.values;
+        var hasEffect = values.some(function (x) { return x.token === token; });
+        return hasEffect;
+    }
+    function cleanupEffects(hook) {
+        var e_1, _a;
+        var values = hook.values;
         try {
-            if (values_1_1 && !values_1_1.done && (_a = values_1.return)) _a.call(values_1);
+            for (var values_1 = __values(values), values_1_1 = values_1.next(); !values_1_1.done; values_1_1 = values_1.next()) {
+                var value = values_1_1.value;
+                if (value.token === token) {
+                    var cleanup = value.value;
+                    (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(cleanup) && cleanup();
+                }
+            }
         }
-        finally { if (e_1) throw e_1.error; }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (values_1_1 && !values_1_1.done && (_a = values_1.return)) _a.call(values_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
     }
+    return {
+        useEffect: useEffect,
+        hasEffects: hasEffects,
+        cleanupEffects: cleanupEffects,
+    };
 }
 
 
@@ -2417,6 +2468,47 @@ function useImperativeHandle(ref, createHandle, deps) {
     var current = (0,_use_memo__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () { return createHandle(); }, deps);
     ref.current = current;
 }
+
+
+
+/***/ }),
+
+/***/ "./src/use-layout-effect/index.ts":
+/*!****************************************!*\
+  !*** ./src/use-layout-effect/index.ts ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "cleanupLayoutEffects": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.cleanupLayoutEffects),
+/* harmony export */   "hasLayoutEffects": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.hasLayoutEffects),
+/* harmony export */   "useLayoutEffect": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect)
+/* harmony export */ });
+/* harmony import */ var _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./use-layout-effect */ "./src/use-layout-effect/use-layout-effect.ts");
+
+
+
+/***/ }),
+
+/***/ "./src/use-layout-effect/use-layout-effect.ts":
+/*!****************************************************!*\
+  !*** ./src/use-layout-effect/use-layout-effect.ts ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "cleanupLayoutEffects": () => (/* binding */ cleanupLayoutEffects),
+/* harmony export */   "hasLayoutEffects": () => (/* binding */ hasLayoutEffects),
+/* harmony export */   "useLayoutEffect": () => (/* binding */ useLayoutEffect)
+/* harmony export */ });
+/* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
+/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
+
+
+var $$useLayoutEffect = Symbol('use-layout-effect');
+var _a = (0,_use_effect__WEBPACK_IMPORTED_MODULE_1__.createEffectFunctions)($$useLayoutEffect, _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsHelper), useLayoutEffect = _a.useEffect, hasLayoutEffects = _a.hasEffects, cleanupLayoutEffects = _a.cleanupEffects;
 
 
 
@@ -3015,43 +3107,42 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "$$memo": () => (/* reexport safe */ _memo__WEBPACK_IMPORTED_MODULE_8__.$$memo),
-/* harmony export */   "ATTR_KEY": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_26__.ATTR_KEY),
-/* harmony export */   "ATTR_REF": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_26__.ATTR_REF),
-/* harmony export */   "Comment": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.Comment),
-/* harmony export */   "CommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.CommentVirtualNode),
+/* harmony export */   "ATTR_KEY": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_27__.ATTR_KEY),
+/* harmony export */   "ATTR_REF": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_27__.ATTR_REF),
+/* harmony export */   "Comment": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.Comment),
+/* harmony export */   "CommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.CommentVirtualNode),
 /* harmony export */   "ComponentFactory": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.ComponentFactory),
-/* harmony export */   "EMPTY_NODE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_26__.EMPTY_NODE),
+/* harmony export */   "EMPTY_NODE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_27__.EMPTY_NODE),
 /* harmony export */   "EffectTag": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.EffectTag),
 /* harmony export */   "Fiber": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.Fiber),
 /* harmony export */   "Fragment": () => (/* reexport safe */ _fragment__WEBPACK_IMPORTED_MODULE_4__.Fragment),
-/* harmony export */   "NodeType": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.NodeType),
-/* harmony export */   "PARTIAL_UPDATE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_26__.PARTIAL_UPDATE),
-/* harmony export */   "ROOT": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_26__.ROOT),
+/* harmony export */   "NodeType": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.NodeType),
+/* harmony export */   "PARTIAL_UPDATE": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_27__.PARTIAL_UPDATE),
+/* harmony export */   "ROOT": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_27__.ROOT),
 /* harmony export */   "Suspense": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.Suspense),
 /* harmony export */   "SuspenseContext": () => (/* reexport safe */ _suspense__WEBPACK_IMPORTED_MODULE_12__.SuspenseContext),
-/* harmony export */   "TagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.TagVirtualNode),
-/* harmony export */   "TaskPriority": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_26__.TaskPriority),
-/* harmony export */   "Text": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.Text),
-/* harmony export */   "TextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.TextVirtualNode),
-/* harmony export */   "View": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.View),
-/* harmony export */   "VirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.VirtualNode),
-/* harmony export */   "cleanupEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_16__.cleanupEffects),
+/* harmony export */   "TagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.TagVirtualNode),
+/* harmony export */   "TaskPriority": () => (/* reexport safe */ _constants__WEBPACK_IMPORTED_MODULE_27__.TaskPriority),
+/* harmony export */   "Text": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.Text),
+/* harmony export */   "TextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.TextVirtualNode),
+/* harmony export */   "View": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.View),
+/* harmony export */   "VirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.VirtualNode),
 /* harmony export */   "cloneTagMap": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.cloneTagMap),
 /* harmony export */   "componentFiberHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.componentFiberHelper),
 /* harmony export */   "createComponent": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.createComponent),
 /* harmony export */   "createContext": () => (/* reexport safe */ _context__WEBPACK_IMPORTED_MODULE_1__.createContext),
-/* harmony export */   "createEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.createEmptyVirtualNode),
+/* harmony export */   "createEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.createEmptyVirtualNode),
 /* harmony export */   "createHook": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.createHook),
 /* harmony export */   "createUpdateCallback": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.createUpdateCallback),
 /* harmony export */   "currentRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.currentRootHelper),
 /* harmony export */   "deletionsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.deletionsHelper),
 /* harmony export */   "detectIsArray": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsArray),
 /* harmony export */   "detectIsBoolean": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsBoolean),
-/* harmony export */   "detectIsCommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.detectIsCommentVirtualNode),
+/* harmony export */   "detectIsCommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsCommentVirtualNode),
 /* harmony export */   "detectIsComponentFactory": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory),
 /* harmony export */   "detectIsDepsDifferent": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsDepsDifferent),
 /* harmony export */   "detectIsEmpty": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsEmpty),
-/* harmony export */   "detectIsEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.detectIsEmptyVirtualNode),
+/* harmony export */   "detectIsEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsEmptyVirtualNode),
 /* harmony export */   "detectIsFragment": () => (/* reexport safe */ _fragment__WEBPACK_IMPORTED_MODULE_4__.detectIsFragment),
 /* harmony export */   "detectIsFunction": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsFunction),
 /* harmony export */   "detectIsLazy": () => (/* reexport safe */ _lazy__WEBPACK_IMPORTED_MODULE_7__.detectIsLazy),
@@ -3061,11 +3152,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsObject": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsObject),
 /* harmony export */   "detectIsRef": () => (/* reexport safe */ _ref__WEBPACK_IMPORTED_MODULE_9__.detectIsRef),
 /* harmony export */   "detectIsString": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsString),
-/* harmony export */   "detectIsTagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.detectIsTagVirtualNode),
-/* harmony export */   "detectIsTextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.detectIsTextVirtualNode),
+/* harmony export */   "detectIsTagVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsTagVirtualNode),
+/* harmony export */   "detectIsTextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsTextVirtualNode),
 /* harmony export */   "detectIsUndefined": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsUndefined),
-/* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.detectIsVirtualNode),
-/* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.detectIsVirtualNodeFactory),
+/* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsVirtualNode),
+/* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsVirtualNodeFactory),
 /* harmony export */   "dummyFn": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.dummyFn),
 /* harmony export */   "effectStoreHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectStoreHelper),
 /* harmony export */   "effectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectsHelper),
@@ -3078,11 +3169,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "getComponentFactoryKey": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.getComponentFactoryKey),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.getRootId),
 /* harmony export */   "getTime": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.getTime),
-/* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_25__.getVirtualNodeKey),
+/* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.getVirtualNodeKey),
 /* harmony export */   "h": () => (/* reexport safe */ _element__WEBPACK_IMPORTED_MODULE_2__.createElement),
 /* harmony export */   "hasChildrenProp": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.hasChildrenProp),
-/* harmony export */   "hasEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_16__.hasEffects),
 /* harmony export */   "keyBy": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.keyBy),
+/* harmony export */   "layoutEffectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.layoutEffectsHelper),
 /* harmony export */   "lazy": () => (/* reexport safe */ _lazy__WEBPACK_IMPORTED_MODULE_7__.lazy),
 /* harmony export */   "memo": () => (/* reexport safe */ _memo__WEBPACK_IMPORTED_MODULE_8__.memo),
 /* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkHelper),
@@ -3095,11 +3186,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "useError": () => (/* reexport safe */ _use_error__WEBPACK_IMPORTED_MODULE_17__.useError),
 /* harmony export */   "useEvent": () => (/* reexport safe */ _use_event__WEBPACK_IMPORTED_MODULE_18__.useEvent),
 /* harmony export */   "useImperativeHandle": () => (/* reexport safe */ _use_imperative_handle__WEBPACK_IMPORTED_MODULE_19__.useImperativeHandle),
-/* harmony export */   "useMemo": () => (/* reexport safe */ _use_memo__WEBPACK_IMPORTED_MODULE_20__.useMemo),
-/* harmony export */   "useReducer": () => (/* reexport safe */ _use_reducer__WEBPACK_IMPORTED_MODULE_21__.useReducer),
-/* harmony export */   "useRef": () => (/* reexport safe */ _use_ref__WEBPACK_IMPORTED_MODULE_22__.useRef),
-/* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_23__.useState),
-/* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_24__.useUpdate),
+/* harmony export */   "useLayoutEffect": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_20__.useLayoutEffect),
+/* harmony export */   "useMemo": () => (/* reexport safe */ _use_memo__WEBPACK_IMPORTED_MODULE_21__.useMemo),
+/* harmony export */   "useReducer": () => (/* reexport safe */ _use_reducer__WEBPACK_IMPORTED_MODULE_22__.useReducer),
+/* harmony export */   "useRef": () => (/* reexport safe */ _use_ref__WEBPACK_IMPORTED_MODULE_23__.useRef),
+/* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_24__.useState),
+/* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_25__.useUpdate),
 /* harmony export */   "wipRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.wipRootHelper),
 /* harmony export */   "workLoop": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.workLoop)
 /* harmony export */ });
@@ -3123,13 +3215,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _use_error__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./use-error */ "./src/use-error/index.ts");
 /* harmony import */ var _use_event__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./use-event */ "./src/use-event/index.ts");
 /* harmony import */ var _use_imperative_handle__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./use-imperative-handle */ "./src/use-imperative-handle/index.ts");
-/* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./use-memo */ "./src/use-memo/index.ts");
-/* harmony import */ var _use_reducer__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./use-reducer */ "./src/use-reducer/index.ts");
-/* harmony import */ var _use_ref__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./use-ref */ "./src/use-ref/index.ts");
-/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./use-state */ "./src/use-state/index.ts");
-/* harmony import */ var _use_update__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./use-update */ "./src/use-update/index.ts");
-/* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./view */ "./src/view/index.ts");
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./constants */ "./src/constants.ts");
+/* harmony import */ var _use_layout_effect__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./use-layout-effect */ "./src/use-layout-effect/index.ts");
+/* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./use-memo */ "./src/use-memo/index.ts");
+/* harmony import */ var _use_reducer__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./use-reducer */ "./src/use-reducer/index.ts");
+/* harmony import */ var _use_ref__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./use-ref */ "./src/use-ref/index.ts");
+/* harmony import */ var _use_state__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./use-state */ "./src/use-state/index.ts");
+/* harmony import */ var _use_update__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./use-update */ "./src/use-update/index.ts");
+/* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./view */ "./src/view/index.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./constants */ "./src/constants.ts");
+
 
 
 

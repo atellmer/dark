@@ -10,6 +10,7 @@ import {
   fromHookUpdateHelper,
   effectStoreHelper,
   effectsHelper,
+  layoutEffectsHelper,
 } from '../scope';
 import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '../component';
 import {
@@ -26,6 +27,7 @@ import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared
 import { PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './model';
 import { hasEffects, cleanupEffects } from '../use-effect';
+import { hasLayoutEffects, cleanupLayoutEffects } from '../use-layout-effect';
 
 class Fiber<N = NativeElement> {
   public nativeElement: N;
@@ -42,6 +44,7 @@ class Fiber<N = NativeElement> {
   public mountedToHost: boolean;
   public portalHost: boolean;
   public effectHost: boolean;
+  public layoutEffectHost: boolean;
   public childrenCount: number;
   public marker: string;
   public isUsed: boolean;
@@ -62,6 +65,7 @@ class Fiber<N = NativeElement> {
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.effectHost = !detectIsUndefined(options.effectHost) ? options.effectHost : false;
+    this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
     this.isUsed = options.isUsed || false;
@@ -75,6 +79,11 @@ class Fiber<N = NativeElement> {
   public markEffectHost() {
     this.effectHost = true;
     this.parent && !this.parent.effectHost && this.parent.markEffectHost();
+  }
+
+  public markLayoutEffectHost() {
+    this.layoutEffectHost = true;
+    this.parent && !this.parent.layoutEffectHost && this.parent.markLayoutEffectHost();
   }
 
   public setError(error: Error) {
@@ -415,6 +424,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
                 fiber.markEffectHost();
               }
 
+              if (childAlternate.layoutEffectHost) {
+                fiber.markLayoutEffectHost();
+              }
+
               if (childAlternate.portalHost) {
                 fiber.markPortalHost();
               }
@@ -429,6 +442,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
 
             if (childAlternate.effectHost) {
               fiber.markEffectHost();
+            }
+
+            if (childAlternate.layoutEffectHost) {
+              fiber.markLayoutEffectHost();
             }
 
             if (childAlternate.portalHost) {
@@ -570,6 +587,10 @@ function pertformInstance(options: PerformInstanceOptions) {
   if (detectIsComponentFactory(performedInstance)) {
     if (hasEffects(fiber)) {
       fiber.markEffectHost();
+    }
+
+    if (hasLayoutEffects(fiber)) {
+      fiber.markLayoutEffectHost();
     }
 
     if (platform.detectIsPortal(performedInstance)) {
@@ -802,19 +823,21 @@ function commitChanges() {
   const fromHook = fromHookUpdateHelper.get();
   const deletions = deletionsHelper.get();
   const hasEffects = Boolean(wipFiber.alternate?.effectHost);
+  const hasLayoutEffects = Boolean(wipFiber.alternate?.layoutEffectHost);
   const hasPortals = Boolean(wipFiber.alternate?.portalHost);
 
-  if (hasEffects || hasPortals) {
+  if (hasEffects || hasLayoutEffects || hasPortals) {
     for (const fiber of deletions) {
       fiber.portalHost && platform.unmountPortal(fiber);
 
-      if (fiber.effectHost) {
+      if (fiber.effectHost || fiber.layoutEffectHost) {
         walkFiber({
           fiber,
           onLoop: ({ nextFiber, isReturn, stop }) => {
             if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
 
             if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
+              cleanupLayoutEffects(nextFiber.hook);
               cleanupEffects(nextFiber.hook);
             }
           },
@@ -824,6 +847,7 @@ function commitChanges() {
   }
 
   commitWork(wipFiber.child, () => {
+    const layoutEffects = layoutEffectsHelper.get();
     const effects = effectsHelper.get();
 
     for (const fiber of deletions) {
@@ -833,12 +857,17 @@ function commitChanges() {
     deletionsHelper.set([]);
     wipRootHelper.set(null);
 
+    for (const layoutEffect of layoutEffects) {
+      layoutEffect();
+    }
+
     setTimeout(() => {
       for (const effect of effects) {
         effect();
       }
     });
 
+    layoutEffectsHelper.reset();
     effectsHelper.reset();
 
     if (fromHook) {
