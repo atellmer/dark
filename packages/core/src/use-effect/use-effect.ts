@@ -15,11 +15,10 @@ function useEffect(effect: Effect, deps?: Array<any>) {
       value: undefined,
       token: $$useEffect,
     };
-    const run = () => {
-      values[idx].value = effect();
-    };
 
-    effectsHelper.add(() => setTimeout(run));
+    effectsHelper.add(() => {
+      values[idx].value = effect();
+    });
   };
 
   if (detectIsUndefined(values[idx])) {

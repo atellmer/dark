@@ -191,7 +191,7 @@ function performChild(options: PerformChildOptions) {
   shadow = shadow ? shadow.child : null;
 
   const alternate = getChildAlternate(nextFiber);
-  const hook = shadow ? shadow.hook : alternate ? alternate.hook : createHook();
+  const hook = getHook({ shadow, alternate, instance });
   const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
   let fiber = new Fiber({ hook, provider });
 
@@ -245,7 +245,7 @@ function performSibling(options: PerformSiblingOptions) {
 
     shadow = shadow ? shadow.nextSibling : null;
     const alternate = getNextSiblingAlternate(nextFiber);
-    const hook = shadow ? shadow.hook : alternate ? alternate.hook : createHook();
+    const hook = getHook({ shadow, alternate, instance });
     const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     let fiber = new Fiber({ hook, provider });
 
@@ -295,6 +295,24 @@ function performSibling(options: PerformSiblingOptions) {
     performedShadow: shadow,
     performedInstance: instance,
   };
+}
+
+type GetHookOptions = {
+  shadow: Fiber;
+  alternate: Fiber;
+  instance: DarkElementInstance;
+};
+
+function getHook(options: GetHookOptions) {
+  const { shadow, alternate, instance } = options;
+
+  if (shadow) return shadow.hook;
+
+  if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
+    return alternate.hook;
+  }
+
+  return createHook();
 }
 
 type MutateFiberOptions = {
@@ -777,9 +795,13 @@ function commitChanges() {
     deletionsHelper.set([]);
     wipRootHelper.set(null);
 
-    for (const effect of effectsHelper.get()) {
-      effect();
-    }
+    const effects = effectsHelper.get();
+
+    setTimeout(() => {
+      for (const effect of effects) {
+        effect();
+      }
+    });
 
     effectsHelper.reset();
 
