@@ -384,6 +384,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./model */ "./src/fiber/model.ts");
 /* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
 /* harmony import */ var _use_layout_effect__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../use-layout-effect */ "./src/use-layout-effect/index.ts");
+/* harmony import */ var _walk__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../walk */ "./src/walk/index.ts");
+/* harmony import */ var _unmount__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../unmount */ "./src/unmount/index.ts");
 var __assign = (undefined && undefined.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -431,6 +433,8 @@ var __values = (undefined && undefined.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
+
+
 
 
 
@@ -661,15 +665,6 @@ function performSibling(options) {
         performedShadow: shadow,
         performedInstance: instance,
     };
-}
-function getHook(options) {
-    var shadow = options.shadow, alternate = options.alternate, instance = options.instance;
-    if (shadow)
-        return shadow.hook;
-    if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
-        return alternate.hook;
-    }
-    return createHook();
 }
 function mutateFiber(options) {
     var fiber = options.fiber, alternate = options.alternate, instance = options.instance;
@@ -1086,27 +1081,10 @@ function commitChanges() {
     var hasLayoutEffects = Boolean((_c = wipFiber.alternate) === null || _c === void 0 ? void 0 : _c.layoutEffectHost);
     var hasPortals = Boolean((_d = wipFiber.alternate) === null || _d === void 0 ? void 0 : _d.portalHost);
     if (hasEffects || hasLayoutEffects || hasPortals) {
-        var _loop_1 = function (fiber) {
-            fiber.portalHost && _global__WEBPACK_IMPORTED_MODULE_1__.platform.unmountPortal(fiber);
-            if (fiber.effectHost || fiber.layoutEffectHost) {
-                walkFiber({
-                    fiber: fiber,
-                    onLoop: function (_a) {
-                        var nextFiber = _a.nextFiber, isReturn = _a.isReturn, stop = _a.stop;
-                        if (nextFiber === fiber.nextSibling || fiber.transposition)
-                            return stop();
-                        if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(nextFiber.instance)) {
-                            (0,_use_layout_effect__WEBPACK_IMPORTED_MODULE_9__.cleanupLayoutEffects)(nextFiber.hook);
-                            (0,_use_effect__WEBPACK_IMPORTED_MODULE_8__.cleanupEffects)(nextFiber.hook);
-                        }
-                    },
-                });
-            }
-        };
         try {
             for (var deletions_1 = __values(deletions), deletions_1_1 = deletions_1.next(); !deletions_1_1.done; deletions_1_1 = deletions_1.next()) {
                 var fiber = deletions_1_1.value;
-                _loop_1(fiber);
+                (0,_unmount__WEBPACK_IMPORTED_MODULE_11__.unmountFiber)(fiber);
             }
         }
         catch (e_5_1) { e_5 = { error: e_5_1 }; }
@@ -1176,7 +1154,7 @@ function commitChanges() {
     });
 }
 function commitWork(fiber, onComplete) {
-    walkFiber({
+    (0,_walk__WEBPACK_IMPORTED_MODULE_10__.walkFiber)({
         fiber: fiber,
         onLoop: function (_a) {
             var nextFiber = _a.nextFiber, isReturn = _a.isReturn, resetIsDeepWalking = _a.resetIsDeepWalking;
@@ -1194,62 +1172,20 @@ function commitWork(fiber, onComplete) {
     });
     onComplete();
 }
-function walkFiber(options) {
-    var fiber = options.fiber, onLoop = options.onLoop;
-    var nextFiber = fiber;
-    var isDeepWalking = true;
-    var isReturn = false;
-    var isStopped = false;
-    var visitedMap = new Map();
-    var detectCanVisit = function (fiber) { return !visitedMap.get(fiber); };
-    while (nextFiber) {
-        onLoop({
-            nextFiber: nextFiber,
-            isReturn: isReturn,
-            resetIsDeepWalking: function () { return (isDeepWalking = false); },
-            stop: function () { return (isStopped = true); },
-        });
-        if (isStopped) {
-            break;
-        }
-        if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
-            var newFiber = nextFiber.child;
-            isReturn = false;
-            nextFiber = newFiber;
-            visitedMap.set(newFiber, true);
-        }
-        else if (nextFiber.nextSibling && detectCanVisit(nextFiber.nextSibling)) {
-            var newFiber = nextFiber.nextSibling;
-            isDeepWalking = true;
-            isReturn = false;
-            nextFiber = newFiber;
-            visitedMap.set(newFiber, true);
-        }
-        else if (nextFiber.parent &&
-            nextFiber.parent === fiber &&
-            nextFiber.parent.nextSibling &&
-            detectCanVisit(nextFiber.parent.nextSibling)) {
-            var newFiber = nextFiber.parent.nextSibling;
-            isDeepWalking = true;
-            isReturn = false;
-            nextFiber = newFiber;
-            visitedMap.set(newFiber, true);
-        }
-        else if (nextFiber.parent && nextFiber.parent !== fiber) {
-            isDeepWalking = false;
-            isReturn = true;
-            nextFiber = nextFiber.parent;
-        }
-        else {
-            nextFiber = null;
-        }
-    }
-}
 function createHook() {
     return {
         idx: 0,
         values: [],
     };
+}
+function getHook(options) {
+    var shadow = options.shadow, alternate = options.alternate, instance = options.instance;
+    if (shadow)
+        return shadow.hook;
+    if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
+        return alternate.hook;
+    }
+    return createHook();
 }
 function createUpdateCallback(options) {
     var rootId = options.rootId, fiber = options.fiber, _a = options.forceStart, forceStart = _a === void 0 ? false : _a, onStart = options.onStart;
@@ -1813,6 +1749,7 @@ var Store = /** @class */ (function () {
         this.nextUnitOfWork = null;
         this.fromHookUpdate = false;
         this.events = new Map();
+        this.unsubscribers = [];
         this.deletions = [];
         this.fiberMount = {
             level: 0,
@@ -1829,6 +1766,7 @@ var rootId = null;
 var stores = new Map();
 var effectStoreHelper = {
     set: function (id) { return effectStore(id); },
+    remove: function (id) { return stores.delete(id); },
 };
 var getRootId = function () { return rootId; };
 var effectStore = function (id) {
@@ -1846,7 +1784,7 @@ var wipRootHelper = {
     set: function (fiber) { return (storeHelper.get().wipRoot = fiber); },
 };
 var currentRootHelper = {
-    get: function () { var _a; return ((_a = storeHelper.get()) === null || _a === void 0 ? void 0 : _a.currentRoot) || null; },
+    get: function (id) { var _a; return ((_a = storeHelper.get(id)) === null || _a === void 0 ? void 0 : _a.currentRoot) || null; },
     set: function (fiber) { return (storeHelper.get().currentRoot = fiber); },
 };
 var nextUnitOfWorkHelper = {
@@ -1863,6 +1801,8 @@ var fromHookUpdateHelper = {
 };
 var eventsHelper = {
     get: function () { return storeHelper.get().events; },
+    addUnsubscriber: function (fn) { return storeHelper.get().unsubscribers.push(fn); },
+    mapUnsubscribers: function (id) { return storeHelper.get(id).unsubscribers.forEach(function (fn) { return fn(); }); },
 };
 var deletionsHelper = {
     get: function () { return storeHelper.get().deletions; },
@@ -2017,6 +1957,78 @@ var Suspense = (0,_component__WEBPACK_IMPORTED_MODULE_0__.createComponent)(funct
         slot: isSuspenseLoaded ? slot : null,
     });
 });
+
+
+
+/***/ }),
+
+/***/ "./src/unmount/index.ts":
+/*!******************************!*\
+  !*** ./src/unmount/index.ts ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "unmountFiber": () => (/* reexport safe */ _unmount__WEBPACK_IMPORTED_MODULE_0__.unmountFiber),
+/* harmony export */   "unmountRoot": () => (/* reexport safe */ _unmount__WEBPACK_IMPORTED_MODULE_0__.unmountRoot)
+/* harmony export */ });
+/* harmony import */ var _unmount__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./unmount */ "./src/unmount/unmount.ts");
+
+
+
+/***/ }),
+
+/***/ "./src/unmount/unmount.ts":
+/*!********************************!*\
+  !*** ./src/unmount/unmount.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "unmountFiber": () => (/* binding */ unmountFiber),
+/* harmony export */   "unmountRoot": () => (/* binding */ unmountRoot)
+/* harmony export */ });
+/* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../global */ "./src/global/index.ts");
+/* harmony import */ var _component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../component */ "./src/component/index.ts");
+/* harmony import */ var _use_effect__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../use-effect */ "./src/use-effect/index.ts");
+/* harmony import */ var _use_layout_effect__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../use-layout-effect */ "./src/use-layout-effect/index.ts");
+/* harmony import */ var _walk__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../walk */ "./src/walk/index.ts");
+/* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
+/* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
+
+
+
+
+
+
+
+function unmountFiber(fiber) {
+    if (fiber.effectHost || fiber.layoutEffectHost) {
+        (0,_walk__WEBPACK_IMPORTED_MODULE_4__.walkFiber)({
+            fiber: fiber,
+            onLoop: function (_a) {
+                var nextFiber = _a.nextFiber, isReturn = _a.isReturn, stop = _a.stop;
+                if (nextFiber === fiber.nextSibling || fiber.transposition)
+                    return stop();
+                if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_1__.detectIsComponentFactory)(nextFiber.instance)) {
+                    (0,_use_layout_effect__WEBPACK_IMPORTED_MODULE_3__.cleanupLayoutEffects)(nextFiber.hook);
+                    (0,_use_effect__WEBPACK_IMPORTED_MODULE_2__.cleanupEffects)(nextFiber.hook);
+                }
+            },
+        });
+    }
+    fiber.portalHost && _global__WEBPACK_IMPORTED_MODULE_0__.platform.unmountPortal(fiber);
+}
+function unmountRoot(rootId, onComplete) {
+    if ((0,_helpers__WEBPACK_IMPORTED_MODULE_5__.detectIsUndefined)(rootId))
+        return;
+    unmountFiber(_scope__WEBPACK_IMPORTED_MODULE_6__.currentRootHelper.get(rootId));
+    _scope__WEBPACK_IMPORTED_MODULE_6__.eventsHelper.mapUnsubscribers(rootId);
+    _scope__WEBPACK_IMPORTED_MODULE_6__.effectStoreHelper.remove(rootId);
+    onComplete();
+}
 
 
 
@@ -3040,6 +3052,88 @@ var detectIsVirtualNodeFactory = function (factory) {
 
 
 
+/***/ }),
+
+/***/ "./src/walk/index.ts":
+/*!***************************!*\
+  !*** ./src/walk/index.ts ***!
+  \***************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "walkFiber": () => (/* reexport safe */ _walk__WEBPACK_IMPORTED_MODULE_0__.walkFiber)
+/* harmony export */ });
+/* harmony import */ var _walk__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./walk */ "./src/walk/walk.ts");
+
+
+
+/***/ }),
+
+/***/ "./src/walk/walk.ts":
+/*!**************************!*\
+  !*** ./src/walk/walk.ts ***!
+  \**************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "walkFiber": () => (/* binding */ walkFiber)
+/* harmony export */ });
+function walkFiber(options) {
+    var fiber = options.fiber, onLoop = options.onLoop;
+    var nextFiber = fiber;
+    var isDeepWalking = true;
+    var isReturn = false;
+    var isStopped = false;
+    var visitedMap = new Map();
+    var detectCanVisit = function (fiber) { return !visitedMap.get(fiber); };
+    while (nextFiber) {
+        onLoop({
+            nextFiber: nextFiber,
+            isReturn: isReturn,
+            resetIsDeepWalking: function () { return (isDeepWalking = false); },
+            stop: function () { return (isStopped = true); },
+        });
+        if (isStopped) {
+            break;
+        }
+        if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
+            var newFiber = nextFiber.child;
+            isReturn = false;
+            nextFiber = newFiber;
+            visitedMap.set(newFiber, true);
+        }
+        else if (nextFiber.nextSibling && detectCanVisit(nextFiber.nextSibling)) {
+            var newFiber = nextFiber.nextSibling;
+            isDeepWalking = true;
+            isReturn = false;
+            nextFiber = newFiber;
+            visitedMap.set(newFiber, true);
+        }
+        else if (nextFiber.parent &&
+            nextFiber.parent === fiber &&
+            nextFiber.parent.nextSibling &&
+            detectCanVisit(nextFiber.parent.nextSibling)) {
+            var newFiber = nextFiber.parent.nextSibling;
+            isDeepWalking = true;
+            isReturn = false;
+            nextFiber = newFiber;
+            visitedMap.set(newFiber, true);
+        }
+        else if (nextFiber.parent && nextFiber.parent !== fiber) {
+            isDeepWalking = false;
+            isReturn = true;
+            nextFiber = nextFiber.parent;
+        }
+        else {
+            nextFiber = null;
+        }
+    }
+}
+
+
+
 /***/ })
 
 /******/ 	});
@@ -3179,6 +3273,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkHelper),
 /* harmony export */   "platform": () => (/* reexport safe */ _global__WEBPACK_IMPORTED_MODULE_5__.platform),
 /* harmony export */   "takeListFromEnd": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.takeListFromEnd),
+/* harmony export */   "unmountRoot": () => (/* reexport safe */ _unmount__WEBPACK_IMPORTED_MODULE_29__.unmountRoot),
 /* harmony export */   "useCallback": () => (/* reexport safe */ _use_callback__WEBPACK_IMPORTED_MODULE_13__.useCallback),
 /* harmony export */   "useContext": () => (/* reexport safe */ _use_context__WEBPACK_IMPORTED_MODULE_14__.useContext),
 /* harmony export */   "useDeferredValue": () => (/* reexport safe */ _use_deferred_value__WEBPACK_IMPORTED_MODULE_15__.useDeferredValue),
@@ -3192,6 +3287,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "useRef": () => (/* reexport safe */ _use_ref__WEBPACK_IMPORTED_MODULE_23__.useRef),
 /* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_24__.useState),
 /* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_25__.useUpdate),
+/* harmony export */   "walkFiber": () => (/* reexport safe */ _walk__WEBPACK_IMPORTED_MODULE_28__.walkFiber),
 /* harmony export */   "wipRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.wipRootHelper),
 /* harmony export */   "workLoop": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.workLoop)
 /* harmony export */ });
@@ -3223,6 +3319,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _use_update__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./use-update */ "./src/use-update/index.ts");
 /* harmony import */ var _view__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./view */ "./src/view/index.ts");
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./constants */ "./src/constants.ts");
+/* harmony import */ var _walk__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./walk */ "./src/walk/index.ts");
+/* harmony import */ var _unmount__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./unmount */ "./src/unmount/index.ts");
+
+
 
 
 

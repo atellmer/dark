@@ -12,6 +12,57 @@ return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/create-root/create-root.tsx":
+/*!*****************************************!*\
+  !*** ./src/create-root/create-root.tsx ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "createRoot": () => (/* binding */ createRoot)
+/* harmony export */ });
+/* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
+/* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../render */ "./src/render/index.ts");
+/* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../dom */ "./src/dom/index.ts");
+
+
+
+function createRoot(container) {
+    return {
+        render: function (element) { return (0,_render__WEBPACK_IMPORTED_MODULE_1__.render)(element, container); },
+        unmount: function () {
+            var rootId = _render__WEBPACK_IMPORTED_MODULE_1__.roots.get(container);
+            (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.unmountRoot)(rootId, function () {
+                (0,_dom__WEBPACK_IMPORTED_MODULE_2__.resetNodeCache)();
+                _render__WEBPACK_IMPORTED_MODULE_1__.roots["delete"](container);
+                container.innerHTML = '';
+            });
+        },
+    };
+}
+
+
+
+/***/ }),
+
+/***/ "./src/create-root/index.ts":
+/*!**********************************!*\
+  !*** ./src/create-root/index.ts ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "createRoot": () => (/* reexport safe */ _create_root__WEBPACK_IMPORTED_MODULE_0__.createRoot)
+/* harmony export */ });
+/* harmony import */ var _create_root__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./create-root */ "./src/create-root/create-root.tsx");
+
+
+
+/***/ }),
+
 /***/ "./src/dom/dom.ts":
 /*!************************!*\
   !*** ./src/dom/dom.ts ***!
@@ -507,7 +558,7 @@ function delegateEvent(options) {
     var eventsStore = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsHelper.get();
     var handlerMap = eventsStore.get(eventName);
     if (!handlerMap) {
-        var rootHandler = function (event) {
+        var rootHandler_1 = function (event) {
             var fireEvent = eventsStore.get(eventName).get(event.target);
             var target = event.target;
             var syntheticEvent = null;
@@ -523,7 +574,8 @@ function delegateEvent(options) {
             }
         };
         eventsStore.set(eventName, new WeakMap([[target, handler]]));
-        document.addEventListener(eventName, rootHandler, true);
+        document.addEventListener(eventName, rootHandler_1, true);
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsHelper.addUnsubscriber(function () { return document.removeEventListener(eventName, rootHandler_1, true); });
     }
     else {
         handlerMap.set(target, handler);
@@ -668,7 +720,8 @@ function unmountPortal(fiber) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.render)
+/* harmony export */   "render": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   "roots": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.roots)
 /* harmony export */ });
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./render */ "./src/render/render.ts");
 
@@ -684,7 +737,8 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */   "render": () => (/* binding */ render),
+/* harmony export */   "roots": () => (/* binding */ roots)
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -1085,13 +1139,16 @@ var __webpack_exports__ = {};
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "createPortal": () => (/* reexport safe */ _portal__WEBPACK_IMPORTED_MODULE_1__.createPortal),
+/* harmony export */   "createPortal": () => (/* reexport safe */ _portal__WEBPACK_IMPORTED_MODULE_2__.createPortal),
+/* harmony export */   "createRoot": () => (/* reexport safe */ _create_root__WEBPACK_IMPORTED_MODULE_1__.createRoot),
 /* harmony export */   "render": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.render),
-/* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_2__.useStyle)
+/* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_3__.useStyle)
 /* harmony export */ });
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./render */ "./src/render/index.ts");
-/* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./portal */ "./src/portal/index.ts");
-/* harmony import */ var _use_style__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./use-style */ "./src/use-style/index.ts");
+/* harmony import */ var _create_root__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./create-root */ "./src/create-root/index.ts");
+/* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./portal */ "./src/portal/index.ts");
+/* harmony import */ var _use_style__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./use-style */ "./src/use-style/index.ts");
+
 
 
 
