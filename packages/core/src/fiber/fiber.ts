@@ -26,8 +26,10 @@ import type { Context, ContextProviderValue } from '../context/model';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
 import { PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './model';
-import { hasEffects, cleanupEffects } from '../use-effect';
-import { hasLayoutEffects, cleanupLayoutEffects } from '../use-layout-effect';
+import { hasEffects } from '../use-effect';
+import { hasLayoutEffects } from '../use-layout-effect';
+import { walkFiber } from '../walk';
+import { unmountFiber } from '../unmount';
 
 class Fiber<N = NativeElement> {
   public nativeElement: N;
@@ -312,24 +314,6 @@ function performSibling(options: PerformSiblingOptions) {
     performedShadow: shadow,
     performedInstance: instance,
   };
-}
-
-type GetHookOptions = {
-  shadow: Fiber;
-  alternate: Fiber;
-  instance: DarkElementInstance;
-};
-
-function getHook(options: GetHookOptions) {
-  const { shadow, alternate, instance } = options;
-
-  if (shadow) return shadow.hook;
-
-  if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
-    return alternate.hook;
-  }
-
-  return createHook();
 }
 
 type MutateFiberOptions = {
@@ -828,21 +812,7 @@ function commitChanges() {
 
   if (hasEffects || hasLayoutEffects || hasPortals) {
     for (const fiber of deletions) {
-      fiber.portalHost && platform.unmountPortal(fiber);
-
-      if (fiber.effectHost || fiber.layoutEffectHost) {
-        walkFiber({
-          fiber,
-          onLoop: ({ nextFiber, isReturn, stop }) => {
-            if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
-
-            if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
-              cleanupLayoutEffects(nextFiber.hook);
-              cleanupEffects(nextFiber.hook);
-            }
-          },
-        });
-      }
+      unmountFiber(fiber);
     }
   }
 
@@ -877,6 +847,7 @@ function commitChanges() {
     }
   });
 }
+
 function commitWork(fiber: Fiber, onComplete: Function) {
   walkFiber({
     fiber,
@@ -898,79 +869,29 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   onComplete();
 }
 
-type WalkFiberOptions<T> = {
-  fiber: Fiber;
-  onLoop: (options: OnLoopOptions<T>) => void;
-};
-
-type OnLoopOptions<T> = {
-  nextFiber: Fiber<T>;
-  isReturn: boolean;
-  resetIsDeepWalking: () => void;
-  stop: () => void;
-};
-
-function walkFiber<T = unknown>(options: WalkFiberOptions<T>) {
-  const { fiber, onLoop } = options;
-  let nextFiber = fiber;
-  let isDeepWalking = true;
-  let isReturn = false;
-  let isStopped = false;
-  const visitedMap = new Map<Fiber, true>();
-  const detectCanVisit = (fiber: Fiber) => !visitedMap.get(fiber);
-
-  while (nextFiber) {
-    onLoop({
-      nextFiber: nextFiber as Fiber<T>,
-      isReturn,
-      resetIsDeepWalking: () => (isDeepWalking = false),
-      stop: () => (isStopped = true),
-    });
-
-    if (isStopped) {
-      break;
-    }
-
-    if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child)) {
-      const newFiber = nextFiber.child;
-
-      isReturn = false;
-      nextFiber = newFiber;
-      visitedMap.set(newFiber, true);
-    } else if (nextFiber.nextSibling && detectCanVisit(nextFiber.nextSibling)) {
-      const newFiber = nextFiber.nextSibling;
-
-      isDeepWalking = true;
-      isReturn = false;
-      nextFiber = newFiber;
-      visitedMap.set(newFiber, true);
-    } else if (
-      nextFiber.parent &&
-      nextFiber.parent === fiber &&
-      nextFiber.parent.nextSibling &&
-      detectCanVisit(nextFiber.parent.nextSibling)
-    ) {
-      const newFiber = nextFiber.parent.nextSibling;
-
-      isDeepWalking = true;
-      isReturn = false;
-      nextFiber = newFiber;
-      visitedMap.set(newFiber, true);
-    } else if (nextFiber.parent && nextFiber.parent !== fiber) {
-      isDeepWalking = false;
-      isReturn = true;
-      nextFiber = nextFiber.parent;
-    } else {
-      nextFiber = null;
-    }
-  }
-}
-
 function createHook(): Hook {
   return {
     idx: 0,
     values: [],
   };
+}
+
+type GetHookOptions = {
+  shadow: Fiber;
+  alternate: Fiber;
+  instance: DarkElementInstance;
+};
+
+function getHook(options: GetHookOptions) {
+  const { shadow, alternate, instance } = options;
+
+  if (shadow) return shadow.hook;
+
+  if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
+    return alternate.hook;
+  }
+
+  return createHook();
 }
 
 type CreateUpdateCallbackOptions = {

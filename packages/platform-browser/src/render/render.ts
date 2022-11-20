@@ -70,4 +70,4 @@ function render(element: DarkElement, container: Element) {
   platform.scheduleCallback(callback, { priority: TaskPriority.NORMAL });
 }
 
-export { render };
+export { render, roots };

@@ -6,6 +6,7 @@ class Store {
   public nextUnitOfWork: Fiber = null;
   public fromHookUpdate = false;
   public events: Map<string, WeakMap<object, Function>> = new Map();
+  public unsubscribers: Array<() => void> = [];
   public deletions: Array<Fiber> = [];
   public fiberMount = {
     level: 0,
@@ -22,6 +23,7 @@ const stores = new Map<number, Store>();
 
 const effectStoreHelper = {
   set: (id: number) => effectStore(id),
+  remove: (id: number) => stores.delete(id),
 };
 
 const getRootId = (): number => rootId;
@@ -41,7 +43,7 @@ const wipRootHelper = {
 };
 
 const currentRootHelper = {
-  get: () => storeHelper.get()?.currentRoot || null,
+  get: (id?: number) => storeHelper.get(id)?.currentRoot || null,
   set: (fiber: Fiber) => (storeHelper.get().currentRoot = fiber),
 };
 
@@ -62,6 +64,8 @@ const fromHookUpdateHelper = {
 
 const eventsHelper = {
   get: () => storeHelper.get().events,
+  addUnsubscriber: (fn: () => void) => storeHelper.get().unsubscribers.push(fn),
+  mapUnsubscribers: (id: number) => storeHelper.get(id).unsubscribers.forEach(fn => fn()),
 };
 
 const deletionsHelper = {

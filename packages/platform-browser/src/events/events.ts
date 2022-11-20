@@ -60,6 +60,7 @@ function delegateEvent(options: DelegateEventOptions) {
 
     eventsStore.set(eventName, new WeakMap([[target, handler]]));
     document.addEventListener(eventName, rootHandler, true);
+    eventsHelper.addUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
     handlerMap.set(target, handler);
   }

@@ -1,7 +1,5 @@
 import { h, View, Text, createComponent, memo, useCallback } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
-
-const domElement = document.getElementById('root');
+import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -82,6 +80,10 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
       button({
         slot: Text('clear rows'),
         onClick: onClear,
+      }),
+      button({
+        slot: Text('unmount app'),
+        onClick: () => root.unmount(),
       }),
     ],
   });
@@ -212,8 +214,12 @@ const Bench = createComponent(() => {
   ];
 });
 
+const root = createRoot(document.getElementById('root'));
+
 function forceUpdate() {
-  render(Bench(), domElement);
+  root.render(Bench());
 }
 
-render(Bench(), domElement);
+document.querySelector('#button').addEventListener('click', () => {
+  root.render(Bench());
+});

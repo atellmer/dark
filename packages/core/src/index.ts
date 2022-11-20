@@ -26,3 +26,5 @@ export * from './use-state';
 export * from './use-update';
 export * from './view';
 export * from './constants';
+export { walkFiber } from './walk';
+export { unmountRoot } from './unmount';

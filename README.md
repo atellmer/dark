@@ -2,10 +2,10 @@
 
 Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in Typescript 💫
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/atellmer/dark/blob/master/LICENSE)
-[![GitHub Release](https://img.shields.io/github/release/atellmer/dark.svg?style=flat)]()
-[![NPM Downloads](https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat)]()
-[![PR's Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com) 
+[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?style=flat&colorA=000063&colorB=673ab7)](https://github.com/atellmer/dark/blob/master/LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7)]()
+[![NPM Downloads](https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7)]()
+[![PR's Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&colorA=000063&colorB=673ab7)](http://makeapullrequest.com) 
 
 ![Dark](./assets/cover.jpg) 
 
@@ -42,6 +42,7 @@ CDN:
 - [Overview](#overview)
 - [Elements](#elements)
 - [Mounting](#mounting)
+- [Unmounting](#unmounting)
 - [Conditional rendering](#conditional-rendering)
 - [List rendering](#list-rendering)
 - [Components](#components)
@@ -88,7 +89,7 @@ import {
   useState,
   useDeferredValue,
 } from '@dark-engine/core';
-import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
+import { render, createRoot, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
 ## Shut up and show me your code!
 
@@ -211,13 +212,22 @@ import { render } from '@dark-engine/platform-browser';
 ```tsx
 render(<App />, document.getElementById('root'));
 ```
-render two apps
+
+or with createRoot
+```tsx
+import { createRoot } from '@dark-engine/platform-browser';
+```
+```tsx
+createRoot(document.getElementById('root')).render(<App />);
+```
+
+render two or more apps
 
 ```tsx
 render(<AppOne />, document.getElementById('root-1'));
 render(<AppTwo />, document.getElementById('root-2'));
 ```
-rerender root
+re-render root
 
 ```tsx
 setInterval(() => {
@@ -225,6 +235,18 @@ setInterval(() => {
   render(<App count={count} />, document.getElementById('root'));
 }, 1000);
 ```
+<a name="unmounting"></a>
+## Unmounting
+
+To unmount the application, you must use render via createRoot. It already contains the unmount method.
+
+```tsx
+const root = createRoot(document.getElementById('root'));
+
+root.render(<App />);
+root.unmount();
+```
+
 <a name="conditional-rendering"></a>
 ## Conditional rendering
 
