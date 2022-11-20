@@ -778,7 +778,7 @@ function render(element, container) {
             nativeElement: container,
             instance: new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TagVirtualNode({
                 name: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ROOT,
-                children: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.flatten)([element]),
+                children: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.flatten)([element || (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createEmptyVirtualNode)()]),
             }),
             alternate: currentRootFiber,
             effectTag: isMounted ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE : _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.PLACEMENT,
