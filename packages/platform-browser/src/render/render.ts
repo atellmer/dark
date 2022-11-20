@@ -2,6 +2,7 @@ import {
   type DarkElement,
   type VirtualNodeFactory,
   type ComponentFactory,
+  ROOT,
   Fiber,
   EffectTag,
   platform,
@@ -13,8 +14,8 @@ import {
   currentRootHelper,
   nextUnitOfWorkHelper,
   fiberMountHelper,
-  ROOT,
   TaskPriority,
+  createEmptyVirtualNode,
 } from '@dark-engine/core';
 import { createDomElement, mutateDom, resetNodeCache } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
@@ -55,7 +56,7 @@ function render(element: DarkElement, container: Element) {
       nativeElement: container,
       instance: new TagVirtualNode({
         name: ROOT,
-        children: flatten([element]) as Array<VirtualNodeFactory | ComponentFactory>,
+        children: flatten([element || createEmptyVirtualNode()]) as Array<VirtualNodeFactory | ComponentFactory>,
       }),
       alternate: currentRootFiber,
       effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
