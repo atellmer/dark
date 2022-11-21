@@ -21,7 +21,7 @@ import {
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import type { DomElement } from './types';
+import type { DOMElement } from './types';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
@@ -31,7 +31,7 @@ const fragmentsMap: Map<Element, DocumentFragment> = new Map();
 let fragmentsCallbacks: Array<() => void> = [];
 let nodeCacheMap: Map<Element, Element> = new Map();
 
-function createElement(vNode: VirtualNode): DomElement {
+function createElement(vNode: VirtualNode): DOMElement {
   const map = {
     [NodeType.TAG]: (vNode: VirtualNode) => {
       const tagNode = vNode as TagVirtualNode;
@@ -58,7 +58,37 @@ function createElement(vNode: VirtualNode): DomElement {
   return map[vNode.type](vNode);
 }
 
-function createDomElement(fiber: Fiber<Element>): DomElement {
+function detectIsSvgElement(tagName) {
+  const tagMap = {
+    svg: true,
+    circle: true,
+    ellipse: true,
+    g: true,
+    text: true,
+    tspan: true,
+    textPath: true,
+    path: true,
+    polygon: true,
+    polyline: true,
+    line: true,
+    rect: true,
+    use: true,
+    image: true,
+    symbol: true,
+    defs: true,
+    linearGradient: true,
+    radialGradient: true,
+    stop: true,
+    clipPath: true,
+    pattern: true,
+    mask: true,
+    marker: true,
+  };
+
+  return Boolean(tagMap[tagName]);
+}
+
+function createNativeElement(fiber: Fiber<Element>): DOMElement {
   if (!detectIsVirtualNode(fiber.instance)) {
     throw new Error('[Dark]: createDomElement receives only virtual node!');
   }
@@ -212,22 +242,6 @@ function canTakeNodeFromCache(fiber: Fiber, parentFiber: Fiber) {
   return false;
 }
 
-function isEndOfInsertion(fiber: Fiber, parentFiber: Fiber) {
-  let nextFiber = fiber;
-
-  do {
-    if (!nextFiber) return false;
-    nextFiber = nextFiber.nextSibling || nextFiber.parent.nextSibling;
-    if (nextFiber && nextFiber.parent === parentFiber) break;
-  } while (!nextFiber);
-
-  if (nextFiber.effectTag === EffectTag.UPDATE) {
-    return true;
-  }
-
-  return false;
-}
-
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let nextFiber = fiber;
   let isDeepWalking = true;
@@ -257,36 +271,6 @@ function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   return null;
 }
 
-function detectIsSvgElement(tagName) {
-  const tagMap = {
-    svg: true,
-    circle: true,
-    ellipse: true,
-    g: true,
-    text: true,
-    tspan: true,
-    textPath: true,
-    path: true,
-    polygon: true,
-    polyline: true,
-    line: true,
-    rect: true,
-    use: true,
-    image: true,
-    symbol: true,
-    defs: true,
-    linearGradient: true,
-    radialGradient: true,
-    stop: true,
-    clipPath: true,
-    pattern: true,
-    mask: true,
-    marker: true,
-  };
-
-  return Boolean(tagMap[tagName]);
-}
-
 function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
   const fromHookUpdate = fromHookUpdateHelper.get();
   const parentNativeElement = parentFiber.nativeElement;
@@ -306,24 +290,14 @@ function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
   if (node) {
     parentNativeElement.insertBefore(fiber.nativeElement, node);
     fiber.mountedToHost = true;
-    if (isEndOfInsertion(fiber, parentFiber)) {
-      nodeCacheMap.delete(parentNativeElement);
-    }
   } else {
-    let fragment = fragmentsMap.get(parentNativeElement);
+    const fragment = fragmentsMap.get(parentNativeElement) || document.createDocumentFragment();
 
-    if (detectIsUndefined(fragment)) {
-      fragment = document.createDocumentFragment();
-      fragmentsMap.set(parentNativeElement, fragment);
-    }
-
+    fragmentsMap.set(parentNativeElement, fragment);
     fragment.appendChild(fiber.nativeElement);
     fiber.mountedToHost = true;
-
     fragmentsCallbacks.push(() => {
       parentNativeElement.appendChild(fragment);
-      fragmentsMap.delete(parentNativeElement);
-      nodeCacheMap.delete(parentNativeElement);
     });
   }
 
@@ -402,10 +376,7 @@ function applyCommit(fiber: Fiber<Element>) {
 function finishCommitWork() {
   fragmentsCallbacks.forEach(fn => fn());
   fragmentsCallbacks = [];
-}
-
-function resetNodeCache() {
   nodeCacheMap = new Map();
 }
 
-export { createDomElement, applyCommit, finishCommitWork, resetNodeCache };
+export { createNativeElement, applyCommit, finishCommitWork };

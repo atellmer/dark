@@ -83,7 +83,9 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
       }),
       button({
         slot: Text('unmount app'),
-        onClick: () => root.unmount(),
+        onClick: () => {
+          root.unmount();
+        },
       }),
     ],
   });
@@ -153,7 +155,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -223,5 +225,5 @@ function forceUpdate() {
 }
 
 document.querySelector('#button').addEventListener('click', () => {
-  root.render(Bench());
+  forceUpdate();
 });

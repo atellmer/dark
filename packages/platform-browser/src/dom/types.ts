@@ -1,1 +1,1 @@
-export type DomElement = {} & (Element | Text | Comment);
+export type DOMElement = HTMLElement | SVGElement | Text | Comment;

@@ -17,13 +17,13 @@ import {
   TaskPriority,
   createEmptyVirtualNode,
 } from '@dark-engine/core';
-import { createDomElement, applyCommit, finishCommitWork, resetNodeCache } from '../dom';
+import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost } from '../scheduling';
 
 platform.scheduleCallback = scheduleCallback;
 platform.shouldYeildToHost = shouldYeildToHost;
-platform.createNativeElement = createDomElement as typeof platform.createNativeElement;
+platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
 platform.applyCommit = applyCommit as typeof platform.applyCommit;
 platform.finishCommitWork = finishCommitWork as typeof platform.finishCommitWork;
 platform.detectIsPortal = detectIsPortal as typeof platform.detectIsPortal;
@@ -50,8 +50,6 @@ function render(element: DarkElement, container: Element) {
 
   const callback = () => {
     effectStoreHelper.set(rootId); // important order!
-    resetNodeCache();
-
     const currentRootFiber = currentRootHelper.get();
     const fiber = new Fiber({
       nativeElement: container,
