@@ -1,5 +1,5 @@
-import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+import { h, View, Text, Fragment, createComponent, memo, useCallback, useEffect } from '@dark-engine/core';
+import { createRoot, createPortal } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -104,6 +104,11 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
 
+  useEffect(() => {
+    console.log('mount');
+    return () => console.log('unmount');
+  }, []);
+
   return (
     <tr class={className}>
       <td class='cell'>{name}</td>
@@ -153,7 +158,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -202,6 +207,8 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
+  const hasItems = state.list.length > 0;
+
   return (
     <>
       <MemoHeader
@@ -212,6 +219,7 @@ const Bench = createComponent(() => {
         onClear={handleClear}
       />
       <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      {!hasItems && <div>{createPortal(<div>portal-1</div>, document.getElementById('portal-1'))}</div>}
     </>
   );
 });

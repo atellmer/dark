@@ -33,43 +33,14 @@ const Portal = createComponent<any>(
 
 const detectIsPortal = (factory: unknown): factory is ComponentFactory =>
   detectIsComponentFactory(factory) && factory.token === $$portal;
+
 const getPortalContainer = (factory: unknown): Element => (detectIsPortal(factory) ? factory.props[$$portal] : null);
 
 function unmountPortal(fiber: Fiber<Element>) {
-  let nextFiber = fiber;
-  let isDeepWalking = true;
-  let isReturn = false;
+  if (detectIsPortal(fiber.instance)) {
+    const container = getPortalContainer(fiber.instance);
 
-  while (nextFiber) {
-    if (!isReturn && detectIsPortal(nextFiber.instance)) {
-      const container = getPortalContainer(nextFiber.instance);
-
-      container.innerHTML = '';
-    }
-
-    if (!nextFiber.portalHost) {
-      isDeepWalking = false;
-    }
-
-    if (nextFiber.child && isDeepWalking) {
-      nextFiber = nextFiber.child;
-      isReturn = false;
-    } else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
-      isDeepWalking = true;
-      isReturn = false;
-      nextFiber = nextFiber.nextSibling;
-    } else if (
-      nextFiber.parent &&
-      nextFiber !== fiber &&
-      nextFiber.parent !== fiber &&
-      nextFiber.parent !== fiber.parent
-    ) {
-      isDeepWalking = false;
-      isReturn = true;
-      nextFiber = nextFiber.parent;
-    } else {
-      nextFiber = null;
-    }
+    container.innerHTML = '';
   }
 }
 

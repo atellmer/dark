@@ -1,16 +1,16 @@
 import { detectIsUndefined, detectIsFunction, detectIsDepsDifferent } from '../helpers';
 import { componentFiberHelper, effectsHelper } from '../scope';
 import type { Fiber, Hook, HookValue } from '../fiber';
-import type { Effect, EffectCleanup } from './types';
+import type { Effect, DropEffect } from './types';
 
 const $$useEffect = Symbol('use-effect');
 
-const { useEffect, hasEffects, cleanupEffects } = createEffectFunctions($$useEffect, effectsHelper);
+const { useEffect, hasEffects, dropEffects } = createEffect($$useEffect, effectsHelper);
 
-function createEffectFunctions(token: Symbol, store: typeof effectsHelper) {
+function createEffect(token: Symbol, store: typeof effectsHelper) {
   function useEffect(effect: Effect, deps?: Array<any>) {
     const fiber = componentFiberHelper.get();
-    const hook = fiber.hook as Hook<HookValue<EffectCleanup>>;
+    const hook = fiber.hook as Hook<HookValue<DropEffect>>;
     const { idx, values } = hook;
     const runEffect = () => {
       values[idx] = {
@@ -46,7 +46,7 @@ function createEffectFunctions(token: Symbol, store: typeof effectsHelper) {
     return hasEffect;
   }
 
-  function cleanupEffects(hook: Hook<HookValue<EffectCleanup>>) {
+  function dropEffects(hook: Hook<HookValue<DropEffect>>) {
     const { values } = hook;
 
     for (const value of values) {
@@ -61,8 +61,8 @@ function createEffectFunctions(token: Symbol, store: typeof effectsHelper) {
   return {
     useEffect,
     hasEffects,
-    cleanupEffects,
+    dropEffects,
   };
 }
 
-export { useEffect, hasEffects, cleanupEffects, createEffectFunctions };
+export { useEffect, hasEffects, dropEffects, createEffect };

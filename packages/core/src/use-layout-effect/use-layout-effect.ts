@@ -1,12 +1,12 @@
 import { layoutEffectsHelper } from '../scope';
-import { createEffectFunctions } from '../use-effect';
+import { createEffect } from '../use-effect';
 
 const $$useLayoutEffect = Symbol('use-layout-effect');
 
 const {
   useEffect: useLayoutEffect,
   hasEffects: hasLayoutEffects,
-  cleanupEffects: cleanupLayoutEffects,
-} = createEffectFunctions($$useLayoutEffect, layoutEffectsHelper);
+  dropEffects: dropLayoutEffects,
+} = createEffect($$useLayoutEffect, layoutEffectsHelper);
 
-export { useLayoutEffect, hasLayoutEffects, cleanupLayoutEffects };
+export { useLayoutEffect, hasLayoutEffects, dropLayoutEffects };

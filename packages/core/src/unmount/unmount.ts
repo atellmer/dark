@@ -1,28 +1,27 @@
 import { type Fiber } from '../fiber';
 import { platform } from '../platform';
 import { detectIsComponentFactory } from '../component';
-import { cleanupEffects } from '../use-effect';
-import { cleanupLayoutEffects } from '../use-layout-effect';
+import { dropEffects } from '../use-effect';
+import { dropLayoutEffects } from '../use-layout-effect';
 import { walkFiber } from '../walk';
 import { detectIsUndefined } from '../helpers';
 import { currentRootHelper, eventsHelper, effectStoreHelper } from '../scope';
 
 function unmountFiber(fiber: Fiber) {
-  if (fiber.effectHost || fiber.layoutEffectHost) {
-    walkFiber({
-      fiber,
-      onLoop: ({ nextFiber, isReturn, stop }) => {
-        if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
+  if (!fiber.effectHost && !fiber.layoutEffectHost && !fiber.portalHost) return;
 
-        if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
-          cleanupLayoutEffects(nextFiber.hook);
-          cleanupEffects(nextFiber.hook);
-        }
-      },
-    });
-  }
+  walkFiber({
+    fiber,
+    onLoop: ({ nextFiber, isReturn, stop }) => {
+      if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
 
-  fiber.portalHost && platform.unmountPortal(fiber);
+      if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
+        nextFiber.layoutEffectHost && dropLayoutEffects(nextFiber.hook);
+        nextFiber.effectHost && dropEffects(nextFiber.hook);
+        nextFiber.portalHost && platform.unmountPortal(nextFiber);
+      }
+    },
+  });
 }
 
 function unmountRoot(rootId: number, onComplete: () => void) {

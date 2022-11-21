@@ -1,2 +1,2 @@
-export type EffectCleanup = void | (() => void);
-export type Effect = () => EffectCleanup;
+export type DropEffect = void | (() => void);
+export type Effect = () => DropEffect;
