@@ -1,4 +1,4 @@
-import { h, View, Text, Fragment, createComponent, memo, useCallback, useEffect } from '@dark-engine/core';
+import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -82,14 +82,6 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         onClick: onClear,
       }),
       button({
-        slot: Text('empty render'),
-        onClick: () => forceUpdate(),
-      }),
-      button({
-        slot: Text('return null'),
-        onClick: () => root.render(Bench({ isNull: true })),
-      }),
-      button({
         slot: Text('unmount app'),
         onClick: () => root.unmount(),
       }),
@@ -111,12 +103,6 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
-
-  useEffect(() => {
-    console.log('mount');
-
-    return () => console.log('unmount');
-  }, []);
 
   return (
     <tr class={className}>
@@ -165,13 +151,9 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-type BenchProps = {
-  isNull: boolean;
-};
-
-const Bench = createComponent<BenchProps>(({ isNull }) => {
+const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -219,8 +201,6 @@ const Bench = createComponent<BenchProps>(({ isNull }) => {
     forceUpdate();
     measurer.stop();
   }, []);
-
-  if (isNull) return null;
 
   return (
     <>
