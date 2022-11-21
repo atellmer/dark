@@ -3,7 +3,7 @@ import { useEffect } from '../use-effect';
 import { componentFiberHelper } from '../scope';
 import { useContext } from '../use-context';
 import { detectIsFunction } from '../helpers';
-import type { Context, ContexProviderProps } from './model';
+import type { Context, ContexProviderProps } from './types';
 
 function createContext<T>(defaultValue: T): Context<T> {
   let displayName = 'Context';

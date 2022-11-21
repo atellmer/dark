@@ -1,5 +1,5 @@
 import { type Fiber } from '../fiber';
-import { platform } from '../global';
+import { platform } from '../platform';
 import { detectIsComponentFactory } from '../component';
 import { cleanupEffects } from '../use-effect';
 import { cleanupLayoutEffects } from '../use-layout-effect';

@@ -1,4 +1,4 @@
-import { h, View, Text, createComponent, memo, useCallback } from '@dark-engine/core';
+import { h, View, Text, createComponent, memo, useCallback, useEffect } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -82,6 +82,10 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         onClick: onClear,
       }),
       button({
+        slot: Text('empty render'),
+        onClick: () => forceUpdate(),
+      }),
+      button({
         slot: Text('unmount app'),
         onClick: () => root.unmount(),
       }),
@@ -103,6 +107,12 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
   const className = `${selected ? 'selected' : ''}`;
+
+  useEffect(() => {
+    console.log('mount');
+
+    return () => console.log('unmount');
+  }, []);
 
   return (
     <tr class={className}>
@@ -153,7 +163,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();

@@ -1,8 +1,8 @@
 import { ATTR_KEY } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
-import type { DarkElementKey, DarkElementInstance } from '../shared/model';
+import type { DarkElementKey, DarkElementInstance } from '../shared';
 import type { MutableRef } from '../ref';
-import type { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './model';
+import type { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './types';
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {

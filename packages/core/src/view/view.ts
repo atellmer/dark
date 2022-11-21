@@ -1,8 +1,8 @@
 import { EMPTY_NODE, ATTR_KEY } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
-import type { DarkElementKey } from '../shared/model';
+import type { DarkElementKey } from '../shared';
 import type { ComponentFactory, StandardComponentProps } from '../component';
-import { NodeType, type ViewDef } from './model';
+import { NodeType, type ViewDef } from './types';
 
 export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;

@@ -496,16 +496,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "resetNodeCache": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.resetNodeCache)
 /* harmony export */ });
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dom */ "./src/dom/dom.ts");
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/dom/model.ts");
+/* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./types */ "./src/dom/types.ts");
 
 
 
 
 /***/ }),
 
-/***/ "./src/dom/model.ts":
+/***/ "./src/dom/types.ts":
 /*!**************************!*\
-  !*** ./src/dom/model.ts ***!
+  !*** ./src/dom/types.ts ***!
   \**************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -803,33 +803,14 @@ function render(element, container) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "TaskPriority": () => (/* reexport safe */ _model__WEBPACK_IMPORTED_MODULE_1__.TaskPriority),
+/* harmony export */   "TaskPriority": () => (/* reexport safe */ _types__WEBPACK_IMPORTED_MODULE_1__.TaskPriority),
 /* harmony export */   "scheduleCallback": () => (/* reexport safe */ _scheduling__WEBPACK_IMPORTED_MODULE_0__.scheduleCallback),
 /* harmony export */   "shouldYeildToHost": () => (/* reexport safe */ _scheduling__WEBPACK_IMPORTED_MODULE_0__.shouldYeildToHost)
 /* harmony export */ });
 /* harmony import */ var _scheduling__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./scheduling */ "./src/scheduling/scheduling.ts");
-/* harmony import */ var _model__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model */ "./src/scheduling/model.ts");
+/* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./types */ "./src/scheduling/types.ts");
 
 
-
-
-/***/ }),
-
-/***/ "./src/scheduling/model.ts":
-/*!*********************************!*\
-  !*** ./src/scheduling/model.ts ***!
-  \*********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "TaskPriority": () => (/* binding */ TaskPriority)
-/* harmony export */ });
-var TaskPriority;
-(function (TaskPriority) {
-    TaskPriority[TaskPriority["HIGH"] = 2] = "HIGH";
-    TaskPriority[TaskPriority["NORMAL"] = 1] = "NORMAL";
-})(TaskPriority || (TaskPriority = {}));
 
 
 /***/ }),
@@ -972,6 +953,25 @@ function setup() {
 }
 setup();
 
+
+
+/***/ }),
+
+/***/ "./src/scheduling/types.ts":
+/*!*********************************!*\
+  !*** ./src/scheduling/types.ts ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TaskPriority": () => (/* binding */ TaskPriority)
+/* harmony export */ });
+var TaskPriority;
+(function (TaskPriority) {
+    TaskPriority[TaskPriority["HIGH"] = 2] = "HIGH";
+    TaskPriority[TaskPriority["NORMAL"] = 1] = "NORMAL";
+})(TaskPriority || (TaskPriority = {}));
 
 
 /***/ }),

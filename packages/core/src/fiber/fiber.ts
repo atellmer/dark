@@ -1,5 +1,5 @@
 import { flatten, detectIsEmpty, error, keyBy, takeListFromEnd, detectIsUndefined, detectIsArray } from '../helpers';
-import { platform } from '../global';
+import { platform } from '../platform';
 import {
   wipRootHelper,
   currentRootHelper,
@@ -22,10 +22,10 @@ import {
   detectIsVirtualNodeFactory,
 } from '../view';
 import { detectIsMemo } from '../memo';
-import type { Context, ContextProviderValue } from '../context/model';
-import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared/model';
+import type { Context, ContextProviderValue } from '../context';
+import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
 import { PARTIAL_UPDATE } from '../constants';
-import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './model';
+import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { walkFiber } from '../walk';
@@ -225,7 +225,7 @@ function performChild(options: PerformChildOptions) {
   });
   instance = performedInstance || instance;
   shadow = performedShadow || shadow;
-  alternate && mutateAlternate({ fiber, alternate, instance });
+  alternate && mutateAlternate({ alternate, instance });
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
@@ -279,7 +279,7 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    alternate && mutateAlternate({ fiber, alternate, instance });
+    alternate && mutateAlternate({ alternate, instance });
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
@@ -351,13 +351,12 @@ function mutateFiber(options: MutateFiberOptions) {
 }
 
 type PerformAlternateOptions = {
-  fiber: Fiber;
   alternate: Fiber;
   instance: DarkElementInstance;
 };
 
 function mutateAlternate(options: PerformAlternateOptions) {
-  const { fiber, alternate, instance } = options;
+  const { alternate, instance } = options;
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
@@ -398,46 +397,22 @@ function mutateAlternate(options: PerformAlternateOptions) {
           const fibersMap = createFibersByKeyMap(alternate.child);
 
           for (const key of diffKeys) {
-            const childAlternate = fibersMap[key] || null;
+            const fiber = fibersMap[key] || null;
 
-            if (childAlternate) {
-              childAlternate.effectTag = EffectTag.DELETION;
-              deletionsHelper.get().push(childAlternate);
-
-              if (childAlternate.effectHost) {
-                fiber.markEffectHost();
-              }
-
-              if (childAlternate.layoutEffectHost) {
-                fiber.markLayoutEffectHost();
-              }
-
-              if (childAlternate.portalHost) {
-                fiber.markPortalHost();
-              }
+            if (fiber) {
+              fiber.effectTag = EffectTag.DELETION;
+              deletionsHelper.get().push(fiber);
             }
           }
         } else if (!hasKeys) {
           const diffCount = prevElementsCount - nextElementsCount;
-          const childAlternates: Array<Fiber> = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
+          const fibers = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
-          for (const childAlternate of childAlternates) {
-            childAlternate.effectTag = EffectTag.DELETION;
-
-            if (childAlternate.effectHost) {
-              fiber.markEffectHost();
-            }
-
-            if (childAlternate.layoutEffectHost) {
-              fiber.markLayoutEffectHost();
-            }
-
-            if (childAlternate.portalHost) {
-              fiber.markPortalHost();
-            }
+          for (const fiber of fibers) {
+            fiber.effectTag = EffectTag.DELETION;
           }
 
-          deletionsHelper.get().push(...childAlternates);
+          deletionsHelper.get().push(...fibers);
         }
       };
 
@@ -530,6 +505,18 @@ function performMemo(options: PerformMemoOptions) {
       while (nextFiber) {
         nextFiber.parent = memoFiber;
         nextFiber = nextFiber.nextSibling;
+      }
+
+      if (memoFiber.effectHost) {
+        fiber.markEffectHost();
+      }
+
+      if (memoFiber.layoutEffectHost) {
+        fiber.markLayoutEffectHost();
+      }
+
+      if (memoFiber.portalHost) {
+        fiber.markPortalHost();
       }
 
       return memoFiber;

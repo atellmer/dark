@@ -3,7 +3,7 @@ import { useMemo } from '../use-memo';
 import { componentFiberHelper } from '../scope';
 import { useUpdate } from '../use-update';
 import type { Fiber } from '../fiber';
-import type { Context, ContextProviderValue } from '../context/model';
+import type { Context, ContextProviderValue } from '../context';
 
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;

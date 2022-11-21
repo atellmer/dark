@@ -1,4 +1,4 @@
-import type { Platform } from './model';
+import type { Platform } from './types';
 
 export const platform: Platform = {
   scheduleCallback: () => {

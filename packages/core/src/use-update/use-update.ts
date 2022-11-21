@@ -1,4 +1,4 @@
-import { platform, type ScheduleCallbackOptions } from '../global';
+import { platform, type ScheduleCallbackOptions } from '../platform';
 import { getRootId, componentFiberHelper } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';

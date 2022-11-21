@@ -1,5 +1,5 @@
 import { type ScheduleCallbackOptions, getTime, workLoop, wipRootHelper, TaskPriority } from '@dark-engine/core';
-import { type Callback } from './model';
+import { type Callback } from './types';
 
 type QueueByPriority = {
   hight: Array<Task>;

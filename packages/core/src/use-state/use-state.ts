@@ -1,4 +1,4 @@
-import { type ScheduleCallbackOptions } from '../global';
+import { type ScheduleCallbackOptions } from '../platform';
 import { detectIsUndefined, detectIsFunction } from '../helpers';
 import { componentFiberHelper } from '../scope';
 import { useUpdate } from '../use-update';

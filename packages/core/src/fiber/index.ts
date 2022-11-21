@@ -1,2 +1,2 @@
 export * from './fiber';
-export * from './model';
+export * from './types';

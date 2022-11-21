@@ -2,7 +2,7 @@ import { useState } from '../use-state';
 import { useCallback } from '../use-callback';
 import { useMemo } from '../use-memo';
 import { detectIsFunction } from '../helpers';
-import type { Reducer, Dispatch, ReducerAction, ReducerState } from './model';
+import type { Reducer, Dispatch, ReducerAction, ReducerState } from './types';
 
 function useReducer<R extends Reducer>(
   reducer: R,

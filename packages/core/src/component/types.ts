@@ -1,6 +1,6 @@
-import { ComponentFactory } from './component';
-import { DarkElementKey, DarkElement } from '../shared/model';
-import { MutableRef } from '../ref/model';
+import type { ComponentFactory } from './component';
+import type { DarkElementKey, DarkElement } from '../shared';
+import type { MutableRef } from '../ref';
 
 export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   displayName?: string;

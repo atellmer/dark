@@ -3,7 +3,7 @@ export * from './context';
 export { createElement as h } from './element';
 export * from './fiber';
 export * from './fragment';
-export * from './global';
+export * from './platform';
 export * from './helpers';
 export * from './lazy';
 export * from './memo';

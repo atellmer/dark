@@ -21,7 +21,7 @@ import {
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import type { DomElement } from './model';
+import type { DomElement } from './types';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
