@@ -608,7 +608,7 @@ function performChild(options) {
     }), performedInstance = _a.performedInstance, performedShadow = _a.performedShadow;
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    alternate && mutateAlternate({ fiber: fiber, alternate: alternate, instance: instance });
+    alternate && mutateAlternate({ alternate: alternate, instance: instance });
     mutateFiber({ fiber: fiber, alternate: alternate, instance: instance });
     fiber = alternate ? performMemo({ fiber: fiber, alternate: alternate, instance: instance }) : fiber;
     nextFiber.child = fiber;
@@ -648,7 +648,7 @@ function performSibling(options) {
         }), performedInstance = _a.performedInstance, performedShadow = _a.performedShadow;
         instance = performedInstance || instance;
         shadow = performedShadow || shadow;
-        alternate && mutateAlternate({ fiber: fiber, alternate: alternate, instance: instance });
+        alternate && mutateAlternate({ alternate: alternate, instance: instance });
         mutateFiber({ fiber: fiber, alternate: alternate, instance: instance });
         fiber = alternate ? performMemo({ fiber: fiber, alternate: alternate, instance: instance }) : fiber;
         fiber.parent = nextFiber.parent;
@@ -704,7 +704,7 @@ function mutateFiber(options) {
     }
 }
 function mutateAlternate(options) {
-    var fiber = options.fiber, alternate = options.alternate, instance = options.instance;
+    var alternate = options.alternate, instance = options.instance;
     var alternateType = getInstanceType(alternate.instance);
     var elementType = getInstanceType(instance);
     var isSameType = elementType === alternateType;
@@ -740,10 +740,10 @@ function mutateAlternate(options) {
                     try {
                         for (var diffKeys_1 = __values(diffKeys), diffKeys_1_1 = diffKeys_1.next(); !diffKeys_1_1.done; diffKeys_1_1 = diffKeys_1.next()) {
                             var key = diffKeys_1_1.value;
-                            var fiber_1 = fibersMap[key] || null;
-                            if (fiber_1) {
-                                fiber_1.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
-                                _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(fiber_1);
+                            var fiber = fibersMap[key] || null;
+                            if (fiber) {
+                                fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+                                _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(fiber);
                             }
                         }
                     }
@@ -760,8 +760,8 @@ function mutateAlternate(options) {
                     var fibers = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.takeListFromEnd)(getSiblingFibers(alternate.child), diffCount);
                     try {
                         for (var fibers_1 = __values(fibers), fibers_1_1 = fibers_1.next(); !fibers_1_1.done; fibers_1_1 = fibers_1.next()) {
-                            var fiber_2 = fibers_1_1.value;
-                            fiber_2.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+                            var fiber = fibers_1_1.value;
+                            fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
                         }
                     }
                     catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -802,9 +802,9 @@ function mutateAlternate(options) {
                                     alternate.child = insertionFiber;
                                 }
                                 else {
-                                    var fiber_3 = fibersByPositionsMap[keyIdx] || null;
-                                    if (fiber_3) {
-                                        insertionFiber.nextSibling = fiber_3;
+                                    var fiber = fibersByPositionsMap[keyIdx] || null;
+                                    if (fiber) {
+                                        insertionFiber.nextSibling = fiber;
                                     }
                                 }
                             }
