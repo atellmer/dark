@@ -378,8 +378,8 @@ function mutateAlternate(options: PerformAlternateOptions) {
       const isRemovingCase = nextElementsCount < prevElementsCount;
       const isInsertingCase = nextElementsCount > prevElementsCount;
       const children = hasChildrenProp(instance) ? instance.children : [];
-      const { keys, nextKeys } = extractKeys(alternate.child, children);
-      const hasKeys = keys.length > 0;
+      const { prevKeys, nextKeys } = extractKeys(alternate.child, children);
+      const hasKeys = prevKeys.length > 0;
       const hasAnyKeys = hasKeys || nextKeys.length > 0;
 
       if (process.env.NODE_ENV === 'development') {
@@ -391,7 +391,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
       }
 
       const performRemovingNodes = () => {
-        const diffKeys = getDiffKeys(keys, nextKeys);
+        const diffKeys = getDiffKeys(prevKeys, nextKeys);
 
         if (diffKeys.length > 0) {
           const fibersMap = createFibersByKeyMap(alternate.child);
@@ -417,7 +417,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
       };
 
       const performInsertingNodes = () => {
-        const diffKeys = getDiffKeys(nextKeys, keys);
+        const diffKeys = getDiffKeys(nextKeys, prevKeys);
 
         if (diffKeys.length > 0) {
           const diffKeyMap = keyBy(diffKeys, x => x);
@@ -434,7 +434,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
 
             usedKeyMap[nextKey] = true;
 
-            if (nextKey !== keys[keyIdx] && diffKeyMap[nextKey]) {
+            if (nextKey !== prevKeys[keyIdx] && diffKeyMap[nextKey]) {
               const insertionFiber = new Fiber({
                 instance: createEmptyVirtualNode(),
                 parent: alternate,
@@ -676,7 +676,7 @@ function createFibersByKeyMap(fiber: Fiber) {
 function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   let nextFiber = alternate;
   let idx = 0;
-  const keys: Array<DarkElementKey> = [];
+  const prevKeys: Array<DarkElementKey> = [];
   const nextKeys: Array<DarkElementKey> = [];
 
   while (nextFiber || idx < children.length) {
@@ -684,7 +684,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
     const nextKey = children[idx] && getElementKey(children[idx]);
 
     if (!detectIsEmpty(key)) {
-      keys.push(key);
+      prevKeys.push(key);
     }
 
     if (!detectIsEmpty(nextKey)) {
@@ -696,7 +696,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   }
 
   return {
-    keys,
+    prevKeys,
     nextKeys,
   };
 }
