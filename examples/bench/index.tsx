@@ -1,4 +1,4 @@
-import { h, View, Text, createComponent, memo, useCallback, useEffect } from '@dark-engine/core';
+import { h, View, Text, Fragment, createComponent, memo, useCallback, useEffect } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -86,6 +86,10 @@ const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onS
         onClick: () => forceUpdate(),
       }),
       button({
+        slot: Text('return null'),
+        onClick: () => root.render(Bench({ isNull: true })),
+      }),
+      button({
         slot: Text('unmount app'),
         onClick: () => root.unmount(),
       }),
@@ -161,7 +165,11 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-const Bench = createComponent(() => {
+type BenchProps = {
+  isNull: boolean;
+};
+
+const Bench = createComponent<BenchProps>(({ isNull }) => {
   const handleCreate = useCallback(() => {
     state.list = buildData(10);
     measurer.start('create');
@@ -212,16 +220,20 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
-  return [
-    <MemoHeader
-      onCreate={handleCreate}
-      onAdd={handleAdd}
-      onUpdateAll={handleUpdateAll}
-      onSwap={handleSwap}
-      onClear={handleClear}
-    />,
-    <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />,
-  ];
+  if (isNull) return null;
+
+  return (
+    <>
+      <MemoHeader
+        onCreate={handleCreate}
+        onAdd={handleAdd}
+        onUpdateAll={handleUpdateAll}
+        onSwap={handleSwap}
+        onClear={handleClear}
+      />
+      <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+    </>
+  );
 });
 
 const root = createRoot(document.getElementById('root'));
