@@ -2,13 +2,13 @@
 # yarn lockfile v1
 
 
-"@dark-engine/core@^0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@dark-engine/core/-/core-0.4.3.tgz#8ca4745d449f466d59a7f8d1306eceaea334dcab"
+"@dark-engine/core@^0.7.4":
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/@dark-engine/core/-/core-0.7.4.tgz#d6e373d0f45503e7f31d838ba834552169072b48"
 
-"@dark-engine/platform-browser@^0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@dark-engine/platform-browser/-/platform-browser-0.4.3.tgz#bbf2e1023c48fbf2c97ad829ba57476ba50d8f00"
+"@dark-engine/platform-browser@^0.7.4":
+  version "0.7.4"
+  resolved "https://registry.yarnpkg.com/@dark-engine/platform-browser/-/platform-browser-0.7.4.tgz#7bfbc065ea8fad2da6d74f8252fdcaf297740096"
 
 "@webassemblyjs/ast@1.7.8":
   version "1.7.8"
