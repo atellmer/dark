@@ -808,7 +808,7 @@ function commitChanges() {
     const effects = effectsHelper.get();
 
     for (const fiber of deletions) {
-      platform.applyCommits(fiber);
+      platform.applyCommit(fiber);
     }
 
     deletionsHelper.set([]);
@@ -844,7 +844,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       if (skip) {
         resetIsDeepWalking();
       } else if (!isReturn) {
-        platform.applyCommits(nextFiber);
+        platform.applyCommit(nextFiber);
       }
 
       if (nextFiber && nextFiber.shadow) {
@@ -853,6 +853,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
     },
   });
 
+  platform.finishCommitWork();
   onComplete();
 }
 

@@ -44,7 +44,7 @@ function fetchModule(dynamic: () => Promise<{ default: Component }>) {
   return new Promise<Component>(resolve => {
     dynamic().then(module => {
       if (!module.default) {
-        throw new Error('lazy loaded component should be exported as default!');
+        throw new Error('[Dark]: lazy loaded component should be exported as default!');
       }
 
       resolve(module.default);

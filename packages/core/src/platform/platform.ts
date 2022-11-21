@@ -10,8 +10,11 @@ export const platform: Platform = {
   createNativeElement: () => {
     throw new Error('createNativeElement not installed by renderer');
   },
-  applyCommits: () => {
-    throw new Error('applyCommits not installed by renderer');
+  applyCommit: () => {
+    throw new Error('applyCommit not installed by renderer');
+  },
+  finishCommitWork: () => {
+    throw new Error('finishCommitWork not installed by renderer');
   },
   detectIsPortal: () => {
     throw new Error('detectIsPortal not installed by renderer');

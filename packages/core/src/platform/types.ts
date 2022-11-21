@@ -6,7 +6,8 @@ export type Platform = {
   scheduleCallback: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYeildToHost: () => boolean;
   createNativeElement: <N>(fiber: Fiber<N>) => N;
-  applyCommits: <N>(fiber: Fiber<N>) => void;
+  applyCommit: <N>(fiber: Fiber<N>) => void;
+  finishCommitWork: () => void;
   detectIsPortal: (factory: ComponentFactory) => boolean;
   unmountPortal: <N>(fiber: Fiber<N>) => void;
 };

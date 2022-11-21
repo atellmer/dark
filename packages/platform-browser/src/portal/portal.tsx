@@ -4,7 +4,6 @@ import {
   type ComponentFactory,
   createComponent,
   detectIsComponentFactory,
-  error,
   useMemo,
 } from '@dark-engine/core';
 
@@ -12,17 +11,18 @@ const $$portal = Symbol('portal');
 
 function createPortal(slot: DarkElement, container: Element) {
   if (!(container instanceof Element)) {
-    if (process.env.NODE_ENV === 'development') {
-      error(`[Dark]: createPortal receives only Element as container!`);
-    }
-
-    return null;
+    throw new Error(`[Dark]: createPortal receives only Element as container!`);
   }
 
   return Portal({ [$$portal]: container, slot });
 }
 
-const Portal = createComponent<any>(
+type PortalProps = {
+  [$$portal]: Element;
+  slot: DarkElement;
+};
+
+const Portal = createComponent<PortalProps>(
   ({ slot, ...rest }) => {
     useMemo(() => (rest[$$portal].innerHTML = ''), []);
 
@@ -34,12 +34,13 @@ const Portal = createComponent<any>(
 const detectIsPortal = (factory: unknown): factory is ComponentFactory =>
   detectIsComponentFactory(factory) && factory.token === $$portal;
 
-const getPortalContainer = (factory: unknown): Element => (detectIsPortal(factory) ? factory.props[$$portal] : null);
+const getPortalContainer = (factory: unknown): Element | null =>
+  detectIsPortal(factory) ? factory.props[$$portal] : null;
 
 function unmountPortal(fiber: Fiber<Element>) {
-  if (detectIsPortal(fiber.instance)) {
-    const container = getPortalContainer(fiber.instance);
+  const container = getPortalContainer(fiber.instance);
 
+  if (container) {
     container.innerHTML = '';
   }
 }
