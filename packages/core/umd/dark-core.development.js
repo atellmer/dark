@@ -724,8 +724,8 @@ function mutateAlternate(options) {
             var isRemovingCase = nextElementsCount_1 < prevElementsCount_1;
             var isInsertingCase = nextElementsCount_1 > prevElementsCount_1;
             var children = hasChildrenProp(instance) ? instance.children : [];
-            var _a = extractKeys(alternate.child, children), keys_1 = _a.keys, nextKeys_1 = _a.nextKeys;
-            var hasKeys_1 = keys_1.length > 0;
+            var _a = extractKeys(alternate.child, children), prevKeys_1 = _a.prevKeys, nextKeys_1 = _a.nextKeys;
+            var hasKeys_1 = prevKeys_1.length > 0;
             var hasAnyKeys = hasKeys_1 || nextKeys_1.length > 0;
             if (true) {
                 if (!hasAnyKeys && prevElementsCount_1 !== 0 && nextElementsCount_1 !== 0) {
@@ -734,7 +734,7 @@ function mutateAlternate(options) {
             }
             var performRemovingNodes = function () {
                 var e_1, _a, e_2, _b, _c;
-                var diffKeys = getDiffKeys(keys_1, nextKeys_1);
+                var diffKeys = getDiffKeys(prevKeys_1, nextKeys_1);
                 if (diffKeys.length > 0) {
                     var fibersMap = createFibersByKeyMap(alternate.child);
                     try {
@@ -776,7 +776,7 @@ function mutateAlternate(options) {
             };
             var performInsertingNodes = function () {
                 var e_3, _a;
-                var diffKeys = getDiffKeys(nextKeys_1, keys_1);
+                var diffKeys = getDiffKeys(nextKeys_1, prevKeys_1);
                 if (diffKeys.length > 0) {
                     var diffKeyMap = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.keyBy)(diffKeys, function (x) { return x; });
                     var fibersByPositionsMap = createFibersByPositionMap(alternate.child);
@@ -791,7 +791,7 @@ function mutateAlternate(options) {
                                 }
                             }
                             usedKeyMap[nextKey_1] = true;
-                            if (nextKey_1 !== keys_1[keyIdx] && diffKeyMap[nextKey_1]) {
+                            if (nextKey_1 !== prevKeys_1[keyIdx] && diffKeyMap[nextKey_1]) {
                                 var insertionFiber = new Fiber({
                                     instance: (0,_view__WEBPACK_IMPORTED_MODULE_4__.createEmptyVirtualNode)(),
                                     parent: alternate,
@@ -977,13 +977,13 @@ function createFibersByKeyMap(fiber) {
 function extractKeys(alternate, children) {
     var nextFiber = alternate;
     var idx = 0;
-    var keys = [];
+    var prevKeys = [];
     var nextKeys = [];
     while (nextFiber || idx < children.length) {
         var key = nextFiber && getElementKey(nextFiber.instance);
         var nextKey = children[idx] && getElementKey(children[idx]);
         if (!(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsEmpty)(key)) {
-            keys.push(key);
+            prevKeys.push(key);
         }
         if (!(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsEmpty)(nextKey)) {
             nextKeys.push(nextKey);
@@ -992,7 +992,7 @@ function extractKeys(alternate, children) {
         idx++;
     }
     return {
-        keys: keys,
+        prevKeys: prevKeys,
         nextKeys: nextKeys,
     };
 }
@@ -1021,8 +1021,8 @@ function getDiffKeys(keys, nextKeys) {
     var nextKeysMap = nextKeys.reduce(function (acc, key) { return ((acc[key] = true), acc); }, {});
     var diff = [];
     try {
-        for (var keys_2 = __values(keys), keys_2_1 = keys_2.next(); !keys_2_1.done; keys_2_1 = keys_2.next()) {
-            var key = keys_2_1.value;
+        for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
+            var key = keys_1_1.value;
             if (!nextKeysMap[key]) {
                 diff.push(key);
             }
@@ -1031,7 +1031,7 @@ function getDiffKeys(keys, nextKeys) {
     catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
-            if (keys_2_1 && !keys_2_1.done && (_a = keys_2.return)) _a.call(keys_2);
+            if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
         }
         finally { if (e_4) throw e_4.error; }
     }
@@ -1107,7 +1107,7 @@ function commitChanges() {
         try {
             for (var deletions_2 = __values(deletions), deletions_2_1 = deletions_2.next(); !deletions_2_1.done; deletions_2_1 = deletions_2.next()) {
                 var fiber = deletions_2_1.value;
-                _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommits(fiber);
+                _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommit(fiber);
             }
         }
         catch (e_6_1) { e_6 = { error: e_6_1 }; }
@@ -1168,13 +1168,14 @@ function commitWork(fiber, onComplete) {
                 resetIsDeepWalking();
             }
             else if (!isReturn) {
-                _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommits(nextFiber);
+                _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommit(nextFiber);
             }
             if (nextFiber && nextFiber.shadow) {
                 nextFiber.shadow = null;
             }
         },
     });
+    _platform__WEBPACK_IMPORTED_MODULE_1__.platform.finishCommitWork();
     onComplete();
 }
 function createHook() {
@@ -1482,7 +1483,7 @@ function fetchModule(dynamic) {
     return new Promise(function (resolve) {
         dynamic().then(function (module) {
             if (!module.default) {
-                throw new Error('lazy loaded component should be exported as default!');
+                throw new Error('[Dark]: lazy loaded component should be exported as default!');
             }
             resolve(module.default);
         });
@@ -1610,8 +1611,11 @@ var platform = {
     createNativeElement: function () {
         throw new Error('createNativeElement not installed by renderer');
     },
-    applyCommits: function () {
-        throw new Error('applyCommits not installed by renderer');
+    applyCommit: function () {
+        throw new Error('applyCommit not installed by renderer');
+    },
+    finishCommitWork: function () {
+        throw new Error('finishCommitWork not installed by renderer');
     },
     detectIsPortal: function () {
         throw new Error('detectIsPortal not installed by renderer');
@@ -1951,7 +1955,7 @@ var SuspenseContext = (0,_context__WEBPACK_IMPORTED_MODULE_2__.createContext)({
 var Suspense = (0,_component__WEBPACK_IMPORTED_MODULE_0__.createComponent)(function (_a) {
     var fallback = _a.fallback, slot = _a.slot;
     if (!fallback) {
-        throw new Error("Suspense fallback not found");
+        throw new Error("[Dark]: Suspense fallback not found");
     }
     var isSuspenseLoaded = (0,_use_context__WEBPACK_IMPORTED_MODULE_3__.useContext)(SuspenseContext).isLoaded;
     var _b = __read((0,_use_state__WEBPACK_IMPORTED_MODULE_1__.useState)(false), 2), isLoaded = _b[0], setIsLoaded = _b[1];
@@ -2010,21 +2014,21 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function unmountFiber(fiber) {
-    if (fiber.effectHost || fiber.layoutEffectHost) {
-        (0,_walk__WEBPACK_IMPORTED_MODULE_4__.walkFiber)({
-            fiber: fiber,
-            onLoop: function (_a) {
-                var nextFiber = _a.nextFiber, isReturn = _a.isReturn, stop = _a.stop;
-                if (nextFiber === fiber.nextSibling || fiber.transposition)
-                    return stop();
-                if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_1__.detectIsComponentFactory)(nextFiber.instance)) {
-                    (0,_use_layout_effect__WEBPACK_IMPORTED_MODULE_3__.cleanupLayoutEffects)(nextFiber.hook);
-                    (0,_use_effect__WEBPACK_IMPORTED_MODULE_2__.cleanupEffects)(nextFiber.hook);
-                }
-            },
-        });
-    }
-    fiber.portalHost && _platform__WEBPACK_IMPORTED_MODULE_0__.platform.unmountPortal(fiber);
+    if (!fiber.effectHost && !fiber.layoutEffectHost && !fiber.portalHost)
+        return;
+    (0,_walk__WEBPACK_IMPORTED_MODULE_4__.walkFiber)({
+        fiber: fiber,
+        onLoop: function (_a) {
+            var nextFiber = _a.nextFiber, isReturn = _a.isReturn, stop = _a.stop;
+            if (nextFiber === fiber.nextSibling || fiber.transposition)
+                return stop();
+            if (!isReturn && (0,_component__WEBPACK_IMPORTED_MODULE_1__.detectIsComponentFactory)(nextFiber.instance)) {
+                nextFiber.layoutEffectHost && (0,_use_layout_effect__WEBPACK_IMPORTED_MODULE_3__.dropLayoutEffects)(nextFiber.hook);
+                nextFiber.effectHost && (0,_use_effect__WEBPACK_IMPORTED_MODULE_2__.dropEffects)(nextFiber.hook);
+                nextFiber.portalHost && _platform__WEBPACK_IMPORTED_MODULE_0__.platform.unmountPortal(nextFiber);
+            }
+        },
+    });
 }
 function unmountRoot(rootId, onComplete) {
     if ((0,_helpers__WEBPACK_IMPORTED_MODULE_5__.detectIsUndefined)(rootId))
@@ -2224,8 +2228,8 @@ function useDeferredValue(value, options) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "cleanupEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.cleanupEffects),
-/* harmony export */   "createEffectFunctions": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.createEffectFunctions),
+/* harmony export */   "createEffect": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.createEffect),
+/* harmony export */   "dropEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.dropEffects),
 /* harmony export */   "hasEffects": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.hasEffects),
 /* harmony export */   "useEffect": () => (/* reexport safe */ _use_effect__WEBPACK_IMPORTED_MODULE_0__.useEffect)
 /* harmony export */ });
@@ -2243,8 +2247,8 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "cleanupEffects": () => (/* binding */ cleanupEffects),
-/* harmony export */   "createEffectFunctions": () => (/* binding */ createEffectFunctions),
+/* harmony export */   "createEffect": () => (/* binding */ createEffect),
+/* harmony export */   "dropEffects": () => (/* binding */ dropEffects),
 /* harmony export */   "hasEffects": () => (/* binding */ hasEffects),
 /* harmony export */   "useEffect": () => (/* binding */ useEffect)
 /* harmony export */ });
@@ -2264,8 +2268,8 @@ var __values = (undefined && undefined.__values) || function(o) {
 
 
 var $$useEffect = Symbol('use-effect');
-var _a = createEffectFunctions($$useEffect, _scope__WEBPACK_IMPORTED_MODULE_1__.effectsHelper), useEffect = _a.useEffect, hasEffects = _a.hasEffects, cleanupEffects = _a.cleanupEffects;
-function createEffectFunctions(token, store) {
+var _a = createEffect($$useEffect, _scope__WEBPACK_IMPORTED_MODULE_1__.effectsHelper), useEffect = _a.useEffect, hasEffects = _a.hasEffects, dropEffects = _a.dropEffects;
+function createEffect(token, store) {
     function useEffect(effect, deps) {
         var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
         var hook = fiber.hook;
@@ -2298,7 +2302,7 @@ function createEffectFunctions(token, store) {
         var hasEffect = values.some(function (x) { return x.token === token; });
         return hasEffect;
     }
-    function cleanupEffects(hook) {
+    function dropEffects(hook) {
         var e_1, _a;
         var values = hook.values;
         try {
@@ -2321,7 +2325,7 @@ function createEffectFunctions(token, store) {
     return {
         useEffect: useEffect,
         hasEffects: hasEffects,
-        cleanupEffects: cleanupEffects,
+        dropEffects: dropEffects,
     };
 }
 
@@ -2498,7 +2502,7 @@ function useImperativeHandle(ref, createHandle, deps) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "cleanupLayoutEffects": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.cleanupLayoutEffects),
+/* harmony export */   "dropLayoutEffects": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.dropLayoutEffects),
 /* harmony export */   "hasLayoutEffects": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.hasLayoutEffects),
 /* harmony export */   "useLayoutEffect": () => (/* reexport safe */ _use_layout_effect__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect)
 /* harmony export */ });
@@ -2516,7 +2520,7 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "cleanupLayoutEffects": () => (/* binding */ cleanupLayoutEffects),
+/* harmony export */   "dropLayoutEffects": () => (/* binding */ dropLayoutEffects),
 /* harmony export */   "hasLayoutEffects": () => (/* binding */ hasLayoutEffects),
 /* harmony export */   "useLayoutEffect": () => (/* binding */ useLayoutEffect)
 /* harmony export */ });
@@ -2525,7 +2529,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var $$useLayoutEffect = Symbol('use-layout-effect');
-var _a = (0,_use_effect__WEBPACK_IMPORTED_MODULE_1__.createEffectFunctions)($$useLayoutEffect, _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsHelper), useLayoutEffect = _a.useEffect, hasLayoutEffects = _a.hasEffects, cleanupLayoutEffects = _a.cleanupEffects;
+var _a = (0,_use_effect__WEBPACK_IMPORTED_MODULE_1__.createEffect)($$useLayoutEffect, _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsHelper), useLayoutEffect = _a.useEffect, hasLayoutEffects = _a.hasEffects, dropLayoutEffects = _a.dropEffects;
 
 
 

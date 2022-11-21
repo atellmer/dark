@@ -71,8 +71,9 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "applyCommit": () => (/* binding */ applyCommit),
 /* harmony export */   "createDomElement": () => (/* binding */ createDomElement),
-/* harmony export */   "mutateDom": () => (/* binding */ mutateDom),
+/* harmony export */   "finishCommitWork": () => (/* binding */ finishCommitWork),
 /* harmony export */   "resetNodeCache": () => (/* binding */ resetNodeCache)
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
@@ -123,6 +124,9 @@ var attrBlackListMap = (_a = {},
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY] = true,
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
     _a);
+var fragmentsMap = new Map();
+var fragmentsCallbacks = [];
+var nodeCacheMap = new Map();
 function createElement(vNode) {
     var _a;
     var map = (_a = {},
@@ -148,7 +152,7 @@ function createElement(vNode) {
 }
 function createDomElement(fiber) {
     if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance)) {
-        throw new Error('createDomElement receives only Element!');
+        throw new Error('[Dark]: createDomElement receives only virtual node!');
     }
     var vNode = fiber.instance;
     return createElement(vNode);
@@ -267,85 +271,7 @@ function upgradeInputAttributes(options) {
     };
     map[tagName] && map[tagName]();
 }
-function updateDom(element, instance, nextInstance) {
-    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTextVirtualNode)(instance) &&
-        (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTextVirtualNode)(nextInstance) &&
-        instance.value !== nextInstance.value) {
-        return (element.textContent = nextInstance.value);
-    }
-    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTagVirtualNode)(instance) && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTagVirtualNode)(nextInstance)) {
-        return updateAttributes(element, instance, nextInstance);
-    }
-}
-var fragmentMap = new Map();
-var nodeCacheMap = new Map();
-function resetNodeCache() {
-    nodeCacheMap = new Map();
-}
-function mutateDom(fiber) {
-    var fromHookUpdate = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fromHookUpdateHelper.get();
-    var nextFiber = getFiberWithNativeElement(fiber);
-    var parentNativeElement = nextFiber.nativeElement;
-    if (fiber.nativeElement !== null && fiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.PLACEMENT) {
-        var cachedNode = nodeCacheMap.get(parentNativeElement);
-        var node = nextFiber.alternate
-            ? !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(cachedNode) && canTakeNodeFromCache(fiber, nextFiber)
-                ? cachedNode
-                : cachedNode === null
-                    ? null
-                    : getNodeOnTheRight(fiber, parentNativeElement)
-            : fromHookUpdate
-                ? getNodeOnTheRight(fiber, parentNativeElement)
-                : null;
-        nodeCacheMap.set(parentNativeElement, node);
-        if (node) {
-            parentNativeElement.insertBefore(fiber.nativeElement, node);
-            fiber.mountedToHost = true;
-            if (isEndOfInsertion(fiber, nextFiber)) {
-                nodeCacheMap.delete(parentNativeElement);
-            }
-        }
-        else {
-            var fragment = fragmentMap.get(parentNativeElement);
-            if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(fragment)) {
-                fragment = document.createDocumentFragment();
-                fragmentMap.set(parentNativeElement, fragment);
-            }
-            fragment.appendChild(fiber.nativeElement);
-            fiber.mountedToHost = true;
-            if (!hasNextSibling(fiber, nextFiber)) {
-                parentNativeElement.appendChild(fragment);
-                fragmentMap.delete(parentNativeElement);
-                nodeCacheMap.delete(parentNativeElement);
-            }
-        }
-        addAttributes(fiber.nativeElement, fiber.instance);
-    }
-    else if (fiber.nativeElement !== null && fiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE) {
-        if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.alternate.instance) || !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance))
-            return;
-        var vNode = fiber.alternate.instance;
-        var nextVNode = fiber.instance;
-        updateDom(fiber.nativeElement, vNode, nextVNode);
-    }
-    else if (fiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETION) {
-        commitDeletion(fiber, parentNativeElement);
-    }
-}
-function hasNextSibling(fiber, rootFilber) {
-    var nextFiber = fiber;
-    if (nextFiber.nextSibling && (0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(nextFiber.nextSibling.instance)) {
-        return false;
-    }
-    while (!nextFiber.nextSibling) {
-        nextFiber = nextFiber.parent;
-        if (nextFiber === rootFilber || nextFiber.nativeElement) {
-            return false;
-        }
-    }
-    return true;
-}
-function getFiberWithNativeElement(fiber) {
+function getParentFiberWithNativeElement(fiber) {
     var nextFiber = fiber.parent;
     if ((0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(fiber.instance))
         return fiber;
@@ -414,7 +340,83 @@ function getNodeOnTheRight(fiber, parentElement) {
     }
     return null;
 }
-function commitDeletion(fiber, parentElement) {
+function detectIsSvgElement(tagName) {
+    var tagMap = {
+        svg: true,
+        circle: true,
+        ellipse: true,
+        g: true,
+        text: true,
+        tspan: true,
+        textPath: true,
+        path: true,
+        polygon: true,
+        polyline: true,
+        line: true,
+        rect: true,
+        use: true,
+        image: true,
+        symbol: true,
+        defs: true,
+        linearGradient: true,
+        radialGradient: true,
+        stop: true,
+        clipPath: true,
+        pattern: true,
+        mask: true,
+        marker: true,
+    };
+    return Boolean(tagMap[tagName]);
+}
+function commitPlacement(fiber, parentFiber) {
+    var fromHookUpdate = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fromHookUpdateHelper.get();
+    var parentNativeElement = parentFiber.nativeElement;
+    var cachedNode = nodeCacheMap.get(parentNativeElement);
+    var node = parentFiber.alternate
+        ? !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(cachedNode) && canTakeNodeFromCache(fiber, parentFiber)
+            ? cachedNode
+            : cachedNode === null
+                ? null
+                : getNodeOnTheRight(fiber, parentNativeElement)
+        : fromHookUpdate
+            ? getNodeOnTheRight(fiber, parentNativeElement)
+            : null;
+    nodeCacheMap.set(parentNativeElement, node);
+    if (node) {
+        parentNativeElement.insertBefore(fiber.nativeElement, node);
+        fiber.mountedToHost = true;
+        if (isEndOfInsertion(fiber, parentFiber)) {
+            nodeCacheMap.delete(parentNativeElement);
+        }
+    }
+    else {
+        var fragment_1 = fragmentsMap.get(parentNativeElement);
+        if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(fragment_1)) {
+            fragment_1 = document.createDocumentFragment();
+            fragmentsMap.set(parentNativeElement, fragment_1);
+        }
+        fragment_1.appendChild(fiber.nativeElement);
+        fiber.mountedToHost = true;
+        fragmentsCallbacks.push(function () {
+            parentNativeElement.appendChild(fragment_1);
+            fragmentsMap.delete(parentNativeElement);
+            nodeCacheMap.delete(parentNativeElement);
+        });
+    }
+    addAttributes(fiber.nativeElement, fiber.instance);
+}
+function commitUpdate(element, instance, nextInstance) {
+    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTextVirtualNode)(instance) &&
+        (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTextVirtualNode)(nextInstance) &&
+        instance.value !== nextInstance.value) {
+        return (element.textContent = nextInstance.value);
+    }
+    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTagVirtualNode)(instance) && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTagVirtualNode)(nextInstance)) {
+        return updateAttributes(element, instance, nextInstance);
+    }
+}
+function commitDeletion(fiber, parentFiber) {
+    var parentElement = parentFiber.nativeElement;
     var nextFiber = fiber;
     var isDeepWalking = true;
     var isReturn = false;
@@ -450,33 +452,28 @@ function commitDeletion(fiber, parentElement) {
         }
     }
 }
-function detectIsSvgElement(tagName) {
-    var tagMap = {
-        svg: true,
-        circle: true,
-        ellipse: true,
-        g: true,
-        text: true,
-        tspan: true,
-        textPath: true,
-        path: true,
-        polygon: true,
-        polyline: true,
-        line: true,
-        rect: true,
-        use: true,
-        image: true,
-        symbol: true,
-        defs: true,
-        linearGradient: true,
-        radialGradient: true,
-        stop: true,
-        clipPath: true,
-        pattern: true,
-        mask: true,
-        marker: true,
-    };
-    return Boolean(tagMap[tagName]);
+function applyCommit(fiber) {
+    var parentFiber = getParentFiberWithNativeElement(fiber);
+    if (fiber.nativeElement !== null && fiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.PLACEMENT) {
+        commitPlacement(fiber, parentFiber);
+    }
+    else if (fiber.nativeElement !== null && fiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE) {
+        if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.alternate.instance) || !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance))
+            return;
+        var vNode = fiber.alternate.instance;
+        var nextVNode = fiber.instance;
+        commitUpdate(fiber.nativeElement, vNode, nextVNode);
+    }
+    else if (fiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETION) {
+        commitDeletion(fiber, parentFiber);
+    }
+}
+function finishCommitWork() {
+    fragmentsCallbacks.forEach(function (fn) { return fn(); });
+    fragmentsCallbacks = [];
+}
+function resetNodeCache() {
+    nodeCacheMap = new Map();
 }
 
 
@@ -491,8 +488,9 @@ function detectIsSvgElement(tagName) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "applyCommit": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.applyCommit),
 /* harmony export */   "createDomElement": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.createDomElement),
-/* harmony export */   "mutateDom": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.mutateDom),
+/* harmony export */   "finishCommitWork": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.finishCommitWork),
 /* harmony export */   "resetNodeCache": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.resetNodeCache)
 /* harmony export */ });
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dom */ "./src/dom/dom.ts");
@@ -657,10 +655,7 @@ var $$portal = Symbol('portal');
 function createPortal(slot, container) {
     var _a;
     if (!(container instanceof Element)) {
-        if (true) {
-            (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.error)("[Dark]: createPortal receives only Element as container!");
-        }
-        return null;
+        throw new Error("[Dark]: createPortal receives only Element as container!");
     }
     return Portal((_a = {}, _a[$$portal] = container, _a.slot = slot, _a));
 }
@@ -672,39 +667,13 @@ var Portal = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createComponent)(
 var detectIsPortal = function (factory) {
     return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory)(factory) && factory.token === $$portal;
 };
-var getPortalContainer = function (factory) { return (detectIsPortal(factory) ? factory.props[$$portal] : null); };
+var getPortalContainer = function (factory) {
+    return detectIsPortal(factory) ? factory.props[$$portal] : null;
+};
 function unmountPortal(fiber) {
-    var nextFiber = fiber;
-    var isDeepWalking = true;
-    var isReturn = false;
-    while (nextFiber) {
-        if (!isReturn && detectIsPortal(nextFiber.instance)) {
-            var container = getPortalContainer(nextFiber.instance);
-            container.innerHTML = '';
-        }
-        if (!nextFiber.portalHost) {
-            isDeepWalking = false;
-        }
-        if (nextFiber.child && isDeepWalking) {
-            nextFiber = nextFiber.child;
-            isReturn = false;
-        }
-        else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
-            isDeepWalking = true;
-            isReturn = false;
-            nextFiber = nextFiber.nextSibling;
-        }
-        else if (nextFiber.parent &&
-            nextFiber !== fiber &&
-            nextFiber.parent !== fiber &&
-            nextFiber.parent !== fiber.parent) {
-            isDeepWalking = false;
-            isReturn = true;
-            nextFiber = nextFiber.parent;
-        }
-        else {
-            nextFiber = null;
-        }
+    var container = getPortalContainer(fiber.instance);
+    if (container) {
+        container.innerHTML = '';
     }
 }
 
@@ -752,13 +721,14 @@ __webpack_require__.r(__webpack_exports__);
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback = _scheduling__WEBPACK_IMPORTED_MODULE_3__.scheduleCallback;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.shouldYeildToHost = _scheduling__WEBPACK_IMPORTED_MODULE_3__.shouldYeildToHost;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.createNativeElement = _dom__WEBPACK_IMPORTED_MODULE_1__.createDomElement;
-_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.applyCommits = _dom__WEBPACK_IMPORTED_MODULE_1__.mutateDom;
+_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.applyCommit = _dom__WEBPACK_IMPORTED_MODULE_1__.applyCommit;
+_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.finishCommitWork = _dom__WEBPACK_IMPORTED_MODULE_1__.finishCommitWork;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.detectIsPortal = _portal__WEBPACK_IMPORTED_MODULE_2__.detectIsPortal;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.unmountPortal = _portal__WEBPACK_IMPORTED_MODULE_2__.unmountPortal;
 var roots = new Map();
 function render(element, container) {
     if (!(container instanceof Element)) {
-        throw new Error("render expects to receive container as Element!");
+        throw new Error("[Dark]: render receives only Element as container!");
     }
     var isMounted = !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(roots.get(container));
     var rootId = null;
