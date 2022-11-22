@@ -50,46 +50,58 @@ const state = {
 
 type HeaderProps = {
   onCreate: () => void;
-  onAdd: () => void;
+  onPrepend: () => void;
+  onAppend: () => void;
+  onInsertDifferent: () => void;
   onUpdateAll: () => void;
   onSwap: () => void;
   onClear: () => void;
 };
 
-const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
-  return div({
-    style:
-      'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
-    slot: [
-      button({
-        slot: Text('create 10000 rows'),
-        onClick: onCreate,
-      }),
-      button({
-        slot: Text('Add 1000 rows'),
-        onClick: onAdd,
-      }),
-      button({
-        slot: Text('update every 10th row'),
-        onClick: onUpdateAll,
-      }),
-      button({
-        slot: Text('swap rows'),
-        onClick: onSwap,
-      }),
-      button({
-        slot: Text('clear rows'),
-        onClick: onClear,
-      }),
-      button({
-        slot: Text('unmount app'),
-        onClick: () => {
-          root.unmount();
-        },
-      }),
-    ],
-  });
-});
+const Header = createComponent<HeaderProps>(
+  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onClear }) => {
+    return div({
+      style:
+        'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
+      slot: [
+        button({
+          slot: Text('create 10000 rows'),
+          onClick: onCreate,
+        }),
+        button({
+          slot: Text('Prepend 1000 rows'),
+          onClick: onPrepend,
+        }),
+        button({
+          slot: Text('Append 1000 rows'),
+          onClick: onAppend,
+        }),
+        button({
+          slot: Text('insert different'),
+          onClick: onInsertDifferent,
+        }),
+        button({
+          slot: Text('update every 10th row'),
+          onClick: onUpdateAll,
+        }),
+        button({
+          slot: Text('swap rows'),
+          onClick: onSwap,
+        }),
+        button({
+          slot: Text('clear rows'),
+          onClick: onClear,
+        }),
+        button({
+          slot: Text('unmount app'),
+          onClick: () => {
+            root.unmount();
+          },
+        }),
+      ],
+    });
+  },
+);
 
 const MemoHeader = memo<HeaderProps>(Header);
 
@@ -155,15 +167,30 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(4);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
-  const handleAdd = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+  const handlePrepend = useCallback(() => {
+    state.list.unshift(...buildData(2, '!!!'));
     state.list = [...state.list];
-    measurer.start('add');
+    measurer.start('prepend');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleAppend = useCallback(() => {
+    state.list.push(...buildData(2, '!!!'));
+    state.list = [...state.list];
+    measurer.start('append');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleInsertDifferent = useCallback(() => {
+    const [item1, item2, item3, ...rest] = state.list;
+
+    state.list = [...buildData(5, '***'), item1, item2, item3, ...buildData(2, '***'), ...rest].filter(Boolean);
+    measurer.start('insert different');
     forceUpdate();
     measurer.stop();
   }, []);
@@ -208,7 +235,9 @@ const Bench = createComponent(() => {
     <>
       <MemoHeader
         onCreate={handleCreate}
-        onAdd={handleAdd}
+        onPrepend={handlePrepend}
+        onAppend={handleAppend}
+        onInsertDifferent={handleInsertDifferent}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onClear={handleClear}
@@ -223,6 +252,8 @@ const root = createRoot(document.getElementById('root'));
 function forceUpdate() {
   root.render(Bench());
 }
+
+forceUpdate();
 
 document.querySelector('#button').addEventListener('click', () => {
   forceUpdate();

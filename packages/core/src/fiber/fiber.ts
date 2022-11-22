@@ -50,6 +50,7 @@ class Fiber<N = NativeElement> {
   public childrenCount: number;
   public marker: string;
   public isUsed: boolean;
+  public idx: number;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -70,6 +71,7 @@ class Fiber<N = NativeElement> {
     this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
+    this.idx = options.idx || 0;
     this.isUsed = options.isUsed || false;
   }
 
@@ -86,6 +88,11 @@ class Fiber<N = NativeElement> {
   public markLayoutEffectHost() {
     this.layoutEffectHost = true;
     this.parent && !this.parent.layoutEffectHost && this.parent.markLayoutEffectHost();
+  }
+
+  public markMountedToHost() {
+    this.mountedToHost = true;
+    this.parent && !this.parent.mountedToHost && this.parent.markMountedToHost();
   }
 
   public setError(error: Error) {
@@ -229,6 +236,8 @@ function performChild(options: PerformChildOptions) {
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
+  fiber.idx = 0;
+
   nextFiber.child = fiber;
   fiber.parent = nextFiber;
   fiber.shadow = shadow;
@@ -283,6 +292,8 @@ function performSibling(options: PerformSiblingOptions) {
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
+    fiber.idx = childrenIdx;
+
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
     fiber.shadow = shadow;
@@ -334,7 +345,7 @@ function mutateFiber(options: MutateFiberOptions) {
   fiber.alternate = alternate || null;
   fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
-  fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
+  fiber.mountedToHost = isUpdate;
 
   if (hasChildrenProp(fiber.instance)) {
     fiber.childrenCount = fiber.instance.children.length;
@@ -375,12 +386,11 @@ function mutateAlternate(options: PerformAlternateOptions) {
     const isRequestedKeys = prevElementsCount !== nextElementsCount;
 
     if (isRequestedKeys) {
-      const isRemovingCase = nextElementsCount < prevElementsCount;
-      const isInsertingCase = nextElementsCount > prevElementsCount;
       const children = hasChildrenProp(instance) ? instance.children : [];
       const { prevKeys, nextKeys } = extractKeys(alternate.child, children);
-      const hasKeys = prevKeys.length > 0;
-      const hasAnyKeys = hasKeys || nextKeys.length > 0;
+      const hasPrevKeys = prevKeys.length > 0;
+      const hasNextKeys = nextKeys.length > 0;
+      const hasAnyKeys = hasPrevKeys || hasNextKeys;
 
       if (process.env.NODE_ENV === 'development') {
         if (!hasAnyKeys && prevElementsCount !== 0 && nextElementsCount !== 0) {
@@ -404,8 +414,9 @@ function mutateAlternate(options: PerformAlternateOptions) {
               deletionsHelper.get().push(fiber);
             }
           }
-        } else if (!hasKeys) {
+        } else {
           const diffCount = prevElementsCount - nextElementsCount;
+          if (diffCount === 0) return;
           const fibers = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const fiber of fibers) {
@@ -419,47 +430,47 @@ function mutateAlternate(options: PerformAlternateOptions) {
       const performInsertingNodes = () => {
         const diffKeys = getDiffKeys(nextKeys, prevKeys);
 
-        if (diffKeys.length > 0) {
-          const diffKeyMap = keyBy(diffKeys, x => x);
-          const fibersByPositionsMap = createFibersByPositionMap(alternate.child);
-          const usedKeyMap = {};
-          let keyIdx = 0;
+        if (diffKeys.length === 0) return;
 
-          for (const nextKey of nextKeys) {
-            if (process.env.NODE_ENV === 'development') {
-              if (usedKeyMap[nextKey]) {
-                error(`Some key of node already has been used!`);
-              }
+        const diffKeyMap = keyBy(diffKeys, x => x);
+        const usedKeyMap = {};
+        let keyIdx = 0;
+
+        for (const nextKey of nextKeys) {
+          if (process.env.NODE_ENV === 'development') {
+            if (usedKeyMap[nextKey]) {
+              error(`Some key of node already has been used!`);
             }
-
-            usedKeyMap[nextKey] = true;
-
-            if (nextKey !== prevKeys[keyIdx] && diffKeyMap[nextKey]) {
-              const insertionFiber = new Fiber({
-                instance: createEmptyVirtualNode(),
-                parent: alternate,
-                effectTag: EffectTag.PLACEMENT,
-              });
-
-              if (keyIdx === 0) {
-                insertionFiber.nextSibling = alternate.child;
-                alternate.child = insertionFiber;
-              } else {
-                const fiber = fibersByPositionsMap[keyIdx] || null;
-
-                if (fiber) {
-                  insertionFiber.nextSibling = fiber;
-                }
-              }
-            }
-
-            keyIdx++;
           }
+
+          usedKeyMap[nextKey] = true;
+
+          if (nextKey !== prevKeys[keyIdx] && diffKeyMap[nextKey]) {
+            const insertionFiber = new Fiber({
+              instance: createEmptyVirtualNode(),
+              parent: alternate,
+              effectTag: EffectTag.PLACEMENT,
+            });
+
+            if (keyIdx === 0) {
+              insertionFiber.nextSibling = alternate.child;
+              alternate.child = insertionFiber;
+            } else {
+              const [fiber, prevFiber] = getFibersByIdx(alternate.child, keyIdx);
+
+              if (fiber && prevFiber) {
+                insertionFiber.nextSibling = fiber;
+                prevFiber.nextSibling = insertionFiber;
+              }
+            }
+          }
+
+          keyIdx++;
         }
       };
 
-      isRemovingCase && performRemovingNodes();
-      isInsertingCase && performInsertingNodes();
+      performRemovingNodes();
+      performInsertingNodes();
     }
   }
 }
@@ -513,6 +524,10 @@ function performMemo(options: PerformMemoOptions) {
 
       if (memoFiber.layoutEffectHost) {
         fiber.markLayoutEffectHost();
+      }
+
+      if (memoFiber.mountedToHost) {
+        fiber.markMountedToHost();
       }
 
       if (memoFiber.portalHost) {
@@ -641,19 +656,23 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
   return instance;
 }
 
-function createFibersByPositionMap(fiber: Fiber) {
+function getFibersByIdx(fiber: Fiber, idx: number): [Fiber | null, Fiber | null] {
+  const map: Record<string, Fiber> = {};
   let nextFiber = fiber;
   let position = 0;
-  const map: Record<string, Fiber> = {};
 
   while (nextFiber) {
     map[position] = nextFiber;
+
+    if (position === idx) {
+      return [map[position] || null, map[position - 1] || null];
+    }
 
     position++;
     nextFiber = nextFiber.nextSibling;
   }
 
-  return map;
+  return [null, null];
 }
 
 function createFibersByKeyMap(fiber: Fiber) {

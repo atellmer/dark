@@ -7,7 +7,6 @@ import {
   type MutableRef,
   ATTR_KEY,
   ATTR_REF,
-  EMPTY_NODE,
   EffectTag,
   detectIsFunction,
   detectIsUndefined,
@@ -15,21 +14,19 @@ import {
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
-  detectIsCommentVirtualNode,
   detectIsRef,
-  fromHookUpdateHelper,
+  walkFiber,
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import type { DOMElement } from './types';
+import type { DOMElement, DOMFragment } from './types';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
 };
-const fragmentsMap: Map<Element, DocumentFragment> = new Map();
-let fragmentsCallbacks: Array<() => void> = [];
-let nodeCacheMap: Map<Element, Element> = new Map();
+
+let fragmentsMap: Map<Element, DOMFragment> = new Map();
 
 function createElement(vNode: VirtualNode): DOMElement {
   const map = {
@@ -224,81 +221,72 @@ function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> 
   return nextFiber;
 }
 
-function canTakeNodeFromCache(fiber: Fiber, parentFiber: Fiber) {
+function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
+  let node: Element = null;
+
+  walkFiber<Element>({
+    fiber,
+    onLoop: ({ nextFiber, stop, resetIsDeepWalking }) => {
+      if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
+        node = nextFiber.nativeElement;
+
+        return stop();
+      }
+
+      if (!nextFiber.mountedToHost) {
+        return resetIsDeepWalking();
+      }
+    },
+  });
+
+  return node;
+}
+
+function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
   let nextFiber = fiber;
 
   while (nextFiber) {
-    if (nextFiber.alternate) {
-      const alternate = nextFiber.alternate;
-      const isEmptyNode = detectIsCommentVirtualNode(alternate.instance) && alternate.instance.value === EMPTY_NODE;
-
-      return isEmptyNode;
+    if (nextFiber?.parent?.nativeElement === parentNativeElement) {
+      return nextFiber.idx;
     }
 
     nextFiber = nextFiber.parent;
-    if (nextFiber === parentFiber) return false;
   }
 
-  return false;
-}
-
-function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
-  let nextFiber = fiber;
-  let isDeepWalking = true;
-
-  while (nextFiber) {
-    if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
-      return nextFiber.nativeElement;
-    }
-
-    if (nextFiber.nativeElement && !nextFiber.mountedToHost) {
-      isDeepWalking = false;
-    }
-
-    if (nextFiber.child && isDeepWalking) {
-      nextFiber = nextFiber.child;
-    } else if (nextFiber.nextSibling) {
-      isDeepWalking = true;
-      nextFiber = nextFiber.nextSibling;
-    } else if (nextFiber.parent && nextFiber.parent.nativeElement !== parentElement) {
-      isDeepWalking = false;
-      nextFiber = nextFiber.parent;
-    } else {
-      nextFiber = null;
-    }
-  }
-
-  return null;
+  return -1;
 }
 
 function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
-  const fromHookUpdate = fromHookUpdateHelper.get();
   const parentNativeElement = parentFiber.nativeElement;
-  const cachedNode = nodeCacheMap.get(parentNativeElement);
-  const node = parentFiber.alternate
-    ? !detectIsUndefined(cachedNode) && canTakeNodeFromCache(fiber, parentFiber)
-      ? cachedNode
-      : cachedNode === null
-      ? null
-      : getNodeOnTheRight(fiber, parentNativeElement)
-    : fromHookUpdate
-    ? getNodeOnTheRight(fiber, parentNativeElement)
-    : null;
+  const childNodes = parentNativeElement.childNodes;
 
-  nodeCacheMap.set(parentNativeElement, node);
+  const append = () => {
+    const { fragment } =
+      fragmentsMap.get(parentNativeElement) ||
+      ({
+        fragment: document.createDocumentFragment(),
+        callback: () => {},
+      } as DOMFragment);
 
-  if (node) {
-    parentNativeElement.insertBefore(fiber.nativeElement, node);
-    fiber.mountedToHost = true;
-  } else {
-    const fragment = fragmentsMap.get(parentNativeElement) || document.createDocumentFragment();
-
-    fragmentsMap.set(parentNativeElement, fragment);
-    fragment.appendChild(fiber.nativeElement);
-    fiber.mountedToHost = true;
-    fragmentsCallbacks.push(() => {
-      parentNativeElement.appendChild(fragment);
+    fragmentsMap.set(parentNativeElement, {
+      fragment,
+      callback: () => {
+        parentNativeElement.appendChild(fragment);
+      },
     });
+    fragment.appendChild(fiber.nativeElement);
+    fiber.markMountedToHost();
+  };
+
+  const insert = () => {
+    parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
+    fiber.markMountedToHost();
+  };
+
+  if (childNodes.length === 0 || getChildIndex(fiber, parentNativeElement) > childNodes.length - 1) {
+    append();
+  } else {
+    insert();
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
@@ -374,9 +362,11 @@ function applyCommit(fiber: Fiber<Element>) {
 }
 
 function finishCommitWork() {
-  fragmentsCallbacks.forEach(fn => fn());
-  fragmentsCallbacks = [];
-  nodeCacheMap = new Map();
+  for (const { callback } of fragmentsMap.values()) {
+    callback();
+  }
+
+  fragmentsMap = new Map();
 }
 
 export { createNativeElement, applyCommit, finishCommitWork };
