@@ -1,11 +1,12 @@
 import { type Fiber } from '../fiber';
 import { type TaskPriority } from '../constants';
 import { type ComponentFactory } from '../component';
+import { type VirtualNode } from '../view';
 
 export type Platform = {
   scheduleCallback: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYeildToHost: () => boolean;
-  createNativeElement: <N>(fiber: Fiber<N>) => N;
+  createNativeElement: <N>(vNode: VirtualNode) => N;
   applyCommit: <N>(fiber: Fiber<N>) => void;
   finishCommitWork: () => void;
   detectIsPortal: (factory: ComponentFactory) => boolean;

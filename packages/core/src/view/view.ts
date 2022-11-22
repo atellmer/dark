@@ -1,5 +1,5 @@
 import { EMPTY_NODE, ATTR_KEY } from '../constants';
-import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
+import { detectIsArray, detectIsEmpty, detectIsFunction, detectIsString } from '../helpers';
 import type { DarkElementKey } from '../shared';
 import type { ComponentFactory, StandardComponentProps } from '../component';
 import { NodeType, type ViewDef } from './types';
@@ -56,9 +56,13 @@ class CommentVirtualNode extends VirtualNode {
 }
 
 const detectIsVirtualNode = (vNode: unknown): vNode is VirtualNode => vNode instanceof VirtualNode;
+
 const detectIsTagVirtualNode = (vNode: unknown): vNode is TagVirtualNode => vNode instanceof TagVirtualNode;
+
 const detectIsCommentVirtualNode = (vNode: unknown): vNode is CommentVirtualNode => vNode instanceof CommentVirtualNode;
+
 const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vNode instanceof TextVirtualNode;
+
 const detectIsEmptyVirtualNode = (vNode: unknown): boolean =>
   detectIsCommentVirtualNode(vNode) && vNode.value === EMPTY_NODE;
 
@@ -68,20 +72,10 @@ function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
   return !detectIsEmpty(key) ? key : null;
 }
 
-function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNode {
-  const text =
-    typeof source === 'string' ? new TextVirtualNode(source) : detectIsTextVirtualNode(source) ? source.value : '';
+const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
 
-  return text;
-}
-
-function Comment(text: string): CommentVirtualNodeFactory {
-  const factory = () => new CommentVirtualNode(text);
-
-  factory[$$virtualNode] = true;
-
-  return factory;
-}
+const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
+  detectIsFunction(factory) && factory[$$virtualNode] === true;
 
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
@@ -101,10 +95,23 @@ function View(def: ViewDef): TagVirtualNodeFactory {
   return factory;
 }
 
-const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
+function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNode {
+  const text = detectIsString(source)
+    ? new TextVirtualNode(source)
+    : detectIsTextVirtualNode(source)
+    ? source.value
+    : '';
 
-const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
-  detectIsFunction(factory) && factory[$$virtualNode] === true;
+  return text;
+}
+
+function Comment(text: string): CommentVirtualNodeFactory {
+  const factory = () => new CommentVirtualNode(text);
+
+  factory[$$virtualNode] = true;
+
+  return factory;
+}
 
 export {
   VirtualNode,
@@ -117,9 +124,9 @@ export {
   detectIsTextVirtualNode,
   detectIsEmptyVirtualNode,
   getVirtualNodeKey,
-  Text,
-  Comment,
-  View,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,
+  View,
+  Text,
+  Comment,
 };

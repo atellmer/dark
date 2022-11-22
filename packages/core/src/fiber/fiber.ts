@@ -357,7 +357,7 @@ function mutateFiber(options: MutateFiberOptions) {
   }
 
   if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
-    fiber.nativeElement = platform.createNativeElement(fiber);
+    fiber.nativeElement = platform.createNativeElement(fiber.instance);
   }
 }
 

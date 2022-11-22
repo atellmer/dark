@@ -28,7 +28,7 @@ const attrBlackListMap = {
 
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
 
-function createElement(vNode: VirtualNode): DOMElement {
+function createNativeElement(vNode: VirtualNode): DOMElement {
   const map = {
     [NodeType.TAG]: (vNode: VirtualNode) => {
       const tagNode = vNode as TagVirtualNode;
@@ -55,7 +55,7 @@ function createElement(vNode: VirtualNode): DOMElement {
   return map[vNode.type](vNode);
 }
 
-function detectIsSvgElement(tagName) {
+function detectIsSvgElement(tagName: string) {
   const tagMap = {
     svg: true,
     circle: true,
@@ -83,14 +83,6 @@ function detectIsSvgElement(tagName) {
   };
 
   return Boolean(tagMap[tagName]);
-}
-
-function createNativeElement(fiber: Fiber<Element>): DOMElement {
-  if (!detectIsVirtualNode(fiber.instance)) {
-    throw new Error('[Dark]: createNativeElement receives only virtual node!');
-  }
-
-  return createElement(fiber.instance);
 }
 
 function applyRef(ref: MutableRef, element: Element) {

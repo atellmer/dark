@@ -1,13 +1,21 @@
 import type { NestedArray } from '../shared';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
-const detectIsUndefined = (o: any) => typeof o === 'undefined';
-const detectIsNumber = (o: any) => typeof o === 'number';
-const detectIsString = (o: any) => typeof o === 'string';
-const detectIsObject = (o: any) => typeof o === 'object';
-const detectIsBoolean = (o: any) => typeof o === 'boolean';
+
+const detectIsUndefined = (o: any): o is undefined => typeof o === 'undefined';
+
+const detectIsNumber = (o: any): o is number => typeof o === 'number';
+
+const detectIsString = (o: any): o is string => typeof o === 'string';
+
+const detectIsObject = (o: any): o is object => typeof o === 'object';
+
+const detectIsBoolean = (o: any): o is boolean => typeof o === 'boolean';
+
 const detectIsArray = (o: any): o is Array<any> => Array.isArray(o);
-const detectIsNull = (o: any) => o === null;
+
+const detectIsNull = (o: any): o is null => o === null;
+
 const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
 function error(str: string) {
