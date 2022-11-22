@@ -87,12 +87,10 @@ function detectIsSvgElement(tagName) {
 
 function createNativeElement(fiber: Fiber<Element>): DOMElement {
   if (!detectIsVirtualNode(fiber.instance)) {
-    throw new Error('[Dark]: createDomElement receives only virtual node!');
+    throw new Error('[Dark]: createNativeElement receives only virtual node!');
   }
 
-  const vNode: VirtualNode = fiber.instance;
-
-  return createElement(vNode);
+  return createElement(fiber.instance);
 }
 
 function applyRef(ref: MutableRef, element: Element) {
@@ -206,16 +204,16 @@ function upgradeInputAttributes(options: UpgradeInputAttributesOptions) {
 }
 
 function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
-  let nextFiber = fiber.parent;
+  let nextFiber = fiber;
 
-  if (detectIsPortal(fiber.instance)) return fiber;
+  while (nextFiber) {
+    nextFiber = nextFiber.parent;
 
-  while (nextFiber && !nextFiber.nativeElement) {
     if (detectIsPortal(nextFiber.instance)) {
       nextFiber.nativeElement = getPortalContainer(nextFiber.instance);
-    } else {
-      nextFiber = nextFiber.parent;
     }
+
+    if (nextFiber.nativeElement) return nextFiber;
   }
 
   return nextFiber;
@@ -307,42 +305,20 @@ function commitUpdate(element: Element, instance: VirtualNode, nextInstance: Vir
 }
 
 function commitDeletion(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
-  const parentElement = parentFiber.nativeElement;
-  let nextFiber = fiber;
-  let isDeepWalking = true;
-  let isReturn = false;
-
-  while (nextFiber) {
-    if (!isReturn) {
-      if (nextFiber.nativeElement) {
-        const isPortal = detectIsPortal(nextFiber.instance);
-
-        !isPortal && parentElement.removeChild(nextFiber.nativeElement);
-        isDeepWalking = false;
+  walkFiber<Element>({
+    fiber,
+    onLoop: ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+      if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+        return stop();
       }
-    }
 
-    if (nextFiber.child && isDeepWalking) {
-      nextFiber = nextFiber.child;
-      isReturn = false;
-    } else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
-      if (nextFiber.nextSibling.effectTag === EffectTag.DELETION) return;
-      isDeepWalking = true;
-      isReturn = false;
-      nextFiber = nextFiber.nextSibling;
-    } else if (
-      nextFiber.parent &&
-      nextFiber !== fiber &&
-      nextFiber.parent !== fiber &&
-      nextFiber.parent !== fiber.parent
-    ) {
-      isDeepWalking = false;
-      isReturn = true;
-      nextFiber = nextFiber.parent;
-    } else {
-      nextFiber = null;
-    }
-  }
+      if (!isReturn && nextFiber.nativeElement) {
+        !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
+
+        return resetIsDeepWalking();
+      }
+    },
+  });
 }
 
 function applyCommit(fiber: Fiber<Element>) {
