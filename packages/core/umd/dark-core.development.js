@@ -1091,47 +1091,12 @@ function hasChildrenProp(element) {
     return (0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsTagVirtualNode)(element) || (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(element);
 }
 function commitChanges() {
-    var e_5, _a;
-    var _b, _c, _d;
     var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.get();
     var fromHook = _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.get();
-    var deletions = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get();
-    var hasEffects = Boolean((_b = wipFiber.alternate) === null || _b === void 0 ? void 0 : _b.effectHost);
-    var hasLayoutEffects = Boolean((_c = wipFiber.alternate) === null || _c === void 0 ? void 0 : _c.layoutEffectHost);
-    var hasPortals = Boolean((_d = wipFiber.alternate) === null || _d === void 0 ? void 0 : _d.portalHost);
-    if (hasEffects || hasLayoutEffects || hasPortals) {
-        try {
-            for (var deletions_1 = __values(deletions), deletions_1_1 = deletions_1.next(); !deletions_1_1.done; deletions_1_1 = deletions_1.next()) {
-                var fiber = deletions_1_1.value;
-                (0,_unmount__WEBPACK_IMPORTED_MODULE_11__.unmountFiber)(fiber);
-            }
-        }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
-        finally {
-            try {
-                if (deletions_1_1 && !deletions_1_1.done && (_a = deletions_1.return)) _a.call(deletions_1);
-            }
-            finally { if (e_5) throw e_5.error; }
-        }
-    }
     commitWork(wipFiber.child, function () {
-        var e_6, _a, e_7, _b;
+        var e_5, _a;
         var layoutEffects = _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsHelper.get();
         var effects = _scope__WEBPACK_IMPORTED_MODULE_2__.effectsHelper.get();
-        try {
-            for (var deletions_2 = __values(deletions), deletions_2_1 = deletions_2.next(); !deletions_2_1.done; deletions_2_1 = deletions_2.next()) {
-                var fiber = deletions_2_1.value;
-                _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommit(fiber);
-            }
-        }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
-        finally {
-            try {
-                if (deletions_2_1 && !deletions_2_1.done && (_a = deletions_2.return)) _a.call(deletions_2);
-            }
-            finally { if (e_6) throw e_6.error; }
-        }
-        _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.set([]);
         _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(null);
         try {
             for (var layoutEffects_1 = __values(layoutEffects), layoutEffects_1_1 = layoutEffects_1.next(); !layoutEffects_1_1.done; layoutEffects_1_1 = layoutEffects_1.next()) {
@@ -1139,27 +1104,27 @@ function commitChanges() {
                 layoutEffect();
             }
         }
-        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
-                if (layoutEffects_1_1 && !layoutEffects_1_1.done && (_b = layoutEffects_1.return)) _b.call(layoutEffects_1);
+                if (layoutEffects_1_1 && !layoutEffects_1_1.done && (_a = layoutEffects_1.return)) _a.call(layoutEffects_1);
             }
-            finally { if (e_7) throw e_7.error; }
+            finally { if (e_5) throw e_5.error; }
         }
         setTimeout(function () {
-            var e_8, _a;
+            var e_6, _a;
             try {
                 for (var effects_1 = __values(effects), effects_1_1 = effects_1.next(); !effects_1_1.done; effects_1_1 = effects_1.next()) {
                     var effect = effects_1_1.value;
                     effect();
                 }
             }
-            catch (e_8_1) { e_8 = { error: e_8_1 }; }
+            catch (e_6_1) { e_6 = { error: e_6_1 }; }
             finally {
                 try {
                     if (effects_1_1 && !effects_1_1.done && (_a = effects_1.return)) _a.call(effects_1);
                 }
-                finally { if (e_8) throw e_8.error; }
+                finally { if (e_6) throw e_6.error; }
             }
         });
         _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsHelper.reset();
@@ -1173,6 +1138,23 @@ function commitChanges() {
     });
 }
 function commitWork(fiber, onComplete) {
+    var e_7, _a;
+    var deletions = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get();
+    try {
+        // important order
+        for (var deletions_1 = __values(deletions), deletions_1_1 = deletions_1.next(); !deletions_1_1.done; deletions_1_1 = deletions_1.next()) {
+            var fiber_1 = deletions_1_1.value;
+            (0,_unmount__WEBPACK_IMPORTED_MODULE_11__.unmountFiber)(fiber_1);
+            _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommit(fiber_1);
+        }
+    }
+    catch (e_7_1) { e_7 = { error: e_7_1 }; }
+    finally {
+        try {
+            if (deletions_1_1 && !deletions_1_1.done && (_a = deletions_1.return)) _a.call(deletions_1);
+        }
+        finally { if (e_7) throw e_7.error; }
+    }
     (0,_walk__WEBPACK_IMPORTED_MODULE_10__.walkFiber)({
         fiber: fiber,
         onLoop: function (_a) {
@@ -1190,6 +1172,7 @@ function commitWork(fiber, onComplete) {
         },
     });
     _platform__WEBPACK_IMPORTED_MODULE_1__.platform.finishCommitWork();
+    _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.set([]);
     onComplete();
 }
 function createHook() {
