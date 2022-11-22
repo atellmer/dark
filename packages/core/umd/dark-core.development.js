@@ -707,7 +707,7 @@ function mutateFiber(options) {
         fiber.alternate.alternate = null;
     }
     if (!fiber.nativeElement && (0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsVirtualNode)(fiber.instance)) {
-        fiber.nativeElement = _platform__WEBPACK_IMPORTED_MODULE_1__.platform.createNativeElement(fiber);
+        fiber.nativeElement = _platform__WEBPACK_IMPORTED_MODULE_1__.platform.createNativeElement(fiber.instance);
     }
 }
 function mutateAlternate(options) {
@@ -3028,15 +3028,10 @@ function getVirtualNodeKey(vNode) {
     var key = vNode && vNode.attrs[_constants__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY];
     return !(0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsEmpty)(key) ? key : null;
 }
-function Text(source) {
-    var text = typeof source === 'string' ? new TextVirtualNode(source) : detectIsTextVirtualNode(source) ? source.value : '';
-    return text;
-}
-function Comment(text) {
-    var factory = function () { return new CommentVirtualNode(text); };
-    factory[$$virtualNode] = true;
-    return factory;
-}
+var createEmptyVirtualNode = function () { return new CommentVirtualNode(_constants__WEBPACK_IMPORTED_MODULE_0__.EMPTY_NODE); };
+var detectIsVirtualNodeFactory = function (factory) {
+    return (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsFunction)(factory) && factory[$$virtualNode] === true;
+};
 function View(def) {
     var factory = function () {
         var as = def.as, slot = def.slot, _a = def.isVoid, isVoid = _a === void 0 ? false : _a, rest = __rest(def, ["as", "slot", "isVoid"]);
@@ -3051,10 +3046,19 @@ function View(def) {
     factory[$$virtualNode] = true;
     return factory;
 }
-var createEmptyVirtualNode = function () { return new CommentVirtualNode(_constants__WEBPACK_IMPORTED_MODULE_0__.EMPTY_NODE); };
-var detectIsVirtualNodeFactory = function (factory) {
-    return (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsFunction)(factory) && factory[$$virtualNode] === true;
-};
+function Text(source) {
+    var text = (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsString)(source)
+        ? new TextVirtualNode(source)
+        : detectIsTextVirtualNode(source)
+            ? source.value
+            : '';
+    return text;
+}
+function Comment(text) {
+    var factory = function () { return new CommentVirtualNode(text); };
+    factory[$$virtualNode] = true;
+    return factory;
+}
 
 
 

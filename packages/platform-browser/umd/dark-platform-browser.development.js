@@ -121,7 +121,7 @@ var attrBlackListMap = (_a = {},
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
     _a);
 var fragmentsMap = new Map();
-function createElement(vNode) {
+function createNativeElement(vNode) {
     var _a;
     var map = (_a = {},
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.TAG] = function (vNode) {
@@ -171,12 +171,6 @@ function detectIsSvgElement(tagName) {
         marker: true,
     };
     return Boolean(tagMap[tagName]);
-}
-function createNativeElement(fiber) {
-    if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance)) {
-        throw new Error('[Dark]: createNativeElement receives only virtual node!');
-    }
-    return createElement(fiber.instance);
 }
 function applyRef(ref, element) {
     if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsRef)(ref)) {
