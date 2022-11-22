@@ -1,7 +1,5 @@
-import { h, View, Text, createComponent, memo, useCallback } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
-
-const domElement = document.getElementById('root');
+import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -52,40 +50,58 @@ const state = {
 
 type HeaderProps = {
   onCreate: () => void;
-  onAdd: () => void;
+  onPrepend: () => void;
+  onAppend: () => void;
+  onInsertDifferent: () => void;
   onUpdateAll: () => void;
   onSwap: () => void;
   onClear: () => void;
 };
 
-const Header = createComponent<HeaderProps>(({ onCreate, onAdd, onUpdateAll, onSwap, onClear }) => {
-  return div({
-    style:
-      'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
-    slot: [
-      button({
-        slot: Text('create 10000 rows'),
-        onClick: onCreate,
-      }),
-      button({
-        slot: Text('Add 1000 rows'),
-        onClick: onAdd,
-      }),
-      button({
-        slot: Text('update every 10th row'),
-        onClick: onUpdateAll,
-      }),
-      button({
-        slot: Text('swap rows'),
-        onClick: onSwap,
-      }),
-      button({
-        slot: Text('clear rows'),
-        onClick: onClear,
-      }),
-    ],
-  });
-});
+const Header = createComponent<HeaderProps>(
+  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onClear }) => {
+    return div({
+      style:
+        'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
+      slot: [
+        button({
+          slot: Text('create 10000 rows'),
+          onClick: onCreate,
+        }),
+        button({
+          slot: Text('Prepend 1000 rows'),
+          onClick: onPrepend,
+        }),
+        button({
+          slot: Text('Append 1000 rows'),
+          onClick: onAppend,
+        }),
+        button({
+          slot: Text('insert different'),
+          onClick: onInsertDifferent,
+        }),
+        button({
+          slot: Text('update every 10th row'),
+          onClick: onUpdateAll,
+        }),
+        button({
+          slot: Text('swap rows'),
+          onClick: onSwap,
+        }),
+        button({
+          slot: Text('clear rows'),
+          onClick: onClear,
+        }),
+        button({
+          slot: Text('unmount app'),
+          onClick: () => {
+            root.unmount();
+          },
+        }),
+      ],
+    });
+  },
+);
 
 const MemoHeader = memo<HeaderProps>(Header);
 
@@ -156,10 +172,25 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const handleAdd = useCallback(() => {
+  const handlePrepend = useCallback(() => {
+    state.list.unshift(...buildData(1000, '!!!'));
+    state.list = [...state.list];
+    measurer.start('prepend');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleAppend = useCallback(() => {
     state.list.push(...buildData(1000, '!!!'));
     state.list = [...state.list];
-    measurer.start('add');
+    measurer.start('append');
+    forceUpdate();
+    measurer.stop();
+  }, []);
+  const handleInsertDifferent = useCallback(() => {
+    const [item1, item2, item3, ...rest] = state.list;
+
+    state.list = [...buildData(5, '***'), item1, item2, item3, ...buildData(2, '***'), ...rest].filter(Boolean);
+    measurer.start('insert different');
     forceUpdate();
     measurer.stop();
   }, []);
@@ -200,20 +231,30 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
 
-  return [
-    <MemoHeader
-      onCreate={handleCreate}
-      onAdd={handleAdd}
-      onUpdateAll={handleUpdateAll}
-      onSwap={handleSwap}
-      onClear={handleClear}
-    />,
-    <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />,
-  ];
+  return (
+    <>
+      <MemoHeader
+        onCreate={handleCreate}
+        onPrepend={handlePrepend}
+        onAppend={handleAppend}
+        onInsertDifferent={handleInsertDifferent}
+        onUpdateAll={handleUpdateAll}
+        onSwap={handleSwap}
+        onClear={handleClear}
+      />
+      <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+    </>
+  );
 });
 
+const root = createRoot(document.getElementById('root'));
+
 function forceUpdate() {
-  render(Bench(), domElement);
+  root.render(Bench());
 }
 
-render(Bench(), domElement);
+forceUpdate();
+
+document.querySelector('#button').addEventListener('click', () => {
+  forceUpdate();
+});
