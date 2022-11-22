@@ -811,26 +811,11 @@ function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNod
 function commitChanges() {
   const wipFiber = wipRootHelper.get();
   const fromHook = fromHookUpdateHelper.get();
-  const deletions = deletionsHelper.get();
-  const hasEffects = Boolean(wipFiber.alternate?.effectHost);
-  const hasLayoutEffects = Boolean(wipFiber.alternate?.layoutEffectHost);
-  const hasPortals = Boolean(wipFiber.alternate?.portalHost);
-
-  if (hasEffects || hasLayoutEffects || hasPortals) {
-    for (const fiber of deletions) {
-      unmountFiber(fiber);
-    }
-  }
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsHelper.get();
     const effects = effectsHelper.get();
 
-    for (const fiber of deletions) {
-      platform.applyCommit(fiber);
-    }
-
-    deletionsHelper.set([]);
     wipRootHelper.set(null);
 
     for (const layoutEffect of layoutEffects) {
@@ -855,6 +840,14 @@ function commitChanges() {
 }
 
 function commitWork(fiber: Fiber, onComplete: Function) {
+  const deletions = deletionsHelper.get();
+
+  // important order
+  for (const fiber of deletions) {
+    unmountFiber(fiber);
+    platform.applyCommit(fiber);
+  }
+
   walkFiber({
     fiber,
     onLoop: ({ nextFiber, isReturn, resetIsDeepWalking }) => {
@@ -873,6 +866,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   });
 
   platform.finishCommitWork();
+  deletionsHelper.set([]);
   onComplete();
 }
 
