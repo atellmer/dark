@@ -25,8 +25,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../render */ "./src/render/index.ts");
-/* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../dom */ "./src/dom/index.ts");
-
 
 
 function createRoot(container) {
@@ -35,7 +33,6 @@ function createRoot(container) {
         unmount: function () {
             var rootId = _render__WEBPACK_IMPORTED_MODULE_1__.roots.get(container);
             (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.unmountRoot)(rootId, function () {
-                (0,_dom__WEBPACK_IMPORTED_MODULE_2__.resetNodeCache)();
                 _render__WEBPACK_IMPORTED_MODULE_1__.roots["delete"](container);
                 container.innerHTML = '';
             });
@@ -72,9 +69,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "applyCommit": () => (/* binding */ applyCommit),
-/* harmony export */   "createDomElement": () => (/* binding */ createDomElement),
-/* harmony export */   "finishCommitWork": () => (/* binding */ finishCommitWork),
-/* harmony export */   "resetNodeCache": () => (/* binding */ resetNodeCache)
+/* harmony export */   "createNativeElement": () => (/* binding */ createNativeElement),
+/* harmony export */   "finishCommitWork": () => (/* binding */ finishCommitWork)
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
@@ -125,8 +121,6 @@ var attrBlackListMap = (_a = {},
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
     _a);
 var fragmentsMap = new Map();
-var fragmentsCallbacks = [];
-var nodeCacheMap = new Map();
 function createElement(vNode) {
     var _a;
     var map = (_a = {},
@@ -150,12 +144,39 @@ function createElement(vNode) {
         _a);
     return map[vNode.type](vNode);
 }
-function createDomElement(fiber) {
+function detectIsSvgElement(tagName) {
+    var tagMap = {
+        svg: true,
+        circle: true,
+        ellipse: true,
+        g: true,
+        text: true,
+        tspan: true,
+        textPath: true,
+        path: true,
+        polygon: true,
+        polyline: true,
+        line: true,
+        rect: true,
+        use: true,
+        image: true,
+        symbol: true,
+        defs: true,
+        linearGradient: true,
+        radialGradient: true,
+        stop: true,
+        clipPath: true,
+        pattern: true,
+        mask: true,
+        marker: true,
+    };
+    return Boolean(tagMap[tagName]);
+}
+function createNativeElement(fiber) {
     if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance)) {
-        throw new Error('[Dark]: createDomElement receives only virtual node!');
+        throw new Error('[Dark]: createNativeElement receives only virtual node!');
     }
-    var vNode = fiber.instance;
-    return createElement(vNode);
+    return createElement(fiber.instance);
 }
 function applyRef(ref, element) {
     if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsRef)(ref)) {
@@ -272,136 +293,72 @@ function upgradeInputAttributes(options) {
     map[tagName] && map[tagName]();
 }
 function getParentFiberWithNativeElement(fiber) {
-    var nextFiber = fiber.parent;
-    if ((0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(fiber.instance))
-        return fiber;
-    while (nextFiber && !nextFiber.nativeElement) {
+    var nextFiber = fiber;
+    while (nextFiber) {
+        nextFiber = nextFiber.parent;
         if ((0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(nextFiber.instance)) {
             nextFiber.nativeElement = (0,_portal__WEBPACK_IMPORTED_MODULE_1__.getPortalContainer)(nextFiber.instance);
         }
-        else {
-            nextFiber = nextFiber.parent;
-        }
+        if (nextFiber.nativeElement)
+            return nextFiber;
     }
     return nextFiber;
 }
-function canTakeNodeFromCache(fiber, parentFiber) {
+function getNodeOnTheRight(fiber, parentElement) {
+    var node = null;
+    (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.walkFiber)({
+        fiber: fiber,
+        onLoop: function (_a) {
+            var nextFiber = _a.nextFiber, stop = _a.stop, resetIsDeepWalking = _a.resetIsDeepWalking;
+            if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
+                node = nextFiber.nativeElement;
+                return stop();
+            }
+            if (!nextFiber.mountedToHost) {
+                return resetIsDeepWalking();
+            }
+        },
+    });
+    return node;
+}
+function getChildIndex(fiber, parentNativeElement) {
+    var _a;
     var nextFiber = fiber;
     while (nextFiber) {
-        if (nextFiber.alternate) {
-            var alternate = nextFiber.alternate;
-            var isEmptyNode = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsCommentVirtualNode)(alternate.instance) && alternate.instance.value === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EMPTY_NODE;
-            return isEmptyNode;
+        if (((_a = nextFiber === null || nextFiber === void 0 ? void 0 : nextFiber.parent) === null || _a === void 0 ? void 0 : _a.nativeElement) === parentNativeElement) {
+            return nextFiber.idx;
         }
         nextFiber = nextFiber.parent;
-        if (nextFiber === parentFiber)
-            return false;
     }
-    return false;
-}
-function isEndOfInsertion(fiber, parentFiber) {
-    var nextFiber = fiber;
-    do {
-        if (!nextFiber)
-            return false;
-        nextFiber = nextFiber.nextSibling || nextFiber.parent.nextSibling;
-        if (nextFiber && nextFiber.parent === parentFiber)
-            break;
-    } while (!nextFiber);
-    if (nextFiber.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE) {
-        return true;
-    }
-    return false;
-}
-function getNodeOnTheRight(fiber, parentElement) {
-    var nextFiber = fiber;
-    var isDeepWalking = true;
-    while (nextFiber) {
-        if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
-            return nextFiber.nativeElement;
-        }
-        if (nextFiber.nativeElement && !nextFiber.mountedToHost) {
-            isDeepWalking = false;
-        }
-        if (nextFiber.child && isDeepWalking) {
-            nextFiber = nextFiber.child;
-        }
-        else if (nextFiber.nextSibling) {
-            isDeepWalking = true;
-            nextFiber = nextFiber.nextSibling;
-        }
-        else if (nextFiber.parent && nextFiber.parent.nativeElement !== parentElement) {
-            isDeepWalking = false;
-            nextFiber = nextFiber.parent;
-        }
-        else {
-            nextFiber = null;
-        }
-    }
-    return null;
-}
-function detectIsSvgElement(tagName) {
-    var tagMap = {
-        svg: true,
-        circle: true,
-        ellipse: true,
-        g: true,
-        text: true,
-        tspan: true,
-        textPath: true,
-        path: true,
-        polygon: true,
-        polyline: true,
-        line: true,
-        rect: true,
-        use: true,
-        image: true,
-        symbol: true,
-        defs: true,
-        linearGradient: true,
-        radialGradient: true,
-        stop: true,
-        clipPath: true,
-        pattern: true,
-        mask: true,
-        marker: true,
-    };
-    return Boolean(tagMap[tagName]);
+    return -1;
 }
 function commitPlacement(fiber, parentFiber) {
-    var fromHookUpdate = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fromHookUpdateHelper.get();
     var parentNativeElement = parentFiber.nativeElement;
-    var cachedNode = nodeCacheMap.get(parentNativeElement);
-    var node = parentFiber.alternate
-        ? !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(cachedNode) && canTakeNodeFromCache(fiber, parentFiber)
-            ? cachedNode
-            : cachedNode === null
-                ? null
-                : getNodeOnTheRight(fiber, parentNativeElement)
-        : fromHookUpdate
-            ? getNodeOnTheRight(fiber, parentNativeElement)
-            : null;
-    nodeCacheMap.set(parentNativeElement, node);
-    if (node) {
-        parentNativeElement.insertBefore(fiber.nativeElement, node);
-        fiber.mountedToHost = true;
-        if (isEndOfInsertion(fiber, parentFiber)) {
-            nodeCacheMap.delete(parentNativeElement);
-        }
+    var childNodes = parentNativeElement.childNodes;
+    var append = function () {
+        var fragment = (fragmentsMap.get(parentNativeElement) ||
+            {
+                fragment: document.createDocumentFragment(),
+                callback: function () { },
+            }).fragment;
+        fragmentsMap.set(parentNativeElement, {
+            fragment: fragment,
+            callback: function () {
+                parentNativeElement.appendChild(fragment);
+            },
+        });
+        fragment.appendChild(fiber.nativeElement);
+        fiber.markMountedToHost();
+    };
+    var insert = function () {
+        parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
+        fiber.markMountedToHost();
+    };
+    if (childNodes.length === 0 || getChildIndex(fiber, parentNativeElement) > childNodes.length - 1) {
+        append();
     }
     else {
-        var fragment_1 = fragmentsMap.get(parentNativeElement);
-        if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(fragment_1)) {
-            fragment_1 = document.createDocumentFragment();
-            fragmentsMap.set(parentNativeElement, fragment_1);
-        }
-        fragment_1.appendChild(fiber.nativeElement);
-        fiber.mountedToHost = true;
-        fragmentsCallbacks.push(function () {
-            parentNativeElement.appendChild(fragment_1);
-            fragmentsMap.delete(parentNativeElement);
-            nodeCacheMap.delete(parentNativeElement);
-        });
+        insert();
     }
     addAttributes(fiber.nativeElement, fiber.instance);
 }
@@ -416,41 +373,19 @@ function commitUpdate(element, instance, nextInstance) {
     }
 }
 function commitDeletion(fiber, parentFiber) {
-    var parentElement = parentFiber.nativeElement;
-    var nextFiber = fiber;
-    var isDeepWalking = true;
-    var isReturn = false;
-    while (nextFiber) {
-        if (!isReturn) {
-            if (nextFiber.nativeElement) {
-                var isPortal = (0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(nextFiber.instance);
-                !isPortal && parentElement.removeChild(nextFiber.nativeElement);
-                isDeepWalking = false;
+    (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.walkFiber)({
+        fiber: fiber,
+        onLoop: function (_a) {
+            var nextFiber = _a.nextFiber, isReturn = _a.isReturn, resetIsDeepWalking = _a.resetIsDeepWalking, stop = _a.stop;
+            if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+                return stop();
             }
-        }
-        if (nextFiber.child && isDeepWalking) {
-            nextFiber = nextFiber.child;
-            isReturn = false;
-        }
-        else if (nextFiber.nextSibling && nextFiber.nextSibling !== fiber.nextSibling) {
-            if (nextFiber.nextSibling.effectTag === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETION)
-                return;
-            isDeepWalking = true;
-            isReturn = false;
-            nextFiber = nextFiber.nextSibling;
-        }
-        else if (nextFiber.parent &&
-            nextFiber !== fiber &&
-            nextFiber.parent !== fiber &&
-            nextFiber.parent !== fiber.parent) {
-            isDeepWalking = false;
-            isReturn = true;
-            nextFiber = nextFiber.parent;
-        }
-        else {
-            nextFiber = null;
-        }
-    }
+            if (!isReturn && nextFiber.nativeElement) {
+                !(0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
+                return resetIsDeepWalking();
+            }
+        },
+    });
 }
 function applyCommit(fiber) {
     var parentFiber = getParentFiberWithNativeElement(fiber);
@@ -469,11 +404,21 @@ function applyCommit(fiber) {
     }
 }
 function finishCommitWork() {
-    fragmentsCallbacks.forEach(function (fn) { return fn(); });
-    fragmentsCallbacks = [];
-}
-function resetNodeCache() {
-    nodeCacheMap = new Map();
+    var e_3, _a;
+    try {
+        for (var _b = __values(fragmentsMap.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var callback = _c.value.callback;
+            callback();
+        }
+    }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_3) throw e_3.error; }
+    }
+    fragmentsMap = new Map();
 }
 
 
@@ -489,9 +434,8 @@ function resetNodeCache() {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "applyCommit": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.applyCommit),
-/* harmony export */   "createDomElement": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.createDomElement),
-/* harmony export */   "finishCommitWork": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.finishCommitWork),
-/* harmony export */   "resetNodeCache": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.resetNodeCache)
+/* harmony export */   "createNativeElement": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.createNativeElement),
+/* harmony export */   "finishCommitWork": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_0__.finishCommitWork)
 /* harmony export */ });
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dom */ "./src/dom/dom.ts");
 /* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./types */ "./src/dom/types.ts");
@@ -720,7 +664,7 @@ __webpack_require__.r(__webpack_exports__);
 
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback = _scheduling__WEBPACK_IMPORTED_MODULE_3__.scheduleCallback;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.shouldYeildToHost = _scheduling__WEBPACK_IMPORTED_MODULE_3__.shouldYeildToHost;
-_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.createNativeElement = _dom__WEBPACK_IMPORTED_MODULE_1__.createDomElement;
+_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.createNativeElement = _dom__WEBPACK_IMPORTED_MODULE_1__.createNativeElement;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.applyCommit = _dom__WEBPACK_IMPORTED_MODULE_1__.applyCommit;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.finishCommitWork = _dom__WEBPACK_IMPORTED_MODULE_1__.finishCommitWork;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.detectIsPortal = _portal__WEBPACK_IMPORTED_MODULE_2__.detectIsPortal;
@@ -742,7 +686,6 @@ function render(element, container) {
     }
     var callback = function () {
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper.set(rootId); // important order!
-        (0,_dom__WEBPACK_IMPORTED_MODULE_1__.resetNodeCache)();
         var currentRootFiber = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.currentRootHelper.get();
         var fiber = new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.Fiber({
             nativeElement: container,

@@ -478,6 +478,7 @@ var Fiber = /** @class */ (function () {
         this.layoutEffectHost = !(0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(options.layoutEffectHost) ? options.layoutEffectHost : false;
         this.childrenCount = options.childrenCount || 0;
         this.marker = options.marker || '';
+        this.idx = options.idx || 0;
         this.isUsed = options.isUsed || false;
     }
     Fiber.prototype.markPortalHost = function () {
@@ -491,6 +492,10 @@ var Fiber = /** @class */ (function () {
     Fiber.prototype.markLayoutEffectHost = function () {
         this.layoutEffectHost = true;
         this.parent && !this.parent.layoutEffectHost && this.parent.markLayoutEffectHost();
+    };
+    Fiber.prototype.markMountedToHost = function () {
+        this.mountedToHost = true;
+        this.parent && !this.parent.mountedToHost && this.parent.markMountedToHost();
     };
     Fiber.prototype.setError = function (error) {
         if (typeof this.catchException === 'function') {
@@ -611,6 +616,7 @@ function performChild(options) {
     alternate && mutateAlternate({ alternate: alternate, instance: instance });
     mutateFiber({ fiber: fiber, alternate: alternate, instance: instance });
     fiber = alternate ? performMemo({ fiber: fiber, alternate: alternate, instance: instance }) : fiber;
+    fiber.idx = 0;
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
     fiber.shadow = shadow;
@@ -651,6 +657,7 @@ function performSibling(options) {
         alternate && mutateAlternate({ alternate: alternate, instance: instance });
         mutateFiber({ fiber: fiber, alternate: alternate, instance: instance });
         fiber = alternate ? performMemo({ fiber: fiber, alternate: alternate, instance: instance }) : fiber;
+        fiber.idx = childrenIdx;
         fiber.parent = nextFiber.parent;
         nextFiber.nextSibling = fiber;
         fiber.shadow = shadow;
@@ -691,7 +698,7 @@ function mutateFiber(options) {
     fiber.alternate = alternate || null;
     fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
     fiber.effectTag = isUpdate ? _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE : _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT;
-    fiber.mountedToHost = fiber.nativeElement ? isUpdate : false;
+    fiber.mountedToHost = isUpdate;
     if (hasChildrenProp(fiber.instance)) {
         fiber.childrenCount = fiber.instance.children.length;
     }
@@ -721,12 +728,11 @@ function mutateAlternate(options) {
         var nextElementsCount_1 = instance.children.length;
         var isRequestedKeys = prevElementsCount_1 !== nextElementsCount_1;
         if (isRequestedKeys) {
-            var isRemovingCase = nextElementsCount_1 < prevElementsCount_1;
-            var isInsertingCase = nextElementsCount_1 > prevElementsCount_1;
             var children = hasChildrenProp(instance) ? instance.children : [];
             var _a = extractKeys(alternate.child, children), prevKeys_1 = _a.prevKeys, nextKeys_1 = _a.nextKeys;
-            var hasKeys_1 = prevKeys_1.length > 0;
-            var hasAnyKeys = hasKeys_1 || nextKeys_1.length > 0;
+            var hasPrevKeys = prevKeys_1.length > 0;
+            var hasNextKeys = nextKeys_1.length > 0;
+            var hasAnyKeys = hasPrevKeys || hasNextKeys;
             if (true) {
                 if (!hasAnyKeys && prevElementsCount_1 !== 0 && nextElementsCount_1 !== 0) {
                     (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.error)("\n            [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!\n          ");
@@ -755,8 +761,10 @@ function mutateAlternate(options) {
                         finally { if (e_1) throw e_1.error; }
                     }
                 }
-                else if (!hasKeys_1) {
+                else {
                     var diffCount = prevElementsCount_1 - nextElementsCount_1;
+                    if (diffCount === 0)
+                        return;
                     var fibers = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.takeListFromEnd)(getSiblingFibers(alternate.child), diffCount);
                     try {
                         for (var fibers_1 = __values(fibers), fibers_1_1 = fibers_1.next(); !fibers_1_1.done; fibers_1_1 = fibers_1.next()) {
@@ -777,51 +785,51 @@ function mutateAlternate(options) {
             var performInsertingNodes = function () {
                 var e_3, _a;
                 var diffKeys = getDiffKeys(nextKeys_1, prevKeys_1);
-                if (diffKeys.length > 0) {
-                    var diffKeyMap = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.keyBy)(diffKeys, function (x) { return x; });
-                    var fibersByPositionsMap = createFibersByPositionMap(alternate.child);
-                    var usedKeyMap = {};
-                    var keyIdx = 0;
-                    try {
-                        for (var nextKeys_2 = __values(nextKeys_1), nextKeys_2_1 = nextKeys_2.next(); !nextKeys_2_1.done; nextKeys_2_1 = nextKeys_2.next()) {
-                            var nextKey_1 = nextKeys_2_1.value;
-                            if (true) {
-                                if (usedKeyMap[nextKey_1]) {
-                                    (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.error)("Some key of node already has been used!");
+                if (diffKeys.length === 0)
+                    return;
+                var diffKeyMap = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.keyBy)(diffKeys, function (x) { return x; });
+                var usedKeyMap = {};
+                var keyIdx = 0;
+                try {
+                    for (var nextKeys_2 = __values(nextKeys_1), nextKeys_2_1 = nextKeys_2.next(); !nextKeys_2_1.done; nextKeys_2_1 = nextKeys_2.next()) {
+                        var nextKey_1 = nextKeys_2_1.value;
+                        if (true) {
+                            if (usedKeyMap[nextKey_1]) {
+                                (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.error)("Some key of node already has been used!");
+                            }
+                        }
+                        usedKeyMap[nextKey_1] = true;
+                        if (nextKey_1 !== prevKeys_1[keyIdx] && diffKeyMap[nextKey_1]) {
+                            var insertionFiber = new Fiber({
+                                instance: (0,_view__WEBPACK_IMPORTED_MODULE_4__.createEmptyVirtualNode)(),
+                                parent: alternate,
+                                effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT,
+                            });
+                            if (keyIdx === 0) {
+                                insertionFiber.nextSibling = alternate.child;
+                                alternate.child = insertionFiber;
+                            }
+                            else {
+                                var _b = __read(getFibersByIdx(alternate.child, keyIdx), 2), fiber = _b[0], prevFiber = _b[1];
+                                if (fiber && prevFiber) {
+                                    insertionFiber.nextSibling = fiber;
+                                    prevFiber.nextSibling = insertionFiber;
                                 }
                             }
-                            usedKeyMap[nextKey_1] = true;
-                            if (nextKey_1 !== prevKeys_1[keyIdx] && diffKeyMap[nextKey_1]) {
-                                var insertionFiber = new Fiber({
-                                    instance: (0,_view__WEBPACK_IMPORTED_MODULE_4__.createEmptyVirtualNode)(),
-                                    parent: alternate,
-                                    effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT,
-                                });
-                                if (keyIdx === 0) {
-                                    insertionFiber.nextSibling = alternate.child;
-                                    alternate.child = insertionFiber;
-                                }
-                                else {
-                                    var fiber = fibersByPositionsMap[keyIdx] || null;
-                                    if (fiber) {
-                                        insertionFiber.nextSibling = fiber;
-                                    }
-                                }
-                            }
-                            keyIdx++;
                         }
-                    }
-                    catch (e_3_1) { e_3 = { error: e_3_1 }; }
-                    finally {
-                        try {
-                            if (nextKeys_2_1 && !nextKeys_2_1.done && (_a = nextKeys_2.return)) _a.call(nextKeys_2);
-                        }
-                        finally { if (e_3) throw e_3.error; }
+                        keyIdx++;
                     }
                 }
+                catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                finally {
+                    try {
+                        if (nextKeys_2_1 && !nextKeys_2_1.done && (_a = nextKeys_2.return)) _a.call(nextKeys_2);
+                    }
+                    finally { if (e_3) throw e_3.error; }
+                }
             };
-            isRemovingCase && performRemovingNodes();
-            isInsertingCase && performInsertingNodes();
+            performRemovingNodes();
+            performInsertingNodes();
         }
     }
 }
@@ -855,6 +863,9 @@ function performMemo(options) {
             }
             if (memoFiber.layoutEffectHost) {
                 fiber.markLayoutEffectHost();
+            }
+            if (memoFiber.mountedToHost) {
+                fiber.markMountedToHost();
             }
             if (memoFiber.portalHost) {
                 fiber.markPortalHost();
@@ -951,16 +962,19 @@ function mountInstance(fiber, instance) {
     }
     return instance;
 }
-function createFibersByPositionMap(fiber) {
+function getFibersByIdx(fiber, idx) {
+    var map = {};
     var nextFiber = fiber;
     var position = 0;
-    var map = {};
     while (nextFiber) {
         map[position] = nextFiber;
+        if (position === idx) {
+            return [map[position] || null, map[position - 1] || null];
+        }
         position++;
         nextFiber = nextFiber.nextSibling;
     }
-    return map;
+    return [null, null];
 }
 function createFibersByKeyMap(fiber) {
     var nextFiber = fiber;
