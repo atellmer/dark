@@ -16,6 +16,7 @@ import {
   detectIsTextVirtualNode,
   detectIsRef,
   walkFiber,
+  trackStore,
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
@@ -250,6 +251,8 @@ function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
 
+  trackStore.get()(fiber.nativeElement);
+
   const append = () => {
     const { fragment } =
       fragmentsMap.get(parentNativeElement) ||
@@ -282,17 +285,19 @@ function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
 }
 
-function commitUpdate(element: Element, instance: VirtualNode, nextInstance: VirtualNode) {
+function commitUpdate(nativeElement: Element, instance: VirtualNode, nextInstance: VirtualNode) {
+  trackStore.get()(nativeElement);
+
   if (
     detectIsTextVirtualNode(instance) &&
     detectIsTextVirtualNode(nextInstance) &&
     instance.value !== nextInstance.value
   ) {
-    return (element.textContent = nextInstance.value);
+    return (nativeElement.textContent = nextInstance.value);
   }
 
   if (detectIsTagVirtualNode(instance) && detectIsTagVirtualNode(nextInstance)) {
-    return updateAttributes(element, instance, nextInstance);
+    return updateAttributes(nativeElement, instance, nextInstance);
   }
 }
 

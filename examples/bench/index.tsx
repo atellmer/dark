@@ -116,10 +116,9 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const className = `${selected ? 'selected' : ''}`;
 
   return (
-    <tr class={className}>
+    <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>qqq</td>
       <td class='cell'>xxx</td>
@@ -167,7 +166,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(1000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -250,7 +249,18 @@ const Bench = createComponent(() => {
 const root = createRoot(document.getElementById('root'));
 
 function forceUpdate() {
-  root.render(Bench());
+  root.render(Bench(), {
+    trackUpdate: node => {
+      if (!node.tagName) return;
+      requestAnimationFrame(() => {
+        node.classList.add('updated-node');
+
+        setTimeout(() => {
+          node.classList.remove('updated-node');
+        }, 300);
+      });
+    },
+  });
 }
 
 forceUpdate();

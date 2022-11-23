@@ -1,10 +1,11 @@
 import type { Fiber } from '../fiber';
+import { dummyFn } from '../helpers';
 
 let rootId: number = null;
 
 const stores = new Map<number, Store>();
 
-class Store {
+class Store<N = unknown> {
   public wipRoot: Fiber = null;
   public currentRoot: Fiber = null;
   public nextUnitOfWork: Fiber = null;
@@ -22,6 +23,7 @@ class Store {
   public isLayoutEffectsZone = false;
   public isUpdateHookZone = false;
   public isBatchZone = false;
+  public trackUpdate: (nativeElement: N) => void | undefined;
 }
 
 type FiberMountStore = {
@@ -140,6 +142,11 @@ const isBatchZone = {
   set: (value: boolean) => (store.get().isBatchZone = value),
 };
 
+const trackStore = {
+  get: () => store.get().trackUpdate || dummyFn,
+  set: (value: (n: unknown) => void) => (store.get().trackUpdate = value),
+};
+
 export {
   getRootId,
   rootStore,
@@ -155,4 +162,5 @@ export {
   isLayoutEffectsZone,
   isUpdateHookZone,
   isBatchZone,
+  trackStore,
 };
