@@ -564,7 +564,7 @@ useLayoutEffect(() => {
 <a name="optimization"></a>
 ## Performance optimization
 
-Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, batched and deffered updates.
+Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, batched and deferred updates.
 
 ### memo
 
