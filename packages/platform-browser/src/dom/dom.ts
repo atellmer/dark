@@ -19,14 +19,12 @@ import {
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import type { DOMElement, DOMFragment } from './types';
+import type { DOMElement } from './types';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
 };
-
-let fragmentsMap: Map<Element, DOMFragment> = new Map();
 
 function createNativeElement(vNode: VirtualNode): DOMElement {
   const map = {
@@ -251,20 +249,7 @@ function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
   const childNodes = parentNativeElement.childNodes;
 
   const append = () => {
-    const { fragment } =
-      fragmentsMap.get(parentNativeElement) ||
-      ({
-        fragment: document.createDocumentFragment(),
-        callback: () => {},
-      } as DOMFragment);
-
-    fragmentsMap.set(parentNativeElement, {
-      fragment,
-      callback: () => {
-        parentNativeElement.appendChild(fragment);
-      },
-    });
-    fragment.appendChild(fiber.nativeElement);
+    parentNativeElement.appendChild(fiber.nativeElement);
     fiber.markMountedToHost();
   };
 
@@ -329,12 +314,6 @@ function applyCommit(fiber: Fiber<Element>) {
   }
 }
 
-function finishCommitWork() {
-  for (const { callback } of fragmentsMap.values()) {
-    callback();
-  }
-
-  fragmentsMap = new Map();
-}
+function finishCommitWork() {}
 
 export { createNativeElement, applyCommit, finishCommitWork };

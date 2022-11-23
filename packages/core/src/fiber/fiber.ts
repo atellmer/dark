@@ -383,9 +383,8 @@ function mutateAlternate(options: PerformAlternateOptions) {
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const prevElementsCount = alternate.childrenCount;
     const nextElementsCount = instance.children.length;
-    const isRequestedKeys = prevElementsCount !== nextElementsCount;
 
-    if (isRequestedKeys) {
+    if (prevElementsCount !== nextElementsCount) {
       const children = hasChildrenProp(instance) ? instance.children : [];
       const { prevKeys, nextKeys } = extractKeys(alternate.child, children);
       const hasPrevKeys = prevKeys.length > 0;
@@ -400,7 +399,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
         }
       }
 
-      const performRemovingNodes = () => {
+      const performRemoving = () => {
         const diffKeys = getDiffKeys(prevKeys, nextKeys);
 
         if (diffKeys.length > 0) {
@@ -416,7 +415,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
           }
         } else {
           const diffCount = prevElementsCount - nextElementsCount;
-          if (diffCount === 0) return;
+          if (diffCount <= 0) return;
           const fibers = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const fiber of fibers) {
@@ -427,10 +426,10 @@ function mutateAlternate(options: PerformAlternateOptions) {
         }
       };
 
-      const performInsertingNodes = () => {
+      const performInserting = () => {
         const diffKeys = getDiffKeys(nextKeys, prevKeys);
 
-        if (diffKeys.length === 0) return;
+        if (diffKeys.length === 0 || diffKeys.length === nextKeys.length) return;
 
         const diffKeyMap = keyBy(diffKeys, x => x);
         const usedKeyMap = {};
@@ -469,8 +468,8 @@ function mutateAlternate(options: PerformAlternateOptions) {
         }
       };
 
-      performRemovingNodes();
-      performInsertingNodes();
+      performRemoving();
+      performInserting();
     }
   }
 }
