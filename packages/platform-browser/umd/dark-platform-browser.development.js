@@ -120,7 +120,6 @@ var attrBlackListMap = (_a = {},
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY] = true,
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
     _a);
-var fragmentsMap = new Map();
 function createNativeElement(vNode) {
     var _a;
     var map = (_a = {},
@@ -330,18 +329,7 @@ function commitPlacement(fiber, parentFiber) {
     var parentNativeElement = parentFiber.nativeElement;
     var childNodes = parentNativeElement.childNodes;
     var append = function () {
-        var fragment = (fragmentsMap.get(parentNativeElement) ||
-            {
-                fragment: document.createDocumentFragment(),
-                callback: function () { },
-            }).fragment;
-        fragmentsMap.set(parentNativeElement, {
-            fragment: fragment,
-            callback: function () {
-                parentNativeElement.appendChild(fragment);
-            },
-        });
-        fragment.appendChild(fiber.nativeElement);
+        parentNativeElement.appendChild(fiber.nativeElement);
         fiber.markMountedToHost();
     };
     var insert = function () {
@@ -397,23 +385,7 @@ function applyCommit(fiber) {
         commitDeletion(fiber, parentFiber);
     }
 }
-function finishCommitWork() {
-    var e_3, _a;
-    try {
-        for (var _b = __values(fragmentsMap.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
-            var callback = _c.value.callback;
-            callback();
-        }
-    }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
-    finally {
-        try {
-            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-        }
-        finally { if (e_3) throw e_3.error; }
-    }
-    fragmentsMap = new Map();
-}
+function finishCommitWork() { }
 
 
 
@@ -491,11 +463,11 @@ var SyntheticEvent = /** @class */ (function () {
 }());
 function delegateEvent(options) {
     var target = options.target, eventName = options.eventName, handler = options.handler;
-    var eventsStore = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsHelper.get();
-    var handlerMap = eventsStore.get(eventName);
+    var eventsMap = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsStore.get();
+    var handlerMap = eventsMap.get(eventName);
     if (!handlerMap) {
         var rootHandler_1 = function (event) {
-            var fireEvent = eventsStore.get(eventName).get(event.target);
+            var fireEvent = eventsMap.get(eventName).get(event.target);
             var target = event.target;
             var syntheticEvent = null;
             if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(fireEvent)) {
@@ -509,9 +481,9 @@ function delegateEvent(options) {
                 target.parentElement.dispatchEvent(new event.constructor(event.type, event));
             }
         };
-        eventsStore.set(eventName, new WeakMap([[target, handler]]));
+        eventsMap.set(eventName, new WeakMap([[target, handler]]));
         document.addEventListener(eventName, rootHandler_1, true);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsHelper.addUnsubscriber(function () { return document.removeEventListener(eventName, rootHandler_1, true); });
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsStore.addUnsubscriber(function () { return document.removeEventListener(eventName, rootHandler_1, true); });
     }
     else {
         handlerMap.set(target, handler);
@@ -651,14 +623,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../dom */ "./src/dom/index.ts");
 /* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../portal */ "./src/portal/index.ts");
-/* harmony import */ var _scheduling__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../scheduling */ "./src/scheduling/index.ts");
+/* harmony import */ var _scheduler__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../scheduler */ "./src/scheduler/index.ts");
 
 
 
 
-_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback = _scheduling__WEBPACK_IMPORTED_MODULE_3__.scheduleCallback;
-_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.shouldYeildToHost = _scheduling__WEBPACK_IMPORTED_MODULE_3__.shouldYeildToHost;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.createNativeElement = _dom__WEBPACK_IMPORTED_MODULE_1__.createNativeElement;
+_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.requestAnimationFrame = requestAnimationFrame.bind(undefined);
+_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback = _scheduler__WEBPACK_IMPORTED_MODULE_3__.scheduleCallback;
+_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.shouldYeildToHost = _scheduler__WEBPACK_IMPORTED_MODULE_3__.shouldYeildToHost;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.applyCommit = _dom__WEBPACK_IMPORTED_MODULE_1__.applyCommit;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.finishCommitWork = _dom__WEBPACK_IMPORTED_MODULE_1__.finishCommitWork;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.detectIsPortal = _portal__WEBPACK_IMPORTED_MODULE_2__.detectIsPortal;
@@ -679,53 +652,50 @@ function render(element, container) {
         rootId = roots.get(container);
     }
     var callback = function () {
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper.set(rootId); // important order!
-        var currentRootFiber = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.currentRootHelper.get();
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.rootStore.set(rootId); // important order!
+        var currentRoot = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.currentRootStore.get();
         var fiber = new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.Fiber({
             nativeElement: container,
             instance: new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TagVirtualNode({
                 name: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ROOT,
                 children: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.flatten)([element || (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createEmptyVirtualNode)()]),
             }),
-            alternate: currentRootFiber,
+            alternate: currentRoot,
             effectTag: isMounted ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE : _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.PLACEMENT,
         });
-        currentRootFiber && (currentRootFiber.alternate = null);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fiberMountHelper.reset();
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootHelper.set(fiber);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper.set(fiber);
+        currentRoot && (currentRoot.alternate = null);
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fiberMountStore.reset();
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootStore.set(fiber);
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkStore.set(fiber);
     };
-    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, { priority: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL });
+    _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, { priority: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL, forceSync: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.isLayoutEffectsZone.get() });
 }
 
 
 
 /***/ }),
 
-/***/ "./src/scheduling/index.ts":
-/*!*********************************!*\
-  !*** ./src/scheduling/index.ts ***!
-  \*********************************/
+/***/ "./src/scheduler/index.ts":
+/*!********************************!*\
+  !*** ./src/scheduler/index.ts ***!
+  \********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "TaskPriority": () => (/* reexport safe */ _types__WEBPACK_IMPORTED_MODULE_1__.TaskPriority),
-/* harmony export */   "scheduleCallback": () => (/* reexport safe */ _scheduling__WEBPACK_IMPORTED_MODULE_0__.scheduleCallback),
-/* harmony export */   "shouldYeildToHost": () => (/* reexport safe */ _scheduling__WEBPACK_IMPORTED_MODULE_0__.shouldYeildToHost)
+/* harmony export */   "scheduleCallback": () => (/* reexport safe */ _scheduler__WEBPACK_IMPORTED_MODULE_0__.scheduleCallback),
+/* harmony export */   "shouldYeildToHost": () => (/* reexport safe */ _scheduler__WEBPACK_IMPORTED_MODULE_0__.shouldYeildToHost)
 /* harmony export */ });
-/* harmony import */ var _scheduling__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./scheduling */ "./src/scheduling/scheduling.ts");
-/* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./types */ "./src/scheduling/types.ts");
-
+/* harmony import */ var _scheduler__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./scheduler */ "./src/scheduler/scheduler.ts");
 
 
 
 /***/ }),
 
-/***/ "./src/scheduling/scheduling.ts":
-/*!**************************************!*\
-  !*** ./src/scheduling/scheduling.ts ***!
-  \**************************************/
+/***/ "./src/scheduler/scheduler.ts":
+/*!************************************!*\
+  !*** ./src/scheduler/scheduler.ts ***!
+  \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -768,6 +738,7 @@ var Task = /** @class */ (function () {
         this.time = options.time;
         this.timeoutMs = options.timeoutMs;
         this.priority = options.priority;
+        this.forceSync = options.forceSync;
         this.callback = options.callback;
     }
     Task.nextTaskId = 0;
@@ -776,8 +747,8 @@ var Task = /** @class */ (function () {
 var shouldYeildToHost = function () { return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline; };
 function scheduleCallback(callback, options) {
     var _a;
-    var _b = options || {}, _c = _b.priority, priority = _c === void 0 ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL : _c, timeoutMs = _b.timeoutMs;
-    var task = new Task({ time: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)(), timeoutMs: timeoutMs, priority: priority, callback: callback });
+    var _b = options || {}, _c = _b.priority, priority = _c === void 0 ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL : _c, _d = _b.timeoutMs, timeoutMs = _d === void 0 ? 0 : _d, _e = _b.forceSync, forceSync = _e === void 0 ? false : _e;
+    var task = new Task({ time: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)(), timeoutMs: timeoutMs, priority: priority, forceSync: forceSync, callback: callback });
     var map = (_a = {},
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH] = function () { return queueByPriority.hight.push(task); },
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL] = function () { return queueByPriority.normal.push(task); },
@@ -791,11 +762,16 @@ function pick(queue) {
         return false;
     currentTask = queue.shift();
     currentTask.callback();
-    requestCallback(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.workLoop);
+    if (currentTask.forceSync) {
+        requestCallbackSync(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.workLoop);
+    }
+    else {
+        requestCallback(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.workLoop);
+    }
     return true;
 }
 function executeTasks() {
-    var isBusy = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootHelper.get());
+    var isBusy = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootStore.get());
     if (!isBusy) {
         checkOverdueTasks() ||
             pick(queueByPriority.hight) ||
@@ -860,25 +836,6 @@ function setup() {
 }
 setup();
 
-
-
-/***/ }),
-
-/***/ "./src/scheduling/types.ts":
-/*!*********************************!*\
-  !*** ./src/scheduling/types.ts ***!
-  \*********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "TaskPriority": () => (/* binding */ TaskPriority)
-/* harmony export */ });
-var TaskPriority;
-(function (TaskPriority) {
-    TaskPriority[TaskPriority["HIGH"] = 2] = "HIGH";
-    TaskPriority[TaskPriority["NORMAL"] = 1] = "NORMAL";
-})(TaskPriority || (TaskPriority = {}));
 
 
 /***/ }),

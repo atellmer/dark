@@ -12,6 +12,65 @@ return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/batch/batch.ts":
+/*!****************************!*\
+  !*** ./src/batch/batch.ts ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "batch": () => (/* binding */ batch),
+/* harmony export */   "runBatch": () => (/* binding */ runBatch)
+/* harmony export */ });
+/* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../scope */ "./src/scope/index.ts");
+/* harmony import */ var _platform__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../platform */ "./src/platform/index.ts");
+
+
+function batch(callback) {
+    _scope__WEBPACK_IMPORTED_MODULE_0__.isBatchZone.set(true);
+    callback();
+}
+function runBatch(fiber, callback) {
+    fiber.batched.push(callback);
+    var update = function () {
+        var size = fiber.batched.length;
+        _platform__WEBPACK_IMPORTED_MODULE_1__.platform.requestAnimationFrame(function () {
+            if (size === fiber.batched.length) {
+                var fn = fiber.batched[fiber.batched.length - 1];
+                _scope__WEBPACK_IMPORTED_MODULE_0__.isBatchZone.set(false);
+                fiber.batched = [];
+                fn && fn();
+            }
+            else {
+                update();
+            }
+        });
+    };
+    update();
+}
+
+
+
+/***/ }),
+
+/***/ "./src/batch/index.ts":
+/*!****************************!*\
+  !*** ./src/batch/index.ts ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "batch": () => (/* reexport safe */ _batch__WEBPACK_IMPORTED_MODULE_0__.batch),
+/* harmony export */   "runBatch": () => (/* reexport safe */ _batch__WEBPACK_IMPORTED_MODULE_0__.runBatch)
+/* harmony export */ });
+/* harmony import */ var _batch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./batch */ "./src/batch/batch.ts");
+
+
+
+/***/ }),
+
 /***/ "./src/component/component.ts":
 /*!************************************!*\
   !*** ./src/component/component.ts ***!
@@ -211,7 +270,7 @@ function mutateContext(context, defaultValue, displayName) {
 function createProvider(context, defaultValue, displayName) {
     return (0,_component__WEBPACK_IMPORTED_MODULE_0__.createComponent)(function (_a) {
         var _b = _a.value, value = _b === void 0 ? defaultValue : _b, slot = _a.slot;
-        var fiber = _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.get();
+        var fiber = _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.get();
         if (!fiber.provider) {
             fiber.provider = new Map();
         }
@@ -480,6 +539,7 @@ var Fiber = /** @class */ (function () {
         this.marker = options.marker || '';
         this.idx = options.idx || 0;
         this.isUsed = options.isUsed || false;
+        this.batched = options.batched || [];
     }
     Fiber.prototype.markPortalHost = function () {
         this.portalHost = true;
@@ -508,13 +568,13 @@ var Fiber = /** @class */ (function () {
     return Fiber;
 }());
 function workLoop() {
-    var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.get();
-    var nextUnitOfWork = _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkHelper.get();
+    var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootStore.get();
+    var nextUnitOfWork = _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkStore.get();
     var shouldYield = false;
     var hasMoreWork = Boolean(nextUnitOfWork);
     while (nextUnitOfWork && !shouldYield) {
         nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
-        _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkHelper.set(nextUnitOfWork);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkStore.set(nextUnitOfWork);
         hasMoreWork = Boolean(nextUnitOfWork);
         shouldYield = _platform__WEBPACK_IMPORTED_MODULE_1__.platform.shouldYeildToHost();
     }
@@ -529,7 +589,7 @@ function performUnitOfWork(fiber) {
     var shadow = fiber.shadow;
     var instance = fiber.instance;
     while (true) {
-        isDeepWalking = _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.deepWalking.get();
+        isDeepWalking = _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.get();
         nextFiber.hook.idx = 0;
         if (isDeepWalking) {
             var hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
@@ -578,23 +638,23 @@ function performUnitOfWork(fiber) {
 function performPartialUpdateEffects(nextFiber) {
     var _a;
     var _b;
-    if (nextFiber.marker === _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE) {
-        var alternate = ((_b = nextFiber.child) === null || _b === void 0 ? void 0 : _b.alternate) || null;
-        var fiber = nextFiber.child || null;
-        if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
-            var nextFiber_1 = alternate.nextSibling;
-            var deletions = [];
-            while (nextFiber_1) {
-                nextFiber_1.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
-                deletions.push(nextFiber_1);
-                nextFiber_1 = nextFiber_1.nextSibling;
-            }
-            (_a = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get()).push.apply(_a, __spreadArray([], __read(deletions), false));
+    if (nextFiber.marker !== _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE)
+        return;
+    var alternate = ((_b = nextFiber.child) === null || _b === void 0 ? void 0 : _b.alternate) || null;
+    var fiber = nextFiber.child || null;
+    if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
+        var nextFiber_1 = alternate.nextSibling;
+        var deletions = [];
+        while (nextFiber_1) {
+            nextFiber_1.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+            deletions.push(nextFiber_1);
+            nextFiber_1 = nextFiber_1.nextSibling;
         }
+        (_a = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get()).push.apply(_a, __spreadArray([], __read(deletions), false));
     }
 }
 function performChild(options) {
-    _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.jumpToChild();
+    _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.jumpToChild();
     var nextFiber = options.nextFiber;
     var shadow = options.shadow;
     var instance = options.instance;
@@ -603,7 +663,7 @@ function performChild(options) {
     var hook = getHook({ shadow: shadow, alternate: alternate, instance: instance });
     var provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     var fiber = new Fiber({ hook: hook, provider: provider });
-    _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.set(fiber);
+    _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.set(fiber);
     fiber.parent = nextFiber;
     var _a = pertformInstance({
         instance: instance,
@@ -630,21 +690,21 @@ function performChild(options) {
     };
 }
 function performSibling(options) {
-    _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.jumpToSibling();
+    _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.jumpToSibling();
     var nextFiber = options.nextFiber;
     var shadow = options.shadow;
     var instance = options.instance;
     var parent = nextFiber.parent.instance;
-    var childrenIdx = _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.getIndex();
+    var childrenIdx = _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.getIndex();
     var hasSibling = hasChildrenProp(parent) && parent.children[childrenIdx];
     if (hasSibling) {
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.deepWalking.set(true);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.set(true);
         shadow = shadow ? shadow.nextSibling : null;
         var alternate = getNextSiblingAlternate(nextFiber);
         var hook = getHook({ shadow: shadow, alternate: alternate, instance: instance });
         var provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
         var fiber = new Fiber({ hook: hook, provider: provider });
-        _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.set(fiber);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.set(fiber);
         fiber.parent = nextFiber.parent;
         var _a = pertformInstance({
             instance: parent,
@@ -671,8 +731,8 @@ function performSibling(options) {
         };
     }
     else {
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.jumpToParent();
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.deepWalking.set(false);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.jumpToParent();
+        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.set(false);
         shadow = shadow ? shadow.parent : null;
         nextFiber = nextFiber.parent;
         instance = nextFiber.instance;
@@ -721,13 +781,12 @@ function mutateAlternate(options) {
     alternate.isUsed = true;
     if (!isSameType || !isSameKeys) {
         alternate.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
-        _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(alternate);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get().push(alternate);
     }
     else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
         var prevElementsCount_1 = alternate.childrenCount;
         var nextElementsCount_1 = instance.children.length;
-        var isRequestedKeys = prevElementsCount_1 !== nextElementsCount_1;
-        if (isRequestedKeys) {
+        if (prevElementsCount_1 !== nextElementsCount_1) {
             var children = hasChildrenProp(instance) ? instance.children : [];
             var _a = extractKeys(alternate.child, children), prevKeys_1 = _a.prevKeys, nextKeys_1 = _a.nextKeys;
             var hasPrevKeys = prevKeys_1.length > 0;
@@ -738,7 +797,7 @@ function mutateAlternate(options) {
                     (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.error)("\n            [Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!\n          ");
                 }
             }
-            var performRemovingNodes = function () {
+            var performRemoving = function () {
                 var e_1, _a, e_2, _b, _c;
                 var diffKeys = getDiffKeys(prevKeys_1, nextKeys_1);
                 if (diffKeys.length > 0) {
@@ -749,7 +808,7 @@ function mutateAlternate(options) {
                             var fiber = fibersMap[key] || null;
                             if (fiber) {
                                 fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
-                                _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get().push(fiber);
+                                _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get().push(fiber);
                             }
                         }
                     }
@@ -763,7 +822,7 @@ function mutateAlternate(options) {
                 }
                 else {
                     var diffCount = prevElementsCount_1 - nextElementsCount_1;
-                    if (diffCount === 0)
+                    if (diffCount <= 0)
                         return;
                     var fibers = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.takeListFromEnd)(getSiblingFibers(alternate.child), diffCount);
                     try {
@@ -779,13 +838,13 @@ function mutateAlternate(options) {
                         }
                         finally { if (e_2) throw e_2.error; }
                     }
-                    (_c = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get()).push.apply(_c, __spreadArray([], __read(fibers), false));
+                    (_c = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get()).push.apply(_c, __spreadArray([], __read(fibers), false));
                 }
             };
-            var performInsertingNodes = function () {
+            var performInserting = function () {
                 var e_3, _a;
                 var diffKeys = getDiffKeys(nextKeys_1, prevKeys_1);
-                if (diffKeys.length === 0)
+                if (diffKeys.length === 0 || diffKeys.length === nextKeys_1.length)
                     return;
                 var diffKeyMap = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.keyBy)(diffKeys, function (x) { return x; });
                 var usedKeyMap = {};
@@ -828,8 +887,8 @@ function mutateAlternate(options) {
                     finally { if (e_3) throw e_3.error; }
                 }
             };
-            performRemovingNodes();
-            performInsertingNodes();
+            performRemoving();
+            performInserting();
         }
     }
 }
@@ -846,7 +905,7 @@ function performMemo(options) {
         var skip = !factory.shouldUpdate(props, nextProps);
         if (skip) {
             var nextFiber = null;
-            _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.deepWalking.set(false);
+            _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.set(false);
             memoFiber = new Fiber(__assign(__assign({}, alternate), { alternate: alternate, effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.SKIP, nextSibling: alternate.nextSibling
                     ? alternate.nextSibling.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION
                         ? null
@@ -1091,55 +1150,30 @@ function hasChildrenProp(element) {
     return (0,_view__WEBPACK_IMPORTED_MODULE_4__.detectIsTagVirtualNode)(element) || (0,_component__WEBPACK_IMPORTED_MODULE_3__.detectIsComponentFactory)(element);
 }
 function commitChanges() {
-    var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.get();
-    var fromHook = _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.get();
+    var wipFiber = _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootStore.get();
     commitWork(wipFiber.child, function () {
-        var e_5, _a;
-        var layoutEffects = _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsHelper.get();
-        var effects = _scope__WEBPACK_IMPORTED_MODULE_2__.effectsHelper.get();
-        _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(null);
-        try {
-            for (var layoutEffects_1 = __values(layoutEffects), layoutEffects_1_1 = layoutEffects_1.next(); !layoutEffects_1_1.done; layoutEffects_1_1 = layoutEffects_1.next()) {
-                var layoutEffect = layoutEffects_1_1.value;
-                layoutEffect();
-            }
-        }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
-        finally {
-            try {
-                if (layoutEffects_1_1 && !layoutEffects_1_1.done && (_a = layoutEffects_1.return)) _a.call(layoutEffects_1);
-            }
-            finally { if (e_5) throw e_5.error; }
-        }
+        var layoutEffects = _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsStore.get();
+        var effects = _scope__WEBPACK_IMPORTED_MODULE_2__.effectsStore.get();
+        _scope__WEBPACK_IMPORTED_MODULE_2__.isLayoutEffectsZone.set(true);
+        layoutEffects.forEach(function (fn) { return fn(); });
+        _scope__WEBPACK_IMPORTED_MODULE_2__.isLayoutEffectsZone.set(false);
         setTimeout(function () {
-            var e_6, _a;
-            try {
-                for (var effects_1 = __values(effects), effects_1_1 = effects_1.next(); !effects_1_1.done; effects_1_1 = effects_1.next()) {
-                    var effect = effects_1_1.value;
-                    effect();
-                }
-            }
-            catch (e_6_1) { e_6 = { error: e_6_1 }; }
-            finally {
-                try {
-                    if (effects_1_1 && !effects_1_1.done && (_a = effects_1.return)) _a.call(effects_1);
-                }
-                finally { if (e_6) throw e_6.error; }
-            }
+            effects.forEach(function (fn) { return fn(); });
         });
-        _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsHelper.reset();
-        _scope__WEBPACK_IMPORTED_MODULE_2__.effectsHelper.reset();
-        if (fromHook) {
-            _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(false);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootStore.set(null); // important order
+        _scope__WEBPACK_IMPORTED_MODULE_2__.layoutEffectsStore.reset();
+        _scope__WEBPACK_IMPORTED_MODULE_2__.effectsStore.reset();
+        if (_scope__WEBPACK_IMPORTED_MODULE_2__.isUpdateHookZone.get()) {
+            _scope__WEBPACK_IMPORTED_MODULE_2__.isUpdateHookZone.set(false);
         }
         else {
-            _scope__WEBPACK_IMPORTED_MODULE_2__.currentRootHelper.set(wipFiber);
+            _scope__WEBPACK_IMPORTED_MODULE_2__.currentRootStore.set(wipFiber);
         }
     });
 }
 function commitWork(fiber, onComplete) {
-    var e_7, _a;
-    var deletions = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.get();
+    var e_5, _a;
+    var deletions = _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get();
     try {
         // important order
         for (var deletions_1 = __values(deletions), deletions_1_1 = deletions_1.next(); !deletions_1_1.done; deletions_1_1 = deletions_1.next()) {
@@ -1148,12 +1182,12 @@ function commitWork(fiber, onComplete) {
             _platform__WEBPACK_IMPORTED_MODULE_1__.platform.applyCommit(fiber_1);
         }
     }
-    catch (e_7_1) { e_7 = { error: e_7_1 }; }
+    catch (e_5_1) { e_5 = { error: e_5_1 }; }
     finally {
         try {
             if (deletions_1_1 && !deletions_1_1.done && (_a = deletions_1.return)) _a.call(deletions_1);
         }
-        finally { if (e_7) throw e_7.error; }
+        finally { if (e_5) throw e_5.error; }
     }
     (0,_walk__WEBPACK_IMPORTED_MODULE_10__.walkFiber)({
         fiber: fiber,
@@ -1172,7 +1206,7 @@ function commitWork(fiber, onComplete) {
         },
     });
     _platform__WEBPACK_IMPORTED_MODULE_1__.platform.finishCommitWork();
-    _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsHelper.set([]);
+    _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.set([]);
     onComplete();
 }
 function createHook() {
@@ -1197,17 +1231,17 @@ function createUpdateCallback(options) {
         if (fiber.isUsed)
             return;
         !forceStart && onStart();
-        _scope__WEBPACK_IMPORTED_MODULE_2__.effectStoreHelper.set(rootId); // important order!
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fromHookUpdateHelper.set(true);
-        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountHelper.reset();
+        _scope__WEBPACK_IMPORTED_MODULE_2__.rootStore.set(rootId); // important order!
+        _scope__WEBPACK_IMPORTED_MODULE_2__.isUpdateHookZone.set(true);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.reset();
         fiber.alternate = new Fiber(__assign(__assign({}, fiber), { alternate: null }));
         fiber.marker = _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE;
         fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE;
         fiber.child = null;
-        _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootHelper.set(fiber);
-        _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.set(fiber);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.wipRootStore.set(fiber);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.set(fiber);
         fiber.instance = mountInstance(fiber, fiber.instance);
-        _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkHelper.set(fiber);
+        _scope__WEBPACK_IMPORTED_MODULE_2__.nextUnitOfWorkStore.set(fiber);
     };
     return callback;
 }
@@ -1599,14 +1633,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "platform": () => (/* binding */ platform)
 /* harmony export */ });
 var platform = {
+    createNativeElement: function () {
+        throw new Error('createNativeElement not installed by renderer');
+    },
+    requestAnimationFrame: function () {
+        throw new Error('requestAnimationFrame not installed by renderer');
+    },
     scheduleCallback: function () {
         throw new Error('scheduleCallback not installed by renderer');
     },
     shouldYeildToHost: function () {
         throw new Error('shouldYeildToHost not installed by renderer');
-    },
-    createNativeElement: function () {
-        throw new Error('createNativeElement not installed by renderer');
     },
     applyCommit: function () {
         throw new Error('applyCommit not installed by renderer');
@@ -1708,18 +1745,20 @@ var detectIsRef = function (ref) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "componentFiberHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.componentFiberHelper),
-/* harmony export */   "currentRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.currentRootHelper),
-/* harmony export */   "deletionsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.deletionsHelper),
-/* harmony export */   "effectStoreHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.effectStoreHelper),
-/* harmony export */   "effectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.effectsHelper),
-/* harmony export */   "eventsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.eventsHelper),
-/* harmony export */   "fiberMountHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.fiberMountHelper),
-/* harmony export */   "fromHookUpdateHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.fromHookUpdateHelper),
+/* harmony export */   "currentFiberStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.currentFiberStore),
+/* harmony export */   "currentRootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.currentRootStore),
+/* harmony export */   "deletionsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.deletionsStore),
+/* harmony export */   "effectsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.effectsStore),
+/* harmony export */   "eventsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.eventsStore),
+/* harmony export */   "fiberMountStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.fiberMountStore),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.getRootId),
-/* harmony export */   "layoutEffectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsHelper),
-/* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkHelper),
-/* harmony export */   "wipRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.wipRootHelper)
+/* harmony export */   "isBatchZone": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.isBatchZone),
+/* harmony export */   "isLayoutEffectsZone": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.isLayoutEffectsZone),
+/* harmony export */   "isUpdateHookZone": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.isUpdateHookZone),
+/* harmony export */   "layoutEffectsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsStore),
+/* harmony export */   "nextUnitOfWorkStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.nextUnitOfWorkStore),
+/* harmony export */   "rootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.rootStore),
+/* harmony export */   "wipRootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_0__.wipRootStore)
 /* harmony export */ });
 /* harmony import */ var _scope__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./scope */ "./src/scope/scope.ts");
 
@@ -1735,25 +1774,28 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "componentFiberHelper": () => (/* binding */ componentFiberHelper),
-/* harmony export */   "currentRootHelper": () => (/* binding */ currentRootHelper),
-/* harmony export */   "deletionsHelper": () => (/* binding */ deletionsHelper),
-/* harmony export */   "effectStoreHelper": () => (/* binding */ effectStoreHelper),
-/* harmony export */   "effectsHelper": () => (/* binding */ effectsHelper),
-/* harmony export */   "eventsHelper": () => (/* binding */ eventsHelper),
-/* harmony export */   "fiberMountHelper": () => (/* binding */ fiberMountHelper),
-/* harmony export */   "fromHookUpdateHelper": () => (/* binding */ fromHookUpdateHelper),
+/* harmony export */   "currentFiberStore": () => (/* binding */ currentFiberStore),
+/* harmony export */   "currentRootStore": () => (/* binding */ currentRootStore),
+/* harmony export */   "deletionsStore": () => (/* binding */ deletionsStore),
+/* harmony export */   "effectsStore": () => (/* binding */ effectsStore),
+/* harmony export */   "eventsStore": () => (/* binding */ eventsStore),
+/* harmony export */   "fiberMountStore": () => (/* binding */ fiberMountStore),
 /* harmony export */   "getRootId": () => (/* binding */ getRootId),
-/* harmony export */   "layoutEffectsHelper": () => (/* binding */ layoutEffectsHelper),
-/* harmony export */   "nextUnitOfWorkHelper": () => (/* binding */ nextUnitOfWorkHelper),
-/* harmony export */   "wipRootHelper": () => (/* binding */ wipRootHelper)
+/* harmony export */   "isBatchZone": () => (/* binding */ isBatchZone),
+/* harmony export */   "isLayoutEffectsZone": () => (/* binding */ isLayoutEffectsZone),
+/* harmony export */   "isUpdateHookZone": () => (/* binding */ isUpdateHookZone),
+/* harmony export */   "layoutEffectsStore": () => (/* binding */ layoutEffectsStore),
+/* harmony export */   "nextUnitOfWorkStore": () => (/* binding */ nextUnitOfWorkStore),
+/* harmony export */   "rootStore": () => (/* binding */ rootStore),
+/* harmony export */   "wipRootStore": () => (/* binding */ wipRootStore)
 /* harmony export */ });
+var rootId = null;
+var stores = new Map();
 var Store = /** @class */ (function () {
     function Store() {
         this.wipRoot = null;
         this.currentRoot = null;
         this.nextUnitOfWork = null;
-        this.fromHookUpdate = false;
         this.events = new Map();
         this.unsubscribers = [];
         this.deletions = [];
@@ -1765,98 +1807,106 @@ var Store = /** @class */ (function () {
         this.componentFiber = null;
         this.effects = [];
         this.layoutEffects = [];
+        this.isLayoutEffectsZone = false;
+        this.isUpdateHookZone = false;
+        this.isBatchZone = false;
     }
     return Store;
 }());
-var rootId = null;
-var stores = new Map();
-var effectStoreHelper = {
-    set: function (id) { return effectStore(id); },
+var rootStore = {
+    set: function (id) {
+        rootId = id;
+        !stores.get(rootId) && stores.set(rootId, new Store());
+    },
     remove: function (id) { return stores.delete(id); },
 };
 var getRootId = function () { return rootId; };
-var effectStore = function (id) {
-    rootId = id;
-    !stores.get(rootId) && stores.set(rootId, new Store());
-};
-var storeHelper = {
+var store = {
     get: function (id) {
         if (id === void 0) { id = rootId; }
         return stores.get(id);
     },
 };
-var wipRootHelper = {
-    get: function () { var _a; return ((_a = storeHelper.get()) === null || _a === void 0 ? void 0 : _a.wipRoot) || null; },
-    set: function (fiber) { return (storeHelper.get().wipRoot = fiber); },
+var wipRootStore = {
+    get: function () { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.wipRoot) || null; },
+    set: function (fiber) { return (store.get().wipRoot = fiber); },
 };
-var currentRootHelper = {
-    get: function (id) { var _a; return ((_a = storeHelper.get(id)) === null || _a === void 0 ? void 0 : _a.currentRoot) || null; },
-    set: function (fiber) { return (storeHelper.get().currentRoot = fiber); },
+var currentRootStore = {
+    get: function (id) { var _a; return ((_a = store.get(id)) === null || _a === void 0 ? void 0 : _a.currentRoot) || null; },
+    set: function (fiber) { return (store.get().currentRoot = fiber); },
 };
-var nextUnitOfWorkHelper = {
-    get: function () { var _a; return ((_a = storeHelper.get()) === null || _a === void 0 ? void 0 : _a.nextUnitOfWork) || null; },
-    set: function (fiber) { return (storeHelper.get().nextUnitOfWork = fiber); },
+var nextUnitOfWorkStore = {
+    get: function () { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.nextUnitOfWork) || null; },
+    set: function (fiber) { return (store.get().nextUnitOfWork = fiber); },
 };
-var componentFiberHelper = {
-    get: function () { var _a; return (_a = storeHelper.get()) === null || _a === void 0 ? void 0 : _a.componentFiber; },
-    set: function (fiber) { return (storeHelper.get().componentFiber = fiber); },
+var currentFiberStore = {
+    get: function () { var _a; return (_a = store.get()) === null || _a === void 0 ? void 0 : _a.componentFiber; },
+    set: function (fiber) { return (store.get().componentFiber = fiber); },
 };
-var fromHookUpdateHelper = {
-    get: function () { var _a; return ((_a = storeHelper.get()) === null || _a === void 0 ? void 0 : _a.fromHookUpdate) || false; },
-    set: function (value) { return (storeHelper.get().fromHookUpdate = value); },
+var eventsStore = {
+    get: function () { return store.get().events; },
+    addUnsubscriber: function (fn) { return store.get().unsubscribers.push(fn); },
+    unsubscribe: function (id) { return store.get(id).unsubscribers.forEach(function (fn) { return fn(); }); },
 };
-var eventsHelper = {
-    get: function () { return storeHelper.get().events; },
-    addUnsubscriber: function (fn) { return storeHelper.get().unsubscribers.push(fn); },
-    mapUnsubscribers: function (id) { return storeHelper.get(id).unsubscribers.forEach(function (fn) { return fn(); }); },
+var deletionsStore = {
+    get: function () { return store.get().deletions; },
+    set: function (deletions) { return (store.get().deletions = deletions); },
 };
-var deletionsHelper = {
-    get: function () { return storeHelper.get().deletions; },
-    set: function (deletions) { return (storeHelper.get().deletions = deletions); },
-};
-var fiberMountHelper = {
+var fiberMountStore = {
     reset: function () {
-        storeHelper.get().fiberMount = {
+        store.get().fiberMount = {
             level: 0,
             navigation: {},
             isDeepWalking: true,
         };
     },
-    getIndex: function () { return storeHelper.get().fiberMount.navigation[storeHelper.get().fiberMount.level]; },
+    getIndex: function () { return store.get().fiberMount.navigation[store.get().fiberMount.level]; },
     jumpToChild: function () {
-        var fiberMount = storeHelper.get().fiberMount;
+        var fiberMount = store.get().fiberMount;
         var level = fiberMount.level;
         var nextLevel = level + 1;
         fiberMount.level = nextLevel;
         fiberMount.navigation[nextLevel] = 0;
     },
     jumpToParent: function () {
-        var fiberMount = storeHelper.get().fiberMount;
+        var fiberMount = store.get().fiberMount;
         var level = fiberMount.level;
         var nextLevel = level - 1;
         fiberMount.navigation[level] = 0;
         fiberMount.level = nextLevel;
     },
     jumpToSibling: function () {
-        var fiberMount = storeHelper.get().fiberMount;
+        var fiberMount = store.get().fiberMount;
         var level = fiberMount.level;
         var idx = fiberMount.navigation[level] + 1;
         fiberMount.navigation[level] = idx;
     },
     deepWalking: {
-        get: function () { return storeHelper.get().fiberMount.isDeepWalking; },
-        set: function (value) { return (storeHelper.get().fiberMount.isDeepWalking = value); },
+        get: function () { return store.get().fiberMount.isDeepWalking; },
+        set: function (value) { return (store.get().fiberMount.isDeepWalking = value); },
     },
 };
-var effectsHelper = {
-    get: function () { return storeHelper.get().effects; },
-    reset: function () { return (storeHelper.get().effects = []); },
-    add: function (effect) { return storeHelper.get().effects.push(effect); },
+var effectsStore = {
+    get: function () { return store.get().effects; },
+    reset: function () { return (store.get().effects = []); },
+    add: function (effect) { return store.get().effects.push(effect); },
 };
-var layoutEffectsHelper = {
-    get: function () { return storeHelper.get().layoutEffects; },
-    reset: function () { return (storeHelper.get().layoutEffects = []); },
-    add: function (effect) { return storeHelper.get().layoutEffects.push(effect); },
+var layoutEffectsStore = {
+    get: function () { return store.get().layoutEffects; },
+    reset: function () { return (store.get().layoutEffects = []); },
+    add: function (effect) { return store.get().layoutEffects.push(effect); },
+};
+var isLayoutEffectsZone = {
+    get: function () { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.isLayoutEffectsZone) || false; },
+    set: function (value) { return (store.get().isLayoutEffectsZone = value); },
+};
+var isUpdateHookZone = {
+    get: function () { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.isUpdateHookZone) || false; },
+    set: function (value) { return (store.get().isUpdateHookZone = value); },
+};
+var isBatchZone = {
+    get: function () { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.isBatchZone) || false; },
+    set: function (value) { return (store.get().isBatchZone = value); },
 };
 
 
@@ -2030,9 +2080,9 @@ function unmountFiber(fiber) {
 function unmountRoot(rootId, onComplete) {
     if ((0,_helpers__WEBPACK_IMPORTED_MODULE_5__.detectIsUndefined)(rootId))
         return;
-    unmountFiber(_scope__WEBPACK_IMPORTED_MODULE_6__.currentRootHelper.get(rootId));
-    _scope__WEBPACK_IMPORTED_MODULE_6__.eventsHelper.mapUnsubscribers(rootId);
-    _scope__WEBPACK_IMPORTED_MODULE_6__.effectStoreHelper.remove(rootId);
+    unmountFiber(_scope__WEBPACK_IMPORTED_MODULE_6__.currentRootStore.get(rootId));
+    _scope__WEBPACK_IMPORTED_MODULE_6__.eventsStore.unsubscribe(rootId);
+    _scope__WEBPACK_IMPORTED_MODULE_6__.rootStore.remove(rootId);
     onComplete();
 }
 
@@ -2113,7 +2163,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function useContext(context) {
     var defaultValue = context.defaultValue;
-    var fiber = _scope__WEBPACK_IMPORTED_MODULE_2__.componentFiberHelper.get();
+    var fiber = _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.get();
     var provider = getProvider(context, fiber);
     var value = provider ? provider.value : defaultValue;
     var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_3__.useUpdate)();
@@ -2265,10 +2315,10 @@ var __values = (undefined && undefined.__values) || function(o) {
 
 
 var $$useEffect = Symbol('use-effect');
-var _a = createEffect($$useEffect, _scope__WEBPACK_IMPORTED_MODULE_1__.effectsHelper), useEffect = _a.useEffect, hasEffects = _a.hasEffects, dropEffects = _a.dropEffects;
+var _a = createEffect($$useEffect, _scope__WEBPACK_IMPORTED_MODULE_1__.effectsStore), useEffect = _a.useEffect, hasEffects = _a.hasEffects, dropEffects = _a.dropEffects;
 function createEffect(token, store) {
     function useEffect(effect, deps) {
-        var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
+        var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.currentFiberStore.get();
         var hook = fiber.hook;
         var idx = hook.idx, values = hook.values;
         var runEffect = function () {
@@ -2365,7 +2415,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function useError() {
-    var fiber = _scope__WEBPACK_IMPORTED_MODULE_0__.componentFiberHelper.get();
+    var fiber = _scope__WEBPACK_IMPORTED_MODULE_0__.currentFiberStore.get();
     var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)();
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ error: null }); }, []);
     fiber.catchException = function (error) {
@@ -2526,7 +2576,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var $$useLayoutEffect = Symbol('use-layout-effect');
-var _a = (0,_use_effect__WEBPACK_IMPORTED_MODULE_1__.createEffect)($$useLayoutEffect, _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsHelper), useLayoutEffect = _a.useEffect, hasLayoutEffects = _a.hasEffects, dropLayoutEffects = _a.dropEffects;
+var _a = (0,_use_effect__WEBPACK_IMPORTED_MODULE_1__.createEffect)($$useLayoutEffect, _scope__WEBPACK_IMPORTED_MODULE_0__.layoutEffectsStore), useLayoutEffect = _a.useEffect, hasLayoutEffects = _a.hasEffects, dropLayoutEffects = _a.dropEffects;
 
 
 
@@ -2591,7 +2641,7 @@ function processValue(getValue, isDepsDifferent) {
     return wrap(getValue(), isDepsDifferent);
 }
 function useMemo(getValue, deps) {
-    var fiber = _scope__WEBPACK_IMPORTED_MODULE_3__.componentFiberHelper.get();
+    var fiber = _scope__WEBPACK_IMPORTED_MODULE_3__.currentFiberStore.get();
     var hook = fiber.hook;
     var idx = hook.idx, values = hook.values;
     if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(values[idx])) {
@@ -2757,7 +2807,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function useState(initialValue, options) {
-    var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
+    var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.currentFiberStore.get();
     var update = (0,_use_update__WEBPACK_IMPORTED_MODULE_2__.useUpdate)(options);
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({
         idx: fiber.hook.idx,
@@ -2824,6 +2874,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fiber__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../fiber */ "./src/fiber/index.ts");
 /* harmony import */ var _use_memo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../use-memo */ "./src/use-memo/index.ts");
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
+/* harmony import */ var _batch__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../batch */ "./src/batch/index.ts");
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
 
 
 
@@ -2831,7 +2894,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function useUpdate(options) {
     var rootId = (0,_scope__WEBPACK_IMPORTED_MODULE_1__.getRootId)();
-    var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.componentFiberHelper.get();
+    var fiber = _scope__WEBPACK_IMPORTED_MODULE_1__.currentFiberStore.get();
     var scope = (0,_use_memo__WEBPACK_IMPORTED_MODULE_3__.useMemo)(function () { return ({ fiber: fiber }); }, []);
     scope.fiber = fiber;
     var update = function (onStart) {
@@ -2841,7 +2904,15 @@ function useUpdate(options) {
             forceStart: Boolean(options === null || options === void 0 ? void 0 : options.timeoutMs),
             onStart: onStart || _helpers__WEBPACK_IMPORTED_MODULE_4__.dummyFn,
         });
-        _platform__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, options);
+        if (_scope__WEBPACK_IMPORTED_MODULE_1__.isLayoutEffectsZone.get()) {
+            options = __assign(__assign({}, (options || {})), { forceSync: true });
+        }
+        if (_scope__WEBPACK_IMPORTED_MODULE_1__.isBatchZone.get()) {
+            (0,_batch__WEBPACK_IMPORTED_MODULE_5__.runBatch)(scope.fiber, function () { return _platform__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, options); });
+        }
+        else {
+            _platform__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, options);
+        }
     };
     return update;
 }
@@ -3231,15 +3302,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "TextVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.TextVirtualNode),
 /* harmony export */   "View": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.View),
 /* harmony export */   "VirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.VirtualNode),
+/* harmony export */   "batch": () => (/* reexport safe */ _batch__WEBPACK_IMPORTED_MODULE_30__.batch),
 /* harmony export */   "cloneTagMap": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.cloneTagMap),
-/* harmony export */   "componentFiberHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.componentFiberHelper),
 /* harmony export */   "createComponent": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.createComponent),
 /* harmony export */   "createContext": () => (/* reexport safe */ _context__WEBPACK_IMPORTED_MODULE_1__.createContext),
 /* harmony export */   "createEmptyVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.createEmptyVirtualNode),
 /* harmony export */   "createHook": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.createHook),
 /* harmony export */   "createUpdateCallback": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.createUpdateCallback),
-/* harmony export */   "currentRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.currentRootHelper),
-/* harmony export */   "deletionsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.deletionsHelper),
+/* harmony export */   "currentFiberStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.currentFiberStore),
+/* harmony export */   "currentRootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.currentRootStore),
+/* harmony export */   "deletionsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.deletionsStore),
 /* harmony export */   "detectIsArray": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsArray),
 /* harmony export */   "detectIsBoolean": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.detectIsBoolean),
 /* harmony export */   "detectIsCommentVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsCommentVirtualNode),
@@ -3262,26 +3334,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "detectIsVirtualNode": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsVirtualNode),
 /* harmony export */   "detectIsVirtualNodeFactory": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.detectIsVirtualNodeFactory),
 /* harmony export */   "dummyFn": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.dummyFn),
-/* harmony export */   "effectStoreHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectStoreHelper),
-/* harmony export */   "effectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectsHelper),
+/* harmony export */   "effectsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.effectsStore),
 /* harmony export */   "error": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.error),
-/* harmony export */   "eventsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.eventsHelper),
-/* harmony export */   "fiberMountHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.fiberMountHelper),
+/* harmony export */   "eventsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.eventsStore),
+/* harmony export */   "fiberMountStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.fiberMountStore),
 /* harmony export */   "flatten": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.flatten),
 /* harmony export */   "forwardRef": () => (/* reexport safe */ _ref__WEBPACK_IMPORTED_MODULE_9__.forwardRef),
-/* harmony export */   "fromHookUpdateHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.fromHookUpdateHelper),
 /* harmony export */   "getComponentFactoryKey": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.getComponentFactoryKey),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.getRootId),
 /* harmony export */   "getTime": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.getTime),
 /* harmony export */   "getVirtualNodeKey": () => (/* reexport safe */ _view__WEBPACK_IMPORTED_MODULE_26__.getVirtualNodeKey),
 /* harmony export */   "h": () => (/* reexport safe */ _element__WEBPACK_IMPORTED_MODULE_2__.createElement),
 /* harmony export */   "hasChildrenProp": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.hasChildrenProp),
+/* harmony export */   "isBatchZone": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.isBatchZone),
+/* harmony export */   "isLayoutEffectsZone": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.isLayoutEffectsZone),
+/* harmony export */   "isUpdateHookZone": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.isUpdateHookZone),
 /* harmony export */   "keyBy": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.keyBy),
-/* harmony export */   "layoutEffectsHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.layoutEffectsHelper),
+/* harmony export */   "layoutEffectsStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.layoutEffectsStore),
 /* harmony export */   "lazy": () => (/* reexport safe */ _lazy__WEBPACK_IMPORTED_MODULE_7__.lazy),
 /* harmony export */   "memo": () => (/* reexport safe */ _memo__WEBPACK_IMPORTED_MODULE_8__.memo),
-/* harmony export */   "nextUnitOfWorkHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkHelper),
+/* harmony export */   "nextUnitOfWorkStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkStore),
 /* harmony export */   "platform": () => (/* reexport safe */ _platform__WEBPACK_IMPORTED_MODULE_5__.platform),
+/* harmony export */   "rootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.rootStore),
 /* harmony export */   "takeListFromEnd": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.takeListFromEnd),
 /* harmony export */   "unmountRoot": () => (/* reexport safe */ _unmount__WEBPACK_IMPORTED_MODULE_29__.unmountRoot),
 /* harmony export */   "useCallback": () => (/* reexport safe */ _use_callback__WEBPACK_IMPORTED_MODULE_13__.useCallback),
@@ -3298,7 +3372,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_24__.useState),
 /* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_25__.useUpdate),
 /* harmony export */   "walkFiber": () => (/* reexport safe */ _walk__WEBPACK_IMPORTED_MODULE_28__.walkFiber),
-/* harmony export */   "wipRootHelper": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.wipRootHelper),
+/* harmony export */   "wipRootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.wipRootStore),
 /* harmony export */   "workLoop": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.workLoop)
 /* harmony export */ });
 /* harmony import */ var _component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./component */ "./src/component/index.ts");
@@ -3331,6 +3405,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./constants */ "./src/constants.ts");
 /* harmony import */ var _walk__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./walk */ "./src/walk/index.ts");
 /* harmony import */ var _unmount__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./unmount */ "./src/unmount/index.ts");
+/* harmony import */ var _batch__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./batch */ "./src/batch/index.ts");
+
 
 
 
