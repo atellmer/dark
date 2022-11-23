@@ -1,15 +1,15 @@
 import { detectIsUndefined, detectIsFunction, detectIsDepsDifferent } from '../helpers';
-import { componentFiberHelper, effectsHelper } from '../scope';
+import { currentFiberStore, effectsStore } from '../scope';
 import type { Fiber, Hook, HookValue } from '../fiber';
 import type { Effect, DropEffect } from './types';
 
 const $$useEffect = Symbol('use-effect');
 
-const { useEffect, hasEffects, dropEffects } = createEffect($$useEffect, effectsHelper);
+const { useEffect, hasEffects, dropEffects } = createEffect($$useEffect, effectsStore);
 
-function createEffect(token: Symbol, store: typeof effectsHelper) {
+function createEffect(token: Symbol, store: typeof effectsStore) {
   function useEffect(effect: Effect, deps?: Array<any>) {
-    const fiber = componentFiberHelper.get();
+    const fiber = currentFiberStore.get();
     const hook = fiber.hook as Hook<HookValue<DropEffect>>;
     const { idx, values } = hook;
     const runEffect = () => {

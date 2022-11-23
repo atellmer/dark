@@ -554,9 +554,10 @@ This type of effect is similar to useEffect, however, it is executed synchronous
 
 ```tsx
 useLayoutEffect(() => {
-    const height = document.body.clientHeight;
-    // todo something with it...
-  }, []);
+  const height = rootRef.current.clientHeight;
+
+  setHeight(height);
+}, []);
 ```
 
 <a name="optimization"></a>

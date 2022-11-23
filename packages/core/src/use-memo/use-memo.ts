@@ -2,7 +2,7 @@ import { type DarkElement } from '../shared';
 import { detectIsUndefined, detectIsArray, detectIsDepsDifferent } from '../helpers';
 import { detectIsComponentFactory, createComponent } from '../component';
 import { detectIsVirtualNodeFactory } from '../view';
-import { componentFiberHelper } from '../scope';
+import { currentFiberStore } from '../scope';
 import { Fragment } from '../fragment';
 import { $$memo } from '../memo';
 
@@ -30,7 +30,7 @@ function processValue<T>(getValue: () => T, isDepsDifferent = false) {
 }
 
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
-  const fiber = componentFiberHelper.get();
+  const fiber = currentFiberStore.get();
   const { hook } = fiber;
   const { idx, values } = hook;
 

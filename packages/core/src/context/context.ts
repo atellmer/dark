@@ -1,6 +1,6 @@
 import { createComponent } from '../component';
 import { useEffect } from '../use-effect';
-import { componentFiberHelper } from '../scope';
+import { currentFiberStore } from '../scope';
 import { useContext } from '../use-context';
 import { detectIsFunction } from '../helpers';
 import type { Context, ContexProviderProps } from './types';
@@ -35,7 +35,7 @@ function mutateContext<T>(context: Context<T>, defaultValue: T, displayName: str
 function createProvider<T>(context: Context<T>, defaultValue: T, displayName: string) {
   return createComponent<ContexProviderProps<T>>(
     ({ value = defaultValue, slot }) => {
-      const fiber = componentFiberHelper.get();
+      const fiber = currentFiberStore.get();
 
       if (!fiber.provider) {
         fiber.provider = new Map();

@@ -1,6 +1,6 @@
 import { type ScheduleCallbackOptions } from '../platform';
 import { detectIsUndefined, detectIsFunction } from '../helpers';
-import { componentFiberHelper } from '../scope';
+import { currentFiberStore } from '../scope';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
@@ -13,7 +13,7 @@ type Scope = {
 };
 
 function useState<T = unknown>(initialValue: T, options?: ScheduleCallbackOptions): [T, (value: Value<T>) => void] {
-  const fiber = componentFiberHelper.get();
+  const fiber = currentFiberStore.get();
   const update = useUpdate(options);
   const scope: Scope = useMemo(
     () => ({

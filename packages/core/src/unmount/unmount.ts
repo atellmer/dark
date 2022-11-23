@@ -5,7 +5,7 @@ import { dropEffects } from '../use-effect';
 import { dropLayoutEffects } from '../use-layout-effect';
 import { walkFiber } from '../walk';
 import { detectIsUndefined } from '../helpers';
-import { currentRootHelper, eventsHelper, effectStoreHelper } from '../scope';
+import { currentRootStore, eventsStore, rootStore } from '../scope';
 
 function unmountFiber(fiber: Fiber) {
   if (!fiber.effectHost && !fiber.layoutEffectHost && !fiber.portalHost) return;
@@ -27,9 +27,9 @@ function unmountFiber(fiber: Fiber) {
 function unmountRoot(rootId: number, onComplete: () => void) {
   if (detectIsUndefined(rootId)) return;
 
-  unmountFiber(currentRootHelper.get(rootId));
-  eventsHelper.mapUnsubscribers(rootId);
-  effectStoreHelper.remove(rootId);
+  unmountFiber(currentRootStore.get(rootId));
+  eventsStore.unsubscribe(rootId);
+  rootStore.remove(rootId);
   onComplete();
 }
 

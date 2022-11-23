@@ -1,12 +1,12 @@
 import { platform, type ScheduleCallbackOptions } from '../platform';
-import { getRootId, componentFiberHelper, isLayoutEffectsZone } from '../scope';
+import { getRootId, currentFiberStore, isLayoutEffectsZone } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';
 import { dummyFn } from '../helpers';
 
 function useUpdate(options?: ScheduleCallbackOptions) {
   const rootId = getRootId();
-  const fiber = componentFiberHelper.get();
+  const fiber = currentFiberStore.get();
   const scope = useMemo(() => ({ fiber }), []);
 
   scope.fiber = fiber;

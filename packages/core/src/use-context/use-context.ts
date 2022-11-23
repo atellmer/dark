@@ -1,13 +1,13 @@
 import { useEffect } from '../use-effect';
 import { useMemo } from '../use-memo';
-import { componentFiberHelper } from '../scope';
+import { currentFiberStore } from '../scope';
 import { useUpdate } from '../use-update';
 import type { Fiber } from '../fiber';
 import type { Context, ContextProviderValue } from '../context';
 
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;
-  const fiber = componentFiberHelper.get();
+  const fiber = currentFiberStore.get();
   const provider = getProvider<T>(context, fiber);
   const value = provider ? provider.value : defaultValue;
   const update = useUpdate();

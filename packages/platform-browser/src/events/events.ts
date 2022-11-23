@@ -1,4 +1,4 @@
-import { detectIsFunction, eventsHelper } from '@dark-engine/core';
+import { detectIsFunction, eventsStore } from '@dark-engine/core';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;
 
@@ -36,12 +36,12 @@ type DelegateEventOptions = {
 
 function delegateEvent(options: DelegateEventOptions) {
   const { target, eventName, handler } = options;
-  const eventsStore = eventsHelper.get();
-  const handlerMap = eventsStore.get(eventName);
+  const eventsMap = eventsStore.get();
+  const handlerMap = eventsMap.get(eventName);
 
   if (!handlerMap) {
     const rootHandler = (event: Event) => {
-      const fireEvent = eventsStore.get(eventName).get(event.target);
+      const fireEvent = eventsMap.get(eventName).get(event.target);
       const target = event.target as Element;
       let syntheticEvent: SyntheticEvent<Event> = null;
 
@@ -58,9 +58,9 @@ function delegateEvent(options: DelegateEventOptions) {
       }
     };
 
-    eventsStore.set(eventName, new WeakMap([[target, handler]]));
+    eventsMap.set(eventName, new WeakMap([[target, handler]]));
     document.addEventListener(eventName, rootHandler, true);
-    eventsHelper.addUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
+    eventsStore.addUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
     handlerMap.set(target, handler);
   }

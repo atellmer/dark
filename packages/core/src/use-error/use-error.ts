@@ -1,4 +1,4 @@
-import { componentFiberHelper } from '../scope';
+import { currentFiberStore } from '../scope';
 import { useEffect } from '../use-effect';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
@@ -8,7 +8,7 @@ type ErrorScope = {
 };
 
 function useError(): Error | null {
-  const fiber = componentFiberHelper.get();
+  const fiber = currentFiberStore.get();
   const update = useUpdate();
   const scope: ErrorScope = useMemo(() => ({ error: null }), []);
 

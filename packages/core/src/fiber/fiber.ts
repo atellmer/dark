@@ -1,16 +1,16 @@
 import { flatten, detectIsEmpty, error, keyBy, takeListFromEnd, detectIsUndefined, detectIsArray } from '../helpers';
 import { platform } from '../platform';
 import {
-  wipRootHelper,
-  currentRootHelper,
-  nextUnitOfWorkHelper,
-  deletionsHelper,
-  fiberMountHelper,
-  componentFiberHelper,
-  fromHookUpdateHelper,
-  effectStoreHelper,
-  effectsHelper,
-  layoutEffectsHelper,
+  wipRootStore,
+  currentRootStore,
+  nextUnitOfWorkStore,
+  deletionsStore,
+  fiberMountStore,
+  currentFiberStore,
+  isUpdateHookZone,
+  rootStore,
+  effectsStore,
+  layoutEffectsStore,
   isLayoutEffectsZone,
 } from '../scope';
 import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '../component';
@@ -106,14 +106,14 @@ class Fiber<N = NativeElement> {
 }
 
 function workLoop() {
-  const wipFiber = wipRootHelper.get();
-  let nextUnitOfWork = nextUnitOfWorkHelper.get();
+  const wipFiber = wipRootStore.get();
+  let nextUnitOfWork = nextUnitOfWorkStore.get();
   let shouldYield = false;
   let hasMoreWork = Boolean(nextUnitOfWork);
 
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
-    nextUnitOfWorkHelper.set(nextUnitOfWork);
+    nextUnitOfWorkStore.set(nextUnitOfWork);
     hasMoreWork = Boolean(nextUnitOfWork);
     shouldYield = platform.shouldYeildToHost();
   }
@@ -132,7 +132,7 @@ function performUnitOfWork(fiber: Fiber) {
   let instance = fiber.instance;
 
   while (true) {
-    isDeepWalking = fiberMountHelper.deepWalking.get();
+    isDeepWalking = fiberMountStore.deepWalking.get();
     nextFiber.hook.idx = 0;
 
     if (isDeepWalking) {
@@ -199,7 +199,7 @@ function performPartialUpdateEffects(nextFiber: Fiber) {
       nextFiber = nextFiber.nextSibling;
     }
 
-    deletionsHelper.get().push(...deletions);
+    deletionsStore.get().push(...deletions);
   }
 }
 
@@ -210,7 +210,7 @@ type PerformChildOptions = {
 };
 
 function performChild(options: PerformChildOptions) {
-  fiberMountHelper.jumpToChild();
+  fiberMountStore.jumpToChild();
   let nextFiber = options.nextFiber;
   let shadow = options.shadow;
   let instance = options.instance;
@@ -222,7 +222,7 @@ function performChild(options: PerformChildOptions) {
   const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
   let fiber = new Fiber({ hook, provider });
 
-  componentFiberHelper.set(fiber);
+  currentFiberStore.set(fiber);
   fiber.parent = nextFiber;
 
   const { performedInstance, performedShadow } = pertformInstance({
@@ -261,16 +261,16 @@ type PerformSiblingOptions = {
 };
 
 function performSibling(options: PerformSiblingOptions) {
-  fiberMountHelper.jumpToSibling();
+  fiberMountStore.jumpToSibling();
   let nextFiber = options.nextFiber;
   let shadow = options.shadow;
   let instance = options.instance;
   const parent = nextFiber.parent.instance;
-  const childrenIdx = fiberMountHelper.getIndex();
+  const childrenIdx = fiberMountStore.getIndex();
   const hasSibling = hasChildrenProp(parent) && parent.children[childrenIdx];
 
   if (hasSibling) {
-    fiberMountHelper.deepWalking.set(true);
+    fiberMountStore.deepWalking.set(true);
 
     shadow = shadow ? shadow.nextSibling : null;
     const alternate = getNextSiblingAlternate(nextFiber);
@@ -278,7 +278,7 @@ function performSibling(options: PerformSiblingOptions) {
     const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     let fiber = new Fiber({ hook, provider });
 
-    componentFiberHelper.set(fiber);
+    currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
 
     const { performedInstance, performedShadow } = pertformInstance({
@@ -309,8 +309,8 @@ function performSibling(options: PerformSiblingOptions) {
       performedInstance: instance,
     };
   } else {
-    fiberMountHelper.jumpToParent();
-    fiberMountHelper.deepWalking.set(false);
+    fiberMountStore.jumpToParent();
+    fiberMountStore.deepWalking.set(false);
     shadow = shadow ? shadow.parent : null;
     nextFiber = nextFiber.parent;
     instance = nextFiber.instance;
@@ -380,7 +380,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
 
   if (!isSameType || !isSameKeys) {
     alternate.effectTag = EffectTag.DELETION;
-    deletionsHelper.get().push(alternate);
+    deletionsStore.get().push(alternate);
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const prevElementsCount = alternate.childrenCount;
     const nextElementsCount = instance.children.length;
@@ -411,7 +411,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
 
             if (fiber) {
               fiber.effectTag = EffectTag.DELETION;
-              deletionsHelper.get().push(fiber);
+              deletionsStore.get().push(fiber);
             }
           }
         } else {
@@ -423,7 +423,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
             fiber.effectTag = EffectTag.DELETION;
           }
 
-          deletionsHelper.get().push(...fibers);
+          deletionsStore.get().push(...fibers);
         }
       };
 
@@ -497,7 +497,7 @@ function performMemo(options: PerformMemoOptions) {
 
     if (skip) {
       let nextFiber: Fiber = null;
-      fiberMountHelper.deepWalking.set(false);
+      fiberMountStore.deepWalking.set(false);
 
       memoFiber = new Fiber({
         ...alternate,
@@ -809,12 +809,11 @@ function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNod
 }
 
 function commitChanges() {
-  const wipFiber = wipRootHelper.get();
-  const fromHook = fromHookUpdateHelper.get();
+  const wipFiber = wipRootStore.get();
 
   commitWork(wipFiber.child, () => {
-    const layoutEffects = layoutEffectsHelper.get();
-    const effects = effectsHelper.get();
+    const layoutEffects = layoutEffectsStore.get();
+    const effects = effectsStore.get();
 
     isLayoutEffectsZone.set(true);
     layoutEffects.forEach(fn => fn());
@@ -824,20 +823,20 @@ function commitChanges() {
       effects.forEach(fn => fn());
     });
 
-    wipRootHelper.set(null); // important order
-    layoutEffectsHelper.reset();
-    effectsHelper.reset();
+    wipRootStore.set(null); // important order
+    layoutEffectsStore.reset();
+    effectsStore.reset();
 
-    if (fromHook) {
-      fromHookUpdateHelper.set(false);
+    if (isUpdateHookZone.get()) {
+      isUpdateHookZone.set(false);
     } else {
-      currentRootHelper.set(wipFiber);
+      currentRootStore.set(wipFiber);
     }
   });
 }
 
 function commitWork(fiber: Fiber, onComplete: Function) {
-  const deletions = deletionsHelper.get();
+  const deletions = deletionsStore.get();
 
   // important order
   for (const fiber of deletions) {
@@ -863,7 +862,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   });
 
   platform.finishCommitWork();
-  deletionsHelper.set([]);
+  deletionsStore.set([]);
   onComplete();
 }
 
@@ -905,9 +904,9 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     forceStart && onStart();
     if (fiber.isUsed) return;
     !forceStart && onStart();
-    effectStoreHelper.set(rootId); // important order!
-    fromHookUpdateHelper.set(true);
-    fiberMountHelper.reset();
+    rootStore.set(rootId); // important order!
+    isUpdateHookZone.set(true);
+    fiberMountStore.reset();
 
     fiber.alternate = new Fiber({
       ...fiber,
@@ -917,10 +916,10 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     fiber.effectTag = EffectTag.UPDATE;
     fiber.child = null;
 
-    wipRootHelper.set(fiber);
-    componentFiberHelper.set(fiber);
+    wipRootStore.set(fiber);
+    currentFiberStore.set(fiber);
     fiber.instance = mountInstance(fiber, fiber.instance);
-    nextUnitOfWorkHelper.set(fiber);
+    nextUnitOfWorkStore.set(fiber);
   };
 
   return callback;

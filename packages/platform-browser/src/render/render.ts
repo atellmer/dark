@@ -9,11 +9,11 @@ import {
   flatten,
   detectIsUndefined,
   TagVirtualNode,
-  effectStoreHelper,
-  wipRootHelper,
-  currentRootHelper,
-  nextUnitOfWorkHelper,
-  fiberMountHelper,
+  rootStore,
+  wipRootStore,
+  currentRootStore,
+  nextUnitOfWorkStore,
+  fiberMountStore,
   TaskPriority,
   createEmptyVirtualNode,
   isLayoutEffectsZone,
@@ -50,22 +50,22 @@ function render(element: DarkElement, container: Element) {
   }
 
   const callback = () => {
-    effectStoreHelper.set(rootId); // important order!
-    const currentRootFiber = currentRootHelper.get();
+    rootStore.set(rootId); // important order!
+    const currentRoot = currentRootStore.get();
     const fiber = new Fiber({
       nativeElement: container,
       instance: new TagVirtualNode({
         name: ROOT,
         children: flatten([element || createEmptyVirtualNode()]) as Array<VirtualNodeFactory | ComponentFactory>,
       }),
-      alternate: currentRootFiber,
+      alternate: currentRoot,
       effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
     });
 
-    currentRootFiber && (currentRootFiber.alternate = null);
-    fiberMountHelper.reset();
-    wipRootHelper.set(fiber);
-    nextUnitOfWorkHelper.set(fiber);
+    currentRoot && (currentRoot.alternate = null);
+    fiberMountStore.reset();
+    wipRootStore.set(fiber);
+    nextUnitOfWorkStore.set(fiber);
   };
 
   platform.scheduleCallback(callback, { priority: TaskPriority.NORMAL, forceSync: isLayoutEffectsZone.get() });
