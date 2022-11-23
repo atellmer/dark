@@ -1,5 +1,6 @@
 import { type ScheduleCallbackOptions, getTime, workLoop, wipRootHelper, TaskPriority } from '@dark-engine/core';
-import { type Callback } from './types';
+
+type Callback = () => boolean;
 
 type QueueByPriority = {
   hight: Array<Task>;
@@ -24,6 +25,7 @@ class Task {
   public time: number;
   public timeoutMs: number;
   public priority: TaskPriority;
+  public forceSync: boolean;
   public callback: () => void;
 
   constructor(options: Omit<Task, 'id'>) {
@@ -31,6 +33,7 @@ class Task {
     this.time = options.time;
     this.timeoutMs = options.timeoutMs;
     this.priority = options.priority;
+    this.forceSync = options.forceSync;
     this.callback = options.callback;
   }
 }
@@ -38,8 +41,8 @@ class Task {
 const shouldYeildToHost = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
-  const { priority = TaskPriority.NORMAL, timeoutMs } = options || {};
-  const task = new Task({ time: getTime(), timeoutMs, priority, callback });
+  const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
+  const task = new Task({ time: getTime(), timeoutMs, priority, forceSync, callback });
   const map: Record<TaskPriority, () => void> = {
     [TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
     [TaskPriority.NORMAL]: () => queueByPriority.normal.push(task),
@@ -55,7 +58,12 @@ function pick(queue: Array<Task>) {
   currentTask = queue.shift();
 
   currentTask.callback();
-  requestCallback(workLoop);
+
+  if (currentTask.forceSync) {
+    requestCallbackSync(workLoop);
+  } else {
+    requestCallback(workLoop);
+  }
 
   return true;
 }

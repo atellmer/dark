@@ -16,10 +16,11 @@ import {
   fiberMountHelper,
   TaskPriority,
   createEmptyVirtualNode,
+  isLayoutEffectsZone,
 } from '@dark-engine/core';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
-import { scheduleCallback, shouldYeildToHost } from '../scheduling';
+import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 
 platform.scheduleCallback = scheduleCallback;
 platform.shouldYeildToHost = shouldYeildToHost;
@@ -67,7 +68,7 @@ function render(element: DarkElement, container: Element) {
     nextUnitOfWorkHelper.set(fiber);
   };
 
-  platform.scheduleCallback(callback, { priority: TaskPriority.NORMAL });
+  platform.scheduleCallback(callback, { priority: TaskPriority.NORMAL, forceSync: isLayoutEffectsZone.get() });
 }
 
 export { render, roots };

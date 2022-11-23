@@ -11,6 +11,7 @@ import {
   effectStoreHelper,
   effectsHelper,
   layoutEffectsHelper,
+  isLayoutEffectsZone,
 } from '../scope';
 import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '../component';
 import {
@@ -183,22 +184,22 @@ function performUnitOfWork(fiber: Fiber) {
 }
 
 function performPartialUpdateEffects(nextFiber: Fiber) {
-  if (nextFiber.marker === PARTIAL_UPDATE) {
-    const alternate = nextFiber.child?.alternate || null;
-    const fiber = nextFiber.child || null;
+  if (nextFiber.marker !== PARTIAL_UPDATE) return;
 
-    if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
-      let nextFiber = alternate.nextSibling;
-      const deletions: Array<Fiber> = [];
+  const alternate = nextFiber.child?.alternate || null;
+  const fiber = nextFiber.child || null;
 
-      while (nextFiber) {
-        nextFiber.effectTag = EffectTag.DELETION;
-        deletions.push(nextFiber);
-        nextFiber = nextFiber.nextSibling;
-      }
+  if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
+    let nextFiber = alternate.nextSibling;
+    const deletions: Array<Fiber> = [];
 
-      deletionsHelper.get().push(...deletions);
+    while (nextFiber) {
+      nextFiber.effectTag = EffectTag.DELETION;
+      deletions.push(nextFiber);
+      nextFiber = nextFiber.nextSibling;
     }
+
+    deletionsHelper.get().push(...deletions);
   }
 }
 
@@ -815,18 +816,15 @@ function commitChanges() {
     const layoutEffects = layoutEffectsHelper.get();
     const effects = effectsHelper.get();
 
-    wipRootHelper.set(null);
-
-    for (const layoutEffect of layoutEffects) {
-      layoutEffect();
-    }
+    isLayoutEffectsZone.set(true);
+    layoutEffects.forEach(fn => fn());
+    isLayoutEffectsZone.set(false);
 
     setTimeout(() => {
-      for (const effect of effects) {
-        effect();
-      }
+      effects.forEach(fn => fn());
     });
 
+    wipRootHelper.set(null); // important order
     layoutEffectsHelper.reset();
     effectsHelper.reset();
 

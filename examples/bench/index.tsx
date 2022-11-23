@@ -1,4 +1,16 @@
-import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
+import {
+  h,
+  View,
+  Text,
+  Fragment,
+  createComponent,
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useEffect,
+  useRef,
+  useState,
+} from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -114,15 +126,21 @@ type RowProps = {
 };
 
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+  const [height, setHeight] = useState(0);
+  const rootRef = useRef<HTMLTableRowElement>(null);
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const className = `${selected ? 'selected' : ''}`;
+
+  useLayoutEffect(() => {
+    console.log('rootRef', rootRef.current);
+    setHeight(rootRef.current.clientHeight);
+  }, []);
 
   return (
-    <tr class={className}>
+    <tr ref={rootRef} class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>qqq</td>
-      <td class='cell'>xxx</td>
+      <td class='cell'>height: {height}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
@@ -167,20 +185,20 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(4);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(1000, '!!!'));
+    state.list.unshift(...buildData(2, '!!!'));
     state.list = [...state.list];
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAppend = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+    state.list.push(...buildData(2, '!!!'));
     state.list = [...state.list];
     measurer.start('append');
     forceUpdate();

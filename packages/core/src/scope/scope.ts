@@ -16,6 +16,7 @@ class Store {
   public componentFiber: Fiber = null;
   public effects: Array<() => void> = [];
   public layoutEffects: Array<() => void> = [];
+  public isLayoutEffectsZone = false;
 }
 
 let rootId = null;
@@ -123,6 +124,11 @@ const layoutEffectsHelper = {
   add: (effect: () => void) => storeHelper.get().layoutEffects.push(effect),
 };
 
+const isLayoutEffectsZone = {
+  get: () => storeHelper.get()?.isLayoutEffectsZone || false,
+  set: (value: boolean) => (storeHelper.get().isLayoutEffectsZone = value),
+};
+
 export {
   getRootId,
   effectStoreHelper,
@@ -136,4 +142,5 @@ export {
   fiberMountHelper,
   effectsHelper,
   layoutEffectsHelper,
+  isLayoutEffectsZone,
 };
