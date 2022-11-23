@@ -74,6 +74,7 @@ import {
   createContext,
   memo,
   lazy,
+  batch,
   forwardRef,
   Suspense,
   useCallback,
@@ -563,7 +564,7 @@ useLayoutEffect(() => {
 <a name="optimization"></a>
 ## Performance optimization
 
-In Dark, render optimization can be configured using the memo function, as well as the useMemo and useCallback hooks. Optimization occurs due to the memoization of the results of the previous calculation or render.
+Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, batched and deffered updates.
 
 ### memo
 
@@ -664,6 +665,33 @@ Similar to useCallback but has no dependencies. Ensures the return of the same f
  return (
     <button onClick={handleClick}>add</button>
   );
+```
+
+#### batch
+
+Enables only the last render call in this animation frame.
+
+```tsx
+import { batch } from '@dark-engine/core';
+```
+
+```tsx
+useLayoutEffect(() => {
+  batch(() => {
+    setCount(1);
+    setCount(2);
+    setCount(3);  // render just this time
+  });
+}, []);
+```
+
+```tsx
+const handleMouseMove = (e: SyntheticEvent<MouseEvent>) => {
+  batch(() => {
+    setClientX(e.sourceEvent.clientX);
+    setClientY(e.sourceEvent.clientY);
+  });
+};
 ```
 
 #### useDeferredValue

@@ -22,13 +22,14 @@ import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 
+platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
+platform.requestAnimationFrame = requestAnimationFrame.bind(this);
 platform.scheduleCallback = scheduleCallback;
 platform.shouldYeildToHost = shouldYeildToHost;
-platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-platform.applyCommit = applyCommit as typeof platform.applyCommit;
-platform.finishCommitWork = finishCommitWork as typeof platform.finishCommitWork;
-platform.detectIsPortal = detectIsPortal as typeof platform.detectIsPortal;
-platform.unmountPortal = unmountPortal as typeof platform.unmountPortal;
+platform.applyCommit = applyCommit;
+platform.finishCommitWork = finishCommitWork;
+platform.detectIsPortal = detectIsPortal;
+platform.unmountPortal = unmountPortal;
 
 const roots = new Map<Element, number>();
 

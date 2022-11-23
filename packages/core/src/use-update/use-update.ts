@@ -1,8 +1,9 @@
 import { platform, type ScheduleCallbackOptions } from '../platform';
-import { getRootId, currentFiberStore, isLayoutEffectsZone } from '../scope';
+import { getRootId, currentFiberStore, isLayoutEffectsZone, isBatchZone } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';
 import { dummyFn } from '../helpers';
+import { runBatch as batch } from '../batch';
 
 function useUpdate(options?: ScheduleCallbackOptions) {
   const rootId = getRootId();
@@ -26,7 +27,11 @@ function useUpdate(options?: ScheduleCallbackOptions) {
       };
     }
 
-    platform.scheduleCallback(callback, options);
+    if (isBatchZone.get()) {
+      batch(scope.fiber, () => platform.scheduleCallback(callback, options));
+    } else {
+      platform.scheduleCallback(callback, options);
+    }
   };
 
   return update;

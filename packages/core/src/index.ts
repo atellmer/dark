@@ -28,3 +28,4 @@ export * from './view';
 export * from './constants';
 export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
+export { batch } from './batch';

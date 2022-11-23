@@ -4,13 +4,14 @@ import { type ComponentFactory } from '../component';
 import { type VirtualNode } from '../view';
 
 export type Platform = {
+  createNativeElement: <N>(vNode: VirtualNode) => N;
+  requestAnimationFrame: typeof requestAnimationFrame;
   scheduleCallback: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYeildToHost: () => boolean;
-  createNativeElement: <N>(vNode: VirtualNode) => N;
-  applyCommit: <N>(fiber: Fiber<N>) => void;
+  applyCommit: (fiber: Fiber) => void;
   finishCommitWork: () => void;
   detectIsPortal: (factory: ComponentFactory) => boolean;
-  unmountPortal: <N>(fiber: Fiber<N>) => void;
+  unmountPortal: (fiber: Fiber) => void;
 };
 
 export type ScheduleCallbackOptions = {

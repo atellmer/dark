@@ -21,6 +21,7 @@ class Store {
   public layoutEffects: Array<() => void> = [];
   public isLayoutEffectsZone = false;
   public isUpdateHookZone = false;
+  public isBatchZone = false;
 }
 
 type FiberMountStore = {
@@ -134,6 +135,11 @@ const isUpdateHookZone = {
   set: (value: boolean) => (store.get().isUpdateHookZone = value),
 };
 
+const isBatchZone = {
+  get: () => store.get()?.isBatchZone || false,
+  set: (value: boolean) => (store.get().isBatchZone = value),
+};
+
 export {
   getRootId,
   rootStore,
@@ -148,4 +154,5 @@ export {
   layoutEffectsStore,
   isLayoutEffectsZone,
   isUpdateHookZone,
+  isBatchZone,
 };
