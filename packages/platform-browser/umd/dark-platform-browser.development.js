@@ -753,7 +753,8 @@ var __read = (undefined && undefined.__read) || function (o, n) {
 var queueByPriority = {
     hight: [],
     normal: [],
-    low: [],
+    low1: [],
+    low2: [],
 };
 var YEILD_INTERVAL = 10;
 var scheduledCallback = null;
@@ -780,7 +781,7 @@ function scheduleCallback(callback, options) {
     var map = (_a = {},
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH] = function () { return queueByPriority.hight.push(task); },
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL] = function () { return queueByPriority.normal.push(task); },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.LOW] = function () { return queueByPriority.low.push(task); },
+        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.LOW] = function () { return (task.timeoutMs > 0 ? queueByPriority.low2.push(task) : queueByPriority.low1.push(task)); },
         _a);
     map[task.priority]();
     executeTasks();
@@ -804,13 +805,13 @@ function executeTasks() {
         checkOverdueTasks() ||
             pick(queueByPriority.hight) ||
             pick(queueByPriority.normal) ||
-            requestIdleCallback(function () { return pick(queueByPriority.low); });
+            requestIdleCallback(function () { return pick(queueByPriority.low1) || pick(queueByPriority.low2); });
     }
 }
 function checkOverdueTasks() {
-    var _a = __read(queueByPriority.low, 1), task = _a[0];
-    if (task && task.timeoutMs > 0 && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() - task.time > task.timeoutMs) {
-        pick(queueByPriority.low);
+    var _a = __read(queueByPriority.low2, 1), task = _a[0];
+    if (task && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() - task.time > task.timeoutMs) {
+        pick(queueByPriority.low2);
         return true;
     }
     return false;
