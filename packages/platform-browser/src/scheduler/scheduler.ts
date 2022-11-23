@@ -5,13 +5,15 @@ type Callback = () => boolean;
 type QueueByPriority = {
   hight: Array<Task>;
   normal: Array<Task>;
-  low: Array<Task>;
+  low1: Array<Task>;
+  low2: Array<Task>;
 };
 
 const queueByPriority: QueueByPriority = {
   hight: [],
   normal: [],
-  low: [],
+  low1: [],
+  low2: [],
 };
 const YEILD_INTERVAL = 10;
 let scheduledCallback: Callback = null;
@@ -46,7 +48,7 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
   const map: Record<TaskPriority, () => void> = {
     [TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
     [TaskPriority.NORMAL]: () => queueByPriority.normal.push(task),
-    [TaskPriority.LOW]: () => queueByPriority.low.push(task),
+    [TaskPriority.LOW]: () => (task.timeoutMs > 0 ? queueByPriority.low2.push(task) : queueByPriority.low1.push(task)),
   };
 
   map[task.priority]();
@@ -75,15 +77,15 @@ function executeTasks() {
     checkOverdueTasks() ||
       pick(queueByPriority.hight) ||
       pick(queueByPriority.normal) ||
-      requestIdleCallback(() => pick(queueByPriority.low));
+      requestIdleCallback(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));
   }
 }
 
 function checkOverdueTasks() {
-  const [task] = queueByPriority.low;
+  const [task] = queueByPriority.low2;
 
-  if (task && task.timeoutMs > 0 && getTime() - task.time > task.timeoutMs) {
-    pick(queueByPriority.low);
+  if (task && getTime() - task.time > task.timeoutMs) {
+    pick(queueByPriority.low2);
     return true;
   }
 
