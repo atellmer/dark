@@ -120,6 +120,7 @@ var attrBlackListMap = (_a = {},
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY] = true,
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
     _a);
+var fragmentsMap = new Map();
 function createNativeElement(vNode) {
     var _a;
     var map = (_a = {},
@@ -329,7 +330,18 @@ function commitPlacement(fiber, parentFiber) {
     var parentNativeElement = parentFiber.nativeElement;
     var childNodes = parentNativeElement.childNodes;
     var append = function () {
-        parentNativeElement.appendChild(fiber.nativeElement);
+        var fragment = (fragmentsMap.get(parentNativeElement) ||
+            {
+                fragment: document.createDocumentFragment(),
+                callback: function () { },
+            }).fragment;
+        fragmentsMap.set(parentNativeElement, {
+            fragment: fragment,
+            callback: function () {
+                parentNativeElement.appendChild(fragment);
+            },
+        });
+        fragment.appendChild(fiber.nativeElement);
         fiber.markMountedToHost();
     };
     var insert = function () {
@@ -385,7 +397,23 @@ function applyCommit(fiber) {
         commitDeletion(fiber, parentFiber);
     }
 }
-function finishCommitWork() { }
+function finishCommitWork() {
+    var e_3, _a;
+    try {
+        for (var _b = __values(fragmentsMap.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var callback = _c.value.callback;
+            callback();
+        }
+    }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_3) throw e_3.error; }
+    }
+    fragmentsMap = new Map();
+}
 
 
 
