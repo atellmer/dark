@@ -64,13 +64,20 @@ const Draggable = createComponent<DraggableProps>(
       cursor: move;
       display: inline-block;
       transform: translate(${coord.x}px, ${coord.y}px);
-      z-index: ${isActive ? 10 : 1};
+      z-index: ${isActive ? 2 : 1};
       user-select: none;
     `,
     }));
 
     useEffect(() => {
       setRect(rootRef.current.getBoundingClientRect());
+    }, []);
+
+    useEffect(() => {
+      const handleEvent = () => setCoord({ x: 0, y: 0 });
+
+      window.addEventListener('resize', handleEvent);
+      return () => window.removeEventListener('resize', handleEvent);
     }, []);
 
     const handleDragStart = () => {
@@ -116,7 +123,7 @@ const App = createComponent(() => {
   return (
     <Surface>
       {({ isDragging, activeDraggableID, setActiveDraggableID, setIsDragging }: SurfaceSlotOptions) => {
-        return ['🍉', '🍇', '🍌'].map((x, idx) => {
+        return ['🍉', '🍇', '🍌', '🍒', '🍎'].map((x, idx) => {
           return (
             <Draggable
               key={x}
