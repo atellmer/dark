@@ -646,7 +646,7 @@ function performPartialUpdateEffects(nextFiber) {
         var nextFiber_1 = alternate.nextSibling;
         var deletions = [];
         while (nextFiber_1) {
-            nextFiber_1.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+            nextFiber_1.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE;
             deletions.push(nextFiber_1);
             nextFiber_1 = nextFiber_1.nextSibling;
         }
@@ -757,7 +757,7 @@ function mutateFiber(options) {
     fiber.instance = instance;
     fiber.alternate = alternate || null;
     fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
-    fiber.effectTag = isUpdate ? _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE : _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT;
+    fiber.effectTag = isUpdate ? _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE : _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.CREATE;
     fiber.mountedToHost = isUpdate;
     if (hasChildrenProp(fiber.instance)) {
         fiber.childrenCount = fiber.instance.children.length;
@@ -780,7 +780,7 @@ function mutateAlternate(options) {
     var isSameKeys = prevKey === nextKey;
     alternate.isUsed = true;
     if (!isSameType || !isSameKeys) {
-        alternate.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+        alternate.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE;
         _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get().push(alternate);
     }
     else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
@@ -807,7 +807,7 @@ function mutateAlternate(options) {
                             var key = diffKeys_1_1.value;
                             var fiber = fibersMap[key] || null;
                             if (fiber) {
-                                fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+                                fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE;
                                 _scope__WEBPACK_IMPORTED_MODULE_2__.deletionsStore.get().push(fiber);
                             }
                         }
@@ -828,7 +828,7 @@ function mutateAlternate(options) {
                     try {
                         for (var fibers_1 = __values(fibers), fibers_1_1 = fibers_1.next(); !fibers_1_1.done; fibers_1_1 = fibers_1.next()) {
                             var fiber = fibers_1_1.value;
-                            fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION;
+                            fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE;
                         }
                     }
                     catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -862,7 +862,7 @@ function mutateAlternate(options) {
                             var insertionFiber = new Fiber({
                                 instance: (0,_view__WEBPACK_IMPORTED_MODULE_4__.createEmptyVirtualNode)(),
                                 parent: alternate,
-                                effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.PLACEMENT,
+                                effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.CREATE,
                             });
                             if (keyIdx === 0) {
                                 insertionFiber.nextSibling = alternate.child;
@@ -907,7 +907,7 @@ function performMemo(options) {
             var nextFiber = null;
             _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.set(false);
             memoFiber = new Fiber(__assign(__assign({}, alternate), { alternate: alternate, effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.SKIP, nextSibling: alternate.nextSibling
-                    ? alternate.nextSibling.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION
+                    ? alternate.nextSibling.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE
                         ? null
                         : alternate.nextSibling
                     : null }));
@@ -1111,8 +1111,8 @@ function getDiffKeys(keys, nextKeys) {
     return diff;
 }
 function getChildAlternate(fiber) {
-    var alternate = fiber.alternate && fiber.alternate.effectTag !== _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION ? fiber.alternate.child : null;
-    while (alternate && alternate.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION) {
+    var alternate = fiber.alternate && fiber.alternate.effectTag !== _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE ? fiber.alternate.child : null;
+    while (alternate && alternate.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE) {
         alternate = alternate.nextSibling;
     }
     return alternate;
@@ -1120,7 +1120,7 @@ function getChildAlternate(fiber) {
 function getNextSiblingAlternate(fiber) {
     var _a;
     var alternate = ((_a = fiber.alternate) === null || _a === void 0 ? void 0 : _a.nextSibling) || null;
-    while (alternate && alternate.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETION) {
+    while (alternate && alternate.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE) {
         alternate = alternate.nextSibling;
     }
     return alternate;
@@ -1288,13 +1288,13 @@ __webpack_require__.r(__webpack_exports__);
 var _a;
 var EffectTag;
 (function (EffectTag) {
-    EffectTag["PLACEMENT"] = "PLACEMENT";
+    EffectTag["CREATE"] = "CREATE";
     EffectTag["UPDATE"] = "UPDATE";
-    EffectTag["DELETION"] = "DELETION";
+    EffectTag["DELETE"] = "DELETE";
     EffectTag["SKIP"] = "SKIP";
 })(EffectTag || (EffectTag = {}));
 var cloneTagMap = (_a = {},
-    _a[EffectTag.PLACEMENT] = true,
+    _a[EffectTag.CREATE] = true,
     _a[EffectTag.SKIP] = true,
     _a);
 

@@ -328,7 +328,7 @@ function getChildIndex(fiber, parentNativeElement) {
     }
     return -1;
 }
-function commitPlacement(fiber) {
+function commitCreation(fiber) {
     var parentFiber = getParentFiberWithNativeElement(fiber);
     var parentNativeElement = parentFiber.nativeElement;
     var childNodes = parentNativeElement.childNodes;
@@ -388,11 +388,11 @@ function commitDeletion(fiber) {
 function applyCommit(fiber) {
     var _a;
     var map = (_a = {},
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.PLACEMENT] = function () {
+        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.CREATE] = function () {
             if (fiber.nativeElement === null)
                 return;
             trackUpdate && trackUpdate(fiber.nativeElement);
-            commitPlacement(fiber);
+            commitCreation(fiber);
         },
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE] = function () {
             if (fiber.nativeElement === null ||
@@ -403,7 +403,7 @@ function applyCommit(fiber) {
             trackUpdate && trackUpdate(fiber.nativeElement);
             commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
         },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETION] = function () { return commitDeletion(fiber); },
+        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETE] = function () { return commitDeletion(fiber); },
         _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.SKIP] = function () { },
         _a);
     map[fiber.effectTag]();
@@ -704,7 +704,7 @@ function render(element, container) {
                 children: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.flatten)([element || (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createEmptyVirtualNode)()]),
             }),
             alternate: currentRoot,
-            effectTag: isMounted ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE : _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.PLACEMENT,
+            effectTag: isMounted ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE : _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.CREATE,
         });
         currentRoot && (currentRoot.alternate = null);
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.fiberMountStore.reset();
