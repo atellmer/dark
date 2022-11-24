@@ -1,4 +1,5 @@
-# Dark
+<div align="center">
+<h1>Dark</h1>
 
 Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in Typescript 💫
 
@@ -6,6 +7,7 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 [![GitHub Release](https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7)]()
 [![NPM Downloads](https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7)]()
 [![PR's Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&colorA=000063&colorB=673ab7)](http://makeapullrequest.com) 
+</div>
 
 ![Dark](./assets/cover.jpg) 
 
