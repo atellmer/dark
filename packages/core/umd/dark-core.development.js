@@ -662,8 +662,8 @@ function performChild(options) {
     shadow = shadow ? shadow.child : null;
     var alternate = getChildAlternate(nextFiber);
     var sourceInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
-    var prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
-    var nextKey = alternate ? getElementKey(alternate.instance) : null;
+    var prevKey = alternate ? getElementKey(alternate.instance) : null;
+    var nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
     var hook = getHook({ shadow: shadow, alternate: alternate, prevKey: prevKey, nextKey: nextKey });
     var provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     var fiber = new Fiber({ hook: hook, provider: provider });
@@ -708,8 +708,8 @@ function performSibling(options) {
         var sourceInstance = hasChildrenProp(nextFiber.parent.instance)
             ? nextFiber.parent.instance.children[childrenIdx] || null
             : null;
-        var prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
-        var nextKey = alternate ? getElementKey(alternate.instance) : null;
+        var prevKey = alternate ? getElementKey(alternate.instance) : null;
+        var nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
         var hook = getHook({ shadow: shadow, alternate: alternate, prevKey: prevKey, nextKey: nextKey });
         var provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
         var fiber = new Fiber({ hook: hook, provider: provider });

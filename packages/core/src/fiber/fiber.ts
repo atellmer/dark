@@ -222,8 +222,8 @@ function performChild(options: PerformChildOptions) {
 
   const alternate = getChildAlternate(nextFiber);
   const sourceInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
-  const prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
-  const nextKey = alternate ? getElementKey(alternate.instance) : null;
+  const prevKey = alternate ? getElementKey(alternate.instance) : null;
+  const nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
   const hook = getHook({ shadow, alternate, prevKey, nextKey });
   const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
   let fiber = new Fiber({ hook, provider });
@@ -283,8 +283,8 @@ function performSibling(options: PerformSiblingOptions) {
     const sourceInstance = hasChildrenProp(nextFiber.parent.instance)
       ? nextFiber.parent.instance.children[childrenIdx] || null
       : null;
-    const prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
-    const nextKey = alternate ? getElementKey(alternate.instance) : null;
+    const prevKey = alternate ? getElementKey(alternate.instance) : null;
+    const nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
     const hook = getHook({ shadow, alternate, prevKey, nextKey });
     const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     let fiber = new Fiber({ hook, provider });
