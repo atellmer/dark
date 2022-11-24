@@ -120,6 +120,7 @@ var _a;
 var attrBlackListMap = (_a = {},
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY] = true,
     _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
+    _a.void = true,
     _a);
 var fragmentsMap = new Map();
 var trackUpdate = null;
@@ -202,13 +203,13 @@ function addAttributes(element, vNode) {
                 }
             }
             else if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(attrValue) && !attrBlackListMap[attrName]) {
-                upgradeInputAttributes({
+                var stopAttrsMap = upgradeInputAttributes({
                     tagName: vNode.name,
                     value: attrValue,
                     attrName: attrName,
                     element: element,
                 });
-                element.setAttribute(attrName, attrValue);
+                !stopAttrsMap[attrName] && element.setAttribute(attrName, attrValue);
             }
         }
     }
@@ -243,13 +244,13 @@ function updateAttributes(element, vNode, nextVNode) {
                     }
                 }
                 else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
-                    upgradeInputAttributes({
+                    var stopAttrsMap = upgradeInputAttributes({
                         tagName: nextVNode.name,
                         value: nextAttrValue,
                         attrName: attrName,
                         element: element,
                     });
-                    element.setAttribute(attrName, nextAttrValue);
+                    !stopAttrsMap[attrName] && element.setAttribute(attrName, nextAttrValue);
                 }
             }
             else {
@@ -265,28 +266,40 @@ function updateAttributes(element, vNode, nextVNode) {
         finally { if (e_2) throw e_2.error; }
     }
 }
+var INPUT_STOP_ATTRS_MAP = {
+    value: true,
+    checked: true,
+};
+var TEXTAREA_STOP_ATTRS_MAP = {
+    value: true,
+};
+var OPTIONS_STOP_ATTRS_MAP = {
+    selected: true,
+};
+var DEFAULT_STOP_ATTRS_MAP = {};
 function upgradeInputAttributes(options) {
     var tagName = options.tagName, element = options.element, attrName = options.attrName, value = options.value;
     var map = {
         input: function () {
-            var attrsMap = {
-                value: true,
-                checked: true,
-            };
-            if (attrsMap[attrName]) {
+            if (INPUT_STOP_ATTRS_MAP[attrName]) {
                 element[attrName] = value;
             }
+            return INPUT_STOP_ATTRS_MAP;
+        },
+        textarea: function () {
+            if (TEXTAREA_STOP_ATTRS_MAP[attrName]) {
+                element[attrName] = value;
+            }
+            return TEXTAREA_STOP_ATTRS_MAP;
         },
         option: function () {
-            var attrsMap = {
-                selected: true,
-            };
-            if (attrsMap[attrName]) {
+            if (OPTIONS_STOP_ATTRS_MAP[attrName]) {
                 element[attrName] = value;
             }
+            return OPTIONS_STOP_ATTRS_MAP;
         },
     };
-    map[tagName] && map[tagName]();
+    return map[tagName] ? map[tagName]() : DEFAULT_STOP_ATTRS_MAP;
 }
 function getParentFiberWithNativeElement(fiber) {
     var nextFiber = fiber;
