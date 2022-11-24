@@ -1,28 +1,35 @@
 import { h, createComponent, useState, useRef, useEffect } from '@dark-engine/core';
-import { render, type SyntheticEvent } from '@dark-engine/platform-browser';
+import { createRoot, SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
 
 const DraggableZone = createComponent(({ slot }) => {
-  const style = `
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    backgroud-color: #444;
-    border: 1px solid red;
-  `;
+  const style = useStyle(styled => ({
+    root: styled`
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      border: 1px solid red;
+      background-color: #fafafa;
+    `,
+  }));
 
-  return [<div style={style}>{slot}</div>];
+  return <div style={style.root}>{slot}</div>;
 });
 
 const DraggableItem = createComponent(({ slot }) => {
+  const [isDragging, setIsDragging] = useState(false);
   const [coord, setCoord] = useState({ x: 0, y: 0 });
   const [rect, setRect] = useState<DOMRect>(null);
   const rootRef = useRef<HTMLElement>(null);
-  const style = `
-    display: inline-block;
-    transform: translate(${coord.x}px, ${coord.y}px);
-    cursor: move;
-  `;
+  const style = useStyle(styled => ({
+    root: styled`
+      cursor: move;
+      position: relative;
+      display: inline-block;
+      transform: translate(${coord.x}px, ${coord.y}px);
+      z-index: ${isDragging ? 10 : 0};
+    `,
+  }));
 
   useEffect(() => {
     setRect(rootRef.current.getBoundingClientRect());
@@ -32,70 +39,75 @@ const DraggableItem = createComponent(({ slot }) => {
     const target = e.target as HTMLElement;
 
     target.style.setProperty('opacity', '0');
+    setIsDragging(true);
   };
 
   const handleDrag = (e: SyntheticEvent<MouseEvent>) => {
+    if (e.sourceEvent.x === 0 || e.sourceEvent.y === 0) return;
     const x = e.sourceEvent.x - rect.width / 2 - rect.left;
     const y = e.sourceEvent.y - rect.height / 2 - rect.top;
 
-    setCoord({
-      x,
-      y,
-    });
+    setCoord({ x, y });
   };
 
   const onDragEnd = (e: SyntheticEvent<MouseEvent>) => {
-    const target = e.target as HTMLElement;
-    const x = e.sourceEvent.x - rect.width / 2 - rect.left;
-    const y = e.sourceEvent.y - rect.height / 2 - rect.top;
+    if (
+      e.sourceEvent.x < 0 ||
+      e.sourceEvent.x > window.innerWidth ||
+      e.sourceEvent.y < 0 ||
+      e.sourceEvent.y > window.innerHeight
+    ) {
+      setCoord({ x: 0, y: 0 });
+    } else {
+      const x = e.sourceEvent.x - rect.width / 2 - rect.left;
+      const y = e.sourceEvent.y - rect.height / 2 - rect.top;
 
-    target.style.setProperty('opacity', '1');
-    setCoord({
-      x,
-      y,
-    });
+      setCoord({ x, y });
+    }
+
+    setIsDragging(false);
   };
 
   return (
-    <div ref={rootRef} style={style} draggable onDragStart={handleDragStart} onDrag={handleDrag} onDragEnd={onDragEnd}>
+    <div
+      ref={rootRef}
+      style={style.root}
+      draggable
+      onDragStart={handleDragStart}
+      onDrag={handleDrag}
+      onDragEnd={onDragEnd}>
       {slot}
     </div>
   );
 });
 
 const App = createComponent(() => {
-  const styleA = `
-    width: 100px;
-    height: 100px;
-    background-color: green;
-    border: 5px solid yellow;
-  `;
-  const styleB = `
-    width: 100px;
-    height: 100px;
-    background-color: pink;
-    border: 5px solid yellow;
-  `;
-  const styleC = `
-    width: 100px;
-    height: 100px;
-    background-color: purple;
-    border: 5px solid yellow;
-  `;
+  const style = useStyle(styled => ({
+    box: styled`
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 200px;
+      height: 200px;
+      font-size: 5rem;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+      margin: 4px;
+    `,
+  }));
 
   return (
     <DraggableZone>
-      <DraggableItem>
-        <div style={styleA}>A</div>
-      </DraggableItem>
-      <DraggableItem>
-        <div style={styleB}>B</div>
-      </DraggableItem>
-      <DraggableItem>
-        <div style={styleC}>C</div>
-      </DraggableItem>
+      {['🍉', '🍌', '🍒', '🍎', '🥑', '🍇'].map((x, idx) => {
+        return (
+          <DraggableItem key={idx}>
+            <div style={style.box}>{x}</div>
+          </DraggableItem>
+        );
+      })}
     </DraggableZone>
   );
 });
 
-render(App(), document.getElementById('root'));
+createRoot(document.getElementById('root')).render(<App />);
