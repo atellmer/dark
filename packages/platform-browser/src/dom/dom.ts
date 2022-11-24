@@ -24,6 +24,7 @@ import type { DOMElement, DOMFragment } from './types';
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
+  void: true,
 };
 
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
@@ -114,14 +115,14 @@ function addAttributes(element: Element, vNode: VirtualNode) {
         });
       }
     } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
-      upgradeInputAttributes({
+      const stopAttrsMap = upgradeInputAttributes({
         tagName: vNode.name,
         value: attrValue,
         attrName,
         element,
       });
 
-      element.setAttribute(attrName, attrValue);
+      !stopAttrsMap[attrName] && element.setAttribute(attrName, attrValue);
     }
   }
 }
@@ -148,20 +149,36 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
           });
         }
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
-        upgradeInputAttributes({
+        const stopAttrsMap = upgradeInputAttributes({
           tagName: nextVNode.name,
           value: nextAttrValue,
           attrName,
           element,
         });
-
-        element.setAttribute(attrName, nextAttrValue);
+        !stopAttrsMap[attrName] && element.setAttribute(attrName, nextAttrValue);
       }
     } else {
       element.removeAttribute(attrName);
     }
   }
 }
+
+const INPUT_STOP_ATTRS_MAP = {
+  value: true,
+  checked: true,
+};
+
+const TEXTAREA_STOP_ATTRS_MAP = {
+  value: true,
+};
+
+const OPTIONS_STOP_ATTRS_MAP = {
+  selected: true,
+};
+
+const DEFAULT_STOP_ATTRS_MAP = {};
+
+type PatchedElements = 'input' | 'textarea' | 'option';
 
 type UpgradeInputAttributesOptions = {
   tagName: string;
@@ -170,31 +187,33 @@ type UpgradeInputAttributesOptions = {
   value: string | boolean;
 };
 
-function upgradeInputAttributes(options: UpgradeInputAttributesOptions) {
+function upgradeInputAttributes(options: UpgradeInputAttributesOptions): Record<string, boolean> {
   const { tagName, element, attrName, value } = options;
-  const map = {
+  const map: Record<PatchedElements, () => Record<string, boolean>> = {
     input: () => {
-      const attrsMap = {
-        value: true,
-        checked: true,
-      };
-
-      if (attrsMap[attrName]) {
+      if (INPUT_STOP_ATTRS_MAP[attrName]) {
         element[attrName] = value;
       }
+
+      return INPUT_STOP_ATTRS_MAP;
+    },
+    textarea: () => {
+      if (TEXTAREA_STOP_ATTRS_MAP[attrName]) {
+        element[attrName] = value;
+      }
+
+      return TEXTAREA_STOP_ATTRS_MAP;
     },
     option: () => {
-      const attrsMap = {
-        selected: true,
-      };
-
-      if (attrsMap[attrName]) {
+      if (OPTIONS_STOP_ATTRS_MAP[attrName]) {
         element[attrName] = value;
       }
+
+      return OPTIONS_STOP_ATTRS_MAP;
     },
   };
 
-  map[tagName] && map[tagName]();
+  return map[tagName] ? map[tagName]() : DEFAULT_STOP_ATTRS_MAP;
 }
 
 function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
