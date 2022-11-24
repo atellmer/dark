@@ -116,10 +116,9 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const className = `${selected ? 'selected' : ''}`;
 
   return (
-    <tr class={className}>
+    <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>qqq</td>
       <td class='cell'>xxx</td>
