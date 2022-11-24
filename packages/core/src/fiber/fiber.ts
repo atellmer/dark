@@ -196,7 +196,7 @@ function performPartialUpdateEffects(nextFiber: Fiber) {
     const deletions: Array<Fiber> = [];
 
     while (nextFiber) {
-      nextFiber.effectTag = EffectTag.DELETION;
+      nextFiber.effectTag = EffectTag.DELETE;
       deletions.push(nextFiber);
       nextFiber = nextFiber.nextSibling;
     }
@@ -347,7 +347,7 @@ function mutateFiber(options: MutateFiberOptions) {
   fiber.instance = instance;
   fiber.alternate = alternate || null;
   fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
-  fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.PLACEMENT;
+  fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.CREATE;
   fiber.mountedToHost = isUpdate;
 
   if (hasChildrenProp(fiber.instance)) {
@@ -381,7 +381,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
   alternate.isUsed = true;
 
   if (!isSameType || !isSameKeys) {
-    alternate.effectTag = EffectTag.DELETION;
+    alternate.effectTag = EffectTag.DELETE;
     deletionsStore.get().push(alternate);
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const prevElementsCount = alternate.childrenCount;
@@ -412,7 +412,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
             const fiber = fibersMap[key] || null;
 
             if (fiber) {
-              fiber.effectTag = EffectTag.DELETION;
+              fiber.effectTag = EffectTag.DELETE;
               deletionsStore.get().push(fiber);
             }
           }
@@ -422,7 +422,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
           const fibers = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const fiber of fibers) {
-            fiber.effectTag = EffectTag.DELETION;
+            fiber.effectTag = EffectTag.DELETE;
           }
 
           deletionsStore.get().push(...fibers);
@@ -451,7 +451,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
             const insertionFiber = new Fiber({
               instance: createEmptyVirtualNode(),
               parent: alternate,
-              effectTag: EffectTag.PLACEMENT,
+              effectTag: EffectTag.CREATE,
             });
 
             if (keyIdx === 0) {
@@ -506,7 +506,7 @@ function performMemo(options: PerformMemoOptions) {
         alternate,
         effectTag: EffectTag.SKIP,
         nextSibling: alternate.nextSibling
-          ? alternate.nextSibling.effectTag === EffectTag.DELETION
+          ? alternate.nextSibling.effectTag === EffectTag.DELETE
             ? null
             : alternate.nextSibling
           : null,
@@ -761,9 +761,9 @@ function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey
 }
 
 function getChildAlternate(fiber: Fiber): Fiber | null {
-  let alternate = fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETION ? fiber.alternate.child : null;
+  let alternate = fiber.alternate && fiber.alternate.effectTag !== EffectTag.DELETE ? fiber.alternate.child : null;
 
-  while (alternate && alternate.effectTag === EffectTag.DELETION) {
+  while (alternate && alternate.effectTag === EffectTag.DELETE) {
     alternate = alternate.nextSibling;
   }
 
@@ -773,7 +773,7 @@ function getChildAlternate(fiber: Fiber): Fiber | null {
 function getNextSiblingAlternate(fiber: Fiber): Fiber | null {
   let alternate = fiber.alternate?.nextSibling || null;
 
-  while (alternate && alternate.effectTag === EffectTag.DELETION) {
+  while (alternate && alternate.effectTag === EffectTag.DELETE) {
     alternate = alternate.nextSibling;
   }
 

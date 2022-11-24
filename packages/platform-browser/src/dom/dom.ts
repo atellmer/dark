@@ -248,7 +248,7 @@ function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
   return -1;
 }
 
-function commitPlacement(fiber: Fiber<Element>) {
+function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
@@ -320,10 +320,10 @@ function commitDeletion(fiber: Fiber<Element>) {
 
 function applyCommit(fiber: Fiber<Element>) {
   const map: Record<EffectTag, () => void> = {
-    [EffectTag.PLACEMENT]: () => {
+    [EffectTag.CREATE]: () => {
       if (fiber.nativeElement === null) return;
       trackUpdate && trackUpdate(fiber.nativeElement);
-      commitPlacement(fiber);
+      commitCreation(fiber);
     },
     [EffectTag.UPDATE]: () => {
       if (
@@ -336,7 +336,7 @@ function applyCommit(fiber: Fiber<Element>) {
       trackUpdate && trackUpdate(fiber.nativeElement);
       commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
     },
-    [EffectTag.DELETION]: () => commitDeletion(fiber),
+    [EffectTag.DELETE]: () => commitDeletion(fiber),
     [EffectTag.SKIP]: () => {},
   };
 

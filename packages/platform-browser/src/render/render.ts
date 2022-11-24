@@ -60,7 +60,7 @@ function render(element: DarkElement, container: Element) {
         children: flatten([element || createEmptyVirtualNode()]) as Array<VirtualNodeFactory | ComponentFactory>,
       }),
       alternate: currentRoot,
-      effectTag: isMounted ? EffectTag.UPDATE : EffectTag.PLACEMENT,
+      effectTag: isMounted ? EffectTag.UPDATE : EffectTag.CREATE,
     });
 
     currentRoot && (currentRoot.alternate = null);

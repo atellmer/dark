@@ -1,7 +1,7 @@
 export enum EffectTag {
-  PLACEMENT = 'PLACEMENT',
+  CREATE = 'CREATE',
   UPDATE = 'UPDATE',
-  DELETION = 'DELETION',
+  DELETE = 'DELETE',
   SKIP = 'SKIP',
 }
 
@@ -19,6 +19,6 @@ export type Hook<T = any> = {
 };
 
 export const cloneTagMap = {
-  [EffectTag.PLACEMENT]: true,
+  [EffectTag.CREATE]: true,
   [EffectTag.SKIP]: true,
 };
