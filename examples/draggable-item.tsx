@@ -1,7 +1,20 @@
-import { h, createComponent, useState, useRef, useEffect } from '@dark-engine/core';
+import { h, createComponent, useState, useRef, useEffect, DarkElement, batch } from '@dark-engine/core';
 import { createRoot, SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
 
-const DraggableZone = createComponent(({ slot }) => {
+type SurfaceProps = {
+  slot?: (options: SurfaceSlotOptions) => DarkElement;
+};
+
+type SurfaceSlotOptions = {
+  isDragging: boolean;
+  activeDraggableID: string | number;
+  setActiveDraggableID: (value: string | number) => void;
+  setIsDragging: (value: boolean) => void;
+};
+
+const Surface = createComponent<SurfaceProps>(({ slot }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [activeDraggableID, setActiveDraggableID] = useState(null);
   const style = useStyle(styled => ({
     root: styled`
       position: relative;
@@ -13,73 +26,75 @@ const DraggableZone = createComponent(({ slot }) => {
     `,
   }));
 
-  return <div style={style.root}>{slot}</div>;
-});
-
-const DraggableItem = createComponent(({ slot }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [coord, setCoord] = useState({ x: 0, y: 0 });
-  const [rect, setRect] = useState<DOMRect>(null);
-  const rootRef = useRef<HTMLElement>(null);
-  const style = useStyle(styled => ({
-    root: styled`
-      cursor: move;
-      position: relative;
-      display: inline-block;
-      transform: translate(${coord.x}px, ${coord.y}px);
-      z-index: ${isDragging ? 10 : 0};
-    `,
-  }));
-
   useEffect(() => {
-    setRect(rootRef.current.getBoundingClientRect());
+    const handleEvent = () => {
+      batch(() => {
+        setIsDragging(false);
+        setActiveDraggableID(null);
+      });
+    };
+
+    document.addEventListener('mouseup', handleEvent);
+
+    return () => {
+      document.removeEventListener('mouseup', handleEvent);
+    };
   }, []);
 
-  const handleDragStart = (e: SyntheticEvent<MouseEvent>) => {
-    const target = e.target as HTMLElement;
+  return <div style={style.root}>{slot({ isDragging, activeDraggableID, setActiveDraggableID, setIsDragging })}</div>;
+});
 
-    target.style.setProperty('opacity', '0');
-    setIsDragging(true);
-  };
+type DraggableProps = {
+  draggableID: number | string;
+  activeDraggableID: number | string;
+  isDragging: boolean;
+  setActiveDraggableID: (value: string | number) => void;
+  setIsDragging: (value: boolean) => void;
+};
 
-  const handleDrag = (e: SyntheticEvent<MouseEvent>) => {
-    if (e.sourceEvent.x === 0 || e.sourceEvent.y === 0) return;
-    const x = e.sourceEvent.x - rect.width / 2 - rect.left;
-    const y = e.sourceEvent.y - rect.height / 2 - rect.top;
+const Draggable = createComponent<DraggableProps>(
+  ({ isDragging, draggableID, activeDraggableID, setIsDragging, setActiveDraggableID, slot }) => {
+    const [coord, setCoord] = useState({ x: 0, y: 0 });
+    const [rect, setRect] = useState<DOMRect>(null);
+    const rootRef = useRef<HTMLElement>(null);
+    const isActive = isDragging && draggableID === activeDraggableID;
+    const style = useStyle(styled => ({
+      root: styled`
+      position: relative;
+      cursor: move;
+      display: inline-block;
+      transform: translate(${coord.x}px, ${coord.y}px);
+      z-index: ${isActive ? 10 : 1};
+      user-select: none;
+    `,
+    }));
 
-    setCoord({ x, y });
-  };
+    useEffect(() => {
+      setRect(rootRef.current.getBoundingClientRect());
+    }, []);
 
-  const onDragEnd = (e: SyntheticEvent<MouseEvent>) => {
-    if (
-      e.sourceEvent.x < 0 ||
-      e.sourceEvent.x > window.innerWidth ||
-      e.sourceEvent.y < 0 ||
-      e.sourceEvent.y > window.innerHeight
-    ) {
-      setCoord({ x: 0, y: 0 });
-    } else {
+    const handleDragStart = () => {
+      batch(() => {
+        setIsDragging(true);
+        setActiveDraggableID(draggableID);
+      });
+    };
+
+    const handleDrag = (e: SyntheticEvent<MouseEvent>) => {
+      if (!isDragging || draggableID !== activeDraggableID || e.sourceEvent.x === 0 || e.sourceEvent.y === 0) return;
       const x = e.sourceEvent.x - rect.width / 2 - rect.left;
       const y = e.sourceEvent.y - rect.height / 2 - rect.top;
 
       setCoord({ x, y });
-    }
+    };
 
-    setIsDragging(false);
-  };
-
-  return (
-    <div
-      ref={rootRef}
-      style={style.root}
-      draggable
-      onDragStart={handleDragStart}
-      onDrag={handleDrag}
-      onDragEnd={onDragEnd}>
-      {slot}
-    </div>
-  );
-});
+    return (
+      <div ref={rootRef} style={style.root} draggable={false} onMouseDown={handleDragStart} onMouseMove={handleDrag}>
+        {slot}
+      </div>
+    );
+  },
+);
 
 const App = createComponent(() => {
   const style = useStyle(styled => ({
@@ -94,20 +109,31 @@ const App = createComponent(() => {
       border-radius: 50%;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
       margin: 4px;
+      color: #000;
     `,
   }));
 
   return (
-    <DraggableZone>
-      {['🍉', '🍌', '🍒', '🍎', '🥑', '🍇'].map((x, idx) => {
-        return (
-          <DraggableItem key={idx}>
-            <div style={style.box}>{x}</div>
-          </DraggableItem>
-        );
-      })}
-    </DraggableZone>
+    <Surface>
+      {({ isDragging, activeDraggableID, setActiveDraggableID, setIsDragging }: SurfaceSlotOptions) => {
+        return ['🍉', '🍇', '🍌'].map((x, idx) => {
+          return (
+            <Draggable
+              key={x}
+              draggableID={idx}
+              activeDraggableID={activeDraggableID}
+              isDragging={isDragging}
+              setActiveDraggableID={setActiveDraggableID}
+              setIsDragging={setIsDragging}>
+              <div style={style.box}>{x}</div>
+            </Draggable>
+          );
+        });
+      }}
+    </Surface>
   );
 });
 
-createRoot(document.getElementById('root')).render(<App />);
+const root = createRoot(document.getElementById('root'));
+
+root.render(<App />);

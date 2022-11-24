@@ -658,16 +658,20 @@ function performChild(options) {
     var nextFiber = options.nextFiber;
     var shadow = options.shadow;
     var instance = options.instance;
+    var childrenIdx = 0;
     shadow = shadow ? shadow.child : null;
     var alternate = getChildAlternate(nextFiber);
-    var hook = getHook({ shadow: shadow, alternate: alternate, instance: instance });
+    var sourceInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
+    var prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
+    var nextKey = alternate ? getElementKey(alternate.instance) : null;
+    var hook = getHook({ shadow: shadow, alternate: alternate, prevKey: prevKey, nextKey: nextKey });
     var provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     var fiber = new Fiber({ hook: hook, provider: provider });
     _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.set(fiber);
     fiber.parent = nextFiber;
     var _a = pertformInstance({
         instance: instance,
-        idx: 0,
+        idx: childrenIdx,
         fiber: fiber,
         alternate: alternate,
     }), performedInstance = _a.performedInstance, performedShadow = _a.performedShadow;
@@ -676,7 +680,7 @@ function performChild(options) {
     alternate && mutateAlternate({ alternate: alternate, instance: instance });
     mutateFiber({ fiber: fiber, alternate: alternate, instance: instance });
     fiber = alternate ? performMemo({ fiber: fiber, alternate: alternate, instance: instance }) : fiber;
-    fiber.idx = 0;
+    fiber.idx = childrenIdx;
     nextFiber.child = fiber;
     fiber.parent = nextFiber;
     fiber.shadow = shadow;
@@ -701,7 +705,12 @@ function performSibling(options) {
         _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.set(true);
         shadow = shadow ? shadow.nextSibling : null;
         var alternate = getNextSiblingAlternate(nextFiber);
-        var hook = getHook({ shadow: shadow, alternate: alternate, instance: instance });
+        var sourceInstance = hasChildrenProp(nextFiber.parent.instance)
+            ? nextFiber.parent.instance.children[childrenIdx] || null
+            : null;
+        var prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
+        var nextKey = alternate ? getElementKey(alternate.instance) : null;
+        var hook = getHook({ shadow: shadow, alternate: alternate, prevKey: prevKey, nextKey: nextKey });
         var provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
         var fiber = new Fiber({ hook: hook, provider: provider });
         _scope__WEBPACK_IMPORTED_MODULE_2__.currentFiberStore.set(fiber);
@@ -1216,12 +1225,11 @@ function createHook() {
     };
 }
 function getHook(options) {
-    var shadow = options.shadow, alternate = options.alternate, instance = options.instance;
+    var shadow = options.shadow, alternate = options.alternate, prevKey = options.prevKey, nextKey = options.nextKey;
     if (shadow)
         return shadow.hook;
-    if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
+    if (alternate && prevKey === nextKey)
         return alternate.hook;
-    }
     return createHook();
 }
 function createUpdateCallback(options) {

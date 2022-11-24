@@ -216,11 +216,15 @@ function performChild(options: PerformChildOptions) {
   let nextFiber = options.nextFiber;
   let shadow = options.shadow;
   let instance = options.instance;
+  const childrenIdx = 0;
 
   shadow = shadow ? shadow.child : null;
 
   const alternate = getChildAlternate(nextFiber);
-  const hook = getHook({ shadow, alternate, instance });
+  const sourceInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
+  const prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
+  const nextKey = alternate ? getElementKey(alternate.instance) : null;
+  const hook = getHook({ shadow, alternate, prevKey, nextKey });
   const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
   let fiber = new Fiber({ hook, provider });
 
@@ -229,7 +233,7 @@ function performChild(options: PerformChildOptions) {
 
   const { performedInstance, performedShadow } = pertformInstance({
     instance,
-    idx: 0,
+    idx: childrenIdx,
     fiber,
     alternate,
   });
@@ -239,7 +243,7 @@ function performChild(options: PerformChildOptions) {
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
-  fiber.idx = 0;
+  fiber.idx = childrenIdx;
 
   nextFiber.child = fiber;
   fiber.parent = nextFiber;
@@ -276,7 +280,12 @@ function performSibling(options: PerformSiblingOptions) {
 
     shadow = shadow ? shadow.nextSibling : null;
     const alternate = getNextSiblingAlternate(nextFiber);
-    const hook = getHook({ shadow, alternate, instance });
+    const sourceInstance = hasChildrenProp(nextFiber.parent.instance)
+      ? nextFiber.parent.instance.children[childrenIdx] || null
+      : null;
+    const prevKey = sourceInstance ? getElementKey(sourceInstance) : null;
+    const nextKey = alternate ? getElementKey(alternate.instance) : null;
+    const hook = getHook({ shadow, alternate, prevKey, nextKey });
     const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     let fiber = new Fiber({ hook, provider });
 
@@ -878,17 +887,15 @@ function createHook(): Hook {
 type GetHookOptions = {
   shadow: Fiber;
   alternate: Fiber;
-  instance: DarkElementInstance;
+  prevKey: DarkElementKey;
+  nextKey: DarkElementKey;
 };
 
 function getHook(options: GetHookOptions) {
-  const { shadow, alternate, instance } = options;
+  const { shadow, alternate, prevKey, nextKey } = options;
 
   if (shadow) return shadow.hook;
-
-  if (alternate && getElementKey(alternate.instance) === getElementKey(instance)) {
-    return alternate.hook;
-  }
+  if (alternate && prevKey === nextKey) return alternate.hook;
 
   return createHook();
 }
