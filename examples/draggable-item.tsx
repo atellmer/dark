@@ -35,9 +35,11 @@ const Surface = createComponent<SurfaceProps>(({ slot }) => {
     };
 
     document.addEventListener('mouseup', handleEvent);
+    document.addEventListener('touchend', handleEvent);
 
     return () => {
       document.removeEventListener('mouseup', handleEvent);
+      document.removeEventListener('touchend', handleEvent);
     };
   }, []);
 
@@ -66,6 +68,7 @@ const Draggable = createComponent<DraggableProps>(
       transform: translate(${coord.x}px, ${coord.y}px);
       z-index: ${isActive ? 2 : 1};
       user-select: none;
+      touch-action: none;
     `,
     }));
 
@@ -87,16 +90,29 @@ const Draggable = createComponent<DraggableProps>(
       });
     };
 
-    const handleDrag = (e: SyntheticEvent<MouseEvent>) => {
-      if (!isDragging || draggableID !== activeDraggableID || e.sourceEvent.x === 0 || e.sourceEvent.y === 0) return;
-      const x = e.sourceEvent.x - rect.width / 2 - rect.left;
-      const y = e.sourceEvent.y - rect.height / 2 - rect.top;
+    const handleDrag = (e: SyntheticEvent<MouseEvent | TouchEvent>) => {
+      if (!isDragging || draggableID !== activeDraggableID) return;
+      const mouseEvent = e.sourceEvent as MouseEvent;
+      const touchEvent = e.sourceEvent as TouchEvent;
+      const touch = mouseEvent instanceof MouseEvent ? mouseEvent : touchEvent.touches[0];
+
+      if (touch.clientX === 0 || touch.clientY === 0) return;
+
+      const x = touch.clientX - rect.width / 2 - rect.left;
+      const y = touch.clientY - rect.height / 2 - rect.top;
 
       setCoord({ x, y });
     };
 
     return (
-      <div ref={rootRef} style={style.root} draggable={false} onMouseDown={handleDragStart} onMouseMove={handleDrag}>
+      <div
+        ref={rootRef}
+        style={style.root}
+        draggable={false}
+        onMouseDown={handleDragStart}
+        onTouchStart={handleDragStart}
+        onMouseMove={handleDrag}
+        onTouchMove={handleDrag}>
         {slot}
       </div>
     );
