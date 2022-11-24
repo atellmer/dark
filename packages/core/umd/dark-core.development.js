@@ -2360,7 +2360,7 @@ function createEffect(token, store) {
     }
     function hasEffects(fiber) {
         var values = fiber.hook.values;
-        var hasEffect = values.some(function (x) { return x.token === token; });
+        var hasEffect = values.some(function (x) { return (x === null || x === void 0 ? void 0 : x.token) === token; });
         return hasEffect;
     }
     function dropEffects(hook) {

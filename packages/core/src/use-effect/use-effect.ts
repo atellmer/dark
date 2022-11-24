@@ -41,7 +41,7 @@ function createEffect(token: Symbol, store: typeof effectsStore) {
 
   function hasEffects(fiber: Fiber) {
     const { values } = fiber.hook as Hook<HookValue>;
-    const hasEffect = values.some(x => x.token === token);
+    const hasEffect = values.some(x => x?.token === token);
 
     return hasEffect;
   }
