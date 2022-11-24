@@ -142,11 +142,6 @@ const isBatchZone = {
   set: (value: boolean) => (store.get().isBatchZone = value),
 };
 
-const trackStore = {
-  get: () => store.get().trackUpdate || dummyFn,
-  set: (value: (n: unknown) => void) => (store.get().trackUpdate = value),
-};
-
 export {
   getRootId,
   rootStore,
@@ -162,5 +157,4 @@ export {
   isLayoutEffectsZone,
   isUpdateHookZone,
   isBatchZone,
-  trackStore,
 };

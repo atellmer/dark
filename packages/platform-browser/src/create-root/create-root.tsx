@@ -1,11 +1,9 @@
 import { type DarkElement, unmountRoot } from '@dark-engine/core';
-import { type RenderOptions, render, roots } from '../render';
+import { render, roots } from '../render';
 
 function createRoot(container: Element) {
   return {
-    render: (element: DarkElement, options?: RenderOptions) => {
-      render(element, container, options);
-    },
+    render: (element: DarkElement) => render(element, container),
     unmount: () => {
       const rootId = roots.get(container);
 

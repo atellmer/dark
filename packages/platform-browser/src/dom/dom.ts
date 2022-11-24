@@ -16,7 +16,6 @@ import {
   detectIsTextVirtualNode,
   detectIsRef,
   walkFiber,
-  trackStore,
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
@@ -28,6 +27,8 @@ const attrBlackListMap = {
 };
 
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
+
+let trackUpdate: (nativeElement: Element) => void = null;
 
 function createNativeElement(vNode: VirtualNode): DOMElement {
   const map = {
@@ -247,11 +248,10 @@ function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
   return -1;
 }
 
-function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
+function commitPlacement(fiber: Fiber<Element>) {
+  const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
-
-  trackStore.get()(fiber.nativeElement);
 
   const append = () => {
     const { fragment } =
@@ -286,8 +286,6 @@ function commitPlacement(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
 }
 
 function commitUpdate(nativeElement: Element, instance: VirtualNode, nextInstance: VirtualNode) {
-  trackStore.get()(nativeElement);
-
   if (
     detectIsTextVirtualNode(instance) &&
     detectIsTextVirtualNode(nextInstance) &&
@@ -301,7 +299,9 @@ function commitUpdate(nativeElement: Element, instance: VirtualNode, nextInstanc
   }
 }
 
-function commitDeletion(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
+function commitDeletion(fiber: Fiber<Element>) {
+  const parentFiber = getParentFiberWithNativeElement(fiber);
+
   walkFiber<Element>({
     fiber,
     onLoop: ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
@@ -319,19 +319,28 @@ function commitDeletion(fiber: Fiber<Element>, parentFiber: Fiber<Element>) {
 }
 
 function applyCommit(fiber: Fiber<Element>) {
-  const parentFiber = getParentFiberWithNativeElement(fiber);
+  const map: Record<EffectTag, () => void> = {
+    [EffectTag.PLACEMENT]: () => {
+      if (fiber.nativeElement === null) return;
+      trackUpdate && trackUpdate(fiber.nativeElement);
+      commitPlacement(fiber);
+    },
+    [EffectTag.UPDATE]: () => {
+      if (
+        fiber.nativeElement === null ||
+        !detectIsVirtualNode(fiber.alternate.instance) ||
+        !detectIsVirtualNode(fiber.instance)
+      ) {
+        return;
+      }
+      trackUpdate && trackUpdate(fiber.nativeElement);
+      commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
+    },
+    [EffectTag.DELETION]: () => commitDeletion(fiber),
+    [EffectTag.SKIP]: () => {},
+  };
 
-  if (fiber.nativeElement !== null && fiber.effectTag === EffectTag.PLACEMENT) {
-    commitPlacement(fiber, parentFiber);
-  } else if (fiber.nativeElement !== null && fiber.effectTag === EffectTag.UPDATE) {
-    if (!detectIsVirtualNode(fiber.alternate.instance) || !detectIsVirtualNode(fiber.instance)) return;
-    const vNode: VirtualNode = fiber.alternate.instance;
-    const nextVNode: VirtualNode = fiber.instance;
-
-    commitUpdate(fiber.nativeElement, vNode, nextVNode);
-  } else if (fiber.effectTag === EffectTag.DELETION) {
-    commitDeletion(fiber, parentFiber);
-  }
+  map[fiber.effectTag]();
 }
 
 function finishCommitWork() {
@@ -342,4 +351,8 @@ function finishCommitWork() {
   fragmentsMap = new Map();
 }
 
-export { createNativeElement, applyCommit, finishCommitWork };
+function setTrackUpdate(fn: typeof trackUpdate) {
+  trackUpdate = fn;
+}
+
+export { createNativeElement, applyCommit, finishCommitWork, setTrackUpdate };

@@ -1,5 +1,5 @@
 import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+import { createRoot, setTrackUpdate } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -166,7 +166,7 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(1000);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
@@ -248,19 +248,19 @@ const Bench = createComponent(() => {
 
 const root = createRoot(document.getElementById('root'));
 
-function forceUpdate() {
-  root.render(Bench(), {
-    trackUpdate: node => {
-      if (!node.tagName) return;
-      requestAnimationFrame(() => {
-        node.classList.add('updated-node');
+// setTrackUpdate((node: Element) => {
+//   if (!node.tagName) return;
+//   requestAnimationFrame(() => {
+//     node.classList.add('updated-node');
 
-        setTimeout(() => {
-          node.classList.remove('updated-node');
-        }, 300);
-      });
-    },
-  });
+//     setTimeout(() => {
+//       node.classList.remove('updated-node');
+//     }, 300);
+//   });
+// });
+
+function forceUpdate() {
+  root.render(Bench());
 }
 
 forceUpdate();
