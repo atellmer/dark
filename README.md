@@ -22,6 +22,7 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 - [Modal window](https://atellmer.github.io/dark/examples/modal-window/)
 - [CodeSandbox example #1 (typescript)](https://codesandbox.io/s/stupefied-colden-6j9ep5?file=/src/index.tsx)
 - [CodeSandbox example #2 (vanilla js)](https://codesandbox.io/s/festive-cray-rk3smt?file=/index.html)
+- [CodeSandbox example #3 (naive realization of styled-components with Dark)](https://codesandbox.io/s/eager-bas-15hesr?file=/src/index.tsx)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
