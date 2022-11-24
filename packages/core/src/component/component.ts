@@ -1,7 +1,7 @@
 import { ATTR_KEY } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
-import type { MutableRef } from '../ref';
+import type { Ref } from '../ref';
 import type { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './types';
 
 const $$component = Symbol('component');
@@ -14,7 +14,7 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
   public token: Symbol;
   public props: P;
-  public ref: MutableRef<R>;
+  public ref: Ref<R>;
   public displayName: string;
   public children: Array<DarkElementInstance> = [];
   public shouldUpdate?: (props: P, nextProps: P) => boolean;
@@ -37,7 +37,7 @@ function createComponent<P, R = any>(
   const computedOptions = { ...defaultOptions, ...options };
   const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
 
-  return (props = {} as Props, ref?: MutableRef<R>): ComponentFactory<Props> => {
+  return (props = {} as Props, ref?: Ref<R>): ComponentFactory<Props> => {
     const computedProps = { ...defaultProps, ...props };
     const factory = new ComponentFactory({
       token,

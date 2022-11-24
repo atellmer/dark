@@ -1,6 +1,6 @@
 import type { ComponentFactory } from './component';
 import type { DarkElementKey, DarkElement } from '../shared';
-import type { MutableRef } from '../ref';
+import type { Ref } from '../ref';
 
 export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   displayName?: string;
@@ -19,18 +19,18 @@ export type SlotProps<T = DarkElement> = Readonly<{
   slot?: T;
 }>;
 
-export type RefProps<T = any> = {
-  ref?: MutableRef<T>;
+export type RefProps<T = unknown> = {
+  ref?: Ref<T>;
 };
 
 export type Component<T extends Pick<StandardComponentProps, 'slot'> = any, R = any> = (
   props: T,
-  ref?: MutableRef<R>,
+  ref?: Ref<R>,
 ) => ComponentFactory;
 
 export type ComponentFactoryReturnType = DarkElement;
 
 export type CreateElement<P extends StandardComponentProps, R = any> = (
   props: P & Pick<StandardComponentProps, 'slot'>,
-  ref?: MutableRef<R>,
+  ref?: Ref<R>,
 ) => ComponentFactoryReturnType;

@@ -176,7 +176,10 @@ function detectIsSvgElement(tagName) {
     return Boolean(tagMap[tagName]);
 }
 function applyRef(ref, element) {
-    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsRef)(ref)) {
+    if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(ref)) {
+        ref(element);
+    }
+    else if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsMutableRef)(ref)) {
         ref.current = element;
     }
 }

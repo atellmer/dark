@@ -735,7 +735,13 @@ useEffect(() => {
   rootRef.current.focus();
 }, []);
 
-return <input ref={rootRef} />;
+<input ref={rootRef} />;
+```
+
+Also there is support function refs
+
+```tsx
+<input ref={ref => console.log(ref)} />;
 ```
 
 #### forwardRef and useImperativeHandle

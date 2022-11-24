@@ -10,7 +10,7 @@ function forwardRef<P, R>(component: Component<P, R>) {
   };
 }
 
-const detectIsRef = (ref: unknown) => {
+const detectIsMutableRef = (ref: unknown): ref is MutableRef => {
   if (!detectIsObject(ref) || detectIsNull(ref)) return false;
   const mutableRef = ref as MutableRef;
 
@@ -23,4 +23,4 @@ const detectIsRef = (ref: unknown) => {
   return false;
 };
 
-export { forwardRef, detectIsRef };
+export { forwardRef, detectIsMutableRef };

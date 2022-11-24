@@ -4,7 +4,7 @@ import {
   type TagVirtualNode,
   type TextVirtualNode,
   type CommentVirtualNode,
-  type MutableRef,
+  type Ref,
   ATTR_KEY,
   ATTR_REF,
   EffectTag,
@@ -14,7 +14,7 @@ import {
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
-  detectIsRef,
+  detectIsMutableRef,
   walkFiber,
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
@@ -88,8 +88,10 @@ function detectIsSvgElement(tagName: string) {
   return Boolean(tagMap[tagName]);
 }
 
-function applyRef(ref: MutableRef, element: Element) {
-  if (detectIsRef(ref)) {
+function applyRef(ref: Ref<Element>, element: Element) {
+  if (detectIsFunction(ref)) {
+    ref(element);
+  } else if (detectIsMutableRef(ref)) {
     ref.current = element;
   }
 }
@@ -102,7 +104,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
     const attrValue = vNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
-      applyRef(attrValue as MutableRef, element);
+      applyRef(attrValue, element);
       continue;
     }
 
@@ -135,7 +137,7 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
     const nextAttrValue = nextVNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
-      applyRef(prevAttrValue as MutableRef, element);
+      applyRef(prevAttrValue, element);
       continue;
     }
 
