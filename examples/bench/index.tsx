@@ -1,5 +1,5 @@
 import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
-import { createRoot, setTrackUpdate } from '@dark-engine/platform-browser';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -247,17 +247,6 @@ const Bench = createComponent(() => {
 });
 
 const root = createRoot(document.getElementById('root'));
-
-// setTrackUpdate((node: Element) => {
-//   if (!node.tagName) return;
-//   requestAnimationFrame(() => {
-//     node.classList.add('updated-node');
-
-//     setTimeout(() => {
-//       node.classList.remove('updated-node');
-//     }, 300);
-//   });
-// });
 
 function forceUpdate() {
   root.render(Bench());

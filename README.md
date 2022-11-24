@@ -18,6 +18,7 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
 - [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
 - [Modal window](https://atellmer.github.io/dark/examples/modal-window/)
+- [CodeSandbox example](https://codesandbox.io/s/stupefied-colden-6j9ep5?file=/src/index.tsx)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
