@@ -7,6 +7,8 @@ export type { SyntheticEvent } from './events';
 export declare const version: string;
 declare global {
   namespace JSX {
-    interface IntrinsicElements {}
+    interface IntrinsicElements {
+      [elemName: string]: any;
+    }
   }
 }

@@ -10,6 +10,10 @@ export const version = process.env.VERSION;
 
 declare global {
   namespace JSX {
-    interface IntrinsicElements {}
+    interface IntrinsicElements {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      [elemName: string]: any;
+    }
   }
 }
