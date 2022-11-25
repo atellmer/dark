@@ -5,11 +5,13 @@
   "author": "AlexPlex",
   "license": "MIT",
   "main": "./index.js",
-  "typings": "./index.d.ts",
+  "typings": "./types/index.d.ts",
   "scripts": {
-    "build": "npm run build:dev && npm run build:prod",
+    "build": "npm run build:types && npm run build:dev && npm run build:prod && npm run format",
     "build:dev": "webpack --config webpack.config --env development",
-    "build:prod": "webpack --config webpack.config --env production"
+    "build:prod": "webpack --config webpack.config --env production",
+    "build:types": "npx tsc -d --emitDeclarationOnly --skipLibCheck --declarationDir types",
+    "format": "npx prettier --write ./**/*.{js,ts}"
   },
   "repository": {
     "type": "git",

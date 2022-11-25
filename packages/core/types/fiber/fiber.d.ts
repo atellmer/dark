@@ -1,0 +1,45 @@
+import { type ComponentFactory } from '../component';
+import { type TagVirtualNode } from '../view';
+import type { Context, ContextProviderValue } from '../context';
+import type { DarkElementInstance } from '../shared';
+import { type NativeElement, type Hook, EffectTag } from './types';
+declare class Fiber<N = NativeElement> {
+  nativeElement: N;
+  parent: Fiber<N>;
+  child: Fiber<N>;
+  nextSibling: Fiber<N>;
+  alternate: Fiber<N>;
+  effectTag: EffectTag;
+  instance: DarkElementInstance;
+  hook: Hook;
+  shadow: Fiber<N>;
+  provider: Map<Context, ContextProviderValue>;
+  transposition: boolean;
+  mountedToHost: boolean;
+  portalHost: boolean;
+  effectHost: boolean;
+  layoutEffectHost: boolean;
+  childrenCount: number;
+  marker: string;
+  isUsed: boolean;
+  idx: number;
+  batched: Array<() => void>;
+  catchException: (error: Error) => void;
+  constructor(options: Partial<Fiber<N>>);
+  markPortalHost(): void;
+  markEffectHost(): void;
+  markLayoutEffectHost(): void;
+  markMountedToHost(): void;
+  setError(error: Error): void;
+}
+declare function workLoop(): boolean;
+declare function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | ComponentFactory;
+declare function createHook(): Hook;
+declare type CreateUpdateCallbackOptions = {
+  rootId: number;
+  fiber: Fiber;
+  forceStart?: boolean;
+  onStart: () => void;
+};
+declare function createUpdateCallback(options: CreateUpdateCallbackOptions): () => void;
+export { Fiber, workLoop, createHook, hasChildrenProp, createUpdateCallback };
