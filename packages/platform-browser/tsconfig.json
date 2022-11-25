@@ -1,8 +1,5 @@
 {
   "extends": "../../tsconfig",
-  "compilerOptions": {
-    "baseUrl": ".",
-  },
   "include": [
     "./**/*.ts"
   ],
