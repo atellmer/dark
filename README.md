@@ -1,7 +1,7 @@
 <div align="center">
 <h1>Dark</h1>
 
-Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in Typescript 💫
+Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in TypeScript 💫
 
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?style=flat&colorA=000063&colorB=673ab7)](https://github.com/atellmer/dark/blob/master/LICENSE)
 [![GitHub Release](https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7)]()
