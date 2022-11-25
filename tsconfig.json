@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "module": "esnext",
@@ -14,8 +14,7 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "lib": [
-      "es6",
-      "es7",
+      "ESNext",
       "dom"
     ],
     "baseUrl": ".",

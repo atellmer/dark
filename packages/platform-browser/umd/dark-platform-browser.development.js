@@ -29,10 +29,10 @@ __webpack_require__.r(__webpack_exports__);
 
 function createRoot(container) {
     return {
-        render: function (element) { return (0,_render__WEBPACK_IMPORTED_MODULE_1__.render)(element, container); },
-        unmount: function () {
-            var rootId = _render__WEBPACK_IMPORTED_MODULE_1__.roots.get(container);
-            (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.unmountRoot)(rootId, function () {
+        render: (element) => (0,_render__WEBPACK_IMPORTED_MODULE_1__.render)(element, container),
+        unmount: () => {
+            const rootId = _render__WEBPACK_IMPORTED_MODULE_1__.roots.get(container);
+            (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.unmountRoot)(rootId, () => {
                 _render__WEBPACK_IMPORTED_MODULE_1__.roots["delete"](container);
                 container.innerHTML = '';
             });
@@ -77,78 +77,40 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../portal */ "./src/portal/index.ts");
 /* harmony import */ var _events__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../events */ "./src/events/index.ts");
-var __values = (undefined && undefined.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-var __read = (undefined && undefined.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var _a;
 
 
 
-var attrBlackListMap = (_a = {},
-    _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY] = true,
-    _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF] = true,
-    _a.void = true,
-    _a);
-var fragmentsMap = new Map();
-var trackUpdate = null;
+const attrBlackListMap = {
+    [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_KEY]: true,
+    [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF]: true,
+    void: true,
+};
+let fragmentsMap = new Map();
+let trackUpdate = null;
 function createNativeElement(vNode) {
-    var _a;
-    var map = (_a = {},
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.TAG] = function (vNode) {
-            var tagNode = vNode;
-            var node = detectIsSvgElement(tagNode.name)
+    const map = {
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.TAG]: (vNode) => {
+            const tagNode = vNode;
+            const node = detectIsSvgElement(tagNode.name)
                 ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
                 : document.createElement(tagNode.name);
             return node;
         },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.TEXT] = function (vNode) {
-            var textNode = vNode;
-            var node = document.createTextNode(textNode.value);
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.TEXT]: (vNode) => {
+            const textNode = vNode;
+            const node = document.createTextNode(textNode.value);
             return node;
         },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.COMMENT] = function (vNode) {
-            var commentNode = vNode;
-            var node = document.createComment(commentNode.value);
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.NodeType.COMMENT]: (vNode) => {
+            const commentNode = vNode;
+            const node = document.createComment(commentNode.value);
             return node;
         },
-        _a);
+    };
     return map[vNode.type](vNode);
 }
 function detectIsSvgElement(tagName) {
-    var tagMap = {
+    const tagMap = {
         svg: true,
         circle: true,
         ellipse: true,
@@ -184,118 +146,96 @@ function applyRef(ref, element) {
     }
 }
 function addAttributes(element, vNode) {
-    var e_1, _a;
     if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsTagVirtualNode)(vNode))
         return;
-    var attrNames = Object.keys(vNode.attrs);
-    try {
-        for (var attrNames_1 = __values(attrNames), attrNames_1_1 = attrNames_1.next(); !attrNames_1_1.done; attrNames_1_1 = attrNames_1.next()) {
-            var attrName = attrNames_1_1.value;
-            var attrValue = vNode.attrs[attrName];
-            if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
-                applyRef(attrValue, element);
-                continue;
+    const attrNames = Object.keys(vNode.attrs);
+    for (const attrName of attrNames) {
+        const attrValue = vNode.attrs[attrName];
+        if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
+            applyRef(attrValue, element);
+            continue;
+        }
+        if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(attrValue)) {
+            if ((0,_events__WEBPACK_IMPORTED_MODULE_2__.detectIsEvent)(attrName)) {
+                (0,_events__WEBPACK_IMPORTED_MODULE_2__.delegateEvent)({
+                    target: element,
+                    handler: attrValue,
+                    eventName: (0,_events__WEBPACK_IMPORTED_MODULE_2__.getEventName)(attrName),
+                });
             }
-            if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(attrValue)) {
-                if ((0,_events__WEBPACK_IMPORTED_MODULE_2__.detectIsEvent)(attrName)) {
+        }
+        else if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(attrValue) && !attrBlackListMap[attrName]) {
+            const stopAttrsMap = upgradeInputAttributes({
+                tagName: vNode.name,
+                value: attrValue,
+                attrName,
+                element,
+            });
+            !stopAttrsMap[attrName] && element.setAttribute(attrName, attrValue);
+        }
+    }
+}
+function updateAttributes(element, vNode, nextVNode) {
+    const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
+    for (const attrName of attrNames) {
+        const prevAttrValue = vNode.attrs[attrName];
+        const nextAttrValue = nextVNode.attrs[attrName];
+        if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
+            applyRef(prevAttrValue, element);
+            continue;
+        }
+        if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(nextAttrValue)) {
+            if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(prevAttrValue)) {
+                if ((0,_events__WEBPACK_IMPORTED_MODULE_2__.detectIsEvent)(attrName) && prevAttrValue !== nextAttrValue) {
                     (0,_events__WEBPACK_IMPORTED_MODULE_2__.delegateEvent)({
                         target: element,
-                        handler: attrValue,
+                        handler: nextAttrValue,
                         eventName: (0,_events__WEBPACK_IMPORTED_MODULE_2__.getEventName)(attrName),
                     });
                 }
             }
-            else if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(attrValue) && !attrBlackListMap[attrName]) {
-                var stopAttrsMap = upgradeInputAttributes({
-                    tagName: vNode.name,
-                    value: attrValue,
-                    attrName: attrName,
-                    element: element,
+            else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
+                const stopAttrsMap = upgradeInputAttributes({
+                    tagName: nextVNode.name,
+                    value: nextAttrValue,
+                    attrName,
+                    element,
                 });
-                !stopAttrsMap[attrName] && element.setAttribute(attrName, attrValue);
+                !stopAttrsMap[attrName] && element.setAttribute(attrName, nextAttrValue);
             }
         }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (attrNames_1_1 && !attrNames_1_1.done && (_a = attrNames_1.return)) _a.call(attrNames_1);
+        else {
+            element.removeAttribute(attrName);
         }
-        finally { if (e_1) throw e_1.error; }
     }
 }
-function updateAttributes(element, vNode, nextVNode) {
-    var e_2, _a;
-    var attrNames = new Set(__spreadArray(__spreadArray([], __read(Object.keys(vNode.attrs)), false), __read(Object.keys(nextVNode.attrs)), false));
-    try {
-        for (var attrNames_2 = __values(attrNames), attrNames_2_1 = attrNames_2.next(); !attrNames_2_1.done; attrNames_2_1 = attrNames_2.next()) {
-            var attrName = attrNames_2_1.value;
-            var prevAttrValue = vNode.attrs[attrName];
-            var nextAttrValue = nextVNode.attrs[attrName];
-            if (attrName === _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ATTR_REF) {
-                applyRef(prevAttrValue, element);
-                continue;
-            }
-            if (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(nextAttrValue)) {
-                if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(prevAttrValue)) {
-                    if ((0,_events__WEBPACK_IMPORTED_MODULE_2__.detectIsEvent)(attrName) && prevAttrValue !== nextAttrValue) {
-                        (0,_events__WEBPACK_IMPORTED_MODULE_2__.delegateEvent)({
-                            target: element,
-                            handler: nextAttrValue,
-                            eventName: (0,_events__WEBPACK_IMPORTED_MODULE_2__.getEventName)(attrName),
-                        });
-                    }
-                }
-                else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
-                    var stopAttrsMap = upgradeInputAttributes({
-                        tagName: nextVNode.name,
-                        value: nextAttrValue,
-                        attrName: attrName,
-                        element: element,
-                    });
-                    !stopAttrsMap[attrName] && element.setAttribute(attrName, nextAttrValue);
-                }
-            }
-            else {
-                element.removeAttribute(attrName);
-            }
-        }
-    }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-    finally {
-        try {
-            if (attrNames_2_1 && !attrNames_2_1.done && (_a = attrNames_2.return)) _a.call(attrNames_2);
-        }
-        finally { if (e_2) throw e_2.error; }
-    }
-}
-var INPUT_STOP_ATTRS_MAP = {
+const INPUT_STOP_ATTRS_MAP = {
     value: true,
     checked: true,
 };
-var TEXTAREA_STOP_ATTRS_MAP = {
+const TEXTAREA_STOP_ATTRS_MAP = {
     value: true,
 };
-var OPTIONS_STOP_ATTRS_MAP = {
+const OPTIONS_STOP_ATTRS_MAP = {
     selected: true,
 };
-var DEFAULT_STOP_ATTRS_MAP = {};
+const DEFAULT_STOP_ATTRS_MAP = {};
 function upgradeInputAttributes(options) {
-    var tagName = options.tagName, element = options.element, attrName = options.attrName, value = options.value;
-    var map = {
-        input: function () {
+    const { tagName, element, attrName, value } = options;
+    const map = {
+        input: () => {
             if (INPUT_STOP_ATTRS_MAP[attrName]) {
                 element[attrName] = value;
             }
             return INPUT_STOP_ATTRS_MAP;
         },
-        textarea: function () {
+        textarea: () => {
             if (TEXTAREA_STOP_ATTRS_MAP[attrName]) {
                 element[attrName] = value;
             }
             return TEXTAREA_STOP_ATTRS_MAP;
         },
-        option: function () {
+        option: () => {
             if (OPTIONS_STOP_ATTRS_MAP[attrName]) {
                 element[attrName] = value;
             }
@@ -305,7 +245,7 @@ function upgradeInputAttributes(options) {
     return map[tagName] ? map[tagName]() : DEFAULT_STOP_ATTRS_MAP;
 }
 function getParentFiberWithNativeElement(fiber) {
-    var nextFiber = fiber;
+    let nextFiber = fiber;
     while (nextFiber) {
         nextFiber = nextFiber.parent;
         if ((0,_portal__WEBPACK_IMPORTED_MODULE_1__.detectIsPortal)(nextFiber.instance)) {
@@ -317,11 +257,10 @@ function getParentFiberWithNativeElement(fiber) {
     return nextFiber;
 }
 function getNodeOnTheRight(fiber, parentElement) {
-    var node = null;
+    let node = null;
     (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.walkFiber)({
-        fiber: fiber,
-        onLoop: function (_a) {
-            var nextFiber = _a.nextFiber, stop = _a.stop, resetIsDeepWalking = _a.resetIsDeepWalking;
+        fiber,
+        onLoop: ({ nextFiber, stop, resetIsDeepWalking }) => {
             if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
                 node = nextFiber.nativeElement;
                 return stop();
@@ -335,7 +274,7 @@ function getNodeOnTheRight(fiber, parentElement) {
 }
 function getChildIndex(fiber, parentNativeElement) {
     var _a;
-    var nextFiber = fiber;
+    let nextFiber = fiber;
     while (nextFiber) {
         if (((_a = nextFiber === null || nextFiber === void 0 ? void 0 : nextFiber.parent) === null || _a === void 0 ? void 0 : _a.nativeElement) === parentNativeElement) {
             return nextFiber.idx;
@@ -345,25 +284,25 @@ function getChildIndex(fiber, parentNativeElement) {
     return -1;
 }
 function commitCreation(fiber) {
-    var parentFiber = getParentFiberWithNativeElement(fiber);
-    var parentNativeElement = parentFiber.nativeElement;
-    var childNodes = parentNativeElement.childNodes;
-    var append = function () {
-        var fragment = (fragmentsMap.get(parentNativeElement) ||
+    const parentFiber = getParentFiberWithNativeElement(fiber);
+    const parentNativeElement = parentFiber.nativeElement;
+    const childNodes = parentNativeElement.childNodes;
+    const append = () => {
+        const { fragment } = fragmentsMap.get(parentNativeElement) ||
             {
                 fragment: document.createDocumentFragment(),
-                callback: function () { },
-            }).fragment;
+                callback: () => { },
+            };
         fragmentsMap.set(parentNativeElement, {
-            fragment: fragment,
-            callback: function () {
+            fragment,
+            callback: () => {
                 parentNativeElement.appendChild(fragment);
             },
         });
         fragment.appendChild(fiber.nativeElement);
         fiber.markMountedToHost();
     };
-    var insert = function () {
+    const insert = () => {
         parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
         fiber.markMountedToHost();
     };
@@ -386,11 +325,10 @@ function commitUpdate(nativeElement, instance, nextInstance) {
     }
 }
 function commitDeletion(fiber) {
-    var parentFiber = getParentFiberWithNativeElement(fiber);
+    const parentFiber = getParentFiberWithNativeElement(fiber);
     (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.walkFiber)({
-        fiber: fiber,
-        onLoop: function (_a) {
-            var nextFiber = _a.nextFiber, isReturn = _a.isReturn, resetIsDeepWalking = _a.resetIsDeepWalking, stop = _a.stop;
+        fiber,
+        onLoop: ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
             if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
                 return stop();
             }
@@ -402,15 +340,14 @@ function commitDeletion(fiber) {
     });
 }
 function applyCommit(fiber) {
-    var _a;
-    var map = (_a = {},
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.CREATE] = function () {
+    const map = {
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.CREATE]: () => {
             if (fiber.nativeElement === null)
                 return;
             trackUpdate && trackUpdate(fiber.nativeElement);
             commitCreation(fiber);
         },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE] = function () {
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.UPDATE]: () => {
             if (fiber.nativeElement === null ||
                 !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.alternate.instance) ||
                 !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsVirtualNode)(fiber.instance)) {
@@ -419,25 +356,14 @@ function applyCommit(fiber) {
             trackUpdate && trackUpdate(fiber.nativeElement);
             commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
         },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETE] = function () { return commitDeletion(fiber); },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.SKIP] = function () { },
-        _a);
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.DELETE]: () => commitDeletion(fiber),
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.EffectTag.SKIP]: () => { },
+    };
     map[fiber.effectTag]();
 }
 function finishCommitWork() {
-    var e_3, _a;
-    try {
-        for (var _b = __values(fragmentsMap.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
-            var callback = _c.value.callback;
-            callback();
-        }
-    }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
-    finally {
-        try {
-            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-        }
-        finally { if (e_3) throw e_3.error; }
+    for (const { callback } of fragmentsMap.values()) {
+        callback();
     }
     fragmentsMap = new Map();
 }
@@ -498,8 +424,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
 
-var SyntheticEvent = /** @class */ (function () {
-    function SyntheticEvent(options) {
+class SyntheticEvent {
+    constructor(options) {
         this.type = '';
         this.sourceEvent = null;
         this.target = null;
@@ -508,31 +434,30 @@ var SyntheticEvent = /** @class */ (function () {
         this.sourceEvent = options.sourceEvent;
         this.target = options.target;
     }
-    SyntheticEvent.prototype.stopPropagation = function () {
+    stopPropagation() {
         this.propagation = false;
         this.sourceEvent.stopPropagation();
-    };
-    SyntheticEvent.prototype.preventDefault = function () {
+    }
+    preventDefault() {
         this.sourceEvent.preventDefault();
-    };
-    SyntheticEvent.prototype.getPropagation = function () {
+    }
+    getPropagation() {
         return this.propagation;
-    };
-    return SyntheticEvent;
-}());
+    }
+}
 function delegateEvent(options) {
-    var target = options.target, eventName = options.eventName, handler = options.handler;
-    var eventsMap = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsStore.get();
-    var handlerMap = eventsMap.get(eventName);
+    const { target, eventName, handler } = options;
+    const eventsMap = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsStore.get();
+    const handlerMap = eventsMap.get(eventName);
     if (!handlerMap) {
-        var rootHandler_1 = function (event) {
-            var fireEvent = eventsMap.get(eventName).get(event.target);
-            var target = event.target;
-            var syntheticEvent = null;
+        const rootHandler = (event) => {
+            const fireEvent = eventsMap.get(eventName).get(event.target);
+            const target = event.target;
+            let syntheticEvent = null;
             if ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(fireEvent)) {
                 syntheticEvent = new SyntheticEvent({
                     sourceEvent: event,
-                    target: target,
+                    target,
                 });
                 fireEvent(syntheticEvent);
             }
@@ -541,15 +466,15 @@ function delegateEvent(options) {
             }
         };
         eventsMap.set(eventName, new WeakMap([[target, handler]]));
-        document.addEventListener(eventName, rootHandler_1, true);
-        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsStore.addUnsubscriber(function () { return document.removeEventListener(eventName, rootHandler_1, true); });
+        document.addEventListener(eventName, rootHandler, true);
+        _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.eventsStore.addUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
     }
     else {
         handlerMap.set(target, handler);
     }
 }
-var detectIsEvent = function (attrName) { return attrName.startsWith('on'); };
-var getEventName = function (attrName) { return attrName.slice(2, attrName.length).toLowerCase(); };
+const detectIsEvent = (attrName) => attrName.startsWith('on');
+const getEventName = (attrName) => attrName.slice(2, attrName.length).toLowerCase();
 
 
 
@@ -620,27 +545,22 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
     return t;
 };
 
-var $$portal = Symbol('portal');
+const $$portal = Symbol('portal');
 function createPortal(slot, container) {
-    var _a;
     if (!(container instanceof Element)) {
-        throw new Error("[Dark]: createPortal receives only Element as container!");
+        throw new Error(`[Dark]: createPortal receives only Element as container!`);
     }
-    return Portal((_a = {}, _a[$$portal] = container, _a.slot = slot, _a));
+    return Portal({ [$$portal]: container, slot });
 }
-var Portal = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createComponent)(function (_a) {
-    var slot = _a.slot, rest = __rest(_a, ["slot"]);
-    (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () { return (rest[$$portal].innerHTML = ''); }, []);
+const Portal = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createComponent)((_a) => {
+    var { slot } = _a, rest = __rest(_a, ["slot"]);
+    (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (rest[$$portal].innerHTML = ''), []);
     return slot;
 }, { token: $$portal });
-var detectIsPortal = function (factory) {
-    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory)(factory) && factory.token === $$portal;
-};
-var getPortalContainer = function (factory) {
-    return detectIsPortal(factory) ? factory.props[$$portal] : null;
-};
+const detectIsPortal = (factory) => (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsComponentFactory)(factory) && factory.token === $$portal;
+const getPortalContainer = (factory) => detectIsPortal(factory) ? factory.props[$$portal] : null;
 function unmountPortal(fiber) {
-    var container = getPortalContainer(fiber.instance);
+    const container = getPortalContainer(fiber.instance);
     if (container) {
         container.innerHTML = '';
     }
@@ -695,13 +615,13 @@ _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.applyCommit = _dom__WEBP
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.finishCommitWork = _dom__WEBPACK_IMPORTED_MODULE_1__.finishCommitWork;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.detectIsPortal = _portal__WEBPACK_IMPORTED_MODULE_2__.detectIsPortal;
 _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.platform.unmountPortal = _portal__WEBPACK_IMPORTED_MODULE_2__.unmountPortal;
-var roots = new Map();
+const roots = new Map();
 function render(element, container) {
     if (!(container instanceof Element)) {
-        throw new Error("[Dark]: render receives only Element as container!");
+        throw new Error(`[Dark]: render receives only Element as container!`);
     }
-    var isMounted = !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(roots.get(container));
-    var rootId = null;
+    const isMounted = !(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(roots.get(container));
+    let rootId = null;
     if (!isMounted) {
         rootId = roots.size;
         roots.set(container, rootId);
@@ -710,10 +630,10 @@ function render(element, container) {
     else {
         rootId = roots.get(container);
     }
-    var callback = function () {
+    const callback = () => {
         _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.rootStore.set(rootId); // important order!
-        var currentRoot = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.currentRootStore.get();
-        var fiber = new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.Fiber({
+        const currentRoot = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.currentRootStore.get();
+        const fiber = new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.Fiber({
             nativeElement: container,
             instance: new _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TagVirtualNode({
                 name: _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.ROOT,
@@ -764,36 +684,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
-var __read = (undefined && undefined.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 
-var queueByPriority = {
+const queueByPriority = {
     hight: [],
     normal: [],
     low1: [],
     low2: [],
 };
-var YEILD_INTERVAL = 10;
-var scheduledCallback = null;
-var deadline = 0;
-var isMessageLoopRunning = false;
-var currentTask = null;
-var Task = /** @class */ (function () {
-    function Task(options) {
+const YEILD_INTERVAL = 10;
+let scheduledCallback = null;
+let deadline = 0;
+let isMessageLoopRunning = false;
+let currentTask = null;
+class Task {
+    constructor(options) {
         this.id = ++Task.nextTaskId;
         this.time = options.time;
         this.timeoutMs = options.timeoutMs;
@@ -801,19 +705,17 @@ var Task = /** @class */ (function () {
         this.forceSync = options.forceSync;
         this.callback = options.callback;
     }
-    Task.nextTaskId = 0;
-    return Task;
-}());
-var shouldYeildToHost = function () { return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline; };
+}
+Task.nextTaskId = 0;
+const shouldYeildToHost = () => (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline;
 function scheduleCallback(callback, options) {
-    var _a;
-    var _b = options || {}, _c = _b.priority, priority = _c === void 0 ? _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL : _c, _d = _b.timeoutMs, timeoutMs = _d === void 0 ? 0 : _d, _e = _b.forceSync, forceSync = _e === void 0 ? false : _e;
-    var task = new Task({ time: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)(), timeoutMs: timeoutMs, priority: priority, forceSync: forceSync, callback: callback });
-    var map = (_a = {},
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH] = function () { return queueByPriority.hight.push(task); },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL] = function () { return queueByPriority.normal.push(task); },
-        _a[_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.LOW] = function () { return (task.timeoutMs > 0 ? queueByPriority.low2.push(task) : queueByPriority.low1.push(task)); },
-        _a);
+    const { priority = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
+    const task = new Task({ time: (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)(), timeoutMs, priority, forceSync, callback });
+    const map = {
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL]: () => queueByPriority.normal.push(task),
+        [_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.LOW]: () => (task.timeoutMs > 0 ? queueByPriority.low2.push(task) : queueByPriority.low1.push(task)),
+    };
     map[task.priority]();
     executeTasks();
 }
@@ -831,16 +733,16 @@ function pick(queue) {
     return true;
 }
 function executeTasks() {
-    var isBusy = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootStore.get());
+    const isBusy = Boolean(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.wipRootStore.get());
     if (!isBusy) {
         checkOverdueTasks() ||
             pick(queueByPriority.hight) ||
             pick(queueByPriority.normal) ||
-            requestIdleCallback(function () { return pick(queueByPriority.low1) || pick(queueByPriority.low2); });
+            requestIdleCallback(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));
     }
 }
 function checkOverdueTasks() {
-    var _a = __read(queueByPriority.low2, 1), task = _a[0];
+    const [task] = queueByPriority.low2;
     if (task && (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() - task.time > task.timeoutMs) {
         pick(queueByPriority.low2);
         return true;
@@ -851,7 +753,7 @@ function performWorkUntilDeadline() {
     if (scheduledCallback) {
         deadline = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() + YEILD_INTERVAL;
         try {
-            var hasMoreWork = scheduledCallback();
+            const hasMoreWork = scheduledCallback();
             if (!hasMoreWork) {
                 currentTask = null;
                 isMessageLoopRunning = false;
@@ -886,8 +788,8 @@ function requestCallbackSync(callback) {
     executeTasks();
     currentTask = null;
 }
-var channel = null;
-var port = null;
+let channel = null;
+let port = null;
 function setup() {
     if (false) {}
     channel = new MessageChannel();
@@ -928,45 +830,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
-var __read = (undefined && undefined.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 
-function styled(strings) {
-    var args = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        args[_i - 1] = arguments[_i];
-    }
-    var style = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.useMemo)(function () {
+function styled(strings, ...args) {
+    const style = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => {
         return strings
-            .map(function (x, idx) { return x + (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(args[idx]) ? args[idx] : ''); })
+            .map((x, idx) => x + (!(0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.detectIsUndefined)(args[idx]) ? args[idx] : ''))
             .join('')
             .replace(/;\s*/gm, ';')
             .replace(/:\s*/gm, ':')
             .trim();
-    }, __spreadArray([strings], __read(args), false));
+    }, [strings, ...args]);
     return style;
 }
 function useStyle(config) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 export * from './component';
 export * from './context';
 export { createElement as h } from './element';
@@ -29,3 +30,11 @@ export * from './constants';
 export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
+
+declare global {
+  namespace JSX {
+    interface ElementChildrenAttribute {
+      slot: {};
+    }
+  }
+}

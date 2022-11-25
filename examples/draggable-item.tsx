@@ -2,7 +2,7 @@ import { h, createComponent, useState, useRef, useEffect, DarkElement, batch } f
 import { createRoot, SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
 
 type SurfaceProps = {
-  slot?: (options: SurfaceSlotOptions) => DarkElement;
+  slot: (options: SurfaceSlotOptions) => DarkElement;
 };
 
 type SurfaceSlotOptions = {
