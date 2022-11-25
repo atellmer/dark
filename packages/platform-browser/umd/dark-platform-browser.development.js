@@ -982,7 +982,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const version = "0.9.3";
+const version = "0.9.4";
 
 })();
 
