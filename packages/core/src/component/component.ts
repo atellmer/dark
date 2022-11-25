@@ -33,8 +33,7 @@ function createComponent<P, R = any>(createElement: CreateElement<P, R>, options
   type Props = P & StandardComponentProps;
   const computedOptions = { ...defaultOptions, ...options };
   const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
-
-  return (props = {} as Props, ref?: Ref<R>): ComponentFactory<Props> => {
+  const component = (props = {} as Props, ref?: Ref<R>): ComponentFactory<Props> => {
     const computedProps = { ...defaultProps, ...props };
     const factory = new ComponentFactory({
       token,
@@ -56,6 +55,8 @@ function createComponent<P, R = any>(createElement: CreateElement<P, R>, options
 
     return factory;
   };
+
+  return component;
 }
 
 const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory => factory instanceof ComponentFactory;

@@ -17,9 +17,5 @@ export declare type SlotProps<T = DarkElement> = Readonly<{
 export declare type RefProps<T = unknown> = {
   ref?: Ref<T>;
 };
-export declare type Component<T = any, R = any> = (props: T, ref?: Ref<R>) => ComponentFactory;
-export declare type ComponentFactoryReturnType = DarkElement;
-export declare type CreateElement<P extends StandardComponentProps, R = any> = (
-  props: P,
-  ref?: Ref<R>,
-) => ComponentFactoryReturnType;
+export declare type Component<P = any, R = any> = (props?: P, ref?: Ref<R>) => ComponentFactory<P>;
+export declare type CreateElement<P extends StandardComponentProps, R = any> = (props: P, ref?: Ref<R>) => DarkElement;

@@ -249,7 +249,7 @@ const Bench = createComponent(() => {
 const root = createRoot(document.getElementById('root'));
 
 function forceUpdate() {
-  root.render(Bench());
+  root.render(<Bench />);
 }
 
 forceUpdate();

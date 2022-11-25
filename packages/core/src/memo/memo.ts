@@ -28,7 +28,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
 const detectIsMemo = (factory: unknown) => detectIsComponentFactory(factory) && factory.token === $$memo;
 
 function memo<T>(
-  component: (props: T, ref?: Ref) => ComponentFactory<T>,
+  component: (props?: T, ref?: Ref) => ComponentFactory<T>,
   shouldUpdate: ShouldUpdate<T & SlotProps> = defaultShouldUpdate,
 ): Component<T & StandardComponentProps> {
   return forwardRef(

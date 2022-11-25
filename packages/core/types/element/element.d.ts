@@ -1,7 +1,8 @@
 import { type TagVirtualNodeFactory } from '../view';
+import { type ComponentFactory } from '../component';
 declare function createElement(
   tag: string | Function,
   props: any,
   ...children: Array<any>
-): TagVirtualNodeFactory | Function | null;
+): ComponentFactory | TagVirtualNodeFactory | null;
 export { createElement };

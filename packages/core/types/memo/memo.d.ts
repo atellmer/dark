@@ -4,7 +4,7 @@ declare type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 declare const $$memo: unique symbol;
 declare const detectIsMemo: (factory: unknown) => boolean;
 declare function memo<T>(
-  component: (props: T, ref?: Ref) => ComponentFactory<T>,
+  component: (props?: T, ref?: Ref) => ComponentFactory<T>,
   shouldUpdate?: ShouldUpdate<T & SlotProps>,
 ): Component<T & StandardComponentProps>;
 export { $$memo, memo, detectIsMemo };
