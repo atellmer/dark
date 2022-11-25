@@ -64,7 +64,7 @@ function keyBy<T = any>(
   return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
 }
 
-function takeListFromEnd<T>(source: Array<T>, count: number) {
+function fromEnd<T>(source: Array<T>, count: number) {
   return source.slice(source.length - count, source.length);
 }
 
@@ -96,7 +96,7 @@ export {
   flatten,
   getTime,
   keyBy,
-  takeListFromEnd,
+  fromEnd,
   dummyFn,
   detectIsDepsDifferent,
 };

@@ -1,4 +1,4 @@
-import { flatten, detectIsEmpty, error, keyBy, takeListFromEnd, detectIsUndefined, detectIsArray } from '../helpers';
+import { flatten, detectIsEmpty, error, keyBy, fromEnd, detectIsUndefined, detectIsArray } from '../helpers';
 import { platform } from '../platform';
 import {
   wipRootStore,
@@ -219,11 +219,11 @@ function performChild(options: PerformChildOptions) {
   const childrenIdx = 0;
 
   shadow = shadow ? shadow.child : null;
-
   const alternate = getChildAlternate(nextFiber);
   const sourceInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
   const prevKey = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
+  shadow = prevKey !== null && nextKey !== null && prevKey === nextKey ? null : shadow;
   const hook = getHook({ shadow, alternate, prevKey, nextKey });
   const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
   let fiber = new Fiber({ hook, provider });
@@ -244,7 +244,6 @@ function performChild(options: PerformChildOptions) {
   fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
   fiber.idx = childrenIdx;
-
   nextFiber.child = fiber;
   fiber.parent = nextFiber;
   fiber.shadow = shadow;
@@ -285,6 +284,7 @@ function performSibling(options: PerformSiblingOptions) {
       : null;
     const prevKey = alternate ? getElementKey(alternate.instance) : null;
     const nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
+    shadow = prevKey !== null && nextKey !== null && prevKey === nextKey ? null : shadow;
     const hook = getHook({ shadow, alternate, prevKey, nextKey });
     const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     let fiber = new Fiber({ hook, provider });
@@ -305,7 +305,6 @@ function performSibling(options: PerformSiblingOptions) {
     fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
     fiber.idx = childrenIdx;
-
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
     fiber.shadow = shadow;
@@ -428,7 +427,7 @@ function mutateAlternate(options: PerformAlternateOptions) {
         } else {
           const diffCount = prevElementsCount - nextElementsCount;
           if (diffCount <= 0) return;
-          const fibers = takeListFromEnd(getSiblingFibers(alternate.child), diffCount);
+          const fibers = fromEnd(getSiblingFibers(alternate.child), diffCount);
 
           for (const fiber of fibers) {
             fiber.effectTag = EffectTag.DELETE;
