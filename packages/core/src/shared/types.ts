@@ -1,7 +1,7 @@
 import type { ComponentFactory } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
 
-export type DarkElement = NestedArray<ComponentFactory | VirtualNode | RenderProps | Nullable | string>;
+export type DarkElement = NestedArray<ComponentFactory | VirtualNode | RenderProps | Nullable | string | number>;
 
 export type Nullable = null | false | undefined;
 

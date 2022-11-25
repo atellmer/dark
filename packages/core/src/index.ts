@@ -31,6 +31,8 @@ export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
 
+export const version = process.env.VERSION;
+
 declare global {
   namespace JSX {
     interface ElementChildrenAttribute {

@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 
+const package = require('./package.json');
 const { alias } = require('../../webpack.alias');
 
 const libraryName = 'DarkPlatformBrowser';
@@ -41,6 +42,7 @@ const config = env => ({
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': env.production ? JSON.stringify('production') : JSON.stringify('development'),
+      'process.env.VERSION': JSON.stringify(package.version),
     }),
   ],
 });

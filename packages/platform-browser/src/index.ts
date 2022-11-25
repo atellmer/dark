@@ -6,6 +6,8 @@ export { useStyle } from './use-style';
 export { setTrackUpdate } from './dom';
 export type { SyntheticEvent } from './events';
 
+export const version = process.env.VERSION;
+
 declare global {
   namespace JSX {
     interface IntrinsicElements {

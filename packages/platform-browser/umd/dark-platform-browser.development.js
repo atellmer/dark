@@ -112,28 +112,63 @@ function createNativeElement(vNode) {
 function detectIsSvgElement(tagName) {
     const tagMap = {
         svg: true,
+        animate: true,
+        animateMotion: true,
+        animateTransform: true,
         circle: true,
+        clipPath: true,
+        defs: true,
+        desc: true,
         ellipse: true,
+        feBlend: true,
+        feColorMatrix: true,
+        feComponentTransfer: true,
+        feComposite: true,
+        feConvolveMatrix: true,
+        feDiffuseLighting: true,
+        feDisplacementMap: true,
+        feDistantLight: true,
+        feDropShadow: true,
+        feFlood: true,
+        feFuncA: true,
+        feFuncB: true,
+        feFuncG: true,
+        feFuncR: true,
+        feGaussianBlur: true,
+        feImage: true,
+        feMerge: true,
+        feMergeNode: true,
+        feMorphology: true,
+        feOffset: true,
+        fePointLight: true,
+        feSpecularLighting: true,
+        feSpotLight: true,
+        feTile: true,
+        feTurbulence: true,
+        filter: true,
+        foreignObject: true,
         g: true,
-        text: true,
-        tspan: true,
-        textPath: true,
+        image: true,
+        line: true,
+        linearGradient: true,
+        marker: true,
+        mask: true,
+        metadata: true,
+        mpath: true,
         path: true,
+        pattern: true,
         polygon: true,
         polyline: true,
-        line: true,
-        rect: true,
-        use: true,
-        image: true,
-        symbol: true,
-        defs: true,
-        linearGradient: true,
         radialGradient: true,
+        rect: true,
         stop: true,
-        clipPath: true,
-        pattern: true,
-        mask: true,
-        marker: true,
+        switch: true,
+        symbol: true,
+        text: true,
+        textPath: true,
+        tspan: true,
+        use: true,
+        view: true,
     };
     return Boolean(tagMap[tagName]);
 }
@@ -273,10 +308,9 @@ function getNodeOnTheRight(fiber, parentElement) {
     return node;
 }
 function getChildIndex(fiber, parentNativeElement) {
-    var _a;
     let nextFiber = fiber;
     while (nextFiber) {
-        if (((_a = nextFiber === null || nextFiber === void 0 ? void 0 : nextFiber.parent) === null || _a === void 0 ? void 0 : _a.nativeElement) === parentNativeElement) {
+        if (nextFiber?.parent?.nativeElement === parentNativeElement) {
             return nextFiber.idx;
         }
         nextFiber = nextFiber.parent;
@@ -425,11 +459,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
 
 class SyntheticEvent {
+    type = '';
+    sourceEvent = null;
+    target = null;
+    propagation = true;
     constructor(options) {
-        this.type = '';
-        this.sourceEvent = null;
-        this.target = null;
-        this.propagation = true;
         this.type = options.sourceEvent.type;
         this.sourceEvent = options.sourceEvent;
         this.target = options.target;
@@ -533,17 +567,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @dark-engine/core */ "@dark-engine/core");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__);
-var __rest = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 
 const $$portal = Symbol('portal');
 function createPortal(slot, container) {
@@ -552,8 +575,7 @@ function createPortal(slot, container) {
     }
     return Portal({ [$$portal]: container, slot });
 }
-const Portal = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createComponent)((_a) => {
-    var { slot } = _a, rest = __rest(_a, ["slot"]);
+const Portal = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.createComponent)(({ slot, ...rest }) => {
     (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => (rest[$$portal].innerHTML = ''), []);
     return slot;
 }, { token: $$portal });
@@ -697,6 +719,13 @@ let deadline = 0;
 let isMessageLoopRunning = false;
 let currentTask = null;
 class Task {
+    static nextTaskId = 0;
+    id;
+    time;
+    timeoutMs;
+    priority;
+    forceSync;
+    callback;
     constructor(options) {
         this.id = ++Task.nextTaskId;
         this.time = options.time;
@@ -706,7 +735,6 @@ class Task {
         this.callback = options.callback;
     }
 }
-Task.nextTaskId = 0;
 const shouldYeildToHost = () => (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.getTime)() >= deadline;
 function scheduleCallback(callback, options) {
     const { priority = _dark_engine_core__WEBPACK_IMPORTED_MODULE_0__.TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
@@ -940,18 +968,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "createRoot": () => (/* reexport safe */ _create_root__WEBPACK_IMPORTED_MODULE_1__.createRoot),
 /* harmony export */   "render": () => (/* reexport safe */ _render__WEBPACK_IMPORTED_MODULE_0__.render),
 /* harmony export */   "setTrackUpdate": () => (/* reexport safe */ _dom__WEBPACK_IMPORTED_MODULE_4__.setTrackUpdate),
-/* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_3__.useStyle)
+/* harmony export */   "useStyle": () => (/* reexport safe */ _use_style__WEBPACK_IMPORTED_MODULE_3__.useStyle),
+/* harmony export */   "version": () => (/* binding */ version)
 /* harmony export */ });
 /* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./render */ "./src/render/index.ts");
 /* harmony import */ var _create_root__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./create-root */ "./src/create-root/index.ts");
 /* harmony import */ var _portal__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./portal */ "./src/portal/index.ts");
 /* harmony import */ var _use_style__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./use-style */ "./src/use-style/index.ts");
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./dom */ "./src/dom/index.ts");
+/* eslint-disable @typescript-eslint/no-namespace */
 
 
 
 
 
+const version = "0.9.3";
 
 })();
 

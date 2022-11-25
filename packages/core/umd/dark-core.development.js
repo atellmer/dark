@@ -95,8 +95,14 @@ const defaultOptions = {
     token: $$component,
 };
 class ComponentFactory {
+    type;
+    token;
+    props;
+    ref;
+    displayName;
+    children = [];
+    shouldUpdate;
     constructor(options) {
-        this.children = [];
         this.type = options.type || null;
         this.token = options.token || null;
         this.props = options.props || null;
@@ -106,10 +112,10 @@ class ComponentFactory {
     }
 }
 function createComponent(createElement, options = {}) {
-    const computedOptions = Object.assign(Object.assign({}, defaultOptions), options);
+    const computedOptions = { ...defaultOptions, ...options };
     const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
     return (props = {}, ref) => {
-        const computedProps = Object.assign(Object.assign({}, defaultProps), props);
+        const computedProps = { ...defaultProps, ...props };
         const factory = new ComponentFactory({
             token,
             ref,
@@ -323,12 +329,16 @@ function getChildren(children) {
 }
 function createElement(tag, props, ...children) {
     if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsString)(tag)) {
-        return (0,_view__WEBPACK_IMPORTED_MODULE_1__.View)(Object.assign(Object.assign({}, props), { as: tag, slot: getChildren(children) }));
+        return (0,_view__WEBPACK_IMPORTED_MODULE_1__.View)({
+            ...props,
+            as: tag,
+            slot: getChildren(children),
+        });
     }
     if ((0,_helpers__WEBPACK_IMPORTED_MODULE_0__.detectIsFunction)(tag)) {
         let slot = getChildren(children);
         slot = slot.length === 1 ? slot[0] : slot;
-        return tag(Object.assign(Object.assign({}, props), { slot }));
+        return tag({ ...props, slot });
     }
     return null;
 }
@@ -392,6 +402,27 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Fiber {
+    nativeElement;
+    parent;
+    child;
+    nextSibling;
+    alternate;
+    effectTag;
+    instance;
+    hook;
+    shadow;
+    provider;
+    transposition;
+    mountedToHost;
+    portalHost;
+    effectHost;
+    layoutEffectHost;
+    childrenCount;
+    marker;
+    isUsed;
+    idx;
+    batched;
+    catchException;
     constructor(options) {
         this.nativeElement = options.nativeElement || null;
         this.parent = options.parent || null;
@@ -508,10 +539,9 @@ function performUnitOfWork(fiber) {
     }
 }
 function performPartialUpdateEffects(nextFiber) {
-    var _a;
     if (nextFiber.marker !== _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE)
         return;
-    const alternate = ((_a = nextFiber.child) === null || _a === void 0 ? void 0 : _a.alternate) || null;
+    const alternate = nextFiber.child?.alternate || null;
     const fiber = nextFiber.child || null;
     if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
         let nextFiber = alternate.nextSibling;
@@ -535,6 +565,7 @@ function performChild(options) {
     const sourceInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
     const prevKey = alternate ? getElementKey(alternate.instance) : null;
     const nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
+    shadow = prevKey !== null && nextKey !== null && prevKey === nextKey ? null : shadow;
     const hook = getHook({ shadow, alternate, prevKey, nextKey });
     const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
     let fiber = new Fiber({ hook, provider });
@@ -581,6 +612,7 @@ function performSibling(options) {
             : null;
         const prevKey = alternate ? getElementKey(alternate.instance) : null;
         const nextKey = sourceInstance ? getElementKey(sourceInstance) : null;
+        shadow = prevKey !== null && nextKey !== null && prevKey === nextKey ? null : shadow;
         const hook = getHook({ shadow, alternate, prevKey, nextKey });
         const provider = shadow ? shadow.provider : alternate ? alternate.provider : null;
         let fiber = new Fiber({ hook, provider });
@@ -695,7 +727,7 @@ function mutateAlternate(options) {
                     const diffCount = prevElementsCount - nextElementsCount;
                     if (diffCount <= 0)
                         return;
-                    const fibers = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.takeListFromEnd)(getSiblingFibers(alternate.child), diffCount);
+                    const fibers = (0,_helpers__WEBPACK_IMPORTED_MODULE_0__.fromEnd)(getSiblingFibers(alternate.child), diffCount);
                     for (const fiber of fibers) {
                         fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE;
                     }
@@ -756,11 +788,16 @@ function performMemo(options) {
         if (skip) {
             let nextFiber = null;
             _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.deepWalking.set(false);
-            memoFiber = new Fiber(Object.assign(Object.assign({}, alternate), { alternate, effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.SKIP, nextSibling: alternate.nextSibling
+            memoFiber = new Fiber({
+                ...alternate,
+                alternate,
+                effectTag: _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.SKIP,
+                nextSibling: alternate.nextSibling
                     ? alternate.nextSibling.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE
                         ? null
                         : alternate.nextSibling
-                    : null }));
+                    : null,
+            });
             alternate.alternate = null;
             nextFiber = memoFiber.child;
             while (nextFiber) {
@@ -956,8 +993,7 @@ function getChildAlternate(fiber) {
     return alternate;
 }
 function getNextSiblingAlternate(fiber) {
-    var _a;
-    let alternate = ((_a = fiber.alternate) === null || _a === void 0 ? void 0 : _a.nextSibling) || null;
+    let alternate = fiber.alternate?.nextSibling || null;
     while (alternate && alternate.effectTag === _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.DELETE) {
         alternate = alternate.nextSibling;
     }
@@ -1059,7 +1095,10 @@ function createUpdateCallback(options) {
         _scope__WEBPACK_IMPORTED_MODULE_2__.rootStore.set(rootId); // important order!
         _scope__WEBPACK_IMPORTED_MODULE_2__.isUpdateHookZone.set(true);
         _scope__WEBPACK_IMPORTED_MODULE_2__.fiberMountStore.reset();
-        fiber.alternate = new Fiber(Object.assign(Object.assign({}, fiber), { alternate: null }));
+        fiber.alternate = new Fiber({
+            ...fiber,
+            alternate: null,
+        });
         fiber.marker = _constants__WEBPACK_IMPORTED_MODULE_6__.PARTIAL_UPDATE;
         fiber.effectTag = _types__WEBPACK_IMPORTED_MODULE_7__.EffectTag.UPDATE;
         fiber.child = null;
@@ -1186,9 +1225,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "dummyFn": () => (/* binding */ dummyFn),
 /* harmony export */   "error": () => (/* binding */ error),
 /* harmony export */   "flatten": () => (/* binding */ flatten),
+/* harmony export */   "fromEnd": () => (/* binding */ fromEnd),
 /* harmony export */   "getTime": () => (/* binding */ getTime),
-/* harmony export */   "keyBy": () => (/* binding */ keyBy),
-/* harmony export */   "takeListFromEnd": () => (/* binding */ takeListFromEnd)
+/* harmony export */   "keyBy": () => (/* binding */ keyBy)
 /* harmony export */ });
 const detectIsFunction = (o) => typeof o === 'function';
 const detectIsUndefined = (o) => typeof o === 'undefined';
@@ -1234,7 +1273,7 @@ function getTime() {
 function keyBy(list, fn, value = false) {
     return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
 }
-function takeListFromEnd(source, count) {
+function fromEnd(source, count) {
     return source.slice(source.length - count, source.length);
 }
 const dummyFn = () => { };
@@ -1486,21 +1525,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "forwardRef": () => (/* binding */ forwardRef)
 /* harmony export */ });
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
-var __rest = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 
 function forwardRef(component) {
-    return (_a) => {
-        var { ref } = _a, rest = __rest(_a, ["ref"]);
+    return ({ ref, ...rest }) => {
         return component(rest, ref);
     };
 }
@@ -1587,25 +1614,24 @@ __webpack_require__.r(__webpack_exports__);
 let rootId = null;
 const stores = new Map();
 class Store {
-    constructor() {
-        this.wipRoot = null;
-        this.currentRoot = null;
-        this.nextUnitOfWork = null;
-        this.events = new Map();
-        this.unsubscribers = [];
-        this.deletions = [];
-        this.fiberMount = {
-            level: 0,
-            navigation: {},
-            isDeepWalking: true,
-        };
-        this.componentFiber = null;
-        this.effects = [];
-        this.layoutEffects = [];
-        this.isLayoutEffectsZone = false;
-        this.isUpdateHookZone = false;
-        this.isBatchZone = false;
-    }
+    wipRoot = null;
+    currentRoot = null;
+    nextUnitOfWork = null;
+    events = new Map();
+    unsubscribers = [];
+    deletions = [];
+    fiberMount = {
+        level: 0,
+        navigation: {},
+        isDeepWalking: true,
+    };
+    componentFiber = null;
+    effects = [];
+    layoutEffects = [];
+    isLayoutEffectsZone = false;
+    isUpdateHookZone = false;
+    isBatchZone = false;
+    trackUpdate;
 }
 const rootStore = {
     set: (id) => {
@@ -1619,19 +1645,19 @@ const store = {
     get: (id = rootId) => stores.get(id),
 };
 const wipRootStore = {
-    get: () => { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.wipRoot) || null; },
+    get: () => store.get()?.wipRoot || null,
     set: (fiber) => (store.get().wipRoot = fiber),
 };
 const currentRootStore = {
-    get: (id) => { var _a; return ((_a = store.get(id)) === null || _a === void 0 ? void 0 : _a.currentRoot) || null; },
+    get: (id) => store.get(id)?.currentRoot || null,
     set: (fiber) => (store.get().currentRoot = fiber),
 };
 const nextUnitOfWorkStore = {
-    get: () => { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.nextUnitOfWork) || null; },
+    get: () => store.get()?.nextUnitOfWork || null,
     set: (fiber) => (store.get().nextUnitOfWork = fiber),
 };
 const currentFiberStore = {
-    get: () => { var _a; return (_a = store.get()) === null || _a === void 0 ? void 0 : _a.componentFiber; },
+    get: () => store.get()?.componentFiber,
     set: (fiber) => (store.get().componentFiber = fiber),
 };
 const eventsStore = {
@@ -1688,15 +1714,15 @@ const layoutEffectsStore = {
     add: (effect) => store.get().layoutEffects.push(effect),
 };
 const isLayoutEffectsZone = {
-    get: () => { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.isLayoutEffectsZone) || false; },
+    get: () => store.get()?.isLayoutEffectsZone || false,
     set: (value) => (store.get().isLayoutEffectsZone = value),
 };
 const isUpdateHookZone = {
-    get: () => { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.isUpdateHookZone) || false; },
+    get: () => store.get()?.isUpdateHookZone || false,
     set: (value) => (store.get().isUpdateHookZone = value),
 };
 const isBatchZone = {
-    get: () => { var _a; return ((_a = store.get()) === null || _a === void 0 ? void 0 : _a.isBatchZone) || false; },
+    get: () => store.get()?.isBatchZone || false,
     set: (value) => (store.get().isBatchZone = value),
 };
 
@@ -2092,7 +2118,7 @@ function createEffect(token, store) {
     }
     function hasEffects(fiber) {
         const { values } = fiber.hook;
-        const hasEffect = values.some(x => (x === null || x === void 0 ? void 0 : x.token) === token);
+        const hasEffect = values.some(x => x?.token === token);
         return hasEffect;
     }
     function dropEffects(hook) {
@@ -2505,7 +2531,7 @@ function useState(initialValue, options) {
             const setValue = () => {
                 scope.values[scope.idx] = newValue;
             };
-            if ((options === null || options === void 0 ? void 0 : options.priority) === _constants__WEBPACK_IMPORTED_MODULE_5__.TaskPriority.LOW) {
+            if (options?.priority === _constants__WEBPACK_IMPORTED_MODULE_5__.TaskPriority.LOW) {
                 update(() => setValue());
             }
             else {
@@ -2575,11 +2601,14 @@ function useUpdate(options) {
         const callback = (0,_fiber__WEBPACK_IMPORTED_MODULE_2__.createUpdateCallback)({
             rootId,
             fiber: scope.fiber,
-            forceStart: Boolean(options === null || options === void 0 ? void 0 : options.timeoutMs),
+            forceStart: Boolean(options?.timeoutMs),
             onStart: onStart || _helpers__WEBPACK_IMPORTED_MODULE_4__.dummyFn,
         });
         if (_scope__WEBPACK_IMPORTED_MODULE_1__.isLayoutEffectsZone.get()) {
-            options = Object.assign(Object.assign({}, (options || {})), { forceSync: true });
+            options = {
+                ...(options || {}),
+                forceSync: true,
+            };
         }
         if (_scope__WEBPACK_IMPORTED_MODULE_1__.isBatchZone.get()) {
             (0,_batch__WEBPACK_IMPORTED_MODULE_5__.runBatch)(scope.fiber, () => _platform__WEBPACK_IMPORTED_MODULE_0__.platform.scheduleCallback(callback, options));
@@ -2675,35 +2704,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../constants */ "./src/constants.ts");
 /* harmony import */ var _helpers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers */ "./src/helpers/index.ts");
 /* harmony import */ var _types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./types */ "./src/view/types.ts");
-var __rest = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 
 
 
 const $$virtualNode = Symbol('virtual-node');
 class VirtualNode {
+    type = null;
     constructor(options) {
-        this.type = null;
         this.type = options.type;
     }
 }
 class TagVirtualNode extends VirtualNode {
+    type = _types__WEBPACK_IMPORTED_MODULE_2__.NodeType.TAG;
+    name = null;
+    isVoid = false;
+    attrs = {};
+    children = [];
     constructor(options) {
         super(options);
-        this.type = _types__WEBPACK_IMPORTED_MODULE_2__.NodeType.TAG;
-        this.name = null;
-        this.isVoid = false;
-        this.attrs = {};
-        this.children = [];
         this.name = options.name || this.name;
         this.isVoid = options.isVoid || this.isVoid;
         this.attrs = options.attrs || this.attrs;
@@ -2711,18 +2729,18 @@ class TagVirtualNode extends VirtualNode {
     }
 }
 class TextVirtualNode extends VirtualNode {
+    type = _types__WEBPACK_IMPORTED_MODULE_2__.NodeType.TEXT;
+    value = '';
     constructor(text) {
         super({});
-        this.type = _types__WEBPACK_IMPORTED_MODULE_2__.NodeType.TEXT;
-        this.value = '';
         this.value = text;
     }
 }
 class CommentVirtualNode extends VirtualNode {
+    type = _types__WEBPACK_IMPORTED_MODULE_2__.NodeType.COMMENT;
+    value = '';
     constructor(text) {
         super({});
-        this.type = _types__WEBPACK_IMPORTED_MODULE_2__.NodeType.COMMENT;
-        this.value = '';
         this.value = text;
     }
 }
@@ -2739,12 +2757,12 @@ const createEmptyVirtualNode = () => new CommentVirtualNode(_constants__WEBPACK_
 const detectIsVirtualNodeFactory = (factory) => (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsFunction)(factory) && factory[$$virtualNode] === true;
 function View(def) {
     const factory = () => {
-        const { as, slot, isVoid = false } = def, rest = __rest(def, ["as", "slot", "isVoid"]);
+        const { as, slot, isVoid = false, ...rest } = def;
         const children = isVoid ? [] : (0,_helpers__WEBPACK_IMPORTED_MODULE_1__.detectIsArray)(slot) ? slot : slot ? [slot] : [];
         return new TagVirtualNode({
             name: as,
             isVoid,
-            attrs: Object.assign({}, rest),
+            attrs: { ...rest },
             children: children,
         });
     };
@@ -2974,6 +2992,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "fiberMountStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.fiberMountStore),
 /* harmony export */   "flatten": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.flatten),
 /* harmony export */   "forwardRef": () => (/* reexport safe */ _ref__WEBPACK_IMPORTED_MODULE_9__.forwardRef),
+/* harmony export */   "fromEnd": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.fromEnd),
 /* harmony export */   "getComponentFactoryKey": () => (/* reexport safe */ _component__WEBPACK_IMPORTED_MODULE_0__.getComponentFactoryKey),
 /* harmony export */   "getRootId": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.getRootId),
 /* harmony export */   "getTime": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.getTime),
@@ -2990,7 +3009,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "nextUnitOfWorkStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.nextUnitOfWorkStore),
 /* harmony export */   "platform": () => (/* reexport safe */ _platform__WEBPACK_IMPORTED_MODULE_5__.platform),
 /* harmony export */   "rootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.rootStore),
-/* harmony export */   "takeListFromEnd": () => (/* reexport safe */ _helpers__WEBPACK_IMPORTED_MODULE_6__.takeListFromEnd),
 /* harmony export */   "unmountRoot": () => (/* reexport safe */ _unmount__WEBPACK_IMPORTED_MODULE_29__.unmountRoot),
 /* harmony export */   "useCallback": () => (/* reexport safe */ _use_callback__WEBPACK_IMPORTED_MODULE_13__.useCallback),
 /* harmony export */   "useContext": () => (/* reexport safe */ _use_context__WEBPACK_IMPORTED_MODULE_14__.useContext),
@@ -3005,6 +3023,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "useRef": () => (/* reexport safe */ _use_ref__WEBPACK_IMPORTED_MODULE_23__.useRef),
 /* harmony export */   "useState": () => (/* reexport safe */ _use_state__WEBPACK_IMPORTED_MODULE_24__.useState),
 /* harmony export */   "useUpdate": () => (/* reexport safe */ _use_update__WEBPACK_IMPORTED_MODULE_25__.useUpdate),
+/* harmony export */   "version": () => (/* binding */ version),
 /* harmony export */   "walkFiber": () => (/* reexport safe */ _walk__WEBPACK_IMPORTED_MODULE_28__.walkFiber),
 /* harmony export */   "wipRootStore": () => (/* reexport safe */ _scope__WEBPACK_IMPORTED_MODULE_10__.wipRootStore),
 /* harmony export */   "workLoop": () => (/* reexport safe */ _fiber__WEBPACK_IMPORTED_MODULE_3__.workLoop)
@@ -3040,6 +3059,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _walk__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./walk */ "./src/walk/index.ts");
 /* harmony import */ var _unmount__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./unmount */ "./src/unmount/index.ts");
 /* harmony import */ var _batch__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./batch */ "./src/batch/index.ts");
+/* eslint-disable @typescript-eslint/no-namespace */
 
 
 
@@ -3071,6 +3091,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const version = "0.9.3";
 
 })();
 
