@@ -3,6 +3,7 @@ import { dom, waitNextIdle, createTestHostNode, createEmptyCommentString } from 
 import { createComponent } from '@dark-engine/core/component/component';
 import { View, Text, Comment } from '@dark-engine/core/view/view';
 import { createElement } from '@dark-engine/core/element/element';
+import { DarkElement } from '@dark-engine/core/shared';
 import { render } from './render';
 
 type Item = { id: number; name: string };
@@ -84,7 +85,11 @@ test(`${TEST_MARKER}: conditional rendering works correctly with replacing compo
     one: boolean;
   };
 
-  const ListItem = createComponent(({ slot }) => {
+  type ListItemProps = {
+    slot: DarkElement;
+  };
+
+  const ListItem = createComponent<ListItemProps>(({ slot }) => {
     return div({
       slot,
     });
@@ -183,7 +188,11 @@ describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
   const itemAttrName = 'data-item';
   let items = [];
 
-  const ListItem = createComponent(({ slot }) => {
+  type ListItemProps = {
+    slot: DarkElement;
+  };
+
+  const ListItem = createComponent<ListItemProps>(({ slot }) => {
     return div({
       [itemAttrName]: true,
       slot,
@@ -459,8 +468,12 @@ test(`${TEST_MARKER} render app in more than one host correctly`, () => {
   const hostOne = document.createElement('div');
   const hostTwo = document.createElement('div');
 
+  type NameProps = {
+    slot: DarkElement;
+  };
+
   const Hello = createComponent(() => <span>hello</span>);
-  const Name = createComponent(({ slot }) => <span>{slot}</span>);
+  const Name = createComponent<NameProps>(({ slot }) => <span>{slot}</span>);
   const App = createComponent<{ name: string }>(({ name }) => {
     return (
       <div>

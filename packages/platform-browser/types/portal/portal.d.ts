@@ -4,12 +4,7 @@ declare function createPortal(
   slot: DarkElement,
   container: Element,
 ): ComponentFactory<
-  PortalProps &
-    import('@dark-engine/core').KeyProps &
-    Readonly<{
-      slot?: DarkElement;
-    }> &
-    import('@dark-engine/core').RefProps<unknown>,
+  PortalProps & import('@dark-engine/core').KeyProps & import('@dark-engine/core').RefProps<unknown>,
   any
 >;
 declare type PortalProps = {

@@ -10,7 +10,7 @@
     "build": "npm run before-build && npm run build:types && npm run build:dev && npm run build:prod && npm run format",
     "build:dev": "webpack --config webpack.config --env development",
     "build:prod": "webpack --config webpack.config --env production",
-    "build:types": "npx tsc -d --emitDeclarationOnly --skipLibCheck --declarationDir types",
+    "build:types": "npx tsc -p ./xtsconfig.json -d --emitDeclarationOnly --skipLibCheck --declarationDir types",
     "format": "npx prettier --write ./**/*.{js,ts}",
     "before-build": "node ./before-build.js"
   },
