@@ -10,9 +10,9 @@ import {
   useCallback,
   Fragment,
   TaskPriority,
+  DarkElement,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
-import { DarkElement } from 'packages/core/types';
 
 startFPSMonitor();
 startMemMonitor();

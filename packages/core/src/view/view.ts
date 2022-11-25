@@ -96,9 +96,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
 }
 
 function Text(source: string | number): TextVirtualNode {
-  const text = new TextVirtualNode(source + '');
-
-  return text;
+  return new TextVirtualNode(source + '');
 }
 
 Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');

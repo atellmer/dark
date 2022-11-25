@@ -23,11 +23,6 @@ export type RefProps<T = unknown> = {
   ref?: Ref<T>;
 };
 
-export type Component<T = any, R = any> = (props: T, ref?: Ref<R>) => ComponentFactory;
+export type Component<T = any, R = any> = (props?: T, ref?: Ref<R>) => ComponentFactory;
 
-export type ComponentFactoryReturnType = DarkElement;
-
-export type CreateElement<P extends StandardComponentProps, R = any> = (
-  props: P,
-  ref?: Ref<R>,
-) => ComponentFactoryReturnType;
+export type CreateElement<P extends StandardComponentProps, R = any> = (props: P, ref?: Ref<R>) => DarkElement;

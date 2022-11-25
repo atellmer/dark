@@ -1,4 +1,14 @@
-import { flatten, detectIsEmpty, error, keyBy, fromEnd, detectIsUndefined, detectIsArray } from '../helpers';
+import {
+  flatten,
+  detectIsEmpty,
+  error,
+  keyBy,
+  fromEnd,
+  detectIsUndefined,
+  detectIsArray,
+  detectIsString,
+  detectIsNumber,
+} from '../helpers';
 import { platform } from '../platform';
 import {
   wipRootStore,
@@ -31,6 +41,7 @@ import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { walkFiber } from '../walk';
 import { unmountFiber } from '../unmount';
+import { Text } from '../view';
 
 class Fiber<N = NativeElement> {
   public nativeElement: N;
@@ -631,7 +642,11 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
 
   if (isComponentFactory) {
     try {
-      const result = factory.type(factory.props, factory.ref);
+      let result = factory.type(factory.props, factory.ref);
+
+      if (detectIsString(result) || detectIsNumber(result)) {
+        result = Text(result);
+      }
 
       factory.children = detectIsArray(result)
         ? (flatten([result]) as Array<DarkElementInstance>)

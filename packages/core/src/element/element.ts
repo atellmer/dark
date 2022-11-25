@@ -1,5 +1,6 @@
 import { detectIsNumber, detectIsString, detectIsFunction } from '../helpers';
 import { View, Text, type TagVirtualNodeFactory } from '../view';
+import { type ComponentFactory } from '../component';
 
 function getChildren(children: Array<any>) {
   children = children.map(x => (detectIsString(x) || detectIsNumber(x) ? Text(x.toString()) : x));
@@ -11,7 +12,7 @@ function createElement(
   tag: string | Function,
   props: any,
   ...children: Array<any>
-): TagVirtualNodeFactory | Function | null {
+): ComponentFactory | TagVirtualNodeFactory | null {
   if (detectIsString(tag)) {
     return View({
       ...props,
