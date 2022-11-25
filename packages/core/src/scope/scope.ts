@@ -1,5 +1,4 @@
 import type { Fiber } from '../fiber';
-import { dummyFn } from '../helpers';
 
 let rootId: number = null;
 

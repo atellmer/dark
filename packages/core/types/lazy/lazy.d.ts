@@ -8,17 +8,9 @@ declare function lazy<P, R = unknown>(
   ...rest
 }: P &
   import('../component').KeyProps &
-  Readonly<{
-    slot?: import('..').DarkElement;
-  }> &
   import('../component').RefProps<unknown> &
   import('../component').RefProps<R>) => import('../component/component').ComponentFactory<
-  P &
-    import('../component').KeyProps &
-    Readonly<{
-      slot?: import('..').DarkElement;
-    }> &
-    import('../component').RefProps<unknown>,
+  P & import('../component').KeyProps & import('../component').RefProps<unknown>,
   R
 >;
 declare const detectIsLazy: (factory: unknown) => boolean;

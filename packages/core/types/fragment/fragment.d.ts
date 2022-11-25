@@ -1,16 +1,20 @@
 import { type KeyProps } from '../component';
 declare const Fragment: (
-  props?: KeyProps &
+  props?: Required<
     Readonly<{
-      slot?: import('..').DarkElement;
-    }> &
+      slot: import('..').DarkElement;
+    }>
+  > &
+    KeyProps &
     import('../component').RefProps<unknown>,
   ref?: import('..').Ref<any>,
 ) => import('../component/component').ComponentFactory<
-  KeyProps &
+  Required<
     Readonly<{
-      slot?: import('..').DarkElement;
-    }> &
+      slot: import('..').DarkElement;
+    }>
+  > &
+    KeyProps &
     import('../component').RefProps<unknown>,
   any
 >;

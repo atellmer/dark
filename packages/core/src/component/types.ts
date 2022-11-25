@@ -9,28 +9,25 @@ export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   shouldUpdate?: (props: P, nextProps: P) => boolean;
 }>;
 
-export type StandardComponentProps = KeyProps & SlotProps & RefProps;
+export type StandardComponentProps = KeyProps & RefProps;
 
 export type KeyProps = {
   key?: DarkElementKey;
 };
 
 export type SlotProps<T = DarkElement> = Readonly<{
-  slot?: T;
+  slot: T;
 }>;
 
 export type RefProps<T = unknown> = {
   ref?: Ref<T>;
 };
 
-export type Component<T extends Pick<StandardComponentProps, 'slot'> = any, R = any> = (
-  props: T,
-  ref?: Ref<R>,
-) => ComponentFactory;
+export type Component<T = any, R = any> = (props: T, ref?: Ref<R>) => ComponentFactory;
 
 export type ComponentFactoryReturnType = DarkElement;
 
 export type CreateElement<P extends StandardComponentProps, R = any> = (
-  props: P & Pick<StandardComponentProps, 'slot'>,
+  props: P,
   ref?: Ref<R>,
 ) => ComponentFactoryReturnType;

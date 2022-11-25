@@ -4,6 +4,7 @@ import { currentFiberStore } from '../scope';
 import { useContext } from '../use-context';
 import { detectIsFunction } from '../helpers';
 import type { Context, ContexProviderProps } from './types';
+import type { DarkElement } from '../shared';
 
 function createContext<T>(defaultValue: T): Context<T> {
   let displayName = 'Context';
@@ -64,8 +65,12 @@ function createProvider<T>(context: Context<T>, defaultValue: T, displayName: st
   );
 }
 
+type ConsumerProps<T> = {
+  slot: (value: T) => DarkElement;
+};
+
 function createConsumer<T>(context: Context<T>, displayName: string) {
-  return createComponent(
+  return createComponent<ConsumerProps<T>>(
     ({ slot }) => {
       const value = useContext(context);
 

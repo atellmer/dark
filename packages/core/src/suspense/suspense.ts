@@ -1,4 +1,4 @@
-import { createComponent } from '../component';
+import { createComponent, type SlotProps } from '../component';
 import { useState } from '../use-state';
 import { createContext } from '../context';
 import { useContext } from '../use-context';
@@ -8,7 +8,7 @@ import type { DarkElement } from '../shared';
 
 type SuspenseProps = {
   fallback: DarkElement;
-};
+} & Required<SlotProps>;
 
 type SuspenseContextValue = {
   fallback: DarkElement;

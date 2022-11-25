@@ -1,7 +1,4 @@
 import type { DarkElement } from '../shared';
-declare type SuspenseProps = {
-  fallback: DarkElement;
-};
 declare type SuspenseContextValue = {
   fallback: DarkElement;
   isLoaded: boolean;
@@ -9,19 +6,25 @@ declare type SuspenseContextValue = {
 };
 declare const SuspenseContext: import('../context').Context<SuspenseContextValue>;
 declare const Suspense: (
-  props?: SuspenseProps &
-    import('../component').KeyProps &
+  props?: {
+    fallback: DarkElement;
+  } & Required<
     Readonly<{
-      slot?: DarkElement;
-    }> &
+      slot: DarkElement;
+    }>
+  > &
+    import('../component').KeyProps &
     import('../component').RefProps<unknown>,
   ref?: import('..').Ref<any>,
 ) => import('../component/component').ComponentFactory<
-  SuspenseProps &
-    import('../component').KeyProps &
+  {
+    fallback: DarkElement;
+  } & Required<
     Readonly<{
-      slot?: DarkElement;
-    }> &
+      slot: DarkElement;
+    }>
+  > &
+    import('../component').KeyProps &
     import('../component').RefProps<unknown>,
   any
 >;

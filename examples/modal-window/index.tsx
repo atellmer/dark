@@ -1,4 +1,4 @@
-import { h, createComponent, useEffect, useState, useMemo, Fragment } from '@dark-engine/core';
+import { h, createComponent, useEffect, useState, useMemo, Fragment, DarkElement } from '@dark-engine/core';
 import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
 
 const Overlay = createComponent(() => {
@@ -19,6 +19,7 @@ const Overlay = createComponent(() => {
 
 type ModalProps = {
   isOpen: boolean;
+  slot: DarkElement;
   onRequestClose: () => void;
 };
 

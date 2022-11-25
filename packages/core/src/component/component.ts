@@ -2,7 +2,7 @@ import { ATTR_KEY } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
 import type { Ref } from '../ref';
-import type { CreateElement, ComponentOptions, StandardComponentProps, SlotProps } from './types';
+import type { CreateElement, ComponentOptions, StandardComponentProps } from './types';
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {
@@ -29,10 +29,7 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   }
 }
 
-function createComponent<P, R = any>(
-  createElement: CreateElement<P & SlotProps, R>,
-  options: ComponentOptions<P> = {},
-) {
+function createComponent<P, R = any>(createElement: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
   type Props = P & StandardComponentProps;
   const computedOptions = { ...defaultOptions, ...options };
   const { token, defaultProps, displayName, shouldUpdate } = computedOptions;

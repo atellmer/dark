@@ -1,5 +1,5 @@
-import type { DarkElementKey } from '../shared';
-import type { ComponentFactory, StandardComponentProps } from '../component';
+import type { DarkElementKey, DarkElement } from '../shared';
+import type { ComponentFactory } from '../component';
 import { NodeType, type ViewDef } from './types';
 export declare type VirtualNodeFactory = () => VirtualNode;
 export declare type TagVirtualNodeFactory = () => TagVirtualNode;
@@ -36,7 +36,10 @@ declare function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null
 declare const createEmptyVirtualNode: () => CommentVirtualNode;
 declare const detectIsVirtualNodeFactory: (factory: unknown) => factory is VirtualNodeFactory;
 declare function View(def: ViewDef): TagVirtualNodeFactory;
-declare function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNode;
+declare function Text(source: string | number): TextVirtualNode;
+declare namespace Text {
+  var from: (source: DarkElement) => string;
+}
 declare function Comment(text: string): CommentVirtualNodeFactory;
 export {
   VirtualNode,

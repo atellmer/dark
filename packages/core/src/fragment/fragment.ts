@@ -1,8 +1,10 @@
-import { type KeyProps, createComponent, detectIsComponentFactory } from '../component';
+import { type KeyProps, type SlotProps, createComponent, detectIsComponentFactory } from '../component';
+
+type FragmentProps = Required<SlotProps> & KeyProps;
 
 const $$fragment = Symbol('fragment');
 
-const Fragment = createComponent<KeyProps>(({ slot }) => slot || null, {
+const Fragment = createComponent<FragmentProps>(({ slot }) => slot || null, {
   token: $$fragment,
 });
 

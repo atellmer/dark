@@ -1,7 +1,7 @@
 import { EMPTY_NODE, ATTR_KEY } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction, detectIsString } from '../helpers';
-import type { DarkElementKey } from '../shared';
-import type { ComponentFactory, StandardComponentProps } from '../component';
+import type { DarkElementKey, DarkElement } from '../shared';
+import type { ComponentFactory } from '../component';
 import { NodeType, type ViewDef } from './types';
 
 export type VirtualNodeFactory = () => VirtualNode;
@@ -95,15 +95,13 @@ function View(def: ViewDef): TagVirtualNodeFactory {
   return factory;
 }
 
-function Text(source: string | StandardComponentProps['slot']): string | TextVirtualNode {
-  const text = detectIsString(source)
-    ? new TextVirtualNode(source)
-    : detectIsTextVirtualNode(source)
-    ? source.value
-    : '';
+function Text(source: string | number): TextVirtualNode {
+  const text = new TextVirtualNode(source + '');
 
   return text;
 }
+
+Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
 
 function Comment(text: string): CommentVirtualNodeFactory {
   const factory = () => new CommentVirtualNode(text);

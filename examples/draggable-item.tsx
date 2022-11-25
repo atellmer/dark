@@ -1,5 +1,8 @@
-import { h, createComponent, useState, useRef, useEffect, DarkElement, batch } from '@dark-engine/core';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { h, createComponent, useState, useRef, useEffect, useMemo, DarkElement, batch } from '@dark-engine/core';
 import { createRoot, SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
+
+type ID = string | number;
 
 type SurfaceProps = {
   slot: (options: SurfaceSlotOptions) => DarkElement;
@@ -7,14 +10,14 @@ type SurfaceProps = {
 
 type SurfaceSlotOptions = {
   isDragging: boolean;
-  activeDraggableID: string | number;
-  setActiveDraggableID: (value: string | number) => void;
+  activeDraggableID: ID | null;
+  setActiveDraggableID: (value: ID | null) => void;
   setIsDragging: (value: boolean) => void;
 };
 
 const Surface = createComponent<SurfaceProps>(({ slot }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [activeDraggableID, setActiveDraggableID] = useState(null);
+  const [activeDraggableID, setActiveDraggableID] = useState<ID | null>(null);
   const style = useStyle(styled => ({
     root: styled`
       position: relative;
@@ -43,45 +46,65 @@ const Surface = createComponent<SurfaceProps>(({ slot }) => {
     };
   }, []);
 
-  return <div style={style.root}>{slot({ isDragging, activeDraggableID, setActiveDraggableID, setIsDragging })}</div>;
+  return (
+    <div style={style.root}>
+      {slot({
+        isDragging,
+        activeDraggableID,
+        setActiveDraggableID,
+        setIsDragging,
+      })}
+    </div>
+  );
 });
 
 type DraggableProps = {
-  draggableID: number | string;
-  activeDraggableID: number | string;
+  draggableID: ID;
+  activeDraggableID: ID | null;
   isDragging: boolean;
-  setActiveDraggableID: (value: string | number) => void;
+  slot: DarkElement;
+  setActiveDraggableID: (value: ID | null) => void;
   setIsDragging: (value: boolean) => void;
 };
 
 const Draggable = createComponent<DraggableProps>(
   ({ isDragging, draggableID, activeDraggableID, setIsDragging, setActiveDraggableID, slot }) => {
     const [coord, setCoord] = useState({ x: 0, y: 0 });
-    const [rect, setRect] = useState<DOMRect>(null);
-    const rootRef = useRef<HTMLElement>(null);
+    const [rect, setRect] = useState<DOMRect | null>(null);
+    const scope = useMemo(() => ({ fromResize: false }), []);
+    const rootRef = useRef<HTMLElement | null>(null);
     const isActive = isDragging && draggableID === activeDraggableID;
     const style = useStyle(styled => ({
       root: styled`
-      position: relative;
-      cursor: move;
-      display: inline-block;
-      transform: translate(${coord.x}px, ${coord.y}px);
-      z-index: ${isActive ? 2 : 1};
-      user-select: none;
-      touch-action: none;
-    `,
+        position: relative;
+        cursor: move;
+        display: inline-block;
+        transform: translate(${coord.x}px, ${coord.y}px);
+        z-index: ${isActive ? 2 : 1};
+        user-select: none;
+        touch-action: none;
+      `,
     }));
 
     useEffect(() => {
-      setRect(rootRef.current.getBoundingClientRect());
+      setRect(rootRef.current!.getBoundingClientRect());
     }, []);
 
     useEffect(() => {
-      const handleEvent = () => setCoord({ x: 0, y: 0 });
+      if (!scope.fromResize) return;
+      setRect(rootRef.current!.getBoundingClientRect());
+      scope.fromResize = false;
+    }, [scope, scope.fromResize]);
+
+    useEffect(() => {
+      const handleEvent = () => {
+        scope.fromResize = true;
+        setCoord({ x: 0, y: 0 });
+      };
 
       window.addEventListener('resize', handleEvent);
       return () => window.removeEventListener('resize', handleEvent);
-    }, []);
+    }, [scope]);
 
     const handleDragStart = () => {
       batch(() => {
@@ -98,8 +121,8 @@ const Draggable = createComponent<DraggableProps>(
 
       if (touch.clientX === 0 || touch.clientY === 0) return;
 
-      const x = touch.clientX - rect.width / 2 - rect.left;
-      const y = touch.clientY - rect.height / 2 - rect.top;
+      const x = touch.clientX - rect!.width / 2 - rect!.left;
+      const y = touch.clientY - rect!.height / 2 - rect!.top;
 
       setCoord({ x, y });
     };
@@ -138,7 +161,7 @@ const App = createComponent(() => {
 
   return (
     <Surface>
-      {({ isDragging, activeDraggableID, setActiveDraggableID, setIsDragging }: SurfaceSlotOptions) => {
+      {({ isDragging, activeDraggableID, setActiveDraggableID, setIsDragging }) => {
         return ['🍉', '🍇', '🍌', '🍒', '🍎'].map((x, idx) => {
           return (
             <Draggable
@@ -157,6 +180,6 @@ const App = createComponent(() => {
   );
 });
 
-const root = createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root')!);
 
 root.render(<App />);
