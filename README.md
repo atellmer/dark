@@ -15,6 +15,7 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 
 - [1k components](https://atellmer.github.io/dark/examples/1k-components/)
 - [10k rows](https://atellmer.github.io/dark/examples/10k-rows/)
+- [Dark ⚡️ Vue benchmark](https://atellmer.github.io/dark/examples/dark-vs-vue/)
 - [Track updates](https://atellmer.github.io/dark/examples/track-updates/)
 - [Sierpinski triangle](https://atellmer.github.io/dark/examples/sierpinski-triangle/)
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
