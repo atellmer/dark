@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Theme</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      position: relative;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-size: 14px;
+    }
+    body {
+      font-family: 'Roboto';
+      transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out;
+    }
+
+    .dark {
+      background-color: #12005e;
+      color: #fff;
+    }
+
+    @keyframes fade {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .fade {
+      animation-name: fade;
+      animation-iteration-count: 1;
+      animation-duration: 0.4s;
+      animation-timing-function: ease-in-out;
+      animation-fill-mode: forwards;
+    }
+
+    .mark {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+    }
+  </style>
+  <link rel="stylesheet"href="https://fonts.googleapis.com/css?family=Roboto">
+</head>
+<body>
+  <div id="root"></div>
+  <script src="./build.js"></script>
+</body>
+</html>
