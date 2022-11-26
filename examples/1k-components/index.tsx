@@ -94,13 +94,10 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     const pyProp = yForLayout(currentLayout);
     const nyProp = yForLayout(nextLayout);
 
-    scope.points = scope.points.map(point => {
-      const newPoint = { ...point };
-      newPoint.x = lerp(newPoint, pct, pxProp, nxProp);
-      newPoint.y = lerp(newPoint, pct, pyProp, nyProp);
-
-      return newPoint;
-    });
+    for (const point of scope.points) {
+      point.x = lerp(point, pct, pxProp, nxProp);
+      point.y = lerp(point, pct, pyProp, nyProp);
+    }
 
     update();
   };

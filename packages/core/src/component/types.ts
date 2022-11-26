@@ -6,8 +6,10 @@ export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   displayName?: string;
   defaultProps?: Partial<P>;
   token?: Symbol;
-  shouldUpdate?: (props: P, nextProps: P) => boolean;
+  shouldUpdate?: ShouldUpdate<P>;
 }>;
+
+export type ShouldUpdate<P> = (props: P, nextProps: P) => boolean;
 
 export type StandardComponentProps = KeyProps & RefProps;
 

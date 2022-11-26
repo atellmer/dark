@@ -869,21 +869,18 @@ function commitWork(fiber: Fiber, onComplete: Function) {
     platform.applyCommit(fiber);
   }
 
-  walkFiber({
-    fiber,
-    onLoop: ({ nextFiber, isReturn, resetIsDeepWalking }) => {
-      const skip = nextFiber.effectTag === EffectTag.SKIP;
+  walkFiber(fiber, ({ nextFiber, isReturn, resetIsDeepWalking }) => {
+    const skip = nextFiber.effectTag === EffectTag.SKIP;
 
-      if (skip) {
-        resetIsDeepWalking();
-      } else if (!isReturn) {
-        platform.applyCommit(nextFiber);
-      }
+    if (skip) {
+      resetIsDeepWalking();
+    } else if (!isReturn) {
+      platform.applyCommit(nextFiber);
+    }
 
-      if (nextFiber && nextFiber.shadow) {
-        nextFiber.shadow = null;
-      }
-    },
+    if (nextFiber && nextFiber.shadow) {
+      nextFiber.shadow = null;
+    }
   });
 
   platform.finishCommitWork();

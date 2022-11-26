@@ -4,12 +4,11 @@ import {
   type StandardComponentProps,
   type RefProps,
   type SlotProps,
+  type ShouldUpdate,
   createComponent,
   detectIsComponentFactory,
 } from '../component';
 import { type Ref, forwardRef } from '../ref';
-
-type ShouldUpdate<T> = (props: T, nextProps: T) => boolean;
 
 const $$memo = Symbol('memo');
 

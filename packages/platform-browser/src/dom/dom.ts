@@ -92,31 +92,31 @@ let fragmentsMap: Map<Element, DOMFragment> = new Map();
 
 let trackUpdate: (nativeElement: Element) => void = null;
 
+const createNativeElementMap = {
+  [NodeType.TAG]: (vNode: VirtualNode) => {
+    const tagNode = vNode as TagVirtualNode;
+    const node = detectIsSvgElement(tagNode.name)
+      ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
+      : document.createElement(tagNode.name);
+
+    return node;
+  },
+  [NodeType.TEXT]: (vNode: VirtualNode) => {
+    const textNode = vNode as TextVirtualNode;
+    const node = document.createTextNode(textNode.value);
+
+    return node;
+  },
+  [NodeType.COMMENT]: (vNode: VirtualNode) => {
+    const commentNode = vNode as CommentVirtualNode;
+    const node = document.createComment(commentNode.value);
+
+    return node;
+  },
+};
+
 function createNativeElement(vNode: VirtualNode): DOMElement {
-  const map = {
-    [NodeType.TAG]: (vNode: VirtualNode) => {
-      const tagNode = vNode as TagVirtualNode;
-      const node = detectIsSvgElement(tagNode.name)
-        ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
-        : document.createElement(tagNode.name);
-
-      return node;
-    },
-    [NodeType.TEXT]: (vNode: VirtualNode) => {
-      const textNode = vNode as TextVirtualNode;
-      const node = document.createTextNode(textNode.value);
-
-      return node;
-    },
-    [NodeType.COMMENT]: (vNode: VirtualNode) => {
-      const commentNode = vNode as CommentVirtualNode;
-      const node = document.createComment(commentNode.value);
-
-      return node;
-    },
-  };
-
-  return map[vNode.type](vNode);
+  return createNativeElementMap[vNode.type](vNode);
 }
 
 function detectIsSvgElement(tagName: string) {
@@ -155,7 +155,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
       const stopAttrsMap = upgradeInputAttributes({
         tagName: vNode.name,
         value: attrValue,
-        attrName,
+        name: attrName,
         element,
       });
 
@@ -189,7 +189,7 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
         const stopAttrsMap = upgradeInputAttributes({
           tagName: nextVNode.name,
           value: nextAttrValue,
-          attrName,
+          name: attrName,
           element,
         });
 
@@ -221,37 +221,42 @@ type PatchedElements = 'input' | 'textarea' | 'option';
 type UpgradeInputAttributesOptions = {
   tagName: string;
   element: Element;
-  attrName: string;
+  name: string;
   value: string | boolean;
 };
 
+const upgradeInputAttributesMap: Record<
+  PatchedElements,
+  (element: Element, name: string, value: string | boolean) => Record<string, boolean>
+> = {
+  input: (element: Element, name: string, value: string | boolean) => {
+    if (INPUT_STOP_ATTRS_MAP[name]) {
+      element[name] = value;
+    }
+
+    return INPUT_STOP_ATTRS_MAP;
+  },
+  textarea: (element: Element, name: string, value: string | boolean) => {
+    if (TEXTAREA_STOP_ATTRS_MAP[name]) {
+      element[name] = value;
+    }
+
+    return TEXTAREA_STOP_ATTRS_MAP;
+  },
+  option: (element: Element, name: string, value: string | boolean) => {
+    if (OPTIONS_STOP_ATTRS_MAP[name]) {
+      element[name] = value;
+    }
+
+    return OPTIONS_STOP_ATTRS_MAP;
+  },
+};
+
 function upgradeInputAttributes(options: UpgradeInputAttributesOptions): Record<string, boolean> {
-  const { tagName, element, attrName, value } = options;
-  const map: Record<PatchedElements, () => Record<string, boolean>> = {
-    input: () => {
-      if (INPUT_STOP_ATTRS_MAP[attrName]) {
-        element[attrName] = value;
-      }
+  const { tagName, element, name, value } = options;
+  const fn = upgradeInputAttributesMap[tagName];
 
-      return INPUT_STOP_ATTRS_MAP;
-    },
-    textarea: () => {
-      if (TEXTAREA_STOP_ATTRS_MAP[attrName]) {
-        element[attrName] = value;
-      }
-
-      return TEXTAREA_STOP_ATTRS_MAP;
-    },
-    option: () => {
-      if (OPTIONS_STOP_ATTRS_MAP[attrName]) {
-        element[attrName] = value;
-      }
-
-      return OPTIONS_STOP_ATTRS_MAP;
-    },
-  };
-
-  return map[tagName] ? map[tagName]() : DEFAULT_STOP_ATTRS_MAP;
+  return fn ? fn(element, name, value) : DEFAULT_STOP_ATTRS_MAP;
 }
 
 function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
@@ -273,19 +278,16 @@ function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> 
 function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
   let node: Element = null;
 
-  walkFiber<Element>({
-    fiber,
-    onLoop: ({ nextFiber, stop, resetIsDeepWalking }) => {
-      if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
-        node = nextFiber.nativeElement;
+  walkFiber<Element>(fiber, ({ nextFiber, stop, resetIsDeepWalking }) => {
+    if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
+      node = nextFiber.nativeElement;
 
-        return stop();
-      }
+      return stop();
+    }
 
-      if (!nextFiber.mountedToHost) {
-        return resetIsDeepWalking();
-      }
-    },
+    if (!nextFiber.mountedToHost) {
+      return resetIsDeepWalking();
+    }
   });
 
   return node;
@@ -305,38 +307,38 @@ function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
   return -1;
 }
 
+const append = (fiber: Fiber<Element>, parentNativeElement: Element) => {
+  const { fragment } =
+    fragmentsMap.get(parentNativeElement) ||
+    ({
+      fragment: document.createDocumentFragment(),
+      callback: () => {},
+    } as DOMFragment);
+
+  fragmentsMap.set(parentNativeElement, {
+    fragment,
+    callback: () => {
+      parentNativeElement.appendChild(fragment);
+    },
+  });
+  fragment.appendChild(fiber.nativeElement);
+  fiber.markMountedToHost();
+};
+
+const insert = (fiber: Fiber<Element>, parentNativeElement: Element) => {
+  parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
+  fiber.markMountedToHost();
+};
+
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
 
-  const append = () => {
-    const { fragment } =
-      fragmentsMap.get(parentNativeElement) ||
-      ({
-        fragment: document.createDocumentFragment(),
-        callback: () => {},
-      } as DOMFragment);
-
-    fragmentsMap.set(parentNativeElement, {
-      fragment,
-      callback: () => {
-        parentNativeElement.appendChild(fragment);
-      },
-    });
-    fragment.appendChild(fiber.nativeElement);
-    fiber.markMountedToHost();
-  };
-
-  const insert = () => {
-    parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
-    fiber.markMountedToHost();
-  };
-
   if (childNodes.length === 0 || getChildIndex(fiber, parentNativeElement) > childNodes.length - 1) {
-    append();
+    append(fiber, parentNativeElement);
   } else {
-    insert();
+    insert(fiber, parentNativeElement);
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
@@ -359,45 +361,42 @@ function commitUpdate(nativeElement: Element, instance: VirtualNode, nextInstanc
 function commitDeletion(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
 
-  walkFiber<Element>({
-    fiber,
-    onLoop: ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
-      if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
-        return stop();
-      }
+  walkFiber<Element>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+      return stop();
+    }
 
-      if (!isReturn && nextFiber.nativeElement) {
-        !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
+    if (!isReturn && nextFiber.nativeElement) {
+      !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
 
-        return resetIsDeepWalking();
-      }
-    },
+      return resetIsDeepWalking();
+    }
   });
 }
 
-function applyCommit(fiber: Fiber<Element>) {
-  const map: Record<EffectTag, () => void> = {
-    [EffectTag.CREATE]: () => {
-      if (fiber.nativeElement === null) return;
-      trackUpdate && trackUpdate(fiber.nativeElement);
-      commitCreation(fiber);
-    },
-    [EffectTag.UPDATE]: () => {
-      if (
-        fiber.nativeElement === null ||
-        !detectIsVirtualNode(fiber.alternate.instance) ||
-        !detectIsVirtualNode(fiber.instance)
-      ) {
-        return;
-      }
-      trackUpdate && trackUpdate(fiber.nativeElement);
-      commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
-    },
-    [EffectTag.DELETE]: () => commitDeletion(fiber),
-    [EffectTag.SKIP]: () => {},
-  };
+const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
+  [EffectTag.CREATE]: (fiber: Fiber<Element>) => {
+    if (fiber.nativeElement === null) return;
+    trackUpdate && trackUpdate(fiber.nativeElement);
+    commitCreation(fiber);
+  },
+  [EffectTag.UPDATE]: (fiber: Fiber<Element>) => {
+    if (
+      fiber.nativeElement === null ||
+      !detectIsVirtualNode(fiber.alternate.instance) ||
+      !detectIsVirtualNode(fiber.instance)
+    ) {
+      return;
+    }
+    trackUpdate && trackUpdate(fiber.nativeElement);
+    commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
+  },
+  [EffectTag.DELETE]: (fiber: Fiber<Element>) => commitDeletion(fiber),
+  [EffectTag.SKIP]: () => {},
+};
 
-  map[fiber.effectTag]();
+function applyCommit(fiber: Fiber<Element>) {
+  applyCommitMap[fiber.effectTag](fiber);
 }
 
 function finishCommitWork() {
