@@ -16,6 +16,7 @@ const queueByPriority: QueueByPriority = {
   low2: [],
 };
 const YEILD_INTERVAL = 4;
+const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
 let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
@@ -75,10 +76,27 @@ function executeTasks() {
 
   if (!isBusy) {
     checkOverdueTasks() ||
+      gc() ||
       pick(queueByPriority.hight) ||
       pick(queueByPriority.normal) ||
       requestIdleCallback(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));
   }
+}
+
+function gc() {
+  if (queueByPriority.low1.length > MAX_LOW_PRIORITY_TASKS_LIMIT && detectIsMemoryLimitReached()) {
+    queueByPriority.low1 = [];
+  }
+
+  return false;
+}
+
+function detectIsMemoryLimitReached() {
+  if (typeof performance !== 'undefined') {
+    return performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit > 0.01;
+  }
+
+  return true;
 }
 
 function checkOverdueTasks() {
