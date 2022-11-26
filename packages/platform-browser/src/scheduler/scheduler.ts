@@ -15,7 +15,7 @@ const queueByPriority: QueueByPriority = {
   low1: [],
   low2: [],
 };
-const YEILD_INTERVAL = 8;
+const YEILD_INTERVAL = 4;
 let scheduledCallback: Callback = null;
 let deadline = 0;
 let isMessageLoopRunning = false;

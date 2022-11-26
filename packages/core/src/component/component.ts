@@ -2,7 +2,7 @@ import { ATTR_KEY } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
 import type { Ref } from '../ref';
-import type { CreateElement, ComponentOptions, StandardComponentProps } from './types';
+import type { CreateElement, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {
@@ -17,43 +17,43 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
   public ref: Ref<R>;
   public displayName: string;
   public children: Array<DarkElementInstance> = [];
-  public shouldUpdate?: (props: P, nextProps: P) => boolean;
+  public shouldUpdate?: ShouldUpdate<P>;
 
-  constructor(options: ComponentFactory<P>) {
-    this.type = options.type || null;
-    this.token = options.token || null;
-    this.props = options.props || null;
-    this.ref = options.ref || null;
-    this.displayName = options.displayName || '';
-    this.shouldUpdate = options.shouldUpdate || null;
+  constructor(
+    type: CreateElement<P>,
+    token: Symbol,
+    props: P,
+    ref: Ref<R>,
+    shouldUpdate: ShouldUpdate<P>,
+    displayName: string,
+  ) {
+    this.type = type || null;
+    this.token = token || null;
+    this.props = props || null;
+    this.ref = ref || null;
+    this.shouldUpdate = shouldUpdate || null;
+    this.displayName = displayName || '';
   }
 }
 
-function createComponent<P, R = any>(createElement: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
-  type Props = P & StandardComponentProps;
-  const computedOptions = { ...defaultOptions, ...options };
+function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
+  const computedOptions = { ...defaultOptions, ...options } as ComponentOptions<P>;
   const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
-  const component = (props = {} as Props, ref?: Ref<R>): ComponentFactory<Props> => {
-    const computedProps = { ...defaultProps, ...props };
-    const factory = new ComponentFactory({
-      token,
-      ref,
-      displayName,
-      shouldUpdate,
-      props: computedProps,
-      type: createElement,
-      children: [],
-    });
+  const component = (
+    props = {} as P & StandardComponentProps,
+    ref?: Ref<R>,
+  ): ComponentFactory<P & StandardComponentProps> => {
+    const mprops = { ...defaultProps, ...props };
 
-    if (computedProps.ref) {
-      delete computedProps.ref;
+    if (mprops.ref) {
+      delete mprops.ref;
 
       if (process.env.NODE_ENV === 'development') {
         error(`[Dark]: To use ref you need to wrap the createComponent with forwardRef!`);
       }
     }
 
-    return factory;
+    return new ComponentFactory(type, token, mprops, ref, shouldUpdate, displayName);
   };
 
   return component;

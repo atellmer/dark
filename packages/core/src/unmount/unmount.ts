@@ -10,17 +10,14 @@ import { currentRootStore, eventsStore, rootStore } from '../scope';
 function unmountFiber(fiber: Fiber) {
   if (!fiber.effectHost && !fiber.layoutEffectHost && !fiber.portalHost) return;
 
-  walkFiber({
-    fiber,
-    onLoop: ({ nextFiber, isReturn, stop }) => {
-      if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
+  walkFiber(fiber, ({ nextFiber, isReturn, stop }) => {
+    if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
 
-      if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
-        nextFiber.layoutEffectHost && dropLayoutEffects(nextFiber.hook);
-        nextFiber.effectHost && dropEffects(nextFiber.hook);
-        nextFiber.portalHost && platform.unmountPortal(nextFiber);
-      }
-    },
+    if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
+      nextFiber.layoutEffectHost && dropLayoutEffects(nextFiber.hook);
+      nextFiber.effectHost && dropEffects(nextFiber.hook);
+      nextFiber.portalHost && platform.unmountPortal(nextFiber);
+    }
   });
 }
 

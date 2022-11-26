@@ -1,10 +1,5 @@
 import { type Fiber } from '../fiber';
 
-type WalkFiberOptions<T> = {
-  fiber: Fiber;
-  onLoop: (options: OnLoopOptions<T>) => void;
-};
-
 type OnLoopOptions<T> = {
   nextFiber: Fiber<T>;
   isReturn: boolean;
@@ -12,8 +7,7 @@ type OnLoopOptions<T> = {
   stop: () => void;
 };
 
-function walkFiber<T = unknown>(options: WalkFiberOptions<T>) {
-  const { fiber, onLoop } = options;
+function walkFiber<T = unknown>(fiber: Fiber<T>, onLoop: (options: OnLoopOptions<T>) => void) {
   let nextFiber = fiber;
   let isDeepWalking = true;
   let isReturn = false;
