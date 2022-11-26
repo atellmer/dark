@@ -84,19 +84,11 @@ function executeTasks() {
 }
 
 function gc() {
-  if (queueByPriority.low1.length > MAX_LOW_PRIORITY_TASKS_LIMIT && detectIsMemoryLimitReached()) {
+  if (queueByPriority.low1.length > MAX_LOW_PRIORITY_TASKS_LIMIT) {
     queueByPriority.low1 = [];
   }
 
   return false;
-}
-
-function detectIsMemoryLimitReached() {
-  if (typeof performance !== 'undefined') {
-    return performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit > 0.01;
-  }
-
-  return true;
 }
 
 function checkOverdueTasks() {

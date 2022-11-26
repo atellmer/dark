@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { type TagVirtualNodeFactory } from '@dark-engine/core';
 export { render } from './render';
 export { createRoot } from './create-root';
 export { createPortal } from './portal';
