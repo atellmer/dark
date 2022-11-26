@@ -129,8 +129,8 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     setAnchors(newPoints);
   };
 
-  const renderPoint = (point, idx) => {
-    return <Point key={idx} x={point.x} y={point.y} color={point.color} />;
+  const renderPoint = ({ x, y, color }: Point, idx: number) => {
+    return <rect key={idx} class='point' transform={`translate(${Math.floor(x)}, ${Math.floor(y)})`} fill={color} />;
   };
 
   return (
@@ -150,15 +150,11 @@ const map = (items: Array<any>, cb: (x: any, idx: number) => any) => {
   return points;
 };
 
-type PointProps = {
+type Point = {
   x: number;
   y: number;
   color: string;
 };
-
-const Point = createComponent<PointProps>(({ x, y, color }) => {
-  return <rect class='point' transform={`translate(${Math.floor(x)}, ${Math.floor(y)})`} fill={color} />;
-});
 
 const theta = Math.PI * (3 - Math.sqrt(5));
 
