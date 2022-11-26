@@ -7,7 +7,7 @@ declare const Fragment: (
   > &
     KeyProps &
     import('../component').RefProps<unknown>,
-  ref?: import('..').Ref<any>,
+  ref?: import('..').Ref<unknown>,
 ) => import('../component/component').ComponentFactory<
   Required<
     Readonly<{

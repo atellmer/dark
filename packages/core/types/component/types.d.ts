@@ -5,8 +5,9 @@ export declare type ComponentOptions<P extends StandardComponentProps> = Readonl
   displayName?: string;
   defaultProps?: Partial<P>;
   token?: Symbol;
-  shouldUpdate?: (props: P, nextProps: P) => boolean;
+  shouldUpdate?: ShouldUpdate<P>;
 }>;
+export declare type ShouldUpdate<P> = (props: P, nextProps: P) => boolean;
 export declare type StandardComponentProps = KeyProps & RefProps;
 export declare type KeyProps = {
   key?: DarkElementKey;

@@ -15,7 +15,7 @@ declare const Suspense: (
   > &
     import('../component').KeyProps &
     import('../component').RefProps<unknown>,
-  ref?: import('..').Ref<any>,
+  ref?: import('..').Ref<unknown>,
 ) => import('../component/component').ComponentFactory<
   {
     fallback: DarkElement;
