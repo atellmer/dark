@@ -1,4 +1,3 @@
-import { waitNextIdle } from '@test-utils';
 import { render } from '@dark-engine/platform-browser/render';
 import { createComponent } from '../component';
 import { memo } from './memo';
@@ -18,10 +17,8 @@ test('memo component works correctly by default', () => {
   const MemoApp = memo(App);
 
   render(MemoApp({}), host);
-  waitNextIdle();
   expect(mockFn).toBeCalledTimes(1);
   render(MemoApp({}), host);
-  waitNextIdle();
   expect(mockFn).toBeCalledTimes(1);
 });
 
@@ -35,15 +32,11 @@ test('memo component works correctly with custom props comparer', () => {
   const MemoApp = memo<Props>(App, (props, nextProps) => props.name !== nextProps.name);
 
   render(MemoApp({ name: 'Alex', age: 24 }), host);
-  waitNextIdle();
   expect(mockFn).toBeCalledTimes(1);
   render(MemoApp({ name: 'Alex', age: 26 }), host);
-  waitNextIdle();
   expect(mockFn).toBeCalledTimes(1);
   render(MemoApp({ name: 'Jane', age: 24 }), host);
-  waitNextIdle();
   expect(mockFn).toBeCalledTimes(2);
   render(MemoApp({ name: 'Jane', age: 28 }), host);
-  waitNextIdle();
   expect(mockFn).toBeCalledTimes(2);
 });

@@ -32,4 +32,4 @@ function createElement(
   return null;
 }
 
-export { createElement };
+export { createElement, createElement as h };
