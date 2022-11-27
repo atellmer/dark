@@ -27,7 +27,7 @@ describe('[use-memo]', () => {
     expect(value).toBeTruthy();
   });
 
-  test('use-memo returns memoized value correctly', () => {
+  test('use-memo works correctly with deps', () => {
     const mockFn = jest.fn();
     const App = createComponent<{ x: number }>(({ x }) => {
       useMemo(() => mockFn(), [x]);
