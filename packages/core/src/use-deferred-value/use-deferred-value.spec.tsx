@@ -1,6 +1,6 @@
 /** @jsx h */
 import { dom } from '@test-utils';
-import { render } from '@dark-engine/platform-browser/render';
+import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { createComponent } from '../component';
 import { useEffect } from '../use-effect';
