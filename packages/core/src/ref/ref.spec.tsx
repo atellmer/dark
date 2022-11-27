@@ -12,7 +12,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[forwarRef]', () => {
+describe('[forward-ref]', () => {
   test('component ref is not available without forwarRef', () => {
     let ref: MutableRef = null;
 
