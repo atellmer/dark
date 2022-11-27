@@ -10,6 +10,7 @@ import {
   useCallback,
   Fragment,
   TaskPriority,
+  DarkElement,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
 
@@ -20,7 +21,14 @@ const domElement = document.getElementById('root');
 
 const targetSize = 25;
 
-const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
+type DotProps = {
+  size: number;
+  x: number;
+  y: number;
+  slot: DarkElement;
+};
+
+const Dot = createComponent<DotProps>(props => {
   const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
   const s = props.size * 1.3;
   const style = useStyle(styled => ({
@@ -50,14 +58,24 @@ const Dot = createComponent<{ size: number; x: number; y: number }>(props => {
 
   return (
     <div style={style.dot} onMouseEnter={enter} onMouseLeave={leave}>
-      {hover ? `* ${Text(props.slot)} *` : Text(props.slot)}
+      {hover ? `* ${Text.from(props.slot)} *` : Text.from(props.slot)}
     </div>
   );
 });
 
-const MemoDot = memo(Dot, (p, n) => p.x !== n.x || p.y !== n.y || p.size !== n.size || Text(p.slot) !== Text(n.slot));
+const MemoDot = memo(
+  Dot,
+  (p, n) => p.x !== n.x || p.y !== n.y || p.size !== n.size || Text.from(p.slot) !== Text.from(n.slot),
+);
 
-const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(({ x, y, s, slot }) => {
+type SierpinskiTriangleProps = {
+  s: number;
+  x: number;
+  y: number;
+  slot: DarkElement;
+};
+
+const SierpinskiTriangle = createComponent<SierpinskiTriangleProps>(({ x, y, s, slot }) => {
   if (s <= targetSize) {
     return (
       <MemoDot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
@@ -93,7 +111,7 @@ const SierpinskiTriangle = createComponent<{ s: number; x: number; y: number }>(
 
 const MemoSierpinskiTriangle = memo(
   SierpinskiTriangle,
-  (p, n) => p.x !== n.x || p.y !== n.y || p.s !== n.s || Text(p.slot) !== Text(n.slot),
+  (p, n) => p.x !== n.x || p.y !== n.y || p.s !== n.s || Text.from(p.slot) !== Text.from(n.slot),
 );
 
 type AppProps = {
