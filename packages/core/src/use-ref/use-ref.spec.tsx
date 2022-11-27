@@ -11,7 +11,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[useRef]', () => {
+describe('[use-ref]', () => {
   test('useRef works correctly', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
