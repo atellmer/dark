@@ -9,7 +9,6 @@ let host: HTMLElement = null;
 
 beforeEach(() => {
   host = document.createElement('div');
-  jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: Function) => cb());
 });
 
 describe('[use-state]', () => {
