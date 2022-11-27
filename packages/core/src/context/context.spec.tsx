@@ -1,153 +1,146 @@
-/** @jsx createElement */
-import { dom, waitNextIdle } from '@test-utils';
+/** @jsx h */
+import { dom } from '@test-utils';
 import { render } from '@dark-engine/platform-browser/render';
 import { createComponent } from '../component';
-import { createElement } from '../element';
+import { h } from '../element';
 import { useState } from '../use-state';
 import { createContext } from './context';
 
 let host: HTMLElement = null;
 
-beforeAll(() => {
-  jest.useFakeTimers();
-});
-
 beforeEach(() => {
   host = document.createElement('div');
-  jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: Function) => cb());
 });
 
-test('context creates correctly', () => {
-  const ThemeContext = createContext('light');
+describe('[context]', () => {
+  test('context is created correctly', () => {
+    const ThemeContext = createContext('light');
 
-  expect(ThemeContext.Provider).toBeTruthy();
-  expect(ThemeContext.Consumer).toBeTruthy();
-});
-
-test('context renders correctly', () => {
-  const content = theme => dom`
-    <div>${theme}</div>
-  `;
-
-  const ThemeContext = createContext('light');
-
-  const Item = createComponent(() => {
-    return <ThemeContext.Consumer>{value => <div>{value}</div>}</ThemeContext.Consumer>;
+    expect(ThemeContext.Provider).toBeTruthy();
+    expect(ThemeContext.Consumer).toBeTruthy();
   });
 
-  const Content = createComponent(() => {
-    return [<Item />];
-  });
+  test('context renders correctly', () => {
+    const content = theme => dom`
+      <div>${theme}</div>
+    `;
 
-  let theme;
-  let setTheme;
+    const ThemeContext = createContext('light');
 
-  const App = createComponent(() => {
-    [theme, setTheme] = useState('light');
+    const Item = createComponent(() => {
+      return <ThemeContext.Consumer>{value => <div>{value}</div>}</ThemeContext.Consumer>;
+    });
 
-    return [
-      <ThemeContext.Provider value={theme}>
-        <Content />
-      </ThemeContext.Provider>,
-    ];
-  });
+    const Content = createComponent(() => {
+      return [<Item />];
+    });
 
-  render(App(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(theme));
-  setTheme('dark');
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(theme));
-});
+    let theme;
+    let setTheme;
 
-test('different nested context works correctly', () => {
-  const content = (theme, lang) => dom`
-    <div>${theme}:${lang}</div>
-  `;
+    const App = createComponent(() => {
+      [theme, setTheme] = useState('light');
 
-  const ThemeContext = createContext('light');
-  const LangContext = createContext('ru');
-
-  const Item = createComponent(() => {
-    return (
-      <ThemeContext.Consumer>
-        {theme => (
-          <LangContext.Consumer>
-            {lang => (
-              <div>
-                {theme}:{lang}
-              </div>
-            )}
-          </LangContext.Consumer>
-        )}
-      </ThemeContext.Consumer>
-    );
-  });
-
-  const Content = createComponent(() => {
-    return [<Item />];
-  });
-
-  let theme;
-  let setTheme;
-  let lang;
-  let setLang;
-
-  const App = createComponent(() => {
-    [theme, setTheme] = useState('light');
-    [lang, setLang] = useState('ru');
-
-    return [
-      <ThemeContext.Provider value={theme}>
-        <LangContext.Provider value={lang}>
+      return [
+        <ThemeContext.Provider value={theme}>
           <Content />
-        </LangContext.Provider>
-      </ThemeContext.Provider>,
-    ];
+        </ThemeContext.Provider>,
+      ];
+    });
+
+    render(App(), host);
+    expect(host.innerHTML).toBe(content(theme));
+
+    setTheme('dark');
+    expect(host.innerHTML).toBe(content(theme));
   });
 
-  render(App(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(theme, lang));
-  setTheme('dark');
-  waitNextIdle();
-  setLang('en');
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(theme, lang));
-  setTheme('light');
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(theme, lang));
-});
+  test('different nested contexts work correctly', () => {
+    const content = (theme, lang) => dom`
+      <div>${theme}:${lang}</div>
+    `;
 
-test('same nested context works correctly', () => {
-  const content = value => dom`
-    <div>${value}</div>
-  `;
+    const ThemeContext = createContext('light');
+    const LangContext = createContext('ru');
 
-  const FormContext = createContext(1);
-  const value = 20;
+    const Item = createComponent(() => {
+      return (
+        <ThemeContext.Consumer>
+          {theme => (
+            <LangContext.Consumer>
+              {lang => (
+                <div>
+                  {theme}:{lang}
+                </div>
+              )}
+            </LangContext.Consumer>
+          )}
+        </ThemeContext.Consumer>
+      );
+    });
 
-  const Item = createComponent(() => {
-    return <FormContext.Consumer>{value => <div>{value}</div>}</FormContext.Consumer>;
+    const Content = createComponent(() => {
+      return [<Item />];
+    });
+
+    let theme;
+    let setTheme;
+    let lang;
+    let setLang;
+
+    const App = createComponent(() => {
+      [theme, setTheme] = useState('light');
+      [lang, setLang] = useState('ru');
+
+      return [
+        <ThemeContext.Provider value={theme}>
+          <LangContext.Provider value={lang}>
+            <Content />
+          </LangContext.Provider>
+        </ThemeContext.Provider>,
+      ];
+    });
+
+    render(App(), host);
+    expect(host.innerHTML).toBe(content(theme, lang));
+
+    setTheme('dark');
+    setLang('en');
+    expect(host.innerHTML).toBe(content(theme, lang));
+
+    setTheme('light');
+    expect(host.innerHTML).toBe(content(theme, lang));
   });
 
-  const Content = createComponent(() => {
-    return [
-      <FormContext.Provider value={value}>
-        <Item />
-      </FormContext.Provider>,
-    ];
-  });
+  test('same nested context works correctly', () => {
+    const content = value => dom`
+      <div>${value}</div>
+    `;
 
-  const App = createComponent(() => {
-    return [
-      <FormContext.Provider value={10}>
-        <Content />
-      </FormContext.Provider>,
-    ];
-  });
+    const FormContext = createContext(1);
+    const value = 20;
 
-  render(App(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(value));
+    const Item = createComponent(() => {
+      return <FormContext.Consumer>{value => <div>{value}</div>}</FormContext.Consumer>;
+    });
+
+    const Content = createComponent(() => {
+      return [
+        <FormContext.Provider value={value}>
+          <Item />
+        </FormContext.Provider>,
+      ];
+    });
+
+    const App = createComponent(() => {
+      return [
+        <FormContext.Provider value={10}>
+          <Content />
+        </FormContext.Provider>,
+      ];
+    });
+
+    render(App(), host);
+    expect(host.innerHTML).toBe(content(value));
+  });
 });
