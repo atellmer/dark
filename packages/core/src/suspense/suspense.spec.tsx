@@ -1,9 +1,10 @@
 /** @jsx h */
-import { dom, createEmptyCommentString } from '@test-utils';
+import { dom } from '@test-utils';
 import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { createComponent } from '../component';
-import { lazy } from './lazy';
+import { lazy } from '../lazy';
+import { Suspense } from './suspense';
 
 let host: HTMLElement = null;
 
@@ -13,10 +14,10 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[lazy]', () => {
-  test('lazy loads component', done => {
+describe('[Suspense]', () => {
+  test('Suspense showing fallback correctly', done => {
     const LazyComponent = lazy(
-      () => import('./lazy-component'),
+      () => import('../lazy/lazy-component'),
       () => {
         expect(host.innerHTML).toBe(content());
 
@@ -26,16 +27,24 @@ describe('[lazy]', () => {
       },
     );
 
+    const loaderContent = () => dom`
+      <div>loading...</div>
+    `;
+
     const content = () => dom`
       <div>lazy</div>
     `;
 
     const App = createComponent(() => {
-      return <LazyComponent />;
+      return (
+        <Suspense fallback={<div>loading...</div>}>
+          <LazyComponent />
+        </Suspense>
+      );
     });
 
     render(App(), host);
-    expect(host.innerHTML).toBe(createEmptyCommentString());
+    expect(host.innerHTML).toBe(loaderContent());
     jest.runAllTimers();
   });
 });
