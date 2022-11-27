@@ -5,7 +5,9 @@ import type { MutableRef } from './types';
 function forwardRef<P, R>(component: Component<P, R>) {
   type Props = P & RefProps<R>;
 
-  return ({ ref, ...rest }: Props) => {
+  return (props: Props) => {
+    const { ref, ...rest } = props || {};
+
     return component(rest as P, ref) as ComponentFactory<P, R>;
   };
 }
