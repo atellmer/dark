@@ -1,81 +1,71 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 import { createComponent } from '../component';
-import { useEffect } from './use-effect';
+import { useLayoutEffect } from './use-layout-effect';
 
 let host: HTMLElement = null;
-
-jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-effect]', () => {
-  test('use-effect fires on mount event correctly', () => {
+describe('[use-layout-effect]', () => {
+  test('use-layout-effect fires on mount event correctly', () => {
     const mockFn = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => mockFn(), []);
+      useLayoutEffect(() => mockFn(), []);
 
       return null;
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
   });
 
-  test('use-effect works correctly with deps', () => {
+  test('use-layout-effect works correctly with deps', () => {
     const mockFn = jest.fn();
     const App = createComponent<{ x: number }>(({ x }) => {
-      useEffect(() => mockFn(), [x]);
+      useLayoutEffect(() => mockFn(), [x]);
 
       return null;
     });
 
     render(App({ x: 1 }), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
 
     render(App({ x: 1 }), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
 
     render(App({ x: 2 }), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(2);
   });
 
-  test('use-effect fires on every render without deps', () => {
+  test('use-layout-effect fires on every render without deps', () => {
     const mockFn = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => mockFn());
+      useLayoutEffect(() => mockFn());
 
       return null;
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(2);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(3);
   });
 
-  test('use-effect drops effect on unmount event correctly', () => {
+  test('use-layout-effect drops effect on unmount event correctly', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
       }, []);
@@ -84,17 +74,14 @@ describe('[use-effect]', () => {
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
     render(null, host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
   });
