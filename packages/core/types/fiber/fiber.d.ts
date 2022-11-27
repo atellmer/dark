@@ -11,7 +11,7 @@ declare class Fiber<N = NativeElement> {
   alternate: Fiber<N>;
   effectTag: EffectTag;
   instance: DarkElementInstance;
-  hook: Hook;
+  hook: Hook | null;
   shadow: Fiber<N>;
   provider: Map<Context, ContextProviderValue>;
   transposition: boolean;
@@ -34,7 +34,6 @@ declare class Fiber<N = NativeElement> {
 }
 declare function workLoop(): boolean;
 declare function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | ComponentFactory;
-declare function createHook(): Hook;
 declare type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
@@ -42,4 +41,4 @@ declare type CreateUpdateCallbackOptions = {
   onStart: () => void;
 };
 declare function createUpdateCallback(options: CreateUpdateCallbackOptions): () => void;
-export { Fiber, workLoop, createHook, hasChildrenProp, createUpdateCallback };
+export { Fiber, workLoop, hasChildrenProp, createUpdateCallback };
