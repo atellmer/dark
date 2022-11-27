@@ -49,6 +49,7 @@ describe('[use-context]', () => {
     expect(host.innerHTML).toBe(content(theme));
 
     setTheme('dark');
+    // In this case, there is no need to wait for timers.
     expect(host.innerHTML).toBe(content(theme));
 
     setTheme('light');
