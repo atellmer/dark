@@ -166,37 +166,6 @@ test('[use-state]: state saves when nodes swapped', () => {
   setCountsTwo = [];
 });
 
-test('[use-state]: state saves after conditional rendering', () => {
-  const content = (count: number) => dom`
-    <div>count: ${count}</div>
-  `;
-
-  let count;
-  let setCount;
-
-  const Counter = createComponent(() => {
-    [count, setCount] = useState(0);
-
-    return [<div>count: {count}</div>];
-  });
-
-  const App = createComponent<{ isOpen: boolean }>(({ isOpen }) => {
-    return [isOpen && <Counter />];
-  });
-
-  render(App({ isOpen: true }), host);
-  waitNextIdle();
-  setCount(1);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(1));
-  render(App({ isOpen: false }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(emptyComment);
-  render(App({ isOpen: true }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(1));
-});
-
 test('[use-state]: nodes remove correctly after use-state when rendering a different number of elements', () => {
   const content = (hasFlag: boolean) =>
     hasFlag
