@@ -4,6 +4,7 @@ import { useEffect } from '../use-effect';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
 import { useContext } from '../use-context';
+import { detectIsFunction } from '../helpers';
 
 const $$lazy = Symbol('lazy');
 
@@ -11,7 +12,7 @@ type LazyScope<P, R> = {
   component: Component<P, R>;
 };
 
-function lazy<P, R = unknown>(dynamic: () => Promise<{ default: Component<P> }>) {
+function lazy<P, R = unknown>(dynamic: () => Promise<{ default: Component<P> }>, done?: () => void) {
   return forwardRef(
     createComponent<P, R>(
       (props, ref) => {
@@ -23,6 +24,7 @@ function lazy<P, R = unknown>(dynamic: () => Promise<{ default: Component<P> }>)
         useEffect(() => {
           fetchModule(dynamic).then(component => {
             setScope({ component });
+            detectIsFunction(done) && done();
           });
         }, []);
 
@@ -52,4 +54,4 @@ function fetchModule(dynamic: () => Promise<{ default: Component }>) {
   });
 }
 
-export { lazy, detectIsLazy };
+export { lazy, detectIsLazy, fetchModule };
