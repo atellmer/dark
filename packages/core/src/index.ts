@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 export * from './component';
 export * from './context';
-export { createElement as h } from './element';
+export { h } from './element';
 export * from './fiber';
 export * from './fragment';
 export * from './platform';
