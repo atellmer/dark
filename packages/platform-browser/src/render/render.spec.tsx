@@ -1,9 +1,6 @@
-/** @jsx createElement */
-import { dom, waitNextIdle, createTestHostNode, createEmptyCommentString } from '@test-utils';
-import { createComponent } from '@dark-engine/core/component/component';
-import { View, Text, Comment } from '@dark-engine/core/view/view';
-import { createElement } from '@dark-engine/core/element/element';
-import { DarkElement } from '@dark-engine/core/shared';
+/** @jsx h */
+import { dom, createTestHostNode, createEmptyCommentString } from '@test-utils';
+import { h, createComponent, View, Text, Comment, DarkElement } from '@dark-engine/core';
 import { render } from './render';
 
 type Item = { id: number; name: string };
@@ -11,7 +8,6 @@ type Item = { id: number; name: string };
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
-const TEST_MARKER = '[RENDER]';
 const emptyComment = createEmptyCommentString();
 let nextId = 0;
 
@@ -29,347 +25,333 @@ beforeEach(() => {
   host = createTestHostNode();
 });
 
-test(`${TEST_MARKER}: render do not throws error`, () => {
-  const Component = createComponent(() => null);
-  const compile = () => {
+describe('[render]', () => {
+  test(`render do not throws error`, () => {
+    const Component = createComponent(() => null);
+    const compile = () => {
+      render(Component(), host);
+    };
+
+    expect(compile).not.toThrowError();
+  });
+
+  test(`render text correctly`, () => {
+    const content = 'hello';
+    const Component = createComponent(() => Text(content));
+
     render(Component(), host);
-    waitNextIdle();
-  };
+    expect(host.innerHTML).toBe(content);
+  });
 
-  expect(compile).not.toThrowError();
-});
+  test(`render tag correctly`, () => {
+    const content = `<div></div>`;
+    const Component = createComponent(() => div());
 
-test(`${TEST_MARKER}: render text correctly`, () => {
-  const content = 'hello';
-  const Component = createComponent(() => Text(content));
+    render(Component(), host);
+    expect(host.innerHTML).toBe(content);
+  });
 
-  render(Component(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content);
-});
+  test(`render comment correctly`, () => {
+    const content = 'some comment';
+    const Component = createComponent(() => Comment(content));
 
-test(`${TEST_MARKER}: render tag correctly`, () => {
-  const content = `<div></div>`;
-  const Component = createComponent(() => div());
+    render(Component(), host);
+    expect(host.innerHTML).toBe(`<!--${content}-->`);
+  });
 
-  render(Component(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content);
-});
-
-test(`${TEST_MARKER}: render comment correctly`, () => {
-  const content = 'some comment';
-  const Component = createComponent(() => Comment(content));
-
-  render(Component(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(`<!--${content}-->`);
-});
-
-test(`${TEST_MARKER}: render array of items correctly`, () => {
-  const content = dom`
+  test(`render array of items correctly`, () => {
+    const content = dom`
     <div></div>
     <div></div>
     <div></div>
   `;
-  const Component = createComponent(() => [div(), div(), div()]);
+    const Component = createComponent(() => [div(), div(), div()]);
 
-  render(Component(), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content);
-});
-
-test(`${TEST_MARKER}: conditional rendering works correctly with replacing components`, () => {
-  type AppProps = {
-    items: Array<Item>;
-    one: boolean;
-  };
-
-  type ListItemProps = {
-    slot: DarkElement;
-  };
-
-  const ListItem = createComponent<ListItemProps>(({ slot }) => {
-    return div({
-      slot,
-    });
+    render(Component(), host);
+    expect(host.innerHTML).toBe(content);
   });
 
-  const ListOne = createComponent<{ items: AppProps['items'] }>(({ items }) => {
-    return items.map(x => {
-      return ListItem({
-        key: x.id,
-        slot: Text(x.name),
+  test(`conditional rendering works correctly with replacing components`, () => {
+    type AppProps = {
+      items: Array<Item>;
+      one: boolean;
+    };
+
+    type ListItemProps = {
+      slot: DarkElement;
+    };
+
+    const ListItem = createComponent<ListItemProps>(({ slot }) => {
+      return div({
+        slot,
       });
     });
-  });
 
-  const ListTwo = createComponent<{ items: AppProps['items'] }>(({ items }) => {
-    return items.map(x => {
-      return ListItem({
-        key: x.id,
-        slot: Text(x.name),
+    const ListOne = createComponent<{ items: AppProps['items'] }>(({ items }) => {
+      return items.map(x => {
+        return ListItem({
+          key: x.id,
+          slot: Text(x.name),
+        });
       });
     });
-  });
 
-  const App = createComponent<AppProps>(({ one, items }) => {
-    return [
-      div({ slot: Text('header') }),
-      one ? ListOne({ items }) : ListTwo({ items }),
-      div({ slot: Text('footer') }),
-    ];
-  });
+    const ListTwo = createComponent<{ items: AppProps['items'] }>(({ items }) => {
+      return items.map(x => {
+        return ListItem({
+          key: x.id,
+          slot: Text(x.name),
+        });
+      });
+    });
 
-  const content = (items: AppProps['items']) => dom`
+    const App = createComponent<AppProps>(({ one, items }) => {
+      return [
+        div({ slot: Text('header') }),
+        one ? ListOne({ items }) : ListTwo({ items }),
+        div({ slot: Text('footer') }),
+      ];
+    });
+
+    const content = (items: AppProps['items']) => dom`
     <div>header</div>
     ${items.map(x => `<div>${x.name}</div>`).join('')}
     <div>footer</div>
   `;
 
-  let items = generateItems(3);
+    let items = generateItems(3);
 
-  render(App({ one: true, items }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(items));
+    render(App({ one: true, items }), host);
+    expect(host.innerHTML).toBe(content(items));
 
-  items = generateItems(3);
-  render(App({ one: false, items }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(items));
+    items = generateItems(3);
+    render(App({ one: false, items }), host);
+    expect(host.innerHTML).toBe(content(items));
 
-  items = generateItems(4);
-  render(App({ one: true, items }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(items));
+    items = generateItems(4);
+    render(App({ one: true, items }), host);
+    expect(host.innerHTML).toBe(content(items));
 
-  items = generateItems(2);
-  render(App({ one: false, items }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(items));
-});
-
-test(`${TEST_MARKER}: conditional rendering works correctly with nullable elements`, () => {
-  type AppProps = {
-    hasFlag: boolean;
-  };
-
-  const App = createComponent<AppProps>(({ hasFlag }) => {
-    return [div({ slot: Text('header') }), hasFlag && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
+    items = generateItems(2);
+    render(App({ one: false, items }), host);
+    expect(host.innerHTML).toBe(content(items));
   });
 
-  const content = (hasFlag: boolean) => dom`
+  test(`conditional rendering works correctly with nullable elements`, () => {
+    type AppProps = {
+      hasFlag: boolean;
+    };
+
+    const App = createComponent<AppProps>(({ hasFlag }) => {
+      return [div({ slot: Text('header') }), hasFlag && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
+    });
+
+    const content = (hasFlag: boolean) => dom`
     <div>header</div>
     ${hasFlag ? '<div>hello</div>' : emptyComment}
     <div>footer</div>
   `;
 
-  render(App({ hasFlag: false }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(false));
+    render(App({ hasFlag: false }), host);
+    expect(host.innerHTML).toBe(content(false));
 
-  render(App({ hasFlag: true }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(true));
+    render(App({ hasFlag: true }), host);
+    expect(host.innerHTML).toBe(content(true));
 
-  render(App({ hasFlag: false }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(false));
+    render(App({ hasFlag: false }), host);
+    expect(host.innerHTML).toBe(content(false));
 
-  render(App({ hasFlag: true }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(true));
-});
-
-describe(`${TEST_MARKER}: adding/removing/swap nodes`, () => {
-  type AppProps = {
-    items: Array<Item>;
-  };
-  const itemAttrName = 'data-item';
-  let items = [];
-
-  type ListItemProps = {
-    slot: DarkElement;
-  };
-
-  const ListItem = createComponent<ListItemProps>(({ slot }) => {
-    return div({
-      [itemAttrName]: true,
-      slot,
-    });
+    render(App({ hasFlag: true }), host);
+    expect(host.innerHTML).toBe(content(true));
   });
 
-  const List = createComponent<AppProps>(({ items }) => {
-    return items.map(x => {
-      return ListItem({
-        key: x.id,
-        slot: Text(x.name),
+  describe(`adding/removing/swap nodes`, () => {
+    type AppProps = {
+      items: Array<Item>;
+    };
+    const itemAttrName = 'data-item';
+    let items = [];
+
+    type ListItemProps = {
+      slot: DarkElement;
+    };
+
+    const ListItem = createComponent<ListItemProps>(({ slot }) => {
+      return div({
+        [itemAttrName]: true,
+        slot,
       });
     });
-  });
 
-  const App = createComponent<AppProps>(({ items }) => {
-    return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
-  });
+    const List = createComponent<AppProps>(({ items }) => {
+      return items.map(x => {
+        return ListItem({
+          key: x.id,
+          slot: Text(x.name),
+        });
+      });
+    });
 
-  const renderApp = () => {
-    render(App({ items }), host);
-    waitNextIdle();
-  };
+    const App = createComponent<AppProps>(({ items }) => {
+      return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
+    });
 
-  const content = (items: Array<Item>) => dom`
+    const renderApp = () => {
+      render(App({ items }), host);
+    };
+
+    const content = (items: Array<Item>) => dom`
     <div>header</div>
     ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
     <div>footer</div>
   `;
 
-  const addItemsToEnd = (count: number) => {
-    items = [...items, ...generateItems(count)];
-  };
-  const addItemsToStart = (count: number) => {
-    items = [...generateItems(count), ...items];
-  };
-  const insertNodesInDifferentPlaces = () => {
-    const [item1, item2, item3, ...rest] = items;
+    const addItemsToEnd = (count: number) => {
+      items = [...items, ...generateItems(count)];
+    };
+    const addItemsToStart = (count: number) => {
+      items = [...generateItems(count), ...items];
+    };
+    const insertNodesInDifferentPlaces = () => {
+      const [item1, item2, item3, ...rest] = items;
 
-    items = [...generateItems(5), item1, item2, ...generateItems(2), ...rest];
-  };
-  const removeItem = (id: number) => {
-    items = items.filter(x => x.id !== id);
-  };
-  const swapItems = () => {
-    const newItems = [...items];
+      items = [...generateItems(5), item1, item2, ...generateItems(2), ...rest];
+    };
+    const removeItem = (id: number) => {
+      items = items.filter(x => x.id !== id);
+    };
+    const swapItems = () => {
+      const newItems = [...items];
 
-    newItems[1] = items[items.length - 2];
-    newItems[newItems.length - 2] = items[1];
-    items = newItems;
-  };
+      newItems[1] = items[items.length - 2];
+      newItems[newItems.length - 2] = items[1];
+      items = newItems;
+    };
 
-  test('nodes added correctly', () => {
-    items = generateItems(5);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
+    test('nodes added correctly', () => {
+      items = generateItems(5);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
 
-    addItemsToEnd(5);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
+      addItemsToEnd(5);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
 
-    addItemsToStart(6);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
+      addItemsToStart(6);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('nodes not recreated after adding', () => {
+      items = generateItems(5);
+      renderApp();
+
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const node = nodes[0];
+      const expected = node.textContent;
+      const count = 4;
+
+      addItemsToStart(count);
+      renderApp();
+
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNode = newNodes[count];
+
+      expect(node).toStrictEqual(newNode);
+      expect(node.textContent).toBe(expected);
+    });
+
+    test('nodes inserted in different places correctly', () => {
+      items = generateItems(10);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+      insertNodesInDifferentPlaces();
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('nodes removed correctly', () => {
+      items = generateItems(10);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+
+      removeItem(6);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+
+      removeItem(5);
+      removeItem(1);
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+
+      items = [];
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('nodes not recreated after removing', () => {
+      items = generateItems(10);
+      renderApp();
+
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const node = nodes[8];
+      const expected = node.textContent;
+
+      removeItem(6);
+      renderApp();
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+
+      expect(node).toBe(newNodes[7]);
+      expect(node.textContent).toBe(expected);
+    });
+
+    test('last nodes removed correctly', () => {
+      items = generateItems(10);
+      renderApp();
+      items.pop();
+      items.pop();
+      renderApp();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('nodes swapped correctly', () => {
+      items = generateItems(10);
+      renderApp();
+
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const nodeOne = nodes[1];
+      const nodeTwo = nodes[8];
+
+      expect(nodeOne.textContent).toBe('2');
+      expect(nodeTwo.textContent).toBe('9');
+
+      swapItems();
+      renderApp();
+
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNodeOne = newNodes[8];
+      const newNodeTwo = newNodes[1];
+
+      expect(newNodeOne.textContent).toBe('2');
+      expect(newNodeTwo.textContent).toBe('9');
+    });
   });
 
-  test('nodes not recreated after adding', () => {
-    items = generateItems(5);
-    renderApp();
-
-    const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-    const node = nodes[0];
-    const expected = node.textContent;
-    const count = 4;
-
-    addItemsToStart(count);
-    renderApp();
-
-    const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-    const newNode = newNodes[count];
-
-    expect(node).toStrictEqual(newNode);
-    expect(node.textContent).toBe(expected);
-  });
-
-  test('nodes inserted in different places correctly', () => {
-    items = generateItems(10);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-    insertNodesInDifferentPlaces();
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-  });
-
-  test('nodes removed correctly', () => {
-    items = generateItems(10);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-
-    removeItem(6);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-
-    removeItem(5);
-    removeItem(1);
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-
-    items = [];
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-  });
-
-  test('nodes not recreated after removing', () => {
-    items = generateItems(10);
-    renderApp();
-
-    const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-    const node = nodes[8];
-    const expected = node.textContent;
-
-    removeItem(6);
-    renderApp();
-    const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-
-    expect(node).toBe(newNodes[7]);
-    expect(node.textContent).toBe(expected);
-  });
-
-  test('last nodes removed correctly', () => {
-    items = generateItems(10);
-    renderApp();
-    items.pop();
-    items.pop();
-    renderApp();
-    expect(host.innerHTML).toBe(content(items));
-  });
-
-  test('nodes swapped correctly', () => {
-    items = generateItems(10);
-    renderApp();
-
-    const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-    const nodeOne = nodes[1];
-    const nodeTwo = nodes[8];
-
-    expect(nodeOne.textContent).toBe('2');
-    expect(nodeTwo.textContent).toBe('9');
-
-    swapItems();
-    renderApp();
-
-    const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-    const newNodeOne = newNodes[8];
-    const newNodeTwo = newNodes[1];
-
-    expect(newNodeOne.textContent).toBe('2');
-    expect(newNodeTwo.textContent).toBe('9');
-  });
-});
-
-describe(`${TEST_MARKER} list of items`, () => {
-  test('render simple array correctly', () => {
-    const content = dom`
+  describe(`list of items`, () => {
+    test('render simple array correctly', () => {
+      const content = dom`
       <div></div>
       <div></div>
       <div></div>
     `;
-    const Component = createComponent(() => [div(), div(), div()]);
+      const Component = createComponent(() => [div(), div(), div()]);
 
-    render(Component(), host);
-    waitNextIdle();
-    expect(host.innerHTML).toBe(content);
-  });
+      render(Component(), host);
+      expect(host.innerHTML).toBe(content);
+    });
 
-  test('render arrays of any nesting correctly', () => {
-    const content = dom`
+    test('render arrays of any nesting correctly', () => {
+      const content = dom`
     <div></div>
     <div></div>
     <div></div>
@@ -378,20 +360,19 @@ describe(`${TEST_MARKER} list of items`, () => {
     <div></div>
     `;
 
-    const Item = createComponent(() => {
-      return [[[div({ id: 'one' })]], div({ id: 'two' })];
+      const Item = createComponent(() => {
+        return [[[div({ id: 'one' })]], div({ id: 'two' })];
+      });
+
+      const App = createComponent(() => [[[[div()], [[div()]], div()]], [Item()], div()]);
+
+      render(App(), host);
+      expect(host.innerHTML).toBe(content);
     });
-
-    const App = createComponent(() => [[[[div()], [[div()]], div()]], [Item()], div()]);
-
-    render(App(), host);
-    waitNextIdle();
-    expect(host.innerHTML).toBe(content);
   });
-});
 
-test('render nested array as components correctly', () => {
-  const content = (count: number) => dom`
+  test('render nested array as components correctly', () => {
+    const content = (count: number) => dom`
     <div>1</div>
     <div>2</div>
     ${Array(count)
@@ -401,114 +382,103 @@ test('render nested array as components correctly', () => {
     <div>3</div>
   `;
 
-  const NestedArray = createComponent<{ count: number }>(({ count }) => {
-    return Array(count)
-      .fill(0)
-      .map((x, idx) => <p key={idx}>{idx}</p>);
+    const NestedArray = createComponent<{ count: number }>(({ count }) => {
+      return Array(count)
+        .fill(0)
+        .map((x, idx) => <p key={idx}>{idx}</p>);
+    });
+
+    const Component = createComponent<{ count: number }>(({ count }) => [
+      <div>1</div>,
+      <div>2</div>,
+      <NestedArray count={count} />,
+      <div>3</div>,
+    ]);
+
+    render(Component({ count: 3 }), host);
+    expect(host.innerHTML).toBe(content(3));
+    render(Component({ count: 5 }), host);
+    expect(host.innerHTML).toBe(content(5));
+    render(Component({ count: 1 }), host);
+    expect(host.innerHTML).toBe(content(1));
   });
 
-  const Component = createComponent<{ count: number }>(({ count }) => [
-    <div>1</div>,
-    <div>2</div>,
-    <NestedArray count={count} />,
-    <div>3</div>,
-  ]);
+  test(`dynamic tag render correcrly`, () => {
+    const text = 'I am dynamic tag';
+    const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
+      const Tag = dynamic ? span : div;
 
-  render(Component({ count: 3 }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(3));
-  render(Component({ count: 5 }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(5));
-  render(Component({ count: 1 }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(content(1));
-});
+      return Tag({ slot: Text(text) });
+    });
 
-test(`${TEST_MARKER} dynamic tag render correcrly`, () => {
-  const text = 'I am dynamic tag';
-  const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
-    const Tag = dynamic ? span : div;
+    render(App({ dynamic: false }), host);
+    expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
-    return Tag({ slot: Text(text) });
+    render(App({ dynamic: true }), host);
+    expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
   });
 
-  render(App({ dynamic: false }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
+  test(`JSX works`, () => {
+    const text = 'I am dynamic tag';
 
-  render(App({ dynamic: true }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
-});
+    const CustomItem = createComponent(({ slot }) => {
+      return <span>{slot}</span>;
+    });
 
-test(`${TEST_MARKER} JSX works`, () => {
-  const text = 'I am dynamic tag';
+    const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
+      const Tag = dynamic ? CustomItem : 'div';
 
-  const CustomItem = createComponent(({ slot }) => {
-    return <span>{slot}</span>;
+      return <Tag>{text}</Tag>;
+    });
+
+    render(App({ dynamic: false }), host);
+    expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
+
+    render(App({ dynamic: true }), host);
+    expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
   });
 
-  const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
-    const Tag = dynamic ? CustomItem : 'div';
+  test(`render app in more than one host correctly`, () => {
+    const hostOne = document.createElement('div');
+    const hostTwo = document.createElement('div');
 
-    return <Tag>{text}</Tag>;
-  });
+    type NameProps = {
+      slot: DarkElement;
+    };
 
-  render(App({ dynamic: false }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
+    const Hello = createComponent(() => <span>hello</span>);
+    const Name = createComponent<NameProps>(({ slot }) => <span>{slot}</span>);
+    const App = createComponent<{ name: string }>(({ name }) => {
+      return (
+        <div>
+          <Hello />
+          <Name>{name}</Name>
+        </div>
+      );
+    });
 
-  render(App({ dynamic: true }), host);
-  waitNextIdle();
-  expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
-});
-
-test(`${TEST_MARKER} render app in more than one host correctly`, () => {
-  const hostOne = document.createElement('div');
-  const hostTwo = document.createElement('div');
-
-  type NameProps = {
-    slot: DarkElement;
-  };
-
-  const Hello = createComponent(() => <span>hello</span>);
-  const Name = createComponent<NameProps>(({ slot }) => <span>{slot}</span>);
-  const App = createComponent<{ name: string }>(({ name }) => {
-    return (
-      <div>
-        <Hello />
-        <Name>{name}</Name>
-      </div>
-    );
-  });
-
-  const content = (name: string) => dom`
+    const content = (name: string) => dom`
     <div>
       <span>hello</span>
       <span>${name}</span>
     </div>
   `;
 
-  render(App({ name: 'Alex' }), hostOne);
-  waitNextIdle();
-  render(App({ name: 'Rebecka' }), hostTwo);
-  waitNextIdle();
-  expect(hostOne.innerHTML).toBe(content('Alex'));
-  expect(hostTwo.innerHTML).toBe(content('Rebecka'));
-  render(App({ name: 'Mark' }), hostOne);
-  waitNextIdle();
-  render(App({ name: 'Rebecka' }), hostTwo);
-  waitNextIdle();
-  expect(hostOne.innerHTML).toBe(content('Mark'));
-  expect(hostTwo.innerHTML).toBe(content('Rebecka'));
-});
+    render(App({ name: 'Alex' }), hostOne);
+    render(App({ name: 'Rebecka' }), hostTwo);
+    expect(hostOne.innerHTML).toBe(content('Alex'));
+    expect(hostTwo.innerHTML).toBe(content('Rebecka'));
+    render(App({ name: 'Mark' }), hostOne);
+    render(App({ name: 'Rebecka' }), hostTwo);
+    expect(hostOne.innerHTML).toBe(content('Mark'));
+    expect(hostTwo.innerHTML).toBe(content('Rebecka'));
+  });
 
-test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
-  const items = generateItems(5);
+  test(`arrays of nodes swapped correctly`, () => {
+    const items = generateItems(5);
 
-  const content = (items: Array<Item>) => {
-    return dom`
+    const content = (items: Array<Item>) => {
+      return dom`
       ${items
         .map(
           x => `
@@ -518,45 +488,44 @@ test(`${TEST_MARKER} arrays of nodes swapped correctly`, () => {
         )
         .join('')}
     `;
-  };
+    };
 
-  const swap = () => {
-    const temp = items[1];
+    const swap = () => {
+      const temp = items[1];
 
-    items[1] = items[items.length - 2];
-    items[items.length - 2] = temp;
-  };
+      items[1] = items[items.length - 2];
+      items[items.length - 2] = temp;
+    };
 
-  const ListItem = createComponent<Item>(({ id }) => {
-    return [<div>1: {id}</div>, <div>2: {id}</div>];
-  });
-
-  const List = createComponent(() => {
-    return items.map(x => {
-      return <ListItem key={x.id} id={x.id} name={x.name} />;
+    const ListItem = createComponent<Item>(({ id }) => {
+      return [<div>1: {id}</div>, <div>2: {id}</div>];
     });
+
+    const List = createComponent(() => {
+      return items.map(x => {
+        return <ListItem key={x.id} id={x.id} name={x.name} />;
+      });
+    });
+
+    const forceUpdate = () => {
+      render(List(), host);
+    };
+
+    forceUpdate();
+    expect(host.innerHTML).toBe(content(items));
+    swap();
+    forceUpdate();
+    expect(host.innerHTML).toBe(content(items));
+    swap();
+    forceUpdate();
+    expect(host.innerHTML).toBe(content(items));
   });
 
-  const forceUpdate = () => {
-    render(List(), host);
-    waitNextIdle();
-  };
+  test(`remove indexed nodes correctly`, () => {
+    let items = generateItems(5);
 
-  forceUpdate();
-  expect(host.innerHTML).toBe(content(items));
-  swap();
-  forceUpdate();
-  expect(host.innerHTML).toBe(content(items));
-  swap();
-  forceUpdate();
-  expect(host.innerHTML).toBe(content(items));
-});
-
-test(`${TEST_MARKER} remove indexed nodes correctly`, () => {
-  let items = generateItems(5);
-
-  const content = (items: Array<Item>) => {
-    return dom`
+    const content = (items: Array<Item>) => {
+      return dom`
       ${items
         .map(
           x => `
@@ -565,30 +534,30 @@ test(`${TEST_MARKER} remove indexed nodes correctly`, () => {
         )
         .join('')}
     `;
-  };
+    };
 
-  const remove = () => {
-    items = [];
-  };
+    const remove = () => {
+      items = [];
+    };
 
-  const ListItem = createComponent<Item>(({ id }) => {
-    return [<div>1: {id}</div>];
-  });
-
-  const List = createComponent(() => {
-    return items.map((x, idx) => {
-      return <ListItem key={idx} id={x.id} name={x.name} />;
+    const ListItem = createComponent<Item>(({ id }) => {
+      return [<div>1: {id}</div>];
     });
+
+    const List = createComponent(() => {
+      return items.map((x, idx) => {
+        return <ListItem key={idx} id={x.id} name={x.name} />;
+      });
+    });
+
+    const forceUpdate = () => {
+      render(List(), host);
+    };
+
+    forceUpdate();
+    expect(host.innerHTML).toBe(content(items));
+    remove();
+    forceUpdate();
+    expect(host.innerHTML).toBe(emptyComment);
   });
-
-  const forceUpdate = () => {
-    render(List(), host);
-    waitNextIdle();
-  };
-
-  forceUpdate();
-  expect(host.innerHTML).toBe(content(items));
-  remove();
-  forceUpdate();
-  expect(host.innerHTML).toBe(emptyComment);
 });
