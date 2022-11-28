@@ -1,3 +1,4 @@
+/** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 import { createComponent } from '../component';
 import { useCallback } from './use-callback';
@@ -55,6 +56,6 @@ describe('[use-callback]', () => {
     });
 
     render(App(), host);
-    expect(typeof handler).toBe('function');
+    expect(handler).toBeInstanceOf(Function);
   });
 });

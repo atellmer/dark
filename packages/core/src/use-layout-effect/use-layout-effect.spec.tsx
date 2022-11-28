@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 
 describe('[use-layout-effect]', () => {
-  test('fires on mount event correctly', () => {
+  test('fires on mount event', () => {
     const mockFn = jest.fn();
     const App = createComponent(() => {
       useLayoutEffect(() => mockFn(), []);
@@ -80,7 +80,7 @@ describe('[use-layout-effect]', () => {
     expect(dropFn).toBeCalledTimes(2);
   });
 
-  test('drops effect on unmount event correctly', () => {
+  test('drops effect on unmount event', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
     const App = createComponent(() => {

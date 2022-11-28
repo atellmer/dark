@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 describe('[use-ref]', () => {
-  test('can store ref', () => {
+  test('can store ref correctly', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
     const App = createComponent(() => {

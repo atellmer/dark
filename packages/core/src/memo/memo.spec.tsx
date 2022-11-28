@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 
 describe('[memo]', () => {
-  test('memo component works correctly by default', () => {
+  test('works correctly by default', () => {
     const mockFn = jest.fn();
     const App = createComponent(() => {
       mockFn();
@@ -25,7 +25,7 @@ describe('[memo]', () => {
     expect(mockFn).toBeCalledTimes(1);
   });
 
-  test('memo component works correctly with custom props comparer', () => {
+  test('works correctly with custom props comparer', () => {
     type Props = { name: string; age: number };
     const mockFn = jest.fn();
     const App = createComponent<Props>(() => {

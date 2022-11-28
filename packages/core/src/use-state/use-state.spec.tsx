@@ -16,15 +16,15 @@ describe('[use-state]', () => {
     const content = (count: number) => dom`
       <div>${count}</div>
     `;
-    let count;
-    let setCount;
-    const Component = createComponent(() => {
+    let count: number;
+    let setCount: (x: number | ((x: number) => number)) => void;
+    const App = createComponent(() => {
       [count, setCount] = useState(0);
 
       return <div>{count}</div>;
     });
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(0));
 
     setCount(count + 1);
@@ -45,13 +45,13 @@ describe('[use-state]', () => {
     `;
     let count: number;
     let setCount: (value: number) => void;
-    const Component = createComponent(() => {
+    const App = createComponent(() => {
       [count, setCount] = useState(0);
 
       return [<div>text</div>, <div>{count}</div>];
     });
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(0));
 
     setCount(count + 1);
@@ -113,7 +113,7 @@ describe('[use-state]', () => {
       return <div>{count}</div>;
     });
 
-    const List = createComponent(() => {
+    const App = createComponent(() => {
       return items.map(x => {
         return <CounterOne key={x.id} id={x.id} />;
       });
@@ -126,7 +126,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render(List(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne[1](1);
@@ -140,13 +140,13 @@ describe('[use-state]', () => {
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    render(List(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    render(List(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -187,7 +187,7 @@ describe('[use-state]', () => {
       );
     });
 
-    const List = createComponent(() => {
+    const App = createComponent(() => {
       return items.map(x => <Item key={x.id} id={x.id} />);
     });
 
@@ -198,7 +198,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render(List(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](1);
@@ -207,7 +207,7 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 2;
     swap();
     setCounts = [];
-    render(List(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(items));
     setCounts[1](20);
     setCounts[items.length - 2](30);
@@ -215,11 +215,11 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 30;
     swap();
     setCounts = [];
-    render(List(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(items));
   });
 
-  test('nodes remove correctly after use-state when rendering a different number of elements', () => {
+  test('nodes removed correctly after set state when rendering a different number of elements', () => {
     const content = (hasFlag: boolean) =>
       hasFlag
         ? dom`<div>flag</div>`
@@ -230,7 +230,7 @@ describe('[use-state]', () => {
           `;
     let hasFlag: boolean;
     let setHasFlag: (value: boolean) => void;
-    const Component = createComponent(() => {
+    const App = createComponent(() => {
       [hasFlag, setHasFlag] = useState(false);
 
       if (hasFlag) return <div>flag</div>;
@@ -238,7 +238,7 @@ describe('[use-state]', () => {
       return [<div>1</div>, <div>2</div>, <div>3</div>];
     });
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content(false));
 
     setHasFlag(true);

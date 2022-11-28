@@ -20,7 +20,7 @@ describe('[View, Text, Comment]', () => {
     expect(factory().name).toBe('div');
   });
 
-  test('View can render tags', () => {
+  test('View can render tags correctly', () => {
     render(div(), host);
     expect(host.innerHTML).toBe('<div></div>');
   });
@@ -53,7 +53,7 @@ describe('[View, Text, Comment]', () => {
     expect(text.value).toBe('Hello');
   });
 
-  test('Text can render the text', () => {
+  test('Text can render the text correctly', () => {
     render(Text(`what's up bitch? 😏`), host);
     expect(host.innerHTML).toBe(`what's up bitch? 😏`);
   });
@@ -71,7 +71,7 @@ describe('[View, Text, Comment]', () => {
     expect(factory().value).toBe('Hello');
   });
 
-  test('Comment can render the comment', () => {
+  test('Comment can render the comment correctly', () => {
     render(Comment(`😈`), host);
     expect(host.innerHTML).toBe(`<!--😈-->`);
   });

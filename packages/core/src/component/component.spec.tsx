@@ -22,37 +22,38 @@ describe('[create-component]', () => {
     expect(compile).not.toThrowError();
   });
 
-  test('type returns virtual node factory correctly', () => {
+  test('type returns virtual node factory', () => {
     const Component = createComponent(() => div());
     const vNodeFactory = Component().type({}) as VirtualNodeFactory;
 
-    expect(typeof vNodeFactory).toBe('function');
+    expect(vNodeFactory).toBeInstanceOf(Function);
     expect(detectIsVirtualNode(vNodeFactory())).toBeTruthy();
   });
 
-  test('type returns null correctly', () => {
+  test('type can return null', () => {
     const Component = createComponent(() => null);
     const element = Component().type({});
 
     expect(element).toBeNull();
   });
 
-  test('pass props to component correctly', () => {
-    const compile = () => {
-      const Component = createComponent<{ one: string; two: string }>(({ one, two }) => {
-        expect(one).toBe('hello');
-        expect(two).toBe('world');
-        return null;
-      });
-      const factory = Component({ one: 'hello', two: 'world' });
-
-      factory.type(factory.props);
+  test('can pass props to component correctly', () => {
+    type ComponentProps = {
+      one: string;
+      two: string;
     };
+    const Component = createComponent<ComponentProps>(({ one, two }) => {
+      expect(one).toBe('hello');
+      expect(two).toBe('world');
 
-    compile();
+      return null;
+    });
+    const factory = Component({ one: 'hello', two: 'world' });
+
+    factory.type(factory.props);
   });
 
-  test('createElement provides correct displayName', () => {
+  test('provides correct displayName', () => {
     const displayName = 'MyComponent';
     const Component = createComponent(() => null, { displayName });
 

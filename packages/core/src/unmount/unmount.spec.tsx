@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('[unmount]', () => {
-  test('clears all effects and unmounts root node', () => {
+  test('clears all effects and unmounts root node correctly', () => {
     const dropFn = jest.fn();
 
     const Child = createComponent(() => {

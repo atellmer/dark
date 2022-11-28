@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 
 describe('[use-reducer]', () => {
-  test('works correctly', () => {
+  test('can update state with render', () => {
     type State = { count: number };
     type Action = { type: string };
 

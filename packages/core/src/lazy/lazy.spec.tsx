@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('[lazy]', () => {
-  test('loads component', done => {
+  test('loads component correctly', done => {
     const LazyComponent = lazy(
       () => import('./lazy-component'),
       () => {
