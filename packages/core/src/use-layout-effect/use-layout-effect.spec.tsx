@@ -2,45 +2,27 @@
 import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { createComponent } from '../component';
-import { useEffect } from './use-effect';
+import { useLayoutEffect } from './use-layout-effect';
 
 let host: HTMLElement = null;
-
-jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-effect]', () => {
-  test('runs async', () => {
-    const mockFn = jest.fn();
-    const App = createComponent(() => {
-      useEffect(() => mockFn(), []);
-
-      return null;
-    });
-
-    render(App(), host);
-    expect(mockFn).toBeCalledTimes(0);
-    jest.runAllTimers();
-    expect(mockFn).toBeCalledTimes(1);
-  });
-
+describe('[use-layout-effect]', () => {
   test('fires on mount event correctly', () => {
     const mockFn = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => mockFn(), []);
+      useLayoutEffect(() => mockFn(), []);
 
       return null;
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
   });
 
@@ -48,7 +30,7 @@ describe('[use-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
     const App = createComponent<{ x: number }>(({ x }) => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
       }, [x]);
@@ -57,22 +39,18 @@ describe('[use-effect]', () => {
     });
 
     render(App({ x: 1 }), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
     render(App({ x: 1 }), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
     render(App({ x: 2 }), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
 
     render(App({ x: 3 }), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(3);
     expect(dropFn).toBeCalledTimes(2);
   });
@@ -81,7 +59,7 @@ describe('[use-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
       });
@@ -90,17 +68,14 @@ describe('[use-effect]', () => {
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(3);
     expect(dropFn).toBeCalledTimes(2);
   });
@@ -109,7 +84,7 @@ describe('[use-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
       }, []);
@@ -118,17 +93,14 @@ describe('[use-effect]', () => {
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
     render(null, host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
   });
@@ -139,11 +111,11 @@ describe('[use-effect]', () => {
     const effectFn2 = jest.fn();
     const dropFn2 = jest.fn();
     const App = createComponent(() => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn1();
         return () => dropFn1();
       });
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn2();
         return () => dropFn2();
       });
@@ -152,21 +124,18 @@ describe('[use-effect]', () => {
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(1);
     expect(effectFn2).toBeCalledTimes(1);
     expect(dropFn1).toBeCalledTimes(0);
     expect(dropFn2).toBeCalledTimes(0);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(2);
     expect(effectFn2).toBeCalledTimes(2);
     expect(dropFn1).toBeCalledTimes(1);
     expect(dropFn2).toBeCalledTimes(1);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(3);
     expect(effectFn2).toBeCalledTimes(3);
     expect(dropFn1).toBeCalledTimes(2);
@@ -180,7 +149,7 @@ describe('[use-effect]', () => {
     const dropFn2 = jest.fn();
 
     const Child = createComponent(() => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn2();
         return () => dropFn2();
       });
@@ -189,7 +158,7 @@ describe('[use-effect]', () => {
     });
 
     const App = createComponent(() => {
-      useEffect(() => {
+      useLayoutEffect(() => {
         effectFn1();
         return () => dropFn1();
       });
@@ -198,7 +167,6 @@ describe('[use-effect]', () => {
     });
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(1);
     expect(effectFn2).toBeCalledTimes(1);
     expect(dropFn1).toBeCalledTimes(0);
@@ -206,7 +174,6 @@ describe('[use-effect]', () => {
     expect(effectFn1.mock.invocationCallOrder[0]).toBeLessThan(effectFn2.mock.invocationCallOrder[0]);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(2);
     expect(effectFn2).toBeCalledTimes(2);
     expect(dropFn1).toBeCalledTimes(1);
@@ -215,7 +182,6 @@ describe('[use-effect]', () => {
     expect(dropFn1.mock.invocationCallOrder[0]).toBeLessThan(dropFn2.mock.invocationCallOrder[0]);
 
     render(App(), host);
-    jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(3);
     expect(effectFn2).toBeCalledTimes(3);
     expect(dropFn1).toBeCalledTimes(2);
