@@ -24,6 +24,7 @@ describe('[View, Text, Comment]', () => {
     render(div(), host);
     expect(host.innerHTML).toBe('<div></div>');
   });
+
   test('View can render tags with attributes', () => {
     const content = () => dom`
       <div style="color: red;" class="box" data-some-attr="123"></div>
@@ -46,7 +47,7 @@ describe('[View, Text, Comment]', () => {
     expect(host.innerHTML).toBe(content());
   });
 
-  test('Text creates the factory', () => {
+  test('Text creates the text virtual node', () => {
     const text = Text('Hello');
 
     expect(text).toBeInstanceOf(TextVirtualNode);
@@ -54,8 +55,10 @@ describe('[View, Text, Comment]', () => {
   });
 
   test('Text can render the text correctly', () => {
-    render(Text(`what's up bitch? 😏`), host);
-    expect(host.innerHTML).toBe(`what's up bitch? 😏`);
+    const value = `what's up bitch? 😏`;
+
+    render(Text(value), host);
+    expect(host.innerHTML).toBe(value);
   });
 
   test('Text can prevent xss attacks', () => {
