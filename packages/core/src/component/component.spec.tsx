@@ -1,7 +1,18 @@
+/** @jsx h */
+import { render } from '@dark-engine/platform-browser/render';
+import { h } from '../element';
 import { View, detectIsVirtualNode, VirtualNodeFactory } from '../view';
+import { useEffect } from '../use-effect';
 import { createComponent, detectIsComponentFactory, getComponentFactoryKey } from './component';
 
+let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
+
+jest.useFakeTimers();
+
+beforeEach(() => {
+  host = document.createElement('div');
+});
 
 describe('[create-component]', () => {
   test('does not throw error', () => {
@@ -78,5 +89,49 @@ describe('[create-component]', () => {
     const key = 'somekey';
 
     expect(getComponentFactoryKey(Component({ key }))).toBe(key);
+  });
+
+  test('component unmounts when key changed', () => {
+    const dropFn = jest.fn();
+
+    type AppProps = {
+      x: number;
+    };
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
+    const Child = createComponent(() => {
+      useEffect(() => {
+        return () => dropFn();
+      }, []);
+
+      return <div>child</div>;
+    });
+
+    const App = createComponent<AppProps>(({ x }) => {
+      return <Child key={x} />;
+    });
+
+    render$({ x: 1 });
+    jest.runAllTimers();
+    expect(dropFn).toHaveBeenCalledTimes(0);
+
+    render$({ x: 1 });
+    jest.runAllTimers();
+    expect(dropFn).toHaveBeenCalledTimes(0);
+
+    render$({ x: 2 });
+    jest.runAllTimers();
+    expect(dropFn).toHaveBeenCalledTimes(1);
+
+    render$({ x: 3 });
+    jest.runAllTimers();
+    expect(dropFn).toHaveBeenCalledTimes(2);
+
+    render$({ x: 3 });
+    jest.runAllTimers();
+    expect(dropFn).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,6 +1,9 @@
 /** @jsx h */
 import { dom } from '@test-utils';
 import { render } from '@dark-engine/platform-browser';
+import { createComponent } from '../component';
+import { MutableRef } from '../ref';
+import { useRef } from '../use-ref';
 import { View, Text, Comment, TagVirtualNode, TextVirtualNode, CommentVirtualNode } from './view';
 
 let host: HTMLElement = null;
@@ -77,5 +80,35 @@ describe('[View, Text, Comment]', () => {
   test('Comment can render the comment correctly', () => {
     render(Comment(`😈`), host);
     expect(host.innerHTML).toBe(`<!--😈-->`);
+  });
+
+  test('node recreates when key changed', () => {
+    type AppProps = {
+      x: number;
+    };
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
+    let ref: MutableRef<HTMLDivElement> = null;
+    let node: HTMLDivElement = null;
+
+    const App = createComponent<AppProps>(({ x }) => {
+      ref = useRef<HTMLDivElement>(null);
+
+      return div({ ref, key: x });
+    });
+
+    render$({ x: 1 });
+    node = ref.current;
+    expect(node).toBeInstanceOf(HTMLDivElement);
+
+    render$({ x: 1 });
+    expect(ref.current).toBe(node);
+
+    render$({ x: 2 });
+    expect(ref.current).not.toBe(node);
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });
