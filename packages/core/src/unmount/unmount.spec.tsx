@@ -54,5 +54,6 @@ describe('[unmount]', () => {
     root.unmount();
     expect(dropFn).toBeCalledTimes(8);
     expect(host.innerHTML).toBe('');
+    expect(root.unmount).not.toThrowError();
   });
 });

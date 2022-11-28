@@ -10,43 +10,6 @@ beforeEach(() => {
 });
 
 describe('[use-callback]', () => {
-  test('works correctly by default', () => {
-    const handlers = [];
-    const App = createComponent(() => {
-      const handler = useCallback(() => {}, []);
-
-      handlers.push(handler);
-
-      return null;
-    });
-
-    render(App(), host);
-    render(App(), host);
-    render(App(), host);
-    expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
-  });
-
-  test('works correctly with deps', () => {
-    type Props = {
-      count: number;
-    };
-    const handlers = [];
-    const App = createComponent<Props>(({ count }) => {
-      const handler = useCallback(() => {}, [count]);
-
-      handlers.push(handler);
-
-      return null;
-    });
-
-    render(App({ count: 1 }), host);
-    expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
-    render(App({ count: 1 }), host);
-    expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
-    render(App({ count: 2 }), host);
-    expect(handlers.every(x => x && x === handlers[0])).toBeFalsy();
-  });
-
   test('returns function', () => {
     let handler: () => void;
     const App = createComponent(() => {
@@ -57,5 +20,54 @@ describe('[use-callback]', () => {
 
     render(App(), host);
     expect(handler).toBeInstanceOf(Function);
+  });
+
+  test('works correctly by default', () => {
+    const handlers = [];
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
+    const App = createComponent(() => {
+      const handler = useCallback(() => {}, []);
+
+      handlers.push(handler);
+
+      return null;
+    });
+
+    render$();
+    render$();
+    render$();
+    expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
+  });
+
+  test('works correctly with deps', () => {
+    type AppProps = {
+      count: number;
+    };
+    const handlers = [];
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
+    const App = createComponent<AppProps>(({ count }) => {
+      const handler = useCallback(() => {}, [count]);
+
+      handlers.push(handler);
+
+      return null;
+    });
+
+    render$({ count: 1 });
+    expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
+
+    render$({ count: 1 });
+    expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
+
+    render$({ count: 2 });
+    expect(handlers.every(x => x && x === handlers[0])).toBeFalsy();
   });
 });

@@ -33,11 +33,7 @@ describe('[forward-ref]', () => {
   test('can forward ref', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
-    const Child = forwardRef(
-      createComponent((props, ref) => {
-        return <div ref={ref} />;
-      }),
-    );
+    const Child = forwardRef(createComponent((_, ref) => <div ref={ref} />));
 
     const App = createComponent(() => {
       ref = useRef(null);

@@ -8,24 +8,27 @@ import { createContext } from './context';
 
 let host: HTMLElement = null;
 
+type Theme = 'light' | 'dark';
+type Lang = 'en' | 'de';
+
 beforeEach(() => {
   host = document.createElement('div');
 });
 
 describe('[context]', () => {
   test('is created correctly', () => {
-    const ThemeContext = createContext('light');
+    const ThemeContext = createContext<Theme>('light');
 
     expect(ThemeContext.Provider).toBeTruthy();
     expect(ThemeContext.Consumer).toBeTruthy();
   });
 
   test('renders correctly', () => {
-    const content = theme => dom`
+    const content = (theme: Theme) => dom`
       <div>${theme}</div>
     `;
 
-    const ThemeContext = createContext('light');
+    const ThemeContext = createContext<Theme>('light');
 
     const Item = createComponent(() => {
       return <ThemeContext.Consumer>{value => <div>{value}</div>}</ThemeContext.Consumer>;
@@ -35,11 +38,11 @@ describe('[context]', () => {
       return [<Item />];
     });
 
-    let theme;
-    let setTheme;
+    let theme: Theme;
+    let setTheme: (value: Theme) => void;
 
     const App = createComponent(() => {
-      [theme, setTheme] = useState('light');
+      [theme, setTheme] = useState<Theme>('light');
 
       return [
         <ThemeContext.Provider value={theme}>
@@ -56,11 +59,11 @@ describe('[context]', () => {
   });
 
   test('nested contexts work correctly', () => {
-    const content = (theme, lang) => dom`
+    const content = (theme: Theme, lang: string) => dom`
       <div>${theme}:${lang}</div>
     `;
 
-    const ThemeContext = createContext('light');
+    const ThemeContext = createContext<Theme>('light');
     const LangContext = createContext('ru');
 
     const Item = createComponent(() => {
@@ -83,14 +86,14 @@ describe('[context]', () => {
       return [<Item />];
     });
 
-    let theme;
-    let setTheme;
-    let lang;
-    let setLang;
+    let theme: Theme;
+    let setTheme: (value: Theme) => void;
+    let lang: Lang;
+    let setLang: (value: Lang) => void;
 
     const App = createComponent(() => {
-      [theme, setTheme] = useState('light');
-      [lang, setLang] = useState('ru');
+      [theme, setTheme] = useState<Theme>('light');
+      [lang, setLang] = useState<Lang>('de');
 
       return [
         <ThemeContext.Provider value={theme}>

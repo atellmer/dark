@@ -143,33 +143,33 @@ describe('[render]', () => {
 
   test('conditional rendering works correctly with nullable elements', () => {
     type AppProps = {
-      hasFlag: boolean;
+      flag: boolean;
     };
 
     const render$ = (props: AppProps) => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ hasFlag }) => {
-      return [div({ slot: Text('header') }), hasFlag && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
+    const App = createComponent<AppProps>(({ flag }) => {
+      return [div({ slot: Text('header') }), flag && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
     });
 
-    const content = (hasFlag: boolean) => dom`
+    const content = (flag: boolean) => dom`
       <div>header</div>
-      ${hasFlag ? '<div>hello</div>' : emptyComment}
+      ${flag ? '<div>hello</div>' : emptyComment}
       <div>footer</div>
     `;
 
-    render$({ hasFlag: false });
+    render$({ flag: false });
     expect(host.innerHTML).toBe(content(false));
 
-    render$({ hasFlag: true });
+    render$({ flag: true });
     expect(host.innerHTML).toBe(content(true));
 
-    render$({ hasFlag: false });
+    render$({ flag: false });
     expect(host.innerHTML).toBe(content(false));
 
-    render$({ hasFlag: true });
+    render$({ flag: true });
     expect(host.innerHTML).toBe(content(true));
   });
 
@@ -177,12 +177,11 @@ describe('[render]', () => {
     type AppProps = {
       items: Array<Item>;
     };
-    const itemAttrName = 'data-item';
-    let items = [];
-
     type ListItemProps = {
       slot: DarkElement;
     };
+    const itemAttrName = 'data-item';
+    let items = [];
 
     const ListItem = createComponent<ListItemProps>(({ slot }) => {
       return div({

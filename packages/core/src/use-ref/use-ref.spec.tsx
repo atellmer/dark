@@ -23,6 +23,6 @@ describe('[use-ref]', () => {
 
     render(App(), host);
     expect(ref.current).toBeTruthy();
-    expect(ref.current instanceof HTMLDivElement).toBeTruthy();
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });

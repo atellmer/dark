@@ -1,6 +1,5 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
-import { h } from '../element';
 import { createComponent } from '../component';
 import { memo } from './memo';
 
@@ -13,34 +12,48 @@ beforeEach(() => {
 describe('[memo]', () => {
   test('works correctly by default', () => {
     const mockFn = jest.fn();
+
+    const render$ = (props = {}) => {
+      render(MemoApp(props), host);
+    };
+
     const App = createComponent(() => {
       mockFn();
       return null;
     });
+
     const MemoApp = memo(App);
 
-    render(MemoApp(), host);
+    render$();
     expect(mockFn).toBeCalledTimes(1);
-    render(<MemoApp />, host);
+    render$();
     expect(mockFn).toBeCalledTimes(1);
   });
 
   test('works correctly with custom props comparer', () => {
-    type Props = { name: string; age: number };
+    type AppProps = { name: string; age: number };
     const mockFn = jest.fn();
-    const App = createComponent<Props>(() => {
+
+    const render$ = (props: AppProps) => {
+      render(MemoApp(props), host);
+    };
+
+    const App = createComponent<AppProps>(() => {
       mockFn();
       return null;
     });
-    const MemoApp = memo<Props>(App, (props, nextProps) => props.name !== nextProps.name);
+    const MemoApp = memo<AppProps>(App, (props, nextProps) => props.name !== nextProps.name);
 
-    render(MemoApp({ name: 'Alex', age: 24 }), host);
+    render$({ name: 'Alex', age: 24 });
     expect(mockFn).toBeCalledTimes(1);
-    render(MemoApp({ name: 'Alex', age: 26 }), host);
+
+    render$({ name: 'Alex', age: 26 });
     expect(mockFn).toBeCalledTimes(1);
-    render(MemoApp({ name: 'Jane', age: 24 }), host);
+
+    render$({ name: 'Jane', age: 24 });
     expect(mockFn).toBeCalledTimes(2);
-    render(MemoApp({ name: 'Jane', age: 28 }), host);
+
+    render$({ name: 'Jane', age: 28 });
     expect(mockFn).toBeCalledTimes(2);
   });
 });

@@ -209,6 +209,7 @@ describe('[use-state]', () => {
     setCounts = [];
     render(App(), host);
     expect(host.innerHTML).toBe(content(items));
+
     setCounts[1](20);
     setCounts[items.length - 2](30);
     items[1].count = 20;
@@ -228,12 +229,12 @@ describe('[use-state]', () => {
             <div>2</div>
             <div>3</div>
           `;
-    let hasFlag: boolean;
-    let setHasFlag: (value: boolean) => void;
+    let flag: boolean;
+    let setFlag: (value: boolean) => void;
     const App = createComponent(() => {
-      [hasFlag, setHasFlag] = useState(false);
+      [flag, setFlag] = useState(false);
 
-      if (hasFlag) return <div>flag</div>;
+      if (flag) return <div>flag</div>;
 
       return [<div>1</div>, <div>2</div>, <div>3</div>];
     });
@@ -241,10 +242,10 @@ describe('[use-state]', () => {
     render(App(), host);
     expect(host.innerHTML).toBe(content(false));
 
-    setHasFlag(true);
+    setFlag(true);
     expect(host.innerHTML).toBe(content(true));
 
-    setHasFlag(false);
+    setFlag(false);
     expect(host.innerHTML).toBe(content(false));
   });
 });

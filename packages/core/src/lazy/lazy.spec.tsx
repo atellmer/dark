@@ -30,9 +30,7 @@ describe('[lazy]', () => {
       <div>lazy</div>
     `;
 
-    const App = createComponent(() => {
-      return <LazyComponent />;
-    });
+    const App = createComponent(() => <LazyComponent />);
 
     render(App(), host);
     expect(host.innerHTML).toBe(createEmptyCommentString());

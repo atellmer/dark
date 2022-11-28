@@ -11,6 +11,8 @@ import { DarkElement } from '../shared';
 
 let host: HTMLElement = null;
 
+type Theme = 'light' | 'dark';
+
 jest.useFakeTimers();
 
 beforeEach(() => {
@@ -22,8 +24,6 @@ describe('[use-context]', () => {
     const content = (theme: Theme) => dom`
       <div>${theme}</div>
     `;
-
-    type Theme = 'light' | 'dark';
     const ThemeContext = createContext<Theme>('light');
 
     const Item = createComponent(() => {
@@ -102,8 +102,6 @@ describe('[use-context]', () => {
     const content = (theme: Theme) => dom`
       <div>${theme}</div>
     `;
-
-    type Theme = 'light' | 'dark';
     const ThemeContext = createContext<Theme>('light');
 
     const Consumer = createComponent(() => {

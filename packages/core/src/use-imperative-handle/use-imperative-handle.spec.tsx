@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('[use-imperative-handle]', () => {
-  test('works correctly', () => {
+  test('mutates ref object correctly', () => {
     const mockFn = jest.fn();
 
     type MyRef = { run: () => void };
@@ -22,7 +22,7 @@ describe('[use-imperative-handle]', () => {
     let ref: MutableRef<MyRef> = null;
 
     const Child = forwardRef<{}, MyRef>(
-      createComponent((props, ref) => {
+      createComponent((_, ref) => {
         useImperativeHandle(ref as MutableRef<MyRef>, () => ({
           run: mockFn,
         }));

@@ -13,42 +13,66 @@ beforeEach(() => {
 });
 
 describe('[use-memo]', () => {
-  test('returns some value', () => {
-    let value: number = null;
+  test('returns correct value', () => {
+    const value = 1;
+    let memoValue: number = null;
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
     const App = createComponent(() => {
-      value = useMemo(() => 1, []);
+      memoValue = useMemo(() => value, []);
 
       return null;
     });
 
-    render(App(), host);
-    expect(value).toBeTruthy();
-    render(App(), host);
-    expect(value).toBeTruthy();
+    render$();
+    expect(memoValue).toBe(value);
+    render$();
+    expect(memoValue).toBe(value);
   });
 
   test('works correctly with deps', () => {
+    type AppProps = {
+      x: number;
+    };
     const mockFn = jest.fn();
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
     const App = createComponent<{ x: number }>(({ x }) => {
       useMemo(() => mockFn(), [x]);
 
       return null;
     });
 
-    render(App({ x: 1 }), host);
+    render$({ x: 1 });
     expect(mockFn).toBeCalledTimes(1);
-    render(App({ x: 1 }), host);
+
+    render$({ x: 1 });
     expect(mockFn).toBeCalledTimes(1);
-    render(App({ x: 2 }), host);
+
+    render$({ x: 2 });
     expect(mockFn).toBeCalledTimes(2);
   });
 
   test('returns a memoized template correctly', () => {
+    type AppProps = {
+      x: number;
+    };
     const content = (value: number) => dom`
       <div>
         <div>Item: ${value}</div>
       </div>
     `;
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
     const Item = createComponent<{ slot: DarkElement }>(({ slot }) => <div>Item: {slot}</div>);
     const App = createComponent<{ x: number }>(({ x }) => {
       const value = useMemo(
@@ -63,11 +87,13 @@ describe('[use-memo]', () => {
       return value;
     });
 
-    render(App({ x: 1 }), host);
+    render$({ x: 1 });
     expect(host.innerHTML).toBe(content(1));
-    render(App({ x: 1 }), host);
+
+    render$({ x: 1 });
     expect(host.innerHTML).toBe(content(1));
-    render(App({ x: 2 }), host);
+
+    render$({ x: 2 });
     expect(host.innerHTML).toBe(content(2));
   });
 });
