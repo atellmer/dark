@@ -8,17 +8,15 @@ function batch(callback: () => void) {
 }
 
 function runBatch(fiber: Fiber, callback: () => void) {
-  fiber.batched.push(callback);
+  fiber.batched = callback;
 
   const update = () => {
-    const size = fiber.batched.length;
+    const fn = fiber.batched;
 
     platform.requestAnimationFrame(() => {
-      if (size === fiber.batched.length) {
-        const fn = fiber.batched[fiber.batched.length - 1];
-
+      if (fn === fiber.batched) {
         isBatchZone.set(false);
-        fiber.batched = [];
+        fiber.batched = null;
         fn && fn();
       } else {
         update();

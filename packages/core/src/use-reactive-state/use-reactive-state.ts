@@ -1,24 +1,31 @@
 import { detectIsObject, detectIsNull } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
-import { batch } from '../batch';
+
+type Scope = {
+  timerId: number | null;
+};
 
 function useReactiveState<T extends object>(value: T) {
   const update = useUpdate();
-  const reactiveValue = useMemo(() => reactive(value, update), []);
+  const scope = useMemo<Scope>(() => ({ timerId: null }), []);
+  const reactiveValue = useMemo(() => reactive(value, scope, update), []);
 
   return reactiveValue;
 }
 
-function reactive<T extends object>(value: T, update: () => void): T {
+function reactive<T extends object>(value: T, scope: Scope, update: () => void): T {
   let patched: T = value;
 
   if (detectIsObject(value) && !detectIsNull(value)) {
     patched = new Proxy(value, {
       set: function (target, prop, value) {
-        target[prop] = reactive(value, update);
+        if (target[prop] === value) return true;
 
-        batch(() => {
+        target[prop] = reactive(value, scope, update);
+
+        scope.timerId && clearTimeout(scope.timerId);
+        scope.timerId = setTimeout(() => {
           update();
         });
 
@@ -27,7 +34,7 @@ function reactive<T extends object>(value: T, update: () => void): T {
     });
 
     for (const key of Object.keys(value)) {
-      value[key] = reactive(value[key], update);
+      value[key] = reactive(value[key], scope, update);
     }
   }
 

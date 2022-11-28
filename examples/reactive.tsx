@@ -1,4 +1,4 @@
-import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/core';
+import { h, Fragment, createComponent, useReactiveState, useEffect } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 type State = {

@@ -73,7 +73,7 @@
     <div id="vue"></div>
     <div id="dark"></div>
     <script>
-      const { View, Text, createComponent, useEffect, useUpdate, TaskPriority } = DarkCore;
+      const { View, Text, createComponent, useEffect, useReactiveState } = DarkCore;
       const { createRoot } = DarkPlatformBrowser;
 
       const token = () => Math.random().toString(36).substring(2, 10);
@@ -110,14 +110,13 @@
         const ul = (props = {}) => View({ ...props, as: 'ul' });
         const li = (props = {}) => View({ ...props, as: 'li' });
         const App = createComponent(() => {
-          const update = useUpdate({ priority: TaskPriority.LOW });
+          const state = useReactiveState({ list });
 
           useEffect(() => {
             const go = () => {
-              list.forEach(item => {
+              state.list.forEach(item => {
                 setTimeout(() => {
                   item.name = token();
-                  update();
                 }, 10);
               });
               setTimeout(go, 10);
@@ -126,7 +125,7 @@
             go();
           }, []);
 
-          return ul({ slot: list.map(item => li({ slot: Text(item.name) }))})
+          return ul({ slot: state.list.map(item => li({ slot: Text(item.name) }))})
         });
 
         createRoot(document.getElementById('dark')).render(App());

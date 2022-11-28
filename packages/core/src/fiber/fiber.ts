@@ -63,7 +63,7 @@ class Fiber<N = NativeElement> {
   public marker: string;
   public isUsed: boolean;
   public idx: number;
-  public batched: Array<() => void>;
+  public batched: () => void | null;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -86,7 +86,7 @@ class Fiber<N = NativeElement> {
     this.marker = options.marker || '';
     this.idx = options.idx || 0;
     this.isUsed = options.isUsed || false;
-    this.batched = options.batched || [];
+    this.batched = options.batched || null;
   }
 
   public markPortalHost() {
