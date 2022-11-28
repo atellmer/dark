@@ -454,7 +454,7 @@ This is a hook to store the state and call to update a piece of the interface.
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
 
-  return <button onClick={() => setCount(count + 1)}>fires {state.count} times</button>;
+  return <button onClick={() => setCount(count + 1)}>fires {count} times</button>;
 });
 ```
 
