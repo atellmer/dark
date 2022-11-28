@@ -84,17 +84,18 @@ import {
   batch,
   forwardRef,
   Suspense,
+  useMemo,
   useCallback,
   useEvent,
   useContext,
   useEffect,
   useLayoutEffect,
   useError,
-  useImperativeHandle,
-  useMemo,
-  useReducer,
   useRef,
+  useImperativeHandle,
   useState,
+  useReducer,
+  useReactiveState,
   useDeferredValue,
 } from '@dark-engine/core';
 import { render, createRoot, createPortal, useStyle } from '@dark-engine/platform-browser';
@@ -439,7 +440,7 @@ const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => consol
 Hooks are needed to bring components to life: give them an internal state, start some actions, and so on. The basic rule for using hooks is to use them at the top level of the component, i.e. do not nest them inside other functions, cycles, conditions. This is a necessary condition, because hooks are not magic, but work based on array indices.
 <a name="state"></a>
 ## State
-Components should be able to store their state between renders. There are useState and useReducer hooks for this.
+Components should be able to store their state between renders. There are useState, useReactiveState and useReducer hooks for this.
 
 #### useState
 
@@ -453,12 +454,7 @@ This is a hook to store the state and call to update a piece of the interface.
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
 
-  const handleClick = () => setCount(count + 1);
-
-  return [
-    <div>count: {count}</div>,
-    <button onClick={handleClick}>Click me</button>,
-  ];
+  return <button onClick={() => setCount(count + 1)}>fires {state.count} times</button>;
 });
 ```
 
@@ -466,6 +462,24 @@ The setter can take a function as an argument to which the previous state is pas
 
 ```tsx
 const handleClick = () => setCount(x => x + 1);
+```
+
+#### useReactiveState
+
+The hook uses Proxy under the hood and allows you to update state reactively when properties change. Performs automatic async batching of updates.
+
+```tsx
+import { useReactiveState } from '@dark-engine/core';
+```
+
+```tsx
+const App = createComponent(() => {
+  const state = useReactiveState({ count: 0 });
+
+  return (
+    <button onClick={() => state.count++}>fires {state.count} times</button>
+  );
+});
 ```
 
 #### useReducer

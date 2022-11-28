@@ -7,6 +7,10 @@ type Scope = {
 };
 
 function useReactiveState<T extends object>(value: T) {
+  if (!value) {
+    throw new Error('[Dark]: initial value is not object or array');
+  }
+
   const update = useUpdate();
   const scope = useMemo<Scope>(() => ({ timerId: null }), []);
   const reactiveValue = useMemo(() => reactive(value, scope, update), []);
