@@ -28,8 +28,8 @@ function reactive<T extends object>(value: T, scope: Scope, update: () => void):
 
         target[prop] = reactive(value, scope, update);
 
-        scope.timerId && clearTimeout(scope.timerId);
-        scope.timerId = setTimeout(() => {
+        scope.timerId && window.clearTimeout(scope.timerId);
+        scope.timerId = window.setTimeout(() => {
           update();
         });
 
