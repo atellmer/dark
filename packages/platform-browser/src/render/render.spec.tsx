@@ -26,52 +26,52 @@ beforeEach(() => {
 });
 
 describe('[render]', () => {
-  test(`render do not throws error`, () => {
-    const Component = createComponent(() => null);
-    const compile = () => {
-      render(Component(), host);
+  test('doesn not throw error', () => {
+    const App = createComponent(() => null);
+    const render$ = () => {
+      render(App(), host);
     };
 
-    expect(compile).not.toThrowError();
+    expect(render$).not.toThrowError();
   });
 
-  test(`render text correctly`, () => {
+  test('can render text correctly', () => {
     const content = 'hello';
-    const Component = createComponent(() => Text(content));
+    const App = createComponent(() => Text(content));
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content);
   });
 
-  test(`render tag correctly`, () => {
+  test('can render tag correctly', () => {
     const content = `<div></div>`;
-    const Component = createComponent(() => div());
+    const App = createComponent(() => div());
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content);
   });
 
-  test(`render comment correctly`, () => {
+  test('can render comment correctly', () => {
     const content = 'some comment';
-    const Component = createComponent(() => Comment(content));
+    const App = createComponent(() => Comment(content));
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(`<!--${content}-->`);
   });
 
-  test(`render array of items correctly`, () => {
+  test('can render array of items correctly', () => {
     const content = dom`
-    <div></div>
-    <div></div>
-    <div></div>
-  `;
-    const Component = createComponent(() => [div(), div(), div()]);
+      <div></div>
+      <div></div>
+      <div></div>
+    `;
+    const App = createComponent(() => [div(), div(), div()]);
 
-    render(Component(), host);
+    render(App(), host);
     expect(host.innerHTML).toBe(content);
   });
 
-  test(`conditional rendering works correctly with replacing components`, () => {
+  test('conditional rendering works correctly with replacing components', () => {
     type AppProps = {
       items: Array<Item>;
       one: boolean;
@@ -79,6 +79,16 @@ describe('[render]', () => {
 
     type ListItemProps = {
       slot: DarkElement;
+    };
+
+    const content = (items: AppProps['items']) => dom`
+      <div>header</div>
+      ${items.map(x => `<div>${x.name}</div>`).join('')}
+      <div>footer</div>
+    `;
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
     };
 
     const ListItem = createComponent<ListItemProps>(({ slot }) => {
@@ -113,33 +123,31 @@ describe('[render]', () => {
       ];
     });
 
-    const content = (items: AppProps['items']) => dom`
-    <div>header</div>
-    ${items.map(x => `<div>${x.name}</div>`).join('')}
-    <div>footer</div>
-  `;
-
     let items = generateItems(3);
 
-    render(App({ one: true, items }), host);
+    render$({ one: true, items });
     expect(host.innerHTML).toBe(content(items));
 
     items = generateItems(3);
-    render(App({ one: false, items }), host);
+    render$({ one: false, items });
     expect(host.innerHTML).toBe(content(items));
 
     items = generateItems(4);
-    render(App({ one: true, items }), host);
+    render$({ one: true, items });
     expect(host.innerHTML).toBe(content(items));
 
     items = generateItems(2);
-    render(App({ one: false, items }), host);
+    render$({ one: false, items });
     expect(host.innerHTML).toBe(content(items));
   });
 
-  test(`conditional rendering works correctly with nullable elements`, () => {
+  test('conditional rendering works correctly with nullable elements', () => {
     type AppProps = {
       hasFlag: boolean;
+    };
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
     };
 
     const App = createComponent<AppProps>(({ hasFlag }) => {
@@ -147,25 +155,25 @@ describe('[render]', () => {
     });
 
     const content = (hasFlag: boolean) => dom`
-    <div>header</div>
-    ${hasFlag ? '<div>hello</div>' : emptyComment}
-    <div>footer</div>
-  `;
+      <div>header</div>
+      ${hasFlag ? '<div>hello</div>' : emptyComment}
+      <div>footer</div>
+    `;
 
-    render(App({ hasFlag: false }), host);
+    render$({ hasFlag: false });
     expect(host.innerHTML).toBe(content(false));
 
-    render(App({ hasFlag: true }), host);
+    render$({ hasFlag: true });
     expect(host.innerHTML).toBe(content(true));
 
-    render(App({ hasFlag: false }), host);
+    render$({ hasFlag: false });
     expect(host.innerHTML).toBe(content(false));
 
-    render(App({ hasFlag: true }), host);
+    render$({ hasFlag: true });
     expect(host.innerHTML).toBe(content(true));
   });
 
-  describe(`adding/removing/swap nodes`, () => {
+  describe('[adding/removing/swaping nodes]', () => {
     type AppProps = {
       items: Array<Item>;
     };
@@ -196,15 +204,15 @@ describe('[render]', () => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
-    const renderApp = () => {
+    const render$ = () => {
       render(App({ items }), host);
     };
 
     const content = (items: Array<Item>) => dom`
-    <div>header</div>
-    ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
-    <div>footer</div>
-  `;
+      <div>header</div>
+      ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
+      <div>footer</div>
+    `;
 
     const addItemsToEnd = (count: number) => {
       items = [...items, ...generateItems(count)];
@@ -228,23 +236,23 @@ describe('[render]', () => {
       items = newItems;
     };
 
-    test('nodes added correctly', () => {
+    test('can add nodes', () => {
       items = generateItems(5);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
 
       addItemsToEnd(5);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
 
       addItemsToStart(6);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('nodes not recreated after adding', () => {
       items = generateItems(5);
-      renderApp();
+      render$();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const node = nodes[0];
@@ -252,7 +260,7 @@ describe('[render]', () => {
       const count = 4;
 
       addItemsToStart(count);
-      renderApp();
+      render$();
 
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const newNode = newNodes[count];
@@ -261,62 +269,62 @@ describe('[render]', () => {
       expect(node.textContent).toBe(expected);
     });
 
-    test('nodes inserted in different places correctly', () => {
+    test('can insert nodes to different places', () => {
       items = generateItems(10);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
       insertNodesInDifferentPlaces();
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
     });
 
-    test('nodes removed correctly', () => {
+    test('can remove nodes', () => {
       items = generateItems(10);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
 
       removeItem(6);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
 
       removeItem(5);
       removeItem(1);
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
 
       items = [];
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('nodes not recreated after removing', () => {
       items = generateItems(10);
-      renderApp();
+      render$();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const node = nodes[8];
       const expected = node.textContent;
 
       removeItem(6);
-      renderApp();
+      render$();
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
 
       expect(node).toBe(newNodes[7]);
       expect(node.textContent).toBe(expected);
     });
 
-    test('last nodes removed correctly', () => {
+    test('can remove last nodes', () => {
       items = generateItems(10);
-      renderApp();
+      render$();
       items.pop();
       items.pop();
-      renderApp();
+      render$();
       expect(host.innerHTML).toBe(content(items));
     });
 
-    test('nodes swapped correctly', () => {
+    test('can swap nodes', () => {
       items = generateItems(10);
-      renderApp();
+      render$();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const nodeOne = nodes[1];
@@ -326,7 +334,7 @@ describe('[render]', () => {
       expect(nodeTwo.textContent).toBe('9');
 
       swapItems();
-      renderApp();
+      render$();
 
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const newNodeOne = newNodes[8];
@@ -337,28 +345,28 @@ describe('[render]', () => {
     });
   });
 
-  describe(`list of items`, () => {
-    test('render simple array correctly', () => {
+  describe('[list of items]', () => {
+    test('can render a simple array', () => {
       const content = dom`
-      <div></div>
-      <div></div>
-      <div></div>
-    `;
-      const Component = createComponent(() => [div(), div(), div()]);
+        <div></div>
+        <div></div>
+        <div></div>
+      `;
+      const App = createComponent(() => [div(), div(), div()]);
 
-      render(Component(), host);
+      render(App(), host);
       expect(host.innerHTML).toBe(content);
     });
 
-    test('render arrays of any nesting correctly', () => {
+    test('can render arrays of any nesting', () => {
       const content = dom`
-    <div></div>
-    <div></div>
-    <div></div>
-    <div id="one"></div>
-    <div id="two"></div>
-    <div></div>
-    `;
+        <div></div>
+        <div></div>
+        <div></div>
+        <div id="one"></div>
+        <div id="two"></div>
+        <div></div>
+      `;
 
       const Item = createComponent(() => {
         return [[[div({ id: 'one' })]], div({ id: 'two' })];
@@ -371,84 +379,122 @@ describe('[render]', () => {
     });
   });
 
-  test('render nested array as components correctly', () => {
+  test('can render nested array as component', () => {
+    type AppProps = {
+      count: number;
+    };
     const content = (count: number) => dom`
-    <div>1</div>
-    <div>2</div>
-    ${Array(count)
-      .fill(0)
-      .map((x, idx) => `<p>${idx}</p>`)
-      .join('')}
-    <div>3</div>
-  `;
+      <div>1</div>
+      <div>2</div>
+      ${Array(count)
+        .fill(0)
+        .map((_, idx) => `<p>${idx}</p>`)
+        .join('')}
+      <div>3</div>
+    `;
 
-    const NestedArray = createComponent<{ count: number }>(({ count }) => {
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
+    const NestedArray = createComponent<AppProps>(({ count }) => {
       return Array(count)
         .fill(0)
-        .map((x, idx) => <p key={idx}>{idx}</p>);
+        .map((_, idx) => <p key={idx}>{idx}</p>);
     });
 
-    const Component = createComponent<{ count: number }>(({ count }) => [
+    const App = createComponent<AppProps>(({ count }) => [
       <div>1</div>,
       <div>2</div>,
       <NestedArray count={count} />,
       <div>3</div>,
     ]);
 
-    render(Component({ count: 3 }), host);
+    render$({ count: 3 });
     expect(host.innerHTML).toBe(content(3));
-    render(Component({ count: 5 }), host);
+
+    render$({ count: 5 });
     expect(host.innerHTML).toBe(content(5));
-    render(Component({ count: 1 }), host);
+
+    render$({ count: 1 });
     expect(host.innerHTML).toBe(content(1));
   });
 
-  test(`dynamic tag render correcrly`, () => {
+  test('can render dynamic tag', () => {
+    type AppProps = {
+      dynamic: boolean;
+    };
     const text = 'I am dynamic tag';
-    const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
+    const App = createComponent<AppProps>(({ dynamic }) => {
       const Tag = dynamic ? span : div;
 
       return Tag({ slot: Text(text) });
     });
 
-    render(App({ dynamic: false }), host);
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
+
+    render$({ dynamic: false });
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
-    render(App({ dynamic: true }), host);
+    render$({ dynamic: true });
     expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
+
+    render$({ dynamic: false });
+    expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
   });
 
-  test(`JSX works`, () => {
+  test('can work with JSX', () => {
+    type AppProps = {
+      dynamic: boolean;
+    };
+
     const text = 'I am dynamic tag';
+
+    const render$ = (props: AppProps) => {
+      render(App(props), host);
+    };
 
     const CustomItem = createComponent(({ slot }) => {
       return <span>{slot}</span>;
     });
 
-    const App = createComponent<{ dynamic: boolean }>(({ dynamic }) => {
+    const App = createComponent<AppProps>(({ dynamic }) => {
       const Tag = dynamic ? CustomItem : 'div';
 
       return <Tag>{text}</Tag>;
     });
 
-    render(App({ dynamic: false }), host);
+    render$({ dynamic: false });
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
-    render(App({ dynamic: true }), host);
+    render$({ dynamic: true });
     expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
+
+    render$({ dynamic: false });
+    expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
   });
 
-  test(`render app in more than one host correctly`, () => {
+  test('can render app to more than one host', () => {
     const hostOne = document.createElement('div');
     const hostTwo = document.createElement('div');
+
+    type AppProps = {
+      name: string;
+    };
 
     type NameProps = {
       slot: DarkElement;
     };
 
+    const render$ = (props: AppProps, host: HTMLElement) => {
+      render(App(props), host);
+    };
+
     const Hello = createComponent(() => <span>hello</span>);
     const Name = createComponent<NameProps>(({ slot }) => <span>{slot}</span>);
-    const App = createComponent<{ name: string }>(({ name }) => {
+    const App = createComponent<AppProps>(({ name }) => {
       return (
         <div>
           <Hello />
@@ -458,23 +504,24 @@ describe('[render]', () => {
     });
 
     const content = (name: string) => dom`
-    <div>
-      <span>hello</span>
-      <span>${name}</span>
-    </div>
-  `;
+      <div>
+        <span>hello</span>
+        <span>${name}</span>
+      </div>
+    `;
 
-    render(App({ name: 'Alex' }), hostOne);
-    render(App({ name: 'Rebecka' }), hostTwo);
+    render$({ name: 'Alex' }, hostOne);
+    render$({ name: 'Rebecka' }, hostTwo);
     expect(hostOne.innerHTML).toBe(content('Alex'));
     expect(hostTwo.innerHTML).toBe(content('Rebecka'));
-    render(App({ name: 'Mark' }), hostOne);
-    render(App({ name: 'Rebecka' }), hostTwo);
+
+    render$({ name: 'Mark' }, hostOne);
+    render$({ name: 'Rebecka' }, hostTwo);
     expect(hostOne.innerHTML).toBe(content('Mark'));
     expect(hostTwo.innerHTML).toBe(content('Rebecka'));
   });
 
-  test(`arrays of nodes swapped correctly`, () => {
+  test('can swap arrays of nodes', () => {
     const items = generateItems(5);
 
     const content = (items: Array<Item>) => {
@@ -482,12 +529,16 @@ describe('[render]', () => {
       ${items
         .map(
           x => `
-        <div>1: ${x.id}</div>
-        <div>2: ${x.id}</div>
-      `,
+            <div>1: ${x.id}</div>
+            <div>2: ${x.id}</div>
+          `,
         )
         .join('')}
     `;
+    };
+
+    const render$ = (props = {}) => {
+      render(List(props), host);
     };
 
     const swap = () => {
@@ -507,21 +558,19 @@ describe('[render]', () => {
       });
     });
 
-    const forceUpdate = () => {
-      render(List(), host);
-    };
+    render$();
+    expect(host.innerHTML).toBe(content(items));
 
-    forceUpdate();
-    expect(host.innerHTML).toBe(content(items));
     swap();
-    forceUpdate();
+    render$();
     expect(host.innerHTML).toBe(content(items));
+
     swap();
-    forceUpdate();
+    render$();
     expect(host.innerHTML).toBe(content(items));
   });
 
-  test(`remove indexed nodes correctly`, () => {
+  test('can remove indexed nodes', () => {
     let items = generateItems(5);
 
     const content = (items: Array<Item>) => {
@@ -529,11 +578,15 @@ describe('[render]', () => {
       ${items
         .map(
           x => `
-        <div>1: ${x.id}</div>
-      `,
+            <div>1: ${x.id}</div>
+          `,
         )
         .join('')}
     `;
+    };
+
+    const render$ = (props = {}) => {
+      render(List(props), host);
     };
 
     const remove = () => {
@@ -550,14 +603,11 @@ describe('[render]', () => {
       });
     });
 
-    const forceUpdate = () => {
-      render(List(), host);
-    };
-
-    forceUpdate();
+    render$();
     expect(host.innerHTML).toBe(content(items));
+
     remove();
-    forceUpdate();
+    render$();
     expect(host.innerHTML).toBe(emptyComment);
   });
 });
