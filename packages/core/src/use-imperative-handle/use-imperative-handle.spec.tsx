@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('[use-imperative-handle]', () => {
-  test('useImperativeHandle works correctly', () => {
+  test('works correctly', () => {
     const mockFn = jest.fn();
 
     type MyRef = { run: () => void };

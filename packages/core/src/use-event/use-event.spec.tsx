@@ -10,7 +10,7 @@ beforeEach(() => {
 });
 
 describe('[use-event]', () => {
-  test('use-event works correctly', () => {
+  test('works correctly', () => {
     const handlers: Array<() => number> = [];
 
     type AppProps = {

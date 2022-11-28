@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('[unmount]', () => {
-  test('unmount works correctly', () => {
+  test('clears all effects and unmounts root node', () => {
     const dropFn = jest.fn();
 
     const Child = createComponent(() => {
@@ -53,5 +53,6 @@ describe('[unmount]', () => {
     jest.runAllTimers();
     root.unmount();
     expect(dropFn).toBeCalledTimes(8);
+    expect(host.innerHTML).toBe('');
   });
 });

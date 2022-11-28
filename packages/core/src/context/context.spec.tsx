@@ -13,14 +13,14 @@ beforeEach(() => {
 });
 
 describe('[context]', () => {
-  test('context is created correctly', () => {
+  test('is created correctly', () => {
     const ThemeContext = createContext('light');
 
     expect(ThemeContext.Provider).toBeTruthy();
     expect(ThemeContext.Consumer).toBeTruthy();
   });
 
-  test('context renders correctly', () => {
+  test('renders correctly', () => {
     const content = theme => dom`
       <div>${theme}</div>
     `;
@@ -55,7 +55,7 @@ describe('[context]', () => {
     expect(host.innerHTML).toBe(content(theme));
   });
 
-  test('different nested contexts work correctly', () => {
+  test('nested contexts work correctly', () => {
     const content = (theme, lang) => dom`
       <div>${theme}:${lang}</div>
     `;
@@ -113,7 +113,7 @@ describe('[context]', () => {
   });
 
   test('same nested context works correctly', () => {
-    const content = value => dom`
+    const content = (value: number) => dom`
       <div>${value}</div>
     `;
 

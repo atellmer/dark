@@ -18,8 +18,8 @@ beforeEach(() => {
 });
 
 describe('[use-context]', () => {
-  test('use-context works correctly', () => {
-    const content = theme => dom`
+  test('works correctly', () => {
+    const content = (theme: Theme) => dom`
       <div>${theme}</div>
     `;
 
@@ -56,8 +56,8 @@ describe('[use-context]', () => {
     expect(host.innerHTML).toBe(content(theme));
   });
 
-  test('use-context works correctly inside static layout #1', () => {
-    const content = theme => dom`
+  test('works correctly inside static layout #1', () => {
+    const content = (theme: Theme) => dom`
       <div>${theme}</div>
     `;
 
@@ -98,8 +98,8 @@ describe('[use-context]', () => {
     expect(host.innerHTML).toBe(content(theme));
   });
 
-  test('use-context works correctly inside static layout #2', () => {
-    const content = theme => dom`
+  test('works correctly inside static layout #2', () => {
+    const content = (theme: Theme) => dom`
       <div>${theme}</div>
     `;
 

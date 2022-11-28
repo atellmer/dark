@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 describe('[Fragment]', () => {
-  test('Fragment renders children correctly', () => {
+  test('renders children correctly', () => {
     const content = () => dom`
       <div>1</div>
       <div>2</div>

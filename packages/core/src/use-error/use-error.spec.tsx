@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 
 describe('[use-error]', () => {
-  test('use-error works correctly', () => {
+  test('catches error correctly', () => {
     const content = () => dom`
       <div>child</div>
     `;
@@ -62,7 +62,7 @@ describe('[use-error]', () => {
     expect(host.innerHTML).toBe(content());
   });
 
-  test('use-error works correctly with deeply children', () => {
+  test('works correctly with deeply children', () => {
     const content = () => dom`
       <div>header</div>
       <div>

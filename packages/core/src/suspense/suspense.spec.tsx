@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 
 describe('[Suspense]', () => {
-  test('Suspense shows fallback correctly', done => {
+  test('shows fallback correctly', done => {
     const LazyComponent = lazy(
       () => import('../lazy/lazy-component'),
       () => {

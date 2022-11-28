@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 describe('[use-callback]', () => {
-  test('use-callback works correctly by default', () => {
+  test('works correctly by default', () => {
     const handlers = [];
     const App = createComponent(() => {
       const handler = useCallback(() => {}, []);
@@ -25,7 +25,7 @@ describe('[use-callback]', () => {
     expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
   });
 
-  test('use-callback works correctly with deps', () => {
+  test('works correctly with deps', () => {
     type Props = {
       count: number;
     };
@@ -46,7 +46,7 @@ describe('[use-callback]', () => {
     expect(handlers.every(x => x && x === handlers[0])).toBeFalsy();
   });
 
-  test('use-callback returns function', () => {
+  test('returns function', () => {
     let handler: () => void;
     const App = createComponent(() => {
       handler = useCallback(() => {}, []);

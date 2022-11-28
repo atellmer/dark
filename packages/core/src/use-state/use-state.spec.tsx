@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 describe('[use-state]', () => {
-  test('[use-state]: use-state works correctly', () => {
+  test('works correctly by default', () => {
     const content = (count: number) => dom`
       <div>${count}</div>
     `;
@@ -38,7 +38,7 @@ describe('[use-state]', () => {
     expect(host.innerHTML).toBe(content(4));
   });
 
-  test('[use-state]: use-state works correctly when component returns array of elements', () => {
+  test('works correctly when component returns array of elements', () => {
     const content = (count: number) => dom`
       <div>text</div>
       <div>${count}</div>
@@ -61,7 +61,7 @@ describe('[use-state]', () => {
     expect(host.innerHTML).toBe(content(2));
   });
 
-  test('[use-state]: state saves when nodes swapped #1', () => {
+  test('can save the state when nodes swapped #1', () => {
     type Item = {
       id: number;
       count: number;
@@ -150,7 +150,7 @@ describe('[use-state]', () => {
     expect(host.innerHTML).toBe(content(items));
   });
 
-  test('[use-state]: state saves when nodes swapped #2', () => {
+  test('can save the state when nodes swapped #2', () => {
     type Item = {
       id: number;
       count: number;
@@ -219,7 +219,7 @@ describe('[use-state]', () => {
     expect(host.innerHTML).toBe(content(items));
   });
 
-  test('[use-state]: nodes remove correctly after use-state when rendering a different number of elements', () => {
+  test('nodes remove correctly after use-state when rendering a different number of elements', () => {
     const content = (hasFlag: boolean) =>
       hasFlag
         ? dom`<div>flag</div>`

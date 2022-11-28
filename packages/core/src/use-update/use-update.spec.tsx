@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 
 describe('[use-update]', () => {
-  test('use-update works correctly', () => {
+  test('can make update', () => {
     const mockFn = jest.fn();
     let update: () => void = null;
     const App = createComponent(() => {
@@ -32,7 +32,7 @@ describe('[use-update]', () => {
     expect(mockFn).toBeCalledTimes(3);
   });
 
-  test('use-update triggers render only its own component', () => {
+  test('can trigger render only its own component', () => {
     const appFn = jest.fn();
     const childFn = jest.fn();
     let update: () => void = null;

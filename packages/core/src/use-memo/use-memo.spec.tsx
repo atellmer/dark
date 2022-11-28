@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 describe('[use-memo]', () => {
-  test('use-memo returns some value', () => {
+  test('returns some value', () => {
     let value: number = null;
     const App = createComponent(() => {
       value = useMemo(() => 1, []);
@@ -27,7 +27,7 @@ describe('[use-memo]', () => {
     expect(value).toBeTruthy();
   });
 
-  test('use-memo works correctly with deps', () => {
+  test('works correctly with deps', () => {
     const mockFn = jest.fn();
     const App = createComponent<{ x: number }>(({ x }) => {
       useMemo(() => mockFn(), [x]);
@@ -43,7 +43,7 @@ describe('[use-memo]', () => {
     expect(mockFn).toBeCalledTimes(2);
   });
 
-  test('use-memo returns memoized templates correctly', () => {
+  test('returns a memoized template correctly', () => {
     const content = (value: number) => dom`
       <div>
         <div>Item: ${value}</div>

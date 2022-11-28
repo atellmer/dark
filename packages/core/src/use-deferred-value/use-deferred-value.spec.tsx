@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 
 describe('[use-deferred-value]', () => {
-  test('useDeferredValue makes a deferred render', () => {
+  test('can make a deferred render', () => {
     const mockFn = jest.fn();
 
     const content = (value: number) => dom`

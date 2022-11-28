@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 describe('[forward-ref]', () => {
-  test('component ref is not available without forwarRef', () => {
+  test('component ref is not available without forwarding', () => {
     let ref: MutableRef = null;
 
     const Child = createComponent(() => {
@@ -30,7 +30,7 @@ describe('[forward-ref]', () => {
     expect(ref.current).toBeFalsy();
   });
 
-  test('forwarRef works correctly', () => {
+  test('can forward ref', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
     const Child = forwardRef(
