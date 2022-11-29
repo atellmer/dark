@@ -100,6 +100,7 @@ import {
   useReducer,
   useReactiveState,
   useDeferredValue,
+  useSyncExternalStore,
 } from '@dark-engine/core';
 import { render, createRoot, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
@@ -1021,6 +1022,22 @@ const Checkbox = createComponent(() => {
       <input id={id} type='checkbox' name='likeit' />
     </>
   );
+});
+```
+
+#### useSyncExternalStore
+
+The hook is useful for synchronizing render states with an external state management library such as Redux.
+
+```tsx
+import { useSyncExternalStore } from '@dark-engine/core';
+```
+
+```tsx
+const App = createComponent(() => {
+  const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
+
+  return <div>{state.isFetching ? 'loading...' : 'ola! 🤪'}</div>;
 });
 ```
 
