@@ -21,7 +21,9 @@ import {
   rootStore,
   effectsStore,
   layoutEffectsStore,
+  insertionEffectsStore,
   isLayoutEffectsZone,
+  isInsertionEffectsZone,
 } from '../scope';
 import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '../component';
 import {
@@ -39,6 +41,7 @@ import { PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
+import { hasInsertionEffects } from '../use-insertion-effect';
 import { walkFiber } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
@@ -56,9 +59,10 @@ class Fiber<N = NativeElement> {
   public provider: Map<Context, ContextProviderValue>;
   public transposition: boolean;
   public mountedToHost: boolean;
-  public portalHost: boolean;
   public effectHost: boolean;
   public layoutEffectHost: boolean;
+  public insertionEffectHost: boolean;
+  public portalHost: boolean;
   public childrenCount: number;
   public marker: string;
   public isUsed: boolean;
@@ -79,9 +83,10 @@ class Fiber<N = NativeElement> {
     this.provider = options.provider || null;
     this.transposition = !detectIsUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
-    this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.effectHost = !detectIsUndefined(options.effectHost) ? options.effectHost : false;
     this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
+    this.insertionEffectHost = !detectIsUndefined(options.insertionEffectHost) ? options.insertionEffectHost : false;
+    this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
     this.idx = options.idx || 0;
@@ -89,9 +94,9 @@ class Fiber<N = NativeElement> {
     this.batched = options.batched || null;
   }
 
-  public markPortalHost() {
-    this.portalHost = true;
-    this.parent && !this.parent.portalHost && this.parent.markPortalHost();
+  public markMountedToHost() {
+    this.mountedToHost = true;
+    this.parent && !this.parent.mountedToHost && this.parent.markMountedToHost();
   }
 
   public markEffectHost() {
@@ -104,9 +109,14 @@ class Fiber<N = NativeElement> {
     this.parent && !this.parent.layoutEffectHost && this.parent.markLayoutEffectHost();
   }
 
-  public markMountedToHost() {
-    this.mountedToHost = true;
-    this.parent && !this.parent.mountedToHost && this.parent.markMountedToHost();
+  public markInsertionEffectHost() {
+    this.insertionEffectHost = true;
+    this.parent && !this.parent.insertionEffectHost && this.parent.markInsertionEffectHost();
+  }
+
+  public markPortalHost() {
+    this.portalHost = true;
+    this.parent && !this.parent.portalHost && this.parent.markPortalHost();
   }
 
   public setError(error: Error) {
@@ -549,6 +559,10 @@ function performMemo(options: PerformMemoOptions) {
         nextFiber = nextFiber.nextSibling;
       }
 
+      if (memoFiber.mountedToHost) {
+        fiber.markMountedToHost();
+      }
+
       if (memoFiber.effectHost) {
         fiber.markEffectHost();
       }
@@ -557,8 +571,8 @@ function performMemo(options: PerformMemoOptions) {
         fiber.markLayoutEffectHost();
       }
 
-      if (memoFiber.mountedToHost) {
-        fiber.markMountedToHost();
+      if (memoFiber.insertionEffectHost) {
+        fiber.markInsertionEffectHost();
       }
 
       if (memoFiber.portalHost) {
@@ -608,6 +622,10 @@ function pertformInstance(options: PerformInstanceOptions) {
 
     if (hasLayoutEffects(fiber)) {
       fiber.markLayoutEffectHost();
+    }
+
+    if (hasInsertionEffects(fiber)) {
+      fiber.markInsertionEffectHost();
     }
 
     if (platform.detectIsPortal(performedInstance)) {
@@ -845,6 +863,11 @@ function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNod
 
 function commitChanges() {
   const wipFiber = wipRootStore.get();
+  const insertionEffects = insertionEffectsStore.get();
+
+  isInsertionEffectsZone.set(true);
+  insertionEffects.forEach(fn => fn());
+  isInsertionEffectsZone.set(false);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
@@ -859,6 +882,7 @@ function commitChanges() {
     });
 
     wipRootStore.set(null); // important order
+    insertionEffectsStore.reset();
     layoutEffectsStore.reset();
     effectsStore.reset();
 

@@ -2,6 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { createComponent } from '../component';
+import { useUpdate } from '../use-update';
 import { useEffect } from './use-effect';
 
 let host: HTMLElement = null;
@@ -250,5 +251,51 @@ describe('[use-effect]', () => {
     expect(dropFn2).toBeCalledTimes(2);
     expect(effectFn1.mock.invocationCallOrder[2]).toBeLessThan(effectFn2.mock.invocationCallOrder[2]);
     expect(dropFn1.mock.invocationCallOrder[1]).toBeLessThan(dropFn2.mock.invocationCallOrder[1]);
+  });
+
+  test('can call render #1', () => {
+    const mockFn = jest.fn();
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
+    const App = createComponent(() => {
+      useEffect(() => {
+        render$();
+      }, []);
+
+      mockFn();
+
+      return null;
+    });
+
+    render$();
+    jest.runAllTimers();
+    expect(mockFn).toBeCalledTimes(2);
+  });
+
+  test('can call render #2', () => {
+    const mockFn = jest.fn();
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
+    const App = createComponent(() => {
+      const update = useUpdate();
+
+      useEffect(() => {
+        update();
+      }, []);
+
+      mockFn();
+
+      return null;
+    });
+
+    render$();
+    jest.runAllTimers();
+    expect(mockFn).toBeCalledTimes(2);
   });
 });

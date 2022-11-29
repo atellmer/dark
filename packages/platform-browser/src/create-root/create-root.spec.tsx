@@ -1,10 +1,6 @@
 /** @jsx h */
-import { createRoot } from '@dark-engine/platform-browser';
-import { h } from '../element';
-import { createComponent } from '../component';
-import { useInsertionEffect } from '../use-insertion-effect';
-import { useLayoutEffect } from '../use-layout-effect';
-import { useEffect } from '../use-effect';
+import { h, createComponent, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { createRoot } from './create-root';
 
 let host: HTMLElement = null;
 
@@ -14,8 +10,19 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[unmount]', () => {
-  test('clears all effects correctly', () => {
+describe('[create-root]', () => {
+  test('has render and unmount methods', () => {
+    const App = createComponent(() => {
+      return null;
+    });
+    const root = createRoot(host);
+
+    root.render(App());
+    expect(root.render).toBeInstanceOf(Function);
+    expect(root.unmount).toBeInstanceOf(Function);
+  });
+
+  test('unmount clears all effects and unmounts root node correctly', () => {
     const dropFn = jest.fn();
 
     const Child = createComponent(() => {
@@ -31,7 +38,7 @@ describe('[unmount]', () => {
         return () => dropFn();
       }, []);
 
-      return null;
+      return <div>child</div>;
     });
 
     const App = createComponent(() => {
@@ -62,5 +69,7 @@ describe('[unmount]', () => {
     jest.runAllTimers();
     root.unmount();
     expect(dropFn).toBeCalledTimes(12);
+    expect(host.innerHTML).toBe('');
+    expect(root.unmount).not.toThrowError();
   });
 });

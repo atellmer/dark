@@ -1,5 +1,5 @@
 import { platform, type ScheduleCallbackOptions } from '../platform';
-import { getRootId, currentFiberStore, isLayoutEffectsZone, isBatchZone } from '../scope';
+import { getRootId, currentFiberStore, isInsertionEffectsZone, isLayoutEffectsZone, isBatchZone } from '../scope';
 import { createUpdateCallback } from '../fiber';
 import { useMemo } from '../use-memo';
 import { dummyFn } from '../helpers';
@@ -13,6 +13,7 @@ function useUpdate(options?: ScheduleCallbackOptions) {
   scope.fiber = fiber;
 
   const update = (onStart?: () => void) => {
+    if (isInsertionEffectsZone.get()) return;
     const callback = createUpdateCallback({
       rootId,
       fiber: scope.fiber,

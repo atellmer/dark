@@ -16,6 +16,7 @@ import {
   fiberMountStore,
   TaskPriority,
   createEmptyVirtualNode,
+  isInsertionEffectsZone,
   isLayoutEffectsZone,
 } from '@dark-engine/core';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
@@ -39,7 +40,7 @@ function render(element: DarkElement, container: Element) {
   }
 
   const isMounted = !detectIsUndefined(roots.get(container));
-  let rootId = null;
+  let rootId: number = null;
 
   if (!isMounted) {
     rootId = roots.size;
@@ -49,6 +50,9 @@ function render(element: DarkElement, container: Element) {
   } else {
     rootId = roots.get(container);
   }
+
+  // insertion effect can't schedule renders
+  if (isInsertionEffectsZone.get(rootId)) return;
 
   const callback = () => {
     rootStore.set(rootId); // important order!
@@ -69,7 +73,10 @@ function render(element: DarkElement, container: Element) {
     nextUnitOfWorkStore.set(fiber);
   };
 
-  platform.scheduleCallback(callback, { priority: TaskPriority.NORMAL, forceSync: isLayoutEffectsZone.get() });
+  platform.scheduleCallback(callback, {
+    priority: TaskPriority.NORMAL,
+    forceSync: isLayoutEffectsZone.get(),
+  });
 }
 
 export { render, roots };

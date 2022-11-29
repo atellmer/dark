@@ -91,6 +91,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useInsertionEffect,
   useError,
   useRef,
   useId,
@@ -99,6 +100,7 @@ import {
   useReducer,
   useReactiveState,
   useDeferredValue,
+  useSyncExternalStore,
 } from '@dark-engine/core';
 import { render, createRoot, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
@@ -584,6 +586,20 @@ useLayoutEffect(() => {
 }, []);
 ```
 
+#### useInsertionEffect
+
+```tsx
+import { useInsertionEffect } from '@dark-engine/core';
+```
+
+The signature is identical to useEffect, but it fires synchronously before all DOM mutations. Use this to inject styles into the DOM before reading layout in useLayoutEffect. This hook does not have access to refs and cannot call render. Useful for css-in-js libraries.
+
+```tsx
+useInsertionEffect(() => {
+  // add style tags to head
+}, []);
+```
+
 <a name="optimization"></a>
 ## Performance optimization
 
@@ -1006,6 +1022,22 @@ const Checkbox = createComponent(() => {
       <input id={id} type='checkbox' name='likeit' />
     </>
   );
+});
+```
+
+#### useSyncExternalStore
+
+The hook is useful for synchronizing render states with an external state management library such as Redux.
+
+```tsx
+import { useSyncExternalStore } from '@dark-engine/core';
+```
+
+```tsx
+const App = createComponent(() => {
+  const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
+
+  return <div>{state.isFetching ? 'loading...' : 'ola! 🤪'}</div>;
 });
 ```
 
