@@ -91,6 +91,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useInsertionEffect,
   useError,
   useRef,
   useId,
@@ -581,6 +582,20 @@ useLayoutEffect(() => {
   const height = rootRef.current.clientHeight;
 
   setHeight(height);
+}, []);
+```
+
+#### useInsertionEffect
+
+```tsx
+import { useInsertionEffect } from '@dark-engine/core';
+```
+
+The signature is identical to useEffect, but it fires synchronously before all DOM mutations. Use this to inject styles into the DOM before reading layout in useLayoutEffect. This hook does not have access to refs and cannot call render. Useful for css-in-js libraries.
+
+```tsx
+useInsertionEffect(() => {
+  // add style tags to head
 }, []);
 ```
 

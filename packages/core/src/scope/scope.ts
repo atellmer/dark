@@ -19,7 +19,9 @@ class Store<N = unknown> {
   public componentFiber: Fiber = null;
   public effects: Array<() => void> = [];
   public layoutEffects: Array<() => void> = [];
+  public insertionEffects: Array<() => void> = [];
   public isLayoutEffectsZone = false;
+  public isInserionEffectsZone = false;
   public isUpdateHookZone = false;
   public isBatchZone = false;
   public trackUpdate: (nativeElement: N) => void | undefined;
@@ -126,9 +128,20 @@ const layoutEffectsStore = {
   add: (effect: () => void) => store.get().layoutEffects.push(effect),
 };
 
+const insertionEffectsStore = {
+  get: () => store.get().insertionEffects,
+  reset: () => (store.get().insertionEffects = []),
+  add: (effect: () => void) => store.get().insertionEffects.push(effect),
+};
+
 const isLayoutEffectsZone = {
   get: () => store.get()?.isLayoutEffectsZone || false,
   set: (value: boolean) => (store.get().isLayoutEffectsZone = value),
+};
+
+const isInsertionEffectsZone = {
+  get: (id?: number) => store.get(id)?.isInserionEffectsZone || false,
+  set: (value: boolean) => (store.get().isInserionEffectsZone = value),
 };
 
 const isUpdateHookZone = {
@@ -153,7 +166,9 @@ export {
   fiberMountStore,
   effectsStore,
   layoutEffectsStore,
+  insertionEffectsStore,
   isLayoutEffectsZone,
+  isInsertionEffectsZone,
   isUpdateHookZone,
   isBatchZone,
 };

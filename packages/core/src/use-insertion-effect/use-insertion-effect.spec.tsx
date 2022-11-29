@@ -3,19 +3,23 @@ import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { createComponent } from '../component';
 import { useUpdate } from '../use-update';
-import { useLayoutEffect } from './use-layout-effect';
+import { useLayoutEffect } from '../use-layout-effect';
+import { useEffect } from '../use-effect';
+import { useInsertionEffect } from './use-insertion-effect';
 
 let host: HTMLElement = null;
+
+jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-layout-effect]', () => {
+describe('[use-insertion-effect]', () => {
   test('runs sync', () => {
     const effectFn = jest.fn();
     const App = createComponent(() => {
-      useLayoutEffect(() => effectFn(), []);
+      useInsertionEffect(() => effectFn(), []);
 
       return null;
     });
@@ -32,7 +36,7 @@ describe('[use-layout-effect]', () => {
     };
 
     const App = createComponent(() => {
-      useLayoutEffect(() => mockFn(), []);
+      useInsertionEffect(() => mockFn(), []);
 
       return null;
     });
@@ -56,7 +60,7 @@ describe('[use-layout-effect]', () => {
     };
 
     const App = createComponent<AppProps>(({ x }) => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn();
         return () => dropFn();
       }, [x]);
@@ -90,7 +94,7 @@ describe('[use-layout-effect]', () => {
     };
 
     const App = createComponent(() => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn();
         return () => dropFn();
       });
@@ -115,7 +119,7 @@ describe('[use-layout-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
     const App = createComponent(() => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn();
         return () => dropFn();
       }, []);
@@ -147,11 +151,11 @@ describe('[use-layout-effect]', () => {
     };
 
     const App = createComponent(() => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn1();
         return () => dropFn1();
       });
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn2();
         return () => dropFn2();
       });
@@ -189,7 +193,7 @@ describe('[use-layout-effect]', () => {
     };
 
     const Child = createComponent(() => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn2();
         return () => dropFn2();
       });
@@ -198,7 +202,7 @@ describe('[use-layout-effect]', () => {
     });
 
     const App = createComponent(() => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         effectFn1();
         return () => dropFn1();
       });
@@ -230,7 +234,111 @@ describe('[use-layout-effect]', () => {
     expect(dropFn1.mock.invocationCallOrder[1]).toBeLessThan(dropFn2.mock.invocationCallOrder[1]);
   });
 
-  test('can call render #1', () => {
+  test('runs before useLayoutEffect and useEffect', () => {
+    const effectFn1 = jest.fn();
+    const effectFn2 = jest.fn();
+    const effectFn3 = jest.fn();
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
+    const App = createComponent(() => {
+      useEffect(() => {
+        effectFn3();
+      });
+
+      useLayoutEffect(() => {
+        effectFn2();
+      });
+
+      useInsertionEffect(() => {
+        effectFn1();
+      });
+
+      return null;
+    });
+
+    render$();
+    jest.runAllTimers();
+    expect(effectFn1.mock.invocationCallOrder[0]).toBeLessThan(effectFn2.mock.invocationCallOrder[0]);
+    expect(effectFn2.mock.invocationCallOrder[0]).toBeLessThan(effectFn3.mock.invocationCallOrder[0]);
+
+    render$();
+    jest.runAllTimers();
+    expect(effectFn1.mock.invocationCallOrder[1]).toBeLessThan(effectFn2.mock.invocationCallOrder[1]);
+    expect(effectFn2.mock.invocationCallOrder[1]).toBeLessThan(effectFn3.mock.invocationCallOrder[1]);
+  });
+
+  test('drop effects call in order of placement when render regardless of type', () => {
+    const dropFn1 = jest.fn();
+    const dropFn2 = jest.fn();
+    const dropFn3 = jest.fn();
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
+    const App = createComponent(() => {
+      useEffect(() => {
+        return () => dropFn3();
+      });
+
+      useLayoutEffect(() => {
+        return () => dropFn2();
+      });
+
+      useInsertionEffect(() => {
+        return () => dropFn1();
+      });
+
+      return null;
+    });
+
+    render$();
+    jest.runAllTimers();
+    render$();
+    jest.runAllTimers();
+    expect(dropFn1.mock.invocationCallOrder[0]).toBeGreaterThan(dropFn2.mock.invocationCallOrder[0]);
+    expect(dropFn2.mock.invocationCallOrder[0]).toBeGreaterThan(dropFn3.mock.invocationCallOrder[0]);
+
+    render$();
+    jest.runAllTimers();
+    expect(dropFn1.mock.invocationCallOrder[1]).toBeGreaterThan(dropFn2.mock.invocationCallOrder[1]);
+    expect(dropFn2.mock.invocationCallOrder[1]).toBeGreaterThan(dropFn3.mock.invocationCallOrder[1]);
+  });
+
+  test('drop effects call in order of type when unmount', () => {
+    const dropFn1 = jest.fn();
+    const dropFn2 = jest.fn();
+    const dropFn3 = jest.fn();
+
+    const App = createComponent(() => {
+      useEffect(() => {
+        return () => dropFn3();
+      }, []);
+
+      useLayoutEffect(() => {
+        return () => dropFn2();
+      }, []);
+
+      useInsertionEffect(() => {
+        return () => dropFn1();
+      }, []);
+
+      return null;
+    });
+
+    render(App(), host);
+    jest.runAllTimers();
+
+    render(null, host);
+    jest.runAllTimers();
+    expect(dropFn1.mock.invocationCallOrder[0]).toBeLessThan(dropFn2.mock.invocationCallOrder[0]);
+    expect(dropFn2.mock.invocationCallOrder[0]).toBeLessThan(dropFn3.mock.invocationCallOrder[0]);
+  });
+
+  test('can not call render #1', () => {
     const mockFn = jest.fn();
 
     const render$ = (props = {}) => {
@@ -238,7 +346,7 @@ describe('[use-layout-effect]', () => {
     };
 
     const App = createComponent(() => {
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         render$();
       }, []);
 
@@ -248,10 +356,10 @@ describe('[use-layout-effect]', () => {
     });
 
     render$();
-    expect(mockFn).toBeCalledTimes(2);
+    expect(mockFn).toBeCalledTimes(1);
   });
 
-  test('can call render #2', () => {
+  test('can not call render #2', () => {
     const mockFn = jest.fn();
 
     const render$ = (props = {}) => {
@@ -261,7 +369,7 @@ describe('[use-layout-effect]', () => {
     const App = createComponent(() => {
       const update = useUpdate();
 
-      useLayoutEffect(() => {
+      useInsertionEffect(() => {
         update();
       }, []);
 
@@ -271,6 +379,6 @@ describe('[use-layout-effect]', () => {
     });
 
     render$();
-    expect(mockFn).toBeCalledTimes(2);
+    expect(mockFn).toBeCalledTimes(1);
   });
 });
