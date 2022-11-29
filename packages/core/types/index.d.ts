@@ -25,6 +25,7 @@ export * from './use-ref';
 export * from './use-update';
 export * from './use-state';
 export * from './use-reactive-state';
+export * from './use-id';
 export * from './view';
 export * from './constants';
 export { walkFiber } from './walk';
