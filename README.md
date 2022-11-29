@@ -46,7 +46,7 @@ CDN:
 ```
 
 ## Table of contents
-- [Overview](#overview)
+- [API overview](#overview)
 - [Elements](#elements)
 - [Mounting](#mounting)
 - [Unmounting](#unmounting)
@@ -65,6 +65,7 @@ CDN:
 - [Code splitting](#code-splitting)
 - [Styles](#styles)
 - [Portals](#portals)
+- [Others](#others)
 
 <a name="overview"></a>
 ## API overview
@@ -92,6 +93,7 @@ import {
   useLayoutEffect,
   useError,
   useRef,
+  useId,
   useImperativeHandle,
   useState,
   useReducer,
@@ -454,7 +456,7 @@ This is a hook to store the state and call to update a piece of the interface.
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
 
-  return <button onClick={() => setCount(count + 1)}>fires {count} times</button>;
+  return <button onClick={() => setCount(count + 1)}>fired {count} times</button>;
 });
 ```
 
@@ -477,7 +479,7 @@ const App = createComponent(() => {
   const state = useReactiveState({ count: 0 });
 
   return (
-    <button onClick={() => state.count++}>fires {state.count} times</button>
+    <button onClick={() => state.count++}>fired {state.count} times</button>
   );
 });
 ```
@@ -594,36 +596,36 @@ import { memo } from '@dark-engine/core';
 ```
 
 ```tsx
-const HardComponent = createComponent(() => {
-  console.log('HardComponent render!');
+const StaticComponent = memo(createComponent(() => {
+  console.log('StaticComponent render!');
 
-  return <div>I'm too complicated</div>;
-});
-
-const MemoHardComponent = memo(HardComponent);
+  return <div>I'm static</div>;
+}));
 
 const App = createComponent(() => {
   console.log('App render!');
 
   useEffect(() => {
     setInterval(() => {
-      render(<App />, document.getElementById('root'));
+      root.render(<App />);
     }, 1000);
   }, []);
 
   return (
     <>
       <div>app</div>
-      <MemoHardComponent />
+      <StaticComponent />
     </>
   );
 });
 
-render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+
+root.render(<App />);
 ```
 ```
 App render!
-HardComponent render!
+StaticComponent render!
 App render!
 App render!
 App render!
@@ -977,6 +979,31 @@ const App = createComponent(() => {
     <>
       <div>Some text</div>
       {createPortal(<div>I will be placed in a new container</div>, portalHost)}
+    </>
+  );
+});
+```
+
+<a name="others"></a>
+## Others
+#### useId
+
+useId is a hook for generating unique IDs that stable between renders.
+
+```tsx
+import { useId } from '@dark-engine/core';
+```
+
+```tsx
+const Checkbox = createComponent(() => {
+  const id = useId();
+
+  // generates something like this 'dark:0:lflt'
+
+  return (
+    <>
+      <label for={id}>Do you like it?</label>
+      <input id={id} type='checkbox' name='likeit' />
     </>
   );
 });
