@@ -16,9 +16,10 @@ declare class Fiber<N = NativeElement> {
   provider: Map<Context, ContextProviderValue>;
   transposition: boolean;
   mountedToHost: boolean;
-  portalHost: boolean;
   effectHost: boolean;
   layoutEffectHost: boolean;
+  insertionEffectHost: boolean;
+  portalHost: boolean;
   childrenCount: number;
   marker: string;
   isUsed: boolean;
@@ -26,10 +27,11 @@ declare class Fiber<N = NativeElement> {
   batched: () => void | null;
   catchException: (error: Error) => void;
   constructor(options: Partial<Fiber<N>>);
-  markPortalHost(): void;
+  markMountedToHost(): void;
   markEffectHost(): void;
   markLayoutEffectHost(): void;
-  markMountedToHost(): void;
+  markInsertionEffectHost(): void;
+  markPortalHost(): void;
   setError(error: Error): void;
 }
 declare function workLoop(): boolean;

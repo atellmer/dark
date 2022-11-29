@@ -50,8 +50,17 @@ declare const layoutEffectsStore: {
   reset: () => any[];
   add: (effect: () => void) => number;
 };
+declare const insertionEffectsStore: {
+  get: () => (() => void)[];
+  reset: () => any[];
+  add: (effect: () => void) => number;
+};
 declare const isLayoutEffectsZone: {
   get: () => boolean;
+  set: (value: boolean) => boolean;
+};
+declare const isInsertionEffectsZone: {
+  get: (id?: number) => boolean;
   set: (value: boolean) => boolean;
 };
 declare const isUpdateHookZone: {
@@ -74,7 +83,9 @@ export {
   fiberMountStore,
   effectsStore,
   layoutEffectsStore,
+  insertionEffectsStore,
   isLayoutEffectsZone,
+  isInsertionEffectsZone,
   isUpdateHookZone,
   isBatchZone,
 };
