@@ -4,14 +4,15 @@ import {
   createComponent,
   Fragment,
   Component,
-  TagVirtualNodeFactory,
   View,
   useMemo,
   useEffect,
+  useInsertionEffect,
   useState,
-  DarkElement,
-  Ref,
-  ComponentFactory,
+  type DarkElement,
+  type Ref,
+  type ComponentFactory,
+  type TagVirtualNodeFactory,
 } from '@dark-engine/core';
 import { createRoot, SyntheticEvent } from '@dark-engine/platform-browser';
 
@@ -49,7 +50,7 @@ function createStyledComponent<P>(tag: Component | ((props: P) => TagVirtualNode
 
       dynamicClassNamesMap[css] = dynamicClassName;
 
-      useEffect(() => {
+      useInsertionEffect(() => {
         if (!css) return;
         const dispose = injectStyle(dynamicClassName, css);
 

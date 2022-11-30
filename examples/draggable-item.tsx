@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { h, createComponent, useState, useRef, useEffect, useMemo, DarkElement, batch } from '@dark-engine/core';
-import { createRoot, SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
+import { h, createComponent, useState, useRef, useEffect, useMemo, type DarkElement, batch } from '@dark-engine/core';
+import { createRoot, type SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
 
 type ID = string | number;
 
