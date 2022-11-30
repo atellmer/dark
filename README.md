@@ -21,11 +21,11 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
 - [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
 - [Modal window](https://atellmer.github.io/dark/examples/modal-window/)
-- [CodeSandbox example #1 (typescript)](https://codesandbox.io/s/stupefied-colden-6j9ep5?file=/src/index.tsx)
-- [CodeSandbox example #2 (vanilla js)](https://codesandbox.io/s/festive-cray-rk3smt?file=/index.html)
-- [CodeSandbox example #3 (naive realization of styled-components with Dark)](https://codesandbox.io/s/eager-bas-15hesr?file=/src/index.tsx)
-- [CodeSandbox example #4 (drag-n-drop with Dark)](https://codesandbox.io/s/hardcore-perlman-79hu91?file=/src/index.tsx)
-- [CodeSandbox example #5 (dark mode with Dark context)](https://codesandbox.io/s/cool-bell-o5qol4?file=/src/index.tsx)
+- [StackBlitz example #1 (vanilla js)](https://stackblitz.com/edit/js-q58h8h?file=index.html)
+- [StackBlitz example #1 (typescript)](https://stackblitz.com/edit/darkapp-ccz57rk?file=index.tsx)
+- [StackBlitz example #3 (naive styled-components with Dark)](https://stackblitz.com/edit/darkapp-ccz57rk-gtbczn?file=styled-components.ts,index.tsx)
+- [StackBlitz example #4 (drag-n-drop with Dark)](https://stackblitz.com/edit/darkapp-ccz57rk-ujdypw?file=index.tsx)
+- [StackBlitz example #5 (dark mode with Dark context)](https://stackblitz.com/edit/darkapp-ccz57rk-z41sup?file=index.tsx)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
