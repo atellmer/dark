@@ -24,7 +24,7 @@ const Surface = createComponent<SurfaceProps>(({ slot }) => {
       width: 100%;
       height: 100vh;
       overflow: hidden;
-      border: 1px solid red;
+      border: 1px solid #3949ab;
       background-color: #fafafa;
     `,
   }));
@@ -148,9 +148,9 @@ const App = createComponent(() => {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 200px;
-      height: 200px;
-      font-size: 5rem;
+      width: 150px;
+      height: 150px;
+      font-size: 4rem;
       background-color: #fff;
       border-radius: 50%;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);

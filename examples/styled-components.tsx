@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   h,
   createComponent,
@@ -103,22 +102,22 @@ const ColoredContainer = styled.div<ColoredContainerProps>`
   font-size: 2rem;
   padding: 6px;
   color: #fff;
-  transition: background-color 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
   ${p =>
     p.variant === 'red' &&
     `
-    background-color: red;
+    background-color: #ef5350;
   `}
   ${p =>
     p.variant === 'yellow' &&
     `
-    background-color: yellow;
+    background-color: #ffeb3b;
     color: #000;
   `}
   ${p =>
     p.variant === 'green' &&
     `
-    background-color: green;
+    background-color: #8bc34a;
   `}
 `;
 
@@ -129,7 +128,7 @@ type InputProps = {
 
 const Input = styled.input<InputProps>`
   width: 100%;
-  border: 1px solid red;
+  border: 2px solid #6f74dd;
 `;
 
 const App = createComponent(() => {

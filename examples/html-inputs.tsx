@@ -9,8 +9,8 @@ const App = createComponent(() => {
   const [textareaValue, setTextareaValue] = useState('world');
   const [checkboxInputValue, setCheckboxInputValue] = useState(true);
   const [radioInputValue, setRadioInputValue] = useState('phone');
-  const [selectValue, setSelectValue] = useState('🐱');
-  const [multiSelectValue, setMultiSelectValue] = useState(['🍎', '🍉']);
+  const [selectValue, setSelectValue] = useState('Cat 🐱');
+  const [multiSelectValue, setMultiSelectValue] = useState(['Apple 🍎', 'Watermelon 🍉']);
 
   return (
     <>
@@ -81,7 +81,7 @@ const App = createComponent(() => {
       </div>
       <hr />
       <div>
-        <div>color input: {colorInputValue}</div>
+        <div style={`color: ${colorInputValue}`}>color input: {colorInputValue}</div>
         <input
           type='color'
           value={colorInputValue}
@@ -103,15 +103,15 @@ const App = createComponent(() => {
             value={checkboxInputValue}
             onChange={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setCheckboxInputValue(!checkboxInputValue)}
           />
-          {checkboxInputValue ? 'checked' : 'not cheked'}
+          {checkboxInputValue ? 'checked' : 'unchecked'}
         </label>
       </div>
       <hr />
       <div>
         <div>radio input: {radioInputValue}</div>
-        {['email', 'phone', 'mail'].map(x => {
+        {['email', 'phone', 'mail'].map((x, idx) => {
           return (
-            <label>
+            <label key={idx + x}>
               <input
                 type='radio'
                 name='contact'
@@ -134,9 +134,9 @@ const App = createComponent(() => {
             name='pet'
             style='width: 200px'
             onChange={(e: SyntheticEvent<InputEvent, HTMLSelectElement>) => setSelectValue(e.target.value)}>
-            {['🐶', '🐱', '🐭'].map(x => {
+            {['Dog 🐶', 'Cat 🐱', 'Fox 🦊'].map((x, idx) => {
               return (
-                <option value={x} selected={selectValue === x}>
+                <option key={idx + x} value={x} selected={selectValue === x}>
                   {x}
                 </option>
               );
@@ -146,7 +146,7 @@ const App = createComponent(() => {
       </div>
       <hr />
       <div>
-        <div>multiselect: {JSON.stringify(multiSelectValue)}</div>
+        <div>multiple select: {JSON.stringify(multiSelectValue)}</div>
         <label>
           Choose a fruit:
           <br />
@@ -157,11 +157,9 @@ const App = createComponent(() => {
             onChange={(e: SyntheticEvent<InputEvent, HTMLSelectElement>) =>
               setMultiSelectValue(Array.from(e.target.selectedOptions).map(x => x.value))
             }>
-            {['🍎', ' 🍌', '🍉', '🍓'].map(x => {
-              const isSelected = multiSelectValue.includes(x);
-
+            {['Apple 🍎', 'Banana 🍌', 'Watermelon 🍉', 'Strawberry🍓'].map((x, idx) => {
               return (
-                <option value={x} selected={isSelected}>
+                <option key={idx + x} value={x} selected={multiSelectValue.includes(x)}>
                   {x}
                 </option>
               );
