@@ -11,6 +11,7 @@ import {
   detectIsFunction,
   detectIsUndefined,
   detectIsBoolean,
+  keyBy,
   NodeType,
   detectIsVirtualNode,
   detectIsTagVirtualNode,
@@ -21,77 +22,17 @@ import {
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import type { DOMElement, DOMFragment, AttributeValue } from './types';
+import { SVG_TAG_NAMES, VOID_TAG_NAMES } from '../constants';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
   void: true,
 };
-
-const svgTagNamesMap = {
-  svg: true,
-  animate: true,
-  animateMotion: true,
-  animateTransform: true,
-  circle: true,
-  clipPath: true,
-  defs: true,
-  desc: true,
-  ellipse: true,
-  feBlend: true,
-  feColorMatrix: true,
-  feComponentTransfer: true,
-  feComposite: true,
-  feConvolveMatrix: true,
-  feDiffuseLighting: true,
-  feDisplacementMap: true,
-  feDistantLight: true,
-  feDropShadow: true,
-  feFlood: true,
-  feFuncA: true,
-  feFuncB: true,
-  feFuncG: true,
-  feFuncR: true,
-  feGaussianBlur: true,
-  feImage: true,
-  feMerge: true,
-  feMergeNode: true,
-  feMorphology: true,
-  feOffset: true,
-  fePointLight: true,
-  feSpecularLighting: true,
-  feSpotLight: true,
-  feTile: true,
-  feTurbulence: true,
-  filter: true,
-  foreignObject: true,
-  g: true,
-  image: true,
-  line: true,
-  linearGradient: true,
-  marker: true,
-  mask: true,
-  metadata: true,
-  mpath: true,
-  path: true,
-  pattern: true,
-  polygon: true,
-  polyline: true,
-  radialGradient: true,
-  rect: true,
-  stop: true,
-  switch: true,
-  symbol: true,
-  text: true,
-  textPath: true,
-  tspan: true,
-  use: true,
-  view: true,
-};
-
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
-
 let trackUpdate: (nativeElement: Element) => void = null;
+const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
+const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
 
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode) => {
@@ -122,6 +63,10 @@ function createNativeElement(vNode: VirtualNode): DOMElement {
 
 function detectIsSvgElement(tagName: string) {
   return Boolean(svgTagNamesMap[tagName]);
+}
+
+function detectIsVoidElement(tagName: string) {
+  return Boolean(voidTagNamesMap[tagName]);
 }
 
 function applyRef(ref: Ref<Element>, element: Element) {
@@ -327,7 +272,9 @@ function commitCreation(fiber: Fiber<Element>) {
   const childNodes = parentNativeElement.childNodes;
 
   if (childNodes.length === 0 || getChildIndex(fiber, parentNativeElement) > childNodes.length - 1) {
-    append(fiber, parentNativeElement);
+    const vNode = parentFiber.instance as TagVirtualNode;
+
+    !detectIsVoidElement(vNode.name) && append(fiber, parentNativeElement);
   } else {
     insert(fiber, parentNativeElement);
   }
