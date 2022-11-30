@@ -147,7 +147,34 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
   }
 }
 
-const patchPropertiesMap: Record<string, (element: Element, attrName: string, attrValue: AttributeValue) => boolean> = {
+type PatchPropertiesOptions = {
+  tagName: string;
+  element: Element;
+  attrName: string;
+  attrValue: AttributeValue;
+};
+
+function patchProperties(options: PatchPropertiesOptions): boolean {
+  const { tagName, element, attrName, attrValue } = options;
+  const fn = patchPropertiesSpecialCasesMap[tagName];
+  let stop = fn ? fn(element, attrName, attrValue) : false;
+
+  if (Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
+    element[attrName] = attrValue;
+  }
+
+  if (!stop && detectIsBoolean(attrValue)) {
+    // blocking the setting of all boolean attributes, except for data attributes or other custom attributes
+    stop = !attrName.includes('-');
+  }
+
+  return stop;
+}
+
+const patchPropertiesSpecialCasesMap: Record<
+  string,
+  (element: Element, attrName: string, attrValue: AttributeValue) => boolean
+> = {
   input: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
     if (attrName === 'value' && detectIsBoolean(attrValue)) {
       // checkbox case
@@ -170,30 +197,6 @@ const patchPropertiesMap: Record<string, (element: Element, attrName: string, at
     return false;
   },
 };
-
-type PathPropertiesOptions = {
-  tagName: string;
-  element: Element;
-  attrName: string;
-  attrValue: string | boolean;
-};
-
-function patchProperties(options: PathPropertiesOptions): boolean {
-  const { tagName, element, attrName, attrValue } = options;
-  const fn = patchPropertiesMap[tagName];
-  let stop = fn ? fn(element, attrName, attrValue) : false;
-
-  if (Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
-    element[attrName] = attrValue;
-  }
-
-  if (!stop && detectIsBoolean(attrValue)) {
-    // blocking the setting of all boolean attributes, except for data attributes or other custom attributes
-    stop = !attrName.includes('-');
-  }
-
-  return stop;
-}
 
 function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
   let nextFiber = fiber;
