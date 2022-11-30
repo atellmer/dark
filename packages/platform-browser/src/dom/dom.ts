@@ -10,6 +10,7 @@ import {
   EffectTag,
   detectIsFunction,
   detectIsUndefined,
+  detectIsBoolean,
   NodeType,
   detectIsVirtualNode,
   detectIsTagVirtualNode,
@@ -19,7 +20,7 @@ import {
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import type { DOMElement, DOMFragment } from './types';
+import type { DOMElement, DOMFragment, AttributeValue } from './types';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
@@ -152,14 +153,14 @@ function addAttributes(element: Element, vNode: VirtualNode) {
         });
       }
     } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
-      const stopAttrsMap = upgradeInputAttributes({
+      const stop = patchProperties({
         tagName: vNode.name,
-        value: attrValue,
-        name: attrName,
+        attrValue,
+        attrName,
         element,
       });
 
-      !stopAttrsMap[attrName] && element.setAttribute(attrName, attrValue);
+      !stop && element.setAttribute(attrName, attrValue);
     }
   }
 }
@@ -186,14 +187,14 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
           });
         }
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
-        const stopAttrsMap = upgradeInputAttributes({
+        const stop = patchProperties({
           tagName: nextVNode.name,
-          value: nextAttrValue,
-          name: attrName,
+          attrValue: nextAttrValue,
+          attrName,
           element,
         });
 
-        !stopAttrsMap[attrName] && element.setAttribute(attrName, nextAttrValue);
+        !stop && element.setAttribute(attrName, nextAttrValue);
       }
     } else {
       element.removeAttribute(attrName);
@@ -201,62 +202,52 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
   }
 }
 
-const INPUT_STOP_ATTRS_MAP = {
-  value: true,
-  checked: true,
+const patchPropertiesMap: Record<string, (element: Element, attrName: string, attrValue: AttributeValue) => boolean> = {
+  input: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
+    if (attrName === 'value' && detectIsBoolean(attrValue)) {
+      // checkbox case
+      element.checked = attrValue;
+    } else if (attrName === 'autoFocus') {
+      // autofocus case
+      element.autofocus = Boolean(attrValue);
+    }
+
+    return false;
+  },
+  textarea: (element: HTMLTextAreaElement, attrName: string, attrValue: AttributeValue) => {
+    if (attrName === 'value') {
+      // redirect value to innerHTML
+      element.innerHTML = String(attrValue);
+
+      return true;
+    }
+
+    return false;
+  },
 };
 
-const TEXTAREA_STOP_ATTRS_MAP = {
-  value: true,
-};
-
-const OPTIONS_STOP_ATTRS_MAP = {
-  selected: true,
-};
-
-const DEFAULT_STOP_ATTRS_MAP = {};
-
-type PatchedElements = 'input' | 'textarea' | 'option';
-
-type UpgradeInputAttributesOptions = {
+type PathPropertiesOptions = {
   tagName: string;
   element: Element;
-  name: string;
-  value: string | boolean;
+  attrName: string;
+  attrValue: string | boolean;
 };
 
-const upgradeInputAttributesMap: Record<
-  PatchedElements,
-  (element: Element, name: string, value: string | boolean) => Record<string, boolean>
-> = {
-  input: (element: Element, name: string, value: string | boolean) => {
-    if (INPUT_STOP_ATTRS_MAP[name]) {
-      element[name] = value;
-    }
+function patchProperties(options: PathPropertiesOptions): boolean {
+  const { tagName, element, attrName, attrValue } = options;
+  const fn = patchPropertiesMap[tagName];
+  let stop = fn ? fn(element, attrName, attrValue) : false;
 
-    return INPUT_STOP_ATTRS_MAP;
-  },
-  textarea: (element: Element, name: string, value: string | boolean) => {
-    if (TEXTAREA_STOP_ATTRS_MAP[name]) {
-      element[name] = value;
-    }
+  if (Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
+    element[attrName] = attrValue;
+  }
 
-    return TEXTAREA_STOP_ATTRS_MAP;
-  },
-  option: (element: Element, name: string, value: string | boolean) => {
-    if (OPTIONS_STOP_ATTRS_MAP[name]) {
-      element[name] = value;
-    }
+  if (!stop && detectIsBoolean(attrValue)) {
+    // blocking the setting of all boolean attributes, except for data attributes or other custom attributes
+    stop = !attrName.includes('-');
+  }
 
-    return OPTIONS_STOP_ATTRS_MAP;
-  },
-};
-
-function upgradeInputAttributes(options: UpgradeInputAttributesOptions): Record<string, boolean> {
-  const { tagName, element, name, value } = options;
-  const fn = upgradeInputAttributesMap[tagName];
-
-  return fn ? fn(element, name, value) : DEFAULT_STOP_ATTRS_MAP;
+  return stop;
 }
 
 function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {

@@ -1,5 +1,5 @@
-import { View, Text, createComponent, useState, useMemo, useRef, forwardRef } from '@dark-engine/core';
-import { render, type SyntheticEvent } from '@dark-engine/platform-browser';
+import { View, Text, createComponent, useState, useRef, forwardRef } from '@dark-engine/core';
+import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
 const button = (props = {}) => View({ ...props, as: 'button' });
@@ -64,7 +64,7 @@ const Checkbox = createComponent<CheckboxProps>(props => {
       input({
         style: 'margin-right: 10px',
         type: 'checkbox',
-        checked: value,
+        value: value,
         onInput: handleInput,
       }),
       Text(labelText),
@@ -92,16 +92,15 @@ const TaskItem = createComponent<TaskItemProps>(props => {
         style: 'display: flex;',
         slot: [
           div({
-            style: 'margin-right: 10px;',
+            style: `margin-right: 10px; ${task.completed ? 'text-decoration: line-through;' : ''}`,
             slot: [
               Checkbox({
                 value: task.completed,
-                labelText: task.completed ? 'yes' : 'no',
+                labelText: task.name,
                 onChange: handleCompleted,
               }),
             ],
           }),
-          Text(task.name),
         ],
       }),
       button({
@@ -112,17 +111,13 @@ const TaskItem = createComponent<TaskItemProps>(props => {
   });
 });
 
-const TodoApp = createComponent(() => {
-  const sourseTasks = useMemo(
-    () => [
-      new TodoTask('Learn Dark', true),
-      new TodoTask('Learn React', true),
-      new TodoTask('Learn Angular'),
-      new TodoTask('Learn Vue'),
-    ],
-    [],
-  );
-  const [tasks, setTasks] = useState<Array<TodoTask>>(sourseTasks);
+const App = createComponent(() => {
+  const [tasks, setTasks] = useState<Array<TodoTask>>(() => [
+    new TodoTask('Learn Dark', true),
+    new TodoTask('Learn React', true),
+    new TodoTask('Learn Angular'),
+    new TodoTask('Learn Vue'),
+  ]);
   const [taskName, setTaskName] = useState('');
   const textFieldRef = useRef<HTMLInputElement>(null);
 
@@ -175,4 +170,4 @@ const TodoApp = createComponent(() => {
   });
 });
 
-render(TodoApp(), document.getElementById('root'));
+createRoot(document.getElementById('root')).render(App());
