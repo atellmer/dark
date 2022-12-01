@@ -1,5 +1,5 @@
 import type { Component, SlotProps } from '../component';
-import type { DarkElement } from '../shared';
+import type { DarkElement, Subscribe, SubscriberWithValue } from '../shared';
 
 export type ContexProviderProps<T> = {
   value: T;
@@ -15,9 +15,5 @@ export type Context<T = unknown> = {
 export type ContextProviderValue<T = unknown> = {
   value: T;
   subscribers: Set<(value: T) => void>;
-  subscribe: Subscribe<T>;
+  subscribe: Subscribe<SubscriberWithValue<T>>;
 };
-
-type Subscribe<T> = (subscriber: (value: T) => void) => Unsubscribe;
-
-type Unsubscribe = () => void;

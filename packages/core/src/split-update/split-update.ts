@@ -1,4 +1,4 @@
-import type { DarkElementKey, DarkElement } from '../shared';
+import type { DarkElementKey, DarkElement, Subscribe, SubscriberWithValue } from '../shared';
 import { type Ref } from '../ref';
 import { createComponent, type ComponentFactory, type StandardComponentProps } from '../component';
 import { createContext } from '../context';
@@ -104,13 +104,9 @@ type Scope<T = unknown> = {
 };
 
 type SplitUpdateContextValue<T = any> = {
-  subscribe: Subscribe<T>;
+  subscribe: Subscribe<SubscriberWithValue<Record<DarkElementKey, T>>>;
   map: Record<DarkElementKey, T>;
 };
-
-type Subscribe<T> = (subscriber: (map: Record<DarkElementKey, T>) => void) => Unsubscribe;
-
-type Unsubscribe = () => void;
 
 type MergedProps<T> = SplitUpdateProps<T> & StandardComponentProps;
 

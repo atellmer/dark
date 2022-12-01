@@ -1,10 +1,8 @@
+import type { Subscribe, Subscriber } from '../shared';
 import { useState } from '../use-state';
 import { useEffect } from '../use-effect';
 
-type Subscribe = (cb: () => void) => Unsubscribe;
-type Unsubscribe = () => void;
-
-function useSyncExternalStore<T>(subscribe: Subscribe, getSnapshot: () => T) {
+function useSyncExternalStore<T>(subscribe: Subscribe<Subscriber>, getSnapshot: () => T) {
   const [state, setState] = useState(getSnapshot());
 
   useEffect(() => {

@@ -25,7 +25,9 @@ function createStore<T>(initialState: T) {
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
 
-    return () => listeners.delete(listener);
+    return () => {
+      listeners.delete(listener);
+    };
   };
 
   return { getState, setState, subscribe };
