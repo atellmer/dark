@@ -26,7 +26,7 @@ describe('[split-update]', () => {
     };
 
     const content = (items: Array<ListItem>) => dom`
-      <div>${items.map(x => `<div>${x.id}:${x.selected}</div>`).join('')}</div>
+      ${items.map(x => `<div>${x.id}:${x.selected}</div>`).join('')}
     `;
 
     let nextId = 0;
@@ -72,11 +72,9 @@ describe('[split-update]', () => {
     const App = createComponent<AppProps>(({ items }) => {
       return (
         <SplitUpdate list={items} getKey={getKey}>
-          <div>
-            {items.map(x => {
-              return <ListItem key={x.id} id={x.id} />;
-            })}
-          </div>
+          {items.map(x => {
+            return <ListItem key={x.id} id={x.id} />;
+          })}
         </SplitUpdate>
       );
     });
@@ -102,7 +100,7 @@ describe('[split-update]', () => {
     render$({ items });
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(items));
-    expect(mockFn).toHaveBeenCalledTimes(size + 1);
+    expect(mockFn).toHaveBeenCalledTimes(size * 1 + 1);
 
     items[1].selected = false;
     items[9].selected = true;
@@ -110,13 +108,13 @@ describe('[split-update]', () => {
     render$({ items });
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(items));
-    expect(mockFn).toHaveBeenCalledTimes(size + 1 + 2);
+    expect(mockFn).toHaveBeenCalledTimes(size * 1 + 1 + 2);
 
     items = [...items];
     render$({ items });
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(items));
-    expect(mockFn).toHaveBeenCalledTimes(size + 1 + 2);
+    expect(mockFn).toHaveBeenCalledTimes(size * 1 + 1 + 2);
 
     items.shift();
     items = [...items];
