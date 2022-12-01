@@ -83,15 +83,15 @@ const Header = createComponent<HeaderProps>(
         'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
       slot: [
         button({
-          slot: Text('create 10000 rows'),
+          slot: Text('create 10 rows'),
           onClick: onCreate,
         }),
         button({
-          slot: Text('Prepend 1000 rows'),
+          slot: Text('Prepend 2 rows'),
           onClick: onPrepend,
         }),
         button({
-          slot: Text('Append 1000 rows'),
+          slot: Text('Append 2 rows'),
           onClick: onAppend,
         }),
         button({
@@ -99,7 +99,7 @@ const Header = createComponent<HeaderProps>(
           onClick: onInsertDifferent,
         }),
         button({
-          slot: Text('update every 10th row'),
+          slot: Text('update every 5th row'),
           onClick: onUpdateAll,
         }),
         button({
@@ -216,8 +216,8 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
   const handleUpdateAll = useCallback(() => {
-    state.list = state.list.map((x, idx) => ({ ...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name }));
-    measurer.start('update every 10th');
+    state.list = state.list.map((x, idx) => ({ ...x, name: (idx + 1) % 5 === 0 ? x.name + '!!!' : x.name }));
+    measurer.start('update every 5th');
     forceUpdate();
     measurer.stop();
   }, []);
