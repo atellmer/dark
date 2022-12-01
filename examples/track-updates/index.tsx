@@ -125,8 +125,6 @@ const MemoHeader = memo<HeaderProps>(Header);
 
 type RowProps = {
   id: number;
-  name: string;
-  selected: boolean;
   onRemove: (id: number) => void;
   onHighlight: (id: number) => void;
 };
@@ -152,10 +150,7 @@ const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
   );
 });
 
-const MemoRow = memo<RowProps>(
-  Row,
-  (props, nextProps) => props.name !== nextProps.name || props.selected !== nextProps.selected,
-);
+const MemoRow = memo<RowProps>(Row);
 
 type ListProps = {
   items: List;
@@ -172,8 +167,6 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
             <MemoRow
               key={item.id}
               id={item.id}
-              name={item.name}
-              selected={item.selected}
               onRemove={onRemove}
               onHighlight={onHighlight}
             />
