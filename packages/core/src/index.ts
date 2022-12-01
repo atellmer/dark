@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 export * from './component';
-export * from './context';
+export { createContext } from './context';
 export { h } from './element';
 export * from './fiber';
-export * from './fragment';
+export { Fragment } from './fragment';
 export * from './platform';
 export * from './helpers';
-export * from './lazy';
-export * from './memo';
+export { lazy } from './lazy';
+export { memo } from './memo';
 export * from './ref';
 export * from './scope';
 export * from './shared';
-export * from './suspense';
+export { Suspense } from './suspense';
 export { useCallback } from './use-callback';
 export { useContext } from './use-context';
 export { useDeferredValue } from './use-deferred-value';
@@ -32,6 +32,7 @@ export { useSyncExternalStore } from './use-sync-external-store';
 export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
+export { SplitUpdate, useSplitUpdate } from './split-update';
 export * from './view';
 export * from './constants';
 

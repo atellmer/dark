@@ -8,6 +8,7 @@ import {
   detectIsArray,
   detectIsString,
   detectIsNumber,
+  getDiffKeys,
 } from '../helpers';
 import { platform } from '../platform';
 import {
@@ -796,19 +797,6 @@ function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
     : null;
 
   return key;
-}
-
-function getDiffKeys(keys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey> {
-  const nextKeysMap = nextKeys.reduce((acc, key) => ((acc[key] = true), acc), {});
-  const diff = [];
-
-  for (const key of keys) {
-    if (!nextKeysMap[key]) {
-      diff.push(key);
-    }
-  }
-
-  return diff;
 }
 
 function getChildAlternate(fiber: Fiber): Fiber | null {

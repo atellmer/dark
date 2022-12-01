@@ -14,5 +14,10 @@ export type Context<T = unknown> = {
 
 export type ContextProviderValue<T = unknown> = {
   value: T;
-  subscribers: Array<(value: T) => void>;
+  subscribers: Set<(value: T) => void>;
+  subscribe: Subscribe<T>;
 };
+
+type Subscribe<T> = (subscriber: (value: T) => void) => Unsubscribe;
+
+type Unsubscribe = () => void;

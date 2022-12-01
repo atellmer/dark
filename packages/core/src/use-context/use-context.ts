@@ -8,33 +8,24 @@ import type { Context, ContextProviderValue } from '../context';
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;
   const fiber = currentFiberStore.get();
-  const provider = getProvider<T>(context, fiber);
+  const provider = useMemo(() => getProvider<T>(context, fiber), []);
   const value = provider ? provider.value : defaultValue;
   const update = useUpdate();
-  const scope = useMemo(() => ({ prevValue: value }), []);
+  const scope = useMemo(() => ({ value }), []);
   const hasProvider = Boolean(provider);
 
   useEffect(() => {
     if (!hasProvider) return;
-
-    const subscriber = (newValue: T) => {
-      if (!Object.is(scope.prevValue, newValue)) {
+    const unsubscribe = provider.subscribe((value: T) => {
+      if (!Object.is(scope.value, value)) {
         update();
       }
-    };
+    });
 
-    provider.subscribers.push(subscriber);
-
-    return () => {
-      const idx = provider.subscribers.findIndex(x => x === subscriber);
-
-      if (idx !== -1) {
-        provider.subscribers.splice(idx, 1);
-      }
-    };
+    return () => unsubscribe();
   }, [hasProvider]);
 
-  scope.prevValue = value;
+  scope.value = value;
 
   return value;
 }

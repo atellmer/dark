@@ -1,4 +1,4 @@
-import type { NestedArray } from '../shared';
+import type { NestedArray, DarkElementKey } from '../shared';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
 
@@ -82,6 +82,19 @@ function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): 
   return false;
 }
 
+function getDiffKeys(prevKeys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey> {
+  const nextKeysMap = nextKeys.reduce((acc, key) => ((acc[key] = true), acc), {});
+  const diff = [];
+
+  for (const key of prevKeys) {
+    if (!nextKeysMap[key]) {
+      diff.push(key);
+    }
+  }
+
+  return diff;
+}
+
 export {
   detectIsFunction,
   detectIsUndefined,
@@ -99,4 +112,5 @@ export {
   fromEnd,
   dummyFn,
   detectIsDepsDifferent,
+  getDiffKeys,
 };
