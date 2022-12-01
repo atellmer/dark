@@ -263,12 +263,14 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />
-      <SplitUpdate list={state.list} getKey={x => x.id}>
+      <SplitUpdate list={state.list} getKey={getKey}>
         <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
       </SplitUpdate>
     </>
   );
 });
+
+const getKey = (x: ListItem) => x.id;
 
 const root = createRoot(document.getElementById('root'));
 

@@ -2,7 +2,7 @@ import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 
 import { EMPTY_NODE } from '@dark-engine/core/constants';
 
-const dom = (strings: TemplateStringsArray, ...args: Array<string | number>) => {
+const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
   const markup = strings
     .map((x, idx) => x + (typeof args[idx] !== 'undefined' ? args[idx] : ''))
     .join('')
