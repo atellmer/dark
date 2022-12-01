@@ -1,4 +1,14 @@
-import { h, View, Text, Fragment, createComponent, memo, useCallback } from '@dark-engine/core';
+import {
+  h,
+  View,
+  Text,
+  Fragment,
+  createComponent,
+  memo,
+  useCallback,
+  SplitUpdate,
+  useSplitUpdate,
+} from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -40,11 +50,19 @@ const buildData = (count, prefix = '') => {
     .map(() => ({
       id: ++nextId,
       name: `item: ${nextId} ${prefix}`,
-      select: false,
+      selected: false,
     }));
 };
 
-const state = {
+type ListItem = { id: number; name: string; selected: boolean };
+
+type List = Array<ListItem>;
+
+type State = {
+  list: List;
+};
+
+const state: State = {
   list: [],
 };
 
@@ -113,7 +131,11 @@ type RowProps = {
   onHighlight: (id: number) => void;
 };
 
-const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
+  const { name, selected } = useSplitUpdate<ListItem>(
+    map => map[id],
+    x => `${x.name}:${x.selected}`,
+  );
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
 
@@ -136,7 +158,7 @@ const MemoRow = memo<RowProps>(
 );
 
 type ListProps = {
-  items: Array<{ id: number; name: string; select: boolean }>;
+  items: List;
   onRemove: (id: number) => void;
   onHighlight: (id: number) => void;
 };
@@ -151,7 +173,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
               key={item.id}
               id={item.id}
               name={item.name}
-              selected={item.select}
+              selected={item.selected}
               onRemove={onRemove}
               onHighlight={onHighlight}
             />
@@ -207,7 +229,7 @@ const Bench = createComponent(() => {
   }, []);
   const handleHightlight = useCallback(id => {
     const idx = state.list.findIndex(x => x.id === id);
-    state.list[idx].select = !state.list[idx].select;
+    state.list[idx].selected = !state.list[idx].selected;
     state.list = [...state.list];
     measurer.start('highlight');
     forceUpdate();
@@ -241,19 +263,19 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />
-      <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      <SplitUpdate list={state.list} getKey={getKey}>
+        <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      </SplitUpdate>
     </>
   );
 });
 
+const getKey = (x: ListItem) => x.id;
+
 const root = createRoot(document.getElementById('root'));
 
 function forceUpdate() {
-  root.render(Bench());
+  root.render(<Bench />);
 }
 
 forceUpdate();
-
-document.querySelector('#button').addEventListener('click', () => {
-  forceUpdate();
-});
