@@ -1,4 +1,3 @@
-declare type Subscribe = (cb: () => void) => Unsubscribe;
-declare type Unsubscribe = () => void;
-declare function useSyncExternalStore<T>(subscribe: Subscribe, getSnapshot: () => T): T;
+import type { Subscribe, Subscriber } from '../shared';
+declare function useSyncExternalStore<T>(subscribe: Subscribe<Subscriber>, getSnapshot: () => T): T;
 export { useSyncExternalStore };

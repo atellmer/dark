@@ -1,4 +1,4 @@
-import type { NestedArray } from '../shared';
+import type { NestedArray, DarkElementKey } from '../shared';
 declare const detectIsFunction: (o: any) => o is Function;
 declare const detectIsUndefined: (o: any) => o is undefined;
 declare const detectIsNumber: (o: any) => o is number;
@@ -19,6 +19,7 @@ declare function keyBy<T = any>(
 declare function fromEnd<T>(source: Array<T>, count: number): T[];
 declare const dummyFn: () => void;
 declare function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean;
+declare function getDiffKeys(prevKeys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey>;
 export {
   detectIsFunction,
   detectIsUndefined,
@@ -36,4 +37,5 @@ export {
   fromEnd,
   dummyFn,
   detectIsDepsDifferent,
+  getDiffKeys,
 };

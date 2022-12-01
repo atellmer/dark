@@ -1,3 +1,6 @@
 import type { Context } from './types';
-declare function createContext<T>(defaultValue: T): Context<T>;
+declare type CreateContextOptions = {
+  displayName?: string;
+};
+declare function createContext<T>(defaultValue: T, options?: CreateContextOptions): Context<T>;
 export { createContext };
