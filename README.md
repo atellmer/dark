@@ -11,6 +11,17 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 
 ![Dark](./assets/cover.jpg) 
 
+## Features
+- 🌟 Reactive
+- 🎉 Declarative
+- 🛸 Fast
+- 🏭 Has components and hooks
+- 🧶 Based on the Fiber concept
+- ⚡️ Сan use without build tools
+- 🦾 Strongly typed
+- 🦄 Small size
+- 🌌 No dependencies
+
 ## Demos
 
 - [1k components](https://atellmer.github.io/dark/examples/1k-components/)
