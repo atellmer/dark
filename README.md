@@ -80,7 +80,7 @@ const App = createComponent(() => {
   );
 });
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')).render(<App />);
 ```
 
 This code can be rewritten without using JSX like this:
