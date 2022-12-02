@@ -1,7 +1,7 @@
 import { h, Fragment, createComponent, lazy, Suspense, type DarkElement } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
-import { createRouter, Router, NavLink } from './router';
+import { createRoutes, Router, NavLink } from './router';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -37,7 +37,7 @@ const Shell = createComponent<ShellProps>(({ route, slot }) => {
 
 const Spinner = createComponent(() => <div>loading...</div>);
 
-const router = createRouter({
+const routes = createRoutes({
   '/': (props = {}) => <Home {...props} />,
   '/about': (props = {}) => <About {...props} />,
   '/contacts': (props = {}) => <Contacts {...props} />,
@@ -45,7 +45,7 @@ const router = createRouter({
 
 const App = createComponent(() => {
   return (
-    <Router router={router}>
+    <Router routes={routes}>
       {({ slot, ...rest }) => (
         <Suspense fallback={<Spinner />}>
           <Shell {...rest}>{slot}</Shell>

@@ -12,7 +12,7 @@ import {
 } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
-type Router = {
+type Routes = {
   transitionTo: (path: string, props?: any) => void;
   on: (eventName: string, callback: (path: string, slot: DarkElement) => void) => void;
   off: (eventName: string, callback: (path: string, slot: DarkElement) => void) => void;
@@ -21,7 +21,7 @@ type Router = {
 const RouterContext = createContext<RouterContextValue>(null);
 
 type RouterContextValue = {
-  router: Router;
+  routes: Routes;
 };
 
 type NavLinkProps = {
@@ -30,11 +30,11 @@ type NavLinkProps = {
 };
 
 const NavLink = createComponent<NavLinkProps>(({ to, slot }) => {
-  const { router } = useContext(RouterContext);
+  const { routes } = useContext(RouterContext);
 
   const handleClick = (e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => {
     e.preventDefault();
-    router.transitionTo(to);
+    routes.transitionTo(to);
   };
   const className = location.pathname === to ? 'active-nav-link' : undefined;
 
@@ -46,7 +46,7 @@ const NavLink = createComponent<NavLinkProps>(({ to, slot }) => {
 });
 
 type RouterProps = {
-  router: Router;
+  routes: Routes;
   slot: (options: RouterSlotOptions) => DarkElement;
 };
 
@@ -55,7 +55,7 @@ type RouterSlotOptions = {
   slot: DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ router, slot }) => {
+const Router = createComponent<RouterProps>(({ routes, slot }) => {
   const [rendered, setRendered] = useState<DarkElement>(null);
   const [route, setRoute] = useState('');
 
@@ -67,24 +67,24 @@ const Router = createComponent<RouterProps>(({ router, slot }) => {
       });
     };
 
-    router.on('transition', subscriber);
+    routes.on('transition', subscriber);
 
-    return () => router.off('transition', subscriber);
+    return () => routes.off('transition', subscriber);
   }, []);
 
   useLayoutEffect(() => {
-    router.transitionTo(location.pathname);
+    routes.transitionTo(location.pathname);
   }, []);
 
-  const contextValue = useMemo(() => ({ router }), []);
+  const contextValue = useMemo(() => ({ routes }), []);
 
   return <RouterContext.Provider value={contextValue}>{slot({ route, slot: rendered })}</RouterContext.Provider>;
 });
 
-type Routes = Record<string, (props?: any) => DarkElement>;
+type Config = Record<string, (props?: any) => DarkElement>;
 
-function createRouter(routes: Routes) {
-  return createBaseRouter(routes);
+function createRoutes(config: Config): Routes {
+  return createBaseRouter(config);
 }
 
-export { createRouter, Router, NavLink };
+export { createRoutes, Router, NavLink };
