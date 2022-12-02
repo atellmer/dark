@@ -57,6 +57,57 @@ CDN:
 <script src="https://unpkg.com/@dark-engine/platform-browser/umd/dark-platform-browser.production.min.js"></script>
 ```
 
+## Usage
+
+The simple component:
+
+```tsx
+import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
+
+const App = createComponent(() => {
+  const state = useReactiveState({ name: "Alex" });
+
+  const handleInput = (e) => {
+    state.name = e.target.value;
+  };
+
+  return (
+    <>
+      <div>Hello {state.name}</div>
+      <input value={state.name} onInput={handleInput} />
+    </>
+  );
+});
+
+createRoot(document.getElementById('root')!).render(<App />);
+```
+
+This code can be rewritten without using JSX like this:
+
+```tsx
+import { View, Text, createComponent, useReactiveState } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
+
+const div = (props) => View({ ...props, as: 'div' });
+const input = (props) => View({ ...props, as: 'input' });
+
+const App = createComponent(() => {
+  const state = useReactiveState({ name: 'Alex' });
+
+  const handleInput = (e) => {
+    state.name = e.target.value;
+  };
+
+  return [
+    div({ slot: Text(`Hello ${state.name}`) }),
+    input({ value: state.name, onInput: handleInput }),
+  ];
+});
+
+createRoot(document.getElementById('root')).render(App());
+```
+
 ## Table of contents
 - [API overview](#overview)
 - [Elements](#elements)
@@ -118,62 +169,6 @@ import {
 } from '@dark-engine/core';
 import { render, createRoot, createPortal, useStyle } from '@dark-engine/platform-browser';
 ```
-## Shut up and show me your code!
-
-For example this is a simple component:
-
-```tsx
-import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
-
-const App = createComponent(() => {
-  const state = useReactiveState({ name: "Alex" });
-
-  const handleInput = (e) => {
-    state.name = e.target.value;
-  };
-
-  return (
-    <>
-      <div>Hello {state.name}</div>
-      <input value={state.name} onInput={handleInput} />
-    </>
-  );
-});
-
-createRoot(document.getElementById('root')!).render(<App />);
-```
-
-This code can be rewritten without using JSX like this:
-
-```tsx
-import { View, Text, createComponent, useReactiveState } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
-
-const div = (props) => View({ ...props, as: 'div' });
-const input = (props) => View({ ...props, as: 'input' });
-
-const App = createComponent(() => {
-  const state = useReactiveState({ name: 'Alex' });
-
-  const handleInput = (e) => {
-    state.name = e.target.value;
-  };
-
-  return [
-    div({
-      slot: Text(`Hello ${state.name}`),
-    }),
-    input({
-      value: state.name,
-      onInput: handleInput,
-    }),
-  ];
-});
-
-createRoot(document.getElementById('root')).render(App());
-```
-
 ## A little more about the core concepts...
 
 <a name="elements"></a>
