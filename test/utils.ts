@@ -18,4 +18,15 @@ const createEmptyCommentString = () => `<!--${EMPTY_NODE}-->`;
 
 const createTestHostNode = () => document.createElement('div');
 
-export { dom, waitNextIdle, createEmptyCommentString, createTestHostNode };
+const fireEvent = (element: Element, eventName: string) => {
+  const event = new Event(eventName, {
+    bubbles: true,
+    cancelable: true,
+  });
+
+  element.dispatchEvent(event);
+};
+
+const click = (element: Element) => fireEvent(element, 'click');
+
+export { dom, waitNextIdle, createEmptyCommentString, createTestHostNode, fireEvent, click };
