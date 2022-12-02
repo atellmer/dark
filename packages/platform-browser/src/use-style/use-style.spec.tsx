@@ -5,8 +5,6 @@ import { useStyle } from './use-style';
 
 let host: HTMLElement = null;
 
-jest.useFakeTimers();
-
 beforeEach(() => {
   host = document.createElement('div');
 });
