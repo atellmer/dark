@@ -120,65 +120,58 @@ import { render, createRoot, createPortal, useStyle } from '@dark-engine/platfor
 ```
 ## Shut up and show me your code!
 
-For example this is a timer component:
+For example this is a simple component:
 
 ```tsx
-import {
-  h,
-  createComponent,
-  useState,
-  useEffect,
-  type DarkElement,
-} from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
-
-type TimerProps = {
-  slot: (value: number) => DarkElement;
-};
-
-const Timer = createComponent<TimerProps>(({ slot }) => {
-  const [seconds, setSeconds] = useState(0);
-
-  useEffect(() => {
-    const timerId = setInterval(() => {
-      setSeconds(x => x + 1);
-    }, 1000);
-
-    return () => clearInterval(timerId);
-  }, []);
-
-  return slot(seconds);
-});
+import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const App = createComponent(() => {
-  return [
-    <div>Timer component is just a logic without view...</div>,
-    <Timer>{seconds => <div>timer: {seconds}</div>}</Timer>,
-  ];
+  const state = useReactiveState({ name: "Alex" });
+
+  const handleInput = (e) => {
+    state.name = e.target.value;
+  };
+
+  return (
+    <>
+      <div>Hello {state.name}</div>
+      <input value={state.name} onInput={handleInput} />
+    </>
+  );
 });
 
-render(<App />, document.getElementById('root'));
+createRoot(document.getElementById('root')!).render(<App />);
 ```
 
-Part of this code can be rewritten without using JSX like this:
+This code can be rewritten without using JSX like this:
 
 ```tsx
-const div = props => View({ ...props, as: 'div' });
+import { View, Text, createComponent, useReactiveState } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
+
+const div = (props) => View({ ...props, as: 'div' });
+const input = (props) => View({ ...props, as: 'input' });
 
 const App = createComponent(() => {
+  const state = useReactiveState({ name: 'Alex' });
+
+  const handleInput = (e) => {
+    state.name = e.target.value;
+  };
+
   return [
     div({
-      slot: Text('Timer component is just a logic without view...')
+      slot: Text(`Hello ${state.name}`),
     }),
-    Timer({
-      slot: (seconds: number) => div({
-        slot: Text(`timer: ${seconds}`),
-      }),
+    input({
+      value: state.name,
+      onInput: handleInput,
     }),
   ];
 });
 
-render(App(), document.getElementById('root'));
+createRoot(document.getElementById('root')).render(App());
 ```
 
 ## A little more about the core concepts...
