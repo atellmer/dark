@@ -18,7 +18,11 @@ const createEmptyCommentString = () => `<!--${EMPTY_NODE}-->`;
 
 const createTestHostNode = () => document.createElement('div');
 
-const fireEvent = (element: Element, eventName: string) => {
+const fireEvent = (element: Element, eventName: string, value?: any) => {
+  if (element instanceof HTMLInputElement && eventName === 'input') {
+    element.value = value;
+  }
+
   const event = new Event(eventName, {
     bubbles: true,
     cancelable: true,
@@ -29,4 +33,6 @@ const fireEvent = (element: Element, eventName: string) => {
 
 const click = (element: Element) => fireEvent(element, 'click');
 
-export { dom, waitNextIdle, createEmptyCommentString, createTestHostNode, fireEvent, click };
+const setInputValue = (element: HTMLInputElement, value: string) => fireEvent(element, 'input', value);
+
+export { dom, waitNextIdle, createEmptyCommentString, createTestHostNode, fireEvent, click, setInputValue };

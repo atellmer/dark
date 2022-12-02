@@ -115,7 +115,7 @@ describe('[events]', () => {
     root.unmount();
   });
 
-  test('can event propagation', () => {
+  test('can fire event propagation', () => {
     const mockFn1 = jest.fn();
     const mockFn2 = jest.fn();
 
