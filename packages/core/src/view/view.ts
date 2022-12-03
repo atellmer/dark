@@ -72,6 +72,12 @@ function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
   return !detectIsEmpty(key) ? key : null;
 }
 
+function getVirtualNodeFactoryKey(factory: VirtualNodeFactory): DarkElementKey | null {
+  const key = factory && factory[ATTR_KEY];
+
+  return !detectIsEmpty(key) ? key : null;
+}
+
 const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
 
 const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
@@ -91,6 +97,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
   };
 
   factory[$$virtualNode] = true;
+  factory[ATTR_KEY] = def.key;
 
   return factory;
 }
@@ -120,6 +127,7 @@ export {
   detectIsTextVirtualNode,
   detectIsEmptyVirtualNode,
   getVirtualNodeKey,
+  getVirtualNodeFactoryKey,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,
   View,

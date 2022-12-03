@@ -1,7 +1,10 @@
+import { DarkElementKey } from '../shared';
+
 export type ViewDef = {
   as: string;
   slot?: any;
   isVoid?: boolean;
+  key?: DarkElementKey;
   [prop: string]: any;
 };
 

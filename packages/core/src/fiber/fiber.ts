@@ -32,6 +32,7 @@ import {
   detectIsTagVirtualNode,
   createEmptyVirtualNode,
   getVirtualNodeKey,
+  getVirtualNodeFactoryKey,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
 } from '../view';
@@ -792,6 +793,8 @@ function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {
 function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
   const key = detectIsComponentFactory(instance)
     ? getComponentFactoryKey(instance)
+    : detectIsVirtualNodeFactory(instance)
+    ? getVirtualNodeFactoryKey(instance)
     : detectIsTagVirtualNode(instance)
     ? getVirtualNodeKey(instance)
     : null;
