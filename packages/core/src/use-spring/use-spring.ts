@@ -1,7 +1,125 @@
+import { detectIsUndefined } from '../helpers';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
-import { useUpdate } from '../use-update';
+
+type UseSpringOptions = {
+  state?: boolean;
+  mass?: number;
+  delay?: number;
+  direction?: Direction;
+};
+
+function useSpring(options: UseSpringOptions) {
+  const { state, mass = 1 } = options;
+  const [x, setX] = useState(0);
+  const scope = useMemo<Scope>(
+    () => ({
+      frameId: null,
+      direction: null,
+      values: createScopeValues(),
+      skipFirstRendfer: true,
+    }),
+    [],
+  );
+
+  useEffect(() => {
+    const { forward, backward, both, source } = createValues({
+      duration: PHYSICAL_DURATION,
+      k: K,
+      frames: FRAMES,
+      mass,
+    });
+
+    scope.values = {
+      forward: {
+        list: forward,
+        step: 0,
+      },
+      backward: {
+        list: backward,
+        step: 0,
+      },
+      both: {
+        list: both,
+        step: 0,
+      },
+      source: {
+        list: source,
+        step: 0,
+      },
+    };
+  }, [mass]);
+
+  useEffect(() => {
+    if (scope.skipFirstRendfer) return;
+
+    const loop = (direction: Direction) => {
+      scope.direction = direction;
+
+      const { step, list } = scope.values[direction];
+      const x = list[step];
+
+      if (step > list.length - 1) {
+        scope.values[direction].step = 0;
+        return;
+      }
+
+      setX(x);
+      scope.values[direction].step++;
+
+      scope.frameId = requestAnimationFrame(() => {
+        scope.frameId = null;
+        loop(direction);
+      });
+    };
+
+    if (scope.frameId) {
+      cancelAnimationFrame(scope.frameId);
+    }
+
+    const direction = state ? 'forward' : 'backward';
+
+    if (scope.values[scope.direction]?.step > 0) {
+      const { list, step } = scope.values[scope.direction];
+      const currentStep = getCurrentStep(list[step], scope.values[direction].list);
+
+      scope.values[scope.direction].step = 0;
+      scope.values[direction].step = currentStep;
+    }
+
+    loop(direction);
+  }, [state]);
+
+  useEffect(() => {
+    scope.skipFirstRendfer = false;
+  }, []);
+
+  return { x };
+}
+
+const K = 1;
+const FRAMES = 60;
+const PHYSICAL_DURATION = 100000; // based on the fact that the minimum mass is 0.01 and the minimum spring constant is also 1
+
+type Direction = 'forward' | 'backward' | 'both';
+
+type Values = {
+  list: Array<number>;
+  step: number;
+};
+
+type Scope = {
+  frameId: number;
+  direction: Direction;
+  values: {
+    forward: Values;
+    backward: Values;
+    both: Values;
+    source: Values;
+  };
+  skipFirstRendfer: boolean;
+};
 
 function period(mass: number, k: number) {
   return 2 * Math.PI * Math.sqrt(mass / k);
@@ -11,7 +129,7 @@ function harmonic(time: number, mass: number, k: number) {
   return 1 * Math.cos(period(mass, k) * time);
 }
 
-function minimax(x: number) {
+function minmax(x: number) {
   const min = -1 * 1;
   const max = 1 * 1;
   const a = 0;
@@ -25,62 +143,87 @@ function fix(x: number, precision = 4): number {
   return Number(x.toFixed(precision));
 }
 
-type UseSpringOptions = {
-  state: boolean | null;
-  mass?: number;
-  k?: number;
-};
+type CreateValuesOptions = {
+  duration: number;
+  k: number;
+  frames: number;
+} & Required<Pick<UseSpringOptions, 'mass'>>;
 
-function useSpring(options: UseSpringOptions) {
-  const { state, mass = 1, k = 1 } = options;
-  const [value, setValue] = useState(0);
-  const update = useUpdate();
-  const scope = useMemo(() => ({ frameId: null, time: 0, trail: null }), []);
+function createValues(options: CreateValuesOptions) {
+  const { duration, frames, mass, k } = options;
+  const size = Math.floor((duration * 2) / (1000 / frames));
+  const steps = Array(size)
+    .fill(null)
+    .map((_, idx) => (idx + 1) / 1000);
+  const source = steps.map(t => fix(1 - minmax(harmonic(t, mass, k)), 2));
+  const forward = [];
+  const backward = [];
+  let isForwardCompleted = false;
 
-  useEffect(() => {
-    if (state === null) return;
-    const startTime = Date.now();
-    const initialTime = scope.time;
+  for (const value of source) {
+    if (!isForwardCompleted) {
+      if (value <= 1) {
+        forward.push(value);
+      }
 
-    function loop() {
-      scope.frameId && cancelAnimationFrame(scope.frameId);
-      scope.frameId = requestAnimationFrame(() => {
-        scope.frameId = null;
-        const time = (Date.now() - startTime) / 1000 - initialTime;
-        const value = fix(1 - minimax(harmonic(time, mass, k)), 2);
+      if (value === 1) {
+        isForwardCompleted = true;
+      }
+    } else {
+      if (value >= 0) {
+        backward.push(value);
+      }
 
-        setValue(value);
-        scope.time = time;
-
-        if (state && value === 1) {
-          scope.trail = true;
-          update();
-          return;
-        }
-
-        if (!state && value === 0) {
-          scope.trail = false;
-          update();
-          return;
-        }
-
-        loop();
-      });
+      if (value === 0) {
+        break;
+      }
     }
+  }
 
-    loop();
-  }, [state]);
-
-  return { value, trail: scope.trail, filterToggle, mapToggle };
+  return {
+    forward,
+    backward,
+    both: [...forward, ...backward],
+    source,
+  };
 }
 
-const filterToggle = (value: number, idx: number) => {
-  if (value !== 0 && value !== 1) return true;
-  return value === 0 ? idx === 0 : value === 1 ? idx === 1 : idx === 0;
-};
+function createScopeValues(): Scope['values'] {
+  return {
+    forward: {
+      list: [],
+      step: 0,
+    },
+    backward: {
+      list: [],
+      step: 0,
+    },
+    both: {
+      list: [],
+      step: 0,
+    },
+    source: {
+      list: [],
+      step: 0,
+    },
+  };
+}
 
-const mapToggle = (value: number, size: number, idx: number) => {
-  return size === 1 ? 1 : idx === 0 ? fix(1 - value, 2) : value;
-};
+function getCurrentStep(x: number, list: Array<number>) {
+  for (let i = 0; i < list.length; i++) {
+    const value = list[i];
+    const prevValue = list[i - 1];
+    const nextValue = list[i + 1];
+
+    if (
+      value === x ||
+      (!detectIsUndefined(prevValue) && !detectIsUndefined(nextValue) && prevValue < x && nextValue > x)
+    ) {
+      return i;
+    }
+  }
+
+  return 0;
+}
 
 export { useSpring };

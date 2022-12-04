@@ -991,6 +991,7 @@ type CreateUpdateCallbackOptions = {
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const { rootId, fiber, forceStart = false, onStart } = options;
   const callback = () => {
+    if (fiber.effectTag === EffectTag.DELETE) return;
     forceStart && onStart();
     if (fiber.isUsed) return;
     !forceStart && onStart();
