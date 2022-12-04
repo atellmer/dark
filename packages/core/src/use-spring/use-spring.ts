@@ -33,6 +33,7 @@ function useSpring(options: UseSpringOptions) {
         duration: PHYSICAL_DURATION,
         k: K,
         frames: FRAMES,
+        fn: invertedHarmonic,
         mass,
         from,
         to,
@@ -198,12 +199,16 @@ function createAnimationData(): AnimationData {
   };
 }
 
-function period(mass: number, k: number) {
-  return 2 * Math.PI * Math.sqrt(mass / k);
+function period(m: number, k: number) {
+  return 2 * Math.PI * Math.sqrt(m / k);
 }
 
-function harmonic(time: number, mass: number, k: number) {
-  return 1 * Math.cos(period(mass, k) * time);
+function harmonic(t: number, m: number, k: number) {
+  return 1 * Math.cos(period(m, k) * t);
+}
+
+function invertedHarmonic(t: number, m: number, k: number) {
+  return 1 - harmonic(t, m, k);
 }
 
 function minimax(values: Array<number>, interval: [number, number]): Array<number> {
@@ -228,16 +233,17 @@ type CreatePhysicalValuesOptions = {
   duration: number;
   k: number;
   frames: number;
+  fn: (t: number, m: number, k: number) => number;
 } & Required<Pick<Animation, 'mass' | 'from' | 'to'>>;
 
 function createPhysicalValues(options: CreatePhysicalValuesOptions) {
-  const { duration, frames, mass, k, from, to } = options;
+  const { duration, frames, mass: m, k, from, to, fn } = options;
   const size = Math.floor((duration * 2) / (1000 / frames));
   const steps = Array(size)
     .fill(null)
     .map((_, idx) => (idx + 1) / 1000);
   const source = minimax(
-    steps.map(t => fix(1 - harmonic(t, mass, k), 2)),
+    steps.map(t => fix(fn(t, m, k), 2)),
     [from, to],
   );
   const forward = [];
