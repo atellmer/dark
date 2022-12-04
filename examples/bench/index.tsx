@@ -32,7 +32,7 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 //   );
 //   const {
 //     values: [x1, x2],
-//   } = useSpring({ state: isOpen, animations });
+//   } = useSpring({ state: isOpen, skipFirst: true, animations });
 
 //   const style = useStyle(styled => ({
 //     root: styled`
@@ -82,7 +82,7 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 //   const {
 //     values: [x],
 //     api,
-//   } = useSpring({ state: isOpen, animations });
+//   } = useSpring({ state: isOpen, skipFirst: true, animations });
 //   const style = useStyle(styled => ({
 //     root: styled`
 //       position: fixed;
@@ -162,13 +162,14 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 //     () => [
 //       {
 //         name: 'item',
-//         mass: 10,
+//         mass: 100,
 //       },
 //     ],
 //     [],
 //   );
 //   const { api } = useSpring({
 //     animations,
+//     skipFirst: true,
 //     outside: ([x]) => {
 //       rootRef.current.style.setProperty('opacity', `${x}`);
 //       rootRef.current.style.setProperty('transform', `scale(${x}, 1)`);
@@ -214,65 +215,161 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 //   );
 // });
 
+type IconProps = {
+  size: number;
+};
+
+const CloseIcon = createComponent<IconProps>(({ size }) => {
+  return (
+    <svg
+      stroke='currentColor'
+      fill='currentColor'
+      stroke-width='0'
+      viewBox='0 0 1024 1024'
+      height={size}
+      width={size}
+      xmlns='http://www.w3.org/2000/svg'>
+      <path d='M685.4 354.8c0-4.4-3.6-8-8-8l-66 .3L512 465.6l-99.3-118.4-66.1-.3c-4.4 0-8 3.5-8 8 0 1.9.7 3.7 1.9 5.2l130.1 155L340.5 670a8.32 8.32 0 0 0-1.9 5.2c0 4.4 3.6 8 8 8l66.1-.3L512 564.4l99.3 118.4 66 .3c4.4 0 8-3.5 8-8 0-1.9-.7-3.7-1.9-5.2L553.5 515l130.1-155c1.2-1.4 1.8-3.3 1.8-5.2z'></path>
+      <path d='M512 65C264.6 65 64 265.6 64 513s200.6 448 448 448 448-200.6 448-448S759.4 65 512 65zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z'></path>
+    </svg>
+  );
+});
+
+const AddIcon = createComponent<IconProps>(({ size }) => {
+  return (
+    <svg
+      stroke='currentColor'
+      fill='currentColor'
+      stroke-width='0'
+      viewBox='0 0 24 24'
+      height={size}
+      width={size}
+      xmlns='http://www.w3.org/2000/svg'>
+      <path fill='none' stroke-width='2' d='M12,22 L12,2 M2,12 L22,12'></path>
+    </svg>
+  );
+});
+
 const App = createComponent(() => {
+  const CARD_WIDTH = 500;
+  const CARD_HEIGHT = 500;
+  const BUTTON_SIZE = 50;
   const [isOpen, setIsOpen] = useState(null);
+  const [width, setWidth] = useState(CARD_WIDTH);
+  const rootRef = useRef<HTMLDivElement>(null);
   const animations = useMemo<Array<Animation>>(
     () => [
       {
+        name: 'to-center',
+        mass: 200,
+      },
+      {
         name: 'to-square',
-        mass: 10,
+        mass: 100,
         from: 0,
         to: 50,
         direction: isOpen || isOpen === null ? 'backward' : 'forward',
       },
       {
         name: 'to-right',
-        mass: 10,
+        mass: 100,
       },
       {
         name: 'to-bottom',
-        mass: 10,
-        delay: isOpen ? 0 : 2000,
+        mass: 100,
+        delay: isOpen ? 0 : 1600,
       },
     ],
     [isOpen],
   );
   const {
-    values: [x1, x2, x3],
+    values: [x1, x2, x3, x4],
   } = useSpring({ state: isOpen, skipFirst: true, animations });
 
   const style = useStyle(styled => ({
     root: styled`
       position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 600px;
-      height: 600px;
-      background-color: #007ac1;
+      bottom: ${x1 < 0.05 ? '20px' : `calc(${50 * x1}% - ${(CARD_HEIGHT / 2) * x4}px)`};
+      right: ${x1 < 0.05 ? '20px' : `calc(${50 * x1}% - ${(width / 2) * x3}px)`};
+      width: ${BUTTON_SIZE + (CARD_WIDTH / 10 - BUTTON_SIZE / 10) * 10 * x3}px;
+      height: ${BUTTON_SIZE + (CARD_HEIGHT / 10 - BUTTON_SIZE / 10) * 10 * x4}px;
+      max-width: 100%;
+      background-color: ${x2 !== 0 || (!isOpen && x4 < 0.5) ? '#ec407a' : '#007ac1'};
       color: #fff;
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       grid-template-rows: auto;
       grid-gap: 16px;
       align-items: center;
-      transform-origin: -50% -50%;
-      transform: scale(${x2 < 0.1 ? 0.1 : x2}, ${x2 < 1 ? 0.1 : x3 < 0.1 ? 0.1 : x3}) translate(-50%, -50%);
-      padding: 16px;
-      border-radius: ${x1 < 25 ? `${x1 + 10}px` : `${x1}%`};
+      padding: ${x1 !== 1 ? `0px` : `32px`};
+      border-radius: ${x2 !== 0 ? `${x2}%` : `${x2 + 10}px`};
+      transition: background-color 1s ease-in-out;
+      cursor: ${x1 !== 0 ? 'default' : 'pointer'};
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    `,
+    close: styled`
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      background-color: transparent;
+      border: 0;
+      padding: 4px;
+      opacity: ${x3};
+      cursor: pointer;
+      pointer-events: ${x3 !== 1 ? 'none' : 'auto'};
+    `,
+    add: styled`
+      color: #fff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0;
+      opacity: ${1 - x4};
     `,
   }));
 
-  const handleOpen = () => setIsOpen(true);
+  useEffect(() => {
+    const callback = () => {
+      const width = window.innerWidth < CARD_WIDTH ? window.innerWidth : CARD_WIDTH;
 
-  const handleClose = () => setIsOpen(false);
+      setWidth(width);
+    };
+
+    window.addEventListener('resize', callback);
+
+    return () => window.removeEventListener('resize', callback);
+  }, []);
+
+  const handleOpen = () => {
+    setIsOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+  };
 
   return (
     <>
-      <button onClick={handleOpen}>open</button>
-      <button onClick={handleClose}>close</button>
-      <div style={style.root}>
+      <div ref={rootRef} role='button' style={style.root} onClick={x1 === 0 ? handleOpen : () => {}}>
+        {x3 < 0.2 && (
+          <div style={style.add}>
+            <AddIcon size={24} />
+          </div>
+        )}
+        {x3 > 0 && (
+          <button style={style.close} onClick={handleClose}>
+            <CloseIcon size={32} />
+          </button>
+        )}
         {['😍', '😅', '🥳', '😎', '😈', '🤪', '😳', '🤓', '🍏', '🍌', '🍉', '🍓']
-          .filter(_ => x3 === 1)
+          .filter(_ => x4 === 1)
           .map((item, idx, arr) => {
             const delay = isOpen ? (idx + 1) * 100 : (arr.length - 1 - idx) * 100;
 
@@ -298,7 +395,7 @@ const Item = createComponent<ItemProps>(({ isOpen, delay, slot }) => {
     () => [
       {
         name: 'opacity',
-        mass: 10,
+        mass: 100,
         delay,
       },
     ],
@@ -325,12 +422,13 @@ const Item = createComponent<ItemProps>(({ isOpen, delay, slot }) => {
     root: styled`
       position: relative;
       display: flex;
+      width: 100%;
       justify-content: center;
       align-items: center;
       font-size: 4rem;
       line-height: 0;
       opacity: ${x1};
-      transform: scale(${1 + 1 * x2});
+      transform: scale(${1 + 0.5 * x2});
       z-index: ${scope.over ? 2 : 1};
     `,
   }));

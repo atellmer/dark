@@ -158,8 +158,12 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   const { tagName, element, attrName, attrValue } = options;
   const fn = patchPropertiesSpecialCasesMap[tagName];
   let stop = fn ? fn(element, attrName, attrValue) : false;
+  const hasIDL =
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement;
 
-  if (Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
+  if (hasIDL && Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
     element[attrName] = attrValue;
   }
 
