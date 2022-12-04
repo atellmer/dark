@@ -25,6 +25,7 @@ import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 
 platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
 platform.requestAnimationFrame = requestAnimationFrame.bind(this);
+platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
 platform.scheduleCallback = scheduleCallback;
 platform.shouldYeildToHost = shouldYeildToHost;
 platform.applyCommit = applyCommit;

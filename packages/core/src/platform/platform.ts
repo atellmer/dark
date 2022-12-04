@@ -7,6 +7,9 @@ export const platform: Platform = {
   requestAnimationFrame: () => {
     throw new Error('requestAnimationFrame not installed by renderer');
   },
+  cancelAnimationFrame: () => {
+    throw new Error('cancelAnimationFrame not installed by renderer');
+  },
   scheduleCallback: () => {
     throw new Error('scheduleCallback not installed by renderer');
   },

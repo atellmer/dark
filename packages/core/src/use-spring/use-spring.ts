@@ -1,17 +1,19 @@
-import { detectIsFunction, detectIsUndefined, keyBy } from '../helpers';
+import { detectIsFunction, detectIsUndefined } from '../helpers';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
 import { useEvent } from '../use-event';
+import { platform } from '../platform';
 
 type UseSpringOptions = {
   state?: boolean;
   animations: Array<Animation>;
+  skipFirst?: boolean;
   outside?: (values: Array<number>) => void;
 };
 
 function useSpring(options: UseSpringOptions) {
-  const { state, animations, outside } = options;
+  const { state, animations, skipFirst, outside } = options;
   const [values, setValues] = useState<Array<number>>(() => getInitialValues(animations), { forceSync: true });
   const scope = useMemo<Scope>(
     () => ({
@@ -19,7 +21,6 @@ function useSpring(options: UseSpringOptions) {
       timerId: null,
       skipFirstRendfer: true,
       playingAnimationIdx: -1,
-      map: keyBy(animations, x => x.name, true) as Record<string, Animation>,
       data: animations.map(() => createAnimationData()),
     }),
     [],
@@ -59,15 +60,15 @@ function useSpring(options: UseSpringOptions) {
       scope.data[idx].values = {
         forward: {
           list: forward,
-          step: 0,
+          step: scope.data[idx].values.forward.step || 0,
         },
         backward: {
           list: backward,
-          step: 0,
+          step: scope.data[idx].values.backward.step || 0,
         },
         both: {
           list: both,
-          step: 0,
+          step: scope.data[idx].values.both.step || 0,
         },
       };
 
@@ -76,11 +77,18 @@ function useSpring(options: UseSpringOptions) {
     }
   }, [animations]);
 
+  useEffect(() => {
+    return () => {
+      scope.frameId && platform.cancelAnimationFrame(scope.frameId);
+      scope.timerId && window.clearTimeout(scope.timerId);
+    };
+  }, []);
+
   const play = useEvent((name: string, direction: Direction) => {
-    const animation = scope.map[name];
+    const idx = animations.findIndex(x => x.name === name);
+    const animation = animations[idx];
     const { delay } = animation;
     const { playingAnimationIdx } = scope;
-    const idx = animations.findIndex(x => x === animation);
 
     scope.playingAnimationIdx = idx;
 
@@ -110,17 +118,17 @@ function useSpring(options: UseSpringOptions) {
         }
 
         scope.data[idx].values[direction].step++;
-
-        scope.frameId = requestAnimationFrame(() => {
-          scope.frameId = null;
-          loop(direction);
-        });
+        scope.frameId = platform.requestAnimationFrame(() => loop(direction));
       };
 
       if (playingAnimationIdx >= 0) {
-        scope.frameId && cancelAnimationFrame(scope.frameId);
+        scope.frameId && platform.cancelAnimationFrame(scope.frameId);
         scope.timerId && window.clearTimeout(scope.timerId);
+        scope.frameId = null;
+        scope.timerId = null;
         const slice = scope.data[playingAnimationIdx];
+
+        if (!slice.direction) return;
 
         if (slice.values[slice.direction].step > 0) {
           const { list, step } = slice.values[slice.direction];
@@ -140,7 +148,7 @@ function useSpring(options: UseSpringOptions) {
   });
 
   useEffect(() => {
-    if (scope.skipFirstRendfer) return;
+    if (scope.skipFirstRendfer && skipFirst) return;
     (async () => {
       const direction: Direction = state ? 'forward' : 'backward';
       const isForward = direction === 'forward';
@@ -151,7 +159,7 @@ function useSpring(options: UseSpringOptions) {
             .reverse();
 
       for (const animation of transformed) {
-        await play(animation.name, direction);
+        await play(animation.name, animation.direction || direction);
       }
     })();
   }, [state]);
@@ -208,7 +216,6 @@ type Scope = {
   timerId: number;
   skipFirstRendfer: boolean;
   playingAnimationIdx: number;
-  map: Record<string, Animation>;
   data: Array<AnimationData>;
 };
 
@@ -337,7 +344,11 @@ function getCurrentStep(x: number, list: Array<number>) {
 }
 
 function getInitialValues(animations: Array<Animation>) {
-  return animations.map(x => x.from || 0);
+  return animations.map(x => {
+    const value = x.direction ? (x.direction == 'forward' ? x.from : x.to) : 0;
+
+    return value || 0;
+  });
 }
 
 const filterToggle = (value: number, idx: number) => {

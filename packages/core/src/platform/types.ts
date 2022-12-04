@@ -6,6 +6,7 @@ import { type VirtualNode } from '../view';
 export type Platform = {
   createNativeElement: <N>(vNode: VirtualNode) => N;
   requestAnimationFrame: typeof requestAnimationFrame;
+  cancelAnimationFrame: typeof cancelAnimationFrame;
   scheduleCallback: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYeildToHost: () => boolean;
   applyCommit: (fiber: Fiber) => void;
