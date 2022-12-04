@@ -8,10 +8,12 @@ type UseSpringOptions = {
   mass?: number;
   delay?: number;
   direction?: Direction;
+  from?: number;
+  to?: number;
 };
 
 function useSpring(options: UseSpringOptions) {
-  const { state, mass = 1 } = options;
+  const { state, mass = 1, from = 0, to = 1 } = options;
   const [x, setX] = useState(0);
   const scope = useMemo<Scope>(
     () => ({
@@ -24,11 +26,13 @@ function useSpring(options: UseSpringOptions) {
   );
 
   useEffect(() => {
-    const { forward, backward, both, source } = createValues({
+    const { forward, backward, both } = createPhysicalValues({
       duration: PHYSICAL_DURATION,
       k: K,
       frames: FRAMES,
       mass,
+      from,
+      to,
     });
 
     scope.values = {
@@ -42,10 +46,6 @@ function useSpring(options: UseSpringOptions) {
       },
       both: {
         list: both,
-        step: 0,
-      },
-      source: {
-        list: source,
         step: 0,
       },
     };
@@ -116,7 +116,6 @@ type Scope = {
     forward: Values;
     backward: Values;
     both: Values;
-    source: Values;
   };
   skipFirstRendfer: boolean;
 };
@@ -129,52 +128,59 @@ function harmonic(time: number, mass: number, k: number) {
   return 1 * Math.cos(period(mass, k) * time);
 }
 
-function minmax(x: number) {
-  const min = -1 * 1;
-  const max = 1 * 1;
-  const a = 0;
-  const b = 1;
-  const y = a + ((x - min) / (max - min)) * (b - a);
+function minimax(values: Array<number>, interval: [number, number]): Array<number> {
+  const a = interval[0];
+  const b = interval[1];
+  const xMin = Math.min(...values);
+  const xMax = Math.max(...values);
+  const normal = [];
 
-  return y;
+  for (let i = 0; i < values.length; i++) {
+    normal[i] = fix(a + ((values[i] - xMin) / (xMax - xMin)) * (b - a), 2);
+  }
+
+  return normal;
 }
 
 function fix(x: number, precision = 4): number {
   return Number(x.toFixed(precision));
 }
 
-type CreateValuesOptions = {
+type CreatePhysicalValuesOptions = {
   duration: number;
   k: number;
   frames: number;
-} & Required<Pick<UseSpringOptions, 'mass'>>;
+} & Required<Pick<UseSpringOptions, 'mass' | 'from' | 'to'>>;
 
-function createValues(options: CreateValuesOptions) {
-  const { duration, frames, mass, k } = options;
+function createPhysicalValues(options: CreatePhysicalValuesOptions) {
+  const { duration, frames, mass, k, from, to } = options;
   const size = Math.floor((duration * 2) / (1000 / frames));
   const steps = Array(size)
     .fill(null)
     .map((_, idx) => (idx + 1) / 1000);
-  const source = steps.map(t => fix(1 - minmax(harmonic(t, mass, k)), 2));
+  const source = minimax(
+    steps.map(t => fix(1 - harmonic(t, mass, k), 2)),
+    [from, to],
+  );
   const forward = [];
   const backward = [];
   let isForwardCompleted = false;
 
   for (const value of source) {
     if (!isForwardCompleted) {
-      if (value <= 1) {
+      if (value <= to) {
         forward.push(value);
       }
 
-      if (value === 1) {
+      if (value === to) {
         isForwardCompleted = true;
       }
     } else {
-      if (value >= 0) {
+      if (value >= from) {
         backward.push(value);
       }
 
-      if (value === 0) {
+      if (value === from) {
         break;
       }
     }
@@ -184,7 +190,6 @@ function createValues(options: CreateValuesOptions) {
     forward,
     backward,
     both: [...forward, ...backward],
-    source,
   };
 }
 
@@ -199,10 +204,6 @@ function createScopeValues(): Scope['values'] {
       step: 0,
     },
     both: {
-      list: [],
-      step: 0,
-    },
-    source: {
       list: [],
       step: 0,
     },
