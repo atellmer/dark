@@ -15,62 +15,25 @@ import {
 } from '@dark-engine/core';
 import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
-const App = createComponent(() => {
-  const [isOpen, setIsOpen] = useState(false);
-  const animations = useMemo<Array<Animation>>(
-    () => [
-      {
-        name: 'scale',
-        mass: 10,
-      },
-      {
-        name: 'rotate',
-        mass: 10,
-      },
-    ],
-    [],
-  );
-  const {
-    items: [x1, x2],
-  } = useSpring({ state: isOpen, animations });
-
-  const style = useStyle(styled => ({
-    root: styled`
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 800px;
-      height: 800px;
-      background-color: #007ac1;
-      color: #fff;
-      font-size: 10rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transform-origin: 0 0;
-      pointer-events: none;
-      opacity: ${x1};
-      transform: scale(${x1}) rotate(${360 * x2}deg) translate(-50%, -50%);
-    `,
-  }));
-
-  return (
-    <>
-      <button onClick={() => setIsOpen(true)}>open</button>
-      <button onClick={() => setIsOpen(false)}>close</button>
-      <button onClick={() => setIsOpen(x => !x)}>toggle</button>
-      <div style={style.root}>
-        {x1.toFixed(2)}
-        <br />
-        {x2.toFixed(2)}
-      </div>
-    </>
-  );
-});
-
 // const App = createComponent(() => {
 //   const [isOpen, setIsOpen] = useState(false);
-//   const { x, api } = useSpring({ state: isOpen, mass: 10 });
+//   const animations = useMemo<Array<Animation>>(
+//     () => [
+//       {
+//         name: 'opacity-scale',
+//         mass: 10,
+//       },
+//       {
+//         name: 'rotate',
+//         mass: 10,
+//       },
+//     ],
+//     [],
+//   );
+//   const {
+//     values: [x1, x2],
+//   } = useSpring({ state: isOpen, animations });
+
 //   const style = useStyle(styled => ({
 //     root: styled`
 //       position: fixed;
@@ -86,17 +49,61 @@ const App = createComponent(() => {
 //       align-items: center;
 //       transform-origin: 0 0;
 //       pointer-events: none;
-//       opacity: 1;
-//       transform: scale(1) translate(-50%, -50%);
+//       opacity: ${x1};
+//       transform: scale(${x1}) rotate(${360 * x2}deg) translate(-50%, -50%);
+//     `,
+//   }));
+
+//   return (
+//     <>
+//       <button onClick={() => setIsOpen(true)}>open</button>
+//       <button onClick={() => setIsOpen(false)}>close</button>
+//       <button onClick={() => setIsOpen(x => !x)}>toggle</button>
+//       <div style={style.root}>
+//         {x1.toFixed(2)}
+//         <br />
+//         {x2.toFixed(2)}
+//       </div>
+//     </>
+//   );
+// });
+
+// const App = createComponent(() => {
+//   const [isOpen, setIsOpen] = useState(false);
+//   const animations = useMemo<Array<Animation>>(
+//     () => [
+//       {
+//         name: 'opacity',
+//         mass: 10,
+//       },
+//     ],
+//     [],
+//   );
+//   const {
+//     values: [x],
+//     api,
+//   } = useSpring({ state: isOpen, animations });
+//   const style = useStyle(styled => ({
+//     root: styled`
+//       position: fixed;
+//       top: 50%;
+//       left: 50%;
+//       width: 800px;
+//       height: 800px;
+//       background-color: #007ac1;
+//       color: #fff;
+//       font-size: 10rem;
+//       display: flex;
+//       justify-content: center;
+//       align-items: center;
+//       transform-origin: 0 0;
+//       pointer-events: none;
+//       transform: translate(-50%, -50%);
 //     `,
 //     emoji: styled`
 //       position: absolute;
 //     `,
 //   }));
-
-//   useEffect(() => {
-//     setIsOpen(true);
-//   }, []);
 
 //   const toggle = () => setIsOpen(!isOpen);
 
@@ -120,89 +127,92 @@ const App = createComponent(() => {
 //   );
 // });
 
-// const App = createComponent(() => {
-//   const [items, setItems] = useState(() =>
-//     Array(1000)
-//       .fill(null)
-//       .map((_, idx) => idx + 1),
-//   );
+const App = createComponent(() => {
+  const [items, setItems] = useState(() =>
+    Array(100)
+      .fill(null)
+      .map((_, idx) => idx + 1),
+  );
 
-//   const handleRemove = (id: number) => {
-//     const idx = items.findIndex(x => x === id);
+  const handleRemove = (id: number) => {
+    const idx = items.findIndex(x => x === id);
 
-//     items.splice(idx, 1);
-//     setItems([...items]);
-//   };
+    items.splice(idx, 1);
+    setItems([...items]);
+  };
 
-//   return (
-//     <>
-//       {items.map(x => {
-//         return <Item key={x} id={x} onRemove={handleRemove} />;
-//       })}
-//     </>
-//   );
-// });
+  return (
+    <>
+      {items.map(x => {
+        return <Item key={x} id={x} onRemove={handleRemove} />;
+      })}
+    </>
+  );
+});
 
-// type ItemProps = {
-//   id: number;
-//   onRemove: (id: number) => void;
-// };
+type ItemProps = {
+  id: number;
+  onRemove: (id: number) => void;
+};
 
-// const Item = createComponent<ItemProps>(({ id, onRemove }) => {
-//   const scope = useMemo(() => ({ isRemoved: false }), []);
-//   const rootRef = useRef<HTMLDivElement>(null);
-//   const { ref, api } = useSpring({
-//     mass: 100,
-//     runOutside: x => {
-//       rootRef.current.style.setProperty('opacity', `${x}`);
-//       rootRef.current.style.setProperty('transform', `scale(${x}, 1)`);
+const Item = createComponent<ItemProps>(({ id, onRemove }) => {
+  const scope = useMemo(() => ({ isRemoved: false }), []);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const animations = useMemo<Array<Animation>>(
+    () => [
+      {
+        name: 'item',
+        mass: 100,
+      },
+    ],
+    [],
+  );
+  const { api } = useSpring({
+    animations,
+    outside: ([x]) => {
+      rootRef.current.style.setProperty('opacity', `${x}`);
+      rootRef.current.style.setProperty('transform', `scale(${x}, 1)`);
 
-//       if (scope.isRemoved) {
-//         if (x > 0) {
-//           rootRef.current.style.setProperty('height', `${48 * x}px`);
-//           rootRef.current.style.setProperty('padding', `${6 * x}px`);
-//         } else {
-//           onRemove(id);
-//         }
-//       }
-//     },
-//   });
-//   const style = useStyle(styled => ({
-//     root: styled`
-//       width: 100%;
-//       height: 48px;
-//       background-color: #007ac1;
-//       color: #fff;
-//       display: flex;
-//       justify-content: space-between;
-//       align-items: center;
-//       opacity: 0;
-//       transform-origin: 0 0;
-//       padding: 6px;
-//       margin-bottom: 1px;
-//     `,
-//   }));
+      if (scope.isRemoved) {
+        if (x > 0) {
+          rootRef.current.style.setProperty('height', `${48 * x}px`);
+          rootRef.current.style.setProperty('padding', `${6 * x}px`);
+        } else {
+          onRemove(id);
+        }
+      }
+    },
+  });
+  const style = useStyle(styled => ({
+    root: styled`
+      width: 100%;
+      height: 48px;
+      background-color: #007ac1;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 1;
+      transform-origin: 0 0;
+      padding: 6px;
+      margin-bottom: 1px;
+    `,
+  }));
 
-//   useLayoutEffect(() => {
-//     ref.current = rootRef.current;
-//   }, []);
+  const handleRemove = () => {
+    if (!scope.isRemoved) {
+      scope.isRemoved = true;
+      api.play('item', 'backward');
+    }
+  };
 
-//   useEffect(() => {
-//     api.run(true);
-//   }, []);
-
-//   const handleRemove = () => {
-//     scope.isRemoved = true;
-//     api.run(false);
-//   };
-
-//   return (
-//     <div ref={rootRef} style={style.root}>
-//       item #{id}
-//       <button onClick={handleRemove}>remove</button>
-//     </div>
-//   );
-// });
+  return (
+    <div ref={rootRef} style={style.root}>
+      item #{id}
+      <button onClick={handleRemove}>remove</button>
+    </div>
+  );
+});
 
 // const App = createComponent(() => {
 //   const [isOpen, setIsOpen] = useState(null);

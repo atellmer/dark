@@ -1,4 +1,4 @@
-import { detectIsUndefined, keyBy } from '../helpers';
+import { detectIsFunction, detectIsUndefined, keyBy } from '../helpers';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
@@ -7,11 +7,12 @@ import { useEvent } from '../use-event';
 type UseSpringOptions = {
   state?: boolean;
   animations: Array<Animation>;
+  outside?: (values: Array<number>) => void;
 };
 
 function useSpring(options: UseSpringOptions) {
-  const { state, animations } = options;
-  const [items, setItems] = useState<Array<number>>(() => getInitialValues(animations));
+  const { state, animations, outside } = options;
+  const [values, setValues] = useState<Array<number>>(() => getInitialValues(animations), { forceSync: true });
   const scope = useMemo<Scope>(
     () => ({
       frameId: null,
@@ -29,15 +30,31 @@ function useSpring(options: UseSpringOptions) {
 
     for (const animation of animations) {
       const { mass = 1, from = 0, to = 1 } = animation;
-      const { forward, backward, both } = createPhysicalValues({
-        duration: PHYSICAL_DURATION,
-        k: K,
-        frames: FRAMES,
-        fn: invertedHarmonic,
-        mass,
-        from,
-        to,
-      });
+      const key = `${mass}:${from}:${to}`;
+      const cache = store[key];
+      let forward: Array<number> = [];
+      let backward: Array<number> = [];
+      let both: Array<number> = [];
+
+      if (cache) {
+        forward = cache.forward.list;
+        backward = cache.backward.list;
+        both = cache.both.list;
+      } else {
+        const values = createPhysicalValues({
+          duration: PHYSICAL_DURATION,
+          k: K,
+          frames: FRAMES,
+          fn: invertedHarmonic,
+          mass,
+          from,
+          to,
+        });
+
+        forward = values.forward;
+        backward = values.backward;
+        both = values.both;
+      }
 
       scope.data[idx].values = {
         forward: {
@@ -54,6 +71,7 @@ function useSpring(options: UseSpringOptions) {
         },
       };
 
+      store[key] = scope.data[idx].values;
       idx++;
     }
   }, [animations]);
@@ -81,10 +99,16 @@ function useSpring(options: UseSpringOptions) {
           return resolve(true);
         }
 
-        const newItems = [...items];
+        const newItems = [...values];
 
         newItems[idx] = x;
-        setItems(newItems);
+
+        if (detectIsFunction(outside)) {
+          outside(newItems);
+        } else {
+          setValues(newItems);
+        }
+
         scope.data[idx].values[direction].step++;
 
         scope.frameId = requestAnimationFrame(() => {
@@ -136,10 +160,28 @@ function useSpring(options: UseSpringOptions) {
     scope.skipFirstRendfer = false;
   }, []);
 
-  const api = useMemo(() => ({ play }), []);
+  const api = useMemo(
+    () => ({
+      play,
+      toggle: {
+        filter: filterToggle,
+        map: mapToggle,
+      },
+    }),
+    [],
+  );
 
-  return { items, api };
+  return { values, api };
 }
+
+const store: Record<
+  string,
+  {
+    forward: Values;
+    backward: Values;
+    both: Values;
+  }
+> = {};
 
 const K = 1;
 const FRAMES = 60;
@@ -246,8 +288,8 @@ function createPhysicalValues(options: CreatePhysicalValuesOptions) {
     steps.map(t => fix(fn(t, m, k), 2)),
     [from, to],
   );
-  const forward = [];
-  const backward = [];
+  const forward: Array<number> = [];
+  const backward: Array<number> = [];
   let isForwardCompleted = false;
 
   for (const value of source) {
@@ -297,5 +339,14 @@ function getCurrentStep(x: number, list: Array<number>) {
 function getInitialValues(animations: Array<Animation>) {
   return animations.map(x => x.from || 0);
 }
+
+const filterToggle = (value: number, idx: number) => {
+  if (value !== 0 && value !== 1) return true;
+  return value === 0 ? idx === 0 : value === 1 ? idx === 1 : idx === 0;
+};
+
+const mapToggle = (value: number, size: number, idx: number) => {
+  return size === 1 ? 1 : idx === 0 ? 1 - value : value;
+};
 
 export { useSpring };
