@@ -29,7 +29,7 @@ export { useState } from './use-state';
 export { useReactiveState } from './use-reactive-state';
 export { useId } from './use-id';
 export { useSyncExternalStore } from './use-sync-external-store';
-export { useSpring } from './use-spring';
+export { useSpring, Animation } from './use-spring';
 export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';

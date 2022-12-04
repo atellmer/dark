@@ -8,6 +8,7 @@ import {
   useUpdate,
   useMemo,
   useSpring,
+  Animation,
   useLayoutEffect,
   DarkElement,
   batch,
@@ -16,7 +17,22 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
 const App = createComponent(() => {
   const [isOpen, setIsOpen] = useState(false);
-  const { x } = useSpring({ state: isOpen, mass: 100 });
+  const animations = useMemo<Array<Animation>>(
+    () => [
+      {
+        name: 'scale',
+        mass: 10,
+      },
+      {
+        name: 'rotate',
+        mass: 10,
+      },
+    ],
+    [],
+  );
+  const {
+    items: [x1, x2],
+  } = useSpring({ state: isOpen, animations });
 
   const style = useStyle(styled => ({
     root: styled`
@@ -33,8 +49,8 @@ const App = createComponent(() => {
       align-items: center;
       transform-origin: 0 0;
       pointer-events: none;
-      opacity: ${x};
-      transform: scale(${x}) translate(-50%, -50%);
+      opacity: ${x1};
+      transform: scale(${x1}) rotate(${360 * x2}deg) translate(-50%, -50%);
     `,
   }));
 
@@ -43,7 +59,11 @@ const App = createComponent(() => {
       <button onClick={() => setIsOpen(true)}>open</button>
       <button onClick={() => setIsOpen(false)}>close</button>
       <button onClick={() => setIsOpen(x => !x)}>toggle</button>
-      <div style={style.root}>{x.toFixed(2)}</div>
+      <div style={style.root}>
+        {x1.toFixed(2)}
+        <br />
+        {x2.toFixed(2)}
+      </div>
     </>
   );
 });

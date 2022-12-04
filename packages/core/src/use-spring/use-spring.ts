@@ -1,4 +1,4 @@
-import { detectIsUndefined } from '../helpers';
+import { detectIsUndefined, keyBy } from '../helpers';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
@@ -6,97 +6,129 @@ import { useEvent } from '../use-event';
 
 type UseSpringOptions = {
   state?: boolean;
-  mass?: number;
-  direction?: Direction;
-  from?: number;
-  to?: number;
-  delay?: number;
+  animations: Array<Animation>;
 };
 
 function useSpring(options: UseSpringOptions) {
-  const { state, mass = 1, from = 0, to = 1, delay } = options;
-  const [x, setX] = useState(0);
+  const { state, animations } = options;
+  const [items, setItems] = useState<Array<number>>(() => getInitialValues(animations));
   const scope = useMemo<Scope>(
     () => ({
       frameId: null,
-      direction: null,
-      values: createScopeValues(),
+      timerId: null,
       skipFirstRendfer: true,
+      playingAnimationIdx: -1,
+      map: keyBy(animations, x => x.name, true) as Record<string, Animation>,
+      data: animations.map(() => createAnimationData()),
     }),
     [],
   );
 
   useEffect(() => {
-    const { forward, backward, both } = createPhysicalValues({
-      duration: PHYSICAL_DURATION,
-      k: K,
-      frames: FRAMES,
-      mass,
-      from,
-      to,
-    });
+    let idx = 0;
 
-    scope.values = {
-      forward: {
-        list: forward,
-        step: 0,
-      },
-      backward: {
-        list: backward,
-        step: 0,
-      },
-      both: {
-        list: both,
-        step: 0,
-      },
-    };
-  }, [mass]);
+    for (const animation of animations) {
+      const { mass = 1, from = 0, to = 1 } = animation;
+      const { forward, backward, both } = createPhysicalValues({
+        duration: PHYSICAL_DURATION,
+        k: K,
+        frames: FRAMES,
+        mass,
+        from,
+        to,
+      });
 
-  const play = useEvent((direction: Direction) => {
-    const loop = (direction: Direction) => {
-      scope.direction = direction;
+      scope.data[idx].values = {
+        forward: {
+          list: forward,
+          step: 0,
+        },
+        backward: {
+          list: backward,
+          step: 0,
+        },
+        both: {
+          list: both,
+          step: 0,
+        },
+      };
 
-      const { step, list } = scope.values[direction];
-      const x = list[step];
+      idx++;
+    }
+  }, [animations]);
 
-      if (step > list.length - 1) {
-        scope.values[direction].step = 0;
-        return;
+  const play = useEvent((name: string, direction: Direction) => {
+    const animation = scope.map[name];
+    const { delay } = animation;
+    const { playingAnimationIdx } = scope;
+    const idx = animations.findIndex(x => x === animation);
+
+    scope.playingAnimationIdx = idx;
+
+    return new Promise<boolean>(resolve => {
+      const loop = (direction: Direction) => {
+        scope.data[idx].direction = direction;
+        scope.playingAnimationIdx = idx;
+
+        const { step, list } = scope.data[idx].values[direction];
+        const x = list[step];
+
+        if (step > list.length - 1) {
+          scope.data[idx].values[direction].step = 0;
+          scope.playingAnimationIdx = -1;
+
+          return resolve(true);
+        }
+
+        const newItems = [...items];
+
+        newItems[idx] = x;
+        setItems(newItems);
+        scope.data[idx].values[direction].step++;
+
+        scope.frameId = requestAnimationFrame(() => {
+          scope.frameId = null;
+          loop(direction);
+        });
+      };
+
+      if (playingAnimationIdx >= 0) {
+        scope.frameId && cancelAnimationFrame(scope.frameId);
+        scope.timerId && window.clearTimeout(scope.timerId);
+        const slice = scope.data[playingAnimationIdx];
+
+        if (slice.values[slice.direction].step > 0) {
+          const { list, step } = slice.values[slice.direction];
+          const currentStep = getCurrentStep(list[step], slice.values[direction].list);
+
+          slice.values[slice.direction].step = 0;
+          slice.values[direction].step = currentStep;
+        }
       }
 
-      setX(x);
-      scope.values[direction].step++;
-
-      scope.frameId = requestAnimationFrame(() => {
-        scope.frameId = null;
+      if (delay) {
+        scope.timerId = window.setTimeout(() => loop(direction), delay);
+      } else {
         loop(direction);
-      });
-    };
-
-    if (scope.frameId) {
-      cancelAnimationFrame(scope.frameId);
-    }
-
-    if (scope.values[scope.direction]?.step > 0) {
-      const { list, step } = scope.values[scope.direction];
-      const currentStep = getCurrentStep(list[step], scope.values[direction].list);
-
-      scope.values[scope.direction].step = 0;
-      scope.values[direction].step = currentStep;
-    }
-
-    if (delay) {
-      setTimeout(() => loop(direction), delay);
-    } else {
-      loop(direction);
-    }
+      }
+    });
   });
 
   useEffect(() => {
     if (scope.skipFirstRendfer) return;
-    const direction = state ? 'forward' : 'backward';
+    (async () => {
+      const direction: Direction = state ? 'forward' : 'backward';
+      const isForward = direction === 'forward';
+      const transformed = isForward
+        ? animations
+        : animations
+            .filter((_, idx) => (scope.playingAnimationIdx >= 0 ? idx <= scope.playingAnimationIdx : true))
+            .reverse();
 
-    play(direction);
+      for (const animation of transformed) {
+        await play(animation.name, direction);
+      }
+    })();
   }, [state]);
 
   useEffect(() => {
@@ -105,7 +137,7 @@ function useSpring(options: UseSpringOptions) {
 
   const api = useMemo(() => ({ play }), []);
 
-  return { x, api };
+  return { items, api };
 }
 
 const K = 1;
@@ -114,6 +146,15 @@ const PHYSICAL_DURATION = 100000; // based on the fact that the minimum mass is 
 
 type Direction = 'forward' | 'backward' | 'both';
 
+export type Animation = {
+  name: string;
+  mass?: number;
+  direction?: Direction;
+  from?: number;
+  to?: number;
+  delay?: number;
+};
+
 type Values = {
   list: Array<number>;
   step: number;
@@ -121,14 +162,41 @@ type Values = {
 
 type Scope = {
   frameId: number;
+  timerId: number;
+  skipFirstRendfer: boolean;
+  playingAnimationIdx: number;
+  map: Record<string, Animation>;
+  data: Array<AnimationData>;
+};
+
+type AnimationData = {
   direction: Direction;
   values: {
     forward: Values;
     backward: Values;
     both: Values;
   };
-  skipFirstRendfer: boolean;
 };
+
+function createAnimationData(): AnimationData {
+  return {
+    direction: null,
+    values: {
+      forward: {
+        list: [],
+        step: 0,
+      },
+      backward: {
+        list: [],
+        step: 0,
+      },
+      both: {
+        list: [],
+        step: 0,
+      },
+    },
+  };
+}
 
 function period(mass: number, k: number) {
   return 2 * Math.PI * Math.sqrt(mass / k);
@@ -160,7 +228,7 @@ type CreatePhysicalValuesOptions = {
   duration: number;
   k: number;
   frames: number;
-} & Required<Pick<UseSpringOptions, 'mass' | 'from' | 'to'>>;
+} & Required<Pick<Animation, 'mass' | 'from' | 'to'>>;
 
 function createPhysicalValues(options: CreatePhysicalValuesOptions) {
   const { duration, frames, mass, k, from, to } = options;
@@ -203,23 +271,6 @@ function createPhysicalValues(options: CreatePhysicalValuesOptions) {
   };
 }
 
-function createScopeValues(): Scope['values'] {
-  return {
-    forward: {
-      list: [],
-      step: 0,
-    },
-    backward: {
-      list: [],
-      step: 0,
-    },
-    both: {
-      list: [],
-      step: 0,
-    },
-  };
-}
-
 function getCurrentStep(x: number, list: Array<number>) {
   for (let i = 0; i < list.length; i++) {
     const value = list[i];
@@ -235,6 +286,10 @@ function getCurrentStep(x: number, list: Array<number>) {
   }
 
   return 0;
+}
+
+function getInitialValues(animations: Array<Animation>) {
+  return animations.map(x => x.from || 0);
 }
 
 export { useSpring };
