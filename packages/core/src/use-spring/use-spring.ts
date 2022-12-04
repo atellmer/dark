@@ -2,18 +2,19 @@ import { detectIsUndefined } from '../helpers';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
+import { useEvent } from '../use-event';
 
 type UseSpringOptions = {
   state?: boolean;
   mass?: number;
-  delay?: number;
   direction?: Direction;
   from?: number;
   to?: number;
+  delay?: number;
 };
 
 function useSpring(options: UseSpringOptions) {
-  const { state, mass = 1, from = 0, to = 1 } = options;
+  const { state, mass = 1, from = 0, to = 1, delay } = options;
   const [x, setX] = useState(0);
   const scope = useMemo<Scope>(
     () => ({
@@ -51,9 +52,7 @@ function useSpring(options: UseSpringOptions) {
     };
   }, [mass]);
 
-  useEffect(() => {
-    if (scope.skipFirstRendfer) return;
-
+  const play = useEvent((direction: Direction) => {
     const loop = (direction: Direction) => {
       scope.direction = direction;
 
@@ -78,8 +77,6 @@ function useSpring(options: UseSpringOptions) {
       cancelAnimationFrame(scope.frameId);
     }
 
-    const direction = state ? 'forward' : 'backward';
-
     if (scope.values[scope.direction]?.step > 0) {
       const { list, step } = scope.values[scope.direction];
       const currentStep = getCurrentStep(list[step], scope.values[direction].list);
@@ -88,14 +85,27 @@ function useSpring(options: UseSpringOptions) {
       scope.values[direction].step = currentStep;
     }
 
-    loop(direction);
+    if (delay) {
+      setTimeout(() => loop(direction), delay);
+    } else {
+      loop(direction);
+    }
+  });
+
+  useEffect(() => {
+    if (scope.skipFirstRendfer) return;
+    const direction = state ? 'forward' : 'backward';
+
+    play(direction);
   }, [state]);
 
   useEffect(() => {
     scope.skipFirstRendfer = false;
   }, []);
 
-  return { x };
+  const api = useMemo(() => ({ play }), []);
+
+  return { x, api };
 }
 
 const K = 1;
