@@ -5,34 +5,38 @@ import {
   useEffect,
   useRef,
   useState,
-  useUpdate,
   useMemo,
   useSpring,
-  Animation,
-  useLayoutEffect,
   DarkElement,
-  batch,
+  memo,
 } from '@dark-engine/core';
 import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
 // const App = createComponent(() => {
 //   const [isOpen, setIsOpen] = useState(false);
-//   const animations = useMemo<Array<Animation>>(
-//     () => [
-//       {
-//         name: 'opacity-scale',
-//         mass: 10,
-//       },
-//       {
-//         name: 'rotate',
-//         mass: 10,
-//       },
-//     ],
-//     [],
-//   );
 //   const {
 //     values: [x1, x2],
-//   } = useSpring({ state: isOpen, skipFirst: true, animations });
+//   } = useSpring({
+//     state: isOpen,
+//     animations: [
+//       ({ state }) => ({
+//         name: 'appearance',
+//         mass: 4.7,
+//         stiffness: 408,
+//         damping: 3,
+//         duration: 10000,
+//         direction: state ? 'forward' : 'mirrored',
+//       }),
+//       ({ state }) => ({
+//         name: 'rotation',
+//         mass: 4.7,
+//         stiffness: 408,
+//         damping: 3,
+//         duration: 20000,
+//         direction: state ? 'forward' : 'mirrored',
+//       }),
+//     ],
+//   });
 
 //   const style = useStyle(styled => ({
 //     root: styled`
@@ -59,30 +63,28 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 //       <button onClick={() => setIsOpen(true)}>open</button>
 //       <button onClick={() => setIsOpen(false)}>close</button>
 //       <button onClick={() => setIsOpen(x => !x)}>toggle</button>
-//       <div style={style.root}>
-//         {x1.toFixed(2)}
-//         <br />
-//         {x2.toFixed(2)}
-//       </div>
+//       <div style={style.root}>{x1.toFixed(4)}</div>
 //     </>
 //   );
 // });
 
 // const App = createComponent(() => {
 //   const [isOpen, setIsOpen] = useState(false);
-//   const animations = useMemo<Array<Animation>>(
-//     () => [
-//       {
-//         name: 'opacity',
-//         mass: 10,
-//       },
-//     ],
-//     [],
-//   );
 //   const {
 //     values: [x],
 //     api,
-//   } = useSpring({ state: isOpen, skipFirst: true, animations });
+//   } = useSpring({
+//     state: isOpen,
+//     animations: [
+//       () => ({
+//         name: 'opacity',
+//         mass: 10,
+//         stiffness: 1,
+//         damping: 1,
+//         duration: 5000,
+//       }),
+//     ],
+//   });
 //   const style = useStyle(styled => ({
 //     root: styled`
 //       position: fixed;
@@ -129,22 +131,25 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
 // const App = createComponent(() => {
 //   const [items, setItems] = useState(() =>
-//     Array(100)
+//     Array(1000)
 //       .fill(null)
 //       .map((_, idx) => idx + 1),
 //   );
+//   const scope = useMemo(() => ({ items }), []);
+
+//   scope.items = items;
 
 //   const handleRemove = (id: number) => {
-//     const idx = items.findIndex(x => x === id);
+//     const idx = scope.items.findIndex(x => x === id);
 
-//     items.splice(idx, 1);
-//     setItems([...items]);
+//     scope.items.splice(idx, 1);
+//     setItems([...scope.items]);
 //   };
 
 //   return (
 //     <>
 //       {items.map(x => {
-//         return <Item key={x} id={x} onRemove={handleRemove} />;
+//         return <MemoItem key={x} id={x} onRemove={handleRemove} />;
 //       })}
 //     </>
 //   );
@@ -157,27 +162,43 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
 // const Item = createComponent<ItemProps>(({ id, onRemove }) => {
 //   const scope = useMemo(() => ({ isRemoved: false }), []);
-//   const rootRef = useRef<HTMLDivElement>(null);
-//   const animations = useMemo<Array<Animation>>(
-//     () => [
-//       {
-//         name: 'item',
-//         mass: 100,
-//       },
+//   const ref = useRef<HTMLDivElement>(null);
+//   useSpring({
+//     state: true,
+//     mount: true,
+//     animations: [
+//       () => ({
+//         name: 'appearance',
+//         mass: 1,
+//         stiffness: 1,
+//         damping: 1,
+//         duration: 1000,
+//         delay: id * 50,
+//       }),
 //     ],
-//     [],
-//   );
+//     outside: ([x1]) => {
+//       ref.current.style.setProperty('opacity', `${x1}`);
+//       ref.current.style.setProperty('transform', `scale(${x1}, 1)`);
+//     },
+//   });
 //   const { api } = useSpring({
-//     animations,
-//     skipFirst: true,
-//     outside: ([x]) => {
-//       rootRef.current.style.setProperty('opacity', `${x}`);
-//       rootRef.current.style.setProperty('transform', `scale(${x}, 1)`);
+//     animations: [
+//       () => ({
+//         name: 'removing',
+//         mass: 1,
+//         stiffness: 1,
+//         damping: 1,
+//         duration: 1000,
+//       }),
+//     ],
+//     outside: ([x2]) => {
+//       ref.current.style.setProperty('opacity', `${x2}`);
+//       ref.current.style.setProperty('transform', `scale(${x2}, 1)`);
 
 //       if (scope.isRemoved) {
-//         if (x > 0) {
-//           rootRef.current.style.setProperty('height', `${48 * x}px`);
-//           rootRef.current.style.setProperty('padding', `${6 * x}px`);
+//         if (x2 > 0) {
+//           ref.current.style.setProperty('height', `${48 * x2}px`);
+//           ref.current.style.setProperty('padding', `${6 * x2}px`);
 //         } else {
 //           onRemove(id);
 //         }
@@ -193,27 +214,30 @@ import { createRoot, useStyle } from '@dark-engine/platform-browser';
 //       display: flex;
 //       justify-content: space-between;
 //       align-items: center;
-//       opacity: 1;
+//       opacity: 0;
 //       transform-origin: 0 0;
 //       padding: 6px;
 //       margin-bottom: 1px;
+//       will-change: transform;
 //     `,
 //   }));
 
 //   const handleRemove = () => {
 //     if (!scope.isRemoved) {
 //       scope.isRemoved = true;
-//       api.play('item', 'backward');
+//       api.play('removing', 'backward');
 //     }
 //   };
 
 //   return (
-//     <div ref={rootRef} style={style.root}>
+//     <div ref={ref} style={style.root}>
 //       item #{id}
 //       <button onClick={handleRemove}>remove</button>
 //     </div>
 //   );
 // });
+
+// const MemoItem = memo(Item);
 
 type IconProps = {
   size: number;
@@ -254,37 +278,43 @@ const App = createComponent(() => {
   const CARD_WIDTH = 500;
   const CARD_HEIGHT = 500;
   const BUTTON_SIZE = 50;
-  const [isOpen, setIsOpen] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [width, setWidth] = useState(CARD_WIDTH);
   const rootRef = useRef<HTMLDivElement>(null);
-  const animations = useMemo<Array<Animation>>(
-    () => [
-      {
-        name: 'to-center',
-        mass: 200,
-      },
-      {
-        name: 'to-square',
-        mass: 100,
-        from: 0,
-        to: 50,
-        direction: isOpen || isOpen === null ? 'backward' : 'forward',
-      },
-      {
-        name: 'to-right',
-        mass: 100,
-      },
-      {
-        name: 'to-bottom',
-        mass: 100,
-        delay: isOpen ? 0 : 1600,
-      },
-    ],
-    [isOpen],
-  );
+
   const {
     values: [x1, x2, x3, x4],
-  } = useSpring({ state: isOpen, skipFirst: true, animations });
+  } = useSpring({
+    state: isOpen,
+    animations: [
+      () => ({
+        name: 'move-button-to-center',
+        mass: 1,
+        stiffness: 1,
+        damping: 1,
+        duration: 500,
+      }),
+      ({ state }) => ({
+        name: 'morph-circle-button-to-square',
+        mass: 1,
+        from: 0,
+        to: 50,
+        duration: 500,
+        direction: state || state === null ? 'backward' : 'forward',
+      }),
+      () => ({
+        name: 'morph-square-button-to-horizaontal-panel',
+        mass: 1,
+        duration: 500,
+      }),
+      ({ state, playingIdx }) => ({
+        name: 'morph-horizontal-panel-to-card',
+        mass: 1,
+        duration: 500,
+        delay: state || playingIdx > 0 ? 0 : 1200,
+      }),
+    ],
+  });
 
   const style = useStyle(styled => ({
     root: styled`
@@ -347,16 +377,15 @@ const App = createComponent(() => {
     return () => window.removeEventListener('resize', callback);
   }, []);
 
-  const handleOpen = () => {
-    setIsOpen(true);
-  };
+  const handleOpen = () => setIsOpen(true);
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
+  const handleClose = () => setIsOpen(false);
+
+  const handleToggle = () => setIsOpen(x => !x);
 
   return (
     <>
+      <button onClick={handleToggle}>toggle</button>
       <div ref={rootRef} role='button' style={style.root} onClick={x1 === 0 ? handleOpen : () => {}}>
         {x3 < 0.2 && (
           <div style={style.add}>
@@ -391,33 +420,36 @@ type ItemProps = {
 };
 
 const Item = createComponent<ItemProps>(({ isOpen, delay, slot }) => {
-  const animationsOne = useMemo<Array<Animation>>(
-    () => [
-      {
-        name: 'opacity',
-        mass: 100,
-        delay,
-      },
-    ],
-    [delay],
-  );
-  const animationsTwo = useMemo<Array<Animation>>(
-    () => [
-      {
-        name: 'hover',
-        mass: 100,
-      },
-    ],
-    [],
-  );
+  const scope = useMemo(() => ({ over: false, delay }), []);
+  scope.delay = delay;
   const {
     values: [x1],
-  } = useSpring({ state: isOpen, animations: animationsOne });
+  } = useSpring({
+    state: isOpen,
+    mount: true,
+    animations: [
+      () => ({
+        name: 'appearance',
+        mass: 1,
+        duration: 500,
+        delay: scope.delay,
+      }),
+    ],
+  });
   const {
     values: [x2],
     api,
-  } = useSpring({ animations: animationsTwo });
-  const scope = useMemo(() => ({ over: false }), []);
+  } = useSpring({
+    animations: [
+      () => ({
+        name: 'hover',
+        mass: 4.7,
+        stiffness: 408,
+        damping: 10,
+        duration: 10000,
+      }),
+    ],
+  });
   const style = useStyle(styled => ({
     root: styled`
       position: relative;
