@@ -12,7 +12,7 @@ type UseSpringOptions = {
   outside?: (values: Array<number>) => void;
 };
 
-function useSpring(options: UseSpringOptions) {
+function useSpring(options: UseSpringOptions, deps: Array<any>) {
   const { state, animations, mount = false, outside } = options;
   const scope = useMemo<Scope>(() => {
     const scope = {
@@ -185,7 +185,7 @@ function useSpring(options: UseSpringOptions) {
         await play(name, ownDirection || direction, idx);
       }
     })();
-  }, [state]);
+  }, [state, ...(deps || [])]);
 
   useEffect(() => {
     scope.skipFirstRendfer = false;
