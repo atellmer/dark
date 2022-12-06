@@ -24,7 +24,7 @@ declare class Fiber<N = NativeElement> {
   marker: string;
   isUsed: boolean;
   idx: number;
-  batched: number;
+  batched: number | null;
   catchException: (error: Error) => void;
   constructor(options: Partial<Fiber<N>>);
   markMountedToHost(): void;
