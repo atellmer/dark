@@ -16,7 +16,7 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 - 🎉 Declarative
 - 🛸 Fast
 - 🏭 Has components and hooks
-- 🧶 Based on the Fiber concept
+- 🧶 Based on the Fiber architecture
 - ⚡️ Сan use without build tools
 - 🦾 Strongly typed
 - 🦄 Small size
@@ -126,6 +126,7 @@ createRoot(document.getElementById('root')).render(App());
 - [Refs](#refs)
 - [Catching errors](#errors)
 - [Context](#context)
+- [Animations](#animations)
 - [Code splitting](#code-splitting)
 - [Styles](#styles)
 - [Portals](#portals)
@@ -160,6 +161,7 @@ import {
   useError,
   useRef,
   useId,
+  useSpring,
   useImperativeHandle,
   useState,
   useReducer,
@@ -952,6 +954,49 @@ render ThemeConsumer!
 render ThemeConsumer!
 ...
 ```
+
+<a name="animations"></a>
+## Animations
+
+Animations in Dark are based on spring physics, so to get the effect you want, you should experiment with its parameters. Dark supports an array of animations that run sequentially one after another, including in the opposite direction. With this technique, you can create complex effects of moving elements.
+
+```tsx
+import { useSpring } from '@dark-engine/core';
+```
+
+```tsx
+const App = createComponent(() => {
+  const [isOpen, setIsOpen] = useState(false);
+  const {
+    values: [x],
+  } = useSpring({
+    state: isOpen,
+    getAnimations: () => [ // 
+      {
+        name: 'my-animation', // animation name should be uniqueness in this component
+        mass: 1,
+        stiffness: 1,
+        damping: 1,
+        duration: 1000,
+      },
+    ],
+  });
+
+  const style = useStyle(styled => ({
+    root: styled`
+      opacity: ${x};
+    `,
+  }));
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(x => !x)}>toggle</button>
+      <div style={style.root}>Hello</div>
+    </>
+  );
+});
+```
+
 <a name="code-splitting"></a>
 ## Code splitting
 
@@ -960,6 +1005,7 @@ If you have separated modules, you might want to lazy load them when needed. In 
 ```tsx
 import { lazy, Suspense } from '@dark-engine/core';
 ```
+
 ```tsx
 type NewPageProps = {};
 
@@ -982,6 +1028,7 @@ const App = createComponent(() => {
   );
 });
 ```
+
 <a name="styles"></a>
 ## Styles
 In Dark for the Browser, styling is done just like in normal HTML using the style and class attributes. You can also use the useStyle hook, which returns an object with styles. This hook differs from the usual template literals in that it internally minifies the style by removing extra spaces (memoization is used), and also, if you have the syntax highlighting plugin for styled-components installed, highlights the style.
