@@ -69,7 +69,7 @@ class Fiber<N = NativeElement> {
   public marker: string;
   public isUsed: boolean;
   public idx: number;
-  public batched: number;
+  public batched: number | null;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -607,13 +607,14 @@ function pertformInstance(options: PerformInstanceOptions) {
 
     instance.children.splice(idx, 1, ...elements);
     performedInstance = instance.children[idx];
-    performedShadow = alternate
-      ? getRootShadow({
-          instance: performedInstance,
-          fiber,
-          alternate,
-        })
-      : performedShadow;
+    performedShadow =
+      alternate && detectIsComponentFactory(alternate.instance)
+        ? getRootShadow({
+            instance: performedInstance,
+            fiber,
+            alternate,
+          })
+        : performedShadow;
     performedInstance = mountInstance(fiber, performedInstance);
   }
 

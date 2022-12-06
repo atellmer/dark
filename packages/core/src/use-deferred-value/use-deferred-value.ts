@@ -1,6 +1,6 @@
 import { useState } from '../use-state';
-import { useEffect } from '../use-effect';
 import { TaskPriority } from '../constants';
+import { batch } from '../batch';
 
 type UseDeferredValueOprions = {
   timeoutMs: number;
@@ -13,9 +13,11 @@ function useDeferredValue<T>(value: T, options?: UseDeferredValueOprions): T {
     timeoutMs,
   });
 
-  useEffect(() => {
-    setDeferredValue(value);
-  }, [value]);
+  if (value !== deferredValue) {
+    batch(() => {
+      setDeferredValue(value);
+    });
+  }
 
   return deferredValue;
 }

@@ -161,7 +161,8 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   const hasIDL =
     element instanceof HTMLInputElement ||
     element instanceof HTMLTextAreaElement ||
-    element instanceof HTMLSelectElement;
+    element instanceof HTMLSelectElement ||
+    element instanceof HTMLOptionElement;
 
   if (hasIDL && Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
     element[attrName] = attrValue;
