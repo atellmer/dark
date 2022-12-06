@@ -39,6 +39,8 @@ Dark is lightweight (10 Kb gzipped) component-and-hook-based UI rendering engine
 - [StackBlitz example #5 (dark mode with Dark context)](https://stackblitz.com/edit/darkapp-ccz57rk-z41sup?file=index.tsx)
 - [StackBlitz example #6 (working with standard HTML input elements)](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
 - [StackBlitz example #7 (demo lazy loading routes via Dark and BaseRouter)](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=router.tsx,index.tsx)
+- [StackBlitz example #8 (spring animated image slider)](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
+- [StackBlitz example #9 (spring animated FAB button)](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
