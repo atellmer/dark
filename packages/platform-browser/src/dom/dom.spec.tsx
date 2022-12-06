@@ -82,4 +82,44 @@ describe('[DOM]', () => {
     expect(host.innerHTML).toBe(content(false));
     root.unmount();
   });
+
+  test('can render svg', () => {
+    const content = () => dom`
+      <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="14" width="14" filter="drop-shadow( 0px 1px 1px rgba(0, 0, 0, .7))" xmlns="http://www.w3.org/2000/svg">
+        <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M184 112l144 144-144 144"></path>
+      </svg>
+    `;
+
+    const root = createRoot(host);
+
+    const render$ = (props = {}) => {
+      root.render(App(props));
+    };
+
+    const App = createComponent(() => {
+      return (
+        <svg
+          stroke='currentColor'
+          fill='currentColor'
+          stroke-width='0'
+          viewBox='0 0 512 512'
+          height={14}
+          width={14}
+          filter='drop-shadow( 0px 1px 1px rgba(0, 0, 0, .7))'
+          xmlns='http://www.w3.org/2000/svg'>
+          <path
+            fill='none'
+            stroke-linecap='round'
+            stroke-linejoin='round'
+            stroke-width='48'
+            d='M184 112l144 144-144 144'
+          />
+        </svg>
+      );
+    });
+
+    render$();
+    expect(host.innerHTML).toBe(content());
+    root.unmount();
+  });
 });

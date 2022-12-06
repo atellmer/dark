@@ -173,13 +173,15 @@ describe('[render]', () => {
     expect(host.innerHTML).toBe(content(true));
   });
 
-  describe('[adding/removing/swaping nodes]', () => {
+  describe('[adding/removing/swaping nodes #1]', () => {
     type AppProps = {
       items: Array<Item>;
     };
+
     type ListItemProps = {
       slot: DarkElement;
     };
+
     const itemAttrName = 'data-item';
     let items = [];
 
@@ -194,6 +196,169 @@ describe('[render]', () => {
       return items.map(x => {
         return ListItem({
           key: x.id,
+          slot: Text(x.name),
+        });
+      });
+    });
+
+    const App = createComponent<AppProps>(({ items }) => {
+      return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
+    });
+
+    const render$ = () => {
+      render(App({ items }), host);
+    };
+
+    const content = (items: Array<Item>) => dom`
+      <div>header</div>
+      ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
+      <div>footer</div>
+    `;
+
+    const addItemsToEnd = (count: number) => {
+      items = [...items, ...generateItems(count)];
+    };
+    const addItemsToStart = (count: number) => {
+      items = [...generateItems(count), ...items];
+    };
+    const insertNodesInDifferentPlaces = () => {
+      const [item1, item2, item3, ...rest] = items;
+
+      items = [...generateItems(5), item1, item2, ...generateItems(2), ...rest];
+    };
+    const removeItem = (id: number) => {
+      items = items.filter(x => x.id !== id);
+    };
+    const swapItems = () => {
+      const newItems = [...items];
+
+      newItems[1] = items[items.length - 2];
+      newItems[newItems.length - 2] = items[1];
+      items = newItems;
+    };
+
+    test('can add nodes', () => {
+      items = generateItems(5);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+
+      addItemsToEnd(5);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+
+      addItemsToStart(6);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('nodes not recreated after adding', () => {
+      items = generateItems(5);
+      render$();
+
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const node = nodes[0];
+      const expected = node.textContent;
+      const count = 4;
+
+      addItemsToStart(count);
+      render$();
+
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNode = newNodes[count];
+
+      expect(node).toStrictEqual(newNode);
+      expect(node.textContent).toBe(expected);
+    });
+
+    test('can insert nodes to different places', () => {
+      items = generateItems(10);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+      insertNodesInDifferentPlaces();
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('can remove nodes', () => {
+      items = generateItems(10);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+
+      removeItem(6);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+
+      removeItem(5);
+      removeItem(1);
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+
+      items = [];
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('nodes not recreated after removing', () => {
+      items = generateItems(10);
+      render$();
+
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const node = nodes[8];
+      const expected = node.textContent;
+
+      removeItem(6);
+      render$();
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+
+      expect(node).toBe(newNodes[7]);
+      expect(node.textContent).toBe(expected);
+    });
+
+    test('can remove last nodes', () => {
+      items = generateItems(10);
+      render$();
+      items.pop();
+      items.pop();
+      render$();
+      expect(host.innerHTML).toBe(content(items));
+    });
+
+    test('can swap nodes', () => {
+      items = generateItems(10);
+      render$();
+
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const nodeOne = nodes[1];
+      const nodeTwo = nodes[8];
+
+      expect(nodeOne.textContent).toBe('2');
+      expect(nodeTwo.textContent).toBe('9');
+
+      swapItems();
+      render$();
+
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNodeOne = newNodes[8];
+      const newNodeTwo = newNodes[1];
+
+      expect(newNodeOne.textContent).toBe('2');
+      expect(newNodeTwo.textContent).toBe('9');
+    });
+  });
+
+  describe('[adding/removing/swaping nodes #2]', () => {
+    type AppProps = {
+      items: Array<Item>;
+    };
+
+    const itemAttrName = 'data-item';
+    let items = [];
+
+    const List = createComponent<AppProps>(({ items }) => {
+      return items.map(x => {
+        return div({
+          key: x.id,
+          [itemAttrName]: true,
           slot: Text(x.name),
         });
       });
