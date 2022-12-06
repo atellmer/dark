@@ -33,6 +33,7 @@ declare const detectIsCommentVirtualNode: (vNode: unknown) => vNode is CommentVi
 declare const detectIsTextVirtualNode: (vNode: unknown) => vNode is TextVirtualNode;
 declare const detectIsEmptyVirtualNode: (vNode: unknown) => boolean;
 declare function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null;
+declare function getVirtualNodeFactoryKey(factory: VirtualNodeFactory): DarkElementKey | null;
 declare const createEmptyVirtualNode: () => CommentVirtualNode;
 declare const detectIsVirtualNodeFactory: (factory: unknown) => factory is VirtualNodeFactory;
 declare function View(def: ViewDef): TagVirtualNodeFactory;
@@ -52,6 +53,7 @@ export {
   detectIsTextVirtualNode,
   detectIsEmptyVirtualNode,
   getVirtualNodeKey,
+  getVirtualNodeFactoryKey,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,
   View,
