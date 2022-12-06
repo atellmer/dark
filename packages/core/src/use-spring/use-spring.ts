@@ -4,45 +4,43 @@ import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
 import { useEvent } from '../use-event';
 import { platform } from '../platform';
+import { TaskPriority } from '../constants';
+import { batch } from '../batch';
 
 type UseSpringOptions = {
   state?: boolean;
-  animations: Array<Animation>;
+  getAnimations: (options: AnimationOptions) => Array<Animation>;
   mount?: boolean;
+  deps?: Array<any>;
   outside?: (values: Array<number>) => void;
 };
 
-function useSpring(options: UseSpringOptions, deps: Array<any>) {
-  const { state, animations, mount = false, outside } = options;
+function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
+  const { state, getAnimations, mount = false, deps: updatingDeps = [], outside } = options;
   const scope = useMemo<Scope>(() => {
     const scope = {
+      getAnimations,
       frameId: null,
       timerId: null,
       skipFirstRendfer: true,
-      playingAnimationIdx: -1,
-      animations,
-      descriptors: [],
-      data: [],
+      playingIdx: -1,
+      data: getAnimations(createDefaultOptions()).map(() => createInitialData()),
       keyes: [],
     };
 
-    for (const animation of animations) {
-      const descriptor = animation({ state: null, playingIdx: -1 });
-
-      scope.descriptors.push(descriptor);
-      scope.data.push(createInitialData());
-    }
-
     return scope;
   }, []);
-  const [values, setValues] = useState(() => getInitialValues(scope.descriptors), { forceSync: true });
+  const [values, setValues] = useState(() => getInitialValues(getAnimations(createDefaultOptions())), {
+    priority: TaskPriority.ANIMATION,
+  });
 
   useEffect(() => {
+    const animations = getAnimations({ state, playingIdx: scope.playingIdx });
     let idx = 0;
 
-    for (const descriptor of scope.descriptors) {
-      const { mass = 1, stiffness = 1, damping = 1, duration = 10000, from = 0, to = 1 } = descriptor;
-      const key = createKey(descriptor);
+    for (const animation of animations) {
+      const { mass = 1, stiffness = 1, damping = 1, duration = 10000, from = 0, to = 1 } = animation;
+      const key = createKey(animation);
       const cache = store[key];
       let forward: Array<number> = [];
       let backward: Array<number> = [];
@@ -88,7 +86,9 @@ function useSpring(options: UseSpringOptions, deps: Array<any>) {
       store[key] = scope.data[idx].values;
       idx++;
     }
-  }, []);
+
+    scope.getAnimations = getAnimations;
+  }, [...deps]);
 
   useEffect(() => {
     return () => {
@@ -98,25 +98,49 @@ function useSpring(options: UseSpringOptions, deps: Array<any>) {
     };
   }, []);
 
-  const play = useEvent((name: string, direction: Direction, sourceIdx?: number) => {
-    const { descriptors } = scope;
-    const idx = detectIsNumber(sourceIdx) ? sourceIdx : descriptors.findIndex(x => x.name === name);
-    const { delay } = descriptors[idx];
-    const { playingAnimationIdx } = scope;
+  useEffect(() => {
+    if (scope.skipFirstRendfer && !mount) return;
+    (async () => {
+      const { getAnimations, playingIdx } = scope;
+      const animations = getAnimations({ state, playingIdx });
+      const direction: Direction = state ? 'forward' : 'backward';
+      const isForward = direction === 'forward';
+      const transformed = isForward
+        ? animations
+        : animations.filter((_, idx) => (playingIdx >= 0 ? idx <= playingIdx : true)).reverse();
 
-    scope.playingAnimationIdx = idx;
+      for (const animation of transformed) {
+        const { name, direction: ownDirection } = animation;
+        const idx = animations.findIndex(x => x === animation);
+
+        await play(name, ownDirection || direction, idx);
+      }
+    })();
+  }, [state, ...updatingDeps]);
+
+  useEffect(() => {
+    scope.skipFirstRendfer = false;
+  }, []);
+
+  const play = useEvent((name: string, direction: Direction, sourceIdx?: number) => {
+    const { getAnimations, playingIdx } = scope;
+    const animations = getAnimations({ state, playingIdx });
+    const idx = detectIsNumber(sourceIdx) ? sourceIdx : animations.findIndex(x => x.name === name);
+    const { delay } = animations[idx];
+
+    scope.playingIdx = idx;
 
     return new Promise<boolean>(resolve => {
       const loop = (direction: Direction) => {
         scope.data[idx].direction = direction;
-        scope.playingAnimationIdx = idx;
+        scope.playingIdx = idx;
 
         const { step, list } = scope.data[idx].values[direction];
         const x = list[step];
 
         if (step > list.length - 1) {
           scope.data[idx].values[direction].step = 0;
-          scope.playingAnimationIdx = -1;
+          scope.playingIdx = -1;
 
           return resolve(true);
         }
@@ -130,19 +154,21 @@ function useSpring(options: UseSpringOptions, deps: Array<any>) {
             outside(newItems);
           });
         } else {
-          setValues(newItems);
+          batch(() => {
+            setValues(newItems);
+          });
         }
 
         scope.data[idx].values[direction].step++;
         scope.frameId = platform.requestAnimationFrame(() => loop(direction));
       };
 
-      if (playingAnimationIdx >= 0) {
+      if (playingIdx >= 0) {
         scope.frameId && platform.cancelAnimationFrame(scope.frameId);
         scope.timerId && window.clearTimeout(scope.timerId);
         scope.frameId = null;
         scope.timerId = null;
-        const slice = scope.data[playingAnimationIdx];
+        const slice = scope.data[playingIdx];
 
         if (!slice.direction) return;
 
@@ -163,34 +189,6 @@ function useSpring(options: UseSpringOptions, deps: Array<any>) {
     });
   });
 
-  useEffect(() => {
-    if (scope.skipFirstRendfer && !mount) return;
-    (async () => {
-      const { animations, playingAnimationIdx } = scope;
-      const direction: Direction = state ? 'forward' : 'backward';
-      const isForward = direction === 'forward';
-      const transformed = isForward
-        ? animations
-        : animations
-            .filter((_, idx) => (scope.playingAnimationIdx >= 0 ? idx <= scope.playingAnimationIdx : true))
-            .reverse();
-
-      for (const animation of transformed) {
-        const descriptor = animation({ state, playingIdx: playingAnimationIdx });
-        const { name, direction: ownDirection } = descriptor;
-        const idx = animations.findIndex(x => x === animation);
-
-        scope.descriptors[idx] = descriptor;
-
-        await play(name, ownDirection || direction, idx);
-      }
-    })();
-  }, [state, ...(deps || [])]);
-
-  useEffect(() => {
-    scope.skipFirstRendfer = false;
-  }, []);
-
   const api = useMemo(
     () => ({
       play,
@@ -209,14 +207,12 @@ const FRAMES = 60;
 const FRAME_RATE = 1 / FRAMES;
 const store: Record<string, PhysicalValues> = {};
 
-export type Animation = (options: AnimationOptions) => AnimationDescriptor;
-
 type AnimationOptions = {
   state: boolean;
   playingIdx: number;
 };
 
-type AnimationDescriptor = {
+export type Animation = {
   name: string;
   direction?: Direction;
   mass?: number;
@@ -231,12 +227,11 @@ type AnimationDescriptor = {
 type Direction = 'forward' | 'backward' | 'mirrored';
 
 type Scope = {
+  getAnimations: (options: AnimationOptions) => Array<Animation>;
   frameId: number;
   timerId: number;
   skipFirstRendfer: boolean;
-  playingAnimationIdx: number;
-  animations: Array<Animation>;
-  descriptors: Array<AnimationDescriptor>;
+  playingIdx: number;
   data: Array<AnimationData>;
   keyes: Array<string>;
 };
@@ -297,7 +292,7 @@ function fix(x: number, precision = 4): number {
 
 type CreatePhysicalValuesOptions = {
   frameRate: number;
-} & Required<Pick<AnimationDescriptor, 'mass' | 'stiffness' | 'damping' | 'duration' | 'from' | 'to'>>;
+} & Required<Pick<Animation, 'mass' | 'stiffness' | 'damping' | 'duration' | 'from' | 'to'>>;
 
 function createPhysicalValues(options: CreatePhysicalValuesOptions) {
   const { frameRate, mass, stiffness, damping, duration, from, to } = options;
@@ -323,7 +318,7 @@ function createPhysicalValues(options: CreatePhysicalValuesOptions) {
 
   const forward = minimax(values, from, to);
   const mirrored = [...forward].reverse();
-  const backward = forward.map(x => fix(to - x, 4));
+  const backward = forward.map(x => fix(from + to - x, 4));
 
   return {
     forward,
@@ -347,18 +342,26 @@ function getCurrentStep(x: number, list: Array<number>) {
   return 0;
 }
 
-function getInitialValues(descriptors: Array<AnimationDescriptor>) {
-  return descriptors.map(x => {
-    const value = x.direction ? (x.direction == 'forward' ? x.from : x.to) : 0;
+function getInitialValues(animations: Array<Animation>) {
+  return animations.map(animation => {
+    const { direction, from, to } = animation;
+    const value = direction ? (direction === 'forward' ? from : to) : 0;
 
     return value || 0;
   });
 }
 
-function createKey(descriptor: AnimationDescriptor) {
-  const { mass, stiffness, damping, duration, from, to } = descriptor;
+function createKey(animation: Animation) {
+  const { mass, stiffness, damping, duration, from, to } = animation;
 
   return `${mass}:${stiffness}:${damping}:${duration}:${from}:${to}`;
+}
+
+function createDefaultOptions(): AnimationOptions {
+  return {
+    state: null,
+    playingIdx: -1,
+  };
 }
 
 function filterToggle(value: number, idx: number) {

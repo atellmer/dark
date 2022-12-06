@@ -3,6 +3,7 @@ import { type ScheduleCallbackOptions, getTime, workLoop, wipRootStore, TaskPrio
 type Callback = () => boolean;
 
 type QueueByPriority = {
+  animations: Array<Task>;
   hight: Array<Task>;
   normal: Array<Task>;
   low1: Array<Task>;
@@ -10,6 +11,7 @@ type QueueByPriority = {
 };
 
 const queueByPriority: QueueByPriority = {
+  animations: [],
   hight: [],
   normal: [],
   low1: [],
@@ -47,6 +49,7 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
   const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
   const task = new Task({ time: getTime(), timeoutMs, priority, forceSync, callback });
   const map: Record<TaskPriority, () => void> = {
+    [TaskPriority.ANIMATION]: () => queueByPriority.animations.push(task),
     [TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
     [TaskPriority.NORMAL]: () => queueByPriority.normal.push(task),
     [TaskPriority.LOW]: () => (task.timeoutMs > 0 ? queueByPriority.low2.push(task) : queueByPriority.low1.push(task)),
@@ -59,10 +62,11 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
   currentTask = queue.shift();
+  const isAnimation = currentTask.priority === TaskPriority.ANIMATION;
 
   currentTask.callback();
 
-  if (currentTask.forceSync) {
+  if (currentTask.forceSync || isAnimation) {
     requestCallbackSync(workLoop);
   } else {
     requestCallback(workLoop);
@@ -77,6 +81,7 @@ function executeTasks() {
   if (!isBusy) {
     checkOverdueTasks() ||
       gc() ||
+      pick(queueByPriority.animations) ||
       pick(queueByPriority.hight) ||
       pick(queueByPriority.normal) ||
       requestIdleCallback(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));

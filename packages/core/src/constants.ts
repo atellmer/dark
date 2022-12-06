@@ -5,6 +5,7 @@ export const ATTR_REF = 'ref';
 export const PARTIAL_UPDATE = 'partial-update';
 
 export enum TaskPriority {
+  ANIMATION = 3,
   HIGH = 2,
   NORMAL = 1,
   LOW = 0,

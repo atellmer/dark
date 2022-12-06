@@ -1,6 +1,5 @@
 import { type Fiber } from '../fiber';
 import { isBatchZone } from '../scope';
-import { platform } from '../platform';
 
 function batch(callback: () => void) {
   isBatchZone.set(true);
@@ -8,23 +7,12 @@ function batch(callback: () => void) {
 }
 
 function runBatch(fiber: Fiber, callback: () => void) {
-  fiber.batched = callback;
-
-  const update = () => {
-    const fn = fiber.batched;
-
-    platform.requestAnimationFrame(() => {
-      if (fn === fiber.batched) {
-        isBatchZone.set(false);
-        fiber.batched = null;
-        fn && fn();
-      } else {
-        update();
-      }
-    });
-  };
-
-  update();
+  fiber.batched && window.clearTimeout(fiber.batched);
+  fiber.batched = window.setTimeout(() => {
+    isBatchZone.set(false);
+    fiber.batched = null;
+    callback();
+  });
 }
 
 export { batch, runBatch };

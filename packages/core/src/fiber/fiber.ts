@@ -69,7 +69,7 @@ class Fiber<N = NativeElement> {
   public marker: string;
   public isUsed: boolean;
   public idx: number;
-  public batched: () => void | null;
+  public batched: number;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
