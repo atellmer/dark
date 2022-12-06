@@ -1,7 +1,21 @@
-import { h, createComponent, useEffect, useState, useMemo, Fragment } from '@dark-engine/core';
+import {
+  h,
+  createComponent,
+  useEffect,
+  useState,
+  useMemo,
+  Fragment,
+  useSpring,
+  type DarkElement,
+} from '@dark-engine/core';
 import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
 
-const Overlay = createComponent(() => {
+type OverlayProps = {
+  x: number;
+  onRequestClose: () => void;
+};
+
+const Overlay = createComponent<OverlayProps>(({ x, onRequestClose }) => {
   const style = useStyle(styled => ({
     container: styled`
       position: fixed;
@@ -9,21 +23,52 @@ const Overlay = createComponent(() => {
       right: 0;
       bottom: 0;
       left: 0;
-      background-color: rgba(1, 1, 1, 0.5);
+      background-color: rgba(1, 1, 1, 0.8);
       z-index: 10000;
+      opacity: ${x};
     `,
   }));
 
-  return <div style={style.container} />;
+  return <div style={style.container} onClick={onRequestClose} />;
 });
 
 type ModalProps = {
   isOpen: boolean;
+  slot: DarkElement;
   onRequestClose: () => void;
 };
 
-const Modal = createComponent<ModalProps>(({ isOpen, slot, onRequestClose }) => {
+const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) => {
   const host = useMemo<HTMLDivElement>(() => document.createElement('div'), []);
+  const [isOpen, setIsOpen] = useState(isOpenX);
+  const scope = useMemo(() => ({ isClosing: false }), []);
+  const {
+    values: [x],
+  } = useSpring({
+    state: isOpen,
+    getAnimations: () => [
+      {
+        name: 'appearance',
+        mass: 1,
+        stiffness: 10,
+        damping: 1,
+        duration: 1000,
+      },
+    ],
+  });
+
+  useEffect(() => {
+    if (scope.isClosing) return;
+    setIsOpen(isOpenX);
+  }, [isOpenX]);
+
+  useEffect(() => {
+    if (!scope.isClosing || x > 0) return;
+
+    scope.isClosing = false;
+    onRequestClose();
+  }, [x]);
+
   const style = useStyle(styled => ({
     container: styled`
       position: fixed;
@@ -47,6 +92,8 @@ const Modal = createComponent<ModalProps>(({ isOpen, slot, onRequestClose }) => 
       margin: auto;
       z-index: 10000;
       border-radius: 4px;
+      opacity: ${x};
+      transform: scale(${1 * x}) translateY(${-100 * (1 - x)}%);
     `,
     modalHeader: styled`
       padding: 32px 32px 0 32px;
@@ -69,13 +116,18 @@ const Modal = createComponent<ModalProps>(({ isOpen, slot, onRequestClose }) => 
     `,
   }));
 
+  const handleClose = () => {
+    scope.isClosing = true;
+    setIsOpen(false);
+  };
+
   const renderModal = () => {
     return (
       <div style={style.container}>
-        <Overlay />
+        <Overlay x={x} onRequestClose={handleClose} />
         <div style={style.modal}>
           <div style={style.modalHeader}>
-            <button style={style.closeButton} onClick={onRequestClose}>
+            <button style={style.closeButton} onClick={handleClose}>
               X
             </button>
           </div>
@@ -85,13 +137,13 @@ const Modal = createComponent<ModalProps>(({ isOpen, slot, onRequestClose }) => 
     );
   };
 
-  if (isOpen && document.body !== host.parentElement) {
+  if (isOpenX && document.body !== host.parentElement) {
     document.body.appendChild(host);
-  } else if (!isOpen && document.body === host.parentElement) {
+  } else if (!isOpenX && document.body === host.parentElement) {
     document.body.removeChild(host);
   }
 
-  return isOpen ? createPortal(renderModal(), host) : null;
+  return isOpenX ? createPortal(renderModal(), host) : null;
 });
 
 const App = createComponent(() => {
