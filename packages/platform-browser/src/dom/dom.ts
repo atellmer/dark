@@ -158,13 +158,8 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   const { tagName, element, attrName, attrValue } = options;
   const fn = patchPropertiesSpecialCasesMap[tagName];
   let stop = fn ? fn(element, attrName, attrValue) : false;
-  const hasIDL =
-    element instanceof HTMLInputElement ||
-    element instanceof HTMLTextAreaElement ||
-    element instanceof HTMLSelectElement ||
-    element instanceof HTMLOptionElement;
 
-  if (hasIDL && Object.getPrototypeOf(element).hasOwnProperty(attrName)) {
+  if (canSetProperty(Object.getPrototypeOf(element), attrName)) {
     element[attrName] = attrValue;
   }
 
@@ -174,6 +169,10 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   }
 
   return stop;
+}
+
+function canSetProperty(prototype: Element, key: string) {
+  return prototype.hasOwnProperty(key) && Boolean(Object.getOwnPropertyDescriptor(prototype, key)?.set);
 }
 
 const patchPropertiesSpecialCasesMap: Record<
