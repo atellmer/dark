@@ -173,11 +173,11 @@ function performUnitOfWork(fiber: Fiber) {
       const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
 
       if (hasChildren) {
-        const { performedFiber, performedNextFiber, performedShadow, performedInstance } = performChild({
+        const { performedFiber, performedNextFiber, performedShadow, performedInstance } = performChild(
           nextFiber,
           shadow,
           instance,
-        });
+        );
 
         nextFiber = performedNextFiber;
         shadow = performedShadow;
@@ -185,11 +185,11 @@ function performUnitOfWork(fiber: Fiber) {
 
         if (performedFiber) return performedFiber;
       } else {
-        const { performedFiber, performedNextFiber, performedShadow, performedInstance } = performSibling({
+        const { performedFiber, performedNextFiber, performedShadow, performedInstance } = performSibling(
           nextFiber,
           shadow,
           instance,
-        });
+        );
 
         nextFiber = performedNextFiber;
         shadow = performedShadow;
@@ -198,11 +198,11 @@ function performUnitOfWork(fiber: Fiber) {
         if (performedFiber) return performedFiber;
       }
     } else {
-      const { performedFiber, performedNextFiber, performedShadow, performedInstance } = performSibling({
+      const { performedFiber, performedNextFiber, performedShadow, performedInstance } = performSibling(
         nextFiber,
         shadow,
         instance,
-      });
+      );
 
       nextFiber = performedNextFiber;
       shadow = performedShadow;
@@ -211,15 +211,13 @@ function performUnitOfWork(fiber: Fiber) {
       if (performedFiber) return performedFiber;
     }
 
-    performPartialUpdateEffects(nextFiber);
+    nextFiber.marker === PARTIAL_UPDATE && performPartialUpdateEffects(nextFiber);
 
     if (nextFiber.parent === null) return null;
   }
 }
 
 function performPartialUpdateEffects(nextFiber: Fiber) {
-  if (nextFiber.marker !== PARTIAL_UPDATE) return;
-
   const alternate = nextFiber.child?.alternate || null;
   const fiber = nextFiber.child || null;
 
@@ -237,17 +235,8 @@ function performPartialUpdateEffects(nextFiber: Fiber) {
   }
 }
 
-type PerformChildOptions = {
-  nextFiber: Fiber;
-  shadow: Fiber;
-  instance: DarkElementInstance;
-};
-
-function performChild(options: PerformChildOptions) {
+function performChild(nextFiber: Fiber, shadow: Fiber, instance: DarkElementInstance) {
   fiberMountStore.jumpToChild();
-  let nextFiber = options.nextFiber;
-  let shadow = options.shadow;
-  let instance = options.instance;
   const childrenIdx = 0;
 
   shadow = shadow ? shadow.child : null;
@@ -276,9 +265,9 @@ function performChild(options: PerformChildOptions) {
   });
   instance = performedInstance || instance;
   shadow = performedShadow || shadow;
-  alternate && mutateAlternate({ fiber, alternate, instance });
-  mutateFiber({ fiber, alternate, instance });
-  fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
+  alternate && mutateAlternate(fiber, alternate, instance);
+  mutateFiber(fiber, alternate, instance);
+  fiber = alternate && detectIsMemo(fiber.instance) ? performMemo(fiber, alternate, instance) : fiber;
 
   fiber.idx = childrenIdx;
   nextFiber.child = fiber;
@@ -296,17 +285,8 @@ function performChild(options: PerformChildOptions) {
   };
 }
 
-type PerformSiblingOptions = {
-  nextFiber: Fiber;
-  shadow: Fiber;
-  instance: DarkElementInstance;
-};
-
-function performSibling(options: PerformSiblingOptions) {
+function performSibling(nextFiber: Fiber, shadow: Fiber, instance: DarkElementInstance) {
   fiberMountStore.jumpToSibling();
-  let nextFiber = options.nextFiber;
-  let shadow = options.shadow;
-  let instance = options.instance;
   const parent = nextFiber.parent.instance;
   const childrenIdx = fiberMountStore.getIndex();
   const hasSibling = hasChildrenProp(parent) && parent.children[childrenIdx];
@@ -342,9 +322,9 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    alternate && mutateAlternate({ fiber, alternate, instance });
-    mutateFiber({ fiber, alternate, instance });
-    fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
+    alternate && mutateAlternate(fiber, alternate, instance);
+    mutateFiber(fiber, alternate, instance);
+    fiber = alternate && detectIsMemo(fiber.instance) ? performMemo(fiber, alternate, instance) : fiber;
 
     fiber.idx = childrenIdx;
     fiber.parent = nextFiber.parent;
@@ -380,14 +360,7 @@ function performSibling(options: PerformSiblingOptions) {
   };
 }
 
-type MutateFiberOptions = {
-  fiber: Fiber;
-  alternate: Fiber;
-  instance: DarkElementInstance;
-};
-
-function mutateFiber(options: MutateFiberOptions) {
-  const { fiber, alternate, instance } = options;
+function mutateFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
@@ -414,14 +387,7 @@ function mutateFiber(options: MutateFiberOptions) {
   }
 }
 
-type PerformAlternateOptions = {
-  fiber: Fiber;
-  alternate: Fiber;
-  instance: DarkElementInstance;
-};
-
-function mutateAlternate(options: PerformAlternateOptions) {
-  const { fiber, alternate, instance } = options;
+function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
@@ -535,71 +501,61 @@ function mutateAlternate(options: PerformAlternateOptions) {
   }
 }
 
-type PerformMemoOptions = {
-  fiber: Fiber;
-  alternate: Fiber;
-  instance: DarkElementInstance;
-};
+function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+  let memoFiber: Fiber = null;
+  const factory = instance as ComponentFactory;
+  const alternateFactory = alternate.instance as ComponentFactory;
 
-function performMemo(options: PerformMemoOptions) {
-  const { fiber, alternate, instance } = options;
+  if (factory.type !== alternateFactory.type) return fiber;
 
-  if (detectIsMemo(fiber.instance)) {
-    let memoFiber: Fiber = null;
-    const factory = instance as ComponentFactory;
-    const alternateFactory = alternate.instance as ComponentFactory;
+  const props = alternateFactory.props;
+  const nextProps = factory.props;
+  const skip = !factory.shouldUpdate(props, nextProps);
 
-    if (factory.type !== alternateFactory.type) return fiber;
+  if (skip) {
+    let nextFiber: Fiber = null;
+    fiberMountStore.deepWalking.set(false);
 
-    const props = alternateFactory.props;
-    const nextProps = factory.props;
-    const skip = !factory.shouldUpdate(props, nextProps);
+    memoFiber = new Fiber({
+      ...alternate,
+      alternate,
+      effectTag: EffectTag.SKIP,
+      nextSibling: alternate.nextSibling
+        ? alternate.nextSibling.effectTag === EffectTag.DELETE
+          ? null
+          : alternate.nextSibling
+        : null,
+    });
 
-    if (skip) {
-      let nextFiber: Fiber = null;
-      fiberMountStore.deepWalking.set(false);
+    alternate.alternate = null;
+    nextFiber = memoFiber.child;
 
-      memoFiber = new Fiber({
-        ...alternate,
-        alternate,
-        effectTag: EffectTag.SKIP,
-        nextSibling: alternate.nextSibling
-          ? alternate.nextSibling.effectTag === EffectTag.DELETE
-            ? null
-            : alternate.nextSibling
-          : null,
-      });
-
-      alternate.alternate = null;
-      nextFiber = memoFiber.child;
-
-      while (nextFiber) {
-        nextFiber.parent = memoFiber;
-        nextFiber = nextFiber.nextSibling;
-      }
-
-      if (memoFiber.mountedToHost) {
-        fiber.markMountedToHost();
-      }
-
-      if (memoFiber.effectHost) {
-        fiber.markEffectHost();
-      }
-
-      if (memoFiber.layoutEffectHost) {
-        fiber.markLayoutEffectHost();
-      }
-
-      if (memoFiber.insertionEffectHost) {
-        fiber.markInsertionEffectHost();
-      }
-
-      if (memoFiber.portalHost) {
-        fiber.markPortalHost();
-      }
-
-      return memoFiber;
+    while (nextFiber) {
+      nextFiber.parent = memoFiber;
+      nextFiber = nextFiber.nextSibling;
     }
+
+    if (memoFiber.mountedToHost) {
+      fiber.markMountedToHost();
+    }
+
+    if (memoFiber.effectHost) {
+      fiber.markEffectHost();
+    }
+
+    if (memoFiber.layoutEffectHost) {
+      fiber.markLayoutEffectHost();
+    }
+
+    if (memoFiber.insertionEffectHost) {
+      fiber.markInsertionEffectHost();
+    }
+
+    if (memoFiber.portalHost) {
+      fiber.markPortalHost();
+    }
+
+    return memoFiber;
   }
 
   return fiber;
@@ -623,6 +579,7 @@ function pertformInstance(options: PerformInstanceOptions) {
       : [instance.children[idx]];
 
     instance.children.splice(idx, 1, ...elements);
+
     performedInstance = instance.children[idx];
     // always extract shadow
     performedShadow = alternate
