@@ -67,6 +67,10 @@ describe('[use-state]', () => {
       count: number;
     };
 
+    type ItemProps = {
+      id: number;
+    };
+
     const content = (items: Array<Item>) => dom`
     ${items
       .map(x => {
@@ -87,10 +91,14 @@ describe('[use-state]', () => {
         count: 0,
       }));
 
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
     let setCountsOne = [];
     let setCountsTwo = [];
 
-    const CounterOne = createComponent<{ id: number }>(({ id }) => {
+    const CounterOne = createComponent<ItemProps>(({ id }) => {
       const [count, setCount] = useState(0);
 
       setCountsOne.push(setCount);
@@ -126,7 +134,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render(App(), host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne[1](1);
@@ -140,13 +148,13 @@ describe('[use-state]', () => {
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    render(App(), host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    render(App(), host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -154,6 +162,10 @@ describe('[use-state]', () => {
     type Item = {
       id: number;
       count: number;
+    };
+
+    type ItemProps = {
+      id: number;
     };
 
     const content = (items: Array<Item>) => dom`
@@ -173,9 +185,13 @@ describe('[use-state]', () => {
         count: 0,
       }));
 
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
     let setCounts: Array<(value: number) => void> = [];
 
-    const Item = createComponent<{ id: number }>(({ id }) => {
+    const Item = createComponent<ItemProps>(({ id }) => {
       const [count, setCount] = useState(0);
 
       setCounts.push(setCount);
@@ -198,7 +214,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render(App(), host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](1);
@@ -207,7 +223,7 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 2;
     swap();
     setCounts = [];
-    render(App(), host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](20);
@@ -216,7 +232,101 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 30;
     swap();
     setCounts = [];
-    render(App(), host);
+    render$();
+    expect(host.innerHTML).toBe(content(items));
+  });
+
+  test('can save the state when nodes swapped #3', () => {
+    type Item = {
+      id: number;
+      count: number;
+    };
+
+    type ItemProps = {
+      id: number;
+    };
+
+    const content = (items: Array<Item>) => dom`
+    ${items
+      .map(x => {
+        return `
+          <div>
+            <div>
+              <p>
+                <div>id: ${x.id}, count: ${x.count}</div>
+              </p>
+            </div>
+          </div>
+        `;
+      })
+      .join('')}
+  `;
+
+    const items: Array<Item> = Array(10)
+      .fill(null)
+      .map((_, idx) => ({
+        id: idx + 1,
+        count: 0,
+      }));
+
+    const render$ = (props = {}) => {
+      render(App(props), host);
+    };
+
+    let setCounts: Array<(value: number) => void> = [];
+
+    const Item = createComponent<ItemProps>(({ id }) => {
+      const [count, setCount] = useState(0);
+
+      setCounts.push(setCount);
+
+      return (
+        <div>
+          id: {id}, count: {count}
+        </div>
+      );
+    });
+
+    const App = createComponent(() => {
+      return items.map(x => {
+        return (
+          <div key={x.id}>
+            <div>
+              <p>
+                <Item id={x.id} />
+              </p>
+            </div>
+          </div>
+        );
+      });
+    });
+
+    const swap = () => {
+      const temp = items[1];
+
+      items[1] = items[items.length - 2];
+      items[items.length - 2] = temp;
+    };
+
+    render$();
+    expect(host.innerHTML).toBe(content(items));
+
+    setCounts[1](1);
+    setCounts[items.length - 2](2);
+    items[1].count = 1;
+    items[items.length - 2].count = 2;
+    swap();
+    setCounts = [];
+    render$();
+    expect(host.innerHTML).toBe(content(items));
+
+    setCounts[1](20);
+    setCounts[items.length - 2](30);
+    items[1].count = 20;
+    items[items.length - 2].count = 30;
+    swap();
+    setCounts = [];
+    render$();
     expect(host.innerHTML).toBe(content(items));
   });
 
