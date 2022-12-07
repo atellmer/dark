@@ -57,9 +57,9 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
       grid: genGrid(100),
       wave: genWave(100),
       spiral: genSpiral(100),
-      points: [],
+      points: [] as Array<Point>,
       step: 0,
-      numSteps: 60 * 2,
+      numSteps: 60 * 6,
     }),
     [],
   );
@@ -71,9 +71,12 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     scope.grid = genGrid(count);
     scope.wave = genWave(count);
     scope.spiral = genSpiral(count);
-
-    makePoints(count);
+    scope.points = makePoints(count, scope);
   }, [count]);
+
+  useEffect(() => {
+    next();
+  }, []);
 
   const next = () => {
     scope.step = (scope.step + 1) % scope.numSteps;
@@ -100,37 +103,10 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     }
 
     update();
-  };
 
-  next();
-
-  const setAnchors = arr => {
-    arr.map((p, index) => {
-      const [gx, gy] = project(scope.grid(index));
-      const [wx, wy] = project(scope.wave(index));
-      const [sx, sy] = project(scope.spiral(index));
-      const [px, py] = project(scope.phyllotaxis(index));
-
-      Object.assign(p, { gx, gy, wx, wy, sx, sy, px, py });
+    requestAnimationFrame(() => {
+      next();
     });
-
-    scope.points = arr;
-  };
-
-  const makePoints = count => {
-    const newPoints = [];
-    for (let i = 0; i < count; i++) {
-      newPoints.push({
-        x: 0,
-        y: 0,
-        color: interpolateViridis(i / count),
-      });
-    }
-    setAnchors(newPoints);
-  };
-
-  const renderPoint = (point, idx) => {
-    return <Point key={idx} x={point.x} y={point.y} color={point.color} />;
   };
 
   return (
@@ -140,7 +116,38 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
   );
 });
 
-const map = (items: Array<any>, cb: (x: any, idx: number) => any) => {
+const setAnchors = (arr: Array<Point>, scope: any) => {
+  arr.map((p, index) => {
+    const [gx, gy] = project(scope.grid(index));
+    const [wx, wy] = project(scope.wave(index));
+    const [sx, sy] = project(scope.spiral(index));
+    const [px, py] = project(scope.phyllotaxis(index));
+
+    Object.assign(p, { gx, gy, wx, wy, sx, sy, px, py });
+  });
+
+  return arr;
+};
+
+const makePoints = (count: number, scope: any) => {
+  const newPoints: Array<Point> = [];
+
+  for (let i = 0; i < count; i++) {
+    newPoints.push({
+      x: 0,
+      y: 0,
+      color: interpolateViridis(i / count),
+    });
+  }
+
+  return setAnchors(newPoints, scope);
+};
+
+const renderPoint = (point: Point, idx: number) => {
+  return <Point key={idx} point={point} />;
+};
+
+const map = (items: Array<Point>, cb: (x: any, idx: number) => any) => {
   const points = [];
 
   for (let i = 0; i < items.length; i++) {
@@ -150,15 +157,27 @@ const map = (items: Array<any>, cb: (x: any, idx: number) => any) => {
   return points;
 };
 
-type PointProps = {
+type Point = {
   x: number;
   y: number;
   color: string;
 };
 
-const Point = createComponent<PointProps>(({ x, y, color }) => {
-  return <rect class='point' transform={`translate(${Math.floor(x)}, ${Math.floor(y)})`} fill={color} />;
-});
+type PointProps = {
+  key: number;
+  point: Point;
+};
+
+const Point = ({ key, point }: PointProps) => {
+  return (
+    <rect
+      class='point'
+      key={key}
+      transform={`translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`}
+      fill={point.color}
+    />
+  );
+};
 
 const theta = Math.PI * (3 - Math.sqrt(5));
 
