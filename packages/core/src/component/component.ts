@@ -1,6 +1,6 @@
-import { ATTR_KEY } from '../constants';
-import { error, detectIsEmpty } from '../helpers';
+import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
+import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
 
@@ -64,4 +64,7 @@ const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory
 const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey =>
   !detectIsEmpty(factory.props[ATTR_KEY]) ? factory.props[ATTR_KEY] : null;
 
-export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey };
+const getComponentFactoryFlag = (factory: ComponentFactory): Record<Flag, boolean> | null =>
+  factory.props[ATTR_FLAG] || null;
+
+export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey, getComponentFactoryFlag };

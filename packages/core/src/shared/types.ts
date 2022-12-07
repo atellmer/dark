@@ -1,5 +1,7 @@
 import type { ComponentFactory } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
+import { type Ref } from '../ref';
+import { Flag } from '../constants';
 
 export type DarkElement = NestedArray<ComponentFactory | VirtualNode | RenderProps | Nullable | string | number>;
 
@@ -20,3 +22,19 @@ export type SubscriberWithValue<T> = (value: T) => void;
 export type Subscribe<S extends Function> = (subscriber: S) => Unsubscribe;
 
 export type Unsubscribe = () => void;
+
+export type SlotProps<T = DarkElement> = Readonly<{
+  slot: T;
+}>;
+
+export type RefProps<T = unknown> = {
+  ref?: Ref<T>;
+};
+
+export type KeyProps = {
+  key?: DarkElementKey;
+};
+
+export type FlagProps = {
+  flag?: Record<Flag, boolean>;
+};

@@ -1,7 +1,7 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority } from '@dark-engine/core';
+import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority, Flag } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
@@ -59,7 +59,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
       spiral: genSpiral(100),
       points: [],
       step: 0,
-      numSteps: 60 * 2,
+      numSteps: 60 * 6,
     }),
     [],
   );
@@ -74,6 +74,10 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
 
     makePoints(count);
   }, [count]);
+
+  useEffect(() => {
+    next();
+  }, []);
 
   const next = () => {
     scope.step = (scope.step + 1) % scope.numSteps;
@@ -100,9 +104,11 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
     }
 
     update();
-  };
 
-  next();
+    requestAnimationFrame(() => {
+      next();
+    });
+  };
 
   const setAnchors = arr => {
     arr.map((p, index) => {
@@ -135,10 +141,14 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
 
   return (
     <svg class='demo'>
-      <g>{map(scope.points, renderPoint)}</g>
+      <g flag={flag}>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });
+
+const flag = {
+  [Flag.HAS_NO_TRANSPOSITIONS]: true,
+};
 
 const map = (items: Array<any>, cb: (x: any, idx: number) => any) => {
   const points = [];

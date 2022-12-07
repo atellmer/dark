@@ -1,12 +1,13 @@
-import { DarkElementKey } from '../shared';
+import { SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
 
 export type ViewDef = {
   as: string;
-  slot?: any;
   isVoid?: boolean;
-  key?: DarkElementKey;
   [prop: string]: any;
-};
+} & Partial<SlotProps> &
+  RefProps &
+  KeyProps &
+  FlagProps;
 
 export enum NodeType {
   TAG = 'TAG',

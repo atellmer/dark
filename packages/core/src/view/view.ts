@@ -1,4 +1,4 @@
-import { EMPTY_NODE, ATTR_KEY } from '../constants';
+import { EMPTY_NODE, ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction, detectIsString } from '../helpers';
 import type { DarkElementKey, DarkElement } from '../shared';
 import type { ComponentFactory } from '../component';
@@ -63,25 +63,24 @@ const detectIsCommentVirtualNode = (vNode: unknown): vNode is CommentVirtualNode
 
 const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vNode instanceof TextVirtualNode;
 
+const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
+  detectIsFunction(factory) && factory[$$virtualNode] === true;
+
 const detectIsEmptyVirtualNode = (vNode: unknown): boolean =>
   detectIsCommentVirtualNode(vNode) && vNode.value === EMPTY_NODE;
 
-function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null {
-  const key = vNode && vNode.attrs[ATTR_KEY];
+const getTagVirtualNodeKey = (vNode: TagVirtualNode): DarkElementKey | null =>
+  !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
 
-  return !detectIsEmpty(key) ? key : null;
-}
+const getTagVirtualNodeFlag = (vNode: TagVirtualNode): Record<Flag, boolean> | null => vNode.attrs[ATTR_FLAG] || null;
 
-function getVirtualNodeFactoryKey(factory: VirtualNodeFactory): DarkElementKey | null {
-  const key = factory && factory[ATTR_KEY];
+const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): DarkElementKey | null =>
+  !detectIsEmpty(factory[ATTR_KEY]) ? factory[ATTR_KEY] : null;
 
-  return !detectIsEmpty(key) ? key : null;
-}
+const getVirtualNodeFactoryFlag = (factory: VirtualNodeFactory): Record<Flag, boolean> | null =>
+  factory[ATTR_FLAG] || null;
 
 const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
-
-const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
-  detectIsFunction(factory) && factory[$$virtualNode] === true;
 
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
@@ -98,6 +97,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
 
   factory[$$virtualNode] = true;
   factory[ATTR_KEY] = def.key;
+  factory[ATTR_FLAG] = def.flag;
 
   return factory;
 }
@@ -125,9 +125,11 @@ export {
   detectIsTagVirtualNode,
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
+  getTagVirtualNodeKey,
+  getTagVirtualNodeFlag,
   detectIsEmptyVirtualNode,
-  getVirtualNodeKey,
   getVirtualNodeFactoryKey,
+  getVirtualNodeFactoryFlag,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,
   View,

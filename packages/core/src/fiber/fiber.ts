@@ -26,20 +26,27 @@ import {
   isLayoutEffectsZone,
   isInsertionEffectsZone,
 } from '../scope';
-import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '../component';
+import {
+  type ComponentFactory,
+  detectIsComponentFactory,
+  getComponentFactoryKey,
+  getComponentFactoryFlag,
+} from '../component';
 import {
   type TagVirtualNode,
-  detectIsTagVirtualNode,
-  createEmptyVirtualNode,
-  getVirtualNodeKey,
-  getVirtualNodeFactoryKey,
   detectIsVirtualNode,
+  detectIsTagVirtualNode,
   detectIsVirtualNodeFactory,
+  createEmptyVirtualNode,
+  getTagVirtualNodeKey,
+  getTagVirtualNodeFlag,
+  getVirtualNodeFactoryKey,
+  getVirtualNodeFactoryFlag,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { PARTIAL_UPDATE } from '../constants';
+import { Flag, PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -59,7 +66,6 @@ class Fiber<N = NativeElement> {
   public hook: Hook | null;
   public shadow: Fiber<N>;
   public provider: Map<Context, ContextProviderValue>;
-  public transposition: boolean;
   public mountedToHost: boolean;
   public effectHost: boolean;
   public layoutEffectHost: boolean;
@@ -70,6 +76,8 @@ class Fiber<N = NativeElement> {
   public isUsed: boolean;
   public idx: number;
   public batched: number | null;
+  public keyedCache: Record<DarkElementKey, Fiber> | null;
+  public transposition: boolean;
   public catchException: (error: Error) => void;
 
   constructor(options: Partial<Fiber<N>>) {
@@ -94,6 +102,7 @@ class Fiber<N = NativeElement> {
     this.idx = options.idx || 0;
     this.isUsed = options.isUsed || false;
     this.batched = options.batched || null;
+    this.keyedCache = options.keyedCache || null;
   }
 
   public markMountedToHost() {
@@ -267,7 +276,7 @@ function performChild(options: PerformChildOptions) {
   });
   instance = performedInstance || instance;
   shadow = performedShadow || shadow;
-  alternate && mutateAlternate({ alternate, instance });
+  alternate && mutateAlternate({ fiber, alternate, instance });
   mutateFiber({ fiber, alternate, instance });
   fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
@@ -333,7 +342,7 @@ function performSibling(options: PerformSiblingOptions) {
     });
     instance = performedInstance || instance;
     shadow = performedShadow || shadow;
-    alternate && mutateAlternate({ alternate, instance });
+    alternate && mutateAlternate({ fiber, alternate, instance });
     mutateFiber({ fiber, alternate, instance });
     fiber = alternate ? performMemo({ fiber, alternate, instance }) : fiber;
 
@@ -406,12 +415,13 @@ function mutateFiber(options: MutateFiberOptions) {
 }
 
 type PerformAlternateOptions = {
+  fiber: Fiber;
   alternate: Fiber;
   instance: DarkElementInstance;
 };
 
 function mutateAlternate(options: PerformAlternateOptions) {
-  const { alternate, instance } = options;
+  const { fiber, alternate, instance } = options;
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
@@ -427,6 +437,14 @@ function mutateAlternate(options: PerformAlternateOptions) {
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const prevElementsCount = alternate.childrenCount;
     const nextElementsCount = instance.children.length;
+    const flag = getElementFlag(instance);
+    let keyedCache = null;
+
+    if (nextElementsCount > 0 && (!flag || !flag[Flag.HAS_NO_TRANSPOSITIONS])) {
+      keyedCache = createKeyedFibersMap(alternate.child);
+    }
+
+    fiber.keyedCache = keyedCache;
 
     if (prevElementsCount !== nextElementsCount) {
       const children = hasChildrenProp(instance) ? instance.children : [];
@@ -447,10 +465,9 @@ function mutateAlternate(options: PerformAlternateOptions) {
         const diffKeys = getDiffKeys(prevKeys, nextKeys);
 
         if (diffKeys.length > 0) {
-          const fibersMap = createFibersByKeyMap(alternate.child);
-
           for (const key of diffKeys) {
-            const fiber = fibersMap[key] || null;
+            const keyedMap = keyedCache || createKeyedFibersMap(alternate.child);
+            const fiber = keyedMap[key] || null;
 
             if (fiber) {
               fiber.effectTag = EffectTag.DELETE;
@@ -607,14 +624,14 @@ function pertformInstance(options: PerformInstanceOptions) {
 
     instance.children.splice(idx, 1, ...elements);
     performedInstance = instance.children[idx];
-    performedShadow =
-      alternate && detectIsComponentFactory(alternate.instance)
-        ? getRootShadow({
-            instance: performedInstance,
-            fiber,
-            alternate,
-          })
-        : performedShadow;
+    // always extract shadow
+    performedShadow = alternate
+      ? getRootShadow({
+          instance: performedInstance,
+          fiber,
+          alternate,
+        })
+      : performedShadow;
     performedInstance = mountInstance(fiber, performedInstance);
   }
 
@@ -650,12 +667,12 @@ type GetRootShadowOptions = {
 
 function getRootShadow(options: GetRootShadowOptions) {
   const { instance, fiber, alternate } = options;
-  const key = getElementKey(alternate.instance);
+  const prevKey = getElementKey(alternate.instance);
   const nextKey = getElementKey(instance);
   let shadow: Fiber = null;
 
-  if (key !== nextKey) {
-    shadow = getAlternateByKey(nextKey, alternate.parent.child);
+  if (fiber.parent.keyedCache && prevKey !== null && nextKey !== null && prevKey !== nextKey) {
+    shadow = fiber.parent.keyedCache[nextKey];
 
     if (shadow) {
       fiber.hook = shadow.hook;
@@ -731,21 +748,21 @@ function getFibersByIdx(fiber: Fiber, idx: number): [Fiber | null, Fiber | null]
   return [null, null];
 }
 
-function createFibersByKeyMap(fiber: Fiber) {
+function createKeyedFibersMap(fiber: Fiber) {
+  const keyedMap: Record<DarkElementKey, Fiber> = {};
   let nextFiber = fiber;
-  const map: Record<string, Fiber> = {};
 
   while (nextFiber) {
     const key = getElementKey(nextFiber.instance);
 
     if (!detectIsEmpty(key)) {
-      map[key] = nextFiber;
+      keyedMap[key] = nextFiber;
     }
 
     nextFiber = nextFiber.nextSibling;
   }
 
-  return map;
+  return keyedMap;
 }
 
 function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
@@ -776,31 +793,28 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   };
 }
 
-function getAlternateByKey(key: DarkElementKey, fiber: Fiber) {
-  if (detectIsEmpty(key)) return null;
-  let nextFiber = fiber;
-
-  while (nextFiber) {
-    if (key === getElementKey(nextFiber.instance)) {
-      return nextFiber;
-    }
-
-    nextFiber = nextFiber.nextSibling;
-  }
-
-  return null;
-}
-
 function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
   const key = detectIsComponentFactory(instance)
     ? getComponentFactoryKey(instance)
     : detectIsVirtualNodeFactory(instance)
     ? getVirtualNodeFactoryKey(instance)
     : detectIsTagVirtualNode(instance)
-    ? getVirtualNodeKey(instance)
+    ? getTagVirtualNodeKey(instance)
     : null;
 
   return key;
+}
+
+function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | null {
+  const flag = detectIsComponentFactory(instance)
+    ? getComponentFactoryFlag(instance)
+    : detectIsVirtualNodeFactory(instance)
+    ? getVirtualNodeFactoryFlag(instance)
+    : detectIsTagVirtualNode(instance)
+    ? getTagVirtualNodeFlag(instance)
+    : null;
+
+  return flag;
 }
 
 function getChildAlternate(fiber: Fiber): Fiber | null {
@@ -904,7 +918,8 @@ function commitWork(fiber: Fiber, onComplete: Function) {
       platform.applyCommit(nextFiber);
     }
 
-    if (nextFiber && nextFiber.shadow) {
+    if (nextFiber) {
+      nextFiber.keyedCache = null;
       nextFiber.shadow = null;
     }
   });
