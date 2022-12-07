@@ -31,11 +31,11 @@ declare const detectIsVirtualNode: (vNode: unknown) => vNode is VirtualNode;
 declare const detectIsTagVirtualNode: (vNode: unknown) => vNode is TagVirtualNode;
 declare const detectIsCommentVirtualNode: (vNode: unknown) => vNode is CommentVirtualNode;
 declare const detectIsTextVirtualNode: (vNode: unknown) => vNode is TextVirtualNode;
-declare const detectIsEmptyVirtualNode: (vNode: unknown) => boolean;
-declare function getVirtualNodeKey(vNode: TagVirtualNode): DarkElementKey | null;
-declare function getVirtualNodeFactoryKey(factory: VirtualNodeFactory): DarkElementKey | null;
-declare const createEmptyVirtualNode: () => CommentVirtualNode;
 declare const detectIsVirtualNodeFactory: (factory: unknown) => factory is VirtualNodeFactory;
+declare const detectIsEmptyVirtualNode: (vNode: unknown) => boolean;
+declare const getTagVirtualNodeKey: (vNode: TagVirtualNode) => DarkElementKey | null;
+declare const getVirtualNodeFactoryKey: (factory: VirtualNodeFactory) => DarkElementKey | null;
+declare const createEmptyVirtualNode: () => CommentVirtualNode;
 declare function View(def: ViewDef): TagVirtualNodeFactory;
 declare function Text(source: string | number): TextVirtualNode;
 declare namespace Text {
@@ -51,8 +51,8 @@ export {
   detectIsTagVirtualNode,
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
+  getTagVirtualNodeKey,
   detectIsEmptyVirtualNode,
-  getVirtualNodeKey,
   getVirtualNodeFactoryKey,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,

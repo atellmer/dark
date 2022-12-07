@@ -13,8 +13,8 @@ declare const Suspense: (
       slot: DarkElement;
     }>
   > &
-    import('../component').KeyProps &
-    import('../component').RefProps<unknown>,
+    import('../shared').KeyProps &
+    import('../shared').RefProps<unknown>,
   ref?: import('..').Ref<unknown>,
 ) => import('../component/component').ComponentFactory<
   {
@@ -24,8 +24,8 @@ declare const Suspense: (
       slot: DarkElement;
     }>
   > &
-    import('../component').KeyProps &
-    import('../component').RefProps<unknown>,
+    import('../shared').KeyProps &
+    import('../shared').RefProps<unknown>,
   any
 >;
 export { SuspenseContext, Suspense };

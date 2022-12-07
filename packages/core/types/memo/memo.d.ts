@@ -1,10 +1,5 @@
-import {
-  type Component,
-  type ComponentFactory,
-  type StandardComponentProps,
-  type SlotProps,
-  type ShouldUpdate,
-} from '../component';
+import { type Component, type ComponentFactory, type StandardComponentProps, type ShouldUpdate } from '../component';
+import type { SlotProps } from '../shared';
 import { type Ref } from '../ref';
 declare const $$memo: unique symbol;
 declare const detectIsMemo: (factory: unknown) => boolean;

@@ -2,12 +2,11 @@ import {
   type Component,
   type ComponentFactory,
   type StandardComponentProps,
-  type RefProps,
-  type SlotProps,
   type ShouldUpdate,
   createComponent,
   detectIsComponentFactory,
 } from '../component';
+import type { RefProps, SlotProps } from '../shared';
 import { type Ref, forwardRef } from '../ref';
 
 const $$memo = Symbol('memo');

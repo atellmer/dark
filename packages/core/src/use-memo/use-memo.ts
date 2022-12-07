@@ -1,6 +1,6 @@
-import { type DarkElement } from '../shared';
+import type { DarkElement, SlotProps } from '../shared';
 import { detectIsUndefined, detectIsArray, detectIsDepsDifferent } from '../helpers';
-import { detectIsComponentFactory, createComponent, type SlotProps } from '../component';
+import { detectIsComponentFactory, createComponent } from '../component';
 import { detectIsVirtualNodeFactory } from '../view';
 import { currentFiberStore } from '../scope';
 import { Fragment } from '../fragment';

@@ -1,4 +1,5 @@
-import { type KeyProps, type SlotProps, createComponent, detectIsComponentFactory } from '../component';
+import { createComponent, detectIsComponentFactory } from '../component';
+import type { KeyProps, SlotProps } from '../shared';
 
 type FragmentProps = Required<SlotProps> & KeyProps;
 

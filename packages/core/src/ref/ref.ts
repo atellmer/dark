@@ -1,5 +1,6 @@
 import { detectIsObject, detectIsNull } from '../helpers';
-import type { Component, RefProps, ComponentFactory } from '../component';
+import type { Component, ComponentFactory } from '../component';
+import type { RefProps } from '../shared';
 import type { MutableRef } from './types';
 
 function forwardRef<P, R>(component: Component<P, R>) {

@@ -1,10 +1,10 @@
-import { createComponent, type SlotProps } from '../component';
+import { createComponent } from '../component';
 import { useState } from '../use-state';
 import { createContext } from '../context';
 import { useContext } from '../use-context';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
-import type { DarkElement } from '../shared';
+import type { DarkElement, SlotProps } from '../shared';
 
 type SuspenseProps = {
   fallback: DarkElement;
