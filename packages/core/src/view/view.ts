@@ -1,5 +1,5 @@
-import { EMPTY_NODE, ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
-import { detectIsArray, detectIsEmpty, detectIsFunction, detectIsString } from '../helpers';
+import { EMPTY_NODE, ATTR_KEY } from '../constants';
+import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
 import type { DarkElementKey, DarkElement } from '../shared';
 import type { ComponentFactory } from '../component';
 import { NodeType, type ViewDef } from './types';
@@ -72,13 +72,8 @@ const detectIsEmptyVirtualNode = (vNode: unknown): boolean =>
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): DarkElementKey | null =>
   !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
 
-const getTagVirtualNodeFlag = (vNode: TagVirtualNode): Record<Flag, boolean> | null => vNode.attrs[ATTR_FLAG] || null;
-
 const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): DarkElementKey | null =>
   !detectIsEmpty(factory[ATTR_KEY]) ? factory[ATTR_KEY] : null;
-
-const getVirtualNodeFactoryFlag = (factory: VirtualNodeFactory): Record<Flag, boolean> | null =>
-  factory[ATTR_FLAG] || null;
 
 const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
 
@@ -97,7 +92,6 @@ function View(def: ViewDef): TagVirtualNodeFactory {
 
   factory[$$virtualNode] = true;
   factory[ATTR_KEY] = def.key;
-  factory[ATTR_FLAG] = def.flag;
 
   return factory;
 }
@@ -126,10 +120,8 @@ export {
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
   getTagVirtualNodeKey,
-  getTagVirtualNodeFlag,
   detectIsEmptyVirtualNode,
   getVirtualNodeFactoryKey,
-  getVirtualNodeFactoryFlag,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,
   View,

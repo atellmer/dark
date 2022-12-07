@@ -7,7 +7,6 @@ import {
   type Ref,
   ATTR_KEY,
   ATTR_REF,
-  ATTR_FLAG,
   EffectTag,
   detectIsFunction,
   detectIsUndefined,
@@ -28,7 +27,6 @@ import { SVG_TAG_NAMES, VOID_TAG_NAMES } from '../constants';
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
-  [ATTR_FLAG]: true,
   void: true,
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
