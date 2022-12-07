@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
-    "dev": "webpack-dev-server --config webpack.config --env.development"
+    "dev": "webpack-dev-server --config webpack.config --env.development",
+    "build": "webpack --config webpack.config --env.development"
   },
   "keywords": [],
   "devDependencies": {
