@@ -273,6 +273,19 @@ const insert = (fiber: Fiber<Element>, parentNativeElement: Element) => {
   fiber.markMountedToHost();
 };
 
+const swap = (fiber: Fiber<Element>, from: number, to: number) => {
+  const nativeElement = fiber.nativeElement;
+  const parentNativeElement = nativeElement.parentElement;
+  const destinationNode = parentNativeElement.childNodes[to] as Element;
+  const destinationSiblingNode = parentNativeElement.childNodes[to + 1] as Element;
+  const departureSiblingNode = parentNativeElement.childNodes[from + 1];
+
+  if (fiber.nativeElement !== destinationNode) {
+    parentNativeElement.insertBefore(fiber.nativeElement, destinationSiblingNode);
+    parentNativeElement.insertBefore(destinationNode, departureSiblingNode);
+  }
+};
+
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
@@ -289,18 +302,46 @@ function commitCreation(fiber: Fiber<Element>) {
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
 }
 
-function commitUpdate(nativeElement: Element, instance: VirtualNode, nextInstance: VirtualNode) {
+function commitUpdate(fiber: Fiber<Element>) {
+  const nativeElement = fiber.nativeElement;
+  const prevInstance = fiber.alternate.instance as VirtualNode;
+  const nextInstance = fiber.instance as VirtualNode;
+
   if (
-    detectIsTextVirtualNode(instance) &&
+    detectIsTextVirtualNode(prevInstance) &&
     detectIsTextVirtualNode(nextInstance) &&
-    instance.value !== nextInstance.value
+    prevInstance.value !== nextInstance.value
   ) {
     return (nativeElement.textContent = nextInstance.value);
   }
 
-  if (detectIsTagVirtualNode(instance) && detectIsTagVirtualNode(nextInstance)) {
-    return updateAttributes(nativeElement, instance, nextInstance);
+  if (detectIsTagVirtualNode(prevInstance) && detectIsTagVirtualNode(nextInstance)) {
+    const { from, to } = getTransposition(fiber);
+
+    to > -1 && swap(fiber, from, to);
+
+    return updateAttributes(nativeElement, prevInstance, nextInstance);
   }
+}
+
+function getTransposition(fiber: Fiber) {
+  let nextFiber = fiber;
+  let from = -1;
+  let to = -1;
+
+  while (nextFiber) {
+    if (nextFiber.alternate.transposition) {
+      nextFiber.alternate.transposition = false;
+      from = nextFiber.alternate.idx;
+      to = nextFiber.idx;
+
+      return { from, to };
+    }
+
+    nextFiber = nextFiber.parent;
+  }
+
+  return { from, to };
 }
 
 function commitDeletion(fiber: Fiber<Element>) {
@@ -334,7 +375,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
       return;
     }
     trackUpdate && trackUpdate(fiber.nativeElement);
-    commitUpdate(fiber.nativeElement, fiber.alternate.instance, fiber.instance);
+    commitUpdate(fiber);
   },
   [EffectTag.DELETE]: (fiber: Fiber<Element>) => commitDeletion(fiber),
   [EffectTag.SKIP]: () => {},
