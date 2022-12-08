@@ -64,6 +64,7 @@ class Fiber<N = NativeElement> {
   public layoutEffectHost: boolean;
   public insertionEffectHost: boolean;
   public portalHost: boolean;
+  public listHost: boolean;
   public childrenCount: number;
   public marker: string;
   public isUsed: boolean;
@@ -87,6 +88,7 @@ class Fiber<N = NativeElement> {
     this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
     this.insertionEffectHost = !detectIsUndefined(options.insertionEffectHost) ? options.insertionEffectHost : false;
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
+    this.listHost = !detectIsUndefined(options.listHost) ? options.listHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
     this.idx = options.idx || 0;
@@ -218,7 +220,7 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   fiber.parent = nextFiber;
 
   instance = pertformInstance(instance, childrenIdx, fiber) || instance;
-  alternate && mutateAlternate(alternate, instance);
+  alternate && mutateAlternate(fiber, alternate, instance);
 
   fiber.idx = childrenIdx;
 
@@ -253,7 +255,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     fiber.parent = nextFiber.parent;
 
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
-    alternate && mutateAlternate(alternate, instance);
+    alternate && mutateAlternate(fiber, alternate, instance);
 
     fiber.idx = childrenIdx;
 
@@ -325,7 +327,7 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
   return child;
 }
 
-function mutateAlternate(alternate: Fiber, instance: DarkElementInstance) {
+function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
@@ -335,15 +337,23 @@ function mutateAlternate(alternate: Fiber, instance: DarkElementInstance) {
   if (!isSameType) {
     alternate.effectTag = EffectTag.DELETE;
     deletionsStore.get().push(alternate);
-  } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
+  } else if (
+    hasChildrenProp(alternate.instance) &&
+    hasChildrenProp(instance) &&
+    (alternate.childrenCount !== instance.children.length || alternate.listHost)
+  ) {
+    if (alternate.childrenCount !== instance.children.length) {
+      fiber.listHost = true;
+    } else {
+      fiber.listHost = alternate.listHost;
+    }
+
     const { prevKeys, nextKeys, keyedMap, nextKeysMap } = extractKeys(alternate.child, instance.children);
     const size = Math.max(prevKeys.length, nextKeys.length);
     let p = 0;
     let n = 0;
     const result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
     let nextFiber = alternate;
-
-    console.log('size', size);
 
     for (let i = 0; i < size; i++) {
       const prevKey = prevKeys[p];
@@ -362,13 +372,11 @@ function mutateAlternate(alternate: Fiber, instance: DarkElementInstance) {
         if (nextKeys.length - n < prevKeys.length - p) {
           n--;
           //result.push([prevKey, 'remove']);
-
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.get().push(prevKeyFiber);
         } else if (nextKeys.length - n > prevKeys.length - p) {
           p--;
           //result.push([nextKey, 'insert']);
-
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         } else {
           if (nextKeysMap[prevKey]) {
@@ -384,7 +392,6 @@ function mutateAlternate(alternate: Fiber, instance: DarkElementInstance) {
         }
       } else {
         //result.push([nextKey, 'stable']);
-
         nextKeyFiber.effectTag = EffectTag.UPDATE;
         nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
       }
@@ -420,6 +427,7 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
     memoFiber = new Fiber({
       ...alternate,
       alternate,
+      idx: fiber.idx,
       effectTag: EffectTag.SKIP,
     });
 
@@ -610,7 +618,7 @@ function commitChanges() {
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
 
-  //console.log('wipFiber', wipFiber);
+  // console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();

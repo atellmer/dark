@@ -174,7 +174,6 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
           return (
             <MemoRow
               key={item.id}
-              //key={idx}
               id={item.id}
               name={item.name}
               selected={item.selected}
