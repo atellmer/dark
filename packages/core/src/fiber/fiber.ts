@@ -674,6 +674,8 @@ function commitChanges() {
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
 
+  wipFiber.alternate = null;
+
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
     const effects = effectsStore.get();
@@ -716,6 +718,8 @@ function commitWork(fiber: Fiber, onComplete: Function) {
     } else if (!isReturn) {
       platform.applyCommit(nextFiber);
     }
+
+    nextFiber.alternate = null;
   });
 
   platform.finishCommitWork();
