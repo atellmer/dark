@@ -3,13 +3,10 @@ import {
   detectIsEmpty,
   detectIsFalsy,
   error,
-  keyBy,
-  fromEnd,
   detectIsUndefined,
   detectIsArray,
   detectIsString,
   detectIsNumber,
-  getDiffKeys,
 } from '../helpers';
 import { platform } from '../platform';
 import {
@@ -40,7 +37,7 @@ import {
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { ATTR_KEY, INDEX_KEY, PARTIAL_UPDATE } from '../constants';
+import { INDEX_KEY, PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -48,6 +45,7 @@ import { hasInsertionEffects } from '../use-insertion-effect';
 import { walkFiber } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
+import { Fragment, detectIsFragment } from '../fragment';
 
 class Fiber<N = NativeElement> {
   public nativeElement: N;
@@ -193,27 +191,7 @@ function performUnitOfWork(fiber: Fiber) {
       if (performedFiber) return performedFiber;
     }
 
-    nextFiber.marker === PARTIAL_UPDATE && performPartialUpdateEffects(nextFiber);
-
     if (nextFiber.parent === null) return null;
-  }
-}
-
-function performPartialUpdateEffects(nextFiber: Fiber) {
-  const alternate = nextFiber.child?.alternate || null;
-  const fiber = nextFiber.child || null;
-
-  if (alternate && fiber && alternate.nextSibling && !fiber.nextSibling) {
-    let nextFiber = alternate.nextSibling;
-    const deletions: Array<Fiber> = [];
-
-    while (nextFiber) {
-      nextFiber.effectTag = EffectTag.DELETE;
-      deletions.push(nextFiber);
-      nextFiber = nextFiber.nextSibling;
-    }
-
-    deletionsStore.get().push(...deletions);
   }
 }
 
@@ -231,7 +209,6 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   fiber.parent = nextFiber;
 
   instance = pertformInstance(instance, childrenIdx, fiber) || instance;
-
   alternate && performAlternate(alternate, instance);
   performFiber(fiber, alternate, instance);
   alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
@@ -270,7 +247,6 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     fiber.parent = nextFiber.parent;
 
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
-
     alternate && performAlternate(alternate, instance);
     performFiber(fiber, alternate, instance);
     alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
@@ -305,11 +281,12 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
 }
 
 function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
-  const key = alternate ? getElementKey(alternate.instance) : null;
-  const nextKey = alternate ? getElementKey(instance) : null;
-  const isDifferentKeys = key !== nextKey;
-  const isSameType = Boolean(alternate) && getInstanceType(alternate.instance) === getInstanceType(instance);
-  const isUpdate = isSameType && !isDifferentKeys;
+  const hasAlternate = Boolean(alternate);
+  const prevKey = hasAlternate ? getElementKey(alternate.instance) : null;
+  const nextKey = hasAlternate ? getElementKey(instance) : null;
+  const isSameKeys = prevKey === nextKey;
+  const isSameTypes = hasAlternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+  const isUpdate = isSameTypes && isSameKeys;
 
   fiber.instance = instance;
   fiber.alternate = alternate || null;
@@ -327,6 +304,8 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
 
   if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
     fiber.nativeElement = platform.createNativeElement(fiber.instance);
+    fiber.effectTag = EffectTag.CREATE;
+    fiber.mountedToHost = false;
   }
 }
 
@@ -338,6 +317,17 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
   }
 
   return child;
+}
+
+function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
+  const vNode = createEmptyVirtualNode();
+
+  return new Fiber().mutate({
+    instance: vNode,
+    parent: alternate,
+    marker: marker + '',
+    effectTag: EffectTag.CREATE,
+  });
 }
 
 function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
@@ -358,19 +348,13 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     let n = 0;
     const result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
     let nextFiber = alternate;
+    let idx = 0;
 
     for (let i = 0; i < size; i++) {
       const prevKey = prevKeys[p];
       const nextKey = nextKeys[n];
       const prevKeyFiber = keyedMap[prevKey];
-      const nextKeyFiber =
-        keyedMap[nextKey] ||
-        new Fiber().mutate({
-          instance: createEmptyVirtualNode(),
-          parent: alternate,
-          marker: nextKey as string,
-          effectTag: EffectTag.CREATE,
-        });
+      const nextKeyFiber = keyedMap[nextKey] || createConditionalFiber(alternate, nextKey);
 
       if (nextKeys[n] !== prevKeys[p]) {
         if (nextKeys.length - n < prevKeys.length - p) {
@@ -381,7 +365,9 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
         } else if (nextKeys.length - n > prevKeys.length - p) {
           p--;
           result.push([nextKey, 'insert']);
+          nextKeyFiber.idx = idx;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
+          idx++;
         } else {
           if (nextKeysMap[prevKey]) {
             result.push([[prevKey, nextKey], 'swap']);
@@ -392,12 +378,16 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
             deletionsStore.get().push(prevKeyFiber);
           }
 
+          nextKeyFiber.idx = idx;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
+          idx++;
         }
       } else {
         result.push([nextKey, 'stable']);
         nextKeyFiber.effectTag = EffectTag.UPDATE;
+        nextKeyFiber.idx = idx;
         nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
+        idx++;
       }
 
       n++;
@@ -405,10 +395,11 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     }
 
     if (result.length > 0) {
-      // console.log('prevKeys', prevKeys);
-      // console.log('nextKeys', nextKeys);
-      // console.log('result', result);
-      // console.log('fiber', fiber);
+      //console.log('prevKeys', prevKeys);
+      //console.log('nextKeys', nextKeys);
+      console.log('result', result);
+      console.log('[alternate]', alternate);
+      //console.log(deletionsStore.get());
     }
   }
 }
@@ -416,12 +407,10 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const prevFactory = alternate.instance as ComponentFactory;
   const nextFactory = instance as ComponentFactory;
-
   if (alternate.transposition || nextFactory.type !== prevFactory.type) return;
-
-  const props = prevFactory.props;
+  const prevProps = prevFactory.props;
   const nextProps = nextFactory.props;
-  const skip = !nextFactory.shouldUpdate(props, nextProps);
+  const skip = !nextFactory.shouldUpdate(prevProps, nextProps);
 
   if (skip) {
     fiberMountStore.deepWalking.set(false);
@@ -512,7 +501,9 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
     try {
       let result = factory.type(factory.props, factory.ref);
 
-      if (detectIsString(result) || detectIsNumber(result)) {
+      if (detectIsArray(result) && !detectIsFragment(factory)) {
+        result = Fragment({ slot: result });
+      } else if (detectIsString(result) || detectIsNumber(result)) {
         result = Text(result);
       }
 
@@ -666,7 +657,7 @@ function commitChanges() {
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
 
-  // console.log('wipFiber', wipFiber);
+  console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();

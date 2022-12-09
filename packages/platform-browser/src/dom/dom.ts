@@ -330,7 +330,7 @@ function getTransposition(fiber: Fiber) {
   let to = -1;
 
   while (nextFiber) {
-    if (nextFiber.alternate.transposition) {
+    if (nextFiber.alternate && nextFiber.alternate.transposition) {
       nextFiber.alternate.transposition = false;
       from = nextFiber.alternate.idx;
       to = nextFiber.idx;
@@ -353,6 +353,7 @@ function commitDeletion(fiber: Fiber<Element>) {
     }
 
     if (!isReturn && nextFiber.nativeElement) {
+      // console.log('[delete]', nextFiber);
       !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
 
       return resetIsDeepWalking();
