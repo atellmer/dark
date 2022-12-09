@@ -48,26 +48,26 @@ import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
 
 class Fiber<N = NativeElement> {
-  public nativeElement: N;
-  public parent: Fiber<N>;
-  public child: Fiber<N>;
-  public nextSibling: Fiber<N>;
-  public alternate: Fiber<N>;
-  public effectTag: EffectTag;
-  public instance: DarkElementInstance;
-  public hook: Hook | null;
-  public provider: Map<Context, ContextProviderValue>;
-  public transposition: boolean;
-  public mountedToHost: boolean;
-  public effectHost: boolean;
-  public layoutEffectHost: boolean;
-  public insertionEffectHost: boolean;
-  public portalHost: boolean;
-  public childrenCount: number;
-  public marker: string;
-  public isUsed: boolean;
-  public idx: number;
-  public batched: number | null;
+  public nativeElement: N = null;
+  public parent: Fiber<N> = null;
+  public child: Fiber<N> = null;
+  public nextSibling: Fiber<N> = null;
+  public alternate: Fiber<N> = null;
+  public effectTag: EffectTag = null;
+  public instance: DarkElementInstance = null;
+  public hook: Hook | null = null;
+  public provider: Map<Context, ContextProviderValue> = null;
+  public transposition = false;
+  public mountedToHost = false;
+  public effectHost = false;
+  public layoutEffectHost = false;
+  public insertionEffectHost = false;
+  public portalHost = false;
+  public childrenCount = 0;
+  public marker = '';
+  public isUsed = false;
+  public idx = 0;
+  public batched: number | null = null;
   public catchException: (error: Error) => void;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
@@ -374,11 +374,11 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
             nextKeyFiber.transposition = true;
           } else {
             result.push([[prevKey, nextKey], 'replace']);
+            nextKeyFiber.idx = idx;
             prevKeyFiber.effectTag = EffectTag.DELETE;
             deletionsStore.get().push(prevKeyFiber);
           }
 
-          nextKeyFiber.idx = idx;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
           idx++;
         }
@@ -397,8 +397,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     if (result.length > 0) {
       //console.log('prevKeys', prevKeys);
       //console.log('nextKeys', nextKeys);
-      console.log('result', result);
-      console.log('[alternate]', alternate);
+      // console.log('result', result);
+      // console.log('[alternate]', alternate);
       //console.log(deletionsStore.get());
     }
   }
@@ -657,7 +657,7 @@ function commitChanges() {
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
 
-  console.log('wipFiber', wipFiber);
+  // console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
