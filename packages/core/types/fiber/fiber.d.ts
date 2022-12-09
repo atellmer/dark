@@ -1,7 +1,7 @@
 import { type ComponentFactory } from '../component';
 import { type TagVirtualNode } from '../view';
 import type { Context, ContextProviderValue } from '../context';
-import type { DarkElementKey, DarkElementInstance } from '../shared';
+import type { DarkElementInstance } from '../shared';
 import { type NativeElement, type Hook, EffectTag } from './types';
 declare class Fiber<N = NativeElement> {
   nativeElement: N;
@@ -9,10 +9,10 @@ declare class Fiber<N = NativeElement> {
   child: Fiber<N>;
   nextSibling: Fiber<N>;
   alternate: Fiber<N>;
+  swap: Fiber<N>;
   effectTag: EffectTag;
   instance: DarkElementInstance;
   hook: Hook | null;
-  shadow: Fiber<N>;
   provider: Map<Context, ContextProviderValue>;
   mountedToHost: boolean;
   effectHost: boolean;
@@ -24,10 +24,9 @@ declare class Fiber<N = NativeElement> {
   isUsed: boolean;
   idx: number;
   batched: number | null;
-  keyedCache: Record<DarkElementKey, Fiber> | null;
-  transposition: boolean;
   catchException: (error: Error) => void;
-  constructor(options: Partial<Fiber<N>>);
+  constructor(hook?: Hook, provider?: Fiber['provider'], idx?: number);
+  mutate(options: Partial<Fiber<N>>): this;
   markMountedToHost(): void;
   markEffectHost(): void;
   markLayoutEffectHost(): void;

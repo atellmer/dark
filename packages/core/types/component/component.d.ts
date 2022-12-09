@@ -1,3 +1,4 @@
+import { Flag } from '../constants';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
@@ -27,4 +28,5 @@ declare function createComponent<P, R = unknown>(
 ) => ComponentFactory<P & StandardComponentProps>;
 declare const detectIsComponentFactory: (factory: unknown) => factory is ComponentFactory<any, any>;
 declare const getComponentFactoryKey: (factory: ComponentFactory) => DarkElementKey;
-export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey };
+declare const getComponentFactoryFlag: (factory: ComponentFactory) => Record<Flag, boolean> | null;
+export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey, getComponentFactoryFlag };

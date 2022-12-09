@@ -26,8 +26,11 @@ declare const eventsStore: {
   unsubscribe: (id: number) => void;
 };
 declare const deletionsStore: {
-  get: () => Fiber<unknown>[];
-  set: (deletions: Array<Fiber>) => Fiber<unknown>[];
+  get: () => Set<Fiber<unknown>>;
+  add: (fiber: Fiber) => Set<Fiber<unknown>>;
+  has: (fiber: Fiber) => boolean;
+  set: (deletions: Set<Fiber>) => Set<Fiber<unknown>>;
+  reset: () => Set<Fiber<unknown>>;
 };
 declare const fiberMountStore: {
   reset: () => void;

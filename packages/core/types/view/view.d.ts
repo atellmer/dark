@@ -1,3 +1,4 @@
+import { Flag } from '../constants';
 import type { DarkElementKey, DarkElement } from '../shared';
 import type { ComponentFactory } from '../component';
 import { NodeType, type ViewDef } from './types';
@@ -34,7 +35,9 @@ declare const detectIsTextVirtualNode: (vNode: unknown) => vNode is TextVirtualN
 declare const detectIsVirtualNodeFactory: (factory: unknown) => factory is VirtualNodeFactory;
 declare const detectIsEmptyVirtualNode: (vNode: unknown) => boolean;
 declare const getTagVirtualNodeKey: (vNode: TagVirtualNode) => DarkElementKey | null;
+declare const getTagVirtualNodeFlag: (vNode: TagVirtualNode) => Record<Flag, boolean> | null;
 declare const getVirtualNodeFactoryKey: (factory: VirtualNodeFactory) => DarkElementKey | null;
+declare const getVirtualNodeFactoryFlag: (factory: VirtualNodeFactory) => Record<Flag, boolean> | null;
 declare const createEmptyVirtualNode: () => CommentVirtualNode;
 declare function View(def: ViewDef): TagVirtualNodeFactory;
 declare function Text(source: string | number): TextVirtualNode;
@@ -52,8 +55,10 @@ export {
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
   getTagVirtualNodeKey,
+  getTagVirtualNodeFlag,
   detectIsEmptyVirtualNode,
   getVirtualNodeFactoryKey,
+  getVirtualNodeFactoryFlag,
   createEmptyVirtualNode,
   detectIsVirtualNodeFactory,
   View,
