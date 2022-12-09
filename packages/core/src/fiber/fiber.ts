@@ -397,7 +397,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       p++;
     }
 
-    if (result.length > 0) {
+    if (result.length > 5) {
       // console.log('prevKeys', prevKeys);
       // console.log('nextKeys', nextKeys);
       // console.log('result', result);

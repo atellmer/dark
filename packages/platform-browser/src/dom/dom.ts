@@ -30,6 +30,7 @@ const attrBlackListMap = {
   void: true,
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
+let swapsMap: Map<ChildNode, boolean> = new Map();
 let trackUpdate: (nativeElement: Element) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
@@ -250,7 +251,7 @@ function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
   return -1;
 }
 
-const append = (fiber: Fiber<Element>, parentNativeElement: Element) => {
+function append(fiber: Fiber<Element>, parentNativeElement: Element) {
   const { fragment } =
     fragmentsMap.get(parentNativeElement) ||
     ({
@@ -266,25 +267,39 @@ const append = (fiber: Fiber<Element>, parentNativeElement: Element) => {
   });
   fragment.appendChild(fiber.nativeElement);
   fiber.markMountedToHost();
-};
+}
 
-const insert = (fiber: Fiber<Element>, parentNativeElement: Element) => {
+function insert(fiber: Fiber<Element>, parentNativeElement: Element) {
   parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
   fiber.markMountedToHost();
-};
+}
 
-const swap = (fiber: Fiber<Element>, from: number, to: number) => {
+function getSwapShift(nodes: NodeListOf<ChildNode>, node: Element, idx: number) {
+  let shift = 0;
+
+  while (nodes[idx + shift] !== node || shift >= nodes.length) {
+    shift++;
+  }
+
+  return shift;
+}
+
+function swap(fiber: Fiber<Element>, from: number, to: number) {
   const nativeElement = fiber.nativeElement;
   const parentNativeElement = nativeElement.parentElement;
-  const destinationNode = parentNativeElement.childNodes[to] as Element;
-  const destinationSiblingNode = parentNativeElement.childNodes[to + 1] as Element;
-  const departureSiblingNode = parentNativeElement.childNodes[from + 1];
+  const childNodes = parentNativeElement.childNodes;
+  const shift = getSwapShift(childNodes, nativeElement, from);
+  const from$ = from + shift;
+  const to$ = to + shift;
+  const destinationNode = childNodes[to$];
 
-  if (fiber.nativeElement !== destinationNode) {
-    parentNativeElement.insertBefore(fiber.nativeElement, destinationSiblingNode);
-    parentNativeElement.insertBefore(destinationNode, departureSiblingNode);
+  if (!swapsMap.get(fiber.nativeElement)) {
+    parentNativeElement.insertBefore(fiber.nativeElement, childNodes[to$ + 1]);
+    parentNativeElement.insertBefore(destinationNode, childNodes[from$ + 1]);
+    swapsMap.set(fiber.nativeElement, true);
+    swapsMap.set(destinationNode, true);
   }
-};
+}
 
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
@@ -353,7 +368,6 @@ function commitDeletion(fiber: Fiber<Element>) {
     }
 
     if (!isReturn && nextFiber.nativeElement) {
-      console.log('[delete]', nextFiber);
       !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
 
       return resetIsDeepWalking();
@@ -392,6 +406,7 @@ function finishCommitWork() {
   }
 
   fragmentsMap = new Map();
+  swapsMap = new Map();
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {
