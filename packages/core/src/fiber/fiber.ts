@@ -3,7 +3,6 @@ import {
   detectIsEmpty,
   detectIsFalsy,
   error,
-  detectIsUndefined,
   detectIsArray,
   detectIsString,
   detectIsNumber,
@@ -77,26 +76,11 @@ class Fiber<N = NativeElement> {
   }
 
   public mutate(options: Partial<Fiber<N>>) {
-    this.nativeElement = options.nativeElement || null;
-    this.parent = options.parent || null;
-    this.child = options.child || null;
-    this.nextSibling = options.nextSibling || null;
-    this.alternate = options.alternate || null;
-    this.swap = options.swap || null;
-    this.effectTag = options.effectTag || null;
-    this.instance = options.instance || null;
-    this.hook = options.hook || null;
-    this.provider = options.provider || null;
-    this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
-    this.effectHost = !detectIsUndefined(options.effectHost) ? options.effectHost : false;
-    this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
-    this.insertionEffectHost = !detectIsUndefined(options.insertionEffectHost) ? options.insertionEffectHost : false;
-    this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
-    this.childrenCount = options.childrenCount || 0;
-    this.marker = options.marker || '';
-    this.idx = options.idx || 0;
-    this.isUsed = options.isUsed || false;
-    this.batched = options.batched || null;
+    const keys = Object.keys(options);
+
+    for (const key of keys) {
+      this[key] = options[key];
+    }
 
     return this;
   }
@@ -374,15 +358,19 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           p--;
           result.push([nextKey, 'insert']);
           nextKeyFiber.idx = idx;
+          nextKeyFiber.effectTag = EffectTag.CREATE;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
           idx++;
         } else {
           if (nextKeysMap[prevKey]) {
             result.push([[prevKey, nextKey], 'swap']);
+            prevKeyFiber.effectTag = EffectTag.UPDATE;
+            nextKeyFiber.effectTag = EffectTag.UPDATE;
             nextKeyFiber.swap = prevKeyFiber;
           } else {
             result.push([[prevKey, nextKey], 'replace']);
             nextKeyFiber.idx = idx;
+            nextKeyFiber.effectTag = EffectTag.CREATE;
             prevKeyFiber.effectTag = EffectTag.DELETE;
             deletionsStore.add(prevKeyFiber);
           }
@@ -398,16 +386,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
         idx++;
       }
 
-      n++;
       p++;
-    }
-
-    if (result.length === 5) {
-      // console.log('prevKeys', prevKeys);
-      // console.log('nextKeys', nextKeys);
-      console.log('result', result);
-      // console.log('[alternate]', alternate);
-      // console.log(deletionsStore.get());
+      n++;
     }
   }
 }
@@ -664,8 +644,6 @@ function commitChanges() {
   isInsertionEffectsZone.set(true);
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
-
-  // console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();

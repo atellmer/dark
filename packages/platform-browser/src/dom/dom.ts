@@ -165,7 +165,6 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   }
 
   if (!stop && detectIsBoolean(attrValue)) {
-    // blocking the setting of all boolean attributes, except for data attributes or other custom attributes
     stop = !attrName.includes('-');
   }
 
@@ -182,10 +181,8 @@ const patchPropertiesSpecialCasesMap: Record<
 > = {
   input: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
     if (attrName === 'value' && detectIsBoolean(attrValue)) {
-      // checkbox case
       element.checked = attrValue;
     } else if (attrName === 'autoFocus') {
-      // autofocus case
       element.autofocus = Boolean(attrValue);
     }
 
@@ -193,7 +190,6 @@ const patchPropertiesSpecialCasesMap: Record<
   },
   textarea: (element: HTMLTextAreaElement, attrName: string, attrValue: AttributeValue) => {
     if (attrName === 'value') {
-      // redirect value to innerHTML
       element.innerHTML = String(attrValue);
 
       return true;
