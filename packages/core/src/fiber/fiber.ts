@@ -36,7 +36,7 @@ import {
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { INDEX_KEY, PARTIAL_UPDATE } from '../constants';
+import { INDEX_KEY, PARTIAL_UPDATE, ATTR_TYPE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -334,7 +334,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     }
     // add flag HAS_NO_SWAP
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
-    const { prevKeys, nextKeys, keyedMap, nextKeysMap } = extractKeys(alternate.child, instance.children);
+    const { prevKeys, nextKeys, keyedFibersMap, keyedInstancesMap } = extractKeys(alternate.child, instance.children);
     const size = Math.max(prevKeys.length, nextKeys.length);
     let p = 0;
     let n = 0;
@@ -345,8 +345,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     for (let i = 0; i < size; i++) {
       const prevKey = prevKeys[p];
       const nextKey = nextKeys[n];
-      const prevKeyFiber = keyedMap[prevKey];
-      const nextKeyFiber = keyedMap[nextKey] || createConditionalFiber(alternate, nextKey);
+      const prevKeyFiber = keyedFibersMap[prevKey];
+      const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
 
       if (nextKeys[n] !== prevKeys[p]) {
         if (nextKeys.length - n < prevKeys.length - p) {
@@ -362,7 +362,10 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
           idx++;
         } else {
-          if (nextKeysMap[prevKey]) {
+          if (
+            keyedInstancesMap[prevKey] &&
+            getInstanceType(keyedInstancesMap[prevKey]) === getInstanceType(keyedInstancesMap[nextKey])
+          ) {
             result.push([[prevKey, nextKey], 'swap']);
             prevKeyFiber.effectTag = EffectTag.UPDATE;
             nextKeyFiber.effectTag = EffectTag.UPDATE;
@@ -533,8 +536,8 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   let idx = 0;
   const prevKeys: Array<DarkElementKey> = [];
   const nextKeys: Array<DarkElementKey> = [];
-  const keyedMap: Record<DarkElementKey, Fiber> = {};
-  const nextKeysMap: Record<DarkElementKey, true> = {};
+  const keyedFibersMap: Record<DarkElementKey, Fiber> = {};
+  const keyedInstancesMap: Record<DarkElementKey, DarkElementInstance> = {};
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
@@ -542,7 +545,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const prevKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       prevKeys.push(prevKey);
-      keyedMap[prevKey] = nextFiber;
+      keyedFibersMap[prevKey] = nextFiber;
     }
 
     if (children[idx]) {
@@ -550,7 +553,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       nextKeys.push(nextKey);
-      nextKeysMap[nextKey] = true;
+      keyedInstancesMap[nextKey] = children[idx];
     }
 
     nextFiber = nextFiber ? nextFiber.nextSibling : null;
@@ -560,8 +563,8 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   return {
     prevKeys,
     nextKeys,
-    keyedMap,
-    nextKeysMap,
+    keyedFibersMap,
+    keyedInstancesMap,
   };
 }
 
@@ -586,7 +589,9 @@ function supportConditional(instance: DarkElement) {
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
-  return detectIsTagVirtualNode(instance)
+  return detectIsVirtualNodeFactory(instance)
+    ? instance[ATTR_TYPE]
+    : detectIsTagVirtualNode(instance)
     ? instance.name
     : detectIsVirtualNode(instance)
     ? instance.type

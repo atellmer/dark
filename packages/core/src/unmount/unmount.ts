@@ -12,8 +12,7 @@ function unmountFiber(fiber: Fiber) {
   if (!fiber.insertionEffectHost && !fiber.layoutEffectHost && !fiber.effectHost && !fiber.portalHost) return;
 
   walkFiber(fiber, ({ nextFiber, isReturn, stop }) => {
-    if (nextFiber === fiber.nextSibling || fiber.transposition) return stop();
-
+    if (nextFiber === fiber.nextSibling) return stop();
     if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
       // important order
       nextFiber.insertionEffectHost && dropInsertionEffects(nextFiber.hook);

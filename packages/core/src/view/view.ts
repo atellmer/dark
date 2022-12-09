@@ -1,4 +1,4 @@
-import { EMPTY_NODE, ATTR_KEY } from '../constants';
+import { EMPTY_NODE, ATTR_KEY, ATTR_TYPE } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
 import type { DarkElementKey, DarkElement } from '../shared';
 import type { ComponentFactory } from '../component';
@@ -92,6 +92,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
 
   factory[$$virtualNode] = true;
   factory[ATTR_KEY] = def.key;
+  factory[ATTR_TYPE] = def.as;
 
   return factory;
 }

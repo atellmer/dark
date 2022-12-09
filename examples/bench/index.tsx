@@ -181,20 +181,20 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(1000, '!!!'));
+    state.list.unshift(...buildData(2, '!!!'));
     state.list = [...state.list];
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAppend = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+    state.list.push(...buildData(2, '!!!'));
     state.list = [...state.list];
     measurer.start('append');
     forceUpdate();

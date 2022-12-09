@@ -1,4 +1,4 @@
-import type { NestedArray, DarkElementKey } from '../shared';
+import type { NestedArray } from '../shared';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
 
@@ -66,10 +66,6 @@ function keyBy<T = any>(
   return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
 }
 
-function fromEnd<T>(source: Array<T>, count: number) {
-  return source.slice(source.length - count, source.length);
-}
-
 const dummyFn = () => {};
 
 function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {
@@ -82,19 +78,6 @@ function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): 
   }
 
   return false;
-}
-
-function getDiffKeys(prevKeys: Array<DarkElementKey>, nextKeys: Array<DarkElementKey>): Array<DarkElementKey> {
-  const nextKeysMap = nextKeys.reduce((acc, key) => ((acc[key] = true), acc), {});
-  const diff = [];
-
-  for (const key of prevKeys) {
-    if (!nextKeysMap[key]) {
-      diff.push(key);
-    }
-  }
-
-  return diff;
 }
 
 export {
@@ -112,8 +95,6 @@ export {
   flatten,
   getTime,
   keyBy,
-  fromEnd,
   dummyFn,
   detectIsDepsDifferent,
-  getDiffKeys,
 };
