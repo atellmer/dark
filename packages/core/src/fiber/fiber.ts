@@ -339,7 +339,10 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 
   if (!isSameType) {
     alternate.effectTag = EffectTag.DELETE;
-    deletionsStore.get().push(alternate);
+
+    if (!deletionsStore.has(alternate.parent)) {
+      deletionsStore.add(alternate);
+    }
     // add flag HAS_NO_SWAP
   } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const { prevKeys, nextKeys, keyedMap, nextKeysMap } = extractKeys(alternate.child, instance.children);
@@ -361,7 +364,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           n--;
           result.push([prevKey, 'remove']);
           prevKeyFiber.effectTag = EffectTag.DELETE;
-          deletionsStore.get().push(prevKeyFiber);
+          deletionsStore.add(prevKeyFiber);
         } else if (nextKeys.length - n > prevKeys.length - p) {
           p--;
           result.push([nextKey, 'insert']);
@@ -376,7 +379,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
             result.push([[prevKey, nextKey], 'replace']);
             nextKeyFiber.idx = idx;
             prevKeyFiber.effectTag = EffectTag.DELETE;
-            deletionsStore.get().push(prevKeyFiber);
+            deletionsStore.add(prevKeyFiber);
           }
 
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
@@ -395,11 +398,11 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     }
 
     if (result.length > 0) {
-      //console.log('prevKeys', prevKeys);
-      //console.log('nextKeys', nextKeys);
+      // console.log('prevKeys', prevKeys);
+      // console.log('nextKeys', nextKeys);
       // console.log('result', result);
       // console.log('[alternate]', alternate);
-      //console.log(deletionsStore.get());
+      // console.log(deletionsStore.get());
     }
   }
 }
@@ -704,7 +707,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   });
 
   platform.finishCommitWork();
-  deletionsStore.set([]);
+  deletionsStore.reset();
   onComplete();
 }
 

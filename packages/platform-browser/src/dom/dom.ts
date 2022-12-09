@@ -353,7 +353,7 @@ function commitDeletion(fiber: Fiber<Element>) {
     }
 
     if (!isReturn && nextFiber.nativeElement) {
-      // console.log('[delete]', nextFiber);
+      console.log('[delete]', nextFiber);
       !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
 
       return resetIsDeepWalking();
