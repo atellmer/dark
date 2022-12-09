@@ -25,7 +25,12 @@ const Demo = createComponent(() => {
         {numPoints}
       </div>
       <div class='about'>
-        Dark 1k Components Demo based on the Glimmer demo by{' '}
+        Dark 1k Components Demo based on the{' '}
+        <a href='https://infernojs.github.io/inferno/1kcomponents/' target='_blank'>
+          {' '}
+          Inferno demo
+        </a>{' '}
+        based on Glimmer demo by{' '}
         <a href='http://mlange.io' target='_blank'>
           Michael Lange
         </a>
@@ -59,7 +64,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
       spiral: genSpiral(100),
       points: [] as Array<Point>,
       step: 0,
-      numSteps: 60 * 6,
+      numSteps: 60 * 4,
     }),
     [],
   );
