@@ -1,6 +1,7 @@
 import {
   flatten,
   detectIsEmpty,
+  detectIsFalsy,
   error,
   keyBy,
   fromEnd,
@@ -39,7 +40,7 @@ import {
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { ATTR_KEY, PARTIAL_UPDATE } from '../constants';
+import { ATTR_KEY, INDEX_KEY, PARTIAL_UPDATE } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -64,7 +65,6 @@ class Fiber<N = NativeElement> {
   public layoutEffectHost: boolean;
   public insertionEffectHost: boolean;
   public portalHost: boolean;
-  public listHost: boolean;
   public childrenCount: number;
   public marker: string;
   public isUsed: boolean;
@@ -72,7 +72,13 @@ class Fiber<N = NativeElement> {
   public batched: number | null;
   public catchException: (error: Error) => void;
 
-  constructor(options: Partial<Fiber<N>>) {
+  constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
+    this.hook = hook;
+    this.provider = provider;
+    this.idx = idx;
+  }
+
+  public mutate(options: Partial<Fiber<N>>) {
     this.nativeElement = options.nativeElement || null;
     this.parent = options.parent || null;
     this.child = options.child || null;
@@ -80,7 +86,7 @@ class Fiber<N = NativeElement> {
     this.alternate = options.alternate || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
-    this.hook = options.hook || createHook();
+    this.hook = options.hook || null;
     this.provider = options.provider || null;
     this.transposition = !detectIsUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
@@ -88,12 +94,13 @@ class Fiber<N = NativeElement> {
     this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
     this.insertionEffectHost = !detectIsUndefined(options.insertionEffectHost) ? options.insertionEffectHost : false;
     this.portalHost = !detectIsUndefined(options.portalHost) ? options.portalHost : false;
-    this.listHost = !detectIsUndefined(options.listHost) ? options.listHost : false;
     this.childrenCount = options.childrenCount || 0;
     this.marker = options.marker || '';
     this.idx = options.idx || 0;
     this.isUsed = options.isUsed || false;
     this.batched = options.batched || null;
+
+    return this;
   }
 
   public markMountedToHost() {
@@ -214,18 +221,20 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   fiberMountStore.jumpToChild();
   const childrenIdx = 0;
   const alternate = nextFiber.alternate ? nextFiber.alternate.child : null;
-  let fiber = new Fiber({});
+  const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
+  const nextInstance: DarkElementInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
+  const hook = getHook(alternate, prevInstance, nextInstance);
+  const provider = alternate ? alternate.provider : null;
+  const fiber = new Fiber(hook, provider, childrenIdx);
 
   currentFiberStore.set(fiber);
   fiber.parent = nextFiber;
 
   instance = pertformInstance(instance, childrenIdx, fiber) || instance;
-  alternate && mutateAlternate(fiber, alternate, instance);
 
-  fiber.idx = childrenIdx;
-
-  mutateFiber(fiber, alternate, instance);
-  fiber = alternate && detectIsMemo(fiber.instance) ? performMemo(fiber, alternate, instance) : fiber;
+  alternate && performAlternate(alternate, instance);
+  performFiber(fiber, alternate, instance);
+  alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
 
   nextFiber.child = fiber;
   fiber.parent = nextFiber;
@@ -249,18 +258,22 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
   if (hasSibling) {
     fiberMountStore.deepWalking.set(true);
     const alternate = nextFiber.alternate ? nextFiber.alternate.nextSibling : null;
-    let fiber = new Fiber({});
+    const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
+    const nextInstance: DarkElementInstance = hasChildrenProp(parentInstance)
+      ? parentInstance.children[childrenIdx] || null
+      : null;
+    const hook = getHook(alternate, prevInstance, nextInstance);
+    const provider = alternate ? alternate.provider : null;
+    const fiber = new Fiber(hook, provider, childrenIdx);
 
     currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
 
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
-    alternate && mutateAlternate(fiber, alternate, instance);
 
-    fiber.idx = childrenIdx;
-
-    mutateFiber(fiber, alternate, instance);
-    fiber = alternate && detectIsMemo(fiber.instance) ? performMemo(fiber, alternate, instance) : fiber;
+    alternate && performAlternate(alternate, instance);
+    performFiber(fiber, alternate, instance);
+    alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
 
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
@@ -291,7 +304,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
   };
 }
 
-function mutateFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const key = alternate ? getElementKey(alternate.instance) : null;
   const nextKey = alternate ? getElementKey(instance) : null;
   const isDifferentKeys = key !== nextKey;
@@ -327,7 +340,7 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
   return child;
 }
 
-function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
@@ -337,17 +350,8 @@ function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementIn
   if (!isSameType) {
     alternate.effectTag = EffectTag.DELETE;
     deletionsStore.get().push(alternate);
-  } else if (
-    hasChildrenProp(alternate.instance) &&
-    hasChildrenProp(instance) &&
-    (alternate.childrenCount !== instance.children.length || alternate.listHost)
-  ) {
-    if (alternate.childrenCount !== instance.children.length) {
-      fiber.listHost = true;
-    } else {
-      fiber.listHost = alternate.listHost;
-    }
-
+    // add flag HAS_NO_SWAP
+  } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
     const { prevKeys, nextKeys, keyedMap, nextKeysMap } = extractKeys(alternate.child, instance.children);
     const size = Math.max(prevKeys.length, nextKeys.length);
     let p = 0;
@@ -361,7 +365,7 @@ function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementIn
       const prevKeyFiber = keyedMap[prevKey];
       const nextKeyFiber =
         keyedMap[nextKey] ||
-        new Fiber({
+        new Fiber().mutate({
           instance: createEmptyVirtualNode(),
           parent: alternate,
           marker: nextKey as string,
@@ -371,19 +375,19 @@ function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementIn
       if (nextKeys[n] !== prevKeys[p]) {
         if (nextKeys.length - n < prevKeys.length - p) {
           n--;
-          //result.push([prevKey, 'remove']);
+          result.push([prevKey, 'remove']);
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.get().push(prevKeyFiber);
         } else if (nextKeys.length - n > prevKeys.length - p) {
           p--;
-          //result.push([nextKey, 'insert']);
+          result.push([nextKey, 'insert']);
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         } else {
           if (nextKeysMap[prevKey]) {
-            //result.push([[prevKey, nextKey], 'swap']);
+            result.push([[prevKey, nextKey], 'swap']);
             nextKeyFiber.transposition = true;
           } else {
-            //result.push([[prevKey, nextKey], 'replace']);
+            result.push([[prevKey, nextKey], 'replace']);
             prevKeyFiber.effectTag = EffectTag.DELETE;
             deletionsStore.get().push(prevKeyFiber);
           }
@@ -391,7 +395,7 @@ function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementIn
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         }
       } else {
-        //result.push([nextKey, 'stable']);
+        result.push([nextKey, 'stable']);
         nextKeyFiber.effectTag = EffectTag.UPDATE;
         nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
       }
@@ -410,57 +414,59 @@ function mutateAlternate(fiber: Fiber, alternate: Fiber, instance: DarkElementIn
 }
 
 function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
-  let memoFiber = fiber;
   const prevFactory = alternate.instance as ComponentFactory;
   const nextFactory = instance as ComponentFactory;
 
-  if (alternate.transposition || nextFactory.type !== prevFactory.type) return memoFiber;
+  if (alternate.transposition || nextFactory.type !== prevFactory.type) return;
 
   const props = prevFactory.props;
   const nextProps = nextFactory.props;
   const skip = !nextFactory.shouldUpdate(props, nextProps);
 
   if (skip) {
-    let nextFiber: Fiber = null;
     fiberMountStore.deepWalking.set(false);
+    const parent = fiber.parent;
+    const nextSibling = fiber.nextSibling;
+    let nextFiber: Fiber = null;
 
-    memoFiber = new Fiber({
+    fiber.mutate({
       ...alternate,
       alternate,
+      parent,
+      nextSibling,
       idx: fiber.idx,
       effectTag: EffectTag.SKIP,
     });
 
     alternate.alternate = null;
-    nextFiber = memoFiber.child;
+
+    nextFiber = fiber.child;
 
     while (nextFiber) {
-      nextFiber.parent = memoFiber;
+      nextFiber.parent = fiber;
       nextFiber = nextFiber.nextSibling;
     }
 
-    if (memoFiber.mountedToHost) {
+    if (alternate.mountedToHost) {
       fiber.markMountedToHost();
     }
 
-    if (memoFiber.effectHost) {
+    if (alternate.effectHost) {
       fiber.markEffectHost();
     }
 
-    if (memoFiber.layoutEffectHost) {
+    if (alternate.layoutEffectHost) {
       fiber.markLayoutEffectHost();
     }
 
-    if (memoFiber.insertionEffectHost) {
+    if (alternate.insertionEffectHost) {
       fiber.markInsertionEffectHost();
     }
 
-    if (memoFiber.portalHost) {
+    if (alternate.portalHost) {
       fiber.markPortalHost();
     }
   }
-
-  return memoFiber;
 }
 
 function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fiber) {
@@ -525,7 +531,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
   if (hasChildrenProp(instance)) {
     for (let i = 0; i < instance.children.length; i++) {
       if (!instance.children[i]) {
-        instance.children[i] = transformElementInstance(instance.children[i]) as DarkElementInstance;
+        instance.children[i] = supportConditional(instance.children[i]) as DarkElementInstance;
       }
     }
 
@@ -554,7 +560,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
       const key = getElementKey(nextFiber.instance);
-      const prevKey = detectIsEmpty(key) ? idx : key;
+      const prevKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       prevKeys.push(prevKey);
       keyedMap[prevKey] = nextFiber;
@@ -562,7 +568,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
 
     if (children[idx]) {
       const key = getElementKey(children[idx]);
-      const nextKey = detectIsEmpty(key) ? idx : key;
+      const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       nextKeys.push(nextKey);
       nextKeysMap[nextKey] = true;
@@ -580,6 +586,10 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   };
 }
 
+function createIndexKey(idx: number) {
+  return `${INDEX_KEY}:${idx}`;
+}
+
 function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
   const key = detectIsComponentFactory(instance)
     ? getComponentFactoryKey(instance)
@@ -592,8 +602,8 @@ function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
   return key;
 }
 
-function transformElementInstance(instance: DarkElement) {
-  return detectIsEmpty(instance) || instance === false ? createEmptyVirtualNode() : instance;
+function supportConditional(instance: DarkElement) {
+  return detectIsFalsy(instance) ? createEmptyVirtualNode() : instance;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
@@ -608,6 +618,44 @@ function getInstanceType(instance: DarkElementInstance): string | Function {
 
 function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | ComponentFactory {
   return detectIsTagVirtualNode(element) || detectIsComponentFactory(element);
+}
+
+function detectIsSameComponentFactoryTypesWithSameKeys(
+  prevInstance: DarkElementInstance | null,
+  nextInstance: DarkElementInstance | null,
+) {
+  if (
+    prevInstance &&
+    nextInstance &&
+    detectIsComponentFactory(prevInstance) &&
+    detectIsComponentFactory(nextInstance)
+  ) {
+    const prevKey = prevInstance ? getElementKey(prevInstance) : null;
+    const nextKey = nextInstance ? getElementKey(nextInstance) : null;
+
+    return prevInstance.type === nextInstance.type && prevKey === nextKey;
+  }
+
+  return false;
+}
+
+function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
+  if (alternate && detectIsSameComponentFactoryTypesWithSameKeys(prevInstance, nextInstance)) {
+    return alternate.hook;
+  }
+
+  if (detectIsComponentFactory(nextInstance)) {
+    return createHook();
+  }
+
+  return null;
+}
+
+function createHook(): Hook {
+  return {
+    idx: 0,
+    values: [],
+  };
 }
 
 function commitChanges() {
@@ -687,10 +735,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     isUpdateHookZone.set(true);
     fiberMountStore.reset();
 
-    fiber.alternate = new Fiber({
-      ...fiber,
-      alternate: null,
-    });
+    fiber.alternate = new Fiber().mutate({ ...fiber, alternate: null });
     fiber.marker = PARTIAL_UPDATE;
     fiber.effectTag = EffectTag.UPDATE;
     fiber.child = null;
@@ -702,13 +747,6 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   };
 
   return callback;
-}
-
-function createHook(): Hook {
-  return {
-    idx: 0,
-    values: [],
-  };
 }
 
 export { Fiber, workLoop, hasChildrenProp, createUpdateCallback };

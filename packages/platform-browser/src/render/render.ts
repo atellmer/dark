@@ -58,7 +58,7 @@ function render(element: DarkElement, container: Element) {
   const callback = () => {
     rootStore.set(rootId); // important order!
     const currentRoot = currentRootStore.get();
-    const fiber = new Fiber({
+    const fiber = new Fiber().mutate({
       nativeElement: container,
       instance: new TagVirtualNode({
         name: ROOT,

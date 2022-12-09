@@ -18,6 +18,8 @@ const detectIsNull = (o: any): o is null => o === null;
 
 const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
+const detectIsFalsy = (o: any) => detectIsNull(o) || detectIsUndefined(o) || o === false;
+
 function error(str: string) {
   !detectIsUndefined(console) && console.error(str);
 }
@@ -105,6 +107,7 @@ export {
   detectIsArray,
   detectIsNull,
   detectIsEmpty,
+  detectIsFalsy,
   error,
   flatten,
   getTime,

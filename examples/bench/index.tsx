@@ -140,7 +140,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   const handleRemove = () => onRemove(id);
   const handleHighlight = () => onHighlight(id);
 
-  // console.log('render', id);
+  console.log('render', id);
 
   return (
     <tr class={selected ? 'selected' : undefined}>
@@ -170,7 +170,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
     <table class='table'>
       <tbody>
-        {items.map((item, idx) => {
+        {items.map(item => {
           return (
             <MemoRow
               key={item.id}
