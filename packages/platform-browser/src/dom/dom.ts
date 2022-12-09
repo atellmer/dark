@@ -327,10 +327,14 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
     commitCreation(fiber);
   },
   [EffectTag.UPDATE]: (fiber: Fiber<Element>) => {
-    if (fiber.swap && !swapsMap.get(fiber) && !swapsMap.get(fiber.alternate)) {
-      swapsMap.set(fiber, true);
-      swapsMap.set(fiber.swap, true);
-      swap(fiber);
+    if (fiber.swap) {
+      if (!swapsMap.get(fiber) && !swapsMap.get(fiber.alternate)) {
+        swapsMap.set(fiber, true);
+        swapsMap.set(fiber.swap, true);
+        swap(fiber);
+      }
+
+      fiber.swap = null;
     }
 
     if (

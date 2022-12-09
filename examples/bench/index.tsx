@@ -201,9 +201,9 @@ const Bench = createComponent(() => {
     measurer.stop();
   }, []);
   const handleInsertDifferent = useCallback(() => {
-    const [item1, item2, item3, ...rest] = state.list;
+    const [item1, item2, _, ...rest] = state.list;
 
-    state.list = [...buildData(5, '***'), item1, item2, item3, ...buildData(2, '***'), ...rest].filter(Boolean);
+    state.list = [...buildData(5, '***'), item1, item2, ...buildData(2, '***'), ...rest].filter(Boolean);
     measurer.start('insert different');
     forceUpdate();
     measurer.stop();
