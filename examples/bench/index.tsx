@@ -125,13 +125,15 @@ const MemoHeader = memo<HeaderProps>(Header);
 
 type RowProps = {
   id: number;
-  name: string;
-  selected: boolean;
   onRemove: (id: number) => void;
   onHighlight: (id: number) => void;
 };
 
-const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
+  const { name, selected } = useSplitUpdate<ListItem>(
+    map => map[id],
+    x => `${x.name}:${x.selected}`,
+  );
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
 
@@ -148,7 +150,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   );
 });
 
-const MemoRow = memo<RowProps>(Row, (p, n) => p.name !== n.name || p.selected !== n.selected);
+const MemoRow = memo<RowProps>(Row);
 
 type ListProps = {
   items: List;
@@ -161,16 +163,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
     <table class='table'>
       <tbody>
         {items.map(item => {
-          return (
-            <MemoRow
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              selected={item.selected}
-              onRemove={onRemove}
-              onHighlight={onHighlight}
-            />
-          );
+          return <MemoRow key={item.id} id={item.id} onRemove={onRemove} onHighlight={onHighlight} />;
         })}
       </tbody>
     </table>
@@ -181,29 +174,29 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(2, '!!!'));
+    state.list.unshift(...buildData(1000, '!!!'));
     state.list = [...state.list];
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAppend = useCallback(() => {
-    state.list.push(...buildData(2, '!!!'));
+    state.list.push(...buildData(1000, '!!!'));
     state.list = [...state.list];
     measurer.start('append');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleInsertDifferent = useCallback(() => {
-    const [item1, item2, _, ...rest] = state.list;
+    const [item1, item2, item3, ...rest] = state.list;
 
-    state.list = [...buildData(5, '***'), item1, item2, ...buildData(2, '***'), ...rest].filter(Boolean);
+    state.list = [...buildData(5, '***'), item1, item2, item3, ...buildData(2, '***'), ...rest].filter(Boolean);
     measurer.start('insert different');
     forceUpdate();
     measurer.stop();
@@ -256,10 +249,14 @@ const Bench = createComponent(() => {
         onSwap={handleSwap}
         onClear={handleClear}
       />
-      <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      <SplitUpdate list={state.list} getKey={getKey}>
+        <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      </SplitUpdate>
     </>
   );
 });
+
+const getKey = (x: ListItem) => x.id;
 
 const root = createRoot(document.getElementById('root'));
 

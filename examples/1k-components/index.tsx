@@ -1,7 +1,7 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority } from '@dark-engine/core';
+import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority, Flag } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
@@ -110,11 +110,13 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
   };
 
   return (
-    <svg class='demo'>
-      <g>{map(scope.points, renderPoint)}</g>
+    <svg class='demo' flag={flag}>
+      <g flag={flag}>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });
+
+const flag = { [Flag.HAS_NO_SWAPS]: true };
 
 const setAnchors = (arr: Array<Point>, scope: any) => {
   arr.map((p, index) => {
@@ -172,6 +174,7 @@ const Point = ({ key, point }: PointProps) => {
   return (
     <rect
       class='point'
+      flag={flag}
       key={key}
       transform={`translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`}
       fill={point.color}

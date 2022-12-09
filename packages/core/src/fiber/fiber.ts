@@ -23,7 +23,12 @@ import {
   isLayoutEffectsZone,
   isInsertionEffectsZone,
 } from '../scope';
-import { type ComponentFactory, detectIsComponentFactory, getComponentFactoryKey } from '../component';
+import {
+  type ComponentFactory,
+  detectIsComponentFactory,
+  getComponentFactoryKey,
+  getComponentFactoryFlag,
+} from '../component';
 import {
   type TagVirtualNode,
   detectIsVirtualNode,
@@ -32,11 +37,13 @@ import {
   createEmptyVirtualNode,
   getTagVirtualNodeKey,
   getVirtualNodeFactoryKey,
+  getTagVirtualNodeFlag,
+  getVirtualNodeFactoryFlag,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { INDEX_KEY, PARTIAL_UPDATE, ATTR_TYPE } from '../constants';
+import { INDEX_KEY, PARTIAL_UPDATE, TYPE, Flag } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -323,6 +330,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
+  const flag = getElementFlag(instance);
+  const hasNoSwapsFlag = flag && flag[Flag.HAS_NO_SWAPS];
 
   alternate.isUsed = true;
 
@@ -332,8 +341,11 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     if (!deletionsStore.has(alternate.parent)) {
       deletionsStore.add(alternate);
     }
-    // add flag HAS_NO_SWAP
-  } else if (hasChildrenProp(alternate.instance) && hasChildrenProp(instance)) {
+  } else if (
+    hasChildrenProp(alternate.instance) &&
+    hasChildrenProp(instance) &&
+    (hasNoSwapsFlag ? alternate.childrenCount !== instance.children.length : true)
+  ) {
     const { prevKeys, nextKeys, keyedFibersMap, keyedInstancesMap } = extractKeys(alternate.child, instance.children);
     const size = Math.max(prevKeys.length, nextKeys.length);
     let p = 0;
@@ -584,13 +596,25 @@ function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
   return key;
 }
 
+function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | null {
+  const flag = detectIsComponentFactory(instance)
+    ? getComponentFactoryFlag(instance)
+    : detectIsVirtualNodeFactory(instance)
+    ? getVirtualNodeFactoryFlag(instance)
+    : detectIsTagVirtualNode(instance)
+    ? getTagVirtualNodeFlag(instance)
+    : null;
+
+  return flag;
+}
+
 function supportConditional(instance: DarkElement) {
   return detectIsFalsy(instance) ? createEmptyVirtualNode() : instance;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
   return detectIsVirtualNodeFactory(instance)
-    ? instance[ATTR_TYPE]
+    ? instance[TYPE]
     : detectIsTagVirtualNode(instance)
     ? instance.name
     : detectIsVirtualNode(instance)
