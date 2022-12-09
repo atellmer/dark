@@ -53,11 +53,11 @@ class Fiber<N = NativeElement> {
   public child: Fiber<N> = null;
   public nextSibling: Fiber<N> = null;
   public alternate: Fiber<N> = null;
+  public swap: Fiber<N> = null;
   public effectTag: EffectTag = null;
   public instance: DarkElementInstance = null;
   public hook: Hook | null = null;
   public provider: Map<Context, ContextProviderValue> = null;
-  public transposition = false;
   public mountedToHost = false;
   public effectHost = false;
   public layoutEffectHost = false;
@@ -82,11 +82,11 @@ class Fiber<N = NativeElement> {
     this.child = options.child || null;
     this.nextSibling = options.nextSibling || null;
     this.alternate = options.alternate || null;
+    this.swap = options.swap || null;
     this.effectTag = options.effectTag || null;
     this.instance = options.instance || null;
     this.hook = options.hook || null;
     this.provider = options.provider || null;
-    this.transposition = !detectIsUndefined(options.transposition) ? options.transposition : false;
     this.mountedToHost = !detectIsUndefined(options.mountedToHost) || false;
     this.effectHost = !detectIsUndefined(options.effectHost) ? options.effectHost : false;
     this.layoutEffectHost = !detectIsUndefined(options.layoutEffectHost) ? options.layoutEffectHost : false;
@@ -294,6 +294,11 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.CREATE;
   fiber.mountedToHost = isUpdate;
 
+  if (alternate && alternate.swap) {
+    fiber.swap = alternate.swap;
+    alternate.swap = null;
+  }
+
   if (hasChildrenProp(fiber.instance)) {
     fiber.childrenCount = fiber.instance.children.length;
   }
@@ -374,7 +379,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
         } else {
           if (nextKeysMap[prevKey]) {
             result.push([[prevKey, nextKey], 'swap']);
-            nextKeyFiber.transposition = true;
+            nextKeyFiber.swap = prevKeyFiber;
           } else {
             result.push([[prevKey, nextKey], 'replace']);
             nextKeyFiber.idx = idx;
@@ -397,10 +402,10 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       p++;
     }
 
-    if (result.length > 5) {
+    if (result.length === 5) {
       // console.log('prevKeys', prevKeys);
       // console.log('nextKeys', nextKeys);
-      // console.log('result', result);
+      console.log('result', result);
       // console.log('[alternate]', alternate);
       // console.log(deletionsStore.get());
     }
@@ -410,7 +415,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const prevFactory = alternate.instance as ComponentFactory;
   const nextFactory = instance as ComponentFactory;
-  if (alternate.transposition || nextFactory.type !== prevFactory.type) return;
+  if (fiber.swap || nextFactory.type !== prevFactory.type) return;
   const prevProps = prevFactory.props;
   const nextProps = nextFactory.props;
   const skip = !nextFactory.shouldUpdate(prevProps, nextProps);

@@ -2,19 +2,9 @@ import { h, View, Text, Fragment, createComponent, memo, useCallback, DarkElemen
 import { createRoot, render } from '@dark-engine/platform-browser';
 
 const host = document.getElementById('root');
-const div = (props = {}) => View({ ...props, as: 'div' });
+
 type Item = { id: number; name: string };
-type AppProps = {
-  items: Array<Item>;
-};
 
-type ListProps = {
-  items: Array<Item>;
-};
-
-type ListItemProps = {
-  slot: DarkElement;
-};
 let nextId = 0;
 
 const generateItems = (count: number) => {
@@ -26,74 +16,43 @@ const generateItems = (count: number) => {
     }));
 };
 
-const itemAttrName = 'data-item';
-let items = [];
+const items = generateItems(5);
 
-items = generateItems(10);
+const render$ = (props = {}) => {
+  render(App(props), host);
+};
 
-const ListItem = createComponent<ListItemProps>(
-  ({ slot }) => {
-    return <div data-item='true'>{slot}</div>;
-  },
-  { displayName: 'ListItem' },
-);
+const swap = () => {
+  const temp = items[1];
 
-const List = createComponent<ListProps>(
-  ({ items }) => {
-    return items.map(x => {
-      return <ListItem key={x.id}>{x.name}</ListItem>;
-    });
-  },
-  { displayName: 'List' },
-);
+  items[1] = items[items.length - 2];
+  items[items.length - 2] = temp;
+};
 
-const App = createComponent<AppProps>(({ items }) => {
+const ListItem = createComponent<Item>(({ id }) => {
   return (
     <>
-      <div>header</div>
-      <List items={items} />
-      <div>footer</div>
+      <div>{id}: 1</div>
+      <div>{id}: 2</div>
     </>
   );
 });
 
-const render$ = () => {
-  render(App({ items }), host);
-};
-
-const swapItems = () => {
-  const newItems = [...items];
-
-  newItems[1] = items[items.length - 2];
-  newItems[newItems.length - 2] = items[1];
-  items = newItems;
-};
+const App = createComponent(() => {
+  return items.map(x => {
+    return <ListItem key={x.id} id={x.id} name={x.name} />;
+  });
+});
 
 render$();
-
-const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-const nodeOne = nodes[1];
-const nodeTwo = nodes[8];
-
-// console.log('nodeOne', nodeOne);
-// console.log('nodeTwo', nodeTwo);
-// console.log('---');
-
-// expect(nodeOne.textContent).toBe('2');
-// expect(nodeTwo.textContent).toBe('9');
+// expect(host.innerHTML).toBe(content(items));
 
 setTimeout(() => {
-  swapItems();
+  swap();
   render$();
-
-  const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
-  const newNodeOne = newNodes[8];
-  const newNodeTwo = newNodes[1];
-
-  // console.log('newNodeOne', newNodeOne);
-  // console.log('newNodeTwo', newNodeTwo);
-  // console.log('---');
-
-  // expect(newNodeOne.textContent).toBe('2');
-  // expect(newNodeTwo.textContent).toBe('9');
+  console.log('items', items);
 }, 3000);
+
+// swap();
+// render$();
+// expect(host.innerHTML).toBe(content(items));
