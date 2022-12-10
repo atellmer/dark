@@ -33,7 +33,6 @@ const attrBlackListMap = {
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
 let swapsMap: Map<Fiber, boolean> = new Map();
-let movesMap: Map<Fiber, boolean> = new Map();
 let trackUpdate: (nativeElement: Element) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
@@ -341,13 +340,8 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
     }
 
     if (fiber.move) {
-      if (!movesMap.get(fiber) && !movesMap.get(fiber.alternate)) {
-        swapsMap.set(fiber, true);
-        swapsMap.set(fiber.move, true);
-        move(fiber);
-      }
-
-      fiber.move = null;
+      move(fiber);
+      fiber.move = false;
     }
 
     if (
@@ -432,7 +426,6 @@ function finishCommitWork() {
 
   fragmentsMap = new Map();
   swapsMap = new Map();
-  movesMap = new Map();
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {
