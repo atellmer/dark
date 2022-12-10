@@ -82,8 +82,7 @@ type HeaderProps = {
 const Header = createComponent<HeaderProps>(
   ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onMove, onClear }) => {
     return div({
-      style:
-        'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
+      class: 'header',
       slot: [
         button({
           slot: Text('create 10000 rows'),
@@ -249,7 +248,7 @@ const Bench = createComponent(() => {
   }, []);
   const handleMove = useCallback(() => {
     if (state.list.length === 0) return;
-    console.log('state.list', state.list);
+    //console.log('state.list', state.list);
     const idx = state.list.findIndex(x => x.id === 1);
     if (idx === -1) return;
     const count = 3;

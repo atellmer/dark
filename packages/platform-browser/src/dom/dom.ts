@@ -379,21 +379,40 @@ function swap(fiber: Fiber<Element>) {
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const parentFiberNodes = collectElements(fiber.parent);
-  const lastParentFiberNode = parentFiberNodes[parentFiberNodes.length - 1];
+  const size = parentFiberNodes.length;
+  const lastIdx = size - 1;
+  const lastParentFiberNode = parentFiberNodes[lastIdx];
   const parentElement = sourceNodes[0].parentElement;
   const childNodes = parentElement.childNodes;
   const sourceFragment = new DocumentFragment();
-  const idx = fiber.idx;
   let shift = 0;
 
   if (lastParentFiberNode.parentElement === parentElement) {
-    const nodeIdx = Array.from(childNodes).findIndex(x => x === lastParentFiberNode);
+    let nodeIdx = 0;
 
-    shift = nodeIdx - (parentFiberNodes.length - 1);
+    if (childNodes.length - size < size) {
+      nodeIdx = childNodes.length - 1;
+
+      for (let i = childNodes.length - 1; i >= 0; i--) {
+        if (childNodes[i] === lastParentFiberNode) {
+          break;
+        }
+        nodeIdx--;
+      }
+    } else {
+      for (let i = 0; i < childNodes.length; i++) {
+        if (childNodes[i] === lastParentFiberNode) {
+          break;
+        }
+        nodeIdx++;
+      }
+    }
+
+    shift = nodeIdx - lastIdx;
   }
 
   sourceNodes.forEach(x => sourceFragment.appendChild(x));
-  parentElement.insertBefore(sourceFragment, childNodes[idx + shift]);
+  parentElement.insertBefore(sourceFragment, childNodes[fiber.idx + shift]);
 }
 
 function collectElements(fiber: Fiber<Element>) {
