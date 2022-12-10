@@ -30,7 +30,7 @@ const createMeasurer = () => {
         const stopTime = performance.now();
         const diff = stopTime - startTime;
 
-        console.log(`${last}: ${diff}`);
+        // console.log(`${last}: ${diff}`);
       });
     }
   };
@@ -73,11 +73,12 @@ type HeaderProps = {
   onInsertDifferent: () => void;
   onUpdateAll: () => void;
   onSwap: () => void;
+  onMove: () => void;
   onClear: () => void;
 };
 
 const Header = createComponent<HeaderProps>(
-  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onClear }) => {
+  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onMove, onClear }) => {
     return div({
       style:
         'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
@@ -107,6 +108,10 @@ const Header = createComponent<HeaderProps>(
           onClick: onSwap,
         }),
         button({
+          slot: Text('move row'),
+          onClick: onMove,
+        }),
+        button({
           slot: Text('clear rows'),
           onClick: onClear,
         }),
@@ -125,15 +130,13 @@ const MemoHeader = memo<HeaderProps>(Header);
 
 type RowProps = {
   id: number;
+  name: string;
+  selected: boolean;
   onRemove: (id: number) => void;
   onHighlight: (id: number) => void;
 };
 
-const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
-  const { name, selected } = useSplitUpdate<ListItem>(
-    map => map[id],
-    x => `${x.name}:${x.selected}`,
-  );
+const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
 
@@ -150,7 +153,7 @@ const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
   );
 });
 
-const MemoRow = memo<RowProps>(Row);
+const MemoRow = memo<RowProps>(Row, (p, n) => p.name !== n.name || p.selected !== n.selected);
 
 type ListProps = {
   items: List;
@@ -163,7 +166,16 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
     <table class='table'>
       <tbody>
         {items.map(item => {
-          return <MemoRow key={item.id} id={item.id} onRemove={onRemove} onHighlight={onHighlight} />;
+          return (
+            <MemoRow
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              selected={item.selected}
+              onRemove={onRemove}
+              onHighlight={onHighlight}
+            />
+          );
         })}
       </tbody>
     </table>
@@ -174,20 +186,20 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(1000, '!!!'));
+    state.list.unshift(...buildData(2, '!!!'));
     state.list = [...state.list];
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAppend = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+    state.list.push(...buildData(2, '!!!'));
     state.list = [...state.list];
     measurer.start('append');
     forceUpdate();
@@ -231,6 +243,19 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
+  const handleMove = useCallback(() => {
+    if (state.list.length === 0) return;
+    const idx = state.list.findIndex(x => x.id === 1);
+    if (idx === -1) return;
+    const temp = state.list[idx];
+    state.list.splice(idx, 1);
+    state.list.splice(idx >= state.list.length ? 0 : idx + 1, 0, temp);
+    state.list = [...state.list];
+    console.log('state.list', state.list);
+    measurer.start('move');
+    forceUpdate();
+    measurer.stop();
+  }, []);
   const handleClear = useCallback(() => {
     state.list = [];
     measurer.start('clear');
@@ -247,11 +272,10 @@ const Bench = createComponent(() => {
         onInsertDifferent={handleInsertDifferent}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
+        onMove={handleMove}
         onClear={handleClear}
       />
-      <SplitUpdate list={state.list} getKey={getKey}>
-        <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
-      </SplitUpdate>
+      <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
     </>
   );
 });

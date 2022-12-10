@@ -339,6 +339,11 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
       fiber.swap = null;
     }
 
+    if (fiber.move) {
+      move(fiber);
+      fiber.move = null;
+    }
+
     if (
       fiber.nativeElement === null ||
       !detectIsVirtualNode(fiber.alternate.instance) ||
@@ -369,6 +374,17 @@ function swap(fiber: Fiber<Element>) {
   sourceNextSibling
     ? parentElement.insertBefore(targetFragment, sourceNextSibling)
     : parentElement.appendChild(targetFragment);
+}
+
+function move(fiber: Fiber<Element>) {
+  const sourceNodes = collectElements(fiber);
+  const firstSourceNode = sourceNodes[0];
+  const parentElement = firstSourceNode.parentElement;
+  const destinationNode = parentElement.childNodes[fiber.idx];
+  const sourceFragment = new DocumentFragment();
+
+  sourceNodes.forEach(x => sourceFragment.appendChild(x));
+  parentElement.insertBefore(sourceFragment, destinationNode);
 }
 
 function collectElements(fiber: Fiber<Element>) {
