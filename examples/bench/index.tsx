@@ -8,6 +8,8 @@ import {
   useCallback,
   SplitUpdate,
   useSplitUpdate,
+  useEffect,
+  useState
 } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
@@ -139,15 +141,22 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
+  const [x, setX] = useState(0);
+
+  useEffect(() => {
+    console.log('mount');
+    return () => console.log('unmount');
+  }, []);
 
   return (
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>qqq</td>
-      <td class='cell'>xxx</td>
+      <td class='cell'>xxx: {x}</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
+        <button onClick={() => setX(x => x + 1)}>increment</button>
       </td>
     </tr>
   );
@@ -247,11 +256,12 @@ const Bench = createComponent(() => {
     if (state.list.length === 0) return;
     const idx = state.list.findIndex(x => x.id === 1);
     if (idx === -1) return;
-    const temp = state.list[idx];
-    state.list.splice(idx, 1);
-    state.list.splice(idx >= state.list.length ? 0 : idx + 1, 0, temp);
+    const temps = Array(1)
+      .fill(null)
+      .map((_, x) => state.list[idx + x]);
+    state.list.splice(idx, temps.length);
+    state.list.splice(idx > state.list.length - temps.length ? 0 : idx + 1, 0, ...temps);
     state.list = [...state.list];
-    console.log('state.list', state.list);
     measurer.start('move');
     forceUpdate();
     measurer.stop();

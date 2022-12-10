@@ -341,7 +341,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
 
     if (fiber.move) {
       move(fiber);
-      fiber.move = null;
+      fiber.move = false;
     }
 
     if (
