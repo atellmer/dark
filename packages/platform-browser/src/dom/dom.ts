@@ -33,6 +33,7 @@ const attrBlackListMap = {
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
 let swapsMap: Map<Fiber, boolean> = new Map();
+let movesMap: Map<Fiber, boolean> = new Map();
 let trackUpdate: (nativeElement: Element) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
@@ -340,8 +341,13 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
     }
 
     if (fiber.move) {
-      move(fiber);
-      fiber.move = false;
+      if (!movesMap.get(fiber) && !movesMap.get(fiber.alternate)) {
+        swapsMap.set(fiber, true);
+        swapsMap.set(fiber.move, true);
+        move(fiber);
+      }
+
+      fiber.move = null;
     }
 
     if (
@@ -378,20 +384,30 @@ function swap(fiber: Fiber<Element>) {
 
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
-  const firstSourceNode = sourceNodes[0];
-  const parentElement = firstSourceNode.parentElement;
-  const destinationNode = parentElement.childNodes[fiber.idx];
+  const parentFiberNodes = collectElements(fiber.parent);
+  const lastParentFiberNode = parentFiberNodes[parentFiberNodes.length - 1];
+  const parentElement = sourceNodes[0].parentElement;
+  const childNodes = parentElement.childNodes;
   const sourceFragment = new DocumentFragment();
+  const idx = fiber.idx;
+  let shift = 0;
+
+  if (lastParentFiberNode.parentElement === parentElement) {
+    const nodeIdx = Array.from(childNodes).findIndex(x => x === lastParentFiberNode);
+
+    shift = nodeIdx - (parentFiberNodes.length - 1);
+  }
 
   sourceNodes.forEach(x => sourceFragment.appendChild(x));
-  parentElement.insertBefore(sourceFragment, destinationNode);
+  parentElement.insertBefore(sourceFragment, childNodes[idx + shift]);
 }
 
 function collectElements(fiber: Fiber<Element>) {
   const store: Array<Element> = [];
+  const nextSibling = fiber.child.parent.nextSibling;
 
   walkFiber<Element>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
-    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+    if (nextFiber === nextSibling || nextFiber === fiber.parent) {
       return stop();
     }
 
@@ -416,6 +432,7 @@ function finishCommitWork() {
 
   fragmentsMap = new Map();
   swapsMap = new Map();
+  movesMap = new Map();
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {

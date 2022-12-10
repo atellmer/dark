@@ -63,7 +63,7 @@ class Fiber<N = NativeElement> {
   public nextSibling: Fiber<N> = null;
   public alternate: Fiber<N> = null;
   public swap: Fiber<N> = null;
-  public move = false;
+  public move: Fiber<N> = null;
   public effectTag: EffectTag = null;
   public instance: DarkElementInstance = null;
   public hook: Hook | null = null;
@@ -289,7 +289,7 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
 
   if (alternate && alternate.move) {
     fiber.move = alternate.move;
-    alternate.move = false;
+    alternate.move = null;
   }
 
   if (hasChildrenProp(fiber.instance)) {
@@ -396,7 +396,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
               nextKeyFiber.swap = prevKeyFiber;
             } else if (isMove) {
               result.push([[nextKey, prevKey], 'move']);
-              nextKeyFiber.move = true;
+              nextKeyFiber.move = prevKeyFiber;
             } else {
               result.push([nextKey, 'stable']);
               nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);

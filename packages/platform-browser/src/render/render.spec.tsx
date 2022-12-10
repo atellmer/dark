@@ -385,7 +385,7 @@ describe('[render]', () => {
       items = [...generateItems(count), ...items];
     };
     const insertNodesInDifferentPlaces = () => {
-      const [item1, item2, item3, ...rest] = items;
+      const [item1, item2, _, ...rest] = items;
 
       items = [...generateItems(5), item1, item2, ...generateItems(2), ...rest];
     };
@@ -397,6 +397,16 @@ describe('[render]', () => {
 
       newItems[1] = items[items.length - 2];
       newItems[newItems.length - 2] = items[1];
+      items = newItems;
+    };
+    const moveItems = (idx: number, count: number) => {
+      const newItems = [...items];
+      const temps = Array(count)
+        .fill(null)
+        .map((_, x) => newItems[idx + x]);
+      newItems.splice(idx, temps.length);
+      newItems.splice(idx > newItems.length - temps.length ? 0 : idx + 1, 0, ...temps);
+
       items = newItems;
     };
 
@@ -507,6 +517,34 @@ describe('[render]', () => {
       expect(newNodeOne.textContent).toBe('2');
       expect(newNodeTwo.textContent).toBe('9');
     });
+
+    // test('can move nodes', () => {
+    //   const content = () => dom`
+    //     <div>header</div>
+    //     ${items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')}
+    //     <div>footer</div>
+    //   `;
+
+    //   const render$ = () => {
+    //     render(App({ items }), host);
+    //   };  
+
+    //   items = generateItems(10);
+
+    //   render$();
+    //   expect(host.innerHTML).toBe(content());
+    //   console.log(host.innerHTML);
+
+    //   moveItems(0, 1);
+    //   render$();
+    //   expect(host.innerHTML).toBe(content());
+    //   console.log(host.innerHTML);
+
+    //   moveItems(0, 3);
+    //   render$();
+    //   expect(host.innerHTML).toBe(content());
+    //   console.log(host.innerHTML);
+    // });
   });
 
   describe('[list of items]', () => {
