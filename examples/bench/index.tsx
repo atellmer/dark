@@ -76,11 +76,12 @@ type HeaderProps = {
   onUpdateAll: () => void;
   onSwap: () => void;
   onMove: () => void;
+  onShuffle: () => void;
   onClear: () => void;
 };
 
 const Header = createComponent<HeaderProps>(
-  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onMove, onClear }) => {
+  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onMove, onShuffle, onClear }) => {
     return div({
       class: 'header',
       slot: [
@@ -113,6 +114,10 @@ const Header = createComponent<HeaderProps>(
           onClick: onMove,
         }),
         button({
+          slot: Text('shuffle'),
+          onClick: onShuffle,
+        }),
+        button({
           slot: Text('clear rows'),
           onClick: onClear,
         }),
@@ -140,17 +145,15 @@ type RowProps = {
 const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
-  const [x, setX] = useState(0);
 
   return (
     <tr class={selected ? 'selected' : undefined}>
       <td class='cell'>{name}</td>
       <td class='cell'>qqq</td>
-      <td class='cell'>xxx: {x}</td>
+      <td class='cell'>xxx</td>
       <td class='cell'>
         <button onClick={handleRemove}>remove</button>
         <button onClick={handleHighlight}>highlight</button>
-        <button onClick={() => setX(x => x + 1)}>increment</button>
       </td>
     </tr>
   );
@@ -197,6 +200,7 @@ const Bench = createComponent(() => {
   const handlePrepend = useCallback(() => {
     state.list.unshift(...buildData(2, '!!!'));
     state.list = [...state.list];
+    console.log('state.list', state.list);
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
@@ -262,6 +266,19 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
+  const handleShuffle = useCallback(() => {
+    console.log('state.list', state.list);
+    state.list = [8, 2, 11, 1, 3, 6, 7, 13, 5, 10, 12].map(x => ({
+      id: x,
+      name: `item: ${x}`,
+      selected: false,
+    }));
+
+    console.log('state.list', state.list);
+    measurer.start('shuffle');
+    forceUpdate();
+    measurer.stop();
+  }, []);
   const handleClear = useCallback(() => {
     state.list = [];
     measurer.start('clear');
@@ -279,6 +296,7 @@ const Bench = createComponent(() => {
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
         onMove={handleMove}
+        onShuffle={handleShuffle}
         onClear={handleClear}
       />
       <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />

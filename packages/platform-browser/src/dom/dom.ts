@@ -32,7 +32,8 @@ const attrBlackListMap = {
   void: true,
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
-let swapsMap: Map<Fiber, boolean> = new Map();
+let nodesMap: Map<Element, Array<Element>> = new Map();
+let moves: Array<() => void> = [];
 let trackUpdate: (nativeElement: Element) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
@@ -217,24 +218,6 @@ function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> 
   return nextFiber;
 }
 
-function getNodeOnTheRight(fiber: Fiber<Element>, parentElement: Element) {
-  let node: Element = null;
-
-  walkFiber<Element>(fiber, ({ nextFiber, stop, resetIsDeepWalking }) => {
-    if (nextFiber.nativeElement && nextFiber.nativeElement.parentElement === parentElement) {
-      node = nextFiber.nativeElement;
-
-      return stop();
-    }
-
-    if (!nextFiber.mountedToHost) {
-      return resetIsDeepWalking();
-    }
-  });
-
-  return node;
-}
-
 function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
   let nextFiber = fiber;
 
@@ -267,8 +250,15 @@ function append(fiber: Fiber<Element>, parentNativeElement: Element) {
   fiber.markMountedToHost();
 }
 
-function insert(fiber: Fiber<Element>, parentNativeElement: Element) {
-  parentNativeElement.insertBefore(fiber.nativeElement, getNodeOnTheRight(fiber, parentNativeElement));
+function insert(fiber: Fiber<Element>, parentNativeElement: Element, idx: number) {
+  const node = parentNativeElement.childNodes[idx];
+
+  if (node) {
+    parentNativeElement.insertBefore(fiber.nativeElement, node);
+  } else {
+    parentNativeElement.appendChild(fiber.nativeElement);
+  }
+
   fiber.markMountedToHost();
 }
 
@@ -276,13 +266,14 @@ function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
+  const idx = childNodes.length === 0 ? -1 : getChildIndex(fiber, parentNativeElement);
 
-  if (childNodes.length === 0 || getChildIndex(fiber, parentNativeElement) > childNodes.length - 1) {
+  if (childNodes.length === 0 || idx > childNodes.length - 1) {
     const vNode = parentFiber.instance as TagVirtualNode;
 
     !detectIsVoidElement(vNode.name) && append(fiber, parentNativeElement);
   } else {
-    insert(fiber, parentNativeElement);
+    insert(fiber, parentNativeElement, idx);
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
@@ -322,72 +313,21 @@ function commitDeletion(fiber: Fiber<Element>) {
   });
 }
 
-const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
-  [EffectTag.CREATE]: (fiber: Fiber<Element>) => {
-    if (fiber.nativeElement === null) return;
-    trackUpdate && trackUpdate(fiber.nativeElement);
-    commitCreation(fiber);
-  },
-  [EffectTag.UPDATE]: (fiber: Fiber<Element>) => {
-    if (fiber.swap) {
-      if (!swapsMap.get(fiber) && !swapsMap.get(fiber.alternate)) {
-        swapsMap.set(fiber, true);
-        swapsMap.set(fiber.swap, true);
-        swap(fiber);
-      }
-
-      fiber.swap = null;
-    }
-
-    if (fiber.move) {
-      move(fiber);
-      fiber.move = false;
-    }
-
-    if (
-      fiber.nativeElement === null ||
-      !detectIsVirtualNode(fiber.alternate.instance) ||
-      !detectIsVirtualNode(fiber.instance)
-    ) {
-      return;
-    }
-    trackUpdate && trackUpdate(fiber.nativeElement);
-    commitUpdate(fiber);
-  },
-  [EffectTag.DELETE]: (fiber: Fiber<Element>) => commitDeletion(fiber),
-  [EffectTag.SKIP]: () => {},
-};
-
-function swap(fiber: Fiber<Element>) {
-  const sourceNodes = collectElements(fiber);
-  const targetNodes = collectElements(fiber.swap);
-  const firstTargetNode = targetNodes[0];
-  const lastSourceNode = sourceNodes[sourceNodes.length - 1];
-  const parentElement = lastSourceNode.parentElement;
-  const sourceNextSibling = lastSourceNode.nextSibling;
-  const sourceFragment = new DocumentFragment();
-  const targetFragment = new DocumentFragment();
-
-  sourceNodes.forEach(x => sourceFragment.appendChild(x));
-  parentElement.insertBefore(sourceFragment, firstTargetNode);
-  targetNodes.forEach(x => targetFragment.appendChild(x));
-  sourceNextSibling
-    ? parentElement.insertBefore(targetFragment, sourceNextSibling)
-    : parentElement.appendChild(targetFragment);
-}
-
-function move(fiber: Fiber<Element>) {
-  const sourceNodes = collectElements(fiber);
+function getMovingIndexShift(fiber: Fiber<Element>, sourceNodes: Array<Element>) {
   const parentFiberNodes = collectElements(fiber.parent);
   const size = parentFiberNodes.length;
   const lastIdx = size - 1;
   const lastParentFiberNode = parentFiberNodes[lastIdx];
-  const parentElement = sourceNodes[0].parentElement;
-  const childNodes = parentElement.childNodes;
-  const sourceFragment = new DocumentFragment();
+  const parentNativeElement = sourceNodes[0].parentElement;
+
+  if (!nodesMap.has(parentNativeElement)) {
+    nodesMap.set(parentNativeElement, Array.from(parentNativeElement.childNodes) as Array<Element>);
+  }
+
+  const childNodes = nodesMap.get(parentNativeElement);
   let shift = 0;
 
-  if (lastParentFiberNode.parentElement === parentElement) {
+  if (lastParentFiberNode.parentElement === parentNativeElement) {
     let nodeIdx = 0;
 
     if (childNodes.length - size < size) {
@@ -411,16 +351,36 @@ function move(fiber: Fiber<Element>) {
     shift = nodeIdx - lastIdx;
   }
 
+  return shift;
+}
+
+function move(fiber: Fiber<Element>) {
+  const sourceNodes = collectElements(fiber);
+  const parentNativeElement = sourceNodes[0].parentElement;
+  const childNodes = parentNativeElement.childNodes;
+  const sourceFragment = new DocumentFragment();
+  const shift = getMovingIndexShift(fiber, sourceNodes);
+  const idx = fiber.idx + shift;
+
+  const move = () => {
+    const destinationNode = childNodes[idx];
+
+    if (destinationNode) {
+      parentNativeElement.insertBefore(sourceFragment, destinationNode);
+    } else {
+      parentNativeElement.appendChild(sourceFragment);
+    }
+  };
+
   sourceNodes.forEach(x => sourceFragment.appendChild(x));
-  parentElement.insertBefore(sourceFragment, childNodes[fiber.idx + shift]);
+  moves.push(move);
 }
 
 function collectElements(fiber: Fiber<Element>) {
   const store: Array<Element> = [];
-  const nextSibling = fiber.child.parent.nextSibling;
 
   walkFiber<Element>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
-    if (nextFiber === nextSibling || nextFiber === fiber.parent) {
+    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
       return stop();
     }
 
@@ -434,6 +394,32 @@ function collectElements(fiber: Fiber<Element>) {
   return store;
 }
 
+const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
+  [EffectTag.CREATE]: (fiber: Fiber<Element>) => {
+    if (fiber.nativeElement === null) return;
+    trackUpdate && trackUpdate(fiber.nativeElement);
+    commitCreation(fiber);
+  },
+  [EffectTag.UPDATE]: (fiber: Fiber<Element>) => {
+    if (fiber.move) {
+      move(fiber);
+      fiber.move = false;
+    }
+
+    if (
+      fiber.nativeElement === null ||
+      !detectIsVirtualNode(fiber.alternate.instance) ||
+      !detectIsVirtualNode(fiber.instance)
+    ) {
+      return;
+    }
+    trackUpdate && trackUpdate(fiber.nativeElement);
+    commitUpdate(fiber);
+  },
+  [EffectTag.DELETE]: (fiber: Fiber<Element>) => commitDeletion(fiber),
+  [EffectTag.SKIP]: () => {},
+};
+
 function applyCommit(fiber: Fiber<Element>) {
   applyCommitMap[fiber.effectTag](fiber);
 }
@@ -443,8 +429,13 @@ function finishCommitWork() {
     callback();
   }
 
+  for (const move of moves) {
+    move();
+  }
+
   fragmentsMap = new Map();
-  swapsMap = new Map();
+  nodesMap = new Map();
+  moves = [];
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {

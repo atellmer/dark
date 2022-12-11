@@ -62,7 +62,6 @@ class Fiber<N = NativeElement> {
   public child: Fiber<N> = null;
   public nextSibling: Fiber<N> = null;
   public alternate: Fiber<N> = null;
-  public swap: Fiber<N> = null;
   public move = false;
   public effectTag: EffectTag = null;
   public instance: DarkElementInstance = null;
@@ -282,11 +281,6 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.CREATE;
   fiber.mountedToHost = isUpdate;
 
-  if (alternate && alternate.swap) {
-    fiber.swap = alternate.swap;
-    alternate.swap = null;
-  }
-
   if (alternate && alternate.move) {
     fiber.move = alternate.move;
     alternate.move = false;
@@ -355,62 +349,45 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       instance.children,
     );
     const size = Math.max(prevKeys.length, nextKeys.length);
-    let p = 0;
-    let n = 0;
     const result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
     let nextFiber = alternate;
     let idx = 0;
+    let p = 0;
+    let n = 0;
 
-    for (let i = 0; i < size; i++) {
-      const prevKey = prevKeys[p];
-      const nextKey = nextKeys[n];
+    for (let i = 0; i < size + p; i++) {
+      const nextKey = nextKeys[i - n] || null;
+      const prevKey = prevKeys[i - p] || null;
       const prevKeyFiber = keyedFibersMap[prevKey];
       const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
 
       if (nextKey !== prevKey) {
-        if (nextKeys.length - n < prevKeys.length - p) {
-          n--;
+        if (nextKey !== null && !prevKeysMap[nextKey]) {
+          if (prevKey !== null && !nextKeysMap[prevKey]) {
+            result.push([[nextKey, prevKey], 'replace']);
+            nextKeyFiber.effectTag = EffectTag.CREATE;
+            prevKeyFiber.effectTag = EffectTag.DELETE;
+            deletionsStore.add(prevKeyFiber);
+          } else {
+            result.push([nextKey, 'insert']);
+            nextKeyFiber.effectTag = EffectTag.CREATE;
+            p++;
+          }
+          nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
+        } else if (!nextKeysMap[prevKey]) {
           result.push([prevKey, 'remove']);
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.add(prevKeyFiber);
           idx--;
-        } else if (nextKeys.length - n > prevKeys.length - p) {
-          p--;
-          result.push([nextKey, 'insert']);
-          nextKeyFiber.effectTag = EffectTag.CREATE;
-          nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
-        } else {
-          if (nextKeysMap[prevKey] > -1) {
-            const idx1 = nextKeysMap[nextKey];
-            const idx2 = nextKeysMap[prevKey];
-            const idx3 = prevKeysMap[nextKey];
-            const idx4 = prevKeysMap[prevKey];
-            const isSwap = idx1 === idx4 && idx2 === idx3;
-            const isMove = !isSwap && idx3 > idx4;
-
-            prevKeyFiber.effectTag = EffectTag.UPDATE;
-            nextKeyFiber.effectTag = EffectTag.UPDATE;
-
-            if (isSwap) {
-              result.push([[prevKey, nextKey], 'swap']);
-              nextKeyFiber.swap = prevKeyFiber;
-            } else if (isMove) {
-              result.push([[nextKey, prevKey], 'move']);
-              nextKeyFiber.move = true;
-            } else {
-              result.push([nextKey, 'stable']);
-              nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
-            }
-          } else {
-            result.push([[prevKey, nextKey], 'replace']);
-            nextKeyFiber.effectTag = EffectTag.CREATE;
-            prevKeyFiber.effectTag = EffectTag.DELETE;
-            deletionsStore.add(prevKeyFiber);
-          }
-
+          n++;
+        } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
+          result.push([[nextKey, prevKey], 'move']);
+          nextKeyFiber.effectTag = EffectTag.UPDATE;
+          prevKeyFiber.effectTag = EffectTag.UPDATE;
+          nextKeyFiber.move = true;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         }
-      } else {
+      } else if (nextKey !== null) {
         result.push([nextKey, 'stable']);
         nextKeyFiber.effectTag = EffectTag.UPDATE;
         nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
@@ -418,8 +395,6 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 
       nextKeyFiber.idx = idx;
       idx++;
-      p++;
-      n++;
     }
   }
 }
@@ -427,7 +402,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   const prevFactory = alternate.instance as ComponentFactory;
   const nextFactory = instance as ComponentFactory;
-  if (fiber.swap || fiber.move || nextFactory.type !== prevFactory.type) return;
+  if (fiber.move || nextFactory.type !== prevFactory.type) return;
   const prevProps = prevFactory.props;
   const nextProps = nextFactory.props;
   const skip = !nextFactory.shouldUpdate(prevProps, nextProps);
@@ -564,8 +539,8 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   let idx = 0;
   const prevKeys: Array<DarkElementKey> = [];
   const nextKeys: Array<DarkElementKey> = [];
-  const prevKeysMap: Record<DarkElementKey, number> = {};
-  const nextKeysMap: Record<DarkElementKey, number> = {};
+  const prevKeysMap: Record<DarkElementKey, boolean> = {};
+  const nextKeysMap: Record<DarkElementKey, boolean> = {};
   const keyedFibersMap: Record<DarkElementKey, Fiber> = {};
 
   while (nextFiber || idx < children.length) {
@@ -574,7 +549,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const prevKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       prevKeys.push(prevKey);
-      prevKeysMap[prevKey] = idx;
+      prevKeysMap[prevKey] = true;
       keyedFibersMap[prevKey] = nextFiber;
     }
 
@@ -583,7 +558,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       nextKeys.push(nextKey);
-      nextKeysMap[nextKey] = idx;
+      nextKeysMap[nextKey] = true;
     }
 
     nextFiber = nextFiber ? nextFiber.nextSibling : null;
@@ -688,6 +663,13 @@ function createHook(): Hook {
 function commitChanges() {
   const wipFiber = wipRootStore.get();
   const insertionEffects = insertionEffectsStore.get();
+  const deletions = deletionsStore.get();
+
+  // important order
+  for (const fiber of deletions) {
+    unmountFiber(fiber);
+    platform.applyCommit(fiber);
+  }
 
   isInsertionEffectsZone.set(true);
   insertionEffects.forEach(fn => fn());
@@ -710,6 +692,7 @@ function commitChanges() {
     });
 
     wipRootStore.set(null); // important order
+    deletionsStore.reset();
     insertionEffectsStore.reset();
     layoutEffectsStore.reset();
     effectsStore.reset();
@@ -723,14 +706,6 @@ function commitChanges() {
 }
 
 function commitWork(fiber: Fiber, onComplete: Function) {
-  const deletions = deletionsStore.get();
-
-  // important order
-  for (const fiber of deletions) {
-    unmountFiber(fiber);
-    platform.applyCommit(fiber);
-  }
-
   walkFiber(fiber, ({ nextFiber, isReturn, resetIsDeepWalking }) => {
     const skip = nextFiber.effectTag === EffectTag.SKIP;
 
@@ -744,7 +719,6 @@ function commitWork(fiber: Fiber, onComplete: Function) {
   });
 
   platform.finishCommitWork();
-  deletionsStore.reset();
   onComplete();
 }
 
