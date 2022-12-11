@@ -313,63 +313,80 @@ function commitDeletion(fiber: Fiber<Element>) {
   });
 }
 
-function getMovingIndexShift(fiber: Fiber<Element>, sourceNodes: Array<Element>) {
-  const parentFiberNodes = collectElements(fiber.parent);
-  const size = parentFiberNodes.length;
-  const lastIdx = size - 1;
-  const lastParentFiberNode = parentFiberNodes[lastIdx];
-  const parentNativeElement = sourceNodes[0].parentElement;
+// function getMovingIndexShift(fiber: Fiber<Element>, sourceNodes: Array<Element>) {
+//   const parentFiberNodes = collectElements(fiber.parent);
+//   const size = parentFiberNodes.length;
+//   const lastIdx = size - 1;
+//   const lastParentFiberNode = parentFiberNodes[lastIdx];
+//   const parentNativeElement = sourceNodes[0].parentElement;
 
-  if (!nodesMap.has(parentNativeElement)) {
-    nodesMap.set(parentNativeElement, Array.from(parentNativeElement.childNodes) as Array<Element>);
-  }
+//   if (!nodesMap.has(parentNativeElement)) {
+//     nodesMap.set(parentNativeElement, Array.from(parentNativeElement.childNodes) as Array<Element>);
+//   }
 
-  const childNodes = nodesMap.get(parentNativeElement);
-  let shift = 0;
+//   const childNodes = nodesMap.get(parentNativeElement);
+//   let shift = 0;
 
-  if (lastParentFiberNode.parentElement === parentNativeElement) {
-    let nodeIdx = 0;
+//   if (lastParentFiberNode.parentElement === parentNativeElement) {
+//     let nodeIdx = 0;
 
-    if (childNodes.length - size < size) {
-      nodeIdx = childNodes.length - 1;
+//     if (childNodes.length - size < size) {
+//       nodeIdx = childNodes.length - 1;
 
-      for (let i = childNodes.length - 1; i >= 0; i--) {
-        if (childNodes[i] === lastParentFiberNode) {
-          break;
-        }
-        nodeIdx--;
-      }
-    } else {
-      for (let i = 0; i < childNodes.length; i++) {
-        if (childNodes[i] === lastParentFiberNode) {
-          break;
-        }
-        nodeIdx++;
-      }
+//       for (let i = childNodes.length - 1; i >= 0; i--) {
+//         if (childNodes[i] === lastParentFiberNode) {
+//           break;
+//         }
+//         nodeIdx--;
+//       }
+//     } else {
+//       for (let i = 0; i < childNodes.length; i++) {
+//         if (childNodes[i] === lastParentFiberNode) {
+//           break;
+//         }
+//         nodeIdx++;
+//       }
+//     }
+
+//     shift = nodeIdx - lastIdx;
+//   }
+
+//   return shift;
+// }
+
+function detectIsReplacingComment(node: ChildNode, id: number) {
+  return node.nodeType === 8 && node.textContent === id + '';
+}
+
+function getMovingDestinationNode(childNode: ChildNode, id: number) {
+  let node = childNode;
+
+  while (!detectIsReplacingComment(node, id)) {
+    node = node.nextSibling;
+
+    if (!node) {
+      break;
     }
-
-    shift = nodeIdx - lastIdx;
   }
 
-  return shift;
+  return node;
 }
 
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const parentNativeElement = sourceNodes[0].parentElement;
   const sourceFragment = new DocumentFragment();
-  const idx = fiber.idx;
+  const id = fiber.parent.id;
   const move = () => {
-    const childNodes = parentNativeElement.childNodes;
-    const destinationNode = childNodes[idx];
+    const node = getMovingDestinationNode(parentNativeElement.firstChild, id);
 
-    parentNativeElement.replaceChild(sourceFragment, destinationNode);
+    parentNativeElement.replaceChild(sourceFragment, node);
   };
 
-  sourceNodes.forEach(node => {
-    node.parentElement.insertBefore(document.createComment(''), node);
+  for (const node of sourceNodes) {
+    node.parentElement.insertBefore(document.createComment(id + ''), node);
     sourceFragment.appendChild(node);
-  });
+  }
 
   moves.push(move);
 }
