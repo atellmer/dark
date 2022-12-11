@@ -396,6 +396,11 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       nextKeyFiber.idx = idx;
       idx++;
     }
+
+    if (result.length >= 5) {
+      console.log('result', result);
+      console.log('[alternate]', alternate);
+    }
   }
 }
 

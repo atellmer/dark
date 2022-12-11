@@ -357,22 +357,20 @@ function getMovingIndexShift(fiber: Fiber<Element>, sourceNodes: Array<Element>)
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const parentNativeElement = sourceNodes[0].parentElement;
-  const childNodes = parentNativeElement.childNodes;
   const sourceFragment = new DocumentFragment();
-  const shift = getMovingIndexShift(fiber, sourceNodes);
-  const idx = fiber.idx + shift;
-
+  const idx = fiber.idx;
   const move = () => {
+    const childNodes = parentNativeElement.childNodes;
     const destinationNode = childNodes[idx];
 
-    if (destinationNode) {
-      parentNativeElement.insertBefore(sourceFragment, destinationNode);
-    } else {
-      parentNativeElement.appendChild(sourceFragment);
-    }
+    parentNativeElement.replaceChild(sourceFragment, destinationNode);
   };
 
-  sourceNodes.forEach(x => sourceFragment.appendChild(x));
+  sourceNodes.forEach(node => {
+    node.parentElement.insertBefore(document.createComment(''), node);
+    sourceFragment.appendChild(node);
+  });
+
   moves.push(move);
 }
 

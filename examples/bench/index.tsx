@@ -268,7 +268,7 @@ const Bench = createComponent(() => {
   }, []);
   const handleShuffle = useCallback(() => {
     console.log('state.list', state.list);
-    state.list = [8, 2, 11, 1, 3, 6, 7, 13, 5, 10, 12].map(x => ({
+    state.list = [8, 2, 21, 1, 3, 6, 7, 23, 5, 10, 22].map(x => ({
       id: x,
       name: `item: ${x}`,
       selected: false,
