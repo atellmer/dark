@@ -344,7 +344,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   const elementType = getInstanceType(instance);
   const isSameType = elementType === alternateType;
   const flag = getElementFlag(instance);
-  const hasNoSwapsFlag = flag && flag[Flag.HAS_NO_SWAPS];
+  const hasNoMovesFlag = flag && flag[Flag.HAS_NO_MOVES];
 
   alternate.isUsed = true;
 
@@ -357,13 +357,13 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   } else if (
     hasChildrenProp(alternate.instance) &&
     hasChildrenProp(instance) &&
-    (hasNoSwapsFlag ? alternate.childrenCount !== instance.children.length : true)
+    (hasNoMovesFlag ? alternate.childrenCount !== instance.children.length : true)
   ) {
     const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
       alternate.child,
       instance.children,
     );
-    const result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
+    let result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
     let size = Math.max(prevKeys.length, nextKeys.length);
     let nextFiber = alternate;
     let idx = 0;
@@ -415,6 +415,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       nextKeyFiber.idx = idx;
       idx++;
     }
+
+    result = [];
   }
 }
 
@@ -751,6 +753,7 @@ function getParentFiberWithNativeElement(fiber: Fiber) {
 
 function syncElementIndices(fiber: Fiber) {
   const diff = fiber.childrenElementsCount - fiber.alternate.childrenElementsCount;
+  if (diff === 0) return;
   const parentFiber = getParentFiberWithNativeElement(fiber);
   let isRight = false;
 

@@ -121,7 +121,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
   );
 });
 
-const flag = { [Flag.HAS_NO_SWAPS]: true };
+const flag = { [Flag.HAS_NO_MOVES]: true };
 
 const setAnchors = (arr: Array<Point>, scope: any) => {
   arr.map((p, index) => {

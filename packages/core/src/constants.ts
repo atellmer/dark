@@ -15,5 +15,5 @@ export enum TaskPriority {
 }
 
 export enum Flag {
-  HAS_NO_SWAPS = 'HAS_NO_SWAPS',
+  HAS_NO_MOVES = 'HAS_NO_MOVES',
 }
