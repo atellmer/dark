@@ -517,34 +517,6 @@ describe('[render]', () => {
       expect(newNodeOne.textContent).toBe('2');
       expect(newNodeTwo.textContent).toBe('9');
     });
-
-    // test('can move nodes', () => {
-    //   const content = () => dom`
-    //     <div>header</div>
-    //     ${items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('')}
-    //     <div>footer</div>
-    //   `;
-
-    //   const render$ = () => {
-    //     render(App({ items }), host);
-    //   };  
-
-    //   items = generateItems(10);
-
-    //   render$();
-    //   expect(host.innerHTML).toBe(content());
-    //   console.log(host.innerHTML);
-
-    //   moveItems(0, 1);
-    //   render$();
-    //   expect(host.innerHTML).toBe(content());
-    //   console.log(host.innerHTML);
-
-    //   moveItems(0, 3);
-    //   render$();
-    //   expect(host.innerHTML).toBe(content());
-    //   console.log(host.innerHTML);
-    // });
   });
 
   describe('[list of items]', () => {

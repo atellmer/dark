@@ -7,6 +7,7 @@ import {
   detectIsString,
   detectIsNumber,
   detectIsFunction,
+  detectIsUndefined,
 } from '../helpers';
 import { platform } from '../platform';
 import {
@@ -72,10 +73,10 @@ class Fiber<N = NativeElement> {
   public portalHost = false;
   public childrenCount = 0;
   public childrenElementsCount = 0;
-  public prevSiblingElementsCount = 0;
   public marker = '';
   public isUsed = false;
   public idx = 0;
+  public elementIdx = 0;
   public batched: number | null = null;
   public catchException: (error: Error) => void;
   private static nextId = 0;
@@ -115,15 +116,6 @@ class Fiber<N = NativeElement> {
   public markPortalHost() {
     this.portalHost = true;
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
-  }
-
-  public getElementIndex(shift = this.idx) {
-    const hasParentNativeElement = Boolean(this.parent?.nativeElement);
-    const elementIdx = hasParentNativeElement
-      ? this.prevSiblingElementsCount + (this.childrenElementsCount > 1 ? shift : 0)
-      : this.parent.getElementIndex(shift);
-
-    return elementIdx;
   }
 
   public incrementChildrenElementsCount(count = 1) {
@@ -218,6 +210,7 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   currentFiberStore.set(fiber);
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
+  fiber.elementIdx = nextFiber.nativeElement ? 0 : nextFiber.elementIdx;
 
   instance = pertformInstance(instance, childrenIdx, fiber) || instance;
   alternate && performAlternate(alternate, instance);
@@ -252,7 +245,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
-    fiber.prevSiblingElementsCount = nextFiber.prevSiblingElementsCount + nextFiber.childrenElementsCount;
+    fiber.elementIdx = nextFiber.elementIdx + nextFiber.childrenElementsCount;
 
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
     alternate && performAlternate(alternate, instance);
@@ -374,8 +367,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     let n = 0;
 
     for (let i = 0; i < size; i++) {
-      const nextKey = nextKeys[i - n] || null;
-      const prevKey = prevKeys[i - p] || null;
+      const nextKey = !detectIsUndefined(nextKeys[i - n]) ? nextKeys[i - n] : null;
+      const prevKey = !detectIsUndefined(prevKeys[i - p]) ? prevKeys[i - p] : null;
       const prevKeyFiber = keyedFibersMap[prevKey];
       const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
 
@@ -416,6 +409,10 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       nextKeyFiber.idx = idx;
       idx++;
     }
+
+    if (result.length > 5) {
+      console.log('result', result);
+    }
   }
 }
 
@@ -438,7 +435,7 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
       idx: fiber.idx,
       parent: fiber.parent,
       nextSibling: fiber.nextSibling,
-      prevSiblingElementsCount: fiber.prevSiblingElementsCount,
+      elementIdx: fiber.elementIdx,
       effectTag: EffectTag.SKIP,
     });
 
@@ -696,7 +693,7 @@ function commitChanges() {
 
   wipFiber.alternate = null;
 
-  // console.log('wipFiber', wipFiber);
+  console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();

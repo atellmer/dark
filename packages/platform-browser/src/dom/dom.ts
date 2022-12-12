@@ -235,23 +235,23 @@ function append(fiber: Fiber<Element>, parentNativeElement: Element) {
   fragment.appendChild(fiber.nativeElement);
 }
 
-function insert(fiber: Fiber<Element>, parentNativeElement: Element, idx: number) {
-  parentNativeElement.insertBefore(fiber.nativeElement, parentNativeElement.childNodes[idx]);
+function insert(fiber: Fiber<Element>, parentNativeElement: Element) {
+  const node = parentNativeElement.childNodes[fiber.elementIdx];
+
+  parentNativeElement.insertBefore(fiber.nativeElement, node);
 }
 
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
-  const hasNoChildNodes = childNodes.length === 0;
-  const idx = hasNoChildNodes ? -1 : fiber.getElementIndex();
 
-  if (hasNoChildNodes || idx > childNodes.length - 1) {
+  if (childNodes.length === 0 || fiber.elementIdx > childNodes.length - 1) {
     const vNode = parentFiber.instance as TagVirtualNode;
 
     !detectIsVoidElement(vNode.name) && append(fiber, parentNativeElement);
   } else {
-    insert(fiber, parentNativeElement, idx);
+    insert(fiber, parentNativeElement);
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
@@ -295,7 +295,7 @@ function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const parentNativeElement = sourceNodes[0].parentElement;
   const sourceFragment = new DocumentFragment();
-  const elementIdx = fiber.getElementIndex();
+  const elementIdx = fiber.elementIdx;
   const move = () => {
     parentNativeElement.replaceChild(sourceFragment, parentNativeElement.childNodes[elementIdx]);
   };
