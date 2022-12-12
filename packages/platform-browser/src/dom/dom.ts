@@ -235,8 +235,8 @@ function append(fiber: Fiber<Element>, parentNativeElement: Element) {
   fragment.appendChild(fiber.nativeElement);
 }
 
-function insert(fiber: Fiber<Element>, parentNativeElement: Element) {
-  const node = parentNativeElement.childNodes[fiber.elementIdx];
+function insert(fiber: Fiber<Element>, parentNativeElement: Element, idx: number) {
+  const node = parentNativeElement.childNodes[idx];
 
   parentNativeElement.insertBefore(fiber.nativeElement, node);
 }
@@ -245,13 +245,15 @@ function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
+  const hasNoChildNodes = childNodes.length === 0;
+  const idx = hasNoChildNodes ? 0 : fiber.elementIdx;
 
-  if (childNodes.length === 0 || fiber.elementIdx > childNodes.length - 1) {
+  if (hasNoChildNodes || idx > childNodes.length - 1) {
     const vNode = parentFiber.instance as TagVirtualNode;
 
     !detectIsVoidElement(vNode.name) && append(fiber, parentNativeElement);
   } else {
-    insert(fiber, parentNativeElement);
+    insert(fiber, parentNativeElement, idx);
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
@@ -293,15 +295,17 @@ function commitDeletion(fiber: Fiber<Element>) {
 
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
-  const parentNativeElement = sourceNodes[0].parentElement;
+  const sourceNode = sourceNodes[0];
+  const parentNativeElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
   const elementIdx = fiber.elementIdx;
   const move = () => {
     parentNativeElement.replaceChild(sourceFragment, parentNativeElement.childNodes[elementIdx]);
   };
 
+  parentNativeElement.insertBefore(document.createComment(elementIdx + ''), sourceNode);
+
   for (const node of sourceNodes) {
-    node.parentElement.insertBefore(document.createComment(elementIdx + ''), node);
     sourceFragment.appendChild(node);
   }
 

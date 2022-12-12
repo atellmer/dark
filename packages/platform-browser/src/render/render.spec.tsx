@@ -700,15 +700,15 @@ describe('[render]', () => {
 
     const content = (items: Array<Item>) => {
       return dom`
-      ${items
-        .map(
-          x => `
-            <div>1: ${x.id}</div>
-            <div>2: ${x.id}</div>
-          `,
-        )
-        .join('')}
-    `;
+        ${items
+          .map(
+            x => `
+              <div>1: ${x.id}</div>
+              <div>2: ${x.id}</div>
+            `,
+          )
+          .join('')}
+      `;
     };
 
     const render$ = (props = {}) => {

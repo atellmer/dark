@@ -6,7 +6,6 @@ import {
   detectIsArray,
   detectIsString,
   detectIsNumber,
-  detectIsFunction,
   detectIsUndefined,
 } from '../helpers';
 import { platform } from '../platform';
@@ -367,8 +366,10 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     let n = 0;
 
     for (let i = 0; i < size; i++) {
-      const nextKey = !detectIsUndefined(nextKeys[i - n]) ? nextKeys[i - n] : null;
-      const prevKey = !detectIsUndefined(prevKeys[i - p]) ? prevKeys[i - p] : null;
+      const x = nextKeys[i - n];
+      const y = prevKeys[i - p];
+      const nextKey = !detectIsUndefined(x) ? x : null;
+      const prevKey = !detectIsUndefined(y) ? y : null;
       const prevKeyFiber = keyedFibersMap[prevKey];
       const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
 
@@ -409,10 +410,6 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       nextKeyFiber.idx = idx;
       idx++;
     }
-
-    if (result.length > 5) {
-      console.log('result', result);
-    }
   }
 }
 
@@ -426,7 +423,7 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
 
   if (skip) {
     fiberMountStore.deepWalking.set(false);
-    let nextFiber: Fiber = null;
+    const deep = fiber.elementIdx !== alternate.elementIdx;
 
     fiber.mutate({
       ...alternate,
@@ -441,12 +438,19 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
 
     alternate.alternate = null;
 
-    nextFiber = fiber.child;
+    walkFiber(fiber.child, ({ nextFiber, stop }) => {
+      if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+        return stop();
+      }
 
-    while (nextFiber) {
-      nextFiber.parent = fiber;
-      nextFiber = nextFiber.nextSibling;
-    }
+      if (!deep && nextFiber === alternate.child.child) {
+        return stop();
+      }
+
+      if (nextFiber.parent === alternate) {
+        nextFiber.parent = fiber;
+      }
+    });
 
     fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
 
@@ -693,7 +697,7 @@ function commitChanges() {
 
   wipFiber.alternate = null;
 
-  console.log('wipFiber', wipFiber);
+  // console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
