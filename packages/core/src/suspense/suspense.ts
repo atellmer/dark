@@ -1,7 +1,6 @@
 import { createComponent } from '../component';
 import { useState } from '../use-state';
-import { createContext } from '../context';
-import { useContext } from '../use-context';
+import { createContext, useContext } from '../context';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
 import type { DarkElement, SlotProps } from '../shared';

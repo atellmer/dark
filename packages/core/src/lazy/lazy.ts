@@ -1,9 +1,9 @@
 import { type Component, createComponent, detectIsComponentFactory } from '../component';
 import { useState } from '../use-state';
 import { useEffect } from '../use-effect';
+import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
-import { useContext } from '../use-context';
 import { detectIsFunction } from '../helpers';
 
 const $$lazy = Symbol('lazy');

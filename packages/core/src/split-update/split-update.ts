@@ -1,8 +1,7 @@
 import type { DarkElementKey, DarkElement, Subscribe, SubscriberWithValue } from '../shared';
 import { createComponent, type ComponentFactory, type StandardComponentProps } from '../component';
 import { type Ref } from '../ref';
-import { createContext } from '../context';
-import { useContext } from '../use-context';
+import { createContext, useContext } from '../context';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useEffect } from '../use-effect';
