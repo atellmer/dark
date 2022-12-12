@@ -53,8 +53,6 @@ import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
 
-let nextFiberId = 0;
-
 class Fiber<N = NativeElement> {
   public id = 0;
   public nativeElement: N = null;
@@ -67,7 +65,6 @@ class Fiber<N = NativeElement> {
   public instance: DarkElementInstance = null;
   public hook: Hook | null = null;
   public provider: Map<Context, ContextProviderValue> = null;
-  public mountedToHost = false;
   public effectHost = false;
   public layoutEffectHost = false;
   public insertionEffectHost = false;
@@ -78,9 +75,10 @@ class Fiber<N = NativeElement> {
   public idx = 0;
   public batched: number | null = null;
   public catchException: (error: Error) => void;
+  private static nextId = 0;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
-    this.id = ++nextFiberId;
+    this.id = ++Fiber.nextId;
     this.hook = hook;
     this.provider = provider;
     this.idx = idx;
@@ -94,11 +92,6 @@ class Fiber<N = NativeElement> {
     }
 
     return this;
-  }
-
-  public markMountedToHost() {
-    this.mountedToHost = true;
-    this.parent && !this.parent.mountedToHost && this.parent.markMountedToHost();
   }
 
   public markEffectHost() {
@@ -119,6 +112,14 @@ class Fiber<N = NativeElement> {
   public markPortalHost() {
     this.portalHost = true;
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
+  }
+
+  public getElementIndex() {
+    const hasParent = Boolean(this.parent);
+    const hasParentNativeElement = hasParent && Boolean(this.parent.nativeElement);
+    const elementIdx = hasParent ? (hasParentNativeElement ? this.idx : this.parent.getElementIndex() + this.idx) : -1;
+
+    return elementIdx;
   }
 
   public setError(error: Error) {
@@ -279,7 +280,6 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   fiber.alternate = alternate || null;
   fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
   fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.CREATE;
-  fiber.mountedToHost = isUpdate;
 
   if (alternate && alternate.move) {
     fiber.move = alternate.move;
@@ -297,7 +297,6 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
     fiber.nativeElement = platform.createNativeElement(fiber.instance);
     fiber.effectTag = EffectTag.CREATE;
-    fiber.mountedToHost = false;
   }
 }
 
@@ -348,14 +347,14 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       alternate.child,
       instance.children,
     );
-    const size = Math.max(prevKeys.length, nextKeys.length);
     const result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
+    let size = Math.max(prevKeys.length, nextKeys.length);
     let nextFiber = alternate;
     let idx = 0;
     let p = 0;
     let n = 0;
 
-    for (let i = 0; i < size + p; i++) {
+    for (let i = 0; i < size; i++) {
       const nextKey = nextKeys[i - n] || null;
       const prevKey = prevKeys[i - p] || null;
       const prevKeyFiber = keyedFibersMap[prevKey];
@@ -372,6 +371,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
             result.push([nextKey, 'insert']);
             nextKeyFiber.effectTag = EffectTag.CREATE;
             p++;
+            size++;
           }
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         } else if (!nextKeysMap[prevKey]) {
@@ -380,6 +380,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           deletionsStore.add(prevKeyFiber);
           idx--;
           n++;
+          size++;
         } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
           result.push([[nextKey, prevKey], 'move']);
           nextKeyFiber.effectTag = EffectTag.UPDATE;
@@ -395,11 +396,6 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 
       nextKeyFiber.idx = idx;
       idx++;
-    }
-
-    if (result.length >= 5) {
-      console.log('result', result);
-      console.log('[alternate]', alternate);
     }
   }
 }
@@ -433,10 +429,6 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
     while (nextFiber) {
       nextFiber.parent = fiber;
       nextFiber = nextFiber.nextSibling;
-    }
-
-    if (alternate.mountedToHost) {
-      fiber.markMountedToHost();
     }
 
     if (alternate.effectHost) {

@@ -247,26 +247,17 @@ function append(fiber: Fiber<Element>, parentNativeElement: Element) {
     },
   });
   fragment.appendChild(fiber.nativeElement);
-  fiber.markMountedToHost();
 }
 
 function insert(fiber: Fiber<Element>, parentNativeElement: Element, idx: number) {
-  const node = parentNativeElement.childNodes[idx];
-
-  if (node) {
-    parentNativeElement.insertBefore(fiber.nativeElement, node);
-  } else {
-    parentNativeElement.appendChild(fiber.nativeElement);
-  }
-
-  fiber.markMountedToHost();
+  parentNativeElement.insertBefore(fiber.nativeElement, parentNativeElement.childNodes[idx]);
 }
 
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
-  const idx = childNodes.length === 0 ? -1 : getChildIndex(fiber, parentNativeElement);
+  const idx = childNodes.length === 0 ? -1 : fiber.getElementIndex();
 
   if (childNodes.length === 0 || idx > childNodes.length - 1) {
     const vNode = parentFiber.instance as TagVirtualNode;
@@ -312,47 +303,6 @@ function commitDeletion(fiber: Fiber<Element>) {
     }
   });
 }
-
-// function getMovingIndexShift(fiber: Fiber<Element>, sourceNodes: Array<Element>) {
-//   const parentFiberNodes = collectElements(fiber.parent);
-//   const size = parentFiberNodes.length;
-//   const lastIdx = size - 1;
-//   const lastParentFiberNode = parentFiberNodes[lastIdx];
-//   const parentNativeElement = sourceNodes[0].parentElement;
-
-//   if (!nodesMap.has(parentNativeElement)) {
-//     nodesMap.set(parentNativeElement, Array.from(parentNativeElement.childNodes) as Array<Element>);
-//   }
-
-//   const childNodes = nodesMap.get(parentNativeElement);
-//   let shift = 0;
-
-//   if (lastParentFiberNode.parentElement === parentNativeElement) {
-//     let nodeIdx = 0;
-
-//     if (childNodes.length - size < size) {
-//       nodeIdx = childNodes.length - 1;
-
-//       for (let i = childNodes.length - 1; i >= 0; i--) {
-//         if (childNodes[i] === lastParentFiberNode) {
-//           break;
-//         }
-//         nodeIdx--;
-//       }
-//     } else {
-//       for (let i = 0; i < childNodes.length; i++) {
-//         if (childNodes[i] === lastParentFiberNode) {
-//           break;
-//         }
-//         nodeIdx++;
-//       }
-//     }
-
-//     shift = nodeIdx - lastIdx;
-//   }
-
-//   return shift;
-// }
 
 function detectIsReplacingComment(node: ChildNode, id: number) {
   return node.nodeType === 8 && node.textContent === id + '';
