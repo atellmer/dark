@@ -117,13 +117,17 @@ class Fiber<N = NativeElement> {
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
   }
 
-  public incrementChildrenElementsCount(count = 1) {
+  public incrementChildrenElementsCount(count = 1, force = false) {
     if (!this.parent) return;
+    const fromUpdate = isUpdateHookZone.get();
+    const stop = fromUpdate && wipRootStore.get().parent === this.parent;
+
+    if (fromUpdate && stop && !force) return;
 
     this.parent.childrenElementsCount += count;
 
     if (!this.parent.nativeElement) {
-      this.parent.incrementChildrenElementsCount();
+      this.parent.incrementChildrenElementsCount(count);
     }
   }
 
@@ -454,7 +458,7 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
       } else if (nextFiber === alternate.child.child) return stop();
     });
 
-    fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
+    // fiber.incrementChildrenElementsCount( alternate.childrenElementsCount);
 
     if (alternate.effectHost) {
       fiber.markEffectHost();
@@ -686,6 +690,7 @@ function commitChanges() {
   const wipFiber = wipRootStore.get();
   const insertionEffects = insertionEffectsStore.get();
   const deletions = deletionsStore.get();
+  const fromUpdate = isUpdateHookZone.get();
 
   // important order
   for (const fiber of deletions) {
@@ -696,6 +701,10 @@ function commitChanges() {
   isInsertionEffectsZone.set(true);
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
+
+  if (fromUpdate) {
+    patchElementIndices(wipFiber);
+  }
 
   wipFiber.alternate = null;
 
@@ -719,10 +728,39 @@ function commitChanges() {
     layoutEffectsStore.reset();
     effectsStore.reset();
 
-    if (isUpdateHookZone.get()) {
+    if (fromUpdate) {
       isUpdateHookZone.set(false);
     } else {
       currentRootStore.set(wipFiber);
+    }
+  });
+}
+
+function patchElementIndices(fiber: Fiber) {
+  let parentFiber = fiber;
+
+  while (parentFiber) {
+    parentFiber = parentFiber.parent;
+
+    if (parentFiber && parentFiber.nativeElement) {
+      break;
+    }
+  }
+
+  const diff = fiber.childrenElementsCount - fiber.alternate.childrenElementsCount;
+
+  fiber.incrementChildrenElementsCount(diff, true);
+
+  walkFiber(fiber.nextSibling, ({ nextFiber, resetIsDeepWalking, isReturn, stop }) => {
+    if (nextFiber === parentFiber) return stop();
+    if (nextFiber === fiber) return resetIsDeepWalking();
+
+    if (nextFiber.nativeElement) {
+      resetIsDeepWalking();
+    }
+
+    if (!isReturn) {
+      nextFiber.elementIdx += diff;
     }
   });
 }
@@ -762,7 +800,10 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     isUpdateHookZone.set(true);
     fiberMountStore.reset();
 
-    fiber.alternate = new Fiber().mutate({ ...fiber, alternate: null });
+    const childrenElementsCount = fiber.childrenElementsCount;
+
+    fiber.childrenElementsCount = 0;
+    fiber.alternate = new Fiber().mutate({ ...fiber, alternate: null, childrenElementsCount });
     fiber.marker = PARTIAL_UPDATE;
     fiber.effectTag = EffectTag.UPDATE;
     fiber.child = null;
