@@ -423,7 +423,8 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
 
   if (skip) {
     fiberMountStore.deepWalking.set(false);
-    const deep = fiber.elementIdx !== alternate.elementIdx;
+    const diff = fiber.elementIdx - alternate.elementIdx;
+    const deep = diff !== 0;
 
     fiber.mutate({
       ...alternate,
@@ -443,13 +444,14 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
         return stop();
       }
 
-      if (!deep && nextFiber === alternate.child.child) {
-        return stop();
-      }
-
       if (nextFiber.parent === alternate) {
         nextFiber.parent = fiber;
       }
+
+      if (deep) {
+        nextFiber.elementIdx += diff;
+        if (nextFiber.parent !== fiber && nextFiber.nativeElement) return stop();
+      } else if (nextFiber === alternate.child.child) return stop();
     });
 
     fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
@@ -697,7 +699,7 @@ function commitChanges() {
 
   wipFiber.alternate = null;
 
-  // console.log('wipFiber', wipFiber);
+  console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
