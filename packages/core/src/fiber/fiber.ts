@@ -120,7 +120,8 @@ class Fiber<N = NativeElement> {
   public incrementChildrenElementsCount(count = 1, force = false) {
     if (!this.parent) return;
     const fromUpdate = isUpdateHookZone.get();
-    const stop = fromUpdate && wipRootStore.get().parent === this.parent;
+    const wipFiber = wipRootStore.get();
+    const stop = fromUpdate && wipFiber.parent === this.parent;
 
     if (fromUpdate && stop && !force) return;
 
@@ -458,7 +459,7 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
       } else if (nextFiber === alternate.child.child) return stop();
     });
 
-    // fiber.incrementChildrenElementsCount( alternate.childrenElementsCount);
+    fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
 
     if (alternate.effectHost) {
       fiber.markEffectHost();
@@ -702,13 +703,11 @@ function commitChanges() {
   insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
 
-  if (fromUpdate) {
-    patchElementIndices(wipFiber);
-  }
+  fromUpdate && syncElementIndices(wipFiber);
 
   wipFiber.alternate = null;
 
-  console.log('wipFiber', wipFiber);
+  // console.log('wipFiber', wipFiber);
 
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
@@ -736,7 +735,7 @@ function commitChanges() {
   });
 }
 
-function patchElementIndices(fiber: Fiber) {
+function getParentFiberWithNativeElement(fiber: Fiber) {
   let parentFiber = fiber;
 
   while (parentFiber) {
@@ -747,19 +746,28 @@ function patchElementIndices(fiber: Fiber) {
     }
   }
 
+  return parentFiber;
+}
+
+function syncElementIndices(fiber: Fiber) {
   const diff = fiber.childrenElementsCount - fiber.alternate.childrenElementsCount;
+  const parentFiber = getParentFiberWithNativeElement(fiber);
+  let isRight = false;
 
   fiber.incrementChildrenElementsCount(diff, true);
 
-  walkFiber(fiber.nextSibling, ({ nextFiber, resetIsDeepWalking, isReturn, stop }) => {
+  walkFiber(parentFiber.child, ({ nextFiber, resetIsDeepWalking, isReturn, stop }) => {
     if (nextFiber === parentFiber) return stop();
-    if (nextFiber === fiber) return resetIsDeepWalking();
+    if (nextFiber === fiber) {
+      isRight = true;
+      return resetIsDeepWalking();
+    }
 
     if (nextFiber.nativeElement) {
       resetIsDeepWalking();
     }
 
-    if (!isReturn) {
+    if (isRight && !isReturn) {
       nextFiber.elementIdx += diff;
     }
   });
