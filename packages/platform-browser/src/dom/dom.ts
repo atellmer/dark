@@ -291,36 +291,13 @@ function commitDeletion(fiber: Fiber<Element>) {
   });
 }
 
-function detectIsReplacingComment(node: ChildNode, id: number) {
-  return node.nodeType === 8 && node.textContent === id + '';
-}
-
-function getMovingDestinationNode(childNode: ChildNode, id: number) {
-  let node = childNode;
-
-  while (!detectIsReplacingComment(node, id)) {
-    node = node.nextSibling;
-
-    if (!node) {
-      break;
-    }
-  }
-
-  return node;
-}
-
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const parentNativeElement = sourceNodes[0].parentElement;
   const sourceFragment = new DocumentFragment();
   const elementIdx = fiber.getElementIndex();
   const move = () => {
-    const node = parentNativeElement.childNodes[elementIdx];
-
-    console.log('sourceNodes', sourceNodes);
-    console.log('node', node);
-
-    parentNativeElement.replaceChild(sourceFragment, node);
+    parentNativeElement.replaceChild(sourceFragment, parentNativeElement.childNodes[elementIdx]);
   };
 
   for (const node of sourceNodes) {

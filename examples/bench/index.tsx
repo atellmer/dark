@@ -32,7 +32,7 @@ const createMeasurer = () => {
         const stopTime = performance.now();
         const diff = stopTime - startTime;
 
-        console.log(`${last}: ${diff}`);
+        // console.log(`${last}: ${diff}`);
       });
     }
   };
