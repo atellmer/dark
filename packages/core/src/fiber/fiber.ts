@@ -1,11 +1,12 @@
 import {
   flatten,
+  error,
   detectIsEmpty,
   detectIsFalsy,
-  error,
   detectIsArray,
   detectIsString,
   detectIsNumber,
+  detectIsFunction,
 } from '../helpers';
 import { platform } from '../platform';
 import {
@@ -70,6 +71,8 @@ class Fiber<N = NativeElement> {
   public insertionEffectHost = false;
   public portalHost = false;
   public childrenCount = 0;
+  public childrenElementsCount = 0;
+  public prevSiblingElementsCount = 0;
   public marker = '';
   public isUsed = false;
   public idx = 0;
@@ -114,12 +117,23 @@ class Fiber<N = NativeElement> {
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
   }
 
-  public getElementIndex() {
-    const hasParent = Boolean(this.parent);
-    const hasParentNativeElement = hasParent && Boolean(this.parent.nativeElement);
-    const elementIdx = hasParent ? (hasParentNativeElement ? this.idx : this.parent.getElementIndex() + this.idx) : -1;
+  public getElementIndex(shift = this.idx) {
+    const hasParentNativeElement = Boolean(this.parent?.nativeElement);
+    const elementIdx = hasParentNativeElement
+      ? this.prevSiblingElementsCount + (this.childrenElementsCount > 1 ? shift : 0)
+      : this.parent.getElementIndex(shift);
 
     return elementIdx;
+  }
+
+  public incrementChildrenElementsCount(count = 1) {
+    if (!this.parent) return;
+
+    this.parent.childrenElementsCount += count;
+
+    if (!this.parent.nativeElement) {
+      this.parent.incrementChildrenElementsCount();
+    }
   }
 
   public setError(error: Error) {
@@ -238,6 +252,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
+    fiber.prevSiblingElementsCount = nextFiber.prevSiblingElementsCount + nextFiber.childrenElementsCount;
 
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
     alternate && performAlternate(alternate, instance);
@@ -297,6 +312,10 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
     fiber.nativeElement = platform.createNativeElement(fiber.instance);
     fiber.effectTag = EffectTag.CREATE;
+  }
+
+  if (fiber.nativeElement) {
+    fiber.incrementChildrenElementsCount();
   }
 }
 
@@ -419,6 +438,7 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
       idx: fiber.idx,
       parent: fiber.parent,
       nextSibling: fiber.nextSibling,
+      prevSiblingElementsCount: fiber.prevSiblingElementsCount,
       effectTag: EffectTag.SKIP,
     });
 
@@ -430,6 +450,8 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
       nextFiber.parent = fiber;
       nextFiber = nextFiber.nextSibling;
     }
+
+    fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
 
     if (alternate.effectHost) {
       fiber.markEffectHost();

@@ -218,20 +218,6 @@ function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> 
   return nextFiber;
 }
 
-function getChildIndex(fiber: Fiber<Element>, parentNativeElement: Element) {
-  let nextFiber = fiber;
-
-  while (nextFiber) {
-    if (nextFiber?.parent?.nativeElement === parentNativeElement) {
-      return nextFiber.idx;
-    }
-
-    nextFiber = nextFiber.parent;
-  }
-
-  return -1;
-}
-
 function append(fiber: Fiber<Element>, parentNativeElement: Element) {
   const { fragment } =
     fragmentsMap.get(parentNativeElement) ||
@@ -257,9 +243,10 @@ function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentNativeElement = parentFiber.nativeElement;
   const childNodes = parentNativeElement.childNodes;
-  const idx = childNodes.length === 0 ? -1 : fiber.getElementIndex();
+  const hasNoChildNodes = childNodes.length === 0;
+  const idx = hasNoChildNodes ? -1 : fiber.getElementIndex();
 
-  if (childNodes.length === 0 || idx > childNodes.length - 1) {
+  if (hasNoChildNodes || idx > childNodes.length - 1) {
     const vNode = parentFiber.instance as TagVirtualNode;
 
     !detectIsVoidElement(vNode.name) && append(fiber, parentNativeElement);
@@ -326,15 +313,18 @@ function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const parentNativeElement = sourceNodes[0].parentElement;
   const sourceFragment = new DocumentFragment();
-  const id = fiber.parent.id;
+  const elementIdx = fiber.getElementIndex();
   const move = () => {
-    const node = getMovingDestinationNode(parentNativeElement.firstChild, id);
+    const node = parentNativeElement.childNodes[elementIdx];
+
+    console.log('sourceNodes', sourceNodes);
+    console.log('node', node);
 
     parentNativeElement.replaceChild(sourceFragment, node);
   };
 
   for (const node of sourceNodes) {
-    node.parentElement.insertBefore(document.createComment(id + ''), node);
+    node.parentElement.insertBefore(document.createComment(elementIdx + ''), node);
     sourceFragment.appendChild(node);
   }
 

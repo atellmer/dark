@@ -32,7 +32,7 @@ const createMeasurer = () => {
         const stopTime = performance.now();
         const diff = stopTime - startTime;
 
-        // console.log(`${last}: ${diff}`);
+        console.log(`${last}: ${diff}`);
       });
     }
   };
@@ -200,7 +200,6 @@ const Bench = createComponent(() => {
   const handlePrepend = useCallback(() => {
     state.list.unshift(...buildData(2, '!!!'));
     state.list = [...state.list];
-    console.log('state.list', state.list);
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
