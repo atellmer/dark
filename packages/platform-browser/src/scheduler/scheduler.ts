@@ -132,8 +132,8 @@ function performWorkUntilDeadline() {
 }
 
 function requestCallback(callback: Callback) {
-  return requestCallbackSync(callback);
   if (process.env.NODE_ENV === 'test') {
+    return requestCallbackSync(callback);
   }
 
   scheduledCallback = callback;

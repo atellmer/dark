@@ -11,6 +11,7 @@ import {
   Fragment,
   TaskPriority,
   DarkElement,
+  useDeferredValue,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
 
@@ -111,7 +112,8 @@ type AppProps = {
 };
 
 const App = createComponent<AppProps>(props => {
-  const [seconds, setSeconds] = useState(0, { priority: TaskPriority.LOW });
+  const [seconds, setSeconds] = useState(0);
+  const defferedSeconds = useDeferredValue(seconds);
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;
@@ -139,7 +141,7 @@ const App = createComponent<AppProps>(props => {
   return (
     <div style={style.container}>
       <MemoSierpinskiTriangle x={0} y={0} s={1000}>
-        {seconds}
+        {defferedSeconds}
       </MemoSierpinskiTriangle>
     </div>
   );

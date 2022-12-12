@@ -32,7 +32,6 @@ const attrBlackListMap = {
   void: true,
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
-let nodesMap: Map<Element, Array<Element>> = new Map();
 let moves: Array<() => void> = [];
 let trackUpdate: (nativeElement: Element) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
@@ -370,7 +369,6 @@ function finishCommitWork() {
   }
 
   fragmentsMap = new Map();
-  nodesMap = new Map();
   moves = [];
 }
 

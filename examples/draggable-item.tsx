@@ -1,6 +1,15 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { h, createComponent, useState, useRef, useEffect, useMemo, type DarkElement, batch } from '@dark-engine/core';
-import { createRoot, type SyntheticEvent, useStyle } from '@dark-engine/platform-browser';
+import {
+  h,
+  createComponent,
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  batch,
+  TaskPriority,
+  type DarkElement,
+} from '@dark-engine/core';
+import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
 type ID = string | number;
 
@@ -69,11 +78,11 @@ type DraggableProps = {
 
 const Draggable = createComponent<DraggableProps>(
   ({ isDragging, draggableID, activeDraggableID, setIsDragging, setActiveDraggableID, slot }) => {
-    const [coord, setCoord] = useState({ x: 0, y: 0 });
+    const [coord, setCoord] = useState({ x: 0, y: 0 }, { priority: TaskPriority.ANIMATION });
     const [rect, setRect] = useState<DOMRect | null>(null);
-    const scope = useMemo(() => ({ fromResize: false }), []);
     const rootRef = useRef<HTMLElement | null>(null);
     const isActive = isDragging && draggableID === activeDraggableID;
+    const scope = useMemo(() => ({ isDragging, isActive, rect, fromResize: false }), []);
     const style = useStyle(styled => ({
       root: styled`
         position: relative;
@@ -83,16 +92,21 @@ const Draggable = createComponent<DraggableProps>(
         z-index: ${isActive ? 2 : 1};
         user-select: none;
         touch-action: none;
+        color: #000;
       `,
     }));
 
+    scope.isDragging = isDragging;
+    scope.isActive = isActive;
+    scope.rect = rect;
+
     useEffect(() => {
-      setRect(rootRef.current!.getBoundingClientRect());
+      setRect(rootRef.current.getBoundingClientRect());
     }, []);
 
     useEffect(() => {
       if (!scope.fromResize) return;
-      setRect(rootRef.current!.getBoundingClientRect());
+      setRect(rootRef.current.getBoundingClientRect());
       scope.fromResize = false;
     }, [scope, scope.fromResize]);
 
@@ -106,25 +120,36 @@ const Draggable = createComponent<DraggableProps>(
       return () => window.removeEventListener('resize', handleEvent);
     }, [scope]);
 
+    useEffect(() => {
+      const handleDrag = (e: MouseEvent | TouchEvent) => {
+        const { isDragging, isActive, rect } = scope;
+        if (!isDragging || !isActive) return;
+        const mouseEvent = e as MouseEvent;
+        const touchEvent = e as TouchEvent;
+        const touch = mouseEvent instanceof MouseEvent ? mouseEvent : touchEvent.touches[0];
+
+        if (touch.clientX === 0 || touch.clientY === 0) return;
+
+        const x = touch.clientX - rect.width / 2 - rect.left;
+        const y = touch.clientY - rect.height / 2 - rect.top;
+
+        setCoord({ x, y });
+      };
+
+      document.addEventListener('mousemove', handleDrag);
+      document.addEventListener('touchmove', handleDrag);
+
+      return () => {
+        document.removeEventListener('mousemove', handleDrag);
+        document.removeEventListener('touchmove', handleDrag);
+      };
+    }, []);
+
     const handleDragStart = () => {
       batch(() => {
         setIsDragging(true);
         setActiveDraggableID(draggableID);
       });
-    };
-
-    const handleDrag = (e: SyntheticEvent<MouseEvent | TouchEvent>) => {
-      if (!isDragging || draggableID !== activeDraggableID) return;
-      const mouseEvent = e.sourceEvent as MouseEvent;
-      const touchEvent = e.sourceEvent as TouchEvent;
-      const touch = mouseEvent instanceof MouseEvent ? mouseEvent : touchEvent.touches[0];
-
-      if (touch.clientX === 0 || touch.clientY === 0) return;
-
-      const x = touch.clientX - rect!.width / 2 - rect!.left;
-      const y = touch.clientY - rect!.height / 2 - rect!.top;
-
-      setCoord({ x, y });
     };
 
     return (
@@ -133,9 +158,7 @@ const Draggable = createComponent<DraggableProps>(
         style={style.root}
         draggable={false}
         onMouseDown={handleDragStart}
-        onTouchStart={handleDragStart}
-        onMouseMove={handleDrag}
-        onTouchMove={handleDrag}>
+        onTouchStart={handleDragStart}>
         {slot}
       </div>
     );
@@ -180,6 +203,6 @@ const App = createComponent(() => {
   );
 });
 
-const root = createRoot(document.getElementById('root')!);
+const root = createRoot(document.getElementById('root'));
 
 root.render(<App />);
