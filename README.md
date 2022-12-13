@@ -69,7 +69,7 @@ import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/cor
 import { createRoot } from '@dark-engine/platform-browser';
 
 const App = createComponent(() => {
-  const state = useReactiveState({ name: "Alex" });
+  const state = useReactiveState({ name: 'Alex' });
 
   const handleInput = (e) => {
     state.name = e.target.value;
