@@ -6,6 +6,7 @@ import {
   detectIsArray,
   detectIsString,
   detectIsNumber,
+  detectIsFunction,
 } from '../helpers';
 import { platform } from '../platform';
 import {
@@ -123,7 +124,7 @@ class Fiber<N = NativeElement> {
   }
 
   public setError(error: Error) {
-    if (typeof this.catchException === 'function') {
+    if (detectIsFunction(this.catchException)) {
       this.catchException(error);
     } else if (this.parent) {
       this.parent.setError(error);
@@ -164,27 +165,27 @@ function performUnitOfWork(fiber: Fiber) {
       const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
 
       if (hasChildren) {
-        const { performedFiber, performedNextFiber, performedInstance } = performChild(nextFiber, instance);
+        const { fiber$, instance$ } = performChild(nextFiber, instance);
 
-        nextFiber = performedNextFiber;
-        instance = performedInstance;
+        nextFiber = fiber$;
+        instance = instance$;
 
-        if (performedFiber) return performedFiber;
+        if (fiber$) return fiber$;
       } else {
-        const { performedFiber, performedNextFiber, performedInstance } = performSibling(nextFiber, instance);
+        const { fiber$$, fiber$, instance$ } = performSibling(nextFiber, instance);
 
-        nextFiber = performedNextFiber;
-        instance = performedInstance;
+        nextFiber = fiber$;
+        instance = instance$;
 
-        if (performedFiber) return performedFiber;
+        if (fiber$$) return fiber$$;
       }
     } else {
-      const { performedFiber, performedNextFiber, performedInstance } = performSibling(nextFiber, instance);
+      const { fiber$$, fiber$, instance$ } = performSibling(nextFiber, instance);
 
-      nextFiber = performedNextFiber;
-      instance = performedInstance;
+      nextFiber = fiber$;
+      instance = instance$;
 
-      if (performedFiber) return performedFiber;
+      if (fiber$$) return fiber$$;
     }
 
     if (nextFiber.parent === null) return null;
@@ -205,7 +206,6 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
   fiber.elementIdx = nextFiber.nativeElement ? 0 : nextFiber.elementIdx;
-
   instance = pertformInstance(instance, childrenIdx, fiber) || instance;
   alternate && performAlternate(alternate, instance);
   performFiber(fiber, alternate, instance);
@@ -213,9 +213,8 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
   return {
-    performedFiber: fiber,
-    performedNextFiber: fiber,
-    performedInstance: instance,
+    fiber$: fiber,
+    instance$: instance,
   };
 }
 
@@ -240,7 +239,6 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
     fiber.elementIdx = nextFiber.elementIdx + nextFiber.childrenElementsCount;
-
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
     alternate && performAlternate(alternate, instance);
     performFiber(fiber, alternate, instance);
@@ -248,9 +246,9 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
     return {
-      performedFiber: fiber,
-      performedNextFiber: fiber,
-      performedInstance: instance,
+      fiber$$: fiber,
+      fiber$: fiber,
+      instance$: instance,
     };
   } else {
     fiberMountStore.jumpToParent();
@@ -264,9 +262,9 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
   }
 
   return {
-    performedFiber: null,
-    performedNextFiber: nextFiber,
-    performedInstance: instance,
+    fiber$$: null,
+    fiber$: nextFiber,
+    instance$: instance,
   };
 }
 
