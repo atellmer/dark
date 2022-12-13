@@ -11,6 +11,7 @@ import {
   Fragment,
   TaskPriority,
   DarkElement,
+  useDeferredValue,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
 
@@ -35,7 +36,6 @@ const Dot = createComponent<DotProps>(props => {
     dot: styled`
       position: absolute;
       background-color: #61dafb;
-      font: normal 15px sans-serif;
       text-align: center;
       cursor: pointer;
       width: ${s}px;
@@ -111,35 +111,31 @@ type AppProps = {
 };
 
 const App = createComponent<AppProps>(props => {
-  const [seconds, setSeconds] = useState(0, { priority: TaskPriority.LOW });
+  const [seconds, setSeconds] = useState(0);
+  const defferedSeconds = useDeferredValue(seconds);
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;
 
   useEffect(() => {
-    setInterval(() => tick(), 1000);
+    setInterval(() => setSeconds(seconds => (seconds % 10) + 1), 1000);
   }, []);
-
-  const tick = useCallback(() => setSeconds(seconds => (seconds % 10) + 1), []);
 
   const style = useStyle(styled => ({
     container: styled`
       position: absolute;
-      transform-origin: 0 0;
       left: 50%;
       top: 50%;
-      width: 10px;
-      height: 10px;
+      transform-origin: 0 0;
       background-color: #eee;
-      transform: ${'scaleX(' + scale / 2.1 + ') scaleY(0.7) translateZ(0.1px)'};
-      zoom: 1;
+      transform: scaleX(${scale / 2.1}) scaleY(0.7);
     `,
   }));
 
   return (
     <div style={style.container}>
       <MemoSierpinskiTriangle x={0} y={0} s={1000}>
-        {seconds}
+        {defferedSeconds}
       </MemoSierpinskiTriangle>
     </div>
   );

@@ -153,7 +153,7 @@ const App = createComponent(() => {
   useEffect(() => {
     const timerId = setInterval(() => {
       setTimer(x => x + 1);
-    }, 1000);
+    }, 10);
 
     return () => clearInterval(timerId);
   }, []);
