@@ -20,8 +20,8 @@ const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
 const detectIsFalsy = (o: any) => detectIsNull(o) || detectIsUndefined(o) || o === false;
 
-function error(str: string) {
-  !detectIsUndefined(console) && console.error(str);
+function error(...args: Array<any>) {
+  !detectIsUndefined(console) && console.error(...args);
 }
 
 function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
