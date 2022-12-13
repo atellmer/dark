@@ -1,10 +1,5 @@
-import { View, Text, createComponent, useState, useRef, forwardRef } from '@dark-engine/core';
-import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
-
-const div = (props = {}) => View({ ...props, as: 'div' });
-const button = (props = {}) => View({ ...props, as: 'button' });
-const input = (props = {}) => View({ ...props, isVoid: true, as: 'input' });
-const label = (props = {}) => View({ ...props, as: 'label' });
+import { Text, createComponent, useState, useRef, forwardRef } from '@dark-engine/core';
+import { createRoot, div, button, input, label, type SyntheticEvent } from '@dark-engine/platform-browser';
 
 class TodoTask {
   private static nextId = 0;
