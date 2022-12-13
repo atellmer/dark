@@ -6,7 +6,6 @@ import {
   detectIsArray,
   detectIsString,
   detectIsNumber,
-  detectIsUndefined,
 } from '../helpers';
 import { platform } from '../platform';
 import {
@@ -385,11 +384,9 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
     let n = 0;
 
     for (let i = 0; i < size; i++) {
-      const x = nextKeys[i - n];
-      const y = prevKeys[i - p];
-      const nextKey = !detectIsUndefined(x) ? x : null;
-      const prevKey = !detectIsUndefined(y) ? y : null;
-      const prevKeyFiber = keyedFibersMap[prevKey];
+      const nextKey = nextKeys[i - n] ?? null;
+      const prevKey = prevKeys[i - p] ?? null;
+      const prevKeyFiber = keyedFibersMap[prevKey] || null;
       const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
 
       if (nextKey !== prevKey) {
@@ -410,8 +407,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           result.push([prevKey, 'remove']);
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.add(prevKeyFiber);
-          idx--;
           n++;
+          idx--;
           size++;
         } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
           result.push([[nextKey, prevKey], 'move']);
