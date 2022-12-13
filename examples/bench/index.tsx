@@ -57,6 +57,34 @@ const buildData = (count, prefix = '') => {
     }));
 };
 
+function randomize(array: Array<any>) {
+  let currentIndex = array.length;
+  let randomIndex;
+
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+const shuffle = (count: number) => {
+  let nextId = 0;
+  const items = Array(count)
+    .fill(0)
+    .map(() => ({
+      id: ++nextId,
+      name: `item: ${nextId}`,
+      selected: false,
+    }));
+  const list = randomize(items);
+
+  return list;
+};
+
 type ListItem = { id: number; name: string; selected: boolean };
 
 type List = Array<ListItem>;
@@ -193,20 +221,20 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
+    state.list = buildData(10);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(1000, '!!!'));
+    state.list.unshift(...buildData(10, '!!!'));
     state.list = [...state.list];
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAppend = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
+    state.list.push(...buildData(10, '!!!'));
     state.list = [...state.list];
     measurer.start('append');
     forceUpdate();
@@ -267,12 +295,12 @@ const Bench = createComponent(() => {
   }, []);
   const handleShuffle = useCallback(() => {
     console.log('state.list', state.list);
-    state.list = [8, 2, 11, 1, 3, 6, 7, 13, 5, 10, 12].map(x => ({
-      id: x,
-      name: `item: ${x}`,
-      selected: false,
-    }));
-
+    // state.list = [8, 2, 11, 1, 3, 6, 7, 13, 5, 10, 12].map(x => ({
+    //   id: x,
+    //   name: `item: ${x}`,
+    //   selected: false,
+    // }));
+    state.list = shuffle(Math.floor(Math.random() * 20));
     console.log('state.list', state.list);
     measurer.start('shuffle');
     forceUpdate();

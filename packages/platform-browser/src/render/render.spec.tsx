@@ -1,6 +1,6 @@
 /** @jsx h */
 import { dom, createTestHostNode, createEmptyCommentString } from '@test-utils';
-import { h, createComponent, View, Text, Comment, DarkElement } from '@dark-engine/core';
+import { h, Fragment, createComponent, View, Text, Comment, useState, type DarkElement } from '@dark-engine/core';
 import { render } from './render';
 
 type Item = { id: number; name: string };
@@ -14,7 +14,7 @@ let nextId = 0;
 const generateItems = (count: number) => {
   return Array(count)
     .fill(0)
-    .map(x => ({
+    .map(_ => ({
       id: ++nextId,
       name: nextId.toString(),
     }));
@@ -143,33 +143,33 @@ describe('[render]', () => {
 
   test('conditional rendering works correctly with nullable elements', () => {
     type AppProps = {
-      flag: boolean;
+      show: boolean;
     };
 
     const render$ = (props: AppProps) => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ flag }) => {
-      return [div({ slot: Text('header') }), flag && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
+    const App = createComponent<AppProps>(({ show }) => {
+      return [div({ slot: Text('header') }), show && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
     });
 
-    const content = (flag: boolean) => dom`
+    const content = (show: boolean) => dom`
       <div>header</div>
-      ${flag ? '<div>hello</div>' : emptyComment}
+      ${show ? '<div>hello</div>' : emptyComment}
       <div>footer</div>
     `;
 
-    render$({ flag: false });
+    render$({ show: false });
     expect(host.innerHTML).toBe(content(false));
 
-    render$({ flag: true });
+    render$({ show: true });
     expect(host.innerHTML).toBe(content(true));
 
-    render$({ flag: false });
+    render$({ show: false });
     expect(host.innerHTML).toBe(content(false));
 
-    render$({ flag: true });
+    render$({ show: true });
     expect(host.innerHTML).toBe(content(true));
   });
 
@@ -182,12 +182,12 @@ describe('[render]', () => {
       slot: DarkElement;
     };
 
-    const itemAttrName = 'data-item';
+    const itemAttr = 'data-item';
     let items = [];
 
     const ListItem = createComponent<ListItemProps>(({ slot }) => {
       return div({
-        [itemAttrName]: true,
+        [itemAttr]: true,
         slot,
       });
     });
@@ -211,7 +211,7 @@ describe('[render]', () => {
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
-      ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
+      ${items.length > 0 ? items.map(x => `<div ${itemAttr}="true">${x.name}</div>`).join('') : emptyComment}
       <div>footer</div>
     `;
 
@@ -222,7 +222,7 @@ describe('[render]', () => {
       items = [...generateItems(count), ...items];
     };
     const insertNodesInDifferentPlaces = () => {
-      const [item1, item2, item3, ...rest] = items;
+      const [item1, item2, _, ...rest] = items;
 
       items = [...generateItems(5), item1, item2, ...generateItems(2), ...rest];
     };
@@ -255,7 +255,7 @@ describe('[render]', () => {
       items = generateItems(5);
       render$();
 
-      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const node = nodes[0];
       const expected = node.textContent;
       const count = 4;
@@ -263,7 +263,7 @@ describe('[render]', () => {
       addItemsToStart(count);
       render$();
 
-      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const newNode = newNodes[count];
 
       expect(node).toStrictEqual(newNode);
@@ -302,13 +302,13 @@ describe('[render]', () => {
       items = generateItems(10);
       render$();
 
-      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const node = nodes[8];
       const expected = node.textContent;
 
       removeItem(6);
       render$();
-      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
 
       expect(node).toBe(newNodes[7]);
       expect(node.textContent).toBe(expected);
@@ -327,7 +327,7 @@ describe('[render]', () => {
       items = generateItems(10);
       render$();
 
-      const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const nodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const nodeOne = nodes[1];
       const nodeTwo = nodes[8];
 
@@ -337,7 +337,7 @@ describe('[render]', () => {
       swapItems();
       render$();
 
-      const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
+      const newNodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const newNodeOne = newNodes[8];
       const newNodeTwo = newNodes[1];
 
@@ -650,7 +650,7 @@ describe('[render]', () => {
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
   });
 
-  test('can render app to more than one host', () => {
+  test('can render app into more than one host', () => {
     const hostOne = document.createElement('div');
     const hostTwo = document.createElement('div');
 
@@ -783,5 +783,96 @@ describe('[render]', () => {
     remove();
     render$();
     expect(host.innerHTML).toBe(emptyComment);
+  });
+
+  test(`conditional rendering works correctly with hook's update`, () => {
+    const content$ = (show: boolean) => dom`
+      ${
+        show
+          ? `
+        <div>1*</div>
+        <div>2*</div>
+        <div>3*</div>
+      `
+          : `${createEmptyCommentString()}`
+      }
+      <button>toggle</button>
+    `;
+    const content = (show1: boolean, show2: boolean) => dom`
+      ${content$(show1)}
+      ${content$(show2)}
+    `;
+
+    let setShow1: (value: boolean) => void;
+    let setShow2: (value: boolean) => void;
+
+    type BoxProps = {
+      n: number;
+    };
+
+    const Box = createComponent<BoxProps>(({ n }) => {
+      const [show, setShow] = useState(true);
+
+      const handleClick = () => setShow(x => !x);
+
+      if (n === 1) {
+        setShow1 = setShow;
+      } else if (n === 2) {
+        setShow2 = setShow;
+      }
+
+      return (
+        <>
+          {show && (
+            <>
+              <div>1*</div>
+              <div>2*</div>
+              <div>3*</div>
+            </>
+          )}
+          <button onClick={handleClick}>toggle</button>
+        </>
+      );
+    });
+
+    const App = createComponent(() => {
+      return (
+        <>
+          <Box n={1} />
+          <Box n={2} />
+        </>
+      );
+    });
+
+    render(<App />, host);
+    expect(host.innerHTML).toBe(content(true, true));
+
+    setShow1(false);
+    expect(host.innerHTML).toBe(content(false, true));
+
+    setShow2(false);
+    expect(host.innerHTML).toBe(content(false, false));
+
+    setShow1(true);
+    expect(host.innerHTML).toBe(content(true, false));
+
+    setShow2(true);
+    expect(host.innerHTML).toBe(content(true, true));
+
+    setShow1(false);
+    setShow2(false);
+    expect(host.innerHTML).toBe(content(false, false));
+
+    setShow1(true);
+    setShow2(true);
+    expect(host.innerHTML).toBe(content(true, true));
+
+    setShow1(false);
+    setShow2(false);
+    expect(host.innerHTML).toBe(content(false, false));
+
+    setShow1(true);
+    setShow2(true);
+    expect(host.innerHTML).toBe(content(true, true));
   });
 });
