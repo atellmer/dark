@@ -1,6 +1,6 @@
 import { useState } from '../use-state';
+import { useMemo } from '../use-memo';
 import { TaskPriority } from '../constants';
-import { batch } from '../batch';
 
 type UseDeferredValueOprions = {
   timeoutMs: number;
@@ -12,11 +12,11 @@ function useDeferredValue<T>(value: T, options?: UseDeferredValueOprions): T {
     priority: TaskPriority.LOW,
     timeoutMs,
   });
+  const scope = useMemo(() => ({ value }), []);
 
-  if (value !== deferredValue) {
-    batch(() => {
-      setDeferredValue(value);
-    });
+  if (scope.value !== value && value !== deferredValue) {
+    scope.value = value;
+    setDeferredValue(value);
   }
 
   return deferredValue;

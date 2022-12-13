@@ -143,14 +143,10 @@ const App = createComponent<AppProps>(props => {
 
 const start = new Date().getTime();
 
-function update() {
+function run() {
   render(<App elapsed={new Date().getTime() - start} />, domElement);
 
-  requestAnimationFrame(update);
-}
-
-function run() {
-  requestAnimationFrame(update);
+  requestAnimationFrame(run);
 }
 
 run();
