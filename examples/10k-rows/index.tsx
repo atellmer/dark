@@ -272,7 +272,3 @@ function forceUpdate() {
 }
 
 forceUpdate();
-
-document.getElementById('button').addEventListener('click', () => {
-  forceUpdate();
-})
