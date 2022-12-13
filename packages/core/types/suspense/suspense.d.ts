@@ -14,7 +14,8 @@ declare const Suspense: (
     }>
   > &
     import('../shared').KeyProps &
-    import('../shared').RefProps<unknown>,
+    import('../shared').RefProps<unknown> &
+    import('../shared').FlagProps,
   ref?: import('..').Ref<unknown>,
 ) => import('../component/component').ComponentFactory<
   {
@@ -25,7 +26,8 @@ declare const Suspense: (
     }>
   > &
     import('../shared').KeyProps &
-    import('../shared').RefProps<unknown>,
+    import('../shared').RefProps<unknown> &
+    import('../shared').FlagProps,
   any
 >;
 export { SuspenseContext, Suspense };

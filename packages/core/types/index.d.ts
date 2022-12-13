@@ -1,5 +1,5 @@
 export * from './component';
-export { createContext } from './context';
+export { createContext, useContext } from './context';
 export { h } from './element';
 export * from './fiber';
 export { Fragment } from './fragment';
@@ -12,7 +12,6 @@ export * from './scope';
 export * from './shared';
 export { Suspense } from './suspense';
 export { useCallback } from './use-callback';
-export { useContext } from './use-context';
 export { useDeferredValue } from './use-deferred-value';
 export { useEffect } from './use-effect';
 export { useLayoutEffect } from './use-layout-effect';

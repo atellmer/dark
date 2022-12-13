@@ -1,11 +1,12 @@
-import { SlotProps, RefProps, KeyProps } from '../shared';
+import { SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
 export declare type ViewDef = {
   as: string;
   isVoid?: boolean;
   [prop: string]: any;
 } & Partial<SlotProps> &
   RefProps &
-  KeyProps;
+  KeyProps &
+  FlagProps;
 export declare enum NodeType {
   TAG = 'TAG',
   TEXT = 'TEXT',

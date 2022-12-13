@@ -5,8 +5,11 @@ declare function lazy<P, R = unknown>(
   }>,
   done?: () => void,
 ): (
-  props: P & import('..').KeyProps & import('..').RefProps<unknown> & import('..').RefProps<R>,
-) => import('../component/component').ComponentFactory<P & import('..').KeyProps & import('..').RefProps<unknown>, R>;
+  props: P & import('..').KeyProps & import('..').RefProps<unknown> & import('..').FlagProps & import('..').RefProps<R>,
+) => import('../component/component').ComponentFactory<
+  P & import('..').KeyProps & import('..').RefProps<unknown> & import('..').FlagProps,
+  R
+>;
 declare const detectIsLazy: (factory: unknown) => boolean;
 declare function fetchModule(
   dynamic: () => Promise<{

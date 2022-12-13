@@ -3,4 +3,5 @@ declare type CreateContextOptions = {
   displayName?: string;
 };
 declare function createContext<T>(defaultValue: T, options?: CreateContextOptions): Context<T>;
-export { createContext };
+declare function useContext<T>(context: Context<T>): T;
+export { createContext, useContext };

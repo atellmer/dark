@@ -9,7 +9,7 @@ declare const detectIsArray: (o: any) => o is any[];
 declare const detectIsNull: (o: any) => o is null;
 declare const detectIsEmpty: (o: any) => boolean;
 declare const detectIsFalsy: (o: any) => boolean;
-declare function error(str: string): void;
+declare function error(...args: Array<any>): void;
 declare function flatten<T = any>(source: Array<NestedArray<T>>): Array<T>;
 declare function getTime(): number;
 declare function keyBy<T = any>(

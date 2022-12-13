@@ -6,7 +6,8 @@ declare const Fragment: (
     }>
   > &
     KeyProps &
-    import('../shared').RefProps<unknown>,
+    import('../shared').RefProps<unknown> &
+    import('../shared').FlagProps,
   ref?: import('..').Ref<unknown>,
 ) => import('../component/component').ComponentFactory<
   Required<
@@ -15,7 +16,8 @@ declare const Fragment: (
     }>
   > &
     KeyProps &
-    import('../shared').RefProps<unknown>,
+    import('../shared').RefProps<unknown> &
+    import('../shared').FlagProps,
   any
 >;
 declare const detectIsFragment: (factory: unknown) => boolean;

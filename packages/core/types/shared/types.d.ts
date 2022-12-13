@@ -1,6 +1,7 @@
 import type { ComponentFactory } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
 import { type Ref } from '../ref';
+import { type Flag } from '../constants';
 export declare type DarkElement = NestedArray<
   ComponentFactory | VirtualNode | RenderProps | Nullable | string | number
 >;
@@ -21,4 +22,7 @@ export declare type RefProps<T = unknown> = {
 };
 export declare type KeyProps = {
   key?: DarkElementKey;
+};
+export declare type FlagProps = {
+  flag?: Record<Flag, boolean>;
 };

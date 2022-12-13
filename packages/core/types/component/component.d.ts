@@ -23,7 +23,7 @@ declare function createComponent<P, R = unknown>(
   type: CreateElement<P, R>,
   options?: ComponentOptions<P>,
 ): (
-  props?: P & import('../shared').KeyProps & import('../shared').RefProps<unknown>,
+  props?: P & import('../shared').KeyProps & import('../shared').RefProps<unknown> & import('../shared').FlagProps,
   ref?: Ref<R>,
 ) => ComponentFactory<P & StandardComponentProps>;
 declare const detectIsComponentFactory: (factory: unknown) => factory is ComponentFactory<any, any>;
