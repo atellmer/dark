@@ -74,7 +74,7 @@
     <div id="dark"></div>
     <script>
       const { View, Text, createComponent, useEffect, useReactiveState } = DarkCore;
-      const { createRoot } = DarkPlatformBrowser;
+      const { createRoot, ul, li } = DarkPlatformBrowser;
 
       const token = () => Math.random().toString(36).substring(2, 10);
       const list = [];
@@ -107,8 +107,6 @@
       }
 
       window.runDark = () => {
-        const ul = (props = {}) => View({ ...props, as: 'ul' });
-        const li = (props = {}) => View({ ...props, as: 'li' });
         const App = createComponent(() => {
           const state = useReactiveState({ list });
 
@@ -125,7 +123,7 @@
             go();
           }, []);
 
-          return ul({ slot: state.list.map(item => li({ slot: Text(item.name) }))})
+          return ul({ slot: state.list.map(item => li({ slot: Text(item.name) }))});
         });
 
         createRoot(document.getElementById('dark')).render(App());

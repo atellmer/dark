@@ -1,8 +1,8 @@
-import { h, createComponent, useState, useEffect, TagVirtualNodeFactory } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import { h, Fragment, createComponent, useState, useEffect, type DarkElement } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
 
 type TimerProps = {
-  slot: (value: number) => TagVirtualNodeFactory;
+  slot: (value: number) => DarkElement;
 };
 
 const Timer = createComponent<TimerProps>(({ slot }) => {
@@ -20,10 +20,12 @@ const Timer = createComponent<TimerProps>(({ slot }) => {
 });
 
 const App = createComponent(() => {
-  return [
-    <div>Timer component is just a logic component without view...</div>,
-    <Timer>{seconds => <div>timer: {seconds}</div>}</Timer>,
-  ];
+  return (
+    <>
+      <div>Timer component is just a logic component without view...</div>,
+      <Timer>{seconds => <div>timer: {seconds}</div>}</Timer>,
+    </>
+  );
 });
 
-render(App(), document.getElementById('root'));
+createRoot(document.getElementById('root')).render(App());

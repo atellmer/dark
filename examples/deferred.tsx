@@ -42,7 +42,7 @@ const App = createComponent(() => {
 
   return (
     <div>
-      <input value={name} autoFocus onInput={handleInput} />
+      <input value={name} placeholder='type 4444 quickly...' autoFocus onInput={handleInput} />
       <ProductList products={filteredProducts} />
     </div>
   );
