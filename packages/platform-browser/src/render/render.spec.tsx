@@ -1,6 +1,17 @@
 /** @jsx h */
 import { dom, createTestHostNode, createEmptyCommentString } from '@test-utils';
-import { h, Fragment, createComponent, View, Text, Comment, useState, type DarkElement } from '@dark-engine/core';
+import {
+  h,
+  Fragment,
+  createComponent,
+  View,
+  Text,
+  Comment,
+  useState,
+  memo,
+  useUpdate,
+  type DarkElement,
+} from '@dark-engine/core';
 import { render } from './render';
 
 type Item = { id: number; name: string };
@@ -397,16 +408,6 @@ describe('[render]', () => {
 
       newItems[1] = items[items.length - 2];
       newItems[newItems.length - 2] = items[1];
-      items = newItems;
-    };
-    const moveItems = (idx: number, count: number) => {
-      const newItems = [...items];
-      const temps = Array(count)
-        .fill(null)
-        .map((_, x) => newItems[idx + x]);
-      newItems.splice(idx, temps.length);
-      newItems.splice(idx > newItems.length - temps.length ? 0 : idx + 1, 0, ...temps);
-
       items = newItems;
     };
 
@@ -874,5 +875,517 @@ describe('[render]', () => {
     setShow1(true);
     setShow2(true);
     expect(host.innerHTML).toBe(content(true, true));
+  });
+
+  test('can move elements', () => {
+    type AppProps = {
+      items: Array<Item>;
+    };
+
+    let items = generateItems(10);
+
+    const content = (items: Array<Item>) => dom`
+      ${items.map(x => `<div>${x.name}</div>`).join('')}
+    `;
+
+    const prepend = (n: number) => {
+      items = [...generateItems(n), ...items];
+    };
+
+    const append = (n: number) => {
+      items = [...items, ...generateItems(n)];
+    };
+
+    const remove = (n: number) => {
+      items.splice(n, 1);
+      items = [...items];
+    };
+
+    const shuffle = () => {
+      items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
+        id: x,
+        name: x + '',
+      }));
+    };
+
+    const App = createComponent<AppProps>(({ items }) => {
+      return items.map(x => <div key={x.id}>{x.name}</div>);
+    });
+
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    append(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(4);
+    append(3);
+    remove(9);
+    remove(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+  });
+
+  test('can move components', () => {
+    type AppProps = {
+      items: Array<Item>;
+    };
+
+    type ItemProps = {
+      item: Item;
+    };
+
+    let items = generateItems(10);
+
+    const content = (items: Array<Item>) => dom`
+      ${items.map(x => `<div>${x.name}</div>`).join('')}
+    `;
+
+    const prepend = (n: number) => {
+      items = [...generateItems(n), ...items];
+    };
+
+    const append = (n: number) => {
+      items = [...items, ...generateItems(n)];
+    };
+
+    const remove = (n: number) => {
+      items.splice(n, 1);
+      items = [...items];
+    };
+
+    const shuffle = () => {
+      items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
+        id: x,
+        name: x + '',
+      }));
+    };
+
+    const Item = createComponent<ItemProps>(({ item }) => {
+      return <div>{item.name}</div>;
+    });
+
+    const App = createComponent<AppProps>(({ items }) => {
+      return items.map(x => <Item key={x.id} item={x} />);
+    });
+
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    append(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(4);
+    append(3);
+    remove(9);
+    remove(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+  });
+
+  test('can move memo components', () => {
+    type AppProps = {
+      items: Array<Item>;
+    };
+
+    type ItemProps = {
+      item: Item;
+    };
+
+    let items = generateItems(10);
+
+    const content = (items: Array<Item>) => dom`
+      ${items.map(x => `<div>${x.name}</div>`).join('')}
+    `;
+
+    const prepend = (n: number) => {
+      items = [...generateItems(n), ...items];
+    };
+
+    const append = (n: number) => {
+      items = [...items, ...generateItems(n)];
+    };
+
+    const remove = (n: number) => {
+      items.splice(n, 1);
+      items = [...items];
+    };
+
+    const shuffle = () => {
+      items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
+        id: x,
+        name: x + '',
+      }));
+    };
+
+    const Item = memo(
+      createComponent<ItemProps>(({ item }) => {
+        return <div>{item.name}</div>;
+      }),
+    );
+
+    const App = createComponent<AppProps>(({ items }) => {
+      return items.map(x => <Item key={x.id} item={x} />);
+    });
+
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    append(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(4);
+    append(3);
+    remove(9);
+    remove(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+  });
+
+  test('can move components with child arrays', () => {
+    type AppProps = {
+      items: Array<Item>;
+    };
+
+    type ItemProps = {
+      item: Item;
+    };
+
+    let items = generateItems(10);
+
+    const content = (items: Array<Item>) => dom`
+      ${items
+        .map(
+          x => dom`
+        <div>${x.name}</div>
+        <div>1 *</div>
+        <div>2 *</div>
+      `,
+        )
+        .join('')}
+    `;
+
+    const prepend = (n: number) => {
+      items = [...generateItems(n), ...items];
+    };
+
+    const append = (n: number) => {
+      items = [...items, ...generateItems(n)];
+    };
+
+    const remove = (n: number) => {
+      items.splice(n, 1);
+      items = [...items];
+    };
+
+    const shuffle = () => {
+      items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
+        id: x,
+        name: x + '',
+      }));
+    };
+
+    const Item = createComponent<ItemProps>(({ item }) => {
+      return (
+        <>
+          <div>{item.name}</div>
+          <div>1 *</div>
+          <div>2 *</div>
+        </>
+      );
+    });
+
+    const App = createComponent<AppProps>(({ items }) => {
+      return items.map(x => <Item key={x.id} item={x} />);
+    });
+
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    append(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    prepend(4);
+    append(3);
+    remove(9);
+    remove(2);
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+
+    shuffle();
+    render(<App items={items} />, host);
+    expect(host.innerHTML).toBe(content(items));
+  });
+
+  test(`can move components with child arrays hook's update`, () => {
+    type AppProps = {
+      show?: boolean;
+    };
+
+    type ItemProps = {
+      item: Item;
+    };
+
+    let items = generateItems(10);
+
+    const content = (items: Array<Item>, show: boolean) => dom`
+      ${
+        show
+          ? dom`
+          <div>header 1</div>
+          <div>header 2</div>
+      `
+          : emptyComment
+      }
+      ${items
+        .map(
+          x => dom`
+        <div>${x.name}</div>
+        <div>1 *</div>
+        <div>2 *</div>
+      `,
+        )
+        .join('')}
+      ${
+        show
+          ? dom`
+          <div>footer 1</div>
+          <div>footer 2</div>
+      `
+          : emptyComment
+      }
+    `;
+
+    const prepend = (n: number) => {
+      items = [...generateItems(n), ...items];
+    };
+
+    const append = (n: number) => {
+      items = [...items, ...generateItems(n)];
+    };
+
+    const remove = (n: number) => {
+      items.splice(n, 1);
+      items = [...items];
+    };
+
+    const shuffle = () => {
+      items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
+        id: x,
+        name: x + '',
+      }));
+    };
+
+    let updateList: () => void;
+
+    const Item = createComponent<ItemProps>(({ item }) => {
+      return (
+        <>
+          <div>{item.name}</div>
+          <div>1 *</div>
+          <div>2 *</div>
+        </>
+      );
+    });
+
+    const List = memo(
+      createComponent(() => {
+        const update = useUpdate();
+
+        updateList = update;
+
+        return items.map(x => <Item key={x.id} item={x} />);
+      }),
+    );
+
+    const App = createComponent<AppProps>(({ show }) => {
+      return (
+        <>
+          {show && (
+            <>
+              <div>header 1</div>
+              <div>header 2</div>
+            </>
+          )}
+          <List />
+          {show && (
+            <>
+              <div>footer 1</div>
+              <div>footer 2</div>
+            </>
+          )}
+        </>
+      );
+    });
+
+    const render$ = (props: AppProps) => {
+      render(<App {...props} />, host);
+    };
+
+    render$({ show: false });
+    expect(host.innerHTML).toBe(content(items, false));
+
+    render$({ show: true });
+    expect(host.innerHTML).toBe(content(items, true));
+
+    prepend(2);
+    updateList();
+    expect(host.innerHTML).toBe(content(items, true));
+
+    render$({ show: true });
+    expect(host.innerHTML).toBe(content(items, true));
+
+    append(2);
+    updateList();
+    expect(host.innerHTML).toBe(content(items, true));
+
+    render$({ show: true });
+    expect(host.innerHTML).toBe(content(items, true));
+
+    render$({ show: false });
+    shuffle();
+    updateList();
+    expect(host.innerHTML).toBe(content(items, false));
+
+    render$({ show: true });
+    remove(9);
+    remove(2);
+    updateList();
+    expect(host.innerHTML).toBe(content(items, true));
+
+    shuffle();
+    updateList();
+    expect(host.innerHTML).toBe(content(items, true));
+
+    render$({ show: true });
+    expect(host.innerHTML).toBe(content(items, true));
+
+    render$({ show: false });
+    expect(host.innerHTML).toBe(content(items, false));
+  });
+
+  test('can move items in arrays', () => {
+    const content$ = (items: Array<Item>) => dom`
+      ${items.map(x => ` <div>${x.name}</div>`).join('')}
+    `;
+    const content = (items: Array<Item>) => dom`
+      <div>
+        <div>header 1</div>
+        <div>header 2</div>
+        ${content$(items)}
+        ${content$(items)}
+        ${content$(items)}
+        ${content$(items)}
+        ${content$(items)}
+        ${content$(items)}
+        <div>footer</div>
+      </div>
+    `;
+
+    type AppProps = {
+      items: Array<Item>;
+    };
+
+    let items = generateItems(10);
+
+    const moveItems = (idx: number, count: number) => {
+      const newItems = [...items];
+      const temps = Array(count)
+        .fill(null)
+        .map((_, x) => newItems[idx + x]);
+      newItems.splice(idx, temps.length);
+      newItems.splice(idx > newItems.length - temps.length ? 0 : idx + 1, 0, ...temps);
+
+      items = newItems;
+    };
+
+    const List = createComponent<AppProps>(({ items }) => {
+      return items.map(x => {
+        return <div key={x.id}>{x.name}</div>;
+      });
+    });
+
+    const App = createComponent<AppProps>(({ items }) => {
+      return (
+        <div>
+          <div>header 1</div>
+          <div>header 2</div>
+          <List items={items} />
+          {items.map(x => {
+            return <div key={x.id + ':0'}>{x.name}</div>;
+          })}
+          {items.map(x => {
+            return <div key={x.id + ':1'}>{x.name}</div>;
+          })}
+          <List items={items} />
+          <List items={items} />
+          <>
+            {items.map(x => {
+              return <div key={x.id}>{x.name}</div>;
+            })}
+          </>
+          <div>footer</div>
+        </div>
+      );
+    });
+
+    const render$ = () => {
+      render(<App items={items} />, host);
+    };
+
+    render$();
+    expect(host.innerHTML).toBe(content(items));
+
+    moveItems(0, 3);
+    render$();
+    expect(host.innerHTML).toBe(content(items));
   });
 });

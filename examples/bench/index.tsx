@@ -8,9 +8,6 @@ import {
   useCallback,
   SplitUpdate,
   useSplitUpdate,
-  useEffect,
-  useState,
-  Flag,
 } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
@@ -57,34 +54,6 @@ const buildData = (count, prefix = '') => {
     }));
 };
 
-function randomize(array: Array<any>) {
-  let currentIndex = array.length;
-  let randomIndex;
-
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-  }
-
-  return array;
-}
-
-const shuffle = (count: number) => {
-  let nextId = 0;
-  const items = Array(count)
-    .fill(0)
-    .map(() => ({
-      id: ++nextId,
-      name: `item: ${nextId}`,
-      selected: false,
-    }));
-  const list = randomize(items);
-
-  return list;
-};
-
 type ListItem = { id: number; name: string; selected: boolean };
 
 type List = Array<ListItem>;
@@ -104,15 +73,14 @@ type HeaderProps = {
   onInsertDifferent: () => void;
   onUpdateAll: () => void;
   onSwap: () => void;
-  onMove: () => void;
-  onShuffle: () => void;
   onClear: () => void;
 };
 
 const Header = createComponent<HeaderProps>(
-  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onMove, onShuffle, onClear }) => {
+  ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onClear }) => {
     return div({
-      class: 'header',
+      style:
+        'width: 100%; height: 64px; background-color: blueviolet; display: flex; align-items: center; padding: 16px;',
       slot: [
         button({
           slot: Text('create 10000 rows'),
@@ -139,14 +107,6 @@ const Header = createComponent<HeaderProps>(
           onClick: onSwap,
         }),
         button({
-          slot: Text('move row'),
-          onClick: onMove,
-        }),
-        button({
-          slot: Text('shuffle'),
-          onClick: onShuffle,
-        }),
-        button({
           slot: Text('clear rows'),
           onClick: onClear,
         }),
@@ -165,13 +125,15 @@ const MemoHeader = memo<HeaderProps>(Header);
 
 type RowProps = {
   id: number;
-  name: string;
-  selected: boolean;
   onRemove: (id: number) => void;
   onHighlight: (id: number) => void;
 };
 
-const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlight }) => {
+const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
+  const { name, selected } = useSplitUpdate<ListItem>(
+    map => map[id],
+    x => `${x.name}:${x.selected}`,
+  );
   const handleRemove = useCallback(() => onRemove(id), []);
   const handleHighlight = useCallback(() => onHighlight(id), []);
 
@@ -188,7 +150,7 @@ const Row = createComponent<RowProps>(({ id, name, selected, onRemove, onHighlig
   );
 });
 
-const MemoRow = memo<RowProps>(Row, (p, n) => p.name !== n.name || p.selected !== n.selected);
+const MemoRow = memo<RowProps>(Row);
 
 type ListProps = {
   items: List;
@@ -201,16 +163,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
     <table class='table'>
       <tbody>
         {items.map(item => {
-          return (
-            <MemoRow
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              selected={item.selected}
-              onRemove={onRemove}
-              onHighlight={onHighlight}
-            />
-          );
+          return <MemoRow key={item.id} id={item.id} onRemove={onRemove} onHighlight={onHighlight} />;
         })}
       </tbody>
     </table>
@@ -221,20 +174,20 @@ const MemoList = memo(List);
 
 const Bench = createComponent(() => {
   const handleCreate = useCallback(() => {
-    state.list = buildData(10);
+    state.list = buildData(10000);
     measurer.start('create');
     forceUpdate();
     measurer.stop();
   }, []);
   const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(10, '!!!'));
+    state.list.unshift(...buildData(1000, '!!!'));
     state.list = [...state.list];
     measurer.start('prepend');
     forceUpdate();
     measurer.stop();
   }, []);
   const handleAppend = useCallback(() => {
-    state.list.push(...buildData(10, '!!!'));
+    state.list.push(...buildData(1000, '!!!'));
     state.list = [...state.list];
     measurer.start('append');
     forceUpdate();
@@ -278,34 +231,6 @@ const Bench = createComponent(() => {
     forceUpdate();
     measurer.stop();
   }, []);
-  const handleMove = useCallback(() => {
-    if (state.list.length === 0) return;
-    const idx = state.list.findIndex(x => x.id === 1);
-    if (idx === -1) return;
-    const count = 3;
-    const temps = Array(count)
-      .fill(null)
-      .map((_, x) => state.list[idx + x]);
-    state.list.splice(idx, temps.length);
-    state.list.splice(idx > state.list.length + (count - 1) - temps.length ? 0 : idx + 1, 0, ...temps);
-    state.list = [...state.list];
-    measurer.start('move');
-    forceUpdate();
-    measurer.stop();
-  }, []);
-  const handleShuffle = useCallback(() => {
-    console.log('state.list', state.list);
-    // state.list = [8, 2, 11, 1, 3, 6, 7, 13, 5, 10, 12].map(x => ({
-    //   id: x,
-    //   name: `item: ${x}`,
-    //   selected: false,
-    // }));
-    state.list = shuffle(Math.floor(Math.random() * 20));
-    console.log('state.list', state.list);
-    measurer.start('shuffle');
-    forceUpdate();
-    measurer.stop();
-  }, []);
   const handleClear = useCallback(() => {
     state.list = [];
     measurer.start('clear');
@@ -322,14 +247,16 @@ const Bench = createComponent(() => {
         onInsertDifferent={handleInsertDifferent}
         onUpdateAll={handleUpdateAll}
         onSwap={handleSwap}
-        onMove={handleMove}
-        onShuffle={handleShuffle}
         onClear={handleClear}
       />
-      <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      <SplitUpdate list={state.list} getKey={getKey}>
+        <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
+      </SplitUpdate>
     </>
   );
 });
+
+const getKey = (x: ListItem) => x.id;
 
 const root = createRoot(document.getElementById('root'));
 

@@ -298,14 +298,19 @@ function move(fiber: Fiber<Element>) {
   const parentNativeElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
   const elementIdx = fiber.elementIdx;
+  let idx = 0;
   const move = () => {
+    for (let i = 1; i < sourceNodes.length; i++) {
+      parentNativeElement.removeChild(parentNativeElement.childNodes[elementIdx + 1]);
+    }
+
     parentNativeElement.replaceChild(sourceFragment, parentNativeElement.childNodes[elementIdx]);
   };
 
-  parentNativeElement.insertBefore(document.createComment(elementIdx + ''), sourceNode);
-
   for (const node of sourceNodes) {
+    parentNativeElement.insertBefore(document.createComment(`${elementIdx}:${idx}`), node);
     sourceFragment.appendChild(node);
+    idx++;
   }
 
   moves.push(move);

@@ -40,6 +40,8 @@ import {
   getVirtualNodeFactoryKey,
   getTagVirtualNodeFlag,
   getVirtualNodeFactoryFlag,
+  detectIsTextVirtualNode,
+  detectIsCommentVirtualNode,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
@@ -118,18 +120,7 @@ class Fiber<N = NativeElement> {
   }
 
   public incrementChildrenElementsCount(count = 1, force = false) {
-    if (!this.parent) return;
-    const fromUpdate = isUpdateHookZone.get();
-    const wipFiber = wipRootStore.get();
-    const stop = fromUpdate && wipFiber.parent === this.parent;
-
-    if (fromUpdate && stop && !force) return;
-
-    this.parent.childrenElementsCount += count;
-
-    if (!this.parent.nativeElement) {
-      this.parent.incrementChildrenElementsCount(count);
-    }
+    incrementChildrenElementsCount(this, count, force);
   }
 
   public setError(error: Error) {
@@ -278,6 +269,29 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     performedNextFiber: nextFiber,
     performedInstance: instance,
   };
+}
+
+function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) {
+  if (!fiber.parent) return;
+  const fromUpdate = isUpdateHookZone.get();
+  const wipFiber = wipRootStore.get();
+  const stop = fromUpdate && wipFiber.parent === fiber.parent;
+
+  if (
+    detectIsTextVirtualNode(fiber.instance) ||
+    detectIsCommentVirtualNode(fiber.instance) ||
+    (detectIsTagVirtualNode(fiber.instance) && fiber.instance.children.length === 0)
+  ) {
+    fiber.childrenElementsCount = 1;
+  }
+
+  if (fromUpdate && stop && !force) return;
+
+  fiber.parent.childrenElementsCount += count;
+
+  if (!fiber.parent.nativeElement) {
+    fiber.parent.incrementChildrenElementsCount(count);
+  }
 }
 
 function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
