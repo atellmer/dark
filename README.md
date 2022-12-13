@@ -89,11 +89,8 @@ createRoot(document.getElementById('root')).render(<App />);
 This code can be rewritten without using JSX like this:
 
 ```tsx
-import { View, Text, createComponent, useReactiveState } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
-
-const div = (props) => View({ ...props, as: 'div' });
-const input = (props) => View({ ...props, as: 'input' });
+import { Text, createComponent, useReactiveState } from '@dark-engine/core';
+import { createRoot, div, input } from '@dark-engine/platform-browser';
 
 const App = createComponent(() => {
   const state = useReactiveState({ name: 'Alex' });
@@ -130,6 +127,7 @@ createRoot(document.getElementById('root')).render(App());
 - [Context](#context)
 - [Animations](#animations)
 - [Code splitting](#code-splitting)
+- [Factory](#factory)
 - [Styles](#styles)
 - [Portals](#portals)
 - [Others](#others)
@@ -172,7 +170,7 @@ import {
   useSplitUpdate,
   useSyncExternalStore,
 } from '@dark-engine/core';
-import { render, createRoot, createPortal, useStyle } from '@dark-engine/platform-browser';
+import { render, createRoot, createPortal, factory, useStyle } from '@dark-engine/platform-browser';
 ```
 ## A little more about the core concepts...
 
@@ -1029,6 +1027,45 @@ const App = createComponent(() => {
     </>
   );
 });
+```
+<a name="factory"></a>
+
+## Factory
+This is a function that creates elements based on their name if you don't use JSX.
+
+```tsx
+import { factory } from '@dark-engine/platform-browser';
+```
+
+```tsx
+const div = factory('div'); // creates <div></div>
+const customElement = factory('custom-element'); // creates <custom-element></custom-element>
+```
+
+For convenience, Dark exports all html and svg tags
+
+```tsx
+import { div, button, input, svg } from '@dark-engine/platform-browser'; // and others
+```
+
+You can use it like this
+
+```tsx
+return (
+  div({
+    slot: button({
+      class: 'awesome-button',
+      slot: Text('click me'),
+      onClick: () => console.log('click'),
+    })
+  })
+)
+
+/*
+<div>
+  <button class="awesome-button">Click me</button>
+</div>
+*/
 ```
 
 <a name="styles"></a>
