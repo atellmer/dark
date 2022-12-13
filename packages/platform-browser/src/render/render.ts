@@ -15,7 +15,7 @@ import {
   nextUnitOfWorkStore,
   fiberMountStore,
   TaskPriority,
-  createEmptyVirtualNode,
+  createReplacer,
   isInsertionEffectsZone,
   isLayoutEffectsZone,
 } from '@dark-engine/core';
@@ -62,7 +62,7 @@ function render(element: DarkElement, container: Element) {
       nativeElement: container,
       instance: new TagVirtualNode({
         name: ROOT,
-        children: flatten([element || createEmptyVirtualNode()]) as Array<VirtualNodeFactory | ComponentFactory>,
+        children: flatten([element || createReplacer()]) as Array<VirtualNodeFactory | ComponentFactory>,
       }),
       alternate: currentRoot,
       effectTag: isMounted ? EffectTag.UPDATE : EffectTag.CREATE,

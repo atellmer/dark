@@ -1,11 +1,10 @@
 export const ROOT = 'root';
-export const EMPTY_NODE = 'dark:matter';
+export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';
 export const TYPE = 'type';
 export const ATTR_KEY = 'key';
 export const ATTR_REF = 'ref';
 export const ATTR_FLAG = 'flag';
-export const PARTIAL_UPDATE = 'partial-update';
 
 export enum TaskPriority {
   ANIMATION = 3,

@@ -1,5 +1,5 @@
 /** @jsx h */
-import { dom, createEmptyCommentString } from '@test-utils';
+import { dom, createReplacerString } from '@test-utils';
 import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { createComponent } from '../component';
@@ -33,7 +33,7 @@ describe('[lazy]', () => {
     const App = createComponent(() => <LazyComponent />);
 
     render(App(), host);
-    expect(host.innerHTML).toBe(createEmptyCommentString());
+    expect(host.innerHTML).toBe(createReplacerString());
     jest.runAllTimers();
   });
 });

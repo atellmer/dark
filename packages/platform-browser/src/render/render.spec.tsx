@@ -1,5 +1,5 @@
 /** @jsx h */
-import { dom, createTestHostNode, createEmptyCommentString } from '@test-utils';
+import { dom, createTestHostNode, createReplacerString } from '@test-utils';
 import {
   h,
   Fragment,
@@ -19,7 +19,7 @@ type Item = { id: number; name: string };
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
-const emptyComment = createEmptyCommentString();
+const replacer = createReplacerString();
 let nextId = 0;
 
 const generateItems = (count: number) => {
@@ -167,7 +167,7 @@ describe('[render]', () => {
 
     const content = (show: boolean) => dom`
       <div>header</div>
-      ${show ? '<div>hello</div>' : emptyComment}
+      ${show ? '<div>hello</div>' : replacer}
       <div>footer</div>
     `;
 
@@ -222,7 +222,7 @@ describe('[render]', () => {
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
-      ${items.length > 0 ? items.map(x => `<div ${itemAttr}="true">${x.name}</div>`).join('') : emptyComment}
+      ${items.length > 0 ? items.map(x => `<div ${itemAttr}="true">${x.name}</div>`).join('') : replacer}
       <div>footer</div>
     `;
 
@@ -385,7 +385,7 @@ describe('[render]', () => {
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
-      ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : emptyComment}
+      ${items.length > 0 ? items.map(x => `<div ${itemAttrName}="true">${x.name}</div>`).join('') : replacer}
       <div>footer</div>
     `;
 
@@ -783,7 +783,7 @@ describe('[render]', () => {
 
     remove();
     render$();
-    expect(host.innerHTML).toBe(emptyComment);
+    expect(host.innerHTML).toBe(replacer);
   });
 
   test(`conditional rendering works correctly with hook's update`, () => {
@@ -795,7 +795,7 @@ describe('[render]', () => {
         <div>2*</div>
         <div>3*</div>
       `
-          : `${createEmptyCommentString()}`
+          : `${replacer}`
       }
       <button>toggle</button>
     `;
@@ -1183,7 +1183,7 @@ describe('[render]', () => {
           <div>header 1</div>
           <div>header 2</div>
       `
-          : emptyComment
+          : replacer
       }
       ${items
         .map(
@@ -1200,7 +1200,7 @@ describe('[render]', () => {
           <div>footer 1</div>
           <div>footer 2</div>
       `
-          : emptyComment
+          : replacer
       }
     `;
 

@@ -1,6 +1,6 @@
 import { requestIdleCallback } from '@shopify/jest-dom-mocks';
 
-import { EMPTY_NODE } from '@dark-engine/core/constants';
+import { REPLACER } from '@dark-engine/core/constants';
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
   const markup = strings
@@ -16,7 +16,7 @@ const waitNextIdle = () => requestIdleCallback.runIdleCallbacks();
 
 const waitNextTick = () => Promise.resolve();
 
-const createEmptyCommentString = () => `<!--${EMPTY_NODE}-->`;
+const createReplacerString = () => `<!--${REPLACER}-->`;
 
 const createTestHostNode = () => document.createElement('div');
 
@@ -37,13 +37,4 @@ const click = (element: Element) => fireEvent(element, 'click');
 
 const setInputValue = (element: HTMLInputElement, value: string) => fireEvent(element, 'input', value);
 
-export {
-  dom,
-  waitNextIdle,
-  waitNextTick,
-  createEmptyCommentString,
-  createTestHostNode,
-  fireEvent,
-  click,
-  setInputValue,
-};
+export { dom, waitNextIdle, waitNextTick, createReplacerString, createTestHostNode, fireEvent, click, setInputValue };

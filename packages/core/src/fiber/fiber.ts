@@ -35,18 +35,18 @@ import {
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsVirtualNodeFactory,
-  createEmptyVirtualNode,
   getTagVirtualNodeKey,
   getVirtualNodeFactoryKey,
   getTagVirtualNodeFlag,
   getVirtualNodeFactoryFlag,
   detectIsTextVirtualNode,
   detectIsCommentVirtualNode,
+  createReplacer,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { INDEX_KEY, PARTIAL_UPDATE, TYPE, Flag } from '../constants';
+import { INDEX_KEY, TYPE, Flag } from '../constants';
 import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -343,7 +343,7 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
 }
 
 function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
-  const vNode = createEmptyVirtualNode();
+  const vNode = createReplacer();
 
   return new Fiber().mutate({
     instance: vNode,
@@ -570,7 +570,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       : [instance.children];
 
     if (isComponentFactory && factory.children.length === 0) {
-      factory.children.push(createEmptyVirtualNode());
+      factory.children.push(createReplacer());
     }
   }
 
@@ -646,7 +646,7 @@ function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | 
 }
 
 function supportConditional(instance: DarkElement) {
-  return detectIsFalsy(instance) ? createEmptyVirtualNode() : instance;
+  return detectIsFalsy(instance) ? createReplacer() : instance;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
@@ -829,7 +829,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
 
     fiber.childrenElementsCount = 0;
     fiber.alternate = new Fiber().mutate({ ...fiber, alternate: null, childrenElementsCount });
-    fiber.marker = PARTIAL_UPDATE;
+    fiber.marker = '🍒';
     fiber.effectTag = EffectTag.UPDATE;
     fiber.child = null;
 

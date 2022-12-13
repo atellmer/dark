@@ -1,4 +1,4 @@
-import { EMPTY_NODE, ATTR_KEY, ATTR_FLAG, TYPE, Flag } from '../constants';
+import { REPLACER, ATTR_KEY, ATTR_FLAG, TYPE, Flag } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
 import type { DarkElementKey, DarkElement } from '../shared';
 import type { ComponentFactory } from '../component';
@@ -66,9 +66,6 @@ const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vN
 const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
   detectIsFunction(factory) && factory[$$virtualNode] === true;
 
-const detectIsEmptyVirtualNode = (vNode: unknown): boolean =>
-  detectIsCommentVirtualNode(vNode) && vNode.value === EMPTY_NODE;
-
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): DarkElementKey | null =>
   !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
 
@@ -80,7 +77,7 @@ const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): DarkElementKey |
 const getVirtualNodeFactoryFlag = (factory: VirtualNodeFactory): Record<Flag, boolean> | null =>
   factory[ATTR_FLAG] || null;
 
-const createEmptyVirtualNode = () => new CommentVirtualNode(EMPTY_NODE);
+const createReplacer = () => new CommentVirtualNode(REPLACER);
 
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
@@ -128,10 +125,9 @@ export {
   detectIsTextVirtualNode,
   getTagVirtualNodeKey,
   getTagVirtualNodeFlag,
-  detectIsEmptyVirtualNode,
   getVirtualNodeFactoryKey,
   getVirtualNodeFactoryFlag,
-  createEmptyVirtualNode,
+  createReplacer,
   detectIsVirtualNodeFactory,
   View,
   Text,
