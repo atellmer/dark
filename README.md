@@ -32,6 +32,7 @@ Dark is lightweight (15 Kb gzipped) component-and-hook-based UI rendering engine
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
 - [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
 - [Modal window](https://atellmer.github.io/dark/examples/modal-window/)
+- [Animated reorderable grid](https://atellmer.github.io/dark/examples/animated-grid/)
 - [StackBlitz example #1 (vanilla js)](https://stackblitz.com/edit/js-q58h8h?file=index.html)
 - [StackBlitz example #1 (typescript)](https://stackblitz.com/edit/darkapp-ccz57rk?file=index.tsx)
 - [StackBlitz example #3 (naive styled-components with Dark)](https://stackblitz.com/edit/darkapp-ccz57rk-gtbczn?file=styled-components.ts,index.tsx)
