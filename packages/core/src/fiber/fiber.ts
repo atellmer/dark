@@ -749,8 +749,6 @@ function commitChanges() {
 
   wipFiber.alternate = null;
 
-  // console.log('wipFiber', wipFiber);
-
   commitWork(wipFiber.child, () => {
     const layoutEffects = layoutEffectsStore.get();
     const effects = effectsStore.get();
