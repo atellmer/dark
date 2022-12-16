@@ -3,10 +3,11 @@
 
 Dark is lightweight (15 Kb gzipped) component-and-hook-based UI rendering engine for javascript apps without dependencies and written in TypeScript 💫
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?style=flat&colorA=000063&colorB=673ab7)](https://github.com/atellmer/dark/blob/master/LICENSE)
-[![GitHub Release](https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7)]()
-[![NPM Downloads](https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7)]()
-[![PR's Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&colorA=000063&colorB=673ab7)](http://makeapullrequest.com) 
+<img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
+<img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
+<img alt="NPM Downloads" src="https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7">
+<img alt="Bundle size core" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/core?label=bundle%20size%20[core]&style=flat&colorA=000063&colorB=673ab7">
+<img alt="Bundle size browser" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/platform-browser?label=bundle%20size%20[platform-browser]&style=flat&colorA=000063&colorB=673ab7">
 </div>
 
 ![Dark](./assets/cover.jpg) 
