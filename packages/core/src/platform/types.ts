@@ -1,6 +1,5 @@
 import { type Fiber } from '../fiber';
 import { type TaskPriority } from '../constants';
-import { type ComponentFactory } from '../component';
 import { type VirtualNode } from '../view';
 
 export type Platform = {
@@ -11,7 +10,7 @@ export type Platform = {
   shouldYeildToHost: () => boolean;
   applyCommit: (fiber: Fiber) => void;
   finishCommitWork: () => void;
-  detectIsPortal: (factory: ComponentFactory) => boolean;
+  detectIsPortal: (factory: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
 };
 

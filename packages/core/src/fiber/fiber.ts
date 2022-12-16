@@ -610,7 +610,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
         }
 
         if (usedKeysMap[nextKey]) {
-          error(`The key of node [${nextKey}] already has been used!`, children[idx]);
+          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [children[idx]]);
         }
 
         usedKeysMap[nextKey] = true;
@@ -698,12 +698,13 @@ function detectIsSameComponentFactoryTypesWithSameKeys(
     prevInstance &&
     nextInstance &&
     detectIsComponentFactory(prevInstance) &&
-    detectIsComponentFactory(nextInstance)
+    detectIsComponentFactory(nextInstance) &&
+    prevInstance.type === nextInstance.type
   ) {
     const prevKey = prevInstance ? getElementKey(prevInstance) : null;
     const nextKey = nextInstance ? getElementKey(nextInstance) : null;
 
-    return prevInstance.type === nextInstance.type && prevKey === nextKey;
+    return prevKey === nextKey;
   }
 
   return false;
@@ -867,4 +868,4 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   return callback;
 }
 
-export { Fiber, workLoop, hasChildrenProp, createUpdateCallback };
+export { Fiber, workLoop, createUpdateCallback };

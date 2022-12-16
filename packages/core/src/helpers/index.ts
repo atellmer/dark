@@ -20,6 +20,10 @@ const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
 const detectIsFalsy = (o: any) => detectIsNull(o) || detectIsUndefined(o) || o === false;
 
+const getTime = () => Date.now();
+
+const dummyFn = () => {};
+
 function error(...args: Array<any>) {
   !detectIsUndefined(console) && console.error(...args);
 }
@@ -54,10 +58,6 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
   return list;
 }
 
-function getTime() {
-  return Date.now();
-}
-
 function keyBy<T = any>(
   list: Array<T>,
   fn: (o: T) => string | number,
@@ -65,8 +65,6 @@ function keyBy<T = any>(
 ): Record<string | number, T | boolean> {
   return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
 }
-
-const dummyFn = () => {};
 
 function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {
   if (!detectIsUndefined(deps) && !detectIsUndefined(prevDeps) && deps.length > 0 && prevDeps.length > 0) {
@@ -91,10 +89,10 @@ export {
   detectIsNull,
   detectIsEmpty,
   detectIsFalsy,
+  getTime,
+  dummyFn,
   error,
   flatten,
-  getTime,
   keyBy,
-  dummyFn,
   detectIsDepsDifferent,
 };

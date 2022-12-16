@@ -29,7 +29,6 @@ const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
   [ATTR_FLAG]: true,
-  void: true,
 };
 let fragmentsMap: Map<Element, DOMFragment> = new Map();
 let moves: Array<() => void> = [];
@@ -217,49 +216,47 @@ function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> 
   return nextFiber;
 }
 
-function append(fiber: Fiber<Element>, parentNativeElement: Element) {
+function append(fiber: Fiber<Element>, parentElement: Element) {
   const { fragment } =
-    fragmentsMap.get(parentNativeElement) ||
+    fragmentsMap.get(parentElement) ||
     ({
       fragment: document.createDocumentFragment(),
       callback: () => {},
     } as DOMFragment);
 
-  fragmentsMap.set(parentNativeElement, {
+  fragmentsMap.set(parentElement, {
     fragment,
     callback: () => {
-      parentNativeElement.appendChild(fragment);
+      parentElement.appendChild(fragment);
     },
   });
   fragment.appendChild(fiber.nativeElement);
 }
 
-function insert(fiber: Fiber<Element>, parentNativeElement: Element, idx: number) {
-  const node = parentNativeElement.childNodes[idx];
-
-  parentNativeElement.insertBefore(fiber.nativeElement, node);
+function insert(fiber: Fiber<Element>, parentElement: Element, idx: number) {
+  parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[idx]);
 }
 
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
-  const parentNativeElement = parentFiber.nativeElement;
-  const childNodes = parentNativeElement.childNodes;
+  const parentElement = parentFiber.nativeElement;
+  const childNodes = parentElement.childNodes;
   const hasNoChildNodes = childNodes.length === 0;
   const idx = hasNoChildNodes ? 0 : fiber.elementIdx;
 
   if (hasNoChildNodes || idx > childNodes.length - 1) {
     const vNode = parentFiber.instance as TagVirtualNode;
 
-    !detectIsVoidElement(vNode.name) && append(fiber, parentNativeElement);
+    !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
   } else {
-    insert(fiber, parentNativeElement, idx);
+    insert(fiber, parentElement, idx);
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
 }
 
 function commitUpdate(fiber: Fiber<Element>) {
-  const nativeElement = fiber.nativeElement;
+  const element = fiber.nativeElement;
   const prevInstance = fiber.alternate.instance as VirtualNode;
   const nextInstance = fiber.instance as VirtualNode;
 
@@ -268,11 +265,11 @@ function commitUpdate(fiber: Fiber<Element>) {
     detectIsTextVirtualNode(nextInstance) &&
     prevInstance.value !== nextInstance.value
   ) {
-    return (nativeElement.textContent = nextInstance.value);
+    return (element.textContent = nextInstance.value);
   }
 
   if (detectIsTagVirtualNode(prevInstance) && detectIsTagVirtualNode(nextInstance)) {
-    return updateAttributes(nativeElement, prevInstance, nextInstance);
+    return updateAttributes(element, prevInstance, nextInstance);
   }
 }
 
@@ -295,20 +292,20 @@ function commitDeletion(fiber: Fiber<Element>) {
 function move(fiber: Fiber<Element>) {
   const sourceNodes = collectElements(fiber);
   const sourceNode = sourceNodes[0];
-  const parentNativeElement = sourceNode.parentElement;
+  const parentElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
   const elementIdx = fiber.elementIdx;
   let idx = 0;
   const move = () => {
     for (let i = 1; i < sourceNodes.length; i++) {
-      parentNativeElement.removeChild(parentNativeElement.childNodes[elementIdx + 1]);
+      parentElement.removeChild(parentElement.childNodes[elementIdx + 1]);
     }
 
-    parentNativeElement.replaceChild(sourceFragment, parentNativeElement.childNodes[elementIdx]);
+    parentElement.replaceChild(sourceFragment, parentElement.childNodes[elementIdx]);
   };
 
   for (const node of sourceNodes) {
-    parentNativeElement.insertBefore(document.createComment(`${elementIdx}:${idx}`), node);
+    parentElement.insertBefore(document.createComment(`${elementIdx}:${idx}`), node);
     sourceFragment.appendChild(node);
     idx++;
   }
