@@ -900,8 +900,6 @@ const App = createComponent(() => {
 ## Context
 
 Context might be useful when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
-In Dark, the context works with the createContext method and useContext hook.
-Note that memoized intermediate components do not necessarily participate in re-rendering.
 
 ```tsx
 import { createContext, useContext } from '@dark-engine/core';
@@ -920,8 +918,8 @@ const ThemeConsumer = createComponent(() => {
   return <div style='font-size: 20vw;'>{theme === 'light' ? '☀️' : '🌙'}</div>;
 });
 
-const Proxy = createComponent(() => {
-  console.log('render Proxy!');
+const StaticLayout = memo(createComponent(() => {
+  console.log('render StaticLayout!');
 
   return (
     <div>
@@ -929,9 +927,7 @@ const Proxy = createComponent(() => {
       <ThemeConsumer />
     </div>
   );
-});
-
-const MemoProxy = memo(Proxy);
+}));
 
 const App = createComponent(() => {
   const [theme, setTheme] = useState<Theme>('light');
@@ -940,7 +936,7 @@ const App = createComponent(() => {
 
   return (
     <ThemeContext.Provider value={theme}>
-      <MemoProxy />
+      <StaticLayout />
       <button onClick={handleToggleTheme}>Toggle theme: {theme}</button>
     </ThemeContext.Provider>
   );
@@ -948,7 +944,7 @@ const App = createComponent(() => {
 
 ```
 ```
-render Proxy!
+render StaticLayout!
 render ThemeConsumer!
 render ThemeConsumer!
 render ThemeConsumer!
@@ -972,9 +968,9 @@ const App = createComponent(() => {
     values: [x],
   } = useSpring({
     state: isOpen,
-    getAnimations: () => [ // 
+    getAnimations: () => [
       {
-        name: 'my-animation', // animation name should be uniqueness in this component
+        name: 'my-animation', // animation name should be uniqueness in this array
         mass: 1,
         stiffness: 1,
         damping: 1,
@@ -1043,30 +1039,28 @@ const div = factory('div'); // creates <div></div>
 const customElement = factory('custom-element'); // creates <custom-element></custom-element>
 ```
 
-For convenience, Dark exports all html and svg tags
+For convenience, Dark exports all html and svg tags:
 
 ```tsx
-import { div, button, input, svg } from '@dark-engine/platform-browser'; // and others
+import { div, button, input, svg, /*and others*/ } from '@dark-engine/platform-browser';
 ```
 
-You can use it like this
+You can use it like this:
 
 ```tsx
 return (
   div({
     slot: button({
       class: 'awesome-button',
-      slot: Text('click me'),
+      slot: Text('Click me'),
       onClick: () => console.log('click'),
     })
   })
-)
+);
 
-/*
-<div>
-  <button class="awesome-button">Click me</button>
-</div>
-*/
+// <div>
+//   <button class="awesome-button">Click me</button>
+// </div>
 ```
 
 <a name="styles"></a>
@@ -1103,17 +1097,16 @@ import { createPortal } from '@dark-engine/platform-browser';
 
 ```tsx
 const App = createComponent(() => {
-  const portalHost = useMemo(() => {
-    const host = document.createElement('div');
+  const portalHost = useMemo(() => document.createElement('div'), []);
 
-    document.body.append(host);
-
-    return host;
+  useLayoutEffect(() => {
+    document.body.appendChild(portalHost);
+    return () => document.body.removeChild(portalHost);
   }, []);
 
   return (
     <>
-      <div>Some text</div>
+      <div>Hello world</div>
       {createPortal(<div>I will be placed in a new container</div>, portalHost)}
     </>
   );
