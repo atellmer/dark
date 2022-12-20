@@ -20,8 +20,8 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
   const scope = useMemo<Scope>(() => {
     const scope = {
       getAnimations,
-      frameId: null,
-      timerId: null,
+      loopTimerId: null,
+      delayTimerId: null,
       skipFirstRendfer: true,
       playingIdx: -1,
       data: getAnimations(createDefaultOptions()).map(() => createInitialData()),
@@ -42,6 +42,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
       const { mass = 1, stiffness = 1, damping = 1, duration = 10000, from = 0, to = 1 } = animation;
       const key = createKey(animation);
       const cache = store[key];
+      const slice = scope.data[idx];
       let forward: Array<number> = [];
       let backward: Array<number> = [];
       let mirrored: Array<number> = [];
@@ -68,22 +69,22 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
         mirrored = values.mirrored;
       }
 
-      scope.data[idx].values = {
+      slice.values = {
         forward: {
+          ...slice.values.forward,
           list: forward,
-          step: scope.data[idx].values.forward.step || 0,
         },
         backward: {
+          ...slice.values.backward,
           list: backward,
-          step: scope.data[idx].values.backward.step || 0,
         },
         mirrored: {
+          ...slice.values.mirrored,
           list: mirrored,
-          step: scope.data[idx].values.mirrored.step || 0,
         },
       };
 
-      store[key] = scope.data[idx].values;
+      store[key] = slice.values;
       idx++;
     }
 
@@ -92,8 +93,8 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
 
   useEffect(() => {
     return () => {
-      scope.frameId && platform.cancelAnimationFrame(scope.frameId);
-      scope.timerId && window.clearTimeout(scope.timerId);
+      scope.loopTimerId && window.clearTimeout(scope.loopTimerId);
+      scope.delayTimerId && window.clearTimeout(scope.delayTimerId);
       scope.keyes.forEach(key => delete store[key]);
     };
   }, []);
@@ -160,14 +161,14 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
         }
 
         scope.data[idx].values[direction].step++;
-        scope.frameId = platform.requestAnimationFrame(() => loop(direction));
+        scope.loopTimerId = window.setTimeout(() => loop(direction), LOOP_INTERVAL);
       };
 
       if (playingIdx >= 0) {
-        scope.frameId && platform.cancelAnimationFrame(scope.frameId);
-        scope.timerId && window.clearTimeout(scope.timerId);
-        scope.frameId = null;
-        scope.timerId = null;
+        scope.loopTimerId && window.clearTimeout(scope.loopTimerId);
+        scope.delayTimerId && window.clearTimeout(scope.delayTimerId);
+        scope.loopTimerId = null;
+        scope.delayTimerId = null;
         const slice = scope.data[playingIdx];
 
         if (!slice.direction) return;
@@ -182,7 +183,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
       }
 
       if (delay) {
-        scope.timerId = window.setTimeout(() => loop(direction), delay);
+        scope.delayTimerId = window.setTimeout(() => loop(direction), delay);
       } else {
         loop(direction);
       }
@@ -205,6 +206,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
 
 const FRAMES = 60;
 const FRAME_RATE = 1 / FRAMES;
+const LOOP_INTERVAL = FRAME_RATE * 1000;
 const store: Record<string, PhysicalValues> = {};
 
 type AnimationOptions = {
@@ -228,8 +230,8 @@ type Direction = 'forward' | 'backward' | 'mirrored';
 
 type Scope = {
   getAnimations: (options: AnimationOptions) => Array<Animation>;
-  frameId: number;
-  timerId: number;
+  loopTimerId: number;
+  delayTimerId: number;
   skipFirstRendfer: boolean;
   playingIdx: number;
   data: Array<AnimationData>;
