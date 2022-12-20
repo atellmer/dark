@@ -1,5 +1,3 @@
-import { type ComponentFactory } from '../component';
-import { type TagVirtualNode } from '../view';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementInstance } from '../shared';
 import { type NativeElement, type Hook, EffectTag } from './types';
@@ -38,7 +36,6 @@ declare class Fiber<N = NativeElement> {
   setError(error: Error): void;
 }
 declare function workLoop(): boolean;
-declare function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | ComponentFactory;
 declare type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
@@ -46,4 +43,4 @@ declare type CreateUpdateCallbackOptions = {
   onStart: () => void;
 };
 declare function createUpdateCallback(options: CreateUpdateCallbackOptions): () => void;
-export { Fiber, workLoop, hasChildrenProp, createUpdateCallback };
+export { Fiber, workLoop, createUpdateCallback };

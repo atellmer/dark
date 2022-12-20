@@ -9,15 +9,15 @@ declare const detectIsArray: (o: any) => o is any[];
 declare const detectIsNull: (o: any) => o is null;
 declare const detectIsEmpty: (o: any) => boolean;
 declare const detectIsFalsy: (o: any) => boolean;
+declare const getTime: () => number;
+declare const dummyFn: () => void;
 declare function error(...args: Array<any>): void;
 declare function flatten<T = any>(source: Array<NestedArray<T>>): Array<T>;
-declare function getTime(): number;
 declare function keyBy<T = any>(
   list: Array<T>,
   fn: (o: T) => string | number,
   value?: boolean,
 ): Record<string | number, T | boolean>;
-declare const dummyFn: () => void;
 declare function detectIsDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean;
 export {
   detectIsFunction,
@@ -30,10 +30,10 @@ export {
   detectIsNull,
   detectIsEmpty,
   detectIsFalsy,
+  getTime,
+  dummyFn,
   error,
   flatten,
-  getTime,
   keyBy,
-  dummyFn,
   detectIsDepsDifferent,
 };
