@@ -7,10 +7,9 @@ import { runBatch as batch } from '../batch';
 
 function useUpdate(options?: ScheduleCallbackOptions) {
   const rootId = getRootId();
-  const fiber = currentFiberStore.get();
-  const scope = useMemo(() => ({ fiber }), []);
+  const scope = useMemo(() => ({ fiber: null }), []);
 
-  scope.fiber = fiber;
+  scope.fiber = currentFiberStore.get();
 
   const update = (onStart?: () => void) => {
     if (isInsertionEffectsZone.get()) return;

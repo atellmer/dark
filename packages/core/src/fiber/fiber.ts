@@ -313,10 +313,6 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
     fiber.childrenCount = fiber.instance.children.length;
   }
 
-  if (fiber.alternate) {
-    fiber.alternate.alternate = null;
-  }
-
   if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
     fiber.nativeElement = platform.createNativeElement(fiber.instance);
     fiber.effectTag = EffectTag.CREATE;
@@ -452,8 +448,6 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
       elementIdx: fiber.elementIdx,
       effectTag: EffectTag.SKIP,
     });
-
-    alternate.alternate = null;
 
     walkFiber(fiber.child, ({ nextFiber, stop }) => {
       if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
@@ -747,9 +741,7 @@ function commitChanges() {
 
   fromUpdate && syncElementIndices(wipFiber);
 
-  wipFiber.alternate = null;
-
-  commitWork(wipFiber.child, () => {
+  commitWork(wipFiber, () => {
     const layoutEffects = layoutEffectsStore.get();
     const effects = effectsStore.get();
 
@@ -815,7 +807,7 @@ function syncElementIndices(fiber: Fiber) {
 }
 
 function commitWork(fiber: Fiber, onComplete: Function) {
-  walkFiber(fiber, ({ nextFiber, isReturn, resetIsDeepWalking }) => {
+  walkFiber(fiber.child, ({ nextFiber, isReturn, resetIsDeepWalking }) => {
     const skip = nextFiber.effectTag === EffectTag.SKIP;
 
     if (skip) {
@@ -827,6 +819,7 @@ function commitWork(fiber: Fiber, onComplete: Function) {
     nextFiber.alternate = null;
   });
 
+  fiber.alternate = null;
   platform.finishCommitWork();
   onComplete();
 }
@@ -849,12 +842,10 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     isUpdateHookZone.set(true);
     fiberMountStore.reset();
 
-    const childrenElementsCount = fiber.childrenElementsCount;
-
-    fiber.childrenElementsCount = 0;
-    fiber.alternate = new Fiber().mutate({ ...fiber, alternate: null, childrenElementsCount });
+    fiber.alternate = new Fiber().mutate({ ...fiber });
     fiber.marker = '🍒';
     fiber.effectTag = EffectTag.UPDATE;
+    fiber.childrenElementsCount = 0;
     fiber.child = null;
 
     wipRootStore.set(fiber);
