@@ -49,10 +49,10 @@ const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClo
     getAnimations: () => [
       {
         name: 'appearance',
-        mass: 1,
-        stiffness: 10,
-        damping: 1,
-        duration: 1000,
+        mass: 0.01,
+        stiffness: 0.01,
+        damping: 0.1,
+        duration: 800,
       },
     ],
   });

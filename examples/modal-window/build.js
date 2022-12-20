@@ -7,7 +7,7 @@
       background-color: rgba(1, 1, 1, 0.8);
       z-index: 10000;
       opacity: ${e};
-    `}));return Object(r.h)("div",{style:n.container,onClick:t})}),s=Object(r.createComponent)(({isOpen:e,slot:t,onRequestClose:n})=>{const s=Object(r.useMemo)(()=>document.createElement("div"),[]),[a,l]=Object(r.useState)(e),c=Object(r.useMemo)(()=>({isClosing:!1}),[]),{values:[u]}=Object(r.useSpring)({state:a,getAnimations:()=>[{name:"appearance",mass:1,stiffness:10,damping:1,duration:1e3}]});Object(r.useEffect)(()=>{c.isClosing||l(e)},[e]),Object(r.useEffect)(()=>{!c.isClosing||u>0||(c.isClosing=!1,n())},[u]);const f=Object(o.useStyle)(e=>({container:e`
+    `}));return Object(r.h)("div",{style:n.container,onClick:t})}),s=Object(r.createComponent)(({isOpen:e,slot:t,onRequestClose:n})=>{const s=Object(r.useMemo)(()=>document.createElement("div"),[]),[a,l]=Object(r.useState)(e),c=Object(r.useMemo)(()=>({isClosing:!1}),[]),{values:[u]}=Object(r.useSpring)({state:a,getAnimations:()=>[{name:"appearance",mass:.01,stiffness:.01,damping:.1,duration:800}]});Object(r.useEffect)(()=>{c.isClosing||l(e)},[e]),Object(r.useEffect)(()=>{!c.isClosing||u>0||(c.isClosing=!1,n())},[u]);const f=Object(o.useStyle)(e=>({container:e`
       position: fixed;
       top: 0;
       right: 0;
