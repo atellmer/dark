@@ -807,8 +807,10 @@ function syncElementIndices(fiber: Fiber) {
 }
 
 function commitWork(fiber: Fiber, onComplete: Function) {
-  walkFiber(fiber.child, ({ nextFiber, isReturn, resetIsDeepWalking }) => {
+  walkFiber(fiber.child, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
     const skip = nextFiber.effectTag === EffectTag.SKIP;
+
+    if (nextFiber === fiber) return stop();
 
     if (skip) {
       resetIsDeepWalking();
