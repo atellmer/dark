@@ -9,6 +9,7 @@
     "tsconfigRootDir": ".",
     "ecmaVersion": 2021,
     "sourceType": "module",
+    "extraFileExtensions": ["mjs"],
     "ecmaFeatures": {
       "jsx": true
     }

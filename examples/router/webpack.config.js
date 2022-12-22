@@ -27,6 +27,7 @@ const config = {
     static: path.join(__dirname, './'),
     compress: false,
     port: 9000,
+    historyApiFallback: true,
   },
   module: {
     rules: [
