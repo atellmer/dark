@@ -2,6 +2,7 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     "module": "commonjs",
+    "target": "ESNext",
     "outDir": "./dist/cjs/",
     "baseUrl": ".",
     "skipLibCheck": true

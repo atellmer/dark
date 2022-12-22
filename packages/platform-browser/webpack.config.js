@@ -24,7 +24,7 @@ const config = env => ({
   },
   entry: path.resolve(__dirname, 'src/index.ts'),
   output: {
-    path: path.resolve(__dirname, 'umd'),
+    path: path.resolve(__dirname, 'dist/umd'),
     filename: env.production ? `${libraryNameKebabCase}.production.min.js` : `${libraryNameKebabCase}.development.js`,
     library: libraryName,
     libraryTarget: 'umd',
