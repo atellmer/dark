@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const { alias } = require('../../webpack.alias');
 
 const config = {
-  mode: 'development',
+  mode: 'production',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -17,7 +17,7 @@ const config = {
     filename: 'build.js',
   },
   devServer: {
-    contentBase: path.join(__dirname, './'),
+    static: path.join(__dirname, './'),
     compress: false,
     port: 9000,
   },
@@ -35,7 +35,8 @@ const config = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env': JSON.stringify(process.env),
+      'process.env.NODE_ENV': JSON.stringify('production'),
     }),
   ],
 };

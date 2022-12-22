@@ -17,7 +17,7 @@ const config = {
     filename: 'build.js',
   },
   devServer: {
-    contentBase: path.join(__dirname, './'),
+    static: path.join(__dirname, './'),
     compress: false,
     port: 9000,
   },
@@ -35,6 +35,7 @@ const config = {
   },
   plugins: [
     new webpack.DefinePlugin({
+      'process.env': JSON.stringify(process.env),
       'process.env.NODE_ENV': JSON.stringify('production'),
     }),
   ],
