@@ -4,13 +4,13 @@ export declare enum EffectTag {
   DELETE = 'DELETE',
   SKIP = 'SKIP',
 }
-export declare type NativeElement = unknown;
-export declare type HookValue<T = any> = {
+export type NativeElement = unknown;
+export type HookValue<T = any> = {
   token?: Symbol;
   deps: Array<any>;
   value: T;
 };
-export declare type Hook<T = any> = {
+export type Hook<T = any> = {
   idx: number;
   values: Array<T>;
 };

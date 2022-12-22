@@ -1,5 +1,5 @@
 import { SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
-export declare type ViewDef = {
+export type ViewDef = {
   as: string;
   isVoid?: boolean;
   [prop: string]: any;

@@ -1,7 +1,7 @@
 import { type Fiber } from '../fiber';
 import { type TaskPriority } from '../constants';
 import { type VirtualNode } from '../view';
-export declare type Platform = {
+export type Platform = {
   createNativeElement: <N>(vNode: VirtualNode) => N;
   requestAnimationFrame: typeof requestAnimationFrame;
   cancelAnimationFrame: typeof cancelAnimationFrame;
@@ -12,7 +12,7 @@ export declare type Platform = {
   detectIsPortal: (factory: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
 };
-export declare type ScheduleCallbackOptions = {
+export type ScheduleCallbackOptions = {
   priority?: TaskPriority;
   timeoutMs?: number;
   forceSync?: boolean;

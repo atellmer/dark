@@ -1,5 +1,5 @@
 import type { DarkElement } from '../shared';
-declare type SuspenseContextValue = {
+type SuspenseContextValue = {
   fallback: DarkElement;
   isLoaded: boolean;
   trigger: () => void;

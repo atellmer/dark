@@ -1,4 +1,4 @@
-declare type UseSpringOptions = {
+type UseSpringOptions = {
   state?: boolean;
   getAnimations: (options: AnimationOptions) => Array<Animation>;
   mount?: boolean;
@@ -18,11 +18,11 @@ declare function useSpring(
     };
   };
 };
-declare type AnimationOptions = {
+type AnimationOptions = {
   state: boolean;
   playingIdx: number;
 };
-export declare type Animation = {
+export type Animation = {
   name: string;
   direction?: Direction;
   mass?: number;
@@ -33,7 +33,7 @@ export declare type Animation = {
   from?: number;
   to?: number;
 };
-declare type Direction = 'forward' | 'backward' | 'mirrored';
+type Direction = 'forward' | 'backward' | 'mirrored';
 declare function filterToggle(value: number, idx: number): boolean;
 declare function mapToggle(value: number, size: number, idx: number): number;
 export { useSpring };

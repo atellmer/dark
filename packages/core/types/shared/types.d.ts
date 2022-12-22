@@ -2,27 +2,25 @@ import type { ComponentFactory } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
 import { type Ref } from '../ref';
 import { type Flag } from '../constants';
-export declare type DarkElement = NestedArray<
-  ComponentFactory | VirtualNode | RenderProps | Nullable | string | number
->;
-export declare type Nullable = null | false | undefined;
-export declare type NestedArray<T> = T | Array<NestedArray<T>>;
-export declare type RenderProps = (...args: Array<any>) => DarkElement;
-export declare type DarkElementKey = string | number;
-export declare type DarkElementInstance = VirtualNode | VirtualNodeFactory | ComponentFactory;
-export declare type Subscriber = () => void;
-export declare type SubscriberWithValue<T> = (value: T) => void;
-export declare type Subscribe<S extends Function> = (subscriber: S) => Unsubscribe;
-export declare type Unsubscribe = () => void;
-export declare type SlotProps<T = DarkElement> = Readonly<{
+export type DarkElement = NestedArray<ComponentFactory | VirtualNode | RenderProps | Nullable | string | number>;
+export type Nullable = null | false | undefined;
+export type NestedArray<T> = T | Array<NestedArray<T>>;
+export type RenderProps = (...args: Array<any>) => DarkElement;
+export type DarkElementKey = string | number;
+export type DarkElementInstance = VirtualNode | VirtualNodeFactory | ComponentFactory;
+export type Subscriber = () => void;
+export type SubscriberWithValue<T> = (value: T) => void;
+export type Subscribe<S extends Function> = (subscriber: S) => Unsubscribe;
+export type Unsubscribe = () => void;
+export type SlotProps<T = DarkElement> = Readonly<{
   slot: T;
 }>;
-export declare type RefProps<T = unknown> = {
+export type RefProps<T = unknown> = {
   ref?: Ref<T>;
 };
-export declare type KeyProps = {
+export type KeyProps = {
   key?: DarkElementKey;
 };
-export declare type FlagProps = {
+export type FlagProps = {
   flag?: Record<Flag, boolean>;
 };

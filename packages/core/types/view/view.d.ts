@@ -2,10 +2,10 @@ import { Flag } from '../constants';
 import type { DarkElementKey, DarkElement } from '../shared';
 import type { ComponentFactory } from '../component';
 import { NodeType, type ViewDef } from './types';
-export declare type VirtualNodeFactory = () => VirtualNode;
-export declare type TagVirtualNodeFactory = () => TagVirtualNode;
-export declare type TextVirtualNodeFactory = () => TextVirtualNode;
-export declare type CommentVirtualNodeFactory = () => CommentVirtualNode;
+export type VirtualNodeFactory = () => VirtualNode;
+export type TagVirtualNodeFactory = () => TagVirtualNode;
+export type TextVirtualNodeFactory = () => TextVirtualNode;
+export type CommentVirtualNodeFactory = () => CommentVirtualNode;
 declare class VirtualNode {
   type: NodeType;
   constructor(options: Partial<VirtualNode>);

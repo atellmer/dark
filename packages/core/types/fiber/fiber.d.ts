@@ -36,7 +36,7 @@ declare class Fiber<N = NativeElement> {
   setError(error: Error): void;
 }
 declare function workLoop(): boolean;
-declare type CreateUpdateCallbackOptions = {
+type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
   forceStart?: boolean;

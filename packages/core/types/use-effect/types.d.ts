@@ -1,2 +1,2 @@
-export declare type DropEffect = void | (() => void);
-export declare type Effect = () => DropEffect;
+export type DropEffect = void | (() => void);
+export type Effect = () => DropEffect;

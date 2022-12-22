@@ -1,5 +1,5 @@
 import { type Fiber } from '../fiber';
-declare type OnLoopOptions<T> = {
+type OnLoopOptions<T> = {
   nextFiber: Fiber<T>;
   isReturn: boolean;
   resetIsDeepWalking: () => void;
