@@ -11,8 +11,8 @@
     "webpack-cli": "5.0.1"
   },
   "dependencies": {
-    "@dark-engine/core": "^0.15.4",
-    "@dark-engine/platform-browser": "^0.15.4",
+    "@dark-engine/core": "^0.15.7",
+    "@dark-engine/platform-browser": "^0.15.7",
     "d3-scale-chromatic": "^3.0.0",
     "perf-monitor": "^0.4.1"
   }
