@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "emitDeclarationOnly": true,
+    "skipLibCheck": true,
+    "declarationDir": "./dist/types/",
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./**/*.spec.ts"
+  ]
+}
