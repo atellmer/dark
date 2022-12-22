@@ -64,7 +64,7 @@ const VizDemo = createComponent<VizDemoProps>(({ count }) => {
       spiral: genSpiral(100),
       points: [] as Array<Point>,
       step: 0,
-      numSteps: 60 * 2.5,
+      numSteps: 60 * 2,
     }),
     [],
   );
