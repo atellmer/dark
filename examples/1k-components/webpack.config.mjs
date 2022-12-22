@@ -1,8 +1,9 @@
-const path = require('path');
-const webpack = require('webpack');
+import { resolve, dirname, join } from 'path';
+import webpack from 'webpack';
 
-const { alias } = require('../../webpack.alias');
+import { alias } from '../../webpack.alias.mjs';
 
+const __dirname = resolve(dirname(''));
 const config = {
   mode: 'production',
   resolve: {
@@ -11,13 +12,13 @@ const config = {
     alias,
   },
   devtool: 'source-map',
-  entry: path.resolve(__dirname, './index.tsx'),
+  entry: resolve(__dirname, './index.tsx'),
   output: {
-    path: path.resolve(__dirname, './'),
+    path: resolve(__dirname, './'),
     filename: 'build.js',
   },
   devServer: {
-    static: path.join(__dirname, './'),
+    static: join(__dirname, './'),
     compress: false,
     port: 9000,
   },
@@ -41,4 +42,4 @@ const config = {
   ],
 };
 
-module.exports = config;
+export default config;

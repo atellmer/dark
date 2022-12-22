@@ -1,33 +1,26 @@
-const path = require('path');
-const webpack = require('webpack');
+import { resolve, dirname, join } from 'path';
+import webpack from 'webpack';
 
-const { alias } = require('../../webpack.alias');
+import { alias } from '../../webpack.alias.mjs';
 
+const __dirname = resolve(dirname(''));
 const config = {
   mode: 'production',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
-    fallback: {
-      assert: require.resolve('assert'),
-    },
     alias,
   },
-  performance: {
-    maxEntrypointSize: 307200,
-    maxAssetSize: 307200,
-  },
   devtool: 'source-map',
-  entry: path.resolve(__dirname, './index.tsx'),
+  entry: resolve(__dirname, './index.tsx'),
   output: {
-    path: path.resolve(__dirname, './'),
+    path: resolve(__dirname, './'),
     filename: 'build.js',
   },
   devServer: {
-    static: path.join(__dirname, './'),
+    static: join(__dirname, './'),
     compress: false,
     port: 9000,
-    historyApiFallback: true,
   },
   module: {
     rules: [
@@ -49,4 +42,4 @@ const config = {
   ],
 };
 
-module.exports = config;
+export default config;
