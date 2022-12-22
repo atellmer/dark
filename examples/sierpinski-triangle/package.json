@@ -10,8 +10,8 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
-    "@dark-engine/core": "^0.15.2",
-    "@dark-engine/platform-browser": "^0.15.2",
+    "@dark-engine/core": "^0.15.4",
+    "@dark-engine/platform-browser": "^0.15.4",
     "perf-monitor": "^0.4.1"
   }
 }

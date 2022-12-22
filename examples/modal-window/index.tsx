@@ -49,10 +49,10 @@ const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClo
     getAnimations: () => [
       {
         name: 'appearance',
-        mass: 0.01,
-        stiffness: 0.01,
-        damping: 0.1,
-        duration: 800,
+        mass: 1,
+        stiffness: 40,
+        damping: 8,
+        duration: 600,
       },
     ],
   });
@@ -153,7 +153,7 @@ const App = createComponent(() => {
   useEffect(() => {
     const timerId = setInterval(() => {
       setTimer(x => x + 1);
-    }, 10);
+    }, 100);
 
     return () => clearInterval(timerId);
   }, []);
