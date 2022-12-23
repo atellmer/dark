@@ -2,7 +2,7 @@ import { SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
 
 export type ViewDef = {
   as: string;
-  isVoid?: boolean;
+  _void?: boolean;
   [prop: string]: any;
 } & Partial<SlotProps> &
   RefProps &

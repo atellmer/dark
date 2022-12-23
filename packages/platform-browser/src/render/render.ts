@@ -1,7 +1,5 @@
 import {
   type DarkElement,
-  type VirtualNodeFactory,
-  type ComponentFactory,
   ROOT,
   Fiber,
   EffectTag,
@@ -72,10 +70,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
     const currentRoot = currentRootStore.get();
     const fiber = new Fiber().mutate({
       nativeElement: container,
-      instance: new TagVirtualNode({
-        name: ROOT,
-        children: flatten([element || createReplacer()]) as Array<VirtualNodeFactory | ComponentFactory>,
-      }),
+      instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alternate: currentRoot,
       effectTag: isMounted ? EffectTag.UPDATE : EffectTag.CREATE,
     });

@@ -14,43 +14,38 @@ const $$virtualNode = Symbol('virtual-node');
 class VirtualNode {
   public type: NodeType = null;
 
-  constructor(options: Partial<VirtualNode>) {
-    this.type = options.type;
+  constructor(type: NodeType) {
+    this.type = type;
   }
 }
 
 class TagVirtualNode extends VirtualNode {
-  public type = NodeType.TAG;
   public name: string = null;
-  public isVoid = false;
   public attrs: Record<string, any> = {};
   public children: Array<VirtualNodeFactory | ComponentFactory> = [];
 
-  constructor(options: Partial<TagVirtualNode>) {
-    super(options);
-    this.name = options.name || this.name;
-    this.isVoid = options.isVoid || this.isVoid;
-    this.attrs = options.attrs || this.attrs;
-    this.children = options.children || this.children;
+  constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
+    super(NodeType.TAG);
+    this.name = name || this.name;
+    this.attrs = attrs || this.attrs;
+    this.children = children || this.children;
   }
 }
 
 class TextVirtualNode extends VirtualNode {
-  public type = NodeType.TEXT;
   public value = '';
 
   constructor(text: string) {
-    super({});
+    super(NodeType.TEXT);
     this.value = text;
   }
 }
 
 class CommentVirtualNode extends VirtualNode {
-  public type = NodeType.COMMENT;
   public value = '';
 
   constructor(text: string) {
-    super({});
+    super(NodeType.COMMENT);
     this.value = text;
   }
 }
@@ -81,15 +76,10 @@ const createReplacer = () => new CommentVirtualNode(REPLACER);
 
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
-    const { as, slot, isVoid = false, ...rest } = def;
-    const children = isVoid ? [] : detectIsArray(slot) ? slot : slot ? [slot] : [];
+    const { as: name, slot, _void = false, ...attrs } = def;
+    const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
 
-    return new TagVirtualNode({
-      name: as,
-      isVoid,
-      attrs: { ...rest },
-      children: children as Array<VirtualNodeFactory>,
-    });
+    return new TagVirtualNode(name, attrs, children);
   };
 
   factory[$$virtualNode] = true;

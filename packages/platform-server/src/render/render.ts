@@ -1,7 +1,5 @@
 import {
   type DarkElement,
-  type VirtualNodeFactory,
-  type ComponentFactory,
   ROOT,
   Fiber,
   EffectTag,
@@ -45,10 +43,7 @@ function renderToString(element: DarkElement): string {
     rootStore.set(rootId);
     const fiber = new Fiber().mutate({
       nativeElement: new TagNativeElement(ROOT),
-      instance: new TagVirtualNode({
-        name: ROOT,
-        children: flatten([element || createReplacer()]) as Array<VirtualNodeFactory | ComponentFactory>,
-      }),
+      instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       effectTag: EffectTag.CREATE,
     });
 
