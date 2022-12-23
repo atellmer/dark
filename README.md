@@ -188,7 +188,14 @@ import {
 } from '@dark-engine/core';
 ```
 ```tsx
-import { render, createRoot, hydrateRoot, createPortal, factory, useStyle } from '@dark-engine/platform-browser';
+import {
+  render,
+  createRoot,
+  hydrateRoot,
+  createPortal,
+  factory,
+  useStyle,
+} from '@dark-engine/platform-browser';
 ```
 ```tsx
 import { renderToString } from '@dark-engine/platform-server';
