@@ -725,6 +725,7 @@ function createHook(): Hook {
 
 function commitChanges() {
   const wipFiber = wipRootStore.get();
+  const isDynamic = platform.detectIsDynamic();
   const insertionEffects = insertionEffectsStore.get();
   const deletions = deletionsStore.get();
   const fromUpdate = isUpdateHookZone.get();
@@ -736,7 +737,7 @@ function commitChanges() {
   }
 
   isInsertionEffectsZone.set(true);
-  insertionEffects.forEach(fn => fn());
+  isDynamic && insertionEffects.forEach(fn => fn());
   isInsertionEffectsZone.set(false);
 
   fromUpdate && syncElementIndices(wipFiber);
@@ -746,11 +747,11 @@ function commitChanges() {
     const effects = effectsStore.get();
 
     isLayoutEffectsZone.set(true);
-    layoutEffects.forEach(fn => fn());
+    isDynamic && layoutEffects.forEach(fn => fn());
     isLayoutEffectsZone.set(false);
 
     setTimeout(() => {
-      effects.forEach(fn => fn());
+      isDynamic && effects.forEach(fn => fn());
     });
 
     wipRootStore.set(null); // important order

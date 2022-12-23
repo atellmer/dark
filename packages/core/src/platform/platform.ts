@@ -22,6 +22,9 @@ export const platform: Platform = {
   finishCommitWork: () => {
     throw new Error('finishCommitWork not installed by renderer');
   },
+  detectIsDynamic: () => {
+    throw new Error('detectIsDynamic not installed by renderer');
+  },
   detectIsPortal: () => {
     throw new Error('detectIsPortal not installed by renderer');
   },

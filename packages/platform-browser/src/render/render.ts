@@ -32,6 +32,7 @@ platform.shouldYeildToHost = shouldYeildToHost;
 platform.applyCommit = applyCommit;
 platform.finishCommitWork = finishCommitWork;
 platform.detectIsPortal = detectIsPortal;
+platform.detectIsDynamic = () => true;
 platform.unmountPortal = unmountPortal;
 
 const roots = new Map<Element, number>();

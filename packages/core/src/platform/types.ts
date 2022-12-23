@@ -10,6 +10,7 @@ export type Platform = {
   shouldYeildToHost: () => boolean;
   applyCommit: (fiber: Fiber) => void;
   finishCommitWork: () => void;
+  detectIsDynamic: () => boolean;
   detectIsPortal: (factory: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
 };
