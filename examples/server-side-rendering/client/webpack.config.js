@@ -13,7 +13,7 @@ const config = {
   },
   entry: resolve(__dirname, './index.tsx'),
   output: {
-    path: resolve(__dirname, './'),
+    path: resolve(__dirname, './static'),
     filename: 'build.js',
   },
   devtool: 'source-map',

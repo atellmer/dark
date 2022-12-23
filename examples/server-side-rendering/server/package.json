@@ -2,7 +2,7 @@
   "name": "dark-ssr-server",
   "scripts": {
     "start": "npm run live",
-    "live": "nodemon --exec ts-node -- ./server.ts"
+    "live": "nodemon --exec ts-node -- ./app.ts"
   },
   "devDependencies": {
     "module-alias": "^2.2.2",
@@ -18,8 +18,8 @@
     "express": "^4.18.2"
   },
   "_moduleAliases": {
-    "@dark-engine/core": "../../packages/core/src/index",
-    "@dark-engine/platform-browser": "../../packages/platform-browser/src/index",
-    "@dark-engine/platform-server": "../../packages/platform-server/src/index"
+    "@dark-engine/core": "../../../packages/core/src/index",
+    "@dark-engine/platform-browser": "../../../packages/platform-browser/src/index",
+    "@dark-engine/platform-server": "../../../packages/platform-server/src/index"
   }
 }

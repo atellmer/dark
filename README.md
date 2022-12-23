@@ -23,6 +23,7 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 - 🦄 Small size
 - 🌌 No dependencies
 - 💥 Tree-shakeable
+- 🎊 SSR support
 
 ## Demos
 
@@ -48,7 +49,7 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
 
-## Installation
+## Installation for browser
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser
@@ -61,6 +62,16 @@ CDN:
 ```html
 <script src="https://unpkg.com/@dark-engine/core/dist/umd/dark-core.production.min.js"></script>
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
+```
+
+## Installation for server
+npm:
+```
+npm install @dark-engine/core @dark-engine/platform-server
+```
+yarn:
+```
+yarn add @dark-engine/core @dark-engine/platform-server
 ```
 
 ## Usage
@@ -134,6 +145,7 @@ createRoot(document.getElementById('root')).render(App());
 - [Styles](#styles)
 - [Portals](#portals)
 - [Others](#others)
+- [SSR](#ssr)
 
 <a name="overview"></a>
 ## API overview
@@ -172,8 +184,14 @@ import {
   useDeferredValue,
   useSplitUpdate,
   useSyncExternalStore,
+  detectIsServer,
 } from '@dark-engine/core';
-import { render, createRoot, createPortal, factory, useStyle } from '@dark-engine/platform-browser';
+```
+```tsx
+import { render, createRoot, hydrateRoot, createPortal, factory, useStyle } from '@dark-engine/platform-browser';
+```
+```tsx
+import { renderToString } from '@dark-engine/platform-server';
 ```
 ## A little more about the core concepts...
 
@@ -1156,7 +1174,78 @@ const App = createComponent(() => {
 });
 ```
 
-Thanks everyone!
+<a name="ssr"></a>
+## SSR (Server-Side Rendering)
+
+A normal Dark application runs in the browser, rendering pages in the DOM in response to user actions. You can also render on the server by creating static application pages that are later loaded on the client. This means that the app typically renders faster, allowing users to preview the layout of the app before it becomes fully interactive.
+The basic principle: on the server, the component code is rendered into a string, which the server returns in response to a request in the form of a file to which the assembled build of the front-end code is connected. The user receives a rendered page with content instantly, while Dark performs a hydration procedure, i.e. reuses DOM nodes already created on the server, hangs event handlers, and also performs all relying effects
+
+```
+ssr-app/
+├─ client/
+│  ├─ app.tsx
+│  ├─ index.tsx
+│  ├─ static/
+│  │  ├─ build.js
+├─ server/
+│  ├─ app.ts
+```
+
+```tsx
+// server/app.ts
+import { renderToString } from '@dark-engine/platform-server';
+
+import { App } from '../client/app'; // your app.tsx
+
+server.use(express.static(join(__dirname, '../client/static')));
+
+server.get('/', (req, res) => {
+  const app = renderToString(App()); // render
+  const page = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <meta name="description" content="My awesome SSR app">
+      <base href="/">
+      <link rel="preload" href="./build.js" as="script" />
+      <title>My awesome SSR app</title>
+    </head>
+    <body>
+      <div id="root">${app}</div>
+      <script src="./build.js" defer></script>
+    </body>
+    </html>
+  `;
+
+  res.send(page);
+});
+```
+
+```tsx
+// client/app.tsx
+import { h, createComponent } from '@dark-engine/core';
+
+const App = createComponent(() => <div>Hello World</div>);
+
+export { App };
+```
+
+```tsx
+// client/index.tsx
+import { h } from '@dark-engine/core';
+import { hydrateRoot } from '@dark-engine/platform-browser';
+
+import { App } from './app';
+
+hydrateRoot(document.getElementById('root'), <App />); // some magic and app works!
+```
+
+A working example of an SSR application based on the express server is in examples/server-side-rendering
+
+Thanks everyone! 🙃
 
 # LICENSE
 

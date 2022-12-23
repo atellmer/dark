@@ -17,13 +17,13 @@
     ],
     "paths": {
       "@dark-engine/core": [
-        "../../packages/core/src/index"
+        "../../../packages/core/src/index"
       ],
       "@dark-engine/platform-browser": [
-        "../../packages/platform-browser/src/index"
+        "../../../packages/platform-browser/src/index"
       ],
       "@dark-engine/platform-server": [
-        "../../packages/platform-server/src/index"
+        "../../../packages/platform-server/src/index"
       ]
     }
   }

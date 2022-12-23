@@ -5,21 +5,21 @@ import * as compression from 'compression';
 import { AddressInfo } from 'net';
 import { renderToString } from '@dark-engine/platform-server';
 
-import { App } from './client/app';
+import { App } from '../client/app';
 
 const PORT = 3000;
 const app = express();
 
 app.use(compression());
-app.use(express.static(join(__dirname, 'client')));
+app.use(express.static(join(__dirname, '../client/static')));
 
 app.get('/', (_, res) => {
-  const content = createTemplate('Dark SSR', renderToString(App()));
+  const page = createPage('Dark SSR', renderToString(App()));
 
-  res.send(content);
+  res.send(page);
 });
 
-function createTemplate(title: string, app: string) {
+function createPage(title: string, app: string) {
   const content = `
     <!DOCTYPE html>
     <html lang="en">
