@@ -234,23 +234,35 @@ function append(fiber: Fiber<Element>, parentElement: Element) {
   fragment.appendChild(fiber.nativeElement);
 }
 
-function insert(fiber: Fiber<Element>, parentElement: Element, idx: number) {
-  parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[idx]);
+function insert(fiber: Fiber<Element>, parentElement: Element) {
+  parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[fiber.elementIdx]);
 }
 
 function commitCreation(fiber: Fiber<Element>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentElement = parentFiber.nativeElement;
   const childNodes = parentElement.childNodes;
-  const hasNoChildNodes = childNodes.length === 0;
-  const idx = hasNoChildNodes ? 0 : fiber.elementIdx;
 
-  if (hasNoChildNodes || idx > childNodes.length - 1) {
-    const vNode = parentFiber.instance as TagVirtualNode;
+  if (isHydrateZone.get()) {
+    const nativeElement = childNodes[fiber.elementIdx] as Element;
 
-    !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
+    if (
+      detectIsTextVirtualNode(fiber.instance) &&
+      nativeElement instanceof Text &&
+      fiber.instance.value.length !== nativeElement.length
+    ) {
+      nativeElement.splitText(fiber.instance.value.length);
+    }
+
+    fiber.nativeElement = nativeElement;
   } else {
-    insert(fiber, parentElement, idx);
+    if (childNodes.length === 0 || fiber.elementIdx > childNodes.length - 1) {
+      const vNode = parentFiber.instance as TagVirtualNode;
+
+      !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
+    } else {
+      insert(fiber, parentElement);
+    }
   }
 
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);

@@ -238,7 +238,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
-    fiber.elementIdx = nextFiber.elementIdx + nextFiber.childrenElementsCount;
+    fiber.elementIdx = nextFiber.elementIdx + (nextFiber.nativeElement ? 1 : nextFiber.childrenElementsCount);
     instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
     alternate && performAlternate(alternate, instance);
     performFiber(fiber, alternate, instance);

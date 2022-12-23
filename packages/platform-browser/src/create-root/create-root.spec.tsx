@@ -19,7 +19,6 @@ describe('[create-root]', () => {
 
     root.render(App());
     expect(root.render).toBeInstanceOf(Function);
-    expect(root.hydrate).toBeInstanceOf(Function);
     expect(root.unmount).toBeInstanceOf(Function);
   });
 
