@@ -4,6 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
     "jsx": "react",
     "jsxFactory": "h",

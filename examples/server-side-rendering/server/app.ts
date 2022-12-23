@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import { join } from 'path';
-import * as express from 'express';
-import * as compression from 'compression';
+import express from 'express';
+import compression from 'compression';
 import { AddressInfo } from 'net';
 import { renderToString } from '@dark-engine/platform-server';
 
