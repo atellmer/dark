@@ -17,6 +17,7 @@ import {
 } from '@dark-engine/core';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
+import { TagNativeElement } from '../native-element';
 
 platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
 platform.requestAnimationFrame = setTimeout.bind(this);
@@ -35,7 +36,7 @@ function renderToString(element: DarkElement): string {
     rootStore.set(rootId);
     const currentRoot = currentRootStore.get();
     const fiber = new Fiber().mutate({
-      nativeElement: null, // TODO
+      nativeElement: new TagNativeElement(ROOT),
       instance: new TagVirtualNode({
         name: ROOT,
         children: flatten([element || createReplacer()]) as Array<VirtualNodeFactory | ComponentFactory>,
@@ -52,9 +53,8 @@ function renderToString(element: DarkElement): string {
 
   platform.scheduleCallback(callback);
 
-  const currentRoot = currentRootStore.get();
-  const nativeElement = currentRoot.nativeElement as Element;
-  const content = nativeElement.innerHTML;
+  const nativeElement = currentRootStore.get().nativeElement as TagNativeElement;
+  const content = nativeElement.toString(true);
 
   return content;
 }

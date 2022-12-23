@@ -31,6 +31,12 @@
       "@dark-engine/platform-browser/*": [
         "./packages/platform-browser/src/*"
       ],
+      "@dark-engine/platform-server": [
+        "./packages/platform-server/src/index"
+      ],
+      "@dark-engine/platform-server/*": [
+        "./packages/platform-server/src/*"
+      ],
       "@test-utils": [
         "./test/utils"
       ]

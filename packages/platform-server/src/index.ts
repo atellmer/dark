@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-export { render } from './render';
+export { renderToString } from './render';
 
 export const version = process.env.VERSION;
 
