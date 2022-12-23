@@ -19,6 +19,7 @@ import {
   detectIsTextVirtualNode,
   detectIsMutableRef,
   walkFiber,
+  isHydrateZone,
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
@@ -372,6 +373,7 @@ function finishCommitWork() {
 
   fragmentsMap = new Map();
   moves = [];
+  isHydrateZone.set(false);
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {

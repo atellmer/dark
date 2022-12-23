@@ -4,7 +4,7 @@ let rootId: number = null;
 
 const stores = new Map<number, Store>();
 
-class Store<N = unknown> {
+class Store {
   public wipRoot: Fiber = null;
   public currentRoot: Fiber = null;
   public nextUnitOfWork: Fiber = null;
@@ -24,7 +24,7 @@ class Store<N = unknown> {
   public isInserionEffectsZone = false;
   public isUpdateHookZone = false;
   public isBatchZone = false;
-  public trackUpdate: (nativeElement: N) => void | undefined;
+  public isHydrateZone = false;
 }
 
 type FiberMountStore = {
@@ -157,6 +157,11 @@ const isBatchZone = {
   set: (value: boolean) => (store.get().isBatchZone = value),
 };
 
+const isHydrateZone = {
+  get: () => store.get()?.isHydrateZone || false,
+  set: (value: boolean) => (store.get().isHydrateZone = value),
+};
+
 export {
   getRootId,
   rootStore,
@@ -174,4 +179,5 @@ export {
   isInsertionEffectsZone,
   isUpdateHookZone,
   isBatchZone,
+  isHydrateZone,
 };

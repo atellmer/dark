@@ -18,6 +18,7 @@ import {
   createReplacer,
   isInsertionEffectsZone,
   isLayoutEffectsZone,
+  isHydrateZone,
 } from '@dark-engine/core';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
@@ -35,7 +36,7 @@ platform.unmountPortal = unmountPortal;
 
 const roots = new Map<Element, number>();
 
-function render(element: DarkElement, container: Element) {
+function render(element: DarkElement, container: Element, hydrate = false) {
   if (!(container instanceof Element)) {
     throw new Error(`[Dark]: render receives only Element as container!`);
   }
@@ -47,7 +48,10 @@ function render(element: DarkElement, container: Element) {
     rootId = roots.size;
 
     roots.set(container, rootId);
-    container.innerHTML = '';
+
+    if (!hydrate) {
+      container.innerHTML = '';
+    }
   } else {
     rootId = roots.get(container);
   }
@@ -71,6 +75,7 @@ function render(element: DarkElement, container: Element) {
     currentRoot && (currentRoot.alternate = null);
     fiberMountStore.reset();
     wipRootStore.set(fiber);
+    isHydrateZone.set(hydrate);
     nextUnitOfWorkStore.set(fiber);
   };
 

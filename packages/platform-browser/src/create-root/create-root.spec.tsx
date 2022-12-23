@@ -11,7 +11,7 @@ beforeEach(() => {
 });
 
 describe('[create-root]', () => {
-  test('has render and unmount methods', () => {
+  test('has methods', () => {
     const App = createComponent(() => {
       return null;
     });
@@ -19,6 +19,7 @@ describe('[create-root]', () => {
 
     root.render(App());
     expect(root.render).toBeInstanceOf(Function);
+    expect(root.hydrate).toBeInstanceOf(Function);
     expect(root.unmount).toBeInstanceOf(Function);
   });
 
