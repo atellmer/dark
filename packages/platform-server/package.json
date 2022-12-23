@@ -1,0 +1,48 @@
+{
+  "name": "@dark-engine/platform-server",
+  "version": "0.15.7",
+  "description": "Dark is lightweight component-and-hook-based UI rendering engine for javascript apps without dependencies and written in TypeScript 💫",
+  "author": "AlexPlex",
+  "license": "MIT",
+  "main": "./dist/cjs/index.js",
+  "typings": "./dist/types/index.d.ts",
+  "scripts": {
+    "build": "npm run before-build && npm run build:pipeline && npm run format && npm run after-build",
+    "build:pipeline": "npm run build:types && npm run build:cjs && npm run build:esm",
+    "build:cjs": "npx tsc -p ./tsconfig.cjs.json",
+    "build:esm": "npx tsc -p ./tsconfig.esm.json",
+    "build:types": "npx tsc -p ./tsconfig.types.json -d",
+    "format": "npx prettier --write ./**/*.{js,ts}",
+    "after-build": "node ./after-build.js",
+    "before-build": "node ./before-build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atellmer/dark.git"
+  },
+  "keywords": [
+    "dark",
+    "react",
+    "reactjs",
+    "angular",
+    "rendering",
+    "app",
+    "server"
+  ],
+  "devDependencies": {
+    "shelljs": "^0.8.5",
+    "ts-loader": "9.4.2",
+    "typescript": "4.9.4"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "/dist"
+  ],
+  "sideEffects": false
+}
