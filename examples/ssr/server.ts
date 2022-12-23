@@ -1,17 +1,25 @@
 import 'module-alias/register';
 import { join } from 'path';
 import * as express from 'express';
+import * as compression from 'compression';
+import { AddressInfo } from 'net';
 import { renderToString } from '@dark-engine/platform-server';
 
 import { App } from './client/app';
 
 const PORT = 3000;
-const server = express();
+const app = express();
 
-server.use(express.static(join(__dirname, 'static')));
+app.use(compression());
+app.use(express.static(join(__dirname, 'client')));
 
-server.get('/*', (req, res) => {
-  const app = renderToString(App());
+app.get('/', (_, res) => {
+  const content = createTemplate('Dark SSR', renderToString(App()));
+
+  res.send(content);
+});
+
+function createTemplate(title: string, app: string) {
   const content = `
     <!DOCTYPE html>
     <html lang="en">
@@ -19,11 +27,15 @@ server.get('/*', (req, res) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <meta name="description" content="${title}">
+      <base href="/">
+      <link rel="icon" href="./favicon.ico">
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Roboto"
       />
-      <title>Server rendering dark app</title>
+      <link rel="preload" href="./build.js" as="script" />
+      <title>${title}</title>
       <style>
         * {
           box-sizing: border-box;
@@ -41,13 +53,16 @@ server.get('/*', (req, res) => {
     </head>
     <body>
       <div id="root">${app}</div>
+      <script src="./build.js" defer></script>
     </body>
     </html>
   `;
 
-  res.send(content);
-});
+  return content;
+}
 
-server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+const server = app.listen(PORT, () => {
+  const { port } = server.address() as AddressInfo;
+
+  console.log(`Server is running on http://localhost:${port}`);
 });
