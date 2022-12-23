@@ -25,20 +25,26 @@ import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 
-platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-platform.requestAnimationFrame = requestAnimationFrame.bind(this);
-platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
-platform.scheduleCallback = scheduleCallback;
-platform.shouldYeildToHost = shouldYeildToHost;
-platform.applyCommit = applyCommit;
-platform.finishCommitWork = finishCommitWork;
-platform.detectIsDynamic = () => true;
-platform.detectIsPortal = detectIsPortal;
-platform.unmountPortal = unmountPortal;
-
+let isInjected = false;
 const roots = new Map<Element, number>();
 
+function inject() {
+  platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
+  platform.requestAnimationFrame = requestAnimationFrame.bind(this);
+  platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
+  platform.scheduleCallback = scheduleCallback;
+  platform.shouldYeildToHost = shouldYeildToHost;
+  platform.applyCommit = applyCommit;
+  platform.finishCommitWork = finishCommitWork;
+  platform.detectIsDynamic = () => true;
+  platform.detectIsPortal = detectIsPortal;
+  platform.unmountPortal = unmountPortal;
+  isInjected = true;
+}
+
 function render(element: DarkElement, container: TagNativeElement, hydrate = false) {
+  !isInjected && inject();
+
   if (!(container instanceof Element)) {
     throw new Error(`[Dark]: render receives only Element as container!`);
   }

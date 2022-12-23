@@ -20,18 +20,26 @@ import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 import { TagNativeElement } from '../native-element';
 
-platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-platform.requestAnimationFrame = setTimeout.bind(this);
-platform.cancelAnimationFrame = setTimeout.bind(this);
-platform.scheduleCallback = scheduleCallback;
-platform.shouldYeildToHost = shouldYeildToHost;
-platform.applyCommit = applyCommit;
-platform.finishCommitWork = finishCommitWork;
-platform.detectIsDynamic = () => false;
-platform.detectIsPortal = () => false;
-platform.unmountPortal = () => {};
+let isInjected = false;
+let nextRootId = -1;
+
+function inject() {
+  platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
+  platform.requestAnimationFrame = setTimeout.bind(this);
+  platform.cancelAnimationFrame = setTimeout.bind(this);
+  platform.scheduleCallback = scheduleCallback;
+  platform.shouldYeildToHost = shouldYeildToHost;
+  platform.applyCommit = applyCommit;
+  platform.finishCommitWork = finishCommitWork;
+  platform.detectIsDynamic = () => false;
+  platform.detectIsPortal = () => false;
+  platform.unmountPortal = () => {};
+  isInjected = true;
+}
 
 function renderToString(element: DarkElement): string {
+  !isInjected && inject();
+
   const rootId = getNextRootId();
   const callback = () => {
     rootStore.set(rootId);
@@ -58,8 +66,6 @@ function renderToString(element: DarkElement): string {
 
   return content;
 }
-
-let nextRootId = -1;
 
 const getNextRootId = () => ++nextRootId;
 
