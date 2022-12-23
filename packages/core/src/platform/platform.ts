@@ -1,6 +1,6 @@
 import type { Platform } from './types';
 
-export const platform: Platform = {
+const platform: Platform = {
   createNativeElement: () => {
     throw new Error('createNativeElement not installed by renderer');
   },
@@ -32,3 +32,7 @@ export const platform: Platform = {
     throw new Error('unmountPortal not installed by renderer');
   },
 };
+
+const detectIsServer = () => !platform.detectIsDynamic();
+
+export { platform, detectIsServer };
