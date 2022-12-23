@@ -23,22 +23,33 @@ import {
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import type { DOMElement, DOMFragment, AttributeValue } from './types';
 import { SVG_TAG_NAMES, VOID_TAG_NAMES } from '../constants';
+import type {
+  NativeElement,
+  TagNativeElement,
+  TextNativeElement,
+  CommentNativeElement,
+  AttributeValue,
+} from '../native-element';
+
+type DOMFragment = {
+  fragment: DocumentFragment;
+  callback: () => void;
+};
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
   [ATTR_FLAG]: true,
 };
-let fragmentsMap: Map<Element, DOMFragment> = new Map();
+let fragmentsMap: Map<NativeElement, DOMFragment> = new Map();
 let moves: Array<() => void> = [];
-let trackUpdate: (nativeElement: Element) => void = null;
+let trackUpdate: (nativeElement: NativeElement) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
 
 const createNativeElementMap = {
-  [NodeType.TAG]: (vNode: VirtualNode) => {
+  [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
     const tagNode = vNode as TagVirtualNode;
     const node = detectIsSvgElement(tagNode.name)
       ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
@@ -46,13 +57,13 @@ const createNativeElementMap = {
 
     return node;
   },
-  [NodeType.TEXT]: (vNode: VirtualNode) => {
+  [NodeType.TEXT]: (vNode: VirtualNode): TextNativeElement => {
     const textNode = vNode as TextVirtualNode;
     const node = document.createTextNode(textNode.value);
 
     return node;
   },
-  [NodeType.COMMENT]: (vNode: VirtualNode) => {
+  [NodeType.COMMENT]: (vNode: VirtualNode): CommentNativeElement => {
     const commentNode = vNode as CommentVirtualNode;
     const node = document.createComment(commentNode.value);
 
@@ -60,7 +71,7 @@ const createNativeElementMap = {
   },
 };
 
-function createNativeElement(vNode: VirtualNode): DOMElement {
+function createNativeElement(vNode: VirtualNode): NativeElement {
   return createNativeElementMap[vNode.type](vNode);
 }
 
@@ -72,7 +83,7 @@ function detectIsVoidElement(tagName: string) {
   return Boolean(voidTagNamesMap[tagName]);
 }
 
-function applyRef(ref: Ref<Element>, element: Element) {
+function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
   if (detectIsFunction(ref)) {
     ref(element);
   } else if (detectIsMutableRef(ref)) {
@@ -80,9 +91,10 @@ function applyRef(ref: Ref<Element>, element: Element) {
   }
 }
 
-function addAttributes(element: Element, vNode: VirtualNode) {
+function addAttributes(element: NativeElement, vNode: VirtualNode) {
   if (!detectIsTagVirtualNode(vNode)) return;
   const attrNames = Object.keys(vNode.attrs);
+  const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
     const attrValue = vNode.attrs[attrName];
@@ -95,7 +107,7 @@ function addAttributes(element: Element, vNode: VirtualNode) {
     if (detectIsFunction(attrValue)) {
       if (detectIsEvent(attrName)) {
         delegateEvent({
-          target: element,
+          target: tagElement,
           handler: attrValue,
           eventName: getEventName(attrName),
         });
@@ -103,18 +115,19 @@ function addAttributes(element: Element, vNode: VirtualNode) {
     } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
       const stop = patchProperties({
         tagName: vNode.name,
+        element: tagElement,
         attrValue,
         attrName,
-        element,
       });
 
-      !stop && element.setAttribute(attrName, attrValue);
+      !stop && tagElement.setAttribute(attrName, attrValue);
     }
   }
 }
 
-function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
+function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
   const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
+  const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
     const prevAttrValue = vNode.attrs[attrName];
@@ -129,7 +142,7 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
       if (detectIsFunction(prevAttrValue)) {
         if (detectIsEvent(attrName) && prevAttrValue !== nextAttrValue) {
           delegateEvent({
-            target: element,
+            target: tagElement,
             handler: nextAttrValue,
             eventName: getEventName(attrName),
           });
@@ -137,22 +150,22 @@ function updateAttributes(element: Element, vNode: TagVirtualNode, nextVNode: Ta
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
         const stop = patchProperties({
           tagName: nextVNode.name,
+          element: tagElement,
           attrValue: nextAttrValue,
           attrName,
-          element,
         });
 
-        !stop && element.setAttribute(attrName, nextAttrValue);
+        !stop && tagElement.setAttribute(attrName, nextAttrValue);
       }
     } else {
-      element.removeAttribute(attrName);
+      tagElement.removeAttribute(attrName);
     }
   }
 }
 
 type PatchPropertiesOptions = {
   tagName: string;
-  element: Element;
+  element: TagNativeElement;
   attrName: string;
   attrValue: AttributeValue;
 };
@@ -173,13 +186,13 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   return stop;
 }
 
-function canSetProperty(prototype: Element, key: string) {
+function canSetProperty(prototype: TagNativeElement, key: string) {
   return prototype.hasOwnProperty(key) && Boolean(Object.getOwnPropertyDescriptor(prototype, key)?.set);
 }
 
 const patchPropertiesSpecialCasesMap: Record<
   string,
-  (element: Element, attrName: string, attrValue: AttributeValue) => boolean
+  (element: NativeElement, attrName: string, attrValue: AttributeValue) => boolean
 > = {
   input: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
     if (attrName === 'value' && detectIsBoolean(attrValue)) {
@@ -201,7 +214,7 @@ const patchPropertiesSpecialCasesMap: Record<
   },
 };
 
-function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> {
+function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<TagNativeElement> {
   let nextFiber = fiber;
 
   while (nextFiber) {
@@ -211,13 +224,13 @@ function getParentFiberWithNativeElement(fiber: Fiber<Element>): Fiber<Element> 
       nextFiber.nativeElement = getPortalContainer(nextFiber.instance);
     }
 
-    if (nextFiber.nativeElement) return nextFiber;
+    if (nextFiber.nativeElement) return nextFiber as Fiber<TagNativeElement>;
   }
 
-  return nextFiber;
+  return nextFiber as Fiber<TagNativeElement>;
 }
 
-function append(fiber: Fiber<Element>, parentElement: Element) {
+function append(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
   const { fragment } =
     fragmentsMap.get(parentElement) ||
     ({
@@ -234,17 +247,17 @@ function append(fiber: Fiber<Element>, parentElement: Element) {
   fragment.appendChild(fiber.nativeElement);
 }
 
-function insert(fiber: Fiber<Element>, parentElement: Element) {
+function insert(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
   parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[fiber.elementIdx]);
 }
 
-function commitCreation(fiber: Fiber<Element>) {
+function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentElement = parentFiber.nativeElement;
   const childNodes = parentElement.childNodes;
 
   if (isHydrateZone.get()) {
-    const nativeElement = childNodes[fiber.elementIdx] as Element;
+    const nativeElement = childNodes[fiber.elementIdx] as NativeElement;
 
     if (
       detectIsTextVirtualNode(fiber.instance) &&
@@ -268,7 +281,7 @@ function commitCreation(fiber: Fiber<Element>) {
   addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
 }
 
-function commitUpdate(fiber: Fiber<Element>) {
+function commitUpdate(fiber: Fiber<NativeElement>) {
   const element = fiber.nativeElement;
   const prevInstance = fiber.alternate.instance as VirtualNode;
   const nextInstance = fiber.instance as VirtualNode;
@@ -286,10 +299,10 @@ function commitUpdate(fiber: Fiber<Element>) {
   }
 }
 
-function commitDeletion(fiber: Fiber<Element>) {
+function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
 
-  walkFiber<Element>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+  walkFiber<NativeElement>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
     if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
       return stop();
     }
@@ -302,7 +315,7 @@ function commitDeletion(fiber: Fiber<Element>) {
   });
 }
 
-function move(fiber: Fiber<Element>) {
+function move(fiber: Fiber<NativeElement>) {
   const sourceNodes = collectElements(fiber);
   const sourceNode = sourceNodes[0];
   const parentElement = sourceNode.parentElement;
@@ -326,10 +339,10 @@ function move(fiber: Fiber<Element>) {
   moves.push(move);
 }
 
-function collectElements(fiber: Fiber<Element>) {
-  const store: Array<Element> = [];
+function collectElements(fiber: Fiber<NativeElement>) {
+  const store: Array<NativeElement> = [];
 
-  walkFiber<Element>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+  walkFiber<NativeElement>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
     if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
       return stop();
     }
@@ -344,13 +357,13 @@ function collectElements(fiber: Fiber<Element>) {
   return store;
 }
 
-const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
-  [EffectTag.CREATE]: (fiber: Fiber<Element>) => {
+const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
+  [EffectTag.CREATE]: (fiber: Fiber<NativeElement>) => {
     if (fiber.nativeElement === null) return;
     trackUpdate && trackUpdate(fiber.nativeElement);
     commitCreation(fiber);
   },
-  [EffectTag.UPDATE]: (fiber: Fiber<Element>) => {
+  [EffectTag.UPDATE]: (fiber: Fiber<NativeElement>) => {
     if (fiber.move) {
       move(fiber);
       fiber.move = false;
@@ -366,11 +379,11 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<Element>) => void> = {
     trackUpdate && trackUpdate(fiber.nativeElement);
     commitUpdate(fiber);
   },
-  [EffectTag.DELETE]: (fiber: Fiber<Element>) => commitDeletion(fiber),
+  [EffectTag.DELETE]: (fiber: Fiber<NativeElement>) => commitDeletion(fiber),
   [EffectTag.SKIP]: () => {},
 };
 
-function applyCommit(fiber: Fiber<Element>) {
+function applyCommit(fiber: Fiber<NativeElement>) {
   applyCommitMap[fiber.effectTag](fiber);
 }
 

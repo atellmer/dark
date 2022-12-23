@@ -20,6 +20,7 @@ import {
   isLayoutEffectsZone,
   isHydrateZone,
 } from '@dark-engine/core';
+import type { TagNativeElement } from '../native-element';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
@@ -37,7 +38,7 @@ platform.unmountPortal = unmountPortal;
 
 const roots = new Map<Element, number>();
 
-function render(element: DarkElement, container: Element, hydrate = false) {
+function render(element: DarkElement, container: TagNativeElement, hydrate = false) {
   if (!(container instanceof Element)) {
     throw new Error(`[Dark]: render receives only Element as container!`);
   }
@@ -73,7 +74,6 @@ function render(element: DarkElement, container: Element, hydrate = false) {
       effectTag: isMounted ? EffectTag.UPDATE : EffectTag.CREATE,
     });
 
-    currentRoot && (currentRoot.alternate = null);
     fiberMountStore.reset();
     wipRootStore.set(fiber);
     isHydrateZone.set(hydrate);

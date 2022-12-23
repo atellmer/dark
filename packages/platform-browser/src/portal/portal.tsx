@@ -6,10 +6,11 @@ import {
   detectIsComponentFactory,
   useMemo,
 } from '@dark-engine/core';
+import type { TagNativeElement } from '../native-element';
 
 const $$portal = Symbol('portal');
 
-function createPortal(slot: DarkElement, container: Element) {
+function createPortal(slot: DarkElement, container: TagNativeElement) {
   if (!(container instanceof Element)) {
     throw new Error(`[Dark]: createPortal receives only Element as container!`);
   }
@@ -18,7 +19,7 @@ function createPortal(slot: DarkElement, container: Element) {
 }
 
 type PortalProps = {
-  [$$portal]: Element;
+  [$$portal]: TagNativeElement;
   slot: DarkElement;
 };
 
@@ -34,10 +35,10 @@ const Portal = createComponent<PortalProps>(
 const detectIsPortal = (factory: unknown): factory is ComponentFactory =>
   detectIsComponentFactory(factory) && factory.token === $$portal;
 
-const getPortalContainer = (factory: unknown): Element | null =>
+const getPortalContainer = (factory: unknown): TagNativeElement | null =>
   detectIsPortal(factory) ? factory.props[$$portal] : null;
 
-function unmountPortal(fiber: Fiber<Element>) {
+function unmountPortal(fiber: Fiber<TagNativeElement>) {
   const container = getPortalContainer(fiber.instance);
 
   if (container) {

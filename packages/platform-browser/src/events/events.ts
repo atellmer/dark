@@ -1,8 +1,9 @@
 import { detectIsFunction, eventsStore } from '@dark-engine/core';
+import type { TagNativeElement } from '../native-element';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;
 
-class SyntheticEvent<E extends Event, T = Element> {
+class SyntheticEvent<E extends Event, T = TagNativeElement> {
   public type = '';
   public sourceEvent: E = null;
   public target: T = null;
@@ -42,7 +43,7 @@ function delegateEvent(options: DelegateEventOptions) {
   if (!handlerMap) {
     const rootHandler = (event: Event) => {
       const fireEvent = eventsMap.get(eventName).get(event.target);
-      const target = event.target as Element;
+      const target = event.target as TagNativeElement;
       let syntheticEvent: SyntheticEvent<Event> = null;
 
       if (detectIsFunction(fireEvent)) {
