@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "paths": {
+      "@dark-engine/core": [
+        "../../packages/core/src/index"
+      ],
+      "@dark-engine/platform-browser": [
+        "../../packages/platform-browser/src/index"
+      ],
+      "@dark-engine/platform-server": [
+        "../../packages/platform-server/src/index"
+      ]
+    }
+  }
+}

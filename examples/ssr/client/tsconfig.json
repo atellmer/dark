@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "outDir": "./lib/",
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "removeComments": false,
+    "downlevelIteration": true,
+    "allowJs": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "lib": [
+      "ES6",
+      "ES7",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@dark-engine/core": [
+        "../../../packages/core/src/index"
+      ],
+      "@dark-engine/platform-browser": [
+        "../../../packages/platform-browser/src/index"
+      ]
+    }
+  }
+}

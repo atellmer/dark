@@ -14,6 +14,7 @@ import {
   nextUnitOfWorkStore,
   fiberMountStore,
   createReplacer,
+  unmountRoot,
 } from '@dark-engine/core';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
@@ -31,21 +32,18 @@ platform.detectIsPortal = () => false;
 platform.unmountPortal = () => {};
 
 function renderToString(element: DarkElement): string {
-  const rootId = 0;
+  const rootId = getNextRootId();
   const callback = () => {
     rootStore.set(rootId);
-    const currentRoot = currentRootStore.get();
     const fiber = new Fiber().mutate({
       nativeElement: new TagNativeElement(ROOT),
       instance: new TagVirtualNode({
         name: ROOT,
         children: flatten([element || createReplacer()]) as Array<VirtualNodeFactory | ComponentFactory>,
       }),
-      alternate: currentRoot,
       effectTag: EffectTag.CREATE,
     });
 
-    currentRoot && (currentRoot.alternate = null);
     fiberMountStore.reset();
     wipRootStore.set(fiber);
     nextUnitOfWorkStore.set(fiber);
@@ -53,10 +51,16 @@ function renderToString(element: DarkElement): string {
 
   platform.scheduleCallback(callback);
 
-  const nativeElement = currentRootStore.get().nativeElement as TagNativeElement;
-  const content = nativeElement.toString(true);
+  const fiber = currentRootStore.get() as Fiber<TagNativeElement>;
+  const content = fiber.nativeElement.toString(true);
+
+  unmountRoot(rootId, () => {});
 
   return content;
 }
+
+let nextRootId = -1;
+
+const getNextRootId = () => ++nextRootId;
 
 export { renderToString };
