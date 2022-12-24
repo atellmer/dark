@@ -34,7 +34,7 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 - [Sierpinski triangle](https://atellmer.github.io/dark/examples/sierpinski-triangle/)
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
 - [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
-- [Modal window](https://atellmer.github.io/dark/examples/modal-window/)
+- [Animated portal modal window](https://atellmer.github.io/dark/examples/modal-window/)
 - [Animated reorderable grid](https://atellmer.github.io/dark/examples/animated-grid/)
 - [StackBlitz example #1 (vanilla js)](https://stackblitz.com/edit/js-q58h8h?file=index.html)
 - [StackBlitz example #1 (typescript)](https://stackblitz.com/edit/darkapp-ccz57rk?file=index.tsx)
@@ -45,6 +45,7 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 - [StackBlitz example #7 (demo lazy loading routes via Dark and BaseRouter)](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=router.tsx,index.tsx)
 - [StackBlitz example #8 (spring animated image slider)](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
 - [StackBlitz example #9 (spring animated FAB button)](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
+- [StackBlitz example #10 (server-side rendering)](https://stackblitz.com/edit/darkapp-ccz57rk-3j65wa?file=server%2Fapp.ts)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
@@ -145,7 +146,7 @@ createRoot(document.getElementById('root')).render(App());
 - [Styles](#styles)
 - [Portals](#portals)
 - [Others](#others)
-- [SSR](#ssr)
+- [SSR (Server-Side Rendering)](#ssr)
 
 <a name="overview"></a>
 ## API overview
@@ -1188,14 +1189,17 @@ A normal Dark application runs in the browser, rendering pages in the DOM in res
 The basic principle: on the server, the component code is rendered into a string, which the server returns in response to a request in the form of a file to which the assembled build of the front-end code is connected. The user receives a rendered page with content instantly, while Dark performs a hydration procedure, i.e. reuses DOM nodes already created on the server, hangs event handlers, and also performs all relying effects
 
 ```
-ssr-app/
+app/
 ├─ client/
-│  ├─ app.tsx
-│  ├─ index.tsx
 │  ├─ static/
 │  │  ├─ build.js
+│  ├─ app.tsx
+│  ├─ index.tsx
+│  ├─ webpack.config.js
 ├─ server/
 │  ├─ app.ts
+├─ package.json
+├─ tsconfig.json
 ```
 
 ```tsx
@@ -1250,7 +1254,7 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />); // some magic and app works!
 ```
 
-A working example of an SSR application based on the express server is in examples/server-side-rendering
+A working example of an SSR application based on the express server is in StackBlitz example #10 
 
 Thanks everyone! 🙃
 
