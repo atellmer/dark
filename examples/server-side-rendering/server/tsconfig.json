@@ -1,4 +1,5 @@
 {
+  "extends": "../tsconfig",
   "compilerOptions": {
     "target": "ESNext",
     "module": "commonjs",
@@ -6,15 +7,12 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "baseUrl": ".",
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
     "lib": [
       "ESNext",
       "DOM"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
     ],
     "paths": {
       "@dark-engine/core": [
