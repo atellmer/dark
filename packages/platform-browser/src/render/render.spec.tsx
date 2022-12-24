@@ -10,6 +10,8 @@ import {
   useState,
   memo,
   useUpdate,
+  useRef,
+  type MutableRef,
   type DarkElement,
 } from '@dark-engine/core';
 import { render } from './render';
@@ -46,28 +48,55 @@ describe('[render]', () => {
     expect(render$).not.toThrowError();
   });
 
-  test('can render text correctly', () => {
-    const content = 'hello';
-    const App = createComponent(() => Text(content));
+  test('can render tag correctly', () => {
+    const content = `<div></div>`;
 
-    render(App(), host);
+    render(div(), host);
     expect(host.innerHTML).toBe(content);
   });
 
-  test('can render tag correctly', () => {
-    const content = `<div></div>`;
-    const App = createComponent(() => div());
+  test('can render text correctly', () => {
+    const content = 'hello';
 
-    render(App(), host);
+    render(Text(content), host);
     expect(host.innerHTML).toBe(content);
   });
 
   test('can render comment correctly', () => {
     const content = 'some comment';
-    const App = createComponent(() => Comment(content));
 
-    render(App(), host);
+    render(Comment(content), host);
     expect(host.innerHTML).toBe(`<!--${content}-->`);
+  });
+
+  test('can render nullable correctly', () => {
+    render(null, host);
+    expect(host.innerHTML).toBe(replacer);
+
+    render('', host);
+    expect(host.innerHTML).toBe(replacer);
+
+    render(0, host);
+    expect(host.innerHTML).toBe(replacer);
+
+    render(false, host);
+    expect(host.innerHTML).toBe(replacer);
+
+    render(undefined, host);
+    expect(host.innerHTML).toBe(replacer);
+  });
+
+  test('can render nested tags correctly', () => {
+    const content = () => dom`
+      <div>
+        <div>
+          <div>ola</div>
+        </div>
+      </div>
+    `;
+
+    render(div({ slot: div({ slot: div({ slot: Text('ola') }) }) }), host);
+    expect(host.innerHTML).toBe(content());
   });
 
   test('can render array of items correctly', () => {
@@ -80,6 +109,11 @@ describe('[render]', () => {
 
     render(App(), host);
     expect(host.innerHTML).toBe(content);
+  });
+
+  test('can prevent xss attacks', () => {
+    render(Text(`<script>alert('xss')</script>`), host);
+    expect(host.innerHTML).toBe(`&lt;script&gt;alert('xss')&lt;/script&gt;`);
   });
 
   test('conditional rendering works correctly with replacing components', () => {
@@ -551,6 +585,36 @@ describe('[render]', () => {
 
       render(App(), host);
       expect(host.innerHTML).toBe(content);
+    });
+
+    test('node recreates when key changed', () => {
+      type AppProps = {
+        x: number;
+      };
+
+      const render$ = (props: AppProps) => {
+        render(App(props), host);
+      };
+
+      let ref: MutableRef<HTMLDivElement> = null;
+      let node: HTMLDivElement = null;
+
+      const App = createComponent<AppProps>(({ x }) => {
+        ref = useRef<HTMLDivElement>(null);
+
+        return div({ ref, key: x });
+      });
+
+      render$({ x: 1 });
+      node = ref.current;
+      expect(node).toBeInstanceOf(HTMLDivElement);
+
+      render$({ x: 1 });
+      expect(ref.current).toBe(node);
+
+      render$({ x: 2 });
+      expect(ref.current).not.toBe(node);
+      expect(ref.current).toBeInstanceOf(HTMLDivElement);
     });
   });
 
