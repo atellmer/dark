@@ -54,8 +54,8 @@ function renderToString(element: DarkElement): string {
 
   platform.scheduleCallback(callback);
 
-  const fiber = currentRootStore.get() as Fiber<TagNativeElement>;
-  const content = fiber.nativeElement.toString(true);
+  const { nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
+  const content = nativeElement.renderToString(true);
 
   unmountRoot(rootId, () => {});
 

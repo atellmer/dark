@@ -1,9 +1,5 @@
 import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
 
-interface RenderableToString {
-  toString(isRoot?: boolean): string;
-}
-
 class NativeElement {
   public type: NodeType;
   public parentElement: TagNativeElement = null;
@@ -11,9 +7,13 @@ class NativeElement {
   constructor(type: NodeType) {
     this.type = type;
   }
+
+  renderToString(isRoot?: boolean) {
+    return this.type as string;
+  }
 }
 
-class TagNativeElement extends NativeElement implements RenderableToString {
+class TagNativeElement extends NativeElement {
   public name: string = null;
   public attrs: Record<string, AttributeValue> = {};
   public children: Array<NativeElement> = [];
@@ -32,16 +32,16 @@ class TagNativeElement extends NativeElement implements RenderableToString {
     this.attrs[name] = detectIsString(value) ? escape(value) : value;
   }
 
-  public toString(isRoot: boolean): string {
+  public renderToString(isRoot: boolean): string {
     const attrs = getAttributes(this.attrs);
-    const children = this.children.map(x => x.toString()).join('');
+    const children = this.children.map(x => x.renderToString()).join('');
     const value = isRoot ? children : `<${this.name}${attrs}>${children}</${this.name}>`;
 
     return value;
   }
 }
 
-class TextNativeElement extends NativeElement implements RenderableToString {
+class TextNativeElement extends NativeElement {
   private value = '';
 
   constructor(text: string) {
@@ -49,12 +49,12 @@ class TextNativeElement extends NativeElement implements RenderableToString {
     this.value = escape(text);
   }
 
-  toString(): string {
+  renderToString(): string {
     return this.value;
   }
 }
 
-class CommentNativeElement extends NativeElement implements RenderableToString {
+class CommentNativeElement extends NativeElement {
   private value = '';
 
   constructor(text: string) {
@@ -62,7 +62,7 @@ class CommentNativeElement extends NativeElement implements RenderableToString {
     this.value = `<!--${escape(text)}-->`;
   }
 
-  toString(): string {
+  renderToString(): string {
     return this.value;
   }
 }
