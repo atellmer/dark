@@ -37,6 +37,12 @@
       "@dark-engine/platform-server/*": [
         "./packages/platform-server/src/*"
       ],
+      "@dark-engine/web-router": [
+        "./packages/web-router/src/index"
+      ],
+      "@dark-engine/web-router/*": [
+        "./packages/web-router/src/*"
+      ],
       "@test-utils": [
         "./test/utils"
       ]
