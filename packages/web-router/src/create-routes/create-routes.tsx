@@ -1,24 +1,30 @@
-import type { Route, RouteConfig, RoutesConfig, RoutesMap } from './types';
+import type { SplitFlatRoute, RouteConfig, RoutesConfig, RoutesMap } from './types';
 
-function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Route): RoutesMap {
+function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: SplitFlatRoute): RoutesMap {
   const routes: Record<string, RouteConfig> = {};
 
   for (const route of config.schema) {
-    const fullPath = createPath(prefix, route.path);
-    const fallback: Route = config.fallback
-      ? { ...config.fallback, path: createPath(prefix, config.fallback.path) }
+    const routePath = createPath(prefix, route.path);
+    const fallbackPath = config.fallback ? createPath(prefix, config.fallback.path) : '';
+    const fallback: SplitFlatRoute = config.fallback
+      ? {
+          ...config.fallback,
+          path: fallbackPath,
+          split: splitPath(fallbackPath),
+        }
       : null;
 
-    routes[fullPath] = {
+    routes[routePath] = {
       route: {
-        path: fullPath,
+        path: routePath,
+        split: splitPath(routePath),
         render: route.render,
       },
-      fallback: fallback || parentFallback,
+      fallback: fallback || parentFallback || null,
     };
 
     if (route.routes) {
-      const nestedRoutes = createRoutes$(route.routes, route.path, config.fallback);
+      const nestedRoutes = createRoutes$(route.routes, route.path, fallback);
 
       for (const key of Object.keys(nestedRoutes)) {
         routes[key] = nestedRoutes[key];
@@ -29,9 +35,9 @@ function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Route
   return routes;
 }
 
-function createPath(prefix: string, path: string) {
-  return prefix ? `${prefix}/${path}` : path;
-}
+const createPath = (prefix: string, path: string) => (prefix ? `${prefix}/${path}` : path);
+
+const splitPath = (path: string) => path.split('/').filter(Boolean);
 
 const createRoutes = (config: RoutesConfig, prefix = '') => createRoutes$(config, prefix);
 

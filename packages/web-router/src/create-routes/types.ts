@@ -8,9 +8,13 @@ export type Route = {
 
 export type FlatRoute = Omit<Route, 'routes'>;
 
+export type SplitFlatRoute = {
+  split: Array<string>;
+} & FlatRoute;
+
 export type RouteConfig = {
-  route: FlatRoute;
-  fallback: FlatRoute;
+  route: SplitFlatRoute;
+  fallback: SplitFlatRoute;
 };
 
 export type RoutesConfig = {

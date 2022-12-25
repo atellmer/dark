@@ -13,7 +13,7 @@ type RouterSlotOptions = {
 };
 
 const Router = createComponent<RouterProps>(({ routes, slot }) => {
-  const currentPath = '/home/tabs';
+  const currentPath = '/home/tabs/settings';
   const [path, setPath] = useState(() => match(currentPath, routes));
   const context = useMemo<RouterContextValue>(() => ({}), []);
 
@@ -27,10 +27,36 @@ const Router = createComponent<RouterProps>(({ routes, slot }) => {
 });
 
 function match(path: string, routesMap: RoutesMap): string {
+  const splittedPath = path.split('/').filter(Boolean);
   const routes = Object.keys(routesMap).map(key => routesMap[key]);
-  const splitted = path.split('/').filter(Boolean);
+  const fallbackPathes = routes.map(x => x.fallback.path);
+  const [fallbackPath] = sort('asc', fallbackPathes, x => x.length);
+  let filteredRoutes = routes.filter(x => x.route.split.length <= splittedPath.length);
 
-  return '';
+  for (let i = 0; i < splittedPath.length; i++) {
+    filteredRoutes = filteredRoutes.filter(x => !x.route.split[i] || x.route.split[i] === splittedPath[i]);
+  }
+
+  const [firstRoute] = sort('desc', filteredRoutes, x => x.route.path.length);
+  const matchedPath = firstRoute
+    ? firstRoute.route.split.length === splittedPath.length
+      ? firstRoute.route.path
+      : firstRoute.fallback
+      ? firstRoute.fallback.path
+      : fallbackPath || ''
+    : fallbackPath || '';
+
+  console.log('matchedPath', matchedPath);
+
+  return matchedPath;
+}
+
+function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => number) {
+  const asc = (a: T, b: T) => selector(a) - selector(b);
+  const desc = (a: T, b: T) => selector(b) - selector(a);
+  const compare = type === 'asc' ? asc : desc;
+
+  return list.sort(compare);
 }
 
 export { Router };
