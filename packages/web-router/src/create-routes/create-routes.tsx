@@ -1,4 +1,5 @@
 import type { SplitFlatRoute, RouteConfig, RoutesConfig, RoutesMap } from './types';
+import { createPath, splitPath } from '../utils';
 
 function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: SplitFlatRoute): RoutesMap {
   const routes: Record<string, RouteConfig> = {};
@@ -14,7 +15,7 @@ function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Split
           fullPath: fallbackFullPath,
           split: splitPath(fallbackFullPath),
         }
-      : null;
+      : parentFallback || null;
 
     routes[routeFullPath] = {
       route: {
@@ -24,11 +25,11 @@ function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Split
         split: splitPath(routeFullPath),
         render: route.render,
       },
-      fallback: fallback || parentFallback || null,
+      fallback,
     };
 
     if (route.routes) {
-      const nestedRoutes = createRoutes$(route.routes, route.path, fallback);
+      const nestedRoutes = createRoutes$(route.routes, routeFullPath, fallback);
 
       for (const key of Object.keys(nestedRoutes)) {
         routes[key] = nestedRoutes[key];
@@ -38,10 +39,6 @@ function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Split
 
   return routes;
 }
-
-const createPath = (prefix: string, path: string) => (prefix ? `${prefix}/${path}` : path);
-
-const splitPath = (path: string) => path.split('/').filter(Boolean);
 
 const createRoutes = (config: RoutesConfig, prefix = '') => createRoutes$(config, prefix);
 
