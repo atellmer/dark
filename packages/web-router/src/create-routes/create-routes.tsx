@@ -1,26 +1,6 @@
-import { DarkElement } from '@dark-engine/core';
+import type { Route, RouteConfig, RoutesConfig, RoutesMap } from './types';
 
-export type Route = {
-  path: string;
-  routes?: CreateRoutesConfig;
-  render: () => DarkElement;
-};
-
-type FlatRoute = Omit<Route, 'routes'>;
-
-type CreateRoutesConfig = {
-  schema: Array<Route>;
-  fallback?: FlatRoute;
-};
-
-type RouteConfig = {
-  route: FlatRoute;
-  fallback: FlatRoute;
-};
-
-export type RoutesMap = Record<string, RouteConfig>;
-
-function createRoutes$(config: CreateRoutesConfig, prefix = '', parentFallback?: Route): RoutesMap {
+function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Route): RoutesMap {
   const routes: Record<string, RouteConfig> = {};
 
   for (const route of config.schema) {
@@ -53,6 +33,6 @@ function createPath(prefix: string, path: string) {
   return prefix ? `${prefix}/${path}` : path;
 }
 
-const createRoutes = (config: CreateRoutesConfig, prefix = '') => createRoutes$(config, prefix);
+const createRoutes = (config: RoutesConfig, prefix = '') => createRoutes$(config, prefix);
 
 export { createRoutes };

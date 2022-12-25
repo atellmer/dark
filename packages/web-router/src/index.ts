@@ -1,2 +1,2 @@
+export { type Route, createRoutes } from './create-routes';
 export { Router } from './router';
-export { createRoutes } from './create-routes';
