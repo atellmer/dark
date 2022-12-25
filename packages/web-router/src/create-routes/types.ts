@@ -9,6 +9,8 @@ export type Route = {
 export type FlatRoute = Omit<Route, 'routes'>;
 
 export type SplitFlatRoute = {
+  fullPath: string;
+  prefix: string;
   split: Array<string>;
 } & FlatRoute;
 

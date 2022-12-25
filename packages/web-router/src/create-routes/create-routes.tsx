@@ -4,20 +4,24 @@ function createRoutes$(config: RoutesConfig, prefix = '', parentFallback?: Split
   const routes: Record<string, RouteConfig> = {};
 
   for (const route of config.schema) {
-    const routePath = createPath(prefix, route.path);
-    const fallbackPath = config.fallback ? createPath(prefix, config.fallback.path) : '';
+    const routeFullPath = createPath(prefix, route.path);
+    const fallbackFullPath = config.fallback ? createPath(prefix, config.fallback.path) : '';
     const fallback: SplitFlatRoute = config.fallback
       ? {
           ...config.fallback,
-          path: fallbackPath,
-          split: splitPath(fallbackPath),
+          prefix,
+          path: config.fallback ? config.fallback.path : '',
+          fullPath: fallbackFullPath,
+          split: splitPath(fallbackFullPath),
         }
       : null;
 
-    routes[routePath] = {
+    routes[routeFullPath] = {
       route: {
-        path: routePath,
-        split: splitPath(routePath),
+        prefix,
+        path: route.path,
+        fullPath: routeFullPath,
+        split: splitPath(routeFullPath),
         render: route.render,
       },
       fallback: fallback || parentFallback || null,
