@@ -68,6 +68,10 @@ function createRoutes(routes: Routes, prefix = '/', parent: FullRoute = null): F
 function match(currentPath: string, routes: FullRoutes): FullRoute {
   const route = routes.find(x => detectIsMatch(currentPath, x.fullPath)) || null;
 
+  if (route?.redirectTo) {
+    return match(route.redirectTo, routes);
+  }
+
   return detectCanRenderRoute(route) ? route : null;
 }
 
