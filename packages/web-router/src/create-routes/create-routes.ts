@@ -1,61 +1,91 @@
 import { type DarkElement } from '@dark-engine/core';
 
-import { detectIsMatch, createPath } from '../utils';
-import type { Routes, FullRoute, FullRoutes } from './types';
 import { SLASH, WILDCARD } from '../constants';
+import { splitPath, normalaizeEnd, detectIsParam } from '../utils';
+import type { Routes, RouteDescriptor, PathMatchStrategy } from './types';
 
-function createRoutes(routes: Routes, prefix = SLASH, parent: FullRoute = null): FullRoutes {
-  const routes$: FullRoutes = [];
+type RouteConstructorOptions = {
+  prefix: string;
+  path: string;
+  redirectTo?: string;
+  pathMatch?: PathMatchStrategy;
+  children?: Array<RouteDescriptor>;
+  parent: Route;
+  render?: (slot?: DarkElement) => DarkElement;
+};
 
-  for (const route of routes) {
-    const { pathMatch = 'prefix' } = route;
-    const fullPath = createPath(pathMatch, prefix, route.path);
-    const children = route.children || [];
-    const fullRoute: FullRoute = {
-      ...route,
-      fullPath,
-      parent,
-      children: [],
-      matchRender: null,
-    };
-    const childRoutes = createRoutes(children, fullPath, fullRoute);
+class Route {
+  public path = '';
+  public fullPath = '';
+  public pathMatch?: PathMatchStrategy;
+  public redirectTo?: string;
+  public parent: Route = null;
+  public children: Array<Route> = [];
+  public cursor: Route = null;
+  public render?: (slot?: DarkElement) => DarkElement;
 
-    if (parent) {
-      parent.children.push(fullRoute);
+  constructor(options: RouteConstructorOptions) {
+    const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, render } = options;
+    const fullPath = createPath(pathMatch, prefix, path);
+
+    this.cursor = this;
+    this.path = path;
+    this.pathMatch = pathMatch;
+    this.parent = parent;
+    this.fullPath = fullPath;
+    this.children = createRoutes(children, fullPath, this);
+
+    if (render) {
+      this.render = render;
     }
 
-    if (fullRoute.redirectTo) {
-      fullRoute.redirectTo = createPath(pathMatch, prefix, fullRoute.redirectTo);
+    if (redirectTo) {
+      this.redirectTo = createPath(pathMatch, prefix, redirectTo);
     }
-
-    routes$.push(fullRoute);
-    routes$.push(...childRoutes);
   }
 
-  for (const route of routes$) {
-    route.matchRender = (path: string) => {
-      const childRoutes = route.children || [];
-      let path$ = path;
-      let rendered = null;
+  public setCursor(cursor: Route) {
+    this.cursor = cursor;
 
-      if (childRoutes.length > 0) {
-        if (path === route.fullPath) {
-          path$ = childRoutes[0].fullPath;
-        }
+    if (this.parent) {
+      this.parent.setCursor(cursor);
+    }
+  }
 
-        const matched = match(path$, childRoutes);
+  public matchRender(path: string): DarkElement {
+    const childRoutes = this.children || [];
+    let path$ = path;
+    let rendered = null;
 
-        rendered = renderRoute(path$, matched);
+    if (childRoutes.length > 0) {
+      if (path === this.fullPath) {
+        path$ = childRoutes[0].fullPath;
       }
 
-      return route.render(rendered);
-    };
+      const matched = match(path$, childRoutes);
+      const cursor = matched || this.cursor;
+
+      this.setCursor(cursor);
+      rendered = renderRoute(path$, matched);
+    }
+
+    return this.render(rendered);
+  }
+}
+
+function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Array<Route> {
+  const routes$: Array<Route> = [];
+
+  for (const route of routes) {
+    const fullRoute = new Route({ ...route, prefix, parent });
+
+    routes$.push(fullRoute, ...fullRoute.children);
   }
 
   return routes$;
 }
 
-function match(path: string, routes: FullRoutes): FullRoute {
+function match(path: string, routes: Array<Route>): Route {
   const route = routes.find(x => detectIsMatch(path, x.fullPath)) || null;
 
   if (route?.redirectTo) return match(route.redirectTo, routes);
@@ -71,15 +101,15 @@ function match(path: string, routes: FullRoutes): FullRoute {
   return null;
 }
 
-function detectCanRenderRoute(route: FullRoute) {
+function detectCanRenderRoute(route: Route): boolean {
   return route?.render && !route.redirectTo;
 }
 
-function renderRoute(path: string, route: FullRoute): DarkElement {
+function renderRoute(path: string, route: Route): DarkElement {
   return detectCanRenderRoute(route) ? route.matchRender(path) : null;
 }
 
-function getWildcardRoute(routes: FullRoutes) {
+function getWildcardRoute(routes: Array<Route>) {
   const wildcardRoutes = routes.filter(x => x.path === WILDCARD);
 
   if (wildcardRoutes.length === 1) return wildcardRoutes[0];
@@ -91,4 +121,40 @@ function getWildcardRoute(routes: FullRoutes) {
   return null;
 }
 
-export { createRoutes, match, renderRoute };
+function detectIsMatch(currentPath: string, fullPath: string): boolean {
+  const splittedA = splitPath(fullPath);
+  const splittedB = splitPath(currentPath);
+
+  if (fullPath === SLASH) {
+    if (currentPath === SLASH) return true;
+    return false;
+  }
+
+  for (let i = 0; i < splittedA.length; i++) {
+    const isParam = detectIsParam(splittedA[i]);
+
+    if (!isParam && splittedA[i] !== splittedB[i]) return false;
+  }
+
+  return true;
+}
+
+function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
+  const prefix$ = pathMatch === 'prefix' ? normalaizeEnd(prefix) : '';
+
+  return normalaizeEnd(prefix$ ? `${prefix$}${path}` : path);
+}
+
+function renderRoot(path: string, routes: Array<Route>, onComplete?: (matched: Route) => void): DarkElement {
+  const matched = match(path, routes);
+  const rendered = renderRoute(path, matched);
+
+  // console.log('path', path);
+  // console.log('routes', routes);
+  // console.log('matched', matched);
+  onComplete && onComplete(matched);
+
+  return rendered;
+}
+
+export { createRoutes, match, renderRoot };

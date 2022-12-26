@@ -1,1 +1,2 @@
-export { Router, type Routes } from './router';
+export { Router } from './router';
+export { type Routes } from './create-routes';
