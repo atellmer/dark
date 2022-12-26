@@ -56,7 +56,7 @@ function createRoutes(routes: Routes, prefix = '/', parent: FullRoute = null): F
       if (route.redirectTo || route.parent?.redirectTo) return null;
       const childRoutes = route.children || [];
       const matched = match(path, childRoutes);
-      const rendered = matched ? renderRoute(matched.fullPath, matched) : null;
+      const rendered = renderRoute(path, matched);
 
       return route.render(rendered);
     };
