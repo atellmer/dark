@@ -269,7 +269,7 @@ describe('[router/create-routes]', () => {
     expect(renderRoot('/', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
-  test('can work combined path match strategies correctly', () => {
+  test('can combine match strategies correctly', () => {
     const routes: Routes = [
       {
         path: 'first',
@@ -372,7 +372,7 @@ describe('[router/create-routes]', () => {
     expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/**/');
   });
 
-  test('can conbine wildcard routes and redirects in nested routes correctly', () => {
+  test('can combine wildcard routes and redirects in nested routes correctly', () => {
     const routes: Routes = [
       {
         path: 'first',
@@ -409,7 +409,7 @@ describe('[router/create-routes]', () => {
     expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
-  test('can conbine wildcard routes and redirects in deeply nested routes correctly', () => {
+  test('can combine wildcard routes and redirects in deeply nested routes correctly', () => {
     const routes: Routes = [
       {
         path: 'first',
