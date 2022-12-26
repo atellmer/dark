@@ -53,10 +53,15 @@ function createRoutes(routes: Routes, prefix = '/', parent: FullRoute = null): F
 
   for (const route of routes$) {
     route.matchRender = (path: string) => {
-      if (route.redirectTo || route.parent?.redirectTo) return null;
       const childRoutes = route.children || [];
-      const matched = match(path, childRoutes);
-      const rendered = renderRoute(path, matched);
+      let path$ = path;
+
+      if (childRoutes.length > 0 && path === route.fullPath) {
+        path$ = childRoutes[0].fullPath;
+      }
+
+      const matched = match(path$, childRoutes);
+      const rendered = renderRoute(path$, matched);
 
       return route.render(rendered);
     };
@@ -65,8 +70,8 @@ function createRoutes(routes: Routes, prefix = '/', parent: FullRoute = null): F
   return routes$;
 }
 
-function match(currentPath: string, routes: FullRoutes): FullRoute {
-  const route = routes.find(x => detectIsMatch(currentPath, x.fullPath)) || null;
+function match(path: string, routes: FullRoutes): FullRoute {
+  const route = routes.find(x => detectIsMatch(path, x.fullPath)) || null;
 
   if (route?.redirectTo) {
     return match(route.redirectTo, routes);
