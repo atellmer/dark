@@ -23,6 +23,7 @@ class Route {
   public children: Array<Route> = [];
   public cursor: Route = null;
   public render?: (slot?: DarkElement) => DarkElement;
+  public static param: string;
 
   constructor(options: RouteConstructorOptions) {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, render } = options;
@@ -57,6 +58,11 @@ class Route {
     let path$ = path;
     let rendered = null;
 
+    Route.param = getParam(path, this);
+
+    console.log('param', Route.param);
+    console.log('render', this);
+
     if (childRoutes.length > 0) {
       if (path === this.fullPath) {
         path$ = childRoutes[0].fullPath;
@@ -72,6 +78,25 @@ class Route {
     return this.render(rendered);
   }
 }
+
+const getParam = (url: string, route: Route): string => {
+  const path = route.fullPath;
+  const prefix = route.parent?.fullPath || '';
+  const splittedUrl = splitPath(url);
+  const splittedPath = splitPath(path);
+  const prevParamsCount = splitPath(prefix).filter(x => detectIsParam(x)).length;
+  const params: Array<string> = [];
+
+  for (let i = 0; i < splittedPath.length; i++) {
+    if (detectIsParam(splittedPath[i])) {
+      params.push(splittedUrl[i]);
+    }
+  }
+
+  const [param = null] = params.splice(prevParamsCount, 1);
+
+  return param;
+};
 
 function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Array<Route> {
   const routes$: Array<Route> = [];
@@ -149,9 +174,9 @@ function renderRoot(path: string, routes: Array<Route>): [Route, DarkElement] {
   const matched = match(path, routes);
   const rendered = renderRoute(path, matched);
 
-  // console.log('path', path);
+  console.log('path', path);
   // console.log('routes', routes);
-  console.log('matched', matched);
+  // console.log('matched', matched);
 
   return [matched, rendered];
 }
