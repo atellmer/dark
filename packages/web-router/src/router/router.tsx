@@ -24,7 +24,7 @@ const Router = createComponent<RouterProps>(({ currentPath, routes, slot }) => {
 });
 
 function createRoutes(routes: Routes, prefix = '/', parent: FullRoute = null): FullRoutes {
-  const fullRoutes: FullRoutes = [];
+  const routes$: FullRoutes = [];
 
   for (const route of routes) {
     const { pathMatch = 'prefix' } = route;
@@ -47,51 +47,36 @@ function createRoutes(routes: Routes, prefix = '/', parent: FullRoute = null): F
       fullRoute.redirectTo = createPath(pathMatch, prefix, fullRoute.redirectTo);
     }
 
-    fullRoutes.push(fullRoute);
-    fullRoutes.push(...childRoutes);
+    routes$.push(fullRoute);
+    routes$.push(...childRoutes);
   }
 
-  for (const route of fullRoutes) {
+  for (const route of routes$) {
     route.matchRender = (path: string) => {
+      if (route.redirectTo || route.parent?.redirectTo) return null;
       const childRoutes = route.children || [];
-      const matched = match(path, childRoutes, fullRoutes);
+      const matched = match(path, childRoutes);
       const rendered = matched ? renderRoute(matched.fullPath, matched) : null;
 
       return route.render(rendered);
     };
   }
 
-  return fullRoutes;
+  return routes$;
 }
 
-function match(currentPath: string, routes: FullRoutes, space: FullRoutes = routes): FullRoute {
-  const fullRoute = routes.find(x => detectIsMatch(currentPath, x.fullPath));
+function match(currentPath: string, routes: FullRoutes): FullRoute {
+  const route = routes.find(x => detectIsMatch(currentPath, x.fullPath)) || null;
 
-  return performRoute(currentPath, fullRoute, routes, space);
-}
-
-function performRoute(path: string, route: FullRoute, routes: FullRoutes, space: FullRoutes = routes): FullRoute {
-  return detectCanRenderRoute(route) ? route : checkRedirects(path, space);
-}
-
-function gettRedirectTarget(path: string, fullRoutes: FullRoutes): FullRoute {
-  const [redirect] = fullRoutes.filter(x => x.redirectTo && x.fullPath === path);
-
-  return redirect ? fullRoutes.find(x => x.fullPath === redirect.redirectTo) || null : null;
-}
-
-function checkRedirects(path: string, space: FullRoutes): FullRoute {
-  const target = gettRedirectTarget(path, space);
-
-  return target ? performRoute(target.fullPath, target, space) : null;
-}
-
-function renderRoute(path: string, fullRoute: FullRoute): DarkElement {
-  return detectCanRenderRoute(fullRoute) ? fullRoute.matchRender(path) : null;
+  return detectCanRenderRoute(route) ? route : null;
 }
 
 function detectCanRenderRoute(route: FullRoute) {
   return route?.render && !route.redirectTo;
+}
+
+function renderRoute(path: string, fullRoute: FullRoute): DarkElement {
+  return detectCanRenderRoute(fullRoute) ? fullRoute.matchRender(path) : null;
 }
 
 export { Router };
