@@ -578,4 +578,41 @@ describe('[router/create-routes]', () => {
       expect(matched.cursor.fullPath).toBe('/first/');
     });
   });
+
+  test('can work with parameters correctly', () => {
+    const routes: Routes = [
+      {
+        path: 'first',
+        render: () => null,
+      },
+      {
+        path: 'second/:id',
+        render: () => null,
+        children: [
+          {
+            path: 'child-a',
+            render: () => null,
+          },
+          {
+            path: 'child-b/:id',
+            render: () => null,
+          },
+        ],
+      },
+    ];
+    const routes$ = createRoutes(routes);
+
+    renderRoot('/second/1/child-a', routes$, matched => {
+      expect(matched.cursor.fullPath).toBe('/second/:id/child-a/');
+    });
+    renderRoot('/second/2/child-a', routes$, matched => {
+      expect(matched.cursor.fullPath).toBe('/second/:id/child-a/');
+    });
+    renderRoot('/second/1/child-b/2', routes$, matched => {
+      expect(matched.cursor.fullPath).toBe('/second/:id/child-b/:id/');
+    });
+    renderRoot('/second/100/child-b/2000', routes$, matched => {
+      expect(matched.cursor.fullPath).toBe('/second/:id/child-b/:id/');
+    });
+  });
 });
