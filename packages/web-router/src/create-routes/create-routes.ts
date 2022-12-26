@@ -1,7 +1,7 @@
 import { type DarkElement } from '@dark-engine/core';
 
 import { SLASH, WILDCARD } from '../constants';
-import { splitPath, normalaizeEnd, detectIsParam } from '../utils';
+import { splitPath, normalaizeEnd, detectIsParam, sort } from '../utils';
 import type { Routes, RouteDescriptor, PathMatchStrategy } from './types';
 
 type RouteConstructorOptions = {
@@ -22,6 +22,7 @@ class Route {
   public parent: Route = null;
   public children: Array<Route> = [];
   public cursor: Route = null;
+  public level = null;
   public render?: (slot?: DarkElement) => DarkElement;
   public static param: string;
 
@@ -29,6 +30,7 @@ class Route {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, render } = options;
     const fullPath = createPath(pathMatch, prefix, path);
 
+    this.level = parent ? parent.level + 1 : 0;
     this.cursor = this;
     this.path = path;
     this.pathMatch = pathMatch;
@@ -54,25 +56,20 @@ class Route {
   }
 
   public matchRender(path: string): DarkElement {
-    const childRoutes = this.children || [];
-    let path$ = path;
     let rendered = null;
 
     Route.param = getParam(path, this);
 
-    console.log('param', Route.param);
-    console.log('render', this);
+    // console.log('path', path);
+    // console.log('param', Route.param);
+    // console.log('render', this);
 
-    if (childRoutes.length > 0) {
-      if (path === this.fullPath) {
-        path$ = childRoutes[0].fullPath;
-      }
-
-      const matched = match(path$, childRoutes);
+    if (this.children.length > 0) {
+      const matched = match(path, this.children);
       const cursor = matched || this.cursor;
 
       this.setCursor(cursor);
-      rendered = renderRoute(path$, matched);
+      rendered = renderRoute(path, matched);
     }
 
     return this.render(rendered);
@@ -135,13 +132,13 @@ function renderRoute(path: string, route: Route): DarkElement {
 }
 
 function getWildcardRoute(routes: Array<Route>) {
-  const wildcardRoutes = routes.filter(x => x.path === WILDCARD);
+  const wildcardRoutes = sort(
+    'asc',
+    routes.filter(x => x.path.indexOf(WILDCARD) !== -1),
+    x => x.level,
+  );
 
-  if (wildcardRoutes.length === 1) return wildcardRoutes[0];
-
-  const rootWildcard = wildcardRoutes.find(x => x.fullPath === `${SLASH}${WILDCARD}${SLASH}`);
-
-  if (rootWildcard) return rootWildcard;
+  if (wildcardRoutes.length > 0) return wildcardRoutes[0];
 
   return null;
 }
@@ -174,7 +171,7 @@ function renderRoot(path: string, routes: Array<Route>): [Route, DarkElement] {
   const matched = match(path, routes);
   const rendered = renderRoute(path, matched);
 
-  console.log('path', path);
+  // console.log('path', path);
   // console.log('routes', routes);
   // console.log('matched', matched);
 
