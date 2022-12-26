@@ -1,4 +1,4 @@
-import { DarkElement } from '@dark-engine/core';
+import { type DarkElement } from '@dark-engine/core';
 
 export type PathMatchStrategy = 'prefix' | 'full';
 

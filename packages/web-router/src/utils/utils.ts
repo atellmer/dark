@@ -1,9 +1,14 @@
 import { SLASH, PARAMETER } from '../constants';
-import { type PathMatchStrategy } from '../router';
+import { type PathMatchStrategy } from '../create-routes';
 
 function detectIsMatch(currentPath: string, fullPath: string): boolean {
   const splittedA = splitPath(fullPath);
   const splittedB = splitPath(currentPath);
+
+  if (fullPath === SLASH) {
+    if (currentPath === SLASH) return true;
+    return false;
+  }
 
   for (let i = 0; i < splittedA.length; i++) {
     const isParam = detectIsParam(splittedA[i]);
