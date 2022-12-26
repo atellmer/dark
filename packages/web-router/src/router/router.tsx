@@ -14,7 +14,7 @@ const Router = createComponent<RouterProps>(({ currentPath, routes, slot }) => {
   const routes$ = useMemo(() => createRoutes(routes), []);
   const context = useMemo<RouterContextValue>(() => ({}), []);
   const currentPath$ = normalaizeEnd(currentPath);
-  const rendered = renderRoot(currentPath$, routes$);
+  const [matched, rendered] = renderRoot(currentPath$, routes$);
 
   return <RouterContext.Provider value={context}>{slot(rendered)}</RouterContext.Provider>;
 });

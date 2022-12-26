@@ -145,16 +145,15 @@ function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string):
   return normalaizeEnd(prefix$ ? `${prefix$}${path}` : path);
 }
 
-function renderRoot(path: string, routes: Array<Route>, onComplete?: (matched: Route) => void): DarkElement {
+function renderRoot(path: string, routes: Array<Route>): [Route, DarkElement] {
   const matched = match(path, routes);
   const rendered = renderRoute(path, matched);
 
   // console.log('path', path);
   // console.log('routes', routes);
-  // console.log('matched', matched);
-  onComplete && onComplete(matched);
+  console.log('matched', matched);
 
-  return rendered;
+  return [matched, rendered];
 }
 
 export { createRoutes, match, renderRoot };

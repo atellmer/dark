@@ -20,24 +20,12 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/first', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
-    renderRoot('/first/', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
-    renderRoot('/second', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/second/', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/third', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/third/');
-    });
-    renderRoot('/third/', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/third/');
-    });
+    expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/first/');
+    expect(renderRoot('/first/', routes$)[0].cursor.fullPath).toBe('/first/');
+    expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/second/', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/third/');
+    expect(renderRoot('/third/', routes$)[0].cursor.fullPath).toBe('/third/');
   });
 
   test('can match incorrect routes correctly', () => {
@@ -57,27 +45,13 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/', routes$, matched => {
-      expect(matched).toBe(null);
-    });
-    renderRoot('', routes$, matched => {
-      expect(matched).toBe(null);
-    });
-    renderRoot('/xxx', routes$, matched => {
-      expect(matched).toBe(null);
-    });
-    renderRoot('/second1', routes$, matched => {
-      expect(matched).toBe(null);
-    });
-    renderRoot('/second/1', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/first/1/xxx', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
-    renderRoot('/some/broken/url', routes$, matched => {
-      expect(matched).toBe(null);
-    });
+    expect(renderRoot('/', routes$)[0]).toBe(null);
+    expect(renderRoot('', routes$)[0]).toBe(null);
+    expect(renderRoot('/xxx', routes$)[0]).toBe(null);
+    expect(renderRoot('/second1', routes$)[0]).toBe(null);
+    expect(renderRoot('/second/1', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/first/1/xxx', routes$)[0].cursor.fullPath).toBe('/first/');
+    expect(renderRoot('/some/broken/url', routes$)[0]).toBe(null);
   });
 
   test('can match nested routes correctly', () => {
@@ -107,24 +81,12 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/first', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
-    renderRoot('/second', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/child-b', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/');
-    });
-    renderRoot('/second/child-b/some/broken/route', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/');
-    });
-    renderRoot('/third', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/third/');
-    });
+    expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/first/');
+    expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/child-b', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
+    expect(renderRoot('/second/child-b/some/broken/route', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
+    expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/third/');
   });
 
   test('can match deeply nested routes correctly', () => {
@@ -174,33 +136,15 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/first', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
-    renderRoot('/second', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/third', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/third/');
-    });
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/child-a/child-a-1', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/child-a-1/');
-    });
-    renderRoot('/second/child-a/child-a-2', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/child-a-2/');
-    });
-    renderRoot('/second/child-b', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/');
-    });
-    renderRoot('/second/child-b/child-b-1', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/child-b-1/');
-    });
-    renderRoot('/second/child-b/child-b-2', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/child-b-2/');
-    });
+    expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/first/');
+    expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/third/');
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/child-a/child-a-1', routes$)[0].cursor.fullPath).toBe('/second/child-a/child-a-1/');
+    expect(renderRoot('/second/child-a/child-a-2', routes$)[0].cursor.fullPath).toBe('/second/child-a/child-a-2/');
+    expect(renderRoot('/second/child-b', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
+    expect(renderRoot('/second/child-b/child-b-1', routes$)[0].cursor.fullPath).toBe('/second/child-b/child-b-1/');
+    expect(renderRoot('/second/child-b/child-b-2', routes$)[0].cursor.fullPath).toBe('/second/child-b/child-b-2/');
   });
 
   test('can work with redirects correctly', () => {
@@ -220,15 +164,9 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/first', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/second', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/');
-    });
-    renderRoot('/third', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/third/');
-    });
+    expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/second/');
+    expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/third/');
   });
 
   test('can work with chained redirects correctly', () => {
@@ -252,18 +190,10 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/first', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/fourth/');
-    });
-    renderRoot('/second', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/fourth/');
-    });
-    renderRoot('/third', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/fourth/');
-    });
-    renderRoot('/fourth', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/fourth/');
-    });
+    expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/fourth/');
+    expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/fourth/');
+    expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/fourth/');
+    expect(renderRoot('/fourth', routes$)[0].cursor.fullPath).toBe('/fourth/');
   });
 
   test('can work with redirects in nested routes correctly', () => {
@@ -301,15 +231,9 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-c/');
-    });
-    renderRoot('/second/child-b', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-c/');
-    });
-    renderRoot('/second/child-c', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-c/');
-    });
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-c/');
+    expect(renderRoot('/second/child-b', routes$)[0].cursor.fullPath).toBe('/second/child-c/');
+    expect(renderRoot('/second/child-c', routes$)[0].cursor.fullPath).toBe('/second/child-c/');
   });
 
   test('can work with root redirect correctly', () => {
@@ -325,9 +249,7 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
+    expect(renderRoot('/', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
   test('can work with root redirect with full path strategy correctly', () => {
@@ -344,9 +266,7 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
+    expect(renderRoot('/', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
   test('can work combined path match strategies correctly', () => {
@@ -373,9 +293,7 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/');
-    });
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
   });
 
   test('can work with wildcard routes correctly', () => {
@@ -409,12 +327,8 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/**/');
-    });
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/**/');
   });
 
   test('can work with wildcard in nested routes correctly', () => {
@@ -452,18 +366,10 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/**/');
-    });
-    renderRoot('/second/child-a/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/**/');
-    });
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/**/');
+    expect(renderRoot('/second/child-a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/**/');
   });
 
   test('can conbine wildcard routes and redirects in nested routes correctly', () => {
@@ -497,18 +403,10 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/child-a/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/child-a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
   test('can conbine wildcard routes and redirects in deeply nested routes correctly', () => {
@@ -556,27 +454,17 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/child-a/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-a/');
-    });
-    renderRoot('/second/child-b/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/child-b-1/');
-    });
-    renderRoot('/second/child-b/child-b-1/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/child-b-1/');
-    });
-    renderRoot('/second/child-b/child-b-2/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/child-b/child-b-2/');
-    });
-    renderRoot('/broken/url', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/first/');
-    });
+    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/child-a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/child-b/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-b/child-b-1/');
+    expect(renderRoot('/second/child-b/child-b-1/broken/url', routes$)[0].cursor.fullPath).toBe(
+      '/second/child-b/child-b-1/',
+    );
+    expect(renderRoot('/second/child-b/child-b-2/broken/url', routes$)[0].cursor.fullPath).toBe(
+      '/second/child-b/child-b-2/',
+    );
+    expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
   test('can work with parameters correctly', () => {
@@ -602,17 +490,9 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    renderRoot('/second/1/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/:id/child-a/');
-    });
-    renderRoot('/second/2/child-a', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/:id/child-a/');
-    });
-    renderRoot('/second/1/child-b/2', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/:id/child-b/:id/');
-    });
-    renderRoot('/second/100/child-b/2000', routes$, matched => {
-      expect(matched.cursor.fullPath).toBe('/second/:id/child-b/:id/');
-    });
+    expect(renderRoot('/second/1/child-a', routes$)[0].cursor.fullPath).toBe('/second/:id/child-a/');
+    expect(renderRoot('/second/2/child-a', routes$)[0].cursor.fullPath).toBe('/second/:id/child-a/');
+    expect(renderRoot('/second/1/child-b/2', routes$)[0].cursor.fullPath).toBe('/second/:id/child-b/:id/');
+    expect(renderRoot('/second/100/child-b/2000', routes$)[0].cursor.fullPath).toBe('/second/:id/child-b/:id/');
   });
 });
