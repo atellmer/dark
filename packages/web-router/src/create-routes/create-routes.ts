@@ -22,9 +22,9 @@ class Route {
   public parent: Route = null;
   public children: Array<Route> = [];
   public cursor: Route = null;
-  public level = null;
+  public level: number = null;
   public render?: (slot?: DarkElement) => DarkElement;
-  public static param: string;
+  private static param: string;
 
   constructor(options: RouteConstructorOptions) {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, render } = options;
@@ -48,7 +48,7 @@ class Route {
   }
 
   public setCursor(cursor: Route) {
-    this.cursor = cursor;
+    this.cursor = cursor || this.cursor;
 
     if (this.parent) {
       this.parent.setCursor(cursor);
@@ -56,23 +56,22 @@ class Route {
   }
 
   public matchRender(path: string): DarkElement {
-    let rendered = null;
+    const matched = match(path, this.children);
 
-    Route.param = getParam(path, this);
+    this.setCursor(matched);
+    Route.setParam(getParam(path, this));
 
-    // console.log('path', path);
-    // console.log('param', Route.param);
-    // console.log('render', this);
-
-    if (this.children.length > 0) {
-      const matched = match(path, this.children);
-      const cursor = matched || this.cursor;
-
-      this.setCursor(cursor);
-      rendered = renderRoute(path, matched);
-    }
+    const rendered = renderRoute(path, matched);
 
     return this.render(rendered);
+  }
+
+  public static getParam(): string {
+    return Route.param;
+  }
+
+  public static setParam(param: string) {
+    Route.param = param;
   }
 }
 
@@ -99,28 +98,50 @@ function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Arr
   const routes$: Array<Route> = [];
 
   for (const route of routes) {
-    const fullRoute = new Route({ ...route, prefix, parent });
+    const route$ = new Route({ ...route, prefix, parent });
 
-    routes$.push(fullRoute, ...fullRoute.children);
+    routes$.push(route$, ...route$.children);
   }
 
   return routes$;
 }
 
 function match(path: string, routes: Array<Route>): Route {
-  const route = routes.find(x => detectIsMatch(path, x.fullPath)) || null;
+  const route = matchRoute(path, routes);
 
-  if (route?.redirectTo) return match(route.redirectTo, routes);
+  if (route?.redirectTo) return redirect(route.fullPath, route.redirectTo, routes);
 
   if (detectCanRenderRoute(route)) return route;
 
-  const wildcardRoute = getWildcardRoute(routes);
+  const wildcard = getWildcardRoute(routes);
 
-  if (wildcardRoute?.redirectTo) return match(wildcardRoute.redirectTo, routes);
+  if (wildcard?.redirectTo) return redirect(wildcard.fullPath, wildcard.redirectTo, routes);
 
-  if (detectCanRenderRoute(wildcardRoute)) return wildcardRoute;
+  if (detectCanRenderRoute(wildcard)) return wildcard;
 
   return null;
+}
+
+function matchRoute(path: string, routes: Array<Route>) {
+  const forwardRoute = routes.find(x => detectIsMatch(path, normalaizeEnd(x.path), true)) || null;
+
+  if (forwardRoute) return forwardRoute;
+
+  const route = routes.find(x => detectIsMatch(path, x.fullPath)) || null;
+
+  return route;
+}
+
+function redirect(from: string, to: string, routes: Array<Route>) {
+  const hasRoute = routes.findIndex(x => x.fullPath === to) !== -1;
+
+  if (!hasRoute) {
+    throw new Error(
+      `[web-router]: Illegal redirect from ${from} to ${to}! A nested route can only redirect to routes at the same hierarchy level.`,
+    );
+  }
+
+  return match(to, routes);
 }
 
 function detectCanRenderRoute(route: Route): boolean {
@@ -143,19 +164,21 @@ function getWildcardRoute(routes: Array<Route>) {
   return null;
 }
 
-function detectIsMatch(currentPath: string, fullPath: string): boolean {
-  const splittedA = splitPath(fullPath);
-  const splittedB = splitPath(currentPath);
+function detectIsMatch(url: string, path: string, matchLength = false): boolean {
+  const splittedUrl = splitPath(url);
+  const splittedPath = splitPath(path);
 
-  if (fullPath === SLASH) {
-    if (currentPath === SLASH) return true;
+  if (path === SLASH) {
+    if (url === SLASH) return true;
     return false;
   }
 
-  for (let i = 0; i < splittedA.length; i++) {
-    const isParam = detectIsParam(splittedA[i]);
+  if (matchLength && url > path) return false;
 
-    if (!isParam && splittedA[i] !== splittedB[i]) return false;
+  for (let i = 0; i < splittedPath.length; i++) {
+    const isParam = detectIsParam(splittedPath[i]);
+
+    if (!isParam && splittedPath[i] !== splittedUrl[i]) return false;
   }
 
   return true;
