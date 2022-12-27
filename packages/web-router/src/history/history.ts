@@ -1,9 +1,12 @@
 import { detectIsFalsy } from '@dark-engine/core';
 
+const browserHistory = globalThis.history;
 class RouterHistory {
   private stack: Array<string> = [];
   private cursor = -1;
   private subscribers: Set<(value: string) => void> = new Set();
+  private fromHistory = false;
+  public dispose: () => void = null;
 
   constructor(url: string) {
     if (detectIsFalsy(url)) {
@@ -11,7 +14,37 @@ class RouterHistory {
     }
 
     this.stack.push(url);
-    this.cursor++;
+    this.cursor = this.stack.length - 1;
+
+    if (browserHistory) {
+      const state = this.getState();
+
+      if (!state) {
+        browserHistory.replaceState(this.createStateBox(), '');
+      } else {
+        this.stack = state.stack;
+        this.cursor = state.cursor;
+      }
+
+      const handlePopState = () => {
+        const state = this.getState();
+
+        if (state) {
+          this.stack = state.stack;
+          this.cursor = state.cursor;
+        }
+
+        if (!this.fromHistory) {
+          this.mapSubscribers();
+        }
+
+        this.fromHistory = false;
+      };
+
+      window.addEventListener('popstate', handlePopState);
+
+      this.dispose = () => window.removeEventListener('popstate', handlePopState);
+    }
   }
 
   private mapSubscribers() {
@@ -21,8 +54,30 @@ class RouterHistory {
   }
 
   private getValue = () => {
-    return this.stack[this.cursor] || '';
+    return this.stack[this.cursor];
   };
+
+  private getState(): State {
+    return (browserHistory.state && browserHistory.state[STATE_KEY]) || null;
+  }
+
+  private createStateBox(): StateBox {
+    const state = browserHistory.state || {};
+
+    return { ...state, [STATE_KEY]: { cursor: this.cursor, stack: this.stack } };
+  }
+
+  private syncHistory(action: HistoryAction, value: string) {
+    if (!browserHistory) return;
+    const stateBox = this.createStateBox();
+
+    switch (action) {
+      case HistoryAction.PUSH:
+        return browserHistory.pushState(stateBox, '', value);
+      case HistoryAction.REPLACE:
+        return browserHistory.replaceState(stateBox, '', value);
+    }
+  }
 
   public subscribe = (subscriber: (value: string) => void) => {
     this.subscribers.add(subscriber);
@@ -33,43 +88,54 @@ class RouterHistory {
   public push(value: string) {
     this.stack.splice(this.cursor + 1, this.stack.length, value);
     this.cursor = this.stack.length - 1;
-    console.log('push', this.cursor, this.stack);
+    this.syncHistory(HistoryAction.PUSH, value);
     this.mapSubscribers();
   }
 
   public replace(value: string) {
     this.stack[this.stack.length - 1] = value;
-    console.log('replace', this.cursor, this.stack);
+    this.syncHistory(HistoryAction.REPLACE, value);
     this.mapSubscribers();
   }
 
   public forward() {
-    this.cursor < this.stack.length - 1 && this.cursor++;
-    console.log('forward', this.cursor, this.stack);
-    this.mapSubscribers();
+    this.go(1);
   }
 
   public back() {
-    this.cursor > 0 && this.cursor--;
-    console.log('back', this.cursor, this.stack);
-    this.mapSubscribers();
+    this.go(-1);
   }
 
   public go(delta: number) {
+    this.fromHistory = true;
     this.cursor += delta;
 
     if (this.cursor > this.stack.length - 1) {
       this.cursor = this.stack.length - 1;
-    }
-
-    if (this.cursor < 0) {
+    } else if (this.cursor < 0) {
       this.cursor = 0;
     }
 
-    console.log('go', this.cursor, this.stack);
+    browserHistory?.go(delta);
     this.mapSubscribers();
   }
 }
+
+enum HistoryAction {
+  PUSH = 'PUSH',
+  REPLACE = 'REPLACE',
+}
+
+type StateBox = {
+  ['web-router']: State;
+};
+
+type State = {
+  cursor: number;
+  stack: Array<string>;
+};
+
+const STATE_KEY = 'web-router';
 
 const createRouterHistory = (url: string) => new RouterHistory(url);
 
