@@ -1,4 +1,4 @@
-import { h, createComponent, useMemo, useEvent, type DarkElement } from '@dark-engine/core';
+import { h, createComponent, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { useHistory } from '../use-history';
 import { useMatch } from '../use-match';
@@ -10,10 +10,11 @@ export type RoutreLinkProps = {
   className?: string;
   title?: string;
   slot: DarkElement;
+  onClick?: (e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => void;
 };
 
 const RouterLink = createComponent<RoutreLinkProps>(
-  ({ to, activeClassName, className: _className, slot, ...rest }) => {
+  ({ to, activeClassName, className: _className, slot, onClick, ...rest }) => {
     const history = useHistory();
     const { path } = useMatch();
     const isActive = useMemo(() => path.indexOf(normalaizeEnd(to)) !== -1, [path]);
@@ -25,6 +26,7 @@ const RouterLink = createComponent<RoutreLinkProps>(
     const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => {
       e.preventDefault();
       history.push(to);
+      detectIsFunction(onClick) && onClick(e);
     });
 
     return (

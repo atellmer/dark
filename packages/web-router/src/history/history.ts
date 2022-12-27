@@ -1,4 +1,4 @@
-import { detectIsFalsy } from '@dark-engine/core';
+import { detectIsFalsy, type SubscriberWithValue } from '@dark-engine/core';
 import { normalaizeEnd } from '../utils';
 
 const browserHistory = globalThis.history;
@@ -81,7 +81,7 @@ class RouterHistory {
     }
   }
 
-  public subscribe = (subscriber: (value: string) => void) => {
+  public subscribe = (subscriber: SubscriberWithValue<string>) => {
     this.subscribers.add(subscriber);
 
     return () => this.subscribers.delete(subscriber);
