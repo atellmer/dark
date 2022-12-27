@@ -37,23 +37,33 @@ const Router = createComponent<RouterProps>(({ pathname: _pathname, routes: _rou
   const routes = useMemo(() => createRoutes(_routes), []);
   const history = useMemo(() => createRouterHistory(pathname), []);
   const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
+  const scope = useMemo(() => ({ pathname }), []);
   const historyContextValue = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
   const routerContextValue = useMemo<ActiveRouteContextValue>(() => ({ pathname, matched, paramsMap }), [pathname]);
+
+  scope.pathname = pathname;
 
   useLayoutEffect(() => {
     setPathname(createPathname(_pathname));
   }, [_pathname]);
 
   useEffect(() => {
-    const unsubscribe = history.subscribe((url: string) => {
-      setPathname(url);
-    });
+    const unsubscribe = history.subscribe((url: string) => setPathname(url));
 
     return () => {
       unsubscribe();
       history.dispose();
     };
   }, []);
+
+  useEffect(() => {
+    if (!matched) return;
+    const path = matched.cursor.fullPath;
+
+    if (pathname !== path) {
+      history.replace(path);
+    }
+  }, [pathname]);
 
   return (
     <RouterHistoryContext.Provider value={historyContextValue}>

@@ -13,25 +13,25 @@ describe('[router/historys]', () => {
     history.subscribe(subscriber);
 
     history.push('/first');
-    expect(subscriber).lastCalledWith('/first');
+    expect(subscriber).lastCalledWith('/first/');
 
     history.push('/second');
-    expect(subscriber).lastCalledWith('/second');
+    expect(subscriber).lastCalledWith('/second/');
 
     history.push('/second/a/1');
-    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(subscriber).lastCalledWith('/second/a/1/');
 
     history.forward();
-    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(subscriber).lastCalledWith('/second/a/1/');
 
     history.forward();
-    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(subscriber).lastCalledWith('/second/a/1/');
 
     history.back();
-    expect(subscriber).lastCalledWith('/second');
+    expect(subscriber).lastCalledWith('/second/');
 
     history.back();
-    expect(subscriber).lastCalledWith('/first');
+    expect(subscriber).lastCalledWith('/first/');
 
     history.back();
     expect(subscriber).lastCalledWith('/');
@@ -40,16 +40,16 @@ describe('[router/historys]', () => {
     expect(subscriber).lastCalledWith('/');
 
     history.go(1000);
-    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(subscriber).lastCalledWith('/second/a/1/');
 
     history.go(-10000);
     expect(subscriber).lastCalledWith('/');
 
     history.push('/third');
-    expect(subscriber).lastCalledWith('/third');
+    expect(subscriber).lastCalledWith('/third/');
 
     history.push('/third');
-    expect(subscriber).lastCalledWith('/third');
+    expect(subscriber).lastCalledWith('/third/');
   });
 
   test('can unsubscribe correctly', () => {

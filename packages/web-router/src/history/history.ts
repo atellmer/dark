@@ -1,4 +1,5 @@
 import { detectIsFalsy } from '@dark-engine/core';
+import { normalaizeEnd } from '../utils';
 
 const browserHistory = globalThis.history;
 class RouterHistory {
@@ -54,7 +55,7 @@ class RouterHistory {
   }
 
   private getValue = () => {
-    return this.stack[this.cursor];
+    return normalaizeEnd(this.stack[this.cursor]);
   };
 
   private getState(): State {
@@ -70,12 +71,13 @@ class RouterHistory {
   private syncHistory(action: HistoryAction, value: string) {
     if (!browserHistory) return;
     const stateBox = this.createStateBox();
+    const normalValue = normalaizeEnd(value);
 
     switch (action) {
       case HistoryAction.PUSH:
-        return browserHistory.pushState(stateBox, '', value);
+        return browserHistory.pushState(stateBox, '', normalValue);
       case HistoryAction.REPLACE:
-        return browserHistory.replaceState(stateBox, '', value);
+        return browserHistory.replaceState(stateBox, '', normalValue);
     }
   }
 
