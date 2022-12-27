@@ -1,7 +1,7 @@
 import { type DarkElement } from '@dark-engine/core';
 
 import { SLASH, WILDCARD } from '../constants';
-import { splitPath, normalaizeEnd, detectIsParam, sort } from '../utils';
+import { splitPath, normalaizeEnd, detectIsParam, getParamName, sort } from '../utils';
 import type { Routes, RouteDescriptor, PathMatchStrategy } from './types';
 
 type RouteConstructorOptions = {
@@ -24,7 +24,6 @@ class Route {
   public cursor: Route = null;
   public level: number = null;
   public render?: (slot?: DarkElement) => DarkElement;
-  private static param: string;
 
   constructor(options: RouteConstructorOptions) {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, render } = options;
@@ -55,43 +54,30 @@ class Route {
     }
   }
 
-  public matchRender(path: string): DarkElement {
-    const matched = match(path, this.children);
+  public matchRender(url: string): DarkElement {
+    const matched = match(url, this.children);
 
     this.setCursor(matched);
-    Route.setParam(getParam(path, this));
 
-    const rendered = renderRoute(path, matched);
+    const rendered = renderRoute(url, matched);
 
     return this.render(rendered);
   }
-
-  public static getParam(): string {
-    return Route.param;
-  }
-
-  public static setParam(param: string) {
-    Route.param = param;
-  }
 }
 
-const getParam = (url: string, route: Route): string => {
+const getParamsMap = (url: string, route: Route): Map<string, string> => {
   const path = route.fullPath;
-  const prefix = route.parent?.fullPath || '';
   const splittedUrl = splitPath(url);
   const splittedPath = splitPath(path);
-  const prevParamsCount = splitPath(prefix).filter(x => detectIsParam(x)).length;
-  const params: Array<string> = [];
+  const map = new Map();
 
   for (let i = 0; i < splittedPath.length; i++) {
     if (detectIsParam(splittedPath[i])) {
-      params.push(splittedUrl[i]);
+      map.set(getParamName(splittedPath[i]), splittedUrl[i]);
     }
   }
 
-  const [param = null] = params.splice(prevParamsCount, 1);
-
-  return param;
+  return map;
 };
 
 function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Array<Route> {
@@ -106,8 +92,8 @@ function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Arr
   return routes$;
 }
 
-function match(path: string, routes: Array<Route>): Route {
-  const route = matchRoute(path, routes);
+function match(url: string, routes: Array<Route>): Route {
+  const route = matchRoute(url, routes);
 
   if (route?.redirectTo) return redirect(route.fullPath, route.redirectTo, routes);
 
@@ -122,12 +108,12 @@ function match(path: string, routes: Array<Route>): Route {
   return null;
 }
 
-function matchRoute(path: string, routes: Array<Route>) {
-  const forwardRoute = routes.find(x => detectIsMatch(path, normalaizeEnd(x.path), true)) || null;
+function matchRoute(url: string, routes: Array<Route>) {
+  const forwardRoute = routes.find(x => detectIsMatch(url, normalaizeEnd(x.path), true)) || null;
 
   if (forwardRoute) return forwardRoute;
 
-  const route = routes.find(x => detectIsMatch(path, x.fullPath)) || null;
+  const route = routes.find(x => detectIsMatch(url, x.fullPath)) || null;
 
   return route;
 }
@@ -148,8 +134,8 @@ function detectCanRenderRoute(route: Route): boolean {
   return route?.render && !route.redirectTo;
 }
 
-function renderRoute(path: string, route: Route): DarkElement {
-  return detectCanRenderRoute(route) ? route.matchRender(path) : null;
+function renderRoute(url: string, route: Route): DarkElement {
+  return detectCanRenderRoute(route) ? route.matchRender(url) : null;
 }
 
 function getWildcardRoute(routes: Array<Route>) {
@@ -190,15 +176,20 @@ function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string):
   return normalaizeEnd(prefix$ ? `${prefix$}${path}` : path);
 }
 
-function renderRoot(path: string, routes: Array<Route>): [Route, DarkElement] {
-  const matched = match(path, routes);
-  const rendered = renderRoute(path, matched);
+function renderRoot(url: string, routes: Array<Route>) {
+  const matched = match(url, routes);
+  const rendered = renderRoute(url, matched);
+  const paramsMap = matched ? getParamsMap(url, matched.cursor) : null;
+  const value = {
+    url,
+    matched,
+    rendered,
+    paramsMap,
+  };
 
-  // console.log('path', path);
-  // console.log('routes', routes);
-  // console.log('matched', matched);
+  console.log('value', value);
 
-  return [matched, rendered];
+  return value;
 }
 
 export { createRoutes, match, renderRoot };
