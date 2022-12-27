@@ -66,14 +66,13 @@ class Route {
 }
 
 const getParamsMap = (url: string, route: Route): Map<string, string> => {
-  const path = route.fullPath;
-  const splittedUrl = splitPath(url);
-  const splittedPath = splitPath(path);
+  const sUrl = splitPath(url);
+  const sPath = splitPath(route.fullPath);
   const map = new Map();
 
-  for (let i = 0; i < splittedPath.length; i++) {
-    if (detectIsParam(splittedPath[i])) {
-      map.set(getParamName(splittedPath[i]), splittedUrl[i]);
+  for (let i = 0; i < sPath.length; i++) {
+    if (detectIsParam(sPath[i])) {
+      map.set(getParamName(sPath[i]), sUrl[i]);
     }
   }
 
@@ -151,8 +150,8 @@ function getWildcardRoute(routes: Array<Route>) {
 }
 
 function detectIsMatch(url: string, path: string, matchLength = false): boolean {
-  const splittedUrl = splitPath(url);
-  const splittedPath = splitPath(path);
+  const sUrl = splitPath(url);
+  const sPath = splitPath(path);
 
   if (path === SLASH) {
     if (url === SLASH) return true;
@@ -161,10 +160,10 @@ function detectIsMatch(url: string, path: string, matchLength = false): boolean 
 
   if (matchLength && url > path) return false;
 
-  for (let i = 0; i < splittedPath.length; i++) {
-    const isParam = detectIsParam(splittedPath[i]);
+  for (let i = 0; i < sPath.length; i++) {
+    const isParam = detectIsParam(sPath[i]);
 
-    if (!isParam && splittedPath[i] !== splittedUrl[i]) return false;
+    if (!isParam && sPath[i] !== sUrl[i]) return false;
   }
 
   return true;
@@ -187,7 +186,7 @@ function renderRoot(url: string, routes: Array<Route>) {
     paramsMap,
   };
 
-  console.log('value', value);
+  // console.log('value', value);
 
   return value;
 }

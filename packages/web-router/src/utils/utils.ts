@@ -2,7 +2,7 @@ import { SLASH, PARAMETER } from '../constants';
 
 const detectIsParam = (value: string) => value && value.startsWith(PARAMETER);
 
-const getParamName = (value: string) => detectIsParam(value) && value.slice(1, value.length);
+const getParamName = (value: string) => (detectIsParam(value) ? value.slice(1, value.length) : null);
 
 const splitPath = (path: string) => path.split(SLASH).filter(Boolean);
 
