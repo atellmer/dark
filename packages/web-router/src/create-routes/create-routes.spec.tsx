@@ -65,11 +65,11 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
           },
         ],
@@ -83,9 +83,9 @@ describe('[router/create-routes]', () => {
 
     expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/first/');
     expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/second/');
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/child-b', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
-    expect(renderRoot('/second/child-b/some/broken/route', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/b', routes$)[0].cursor.fullPath).toBe('/second/b/');
+    expect(renderRoot('/second/b/some/broken/route', routes$)[0].cursor.fullPath).toBe('/second/b/');
     expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/third/');
   });
 
@@ -100,29 +100,29 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
             children: [
               {
-                path: 'child-a-1',
+                path: '1',
                 render: () => null,
               },
               {
-                path: 'child-a-2',
+                path: '2',
                 render: () => null,
               },
             ],
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
             children: [
               {
-                path: 'child-b-1',
+                path: '1',
                 render: () => null,
               },
               {
-                path: 'child-b-2',
+                path: '2',
                 render: () => null,
               },
             ],
@@ -139,12 +139,12 @@ describe('[router/create-routes]', () => {
     expect(renderRoot('/first', routes$)[0].cursor.fullPath).toBe('/first/');
     expect(renderRoot('/second', routes$)[0].cursor.fullPath).toBe('/second/');
     expect(renderRoot('/third', routes$)[0].cursor.fullPath).toBe('/third/');
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/child-a/child-a-1', routes$)[0].cursor.fullPath).toBe('/second/child-a/child-a-1/');
-    expect(renderRoot('/second/child-a/child-a-2', routes$)[0].cursor.fullPath).toBe('/second/child-a/child-a-2/');
-    expect(renderRoot('/second/child-b', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
-    expect(renderRoot('/second/child-b/child-b-1', routes$)[0].cursor.fullPath).toBe('/second/child-b/child-b-1/');
-    expect(renderRoot('/second/child-b/child-b-2', routes$)[0].cursor.fullPath).toBe('/second/child-b/child-b-2/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/a/1', routes$)[0].cursor.fullPath).toBe('/second/a/1/');
+    expect(renderRoot('/second/a/2', routes$)[0].cursor.fullPath).toBe('/second/a/2/');
+    expect(renderRoot('/second/b', routes$)[0].cursor.fullPath).toBe('/second/b/');
+    expect(renderRoot('/second/b/1', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b/2', routes$)[0].cursor.fullPath).toBe('/second/b/2/');
   });
 
   test('can work with redirects correctly', () => {
@@ -207,15 +207,15 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
-            redirectTo: 'child-b',
+            path: 'a',
+            redirectTo: 'b',
           },
           {
-            path: 'child-b',
-            redirectTo: 'child-c',
+            path: 'b',
+            redirectTo: 'c',
           },
           {
-            path: 'child-c',
+            path: 'c',
             render: () => null,
           },
         ],
@@ -231,9 +231,9 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-c/');
-    expect(renderRoot('/second/child-b', routes$)[0].cursor.fullPath).toBe('/second/child-c/');
-    expect(renderRoot('/second/child-c', routes$)[0].cursor.fullPath).toBe('/second/child-c/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/c/');
+    expect(renderRoot('/second/b', routes$)[0].cursor.fullPath).toBe('/second/c/');
+    expect(renderRoot('/second/c', routes$)[0].cursor.fullPath).toBe('/second/c/');
   });
 
   test('can work with root redirect correctly', () => {
@@ -280,12 +280,12 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: '/second/child-a',
-            redirectTo: '/second/child-b',
+            path: '/second/a',
+            redirectTo: '/second/b',
             pathMatch: 'full',
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
           },
         ],
@@ -293,7 +293,7 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-b/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/b/');
   });
 
   test('can work with wildcard routes correctly', () => {
@@ -307,11 +307,11 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
           },
         ],
@@ -327,7 +327,8 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/', routes$)[0].cursor.fullPath).toBe('/first/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/a/');
     expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/**/');
   });
 
@@ -342,11 +343,11 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
           },
           {
@@ -366,9 +367,9 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/a/');
     expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/**/');
-    expect(renderRoot('/second/child-a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/a/');
     expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/**/');
   });
 
@@ -383,16 +384,16 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
           },
           {
             path: '**',
-            redirectTo: 'child-a',
+            redirectTo: 'a',
           },
         ],
       },
@@ -403,9 +404,9 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/child-a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/a/');
     expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
@@ -420,30 +421,30 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
           },
           {
-            path: 'child-b',
+            path: 'b',
             render: () => null,
             children: [
               {
-                path: 'child-b-1',
+                path: '1',
                 render: () => null,
               },
               {
-                path: 'child-b-2',
+                path: '2',
                 render: () => null,
               },
               {
                 path: '**',
-                redirectTo: 'child-b-1',
+                redirectTo: '1',
               },
             ],
           },
           {
             path: '**',
-            redirectTo: 'child-a',
+            redirectTo: 'a',
           },
         ],
       },
@@ -454,16 +455,16 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/child-a', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/child-a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-a/');
-    expect(renderRoot('/second/child-b/broken/url', routes$)[0].cursor.fullPath).toBe('/second/child-b/child-b-1/');
-    expect(renderRoot('/second/child-b/child-b-1/broken/url', routes$)[0].cursor.fullPath).toBe(
-      '/second/child-b/child-b-1/',
-    );
-    expect(renderRoot('/second/child-b/child-b-2/broken/url', routes$)[0].cursor.fullPath).toBe(
-      '/second/child-b/child-b-2/',
-    );
+    expect(renderRoot('/second/a', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/broken/url', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/a/broken/url', routes$)[0].cursor.fullPath).toBe('/second/a/');
+    expect(renderRoot('/second/b/broken/url', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b/', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b/1', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b/1/', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b/1/broken/url', routes$)[0].cursor.fullPath).toBe('/second/b/1/');
+    expect(renderRoot('/second/b/2/broken/url', routes$)[0].cursor.fullPath).toBe('/second/b/2/');
     expect(renderRoot('/broken/url', routes$)[0].cursor.fullPath).toBe('/first/');
   });
 
@@ -478,11 +479,11 @@ describe('[router/create-routes]', () => {
         render: () => null,
         children: [
           {
-            path: 'child-a',
+            path: 'a',
             render: () => null,
           },
           {
-            path: 'child-b/:id',
+            path: 'b/:id',
             render: () => null,
           },
         ],
@@ -490,10 +491,10 @@ describe('[router/create-routes]', () => {
     ];
     const routes$ = createRoutes(routes);
 
-    expect(renderRoot('/second/1/child-a', routes$)[0].cursor.fullPath).toBe('/second/:id/child-a/');
-    expect(renderRoot('/second/2/child-a', routes$)[0].cursor.fullPath).toBe('/second/:id/child-a/');
-    expect(renderRoot('/second/1/child-b/2', routes$)[0].cursor.fullPath).toBe('/second/:id/child-b/:id/');
-    expect(renderRoot('/second/100/child-b/2000', routes$)[0].cursor.fullPath).toBe('/second/:id/child-b/:id/');
+    expect(renderRoot('/second/1/a', routes$)[0].cursor.fullPath).toBe('/second/:id/a/');
+    expect(renderRoot('/second/2/a', routes$)[0].cursor.fullPath).toBe('/second/:id/a/');
+    expect(renderRoot('/second/1/b/2', routes$)[0].cursor.fullPath).toBe('/second/:id/b/:id/');
+    expect(renderRoot('/second/100/b/2000', routes$)[0].cursor.fullPath).toBe('/second/:id/b/:id/');
   });
 
   test('throws error when illegal redirect occurs in nested components', () => {

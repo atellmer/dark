@@ -5,16 +5,16 @@ import { type RouterContextValue, RouterContext } from '../context';
 import { normalaizeEnd } from '../utils';
 
 type RouterProps = {
-  currentPath?: string;
+  pathname?: string;
   routes: Routes;
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ currentPath, routes, slot }) => {
+const Router = createComponent<RouterProps>(({ pathname, routes, slot }) => {
   const routes$ = useMemo(() => createRoutes(routes), []);
   const context = useMemo<RouterContextValue>(() => ({}), []);
-  const currentPath$ = normalaizeEnd(detectIsServer() ? currentPath : currentPath || location.pathname);
-  const [matched, rendered] = renderRoot(currentPath$, routes$);
+  const pathname$ = normalaizeEnd(detectIsServer() ? pathname : pathname || location.pathname);
+  const [matched, rendered] = renderRoot(pathname$, routes$);
 
   return <RouterContext.Provider value={context}>{slot(rendered)}</RouterContext.Provider>;
 });
