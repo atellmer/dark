@@ -2,15 +2,15 @@ import { createContext, useContext } from '@dark-engine/core';
 import { type RouterHistory } from '../history';
 import { type Route } from '../create-routes';
 
-export type RouterContextValue = {
+export type ActiveRouteContextValue = {
   paramsMap: Map<string, string>;
   matched: Route;
 };
 
-const RouterContext = createContext<RouterContextValue>(null, { displayName: 'Router' });
+const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });
 
-function useRouterContext() {
-  const value = useContext(RouterContext);
+function useActiveRouteContext() {
+  const value = useContext(ActiveRouteContext);
 
   return value;
 }
@@ -27,4 +27,4 @@ function useRouterHistoryContext() {
   return value;
 }
 
-export { RouterContext, useRouterContext, RouterHistoryContext, useRouterHistoryContext };
+export { ActiveRouteContext, useActiveRouteContext, RouterHistoryContext, useRouterHistoryContext };

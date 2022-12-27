@@ -1,7 +1,7 @@
-import { useRouterContext } from '../context';
+import { useActiveRouteContext } from '../context';
 
 function useParams() {
-  const { paramsMap } = useRouterContext();
+  const { paramsMap } = useActiveRouteContext();
 
   return paramsMap;
 }
