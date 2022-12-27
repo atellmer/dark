@@ -1,9 +1,11 @@
-import { useRouterHistoryContext } from '../context';
+import { useRouterHistoryContext, checkContextValue } from '../context';
 
 function useHistory() {
-  const { history } = useRouterHistoryContext();
+  const value = useRouterHistoryContext();
 
-  return history;
+  checkContextValue(value);
+
+  return value.history;
 }
 
 export { useHistory };

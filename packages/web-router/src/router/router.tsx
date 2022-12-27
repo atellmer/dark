@@ -27,10 +27,8 @@ export type RouterProps = {
 };
 
 const Router = createComponent<RouterProps>(({ pathname: _pathname, routes: _routes, slot }) => {
-  const parentContext = useActiveRouteContext();
-
-  if (parentContext) {
-    throw new Error('[web-router]: Parent router context detected!');
+  if (useActiveRouteContext()) {
+    throw new Error('[web-router]: Parent active route context detected!');
   }
 
   const createPathname = (pathname: string) =>
@@ -40,7 +38,7 @@ const Router = createComponent<RouterProps>(({ pathname: _pathname, routes: _rou
   const history = useMemo(() => createRouterHistory(pathname), []);
   const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
   const historyContextValue = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-  const routerContextValue = useMemo<ActiveRouteContextValue>(() => ({ matched, paramsMap }), [pathname]);
+  const routerContextValue = useMemo<ActiveRouteContextValue>(() => ({ pathname, matched, paramsMap }), [pathname]);
 
   useLayoutEffect(() => {
     setPathname(createPathname(_pathname));

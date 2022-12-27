@@ -54,9 +54,7 @@ class Route {
 
     this.setCursor(matched);
 
-    const slot = renderRoute(url, matched);
-
-    return this.component({ slot, key: this.path });
+    return this.component({ slot: renderRoute(url, matched), key: this.path, path: this.fullPath });
   }
 }
 
@@ -181,9 +179,7 @@ function renderRoot(url: string, routes: Array<Route>) {
     paramsMap,
   };
 
-  // console.log('value', value);
-
   return value;
 }
 
-export { Route, createRoutes, match, renderRoot };
+export { createRoutes, match, renderRoot };

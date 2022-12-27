@@ -1,9 +1,11 @@
-import { useActiveRouteContext } from '../context';
+import { useActiveRouteContext, checkContextValue } from '../context';
 
 function useParams() {
-  const { paramsMap } = useActiveRouteContext();
+  const value = useActiveRouteContext();
 
-  return paramsMap;
+  checkContextValue(value);
+
+  return value.paramsMap;
 }
 
 export { useParams };

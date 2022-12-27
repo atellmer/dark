@@ -5,6 +5,7 @@ import { type Route } from '../create-routes';
 export type ActiveRouteContextValue = {
   paramsMap: Map<string, string>;
   matched: Route;
+  pathname: string;
 };
 
 const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });
@@ -27,4 +28,10 @@ function useRouterHistoryContext() {
   return value;
 }
 
-export { ActiveRouteContext, useActiveRouteContext, RouterHistoryContext, useRouterHistoryContext };
+function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
+  if (!value) {
+    throw new Error('[web-router]:  Illegal invoke hook outside router!');
+  }
+}
+
+export { ActiveRouteContext, useActiveRouteContext, RouterHistoryContext, useRouterHistoryContext, checkContextValue };
