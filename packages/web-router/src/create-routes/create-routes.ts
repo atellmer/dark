@@ -191,4 +191,4 @@ function renderRoot(url: string, routes: Array<Route>) {
   return value;
 }
 
-export { createRoutes, match, renderRoot };
+export { Route, createRoutes, match, renderRoot };

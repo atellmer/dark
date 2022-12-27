@@ -139,4 +139,4 @@ const STATE_KEY = 'web-router';
 
 const createRouterHistory = (url: string) => new RouterHistory(url);
 
-export { createRouterHistory };
+export { RouterHistory, createRouterHistory };
