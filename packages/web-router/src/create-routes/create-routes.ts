@@ -6,13 +6,8 @@ import type { Routes, RouteDescriptor, PathMatchStrategy } from './types';
 
 type RouteConstructorOptions = {
   prefix: string;
-  path: string;
-  redirectTo?: string;
-  pathMatch?: PathMatchStrategy;
-  children?: Array<RouteDescriptor>;
   parent: Route;
-  render?: (slot?: DarkElement) => DarkElement;
-};
+} & RouteDescriptor;
 
 class Route {
   public path = '';
@@ -23,10 +18,10 @@ class Route {
   public children: Array<Route> = [];
   public cursor: Route = null;
   public level: number = null;
-  public render?: (slot?: DarkElement) => DarkElement;
+  public component?: RouteConstructorOptions['component'];
 
   constructor(options: RouteConstructorOptions) {
-    const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, render } = options;
+    const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, component } = options;
     const fullPath = createPath(pathMatch, prefix, path);
 
     this.level = parent ? parent.level + 1 : 0;
@@ -37,8 +32,8 @@ class Route {
     this.fullPath = fullPath;
     this.children = createRoutes(children, fullPath, this);
 
-    if (render) {
-      this.render = render;
+    if (component) {
+      this.component = component;
     }
 
     if (redirectTo) {
@@ -59,9 +54,9 @@ class Route {
 
     this.setCursor(matched);
 
-    const rendered = renderRoute(url, matched);
+    const slot = renderRoute(url, matched);
 
-    return this.render(rendered);
+    return this.component({ slot, key: this.path });
   }
 }
 
@@ -130,7 +125,7 @@ function redirect(from: string, to: string, routes: Array<Route>) {
 }
 
 function detectCanRenderRoute(route: Route): boolean {
-  return route?.render && !route.redirectTo;
+  return route?.component && !route.redirectTo;
 }
 
 function renderRoute(url: string, route: Route): DarkElement {

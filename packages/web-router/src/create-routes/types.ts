@@ -1,4 +1,4 @@
-import { type DarkElement } from '@dark-engine/core';
+import { type Component } from '@dark-engine/core';
 
 export type PathMatchStrategy = 'prefix' | 'full';
 
@@ -7,7 +7,7 @@ export type RouteDescriptor = {
   redirectTo?: string;
   pathMatch?: PathMatchStrategy;
   children?: Array<RouteDescriptor>;
-  render?: (slot?: DarkElement) => DarkElement;
+  component?: Component;
 };
 
 export type Routes = Array<RouteDescriptor>;

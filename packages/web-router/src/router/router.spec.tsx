@@ -25,15 +25,15 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: () => <div>second</div>,
+        component: createComponent(() => <div>second</div>),
       },
       {
         path: 'third',
-        render: () => <div>third</div>,
+        component: createComponent(() => <div>third</div>),
       },
     ];
 
@@ -63,15 +63,15 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: () => <div>second</div>,
+        component: createComponent(() => <div>second</div>),
       },
       {
         path: 'third',
-        render: () => <div>third</div>,
+        component: createComponent(() => <div>third</div>),
       },
     ];
 
@@ -113,25 +113,25 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: () => <div>a</div>,
+            component: createComponent(() => <div>a</div>),
           },
           {
             path: 'b',
-            render: () => <div>b</div>,
+            component: createComponent(() => <div>b</div>),
           },
         ],
       },
       {
         path: 'third',
-        render: <div>third</div>,
+        component: createComponent(() => <div>third</div>),
       },
     ];
 
@@ -170,37 +170,37 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: slot => <a>{slot}</a>,
+            component: createComponent(({ slot }) => <a>{slot}</a>),
             children: [
               {
                 path: '1',
-                render: () => <div>1</div>,
+                component: createComponent(() => <div>1</div>),
               },
               {
                 path: '2',
-                render: () => <div>2</div>,
+                component: createComponent(() => <div>2</div>),
               },
             ],
           },
           {
             path: 'b',
-            render: slot => <b>{slot}</b>,
+            component: createComponent(({ slot }) => <b>{slot}</b>),
             children: [
               {
                 path: '1',
-                render: () => <div>1</div>,
+                component: createComponent(() => <div>1</div>),
               },
               {
                 path: '2',
-                render: () => <div>2</div>,
+                component: createComponent(() => <div>2</div>),
               },
             ],
           },
@@ -208,7 +208,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'third',
-        render: () => <div>third</div>,
+        component: () => <div>third</div>,
       },
     ];
 
@@ -260,11 +260,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        render: () => <div>second</div>,
+        component: createComponent(() => <div>second</div>),
       },
       {
         path: 'third',
-        render: () => <div>third</div>,
+        component: createComponent(() => <div>third</div>),
       },
     ];
 
@@ -306,7 +306,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'fourth',
-        render: () => <div>fourth</div>,
+        component: createComponent(() => <div>fourth</div>),
       },
     ];
     const App = createComponent<AppProps>(({ pathname }) => {
@@ -342,7 +342,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -354,7 +354,7 @@ describe('[router/rendering]', () => {
           },
           {
             path: 'c',
-            render: () => <div>c</div>,
+            component: createComponent(() => <div>c</div>),
           },
         ],
       },
@@ -364,7 +364,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'fourth',
-        render: () => <div>fourth</div>,
+        component: createComponent(() => <div>fourth</div>),
       },
     ];
 
@@ -394,7 +394,7 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: '',
@@ -422,7 +422,7 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: '/',
@@ -450,11 +450,11 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: '/second/a',
@@ -463,7 +463,7 @@ describe('[router/rendering]', () => {
           },
           {
             path: 'b',
-            render: () => <div>b</div>,
+            component: createComponent(() => <div>b</div>),
           },
         ],
       },
@@ -489,19 +489,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: () => <div>a</div>,
+            component: createComponent(() => <div>a</div>),
           },
           {
             path: 'b',
-            render: () => <div>b</div>,
+            component: createComponent(() => <div>b</div>),
           },
         ],
       },
@@ -511,7 +511,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: '**',
-        render: () => <div>404</div>,
+        component: createComponent(() => <div>404</div>),
       },
     ];
 
@@ -544,23 +544,23 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: () => <div>a</div>,
+            component: createComponent(() => <div>a</div>),
           },
           {
             path: 'b',
-            render: () => <div>b</div>,
+            component: createComponent(() => <div>b</div>),
           },
           {
             path: '**',
-            render: () => <div>404</div>,
+            component: createComponent(() => <div>404</div>),
           },
         ],
       },
@@ -570,7 +570,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: '**',
-        render: () => <div>404</div>,
+        component: createComponent(() => <div>404</div>),
       },
     ];
 
@@ -603,19 +603,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: () => <div>a</div>,
+            component: createComponent(() => <div>a</div>),
           },
           {
             path: 'b',
-            render: () => <div>b</div>,
+            component: createComponent(() => <div>b</div>),
           },
           {
             path: '**',
@@ -658,27 +658,27 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: () => <div>a</div>,
+            component: createComponent(() => <div>a</div>),
           },
           {
             path: 'b',
-            render: slot => <b>{slot}</b>,
+            component: createComponent(({ slot }) => <b>{slot}</b>),
             children: [
               {
                 path: '1',
-                render: () => <div>1</div>,
+                component: createComponent(() => <div>1</div>),
               },
               {
                 path: '2',
-                render: () => <div>2</div>,
+                component: createComponent(() => <div>2</div>),
               },
               {
                 path: '**',
@@ -748,19 +748,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second/:id',
-        render: slot => <second>{slot}</second>,
+        component: createComponent(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            render: () => <div>a</div>,
+            component: createComponent(() => <div>a</div>),
           },
           {
             path: 'b/:id',
-            render: () => <div>b</div>,
+            component: createComponent(() => <div>b</div>),
           },
         ],
       },
@@ -795,19 +795,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second/a/1',
-        render: () => <div>second/a/1</div>,
+        component: createComponent(() => <div>second/a/1</div>),
       },
       {
         path: 'second/a/2',
-        render: () => <div>second/a/2</div>,
+        component: createComponent(() => <div>second/a/2</div>),
       },
       {
         path: 'second/a',
-        render: () => <div>second/a</div>,
+        component: createComponent(() => <div>second/a</div>),
       },
       {
         path: 'second/b',
@@ -815,11 +815,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        render: () => <div>second</div>,
+        component: createComponent(() => <div>second</div>),
       },
       {
         path: 'third',
-        render: () => <div>third</div>,
+        component: createComponent(() => <div>third</div>),
       },
       {
         path: '**',
@@ -868,19 +868,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        render: () => <div>first</div>,
+        component: createComponent(() => <div>first</div>),
       },
       {
         path: 'second/a',
-        render: slot => <second:a>{slot}</second:a>,
+        component: createComponent(({ slot }) => <second:a>{slot}</second:a>),
         children: [
           {
             path: '1',
-            render: () => <div>1</div>,
+            component: createComponent(() => <div>1</div>),
           },
           {
             path: '2',
-            render: () => <div>2</div>,
+            component: createComponent(() => <div>2</div>),
           },
           {
             path: '**',
@@ -894,11 +894,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        render: () => <div>second</div>,
+        component: createComponent(() => <div>second</div>),
       },
       {
         path: 'third',
-        render: () => <div>third</div>,
+        component: createComponent(() => <div>third</div>),
       },
       {
         path: '**',
