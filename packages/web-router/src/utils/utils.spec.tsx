@@ -78,11 +78,6 @@ describe('[router/utils]', () => {
   test('parseURL works correctly #9', () => {
     const { protocol, host, pathname, search } = parseURL('/#/some/route?q="hello"');
 
-    console.log('protocol', protocol);
-    console.log('host', host);
-    console.log('pathname', pathname);
-    console.log('search', search);
-
     expect(protocol).toBe('');
     expect(host).toBe('');
     expect(pathname).toBe('/#/some/route');

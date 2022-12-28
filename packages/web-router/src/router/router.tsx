@@ -9,7 +9,8 @@ import {
   useState,
 } from '@dark-engine/core';
 
-import { createPathname } from '../utils';
+import { SLASH } from '../constants';
+import { createPathname, normalaizeEnd } from '../utils';
 import { createRouterHistory } from '../history';
 import { type Routes, createRoutes, renderRoot, pathnameFromPath } from '../create-routes';
 import {
@@ -21,18 +22,19 @@ import {
 } from '../context';
 
 export type RouterProps = {
-  url?: string;
+  url?: string; // for server-side rendering
+  baseURL?: string;
   routes: Routes;
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ url, routes: sourceRoutes, slot }) => {
+const Router = createComponent<RouterProps>(({ url, baseURL = SLASH, routes: sourceRoutes, slot }) => {
   if (useActiveRouteContext()) {
     throw new Error('[web-router]: Parent active route context detected!');
   }
   const isServer = detectIsServer();
   const [pathname, setPathname] = useState(() => createPathname(url, isServer));
-  const routes = useMemo(() => createRoutes(sourceRoutes), []);
+  const routes = useMemo(() => createRoutes(sourceRoutes, normalaizeEnd(baseURL)), []);
   const history = useMemo(() => createRouterHistory(pathname), []);
   const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
   const scope = useMemo(() => ({ pathname }), []);
