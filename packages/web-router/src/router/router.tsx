@@ -9,7 +9,7 @@ import {
   useState,
 } from '@dark-engine/core';
 
-import { normalaizeEnd } from '../utils';
+import { createPathname } from '../utils';
 import { createRouterHistory } from '../history';
 import { type Routes, createRoutes, renderRoot, pathnameFromPath } from '../create-routes';
 import {
@@ -21,18 +21,17 @@ import {
 } from '../context';
 
 export type RouterProps = {
-  pathname?: string;
-  search?: string;
+  url?: string;
   routes: Routes;
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes: sourceRoutes, slot }) => {
+const Router = createComponent<RouterProps>(({ url, routes: sourceRoutes, slot }) => {
   if (useActiveRouteContext()) {
     throw new Error('[web-router]: Parent active route context detected!');
   }
   const isServer = detectIsServer();
-  const [pathname, setPathname] = useState(() => createPathname(sourcePathname, isServer));
+  const [pathname, setPathname] = useState(() => createPathname(url, isServer));
   const routes = useMemo(() => createRoutes(sourceRoutes), []);
   const history = useMemo(() => createRouterHistory(pathname), []);
   const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
@@ -43,8 +42,8 @@ const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes:
   scope.pathname = pathname;
 
   useLayoutEffect(() => {
-    setPathname(createPathname(sourcePathname, isServer));
-  }, [sourcePathname]);
+    setPathname(createPathname(url, isServer));
+  }, [url]);
 
   useLayoutEffect(() => {
     const unsubscribe = history.subscribe(url => setPathname(url));
@@ -70,11 +69,5 @@ const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes:
     </RouterHistoryContext.Provider>
   );
 });
-
-function createPathname(sourcePathname: string, isServer: boolean) {
-  const pathname = normalaizeEnd(isServer ? sourcePathname : sourcePathname || location.pathname);
-
-  return pathname;
-}
 
 export { Router };

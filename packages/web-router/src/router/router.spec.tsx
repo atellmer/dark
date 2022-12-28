@@ -6,7 +6,7 @@ import { type Routes } from '../create-routes';
 import { Router } from './router';
 
 type AppProps = {
-  pathname: string;
+  url: string;
 };
 
 let host: HTMLElement = null;
@@ -37,9 +37,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -47,13 +47,13 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<div>second</div>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
     root.unmount();
@@ -75,9 +75,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -85,25 +85,25 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/' />);
+    root.render(<App url='/' />);
     expect(host.innerHTML).toBe(replacer);
 
-    root.render(<App pathname='' />);
+    root.render(<App url='' />);
     expect(host.innerHTML).toBe(replacer);
 
-    root.render(<App pathname='/xxx' />);
+    root.render(<App url='/xxx' />);
     expect(host.innerHTML).toBe(replacer);
 
-    root.render(<App pathname='/second1' />);
+    root.render(<App url='/second1' />);
     expect(host.innerHTML).toBe(replacer);
 
-    root.render(<App pathname='/second/1' />);
+    root.render(<App url='/second/1' />);
     expect(host.innerHTML).toBe(`<div>second</div>`);
 
-    root.render(<App pathname='/first/1/xxx' />);
+    root.render(<App url='/first/1/xxx' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/some/broken/url' />);
+    root.render(<App url='/some/broken/url' />);
     expect(host.innerHTML).toBe(replacer);
 
     root.unmount();
@@ -135,9 +135,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -145,22 +145,22 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<second>${replacer}</second>`);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/b' />);
+    root.render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
-    root.render(<App pathname='/second/b/some/broken/route' />);
+    root.render(<App url='/second/b/some/broken/route' />);
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
     root.unmount();
@@ -212,9 +212,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -222,31 +222,31 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<second>${replacer}</second>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><a>${replacer}</a></second>`);
 
-    root.render(<App pathname='/second/a/1' />);
+    root.render(<App url='/second/a/1' />);
     expect(host.innerHTML).toBe(`<second><a><div>1</div></a></second>`);
 
-    root.render(<App pathname='/second/a/2' />);
+    root.render(<App url='/second/a/2' />);
     expect(host.innerHTML).toBe(`<second><a><div>2</div></a></second>`);
 
-    root.render(<App pathname='/second/b' />);
+    root.render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<second><b>${replacer}</b></second>`);
 
-    root.render(<App pathname='/second/b/1' />);
+    root.render(<App url='/second/b/1' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/2' />);
+    root.render(<App url='/second/b/2' />);
     expect(host.innerHTML).toBe(`<second><b><div>2</div></b></second>`);
 
     root.unmount();
@@ -268,9 +268,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -278,13 +278,13 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>second</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<div>second</div>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
     root.unmount();
@@ -309,9 +309,9 @@ describe('[router/rendering]', () => {
         component: createComponent(() => <div>fourth</div>),
       },
     ];
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -319,16 +319,16 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>fourth</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<div>fourth</div>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>fourth</div>`);
 
-    root.render(<App pathname='/fourth' />);
+    root.render(<App url='/fourth' />);
     expect(host.innerHTML).toBe(`<div>fourth</div>`);
 
     root.unmount();
@@ -368,9 +368,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -378,13 +378,13 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>c</div></second>`);
 
-    root.render(<App pathname='/second/b' />);
+    root.render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<second><div>c</div></second>`);
 
-    root.render(<App pathname='/second/c' />);
+    root.render(<App url='/second/c' />);
     expect(host.innerHTML).toBe(`<second><div>c</div></second>`);
 
     root.unmount();
@@ -402,9 +402,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -412,7 +412,7 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/' />);
+    root.render(<App url='/' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
     root.unmount();
@@ -430,9 +430,9 @@ describe('[router/rendering]', () => {
         pathMatch: 'full',
       },
     ];
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -440,7 +440,7 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/' />);
+    root.render(<App url='/' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
     root.unmount();
@@ -469,9 +469,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -479,7 +479,7 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
     root.unmount();
@@ -515,9 +515,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -525,16 +525,16 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/' />);
+    root.render(<App url='/' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/broken/url' />);
+    root.render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<div>404</div>`);
 
     root.unmount();
@@ -574,9 +574,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -584,16 +584,16 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/broken/url' />);
+    root.render(<App url='/second/broken/url' />);
     expect(host.innerHTML).toBe(`<second><div>404</div></second>`);
 
-    root.render(<App pathname='/second/a/broken/url' />);
+    root.render(<App url='/second/a/broken/url' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/broken/url' />);
+    root.render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<div>404</div>`);
 
     root.unmount();
@@ -629,9 +629,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -639,16 +639,16 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/broken/url' />);
+    root.render(<App url='/second/broken/url' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/a/broken/url' />);
+    root.render(<App url='/second/a/broken/url' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/broken/url' />);
+    root.render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
     root.unmount();
@@ -698,9 +698,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -708,37 +708,37 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/broken/url' />);
+    root.render(<App url='/second/broken/url' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/a/broken/url' />);
+    root.render(<App url='/second/a/broken/url' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/b' />);
+    root.render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/' />);
+    root.render(<App url='/second/b/' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/1' />);
+    root.render(<App url='/second/b/1' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/1/' />);
+    root.render(<App url='/second/b/1/' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/broken/url' />);
+    root.render(<App url='/second/b/broken/url' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/1/broken/url' />);
+    root.render(<App url='/second/b/1/broken/url' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
-    root.render(<App pathname='/second/b/2/broken/url' />);
+    root.render(<App url='/second/b/2/broken/url' />);
     expect(host.innerHTML).toBe(`<second><b><div>2</div></b></second>`);
 
-    root.render(<App pathname='/broken/url' />);
+    root.render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
     root.unmount();
@@ -766,9 +766,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -776,16 +776,16 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/second/1/a/' />);
+    root.render(<App url='/second/1/a/' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/2/a/' />);
+    root.render(<App url='/second/2/a/' />);
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
-    root.render(<App pathname='/second/1/b/2' />);
+    root.render(<App url='/second/1/b/2' />);
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
-    root.render(<App pathname='/second/100/b/2000' />);
+    root.render(<App url='/second/100/b/2000' />);
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
     root.unmount();
@@ -827,9 +827,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -837,28 +837,28 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/' />);
+    root.render(<App url='/' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<div>second</div>`);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<div>second/a</div>`);
 
-    root.render(<App pathname='/second/a/1' />);
+    root.render(<App url='/second/a/1' />);
     expect(host.innerHTML).toBe(`<div>second/a/1</div>`);
 
-    root.render(<App pathname='/second/a/2' />);
+    root.render(<App url='/second/a/2' />);
     expect(host.innerHTML).toBe(`<div>second/a/2</div>`);
 
-    root.render(<App pathname='/second/b' />);
+    root.render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
     root.unmount();
@@ -906,9 +906,9 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ pathname }) => {
+    const App = createComponent<AppProps>(({ url }) => {
       return (
-        <Router routes={routes} pathname={pathname}>
+        <Router routes={routes} url={url}>
           {slot => slot}
         </Router>
       );
@@ -916,28 +916,28 @@ describe('[router/rendering]', () => {
 
     const root = createRoot(host);
 
-    root.render(<App pathname='/' />);
+    root.render(<App url='/' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/first' />);
+    root.render(<App url='/first' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
 
-    root.render(<App pathname='/second' />);
+    root.render(<App url='/second' />);
     expect(host.innerHTML).toBe(`<div>second</div>`);
 
-    root.render(<App pathname='/second/a' />);
+    root.render(<App url='/second/a' />);
     expect(host.innerHTML).toBe(`<second:a><div>2</div></second:a>`);
 
-    root.render(<App pathname='/second/a/1' />);
+    root.render(<App url='/second/a/1' />);
     expect(host.innerHTML).toBe(`<second:a><div>1</div></second:a>`);
 
-    root.render(<App pathname='/second/a/2' />);
+    root.render(<App url='/second/a/2' />);
     expect(host.innerHTML).toBe(`<second:a><div>2</div></second:a>`);
 
-    root.render(<App pathname='/second/b' />);
+    root.render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
-    root.render(<App pathname='/third' />);
+    root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
 
     root.unmount();

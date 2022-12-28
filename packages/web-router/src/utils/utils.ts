@@ -1,4 +1,52 @@
-import { SLASH, PARAMETER } from '../constants';
+import { SLASH, PARAMETER, PROTOCOL, SEARCH } from '../constants';
+
+function parseURL(url: string) {
+  let body = url;
+  let protocol = '';
+  let host = '';
+  let pathname = '';
+  let search = '';
+
+  if (body.indexOf(PROTOCOL) !== -1) {
+    [protocol, body] = body.split(PROTOCOL).filter(Boolean);
+  }
+
+  const splitted = body.split('');
+  const idx = splitted.findIndex(x => x === SLASH);
+
+  if (idx !== -1) {
+    host = splitted.filter((_, idx1) => idx1 < idx).join('');
+    pathname = splitted.filter((_, idx1) => idx1 >= idx).join('');
+  } else {
+    host = body;
+    pathname = SLASH;
+  }
+
+  if (pathname.indexOf(SEARCH) !== -1) {
+    [pathname, search] = pathname.split(SEARCH).filter(Boolean);
+  }
+
+  return {
+    protocol,
+    host,
+    pathname,
+    search,
+  };
+}
+
+function createPathname(url: string, isServer: boolean): string {
+  if (url) {
+    const { pathname } = parseURL(url);
+
+    return normalaizeEnd(pathname);
+  }
+
+  if (!isServer) {
+    return normalaizeEnd(location.pathname);
+  }
+
+  return '';
+}
 
 const detectIsParam = (value: string) => value && value.startsWith(PARAMETER);
 
@@ -18,4 +66,4 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
 
 const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
 
-export { detectIsParam, getParamName, splitPath, normalaizeEnd, sort, cm };
+export { parseURL, createPathname, detectIsParam, getParamName, splitPath, normalaizeEnd, sort, cm };
