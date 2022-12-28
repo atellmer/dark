@@ -357,6 +357,17 @@ function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
   });
 }
 
+function canAddToDeletions(fiber: Fiber) {
+  let nextFiber = fiber.parent;
+
+  while (nextFiber) {
+    if (nextFiber.effectTag === EffectTag.DELETE) return false;
+    nextFiber = nextFiber.parent;
+  }
+
+  return true;
+}
+
 function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   const alternateType = getInstanceType(alternate.instance);
   const elementType = getInstanceType(instance);
@@ -367,9 +378,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   alternate.isUsed = true;
 
   if (!isSameType) {
-    alternate.effectTag = EffectTag.DELETE;
-
-    if (!deletionsStore.has(alternate.parent)) {
+    if (canAddToDeletions(alternate)) {
+      alternate.effectTag = EffectTag.DELETE;
       deletionsStore.add(alternate);
     }
   } else if (

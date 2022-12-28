@@ -15,7 +15,9 @@ const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
   if (!fallback) {
     throw new Error(`[Dark]: Suspense fallback not found!`);
   }
-  const value = useMemo(() => ({ fallback }), [fallback]);
+  const value = useMemo(() => ({ fallback }), []);
+
+  value.fallback = fallback;
 
   return SuspenseContext.Provider({ value, slot });
 });

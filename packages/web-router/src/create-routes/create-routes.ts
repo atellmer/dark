@@ -58,7 +58,6 @@ class Route {
 
     return CurrentPathContext.Provider({
       value: this.fullPath,
-      key: this.path,
       slot: [component({ slot: renderRoute(pathname, matched) })],
     });
   }
