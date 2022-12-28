@@ -45,7 +45,7 @@ const Router = createComponent<RouterProps>(({ pathname: sourceURL, routes: sour
     setURL(createURL(sourceURL, isServer));
   }, [sourceURL]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const unsubscribe = history.subscribe(url => setURL(url));
 
     return () => {
