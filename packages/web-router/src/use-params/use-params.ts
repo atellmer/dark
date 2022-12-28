@@ -9,4 +9,4 @@ function useParams(): ParamsMap {
   return value.paramsMap;
 }
 
-export { useParams };
+export { ParamsMap, useParams };

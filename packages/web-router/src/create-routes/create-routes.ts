@@ -185,7 +185,11 @@ function pathnameFromPath(pathname: string, path: string): string {
     }
   }
 
-  const newPathname = SLASH + normalaizeEnd(parts.join(SLASH));
+  let newPathname = normalaizeEnd(parts.join(SLASH));
+
+  if (newPathname[0] !== SLASH) {
+    newPathname = SLASH + newPathname;
+  }
 
   return newPathname;
 }
