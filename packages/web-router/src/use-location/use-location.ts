@@ -9,7 +9,7 @@ export type Location = {
 function useLocation(): Location {
   const activeRoute = useActiveRouteContext();
   checkContextValue(activeRoute);
-  const { url: pathname } = activeRoute;
+  const { pathname } = activeRoute;
   const key = useMemo(() => getKey(), [pathname]);
   const value: Location = { pathname, key };
 

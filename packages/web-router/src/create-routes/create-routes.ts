@@ -50,28 +50,28 @@ class Route {
     }
   }
 
-  public matchRender(url: string): DarkElement {
+  public matchRender(pathname: string): DarkElement {
     const component = this.component as Component<StandardComponentProps & SlotProps>;
-    const matched = match(url, this.children);
+    const matched = match(pathname, this.children);
 
     this.setCursor(matched);
 
     return CurrentPathContext.Provider({
       value: this.fullPath,
       key: this.path,
-      slot: [component({ slot: renderRoute(url, matched) })],
+      slot: [component({ slot: renderRoute(pathname, matched) })],
     });
   }
 }
 
-const getParamsMap = (url: string, route: Route): ParamsMap => {
-  const sUrl = splitPath(url);
+const getParamsMap = (pathname: string, route: Route): ParamsMap => {
+  const sPathname = splitPath(pathname);
   const sPath = splitPath(route.fullPath);
   const map = new Map();
 
   for (let i = 0; i < sPath.length; i++) {
     if (detectIsParam(sPath[i])) {
-      map.set(getParamName(sPath[i]), sUrl[i]);
+      map.set(getParamName(sPath[i]), sPathname[i]);
     }
   }
 
@@ -90,8 +90,8 @@ function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Arr
   return routes$;
 }
 
-function match(url: string, routes: Array<Route>): Route {
-  const route = matchRoute(url, routes);
+function match(pathname: string, routes: Array<Route>): Route {
+  const route = matchRoute(pathname, routes);
 
   if (route?.redirectTo) return redirect(route.fullPath, route.redirectTo, routes);
 
@@ -106,12 +106,12 @@ function match(url: string, routes: Array<Route>): Route {
   return null;
 }
 
-function matchRoute(url: string, routes: Array<Route>) {
-  const forwardRoute = routes.find(x => detectIsMatch(url, normalaizeEnd(x.path), true)) || null;
+function matchRoute(pathname: string, routes: Array<Route>) {
+  const forwardRoute = routes.find(x => detectIsMatch(pathname, normalaizeEnd(x.path), true)) || null;
 
   if (forwardRoute) return forwardRoute;
 
-  const route = routes.find(x => detectIsMatch(url, x.fullPath)) || null;
+  const route = routes.find(x => detectIsMatch(pathname, x.fullPath)) || null;
 
   return route;
 }
@@ -132,8 +132,8 @@ function detectCanRenderRoute(route: Route): boolean {
   return route?.component && !route.redirectTo;
 }
 
-function renderRoute(url: string, route: Route): DarkElement {
-  return detectCanRenderRoute(route) ? route.matchRender(url) : null;
+function renderRoute(pathname: string, route: Route): DarkElement {
+  return detectCanRenderRoute(route) ? route.matchRender(pathname) : null;
 }
 
 function getWildcardRoute(routes: Array<Route>) {
@@ -148,28 +148,28 @@ function getWildcardRoute(routes: Array<Route>) {
   return null;
 }
 
-function detectIsMatch(url: string, path: string, matchLength = false): boolean {
-  const sUrl = splitPath(url);
+function detectIsMatch(pathname: string, path: string, matchLength = false): boolean {
+  const sPathname = splitPath(pathname);
   const sPath = splitPath(path);
 
   if (path === SLASH) {
-    if (url === SLASH) return true;
+    if (pathname === SLASH) return true;
     return false;
   }
 
-  if (matchLength && url > path) return false;
+  if (matchLength && pathname > path) return false;
 
   for (let i = 0; i < sPath.length; i++) {
     const isParam = detectIsParam(sPath[i]);
 
-    if (!isParam && sPath[i] !== sUrl[i]) return false;
+    if (!isParam && sPath[i] !== sPathname[i]) return false;
   }
 
   return true;
 }
 
-function fromPath(url: string, path: string): string {
-  const sUrl = splitPath(url);
+function pathnameFromPath(pathname: string, path: string): string {
+  const sPathname = splitPath(pathname);
   const sPath = splitPath(path);
   const parts: Array<string> = [];
 
@@ -177,7 +177,7 @@ function fromPath(url: string, path: string): string {
     const isParam = detectIsParam(sPath[i]);
 
     if (isParam) {
-      const param = sUrl[i] || 'null';
+      const param = sPathname[i] || 'null';
 
       parts.push(param);
     } else {
@@ -185,9 +185,9 @@ function fromPath(url: string, path: string): string {
     }
   }
 
-  const newURL = SLASH + normalaizeEnd(parts.join(SLASH));
+  const newPathname = SLASH + normalaizeEnd(parts.join(SLASH));
 
-  return newURL;
+  return newPathname;
 }
 
 function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
@@ -196,12 +196,12 @@ function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string):
   return normalaizeEnd(prefix$ ? `${prefix$}${path}` : path);
 }
 
-function renderRoot(url: string, routes: Array<Route>) {
-  const matched = match(url, routes);
-  const rendered = renderRoute(url, matched);
-  const paramsMap = matched ? getParamsMap(url, matched.cursor) : null;
+function renderRoot(pathname: string, routes: Array<Route>) {
+  const matched = match(pathname, routes);
+  const rendered = renderRoute(pathname, matched);
+  const paramsMap = matched ? getParamsMap(pathname, matched.cursor) : null;
   const value = {
-    url,
+    pathname,
     matched,
     rendered,
     paramsMap,
@@ -210,4 +210,4 @@ function renderRoot(url: string, routes: Array<Route>) {
   return value;
 }
 
-export { type Route, createRoutes, match, renderRoot, detectIsMatch, fromPath };
+export { type Route, createRoutes, match, renderRoot, detectIsMatch, pathnameFromPath };

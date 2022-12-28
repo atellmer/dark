@@ -11,7 +11,7 @@ import {
 
 import { normalaizeEnd } from '../utils';
 import { createRouterHistory } from '../history';
-import { type Routes, createRoutes, renderRoot, fromPath } from '../create-routes';
+import { type Routes, createRoutes, renderRoot, pathnameFromPath } from '../create-routes';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -22,31 +22,32 @@ import {
 
 export type RouterProps = {
   pathname?: string;
+  search?: string;
   routes: Routes;
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ pathname: sourceURL, routes: sourceRoutes, slot }) => {
+const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes: sourceRoutes, slot }) => {
   if (useActiveRouteContext()) {
     throw new Error('[web-router]: Parent active route context detected!');
   }
   const isServer = detectIsServer();
-  const [url, setURL] = useState(() => createURL(sourceURL, isServer));
+  const [pathname, setPathname] = useState(() => createPathname(sourcePathname, isServer));
   const routes = useMemo(() => createRoutes(sourceRoutes), []);
-  const history = useMemo(() => createRouterHistory(url), []);
-  const { matched, paramsMap, rendered } = renderRoot(url, routes);
-  const scope = useMemo(() => ({ url }), []);
+  const history = useMemo(() => createRouterHistory(pathname), []);
+  const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
+  const scope = useMemo(() => ({ pathname }), []);
   const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-  const routerContext = useMemo<ActiveRouteContextValue>(() => ({ url, matched, paramsMap }), [url]);
+  const routerContext = useMemo<ActiveRouteContextValue>(() => ({ pathname, matched, paramsMap }), [pathname]);
 
-  scope.url = url;
-
-  useLayoutEffect(() => {
-    setURL(createURL(sourceURL, isServer));
-  }, [sourceURL]);
+  scope.pathname = pathname;
 
   useLayoutEffect(() => {
-    const unsubscribe = history.subscribe(url => setURL(url));
+    setPathname(createPathname(sourcePathname, isServer));
+  }, [sourcePathname]);
+
+  useLayoutEffect(() => {
+    const unsubscribe = history.subscribe(url => setPathname(url));
 
     return () => {
       unsubscribe();
@@ -56,12 +57,12 @@ const Router = createComponent<RouterProps>(({ pathname: sourceURL, routes: sour
 
   useEffect(() => {
     if (!matched) return;
-    const newURL = fromPath(url, matched.cursor.fullPath);
+    const newPathname = pathnameFromPath(pathname, matched.cursor.fullPath);
 
-    if (url !== newURL) {
-      history.replace(newURL);
+    if (pathname !== newPathname) {
+      history.replace(newPathname);
     }
-  }, [url]);
+  }, [pathname]);
 
   return (
     <RouterHistoryContext.Provider value={historyContext}>
@@ -70,10 +71,10 @@ const Router = createComponent<RouterProps>(({ pathname: sourceURL, routes: sour
   );
 });
 
-function createURL(url: string, isServer: boolean) {
-  const url$ = normalaizeEnd(isServer ? url : url || location.pathname);
+function createPathname(sourcePathname: string, isServer: boolean) {
+  const pathname = normalaizeEnd(isServer ? sourcePathname : sourcePathname || location.pathname);
 
-  return url$;
+  return pathname;
 }
 
 export { Router };
