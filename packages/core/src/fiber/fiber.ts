@@ -23,6 +23,8 @@ import {
   insertionEffectsStore,
   isLayoutEffectsZone,
   isInsertionEffectsZone,
+  detectHasRegisteredLazy,
+  isHydrateZone,
 } from '../scope';
 import {
   type ComponentFactory,
@@ -733,6 +735,7 @@ function createHook(): Hook {
 }
 
 function commitChanges() {
+  if (isHydrateZone.get() && detectHasRegisteredLazy()) return; // important order
   const wipFiber = wipRootStore.get();
   const isDynamic = platform.detectIsDynamic();
   const insertionEffects = insertionEffectsStore.get();

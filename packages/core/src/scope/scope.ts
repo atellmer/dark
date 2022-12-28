@@ -25,6 +25,7 @@ class Store {
   public isUpdateHookZone = false;
   public isBatchZone = false;
   public isHydrateZone = false;
+  public lazy: Set<number> = new Set();
 }
 
 type FiberMountStore = {
@@ -162,6 +163,18 @@ const isHydrateZone = {
   set: (value: boolean) => (store.get().isHydrateZone = value),
 };
 
+const registerLazy = () => {
+  const { id } = currentFiberStore.get();
+
+  store.get().lazy.add(id);
+
+  return id;
+};
+
+const unregisterLazy = (id: number) => store.get().lazy.delete(id);
+
+const detectHasRegisteredLazy = () => store.get().lazy.size > 0;
+
 export {
   getRootId,
   rootStore,
@@ -180,4 +193,7 @@ export {
   isUpdateHookZone,
   isBatchZone,
   isHydrateZone,
+  registerLazy,
+  unregisterLazy,
+  detectHasRegisteredLazy,
 };

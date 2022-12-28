@@ -37,6 +37,7 @@ function inject() {
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = detectIsPortal;
   platform.unmountPortal = unmountPortal;
+  platform.restart = () => {};
   isInjected = true;
 }
 
@@ -68,11 +69,12 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
   const callback = () => {
     rootStore.set(rootId); // important order!
     const currentRoot = currentRootStore.get();
+    const isUpdate = Boolean(currentRoot);
     const fiber = new Fiber().mutate({
       nativeElement: container,
       instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alternate: currentRoot,
-      effectTag: isMounted ? EffectTag.UPDATE : EffectTag.CREATE,
+      effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.CREATE,
     });
 
     fiberMountStore.reset();
@@ -83,7 +85,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
 
   platform.scheduleCallback(callback, {
     priority: TaskPriority.NORMAL,
-    forceSync: isLayoutEffectsZone.get(),
+    forceSync: hydrate || isLayoutEffectsZone.get(),
   });
 }
 
