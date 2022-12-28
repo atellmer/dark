@@ -2,7 +2,8 @@ import { type DarkElement, type Component, type StandardComponentProps, type Slo
 
 import { SLASH, WILDCARD } from '../constants';
 import { splitPath, normalaizeEnd, detectIsParam, getParamName, sort } from '../utils';
-import type { Routes, RouteDescriptor, PathMatchStrategy } from './types';
+import { CurrentPathContext } from '../context';
+import type { Routes, RouteDescriptor, PathMatchStrategy, ParamsMap } from './types';
 
 type RouteConstructorOptions = {
   prefix: string;
@@ -55,11 +56,15 @@ class Route {
 
     this.setCursor(matched);
 
-    return component({ slot: renderRoute(url, matched), key: this.path });
+    return CurrentPathContext.Provider({
+      value: this.fullPath,
+      key: this.path,
+      slot: [component({ slot: renderRoute(url, matched) })],
+    });
   }
 }
 
-const getParamsMap = (url: string, route: Route): Map<string, string> => {
+const getParamsMap = (url: string, route: Route): ParamsMap => {
   const sUrl = splitPath(url);
   const sPath = splitPath(route.fullPath);
   const map = new Map();

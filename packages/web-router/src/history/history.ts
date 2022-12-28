@@ -27,7 +27,7 @@ class RouterHistory {
         this.cursor = state.cursor;
       }
 
-      const handlePopState = () => {
+      const handleEvent = () => {
         const state = this.getState();
 
         if (state) {
@@ -42,9 +42,14 @@ class RouterHistory {
         this.fromHistory = false;
       };
 
-      window.addEventListener('popstate', handlePopState);
+      window.addEventListener('popstate', handleEvent);
 
-      this.dispose = () => window.removeEventListener('popstate', handlePopState);
+      this.dispose = () => {
+        window.removeEventListener('popstate', handleEvent);
+        this.subscribers.clear();
+        this.stack = [];
+        this.cursor = -1;
+      };
     }
   }
 
@@ -129,7 +134,7 @@ enum HistoryAction {
 }
 
 type StateBox = {
-  ['web-router']: State;
+  [STATE_KEY]: State;
 };
 
 type State = {

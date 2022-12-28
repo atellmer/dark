@@ -1,9 +1,10 @@
 import type { Component } from '../component';
-import type { DarkElement, Subscribe, SubscriberWithValue, SlotProps } from '../shared';
+import type { DarkElement, Subscribe, SubscriberWithValue, SlotProps, KeyProps } from '../shared';
 
 export type ContexProviderProps<T> = {
   value: T;
-} & SlotProps;
+} & SlotProps &
+  KeyProps;
 
 export type Context<T = unknown> = {
   Provider: Component<ContexProviderProps<T>>;

@@ -1,7 +1,7 @@
 import { h, createComponent, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { useHistory } from '../use-history';
-import { useMatch } from '../use-match';
+import { useLocation } from '../use-location';
 import { normalaizeEnd, cm } from '../utils';
 
 export type RoutreLinkProps = {
@@ -16,8 +16,8 @@ export type RoutreLinkProps = {
 const RouterLink = createComponent<RoutreLinkProps>(
   ({ to, activeClassName, className: sourceClassName, slot, onClick, ...rest }) => {
     const history = useHistory();
-    const { url } = useMatch();
-    const isActive = useMemo(() => url.indexOf(normalaizeEnd(to)) !== -1, [url]);
+    const { pathname } = useLocation();
+    const isActive = useMemo(() => pathname.indexOf(normalaizeEnd(to)) !== -1, [pathname]);
     const className = useMemo(
       () => cm(sourceClassName, isActive ? activeClassName : ''),
       [sourceClassName, activeClassName, isActive],

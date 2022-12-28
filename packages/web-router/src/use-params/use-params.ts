@@ -1,6 +1,7 @@
 import { useActiveRouteContext, checkContextValue } from '../context';
+import { type ParamsMap } from '../create-routes';
 
-function useParams() {
+function useParams(): ParamsMap {
   const value = useActiveRouteContext();
 
   checkContextValue(value);

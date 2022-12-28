@@ -28,10 +28,26 @@ function useRouterHistoryContext() {
   return value;
 }
 
+const CurrentPathContext = createContext<string>(null, { displayName: 'CurrentPath' });
+
+function useCurrentPathContext() {
+  const value = useContext(CurrentPathContext);
+
+  return value;
+}
+
 function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
   if (!value) {
     throw new Error('[web-router]:  Illegal invoke hook outside router!');
   }
 }
 
-export { ActiveRouteContext, useActiveRouteContext, RouterHistoryContext, useRouterHistoryContext, checkContextValue };
+export {
+  ActiveRouteContext,
+  useActiveRouteContext,
+  RouterHistoryContext,
+  useRouterHistoryContext,
+  CurrentPathContext,
+  useCurrentPathContext,
+  checkContextValue,
+};
