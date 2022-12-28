@@ -23,9 +23,9 @@ describe('[router/router-link]', () => {
   test('can navigate by routes correctly', () => {
     const content = (active: string, value: string) => dom`
       <header>
-        <a href="/first"${active === '/first' ? ` class="router-active-link"` : ''}>first</a>
-        <a href="/second"${active === '/second' ? ` class="router-active-link"` : ''}>second</a>
-        <a href="/third"${active === '/third' ? ` class="router-active-link"` : ''}>third</a>
+        <a href="/first"${active === '/first' ? ` class="router-link-active"` : ''}>first</a>
+        <a href="/second"${active === '/second' ? ` class="router-link-active"` : ''}>second</a>
+        <a href="/third"${active === '/third' ? ` class="router-link-active"` : ''}>third</a>
       </header>
       <main>${value}</main>
     `;
@@ -149,7 +149,7 @@ describe('[router/router-link]', () => {
     const root = createRoot(host);
 
     root.render(<App />);
-    expect(host.innerHTML).toBe(`<a href="/" class="router-active-link">first</a>`);
+    expect(host.innerHTML).toBe(`<a href="/" class="router-link-active">first</a>`);
 
     click(host.querySelector('a'));
     expect(defaultPrevented).toBe(true);

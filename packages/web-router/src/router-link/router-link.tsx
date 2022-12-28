@@ -38,7 +38,7 @@ const RouterLink = createComponent<RoutreLinkProps>(
   },
   {
     defaultProps: {
-      activeClassName: 'router-active-link',
+      activeClassName: 'router-link-active',
     },
   },
 );

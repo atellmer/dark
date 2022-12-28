@@ -1,10 +1,10 @@
 import { type Component, createComponent, detectIsComponentFactory } from '../component';
+import { detectIsFunction } from '../helpers';
 import { useState } from '../use-state';
 import { useEffect } from '../use-effect';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
-import { detectIsFunction } from '../helpers';
 
 const $$lazy = Symbol('lazy');
 
@@ -16,10 +16,8 @@ function lazy<P, R = unknown>(dynamic: () => Promise<{ default: Component<P> }>,
   return forwardRef(
     createComponent<P, R>(
       (props, ref) => {
-        const { fallback, trigger } = useContext(SuspenseContext);
-        const [scope, setScope] = useState<LazyScope<P, R>>({
-          component: null,
-        });
+        const { fallback } = useContext(SuspenseContext);
+        const [scope, setScope] = useState<LazyScope<P, R>>({ component: null });
 
         useEffect(() => {
           fetchModule(dynamic).then(component => {
@@ -27,11 +25,6 @@ function lazy<P, R = unknown>(dynamic: () => Promise<{ default: Component<P> }>,
             detectIsFunction(done) && done();
           });
         }, []);
-
-        useEffect(() => {
-          if (!scope.component) return;
-          trigger();
-        }, [scope.component]);
 
         return scope.component ? scope.component(props, ref) : fallback;
       },

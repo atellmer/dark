@@ -47,7 +47,7 @@ import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
 import { INDEX_KEY, TYPE, Flag } from '../constants';
-import { type NativeElement, type Hook, EffectTag, cloneTagMap } from './types';
+import { type NativeElement, type Hook, EffectTag } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
@@ -55,6 +55,10 @@ import { walkFiber } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
+
+const cloneTagMap = {
+  [EffectTag.CREATE]: true,
+};
 
 class Fiber<N = NativeElement> {
   public id = 0;
@@ -210,7 +214,6 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   alternate && performAlternate(alternate, instance);
   performFiber(fiber, alternate, instance);
   alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
-  cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
   return {
     fiber$: fiber,
@@ -243,7 +246,6 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     alternate && performAlternate(alternate, instance);
     performFiber(fiber, alternate, instance);
     alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
-    cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
     return {
       fiber$$: fiber,
@@ -292,12 +294,19 @@ function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) 
 }
 
 function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
-  const hasAlternate = Boolean(alternate);
-  const prevKey = hasAlternate ? getElementKey(alternate.instance) : null;
-  const nextKey = hasAlternate ? getElementKey(instance) : null;
-  const isSameKeys = prevKey === nextKey;
-  const isSameTypes = hasAlternate && getInstanceType(alternate.instance) === getInstanceType(instance);
-  const isUpdate = isSameTypes && isSameKeys;
+  let isUpdate = false;
+
+  cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
+
+  if (fiber.effectTag !== EffectTag.CREATE) {
+    const hasAlternate = Boolean(alternate);
+    const prevKey = hasAlternate ? getElementKey(alternate.instance) : null;
+    const nextKey = hasAlternate ? getElementKey(instance) : null;
+    const isSameKeys = prevKey === nextKey;
+    const isSameTypes = hasAlternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+
+    isUpdate = isSameTypes && isSameKeys;
+  }
 
   fiber.instance = instance;
   fiber.alternate = alternate || null;
@@ -768,6 +777,26 @@ function commitChanges() {
   });
 }
 
+function commitWork(fiber: Fiber, onComplete: Function) {
+  walkFiber(fiber.child, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+    const skip = nextFiber.effectTag === EffectTag.SKIP;
+
+    if (nextFiber === fiber) return stop();
+
+    if (skip) {
+      resetIsDeepWalking();
+    } else if (!isReturn) {
+      platform.applyCommit(nextFiber);
+    }
+
+    nextFiber.alternate = null;
+  });
+
+  fiber.alternate = null;
+  platform.finishCommitWork();
+  onComplete();
+}
+
 function getParentFiberWithNativeElement(fiber: Fiber) {
   let parentFiber = fiber;
 
@@ -805,26 +834,6 @@ function syncElementIndices(fiber: Fiber) {
       nextFiber.elementIdx += diff;
     }
   });
-}
-
-function commitWork(fiber: Fiber, onComplete: Function) {
-  walkFiber(fiber.child, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
-    const skip = nextFiber.effectTag === EffectTag.SKIP;
-
-    if (nextFiber === fiber) return stop();
-
-    if (skip) {
-      resetIsDeepWalking();
-    } else if (!isReturn) {
-      platform.applyCommit(nextFiber);
-    }
-
-    nextFiber.alternate = null;
-  });
-
-  fiber.alternate = null;
-  platform.finishCommitWork();
-  onComplete();
 }
 
 type CreateUpdateCallbackOptions = {

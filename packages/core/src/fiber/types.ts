@@ -17,8 +17,3 @@ export type Hook<T = any> = {
   idx: number;
   values: Array<T>;
 };
-
-export const cloneTagMap = {
-  [EffectTag.CREATE]: true,
-  [EffectTag.SKIP]: true,
-};
