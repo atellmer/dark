@@ -1,4 +1,5 @@
 import {
+  type DarkElement,
   h,
   createComponent,
   useMemo,
@@ -6,7 +7,6 @@ import {
   useEffect,
   useLayoutEffect,
   useState,
-  type DarkElement,
 } from '@dark-engine/core';
 
 import { normalaizeEnd } from '../utils';
@@ -26,27 +26,27 @@ export type RouterProps = {
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes: sourceRoutes, slot }) => {
+const Router = createComponent<RouterProps>(({ pathname: sourceURL, routes: sourceRoutes, slot }) => {
   if (useActiveRouteContext()) {
     throw new Error('[web-router]: Parent active route context detected!');
   }
   const isServer = detectIsServer();
-  const [url, setURL] = useState(() => createURL(sourcePathname, isServer));
+  const [url, setURL] = useState(() => createURL(sourceURL, isServer));
   const routes = useMemo(() => createRoutes(sourceRoutes), []);
   const history = useMemo(() => createRouterHistory(url), []);
   const { matched, paramsMap, rendered } = renderRoot(url, routes);
   const scope = useMemo(() => ({ url }), []);
-  const historyContextValue = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-  const routerContextValue = useMemo<ActiveRouteContextValue>(() => ({ url, matched, paramsMap }), [url]);
+  const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
+  const routerContext = useMemo<ActiveRouteContextValue>(() => ({ url, matched, paramsMap }), [url]);
 
   scope.url = url;
 
   useLayoutEffect(() => {
-    setURL(createURL(sourcePathname, isServer));
-  }, [sourcePathname]);
+    setURL(createURL(sourceURL, isServer));
+  }, [sourceURL]);
 
   useEffect(() => {
-    const unsubscribe = history.subscribe((url: string) => setURL(url));
+    const unsubscribe = history.subscribe(url => setURL(url));
 
     return () => {
       unsubscribe();
@@ -56,8 +56,7 @@ const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes:
 
   useEffect(() => {
     if (!matched) return;
-    const path = matched.cursor.fullPath;
-    const newURL = fromPath(url, path);
+    const newURL = fromPath(url, matched.cursor.fullPath);
 
     if (url !== newURL) {
       history.replace(newURL);
@@ -65,16 +64,16 @@ const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes:
   }, [url]);
 
   return (
-    <RouterHistoryContext.Provider value={historyContextValue}>
-      <ActiveRouteContext.Provider value={routerContextValue}>{slot(rendered)}</ActiveRouteContext.Provider>
+    <RouterHistoryContext.Provider value={historyContext}>
+      <ActiveRouteContext.Provider value={routerContext}>{slot(rendered)}</ActiveRouteContext.Provider>
     </RouterHistoryContext.Provider>
   );
 });
 
-function createURL(pathname: string, isServer: boolean) {
-  const url = normalaizeEnd(isServer ? pathname : pathname || location.pathname);
+function createURL(url: string, isServer: boolean) {
+  const url$ = normalaizeEnd(isServer ? url : url || location.pathname);
 
-  return url;
+  return url$;
 }
 
 export { Router };

@@ -1,4 +1,4 @@
-import { type DarkElement } from '@dark-engine/core';
+import { type DarkElement, type Component, type StandardComponentProps, type SlotProps } from '@dark-engine/core';
 
 import { SLASH, WILDCARD } from '../constants';
 import { splitPath, normalaizeEnd, detectIsParam, getParamName, sort } from '../utils';
@@ -50,11 +50,12 @@ class Route {
   }
 
   public matchRender(url: string): DarkElement {
+    const component = this.component as Component<StandardComponentProps & SlotProps>;
     const matched = match(url, this.children);
 
     this.setCursor(matched);
 
-    return this.component({ slot: renderRoute(url, matched), key: this.path, path: this.fullPath });
+    return component({ slot: renderRoute(url, matched), key: this.path });
   }
 }
 
