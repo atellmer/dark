@@ -1,7 +1,7 @@
 /** @jsx h */
 import { createTestHostNode, createReplacerString, click, dom } from '@test-utils';
 import { h, Fragment, createComponent } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { RouterLink } from './router-link';
@@ -114,6 +114,45 @@ describe('[router/router-link]', () => {
 
     root.render(<App />);
     expect(host.innerHTML).toBe(`<a href="/" class="my-link custom-active-link">first</a>`);
+
+    root.unmount();
+  });
+
+  test('prevent default click event', () => {
+    const routes: Routes = [
+      {
+        path: '',
+        component: createComponent(() => null),
+      },
+    ];
+
+    let defaultPrevented = false;
+
+    const App = createComponent(() => {
+      const handleClick = (e: SyntheticEvent<MouseEvent>) => {
+        defaultPrevented = e.sourceEvent.defaultPrevented;
+      };
+
+      return (
+        <Router routes={routes}>
+          {() => {
+            return (
+              <RouterLink to='/' onClick={handleClick}>
+                first
+              </RouterLink>
+            );
+          }}
+        </Router>
+      );
+    });
+
+    const root = createRoot(host);
+
+    root.render(<App />);
+    expect(host.innerHTML).toBe(`<a href="/" class="router-active-link">first</a>`);
+
+    click(host.querySelector('a'));
+    expect(defaultPrevented).toBe(true);
 
     root.unmount();
   });
