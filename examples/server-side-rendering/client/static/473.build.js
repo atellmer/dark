@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[473],{38:(t,a,s)=>{s.d(a,{G:()=>f});var l=s(654),e=s(524);const f=(0,l.LM)((({slot:t})=>(0,e.h)("article",{class:"fade animated-route"},t)))},473:(t,a,s)=>{s.r(a),s.d(a,{default:()=>h});var l=s(654),e=s(524),f=s(38);const h=(0,l.LM)((()=>(0,e.h)(f.G,null,(0,e.h)("h2",null,"Child route A"),(0,e.h)("img",{src:"https://images.unsplash.com/photo-1670100054273-7371cf0816e3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80"}))))}}]);
+//# sourceMappingURL=473.build.js.map

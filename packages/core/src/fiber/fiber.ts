@@ -735,7 +735,7 @@ function createHook(): Hook {
 }
 
 function commitChanges() {
-  if (isHydrateZone.get() && detectHasRegisteredLazy()) return; // important order
+  if (isHydrateZone.get() && detectHasRegisteredLazy()) return flush(null); // important order
   const wipFiber = wipRootStore.get();
   const isDynamic = platform.detectIsDynamic();
   const insertionEffects = insertionEffectsStore.get();
@@ -766,18 +766,24 @@ function commitChanges() {
       isDynamic && effects.forEach(fn => fn());
     });
 
-    wipRootStore.set(null); // important order
-    deletionsStore.reset();
-    insertionEffectsStore.reset();
-    layoutEffectsStore.reset();
-    effectsStore.reset();
-
-    if (fromUpdate) {
-      isUpdateHookZone.set(false);
-    } else {
-      currentRootStore.set(wipFiber);
-    }
+    flush(wipFiber);
   });
+}
+
+function flush(wipFiber: Fiber) {
+  const fromUpdate = isUpdateHookZone.get();
+
+  wipRootStore.set(null); // important order
+  deletionsStore.reset();
+  insertionEffectsStore.reset();
+  layoutEffectsStore.reset();
+  effectsStore.reset();
+
+  if (fromUpdate) {
+    isUpdateHookZone.set(false);
+  } else {
+    currentRootStore.set(wipFiber);
+  }
 }
 
 function commitWork(fiber: Fiber, onComplete: Function) {

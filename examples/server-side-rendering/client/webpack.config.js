@@ -9,6 +9,7 @@ const config = {
     alias: {
       '@dark-engine/core': resolve(__dirname, '../../../packages/core/src'),
       '@dark-engine/platform-browser': resolve(__dirname, '../../../packages/platform-browser/src'),
+      '@dark-engine/web-router': resolve(__dirname, '../../../packages/web-router/src'),
     },
   },
   entry: resolve(__dirname, './index.tsx'),

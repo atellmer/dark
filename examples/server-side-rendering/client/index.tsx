@@ -1,6 +1,3 @@
-import { h } from '@dark-engine/core';
-import { hydrateRoot } from '@dark-engine/platform-browser';
+import { bootstrap } from './bootstrap/app.client';
 
-import { App } from './app';
-
-hydrateRoot(document.getElementById('root'), <App />);
+bootstrap(true);

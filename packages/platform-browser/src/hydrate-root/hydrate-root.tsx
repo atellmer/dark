@@ -4,9 +4,8 @@ import { unmount } from '../create-root';
 import type { TagNativeElement } from '../native-element';
 
 function hydrateRoot(container: TagNativeElement, element: DarkElement) {
+  render(element, container, true); //important order
   platform.restart = () => hydrateRoot(container, element);
-
-  render(element, container, true);
 
   return {
     unmount: () => unmount(container),

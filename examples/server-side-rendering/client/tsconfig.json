@@ -19,6 +19,12 @@
       "@dark-engine/platform-browser": [
         "../../../packages/platform-browser/src/index"
       ],
+      "@dark-engine/platform-server": [
+        "../../../packages/platform-server/src/index"
+      ],
+      "@dark-engine/web-router": [
+        "../../../packages/web-router/src/index"
+      ],
     }
   }
 }
