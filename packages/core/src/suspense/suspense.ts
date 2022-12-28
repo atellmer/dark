@@ -7,9 +7,7 @@ type SuspenseProps = {
   fallback: DarkElement;
 } & Required<SlotProps>;
 
-type SuspenseContextValue = {
-  fallback: DarkElement;
-};
+type SuspenseContextValue = {} & Pick<SuspenseProps, 'fallback'>;
 
 const SuspenseContext = createContext<SuspenseContextValue>({ fallback: null });
 
