@@ -2,7 +2,7 @@ import { h, createComponent, useMemo, useEvent, detectIsFunction, type DarkEleme
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { useHistory } from '../use-history';
 import { useMatch } from '../use-match';
-import { normalaizeEnd } from '../utils';
+import { normalaizeEnd, cm } from '../utils';
 
 export type RoutreLinkProps = {
   to: string;
@@ -14,13 +14,13 @@ export type RoutreLinkProps = {
 };
 
 const RouterLink = createComponent<RoutreLinkProps>(
-  ({ to, activeClassName, className: _className, slot, onClick, ...rest }) => {
+  ({ to, activeClassName, className: sourceClassName, slot, onClick, ...rest }) => {
     const history = useHistory();
-    const { path } = useMatch();
-    const isActive = useMemo(() => path.indexOf(normalaizeEnd(to)) !== -1, [path]);
+    const { url } = useMatch();
+    const isActive = useMemo(() => url.indexOf(normalaizeEnd(to)) !== -1, [url]);
     const className = useMemo(
-      () => [_className, isActive ? activeClassName : ''].filter(Boolean).join(' ') || undefined,
-      [_className, activeClassName, isActive],
+      () => cm(sourceClassName, isActive ? activeClassName : ''),
+      [sourceClassName, activeClassName, isActive],
     );
 
     const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => {

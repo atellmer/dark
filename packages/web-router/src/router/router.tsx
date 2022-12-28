@@ -11,7 +11,7 @@ import {
 
 import { normalaizeEnd } from '../utils';
 import { createRouterHistory } from '../history';
-import { type Routes, createRoutes, renderRoot } from '../create-routes';
+import { type Routes, createRoutes, renderRoot, fromPath } from '../create-routes';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -26,29 +26,27 @@ export type RouterProps = {
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ pathname: _pathname, routes: _routes, slot }) => {
+const Router = createComponent<RouterProps>(({ pathname: sourcePathname, routes: sourceRoutes, slot }) => {
   if (useActiveRouteContext()) {
     throw new Error('[web-router]: Parent active route context detected!');
   }
-
-  const createPathname = (pathname: string) =>
-    normalaizeEnd(detectIsServer() ? pathname : pathname || location.pathname);
-  const [pathname, setPathname] = useState(() => createPathname(_pathname));
-  const routes = useMemo(() => createRoutes(_routes), []);
-  const history = useMemo(() => createRouterHistory(pathname), []);
-  const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
-  const scope = useMemo(() => ({ pathname }), []);
+  const isServer = detectIsServer();
+  const [url, setURL] = useState(() => createURL(sourcePathname, isServer));
+  const routes = useMemo(() => createRoutes(sourceRoutes), []);
+  const history = useMemo(() => createRouterHistory(url), []);
+  const { matched, paramsMap, rendered } = renderRoot(url, routes);
+  const scope = useMemo(() => ({ url }), []);
   const historyContextValue = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-  const routerContextValue = useMemo<ActiveRouteContextValue>(() => ({ pathname, matched, paramsMap }), [pathname]);
+  const routerContextValue = useMemo<ActiveRouteContextValue>(() => ({ url, matched, paramsMap }), [url]);
 
-  scope.pathname = pathname;
+  scope.url = url;
 
   useLayoutEffect(() => {
-    setPathname(createPathname(_pathname));
-  }, [_pathname]);
+    setURL(createURL(sourcePathname, isServer));
+  }, [sourcePathname]);
 
   useEffect(() => {
-    const unsubscribe = history.subscribe((url: string) => setPathname(url));
+    const unsubscribe = history.subscribe((url: string) => setURL(url));
 
     return () => {
       unsubscribe();
@@ -59,11 +57,12 @@ const Router = createComponent<RouterProps>(({ pathname: _pathname, routes: _rou
   useEffect(() => {
     if (!matched) return;
     const path = matched.cursor.fullPath;
+    const newURL = fromPath(url, path);
 
-    if (pathname !== path) {
-      history.replace(path);
+    if (url !== newURL) {
+      history.replace(newURL);
     }
-  }, [pathname]);
+  }, [url]);
 
   return (
     <RouterHistoryContext.Provider value={historyContextValue}>
@@ -71,5 +70,11 @@ const Router = createComponent<RouterProps>(({ pathname: _pathname, routes: _rou
     </RouterHistoryContext.Provider>
   );
 });
+
+function createURL(pathname: string, isServer: boolean) {
+  const url = normalaizeEnd(isServer ? pathname : pathname || location.pathname);
+
+  return url;
+}
 
 export { Router };

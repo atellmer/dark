@@ -16,4 +16,6 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
   return list.sort(compare);
 }
 
-export { detectIsParam, getParamName, splitPath, normalaizeEnd, sort };
+const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
+
+export { detectIsParam, getParamName, splitPath, normalaizeEnd, sort, cm };

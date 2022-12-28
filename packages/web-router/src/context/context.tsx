@@ -5,7 +5,7 @@ import { type Route } from '../create-routes';
 export type ActiveRouteContextValue = {
   paramsMap: Map<string, string>;
   matched: Route;
-  pathname: string;
+  url: string;
 };
 
 const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });

@@ -162,6 +162,22 @@ function detectIsMatch(url: string, path: string, matchLength = false): boolean 
   return true;
 }
 
+function fromPath(url: string, path: string): string {
+  const sUrl = splitPath(url);
+  const sPath = splitPath(path);
+  const parts: Array<string> = [];
+
+  for (let i = 0; i < sPath.length; i++) {
+    const isParam = detectIsParam(sPath[i]);
+
+    parts.push(sUrl[i] || (isParam ? 'null' : sPath[i]));
+  }
+
+  const newURL = SLASH + normalaizeEnd(parts.join(SLASH));
+
+  return newURL;
+}
+
 function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
   const prefix$ = pathMatch === 'prefix' ? normalaizeEnd(prefix) : '';
 
@@ -182,4 +198,4 @@ function renderRoot(url: string, routes: Array<Route>) {
   return value;
 }
 
-export { createRoutes, match, renderRoot };
+export { type Route, createRoutes, match, renderRoot, detectIsMatch, fromPath };
