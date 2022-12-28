@@ -176,7 +176,13 @@ function fromPath(url: string, path: string): string {
   for (let i = 0; i < sPath.length; i++) {
     const isParam = detectIsParam(sPath[i]);
 
-    parts.push(sUrl[i] || (isParam ? 'null' : sPath[i]));
+    if (isParam) {
+      const param = sUrl[i] || 'null';
+
+      parts.push(param);
+    } else {
+      parts.push(sPath[i]);
+    }
   }
 
   const newURL = SLASH + normalaizeEnd(parts.join(SLASH));
