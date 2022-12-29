@@ -12,7 +12,9 @@ function useMatch(): Match {
   const activeRoute = useActiveRouteContext();
   checkContextValue(activeRoute);
   const path = useCurrentPathContext();
-  const { pathname } = activeRoute;
+  const {
+    location: { pathname },
+  } = activeRoute;
   const url = useMemo(() => (path ? pathnameFromPath(pathname, path) : ''), [path, pathname]);
   const value: Match = { path, url };
 

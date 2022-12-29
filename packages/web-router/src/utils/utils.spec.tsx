@@ -1,6 +1,6 @@
 /** @jsx h */
 import { PARAMETER } from '../constants';
-import { parseURL, normalaizeEnd, detectIsParam, getParamName, sort, splitPath, cm } from './utils';
+import { parseURL, normalaizePathname, detectIsParam, getParamName, sort, splitPath, cm } from './utils';
 
 describe('[router/utils]', () => {
   test('parseURL works correctly #1', () => {
@@ -9,7 +9,7 @@ describe('[router/utils]', () => {
     expect(protocol).toBe('https');
     expect(host).toBe('localhost:9000');
     expect(pathname).toBe('/search/route/');
-    expect(search).toBe('q="hello"&p="world"');
+    expect(search).toBe('?q="hello"&p="world"');
   });
 
   test('parseURL works correctly #2', () => {
@@ -18,7 +18,7 @@ describe('[router/utils]', () => {
     expect(protocol).toBe('https');
     expect(host).toBe('www.google.com');
     expect(pathname).toBe('/search/route/');
-    expect(search).toBe('q="hello"&p="world"');
+    expect(search).toBe('?q="hello"&p="world"');
   });
 
   test('parseURL works correctly #3', () => {
@@ -27,7 +27,7 @@ describe('[router/utils]', () => {
     expect(protocol).toBe('https');
     expect(host).toBe('google.com');
     expect(pathname).toBe('/search/route/');
-    expect(search).toBe('q="hello"&p="world"');
+    expect(search).toBe('?q="hello"&p="world"');
   });
 
   test('parseURL works correctly #4', () => {
@@ -62,7 +62,7 @@ describe('[router/utils]', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route');
+    expect(pathname).toBe('/some/route/');
     expect(search).toBe('');
   });
 
@@ -71,8 +71,8 @@ describe('[router/utils]', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route');
-    expect(search).toBe('q="hello"');
+    expect(pathname).toBe('/some/route/');
+    expect(search).toBe('?q="hello"');
   });
 
   test('parseURL works correctly #9', () => {
@@ -80,13 +80,15 @@ describe('[router/utils]', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/#/some/route');
-    expect(search).toBe('q="hello"');
+    expect(pathname).toBe('/#/some/route/');
+    expect(search).toBe('?q="hello"');
   });
 
-  test('normalaizeEnd works correctly', () => {
-    expect(normalaizeEnd('/some/route')).toBe('/some/route/');
-    expect(normalaizeEnd('/some/route/')).toBe('/some/route/');
+  test('normalaizePathname works correctly', () => {
+    expect(normalaizePathname('/some/route')).toBe('/some/route/');
+    expect(normalaizePathname('/some/route/')).toBe('/some/route/');
+    expect(normalaizePathname('/some/route?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
+    expect(normalaizePathname('/some/route/?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
   });
 
   test('detectIsParam works correctly', () => {

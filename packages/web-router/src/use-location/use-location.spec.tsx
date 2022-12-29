@@ -6,7 +6,8 @@ import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { useHistory } from '../use-history';
 import { RouterHistory } from '../history';
-import { useLocation, type Location } from './use-location';
+import { RouterLocation } from '../location';
+import { useLocation } from './use-location';
 
 let host: HTMLElement = null;
 
@@ -21,7 +22,7 @@ afterAll(() => {
 describe('[router/use-location]', () => {
   test('hook works correctly', () => {
     let history: RouterHistory = null;
-    let location: Location = null;
+    let location: RouterLocation = null;
 
     const routes: Routes = [
       {
@@ -50,14 +51,14 @@ describe('[router/use-location]', () => {
     const root = createRoot(host);
 
     root.render(<App />);
-    expect(location).toBeTruthy();
+    expect(location).toBeInstanceOf(RouterLocation);
     expect(location.pathname).toBe('/');
     expect(location.key).toBeTruthy;
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/second');
     expect(host.innerHTML).toBe(`<div>second</div>`);
-    expect(location).toBeTruthy();
+    expect(location).toBeInstanceOf(RouterLocation);
     expect(location.pathname).toBe('/second/');
     expect(location.key).toBeTruthy;
 

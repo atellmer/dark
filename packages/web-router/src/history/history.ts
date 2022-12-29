@@ -1,11 +1,11 @@
 import { detectIsFalsy, type SubscriberWithValue } from '@dark-engine/core';
-import { normalaizeEnd } from '../utils';
+import { normalaizePathname, parseURL } from '../utils';
 
 const browserHistory = globalThis.history;
 class RouterHistory {
   private stack: Array<string> = [];
   private cursor = -1;
-  private subscribers: Set<(value: string) => void> = new Set();
+  private subscribers: Set<SubscriberWithValue<string>> = new Set();
   private fromHistory = false;
   public dispose: () => void = null;
 
@@ -14,7 +14,10 @@ class RouterHistory {
       throw new Error('[web-router]: RouterHistory must have initial url!');
     }
 
-    this.stack.push(url);
+    const { pathname, search } = parseURL(url);
+    const spathname = pathname + search;
+
+    this.stack.push(spathname);
     this.cursor = this.stack.length - 1;
 
     if (browserHistory) {
@@ -60,7 +63,7 @@ class RouterHistory {
   }
 
   private getValue = () => {
-    return normalaizeEnd(this.stack[this.cursor]);
+    return normalaizePathname(this.stack[this.cursor]);
   };
 
   private getState(): State {
@@ -73,16 +76,16 @@ class RouterHistory {
     return { ...state, [STATE_KEY]: { cursor: this.cursor, stack: this.stack } };
   }
 
-  private syncHistory(action: HistoryAction, value: string) {
+  private syncHistory(action: HistoryAction, spathname: string) {
     if (!browserHistory) return;
     const stateBox = this.createStateBox();
-    const normalValue = normalaizeEnd(value);
+    const spathname$ = normalaizePathname(spathname);
 
     switch (action) {
       case HistoryAction.PUSH:
-        return browserHistory.pushState(stateBox, '', normalValue);
+        return browserHistory.pushState(stateBox, '', spathname$);
       case HistoryAction.REPLACE:
-        return browserHistory.replaceState(stateBox, '', normalValue);
+        return browserHistory.replaceState(stateBox, '', spathname$);
     }
   }
 
@@ -92,16 +95,16 @@ class RouterHistory {
     return () => this.subscribers.delete(subscriber);
   };
 
-  public push(value: string) {
-    this.stack.splice(this.cursor + 1, this.stack.length, value);
+  public push(spathname: string) {
+    this.stack.splice(this.cursor + 1, this.stack.length, spathname);
     this.cursor = this.stack.length - 1;
-    this.syncHistory(HistoryAction.PUSH, value);
+    this.syncHistory(HistoryAction.PUSH, spathname);
     this.mapSubscribers();
   }
 
-  public replace(value: string) {
-    this.stack[this.stack.length - 1] = value;
-    this.syncHistory(HistoryAction.REPLACE, value);
+  public replace(spathname: string) {
+    this.stack[this.stack.length - 1] = spathname;
+    this.syncHistory(HistoryAction.REPLACE, spathname);
     this.mapSubscribers();
   }
 

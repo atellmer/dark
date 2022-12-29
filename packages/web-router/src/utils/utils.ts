@@ -1,4 +1,4 @@
-import { SLASH, PARAMETER, PROTOCOL, SEARCH } from '../constants';
+import { SLASH, PARAMETER, PROTOCOL_MARK, SEARCH_MARK } from '../constants';
 
 function parseURL(url: string) {
   let body = url;
@@ -7,8 +7,8 @@ function parseURL(url: string) {
   let pathname = '';
   let search = '';
 
-  if (body.indexOf(PROTOCOL) !== -1) {
-    [protocol, body] = body.split(PROTOCOL).filter(Boolean);
+  if (body.indexOf(PROTOCOL_MARK) !== -1) {
+    [protocol, body] = body.split(PROTOCOL_MARK).filter(Boolean);
   }
 
   const splitted = body.split('');
@@ -22,31 +22,19 @@ function parseURL(url: string) {
     pathname = SLASH;
   }
 
-  if (pathname.indexOf(SEARCH) !== -1) {
-    [pathname, search] = pathname.split(SEARCH).filter(Boolean);
+  if (pathname.indexOf(SEARCH_MARK) !== -1) {
+    [pathname, search] = pathname.split(SEARCH_MARK).filter(Boolean);
   }
 
   return {
     protocol,
     host,
-    pathname,
-    search,
+    pathname: normalaizePathname(pathname),
+    search: createSearch(search),
   };
 }
 
-function createPathname(url: string, isServer: boolean): string {
-  if (url) {
-    const { pathname } = parseURL(url);
-
-    return normalaizeEnd(pathname);
-  }
-
-  if (!isServer) {
-    return normalaizeEnd(location.pathname);
-  }
-
-  return '';
-}
+const createSearch = (value: string) => (value ? `${SEARCH_MARK}${value}` : '');
 
 const detectIsParam = (value: string) => value && value.startsWith(PARAMETER);
 
@@ -54,7 +42,12 @@ const getParamName = (value: string) => (detectIsParam(value) ? value.slice(1, v
 
 const splitPath = (path: string) => path.split(SLASH).filter(Boolean);
 
-const normalaizeEnd = (path: string) => (path.endsWith(SLASH) ? path : path + SLASH);
+function normalaizePathname(spath: string) {
+  const [path, search] = spath.split(SEARCH_MARK);
+  const newSpath = (path.endsWith(SLASH) ? path : path + SLASH) + createSearch(search);
+
+  return newSpath;
+}
 
 function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => number) {
   const asc = (a: T, b: T) => selector(a) - selector(b);
@@ -66,4 +59,4 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
 
 const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
 
-export { parseURL, createPathname, detectIsParam, getParamName, splitPath, normalaizeEnd, sort, cm };
+export { parseURL, detectIsParam, getParamName, splitPath, normalaizePathname, sort, cm };

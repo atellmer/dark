@@ -1,9 +1,8 @@
 import { h, createComponent, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
-import { SLASH } from '../constants';
 import { useHistory } from '../use-history';
 import { useLocation } from '../use-location';
-import { normalaizeEnd, cm } from '../utils';
+import { normalaizePathname, cm } from '../utils';
 
 export type RoutreLinkProps = {
   to: string;
@@ -44,8 +43,8 @@ const RouterLink = createComponent<RoutreLinkProps>(
 );
 
 function detectIsActiveLink(pathname: string, to: string): boolean {
-  const pathname$ = normalaizeEnd(pathname);
-  const to$ = normalaizeEnd(to);
+  const pathname$ = normalaizePathname(pathname);
+  const to$ = normalaizePathname(to);
 
   return pathname$.indexOf(to$) !== -1;
 }

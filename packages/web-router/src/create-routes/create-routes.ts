@@ -1,7 +1,7 @@
 import { type DarkElement, type Component, type StandardComponentProps, type SlotProps } from '@dark-engine/core';
 
 import { SLASH, WILDCARD } from '../constants';
-import { splitPath, normalaizeEnd, detectIsParam, getParamName, sort } from '../utils';
+import { splitPath, normalaizePathname, detectIsParam, getParamName, sort } from '../utils';
 import { CurrentPathContext } from '../context';
 import type { Routes, RouteDescriptor, PathMatchStrategy, ParamsMap } from './types';
 
@@ -106,7 +106,7 @@ function match(pathname: string, routes: Array<Route>): Route {
 }
 
 function matchRoute(pathname: string, routes: Array<Route>) {
-  const forwardRoute = routes.find(x => detectIsMatch(pathname, normalaizeEnd(x.path), true)) || null;
+  const forwardRoute = routes.find(x => detectIsMatch(pathname, normalaizePathname(x.path), true)) || null;
 
   if (forwardRoute) return forwardRoute;
 
@@ -184,7 +184,7 @@ function pathnameFromPath(pathname: string, path: string): string {
     }
   }
 
-  let newPathname = normalaizeEnd(parts.join(SLASH));
+  let newPathname = normalaizePathname(parts.join(SLASH));
 
   if (newPathname[0] !== SLASH) {
     newPathname = SLASH + newPathname;
@@ -194,9 +194,9 @@ function pathnameFromPath(pathname: string, path: string): string {
 }
 
 function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
-  const prefix$ = pathMatch === 'prefix' ? normalaizeEnd(prefix) : '';
+  const prefix$ = pathMatch === 'prefix' ? normalaizePathname(prefix) : '';
 
-  return normalaizeEnd(prefix$ ? `${prefix$}${path}` : path);
+  return normalaizePathname(prefix$ ? `${prefix$}${path}` : path);
 }
 
 function renderRoot(pathname: string, routes: Array<Route>) {

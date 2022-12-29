@@ -1,11 +1,12 @@
 import { createContext, useContext } from '@dark-engine/core';
+import { type RouterLocation } from '../location';
 import { type RouterHistory } from '../history';
 import { type Route } from '../create-routes';
 
 export type ActiveRouteContextValue = {
+  location: RouterLocation;
   paramsMap: Map<string, string>;
   matched: Route;
-  pathname: string;
 };
 
 const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });
