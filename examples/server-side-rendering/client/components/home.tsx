@@ -1,5 +1,5 @@
-import { h, createComponent, type DarkElement, useState } from '@dark-engine/core';
-import { RouterLink, useMatch } from '@dark-engine/web-router';
+import { h, createComponent, type DarkElement, useState, useEffect } from '@dark-engine/core';
+import { RouterLink, useMatch, useHistory, useParams, useLocation } from '@dark-engine/web-router';
 
 import { AnimatedRoute } from './animated-route';
 
@@ -9,7 +9,16 @@ type HomeProps = {
 
 const Home = createComponent<HomeProps>(({ slot }) => {
   const { url } = useMatch();
+  const history = useHistory();
+  const params = useParams();
+  const location = useLocation();
   const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (params.get('id') === 'null') {
+      history.push('/home/777');
+    }
+  }, [location.url]);
 
   return (
     <AnimatedRoute>
