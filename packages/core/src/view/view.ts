@@ -74,6 +74,9 @@ const getVirtualNodeFactoryFlag = (factory: VirtualNodeFactory): Record<Flag, bo
 
 const createReplacer = () => new CommentVirtualNode(REPLACER);
 
+const detectIsPlainVirtualNode = (vNode: unknown) =>
+  detectIsTextVirtualNode(vNode) || detectIsCommentVirtualNode(vNode);
+
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
     const { as: name, slot, _void = false, ...attrs } = def;
@@ -113,6 +116,7 @@ export {
   detectIsTagVirtualNode,
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
+  detectIsPlainVirtualNode,
   getTagVirtualNodeKey,
   getTagVirtualNodeFlag,
   getVirtualNodeFactoryKey,

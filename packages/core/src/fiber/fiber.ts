@@ -43,6 +43,7 @@ import {
   getVirtualNodeFactoryFlag,
   detectIsTextVirtualNode,
   detectIsCommentVirtualNode,
+  detectIsPlainVirtualNode,
   createReplacer,
 } from '../view';
 import { detectIsMemo } from '../memo';
@@ -616,16 +617,19 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
     }
 
     if (children[idx]) {
-      const key = getElementKey(children[idx]);
+      const instance = children[idx];
+      const key = getElementKey(instance);
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       if (process.env.NODE_ENV === 'development') {
-        if (detectIsEmpty(key)) {
+        const isPlainNode = detectIsPlainVirtualNode(instance);
+
+        if (detectIsEmpty(key) && !isPlainNode) {
           hasNoNextKeys = true;
         }
 
         if (usedKeysMap[nextKey]) {
-          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [children[idx]]);
+          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [instance]);
         }
 
         usedKeysMap[nextKey] = true;
