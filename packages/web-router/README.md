@@ -26,6 +26,11 @@ yarn:
 yarn add @dark-engine/web-router
 ```
 
+CDN:
+```html
+<script src="https://unpkg.com/@dark-engine/web-router/dist/umd/dark-web-router.production.min.js"></script>
+```
+
 ## API
 
 ```tsx
