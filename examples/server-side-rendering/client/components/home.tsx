@@ -16,7 +16,7 @@ const Home = createComponent<HomeProps>(({ slot }) => {
 
   useEffect(() => {
     if (params.get('id') === 'null') {
-      history.push('/home/777');
+      history.push('/home/888');
     }
   }, [location.url]);
 

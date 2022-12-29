@@ -11,7 +11,7 @@ const Shell = createComponent<ShellProps>(({ slot }) => {
   return (
     <Suspense fallback={<Spinner />}>
       <header>
-        <RouterLink to='/home/777'>home</RouterLink>
+        <RouterLink to='/home'>home</RouterLink>
         <RouterLink to='/about'>about</RouterLink>
         <RouterLink to='/contacts'>contacts</RouterLink>
       </header>
