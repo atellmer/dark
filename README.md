@@ -6,8 +6,9 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 <img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="NPM Downloads" src="https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7">
-<img alt="Bundle size core" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/core?label=bundle%20size%20[core]&style=flat&colorA=000063&colorB=673ab7">
-<img alt="Bundle size browser" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/platform-browser?label=bundle%20size%20[platform-browser]&style=flat&colorA=000063&colorB=673ab7">
+<img alt="bundle size core" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/core?label=size%20[core]&style=flat&colorA=000063&colorB=673ab7">
+<img alt="bundle size browser" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/platform-browser?label=size%20[platform-browser]&style=flat&colorA=000063&colorB=673ab7">
+<img alt="bundle size router" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/web-router?label=size%20[router]&style=flat&colorA=000063&colorB=673ab7">
 </div>
 
 ![Dark](./assets/cover.jpg) 
@@ -54,26 +55,27 @@ This project was written in my free time as a hobby. I challenged myself: can I 
 ## Installation for browser
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-browser
+npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/web-router 
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-browser
+yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/web-router
 ```
 CDN:
 ```html
 <script src="https://unpkg.com/@dark-engine/core/dist/umd/dark-core.production.min.js"></script>
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
+<script src="https://unpkg.com/@dark-engine/web-router/dist/umd/dark-web-router.production.min.js"></script>
 ```
 
 ## Installation for server
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-server
+npm install @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-server
+yarn add @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
 ```
 
 ## Usage
@@ -1231,21 +1233,8 @@ A working example of an SSR application based on the express server is in StackB
 <a name="routing"></a>
 ## Routing
 
-Dark provides routing as a separate package called @dark-engine/web-router. This is an isomorphic router designed for rendering universal web applications that work both on the client via the HTML5 Browser History API and on the server.
-
-npm:
-```
-npm install @dark-engine/web-router
-```
-yarn:
-```
-yarn add @dark-engine/web-router
-```
-
-CDN:
-```html
-<script src="https://unpkg.com/@dark-engine/web-router/dist/umd/dark-web-router.production.min.js"></script>
-```
+Dark provides routing as a separate package called `@dark-engine/web-router`.
+This is an isomorphic router designed for rendering universal web applications that work both on the client via the HTML5 Browser History API and on the server.
 
 ```tsx
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
