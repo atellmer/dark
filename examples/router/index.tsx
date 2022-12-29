@@ -1,58 +1,57 @@
 import { h, Fragment, createComponent, lazy, Suspense, type DarkElement } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
-
-import { createRoutes, Router, NavLink } from './router';
+import { type Routes, Router, RouterLink, useLocation } from '@dark-engine/web-router';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
 const Contacts = lazy(() => import('./contacts'));
 
 type ShellProps = {
-  route: string;
-  slot?: DarkElement;
+  slot: DarkElement;
 };
 
-const Shell = createComponent<ShellProps>(({ route, slot }) => {
-  const handleAnimationStart = () => {
-    document.body.classList.add('overflow-hidden');
-  };
-
-  const handleAnimationEnd = () => {
-    document.body.classList.remove('overflow-hidden');
-  };
+const Shell = createComponent<ShellProps>(({ slot }) => {
+  const { key } = useLocation();
 
   return (
     <>
-      <header>
-        <NavLink to='/'>Home</NavLink>
-        <NavLink to='/about'>About</NavLink>
-        <NavLink to='/contacts'>Contacts</NavLink>
-      </header>
-      <main key={route} onAnimationStart={handleAnimationStart} onAnimationEnd={handleAnimationEnd}>
-        {slot}
-      </main>
+      <Suspense fallback={<Spinner />}>
+        <header>
+          <RouterLink to='/home'>Home</RouterLink>
+          <RouterLink to='/about'>About</RouterLink>
+          <RouterLink to='/contacts'>Contacts</RouterLink>
+        </header>
+        <main key={key} class='fade'>
+          {slot}
+        </main>
+      </Suspense>
     </>
   );
 });
 
-const Spinner = createComponent(() => <div>loading...</div>);
+const Spinner = createComponent(() => <div>Loading...</div>);
 
-const routes = createRoutes({
-  '/': (props = {}) => <Home {...props} />,
-  '/about': (props = {}) => <About {...props} />,
-  '/contacts': (props = {}) => <Contacts {...props} />,
-});
+const routes: Routes = [
+  {
+    path: 'home',
+    component: Home,
+  },
+  {
+    path: 'about',
+    component: About,
+  },
+  {
+    path: 'contacts',
+    component: Contacts,
+  },
+  {
+    path: '**',
+    redirectTo: 'home',
+  },
+];
 
 const App = createComponent(() => {
-  return (
-    <Router routes={routes}>
-      {({ slot, ...rest }) => (
-        <Suspense fallback={<Spinner />}>
-          <Shell {...rest}>{slot}</Shell>
-        </Suspense>
-      )}
-    </Router>
-  );
+  return <Router routes={routes}>{slot => <Shell>{slot}</Shell>}</Router>;
 });
 
 createRoot(document.getElementById('root')).render(<App />);
