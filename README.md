@@ -24,6 +24,7 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 - 🌌 No dependencies
 - 💥 Tree-shakeable
 - 🎊 SSR support
+- 🏄‍♂️ Out of box isomorphic routing
 
 ## Demos
 
@@ -145,8 +146,9 @@ createRoot(document.getElementById('root')).render(App());
 - [Factory](#factory)
 - [Styles](#styles)
 - [Portals](#portals)
-- [Others](#others)
 - [SSR (Server-Side Rendering)](#ssr)
+- [Routing](#routing)
+- [Others](#others)
 
 <a name="overview"></a>
 ## API overview
@@ -200,6 +202,17 @@ import {
 ```
 ```tsx
 import { renderToString } from '@dark-engine/platform-server';
+```
+```tsx
+import {
+  type Routes,
+  Router,
+  RouterLink,
+  useLocation,
+  useHistory,
+  useParams,
+  useMatch,
+} from '@dark-engine/web-router';
 ```
 ## A little more about the core concepts...
 
@@ -1141,47 +1154,6 @@ const App = createComponent(() => {
 });
 ```
 
-<a name="others"></a>
-## Others
-#### useId
-
-useId is a hook for generating unique IDs that stable between renders.
-
-```tsx
-import { useId } from '@dark-engine/core';
-```
-
-```tsx
-const Checkbox = createComponent(() => {
-  const id = useId();
-
-  // generates something like this 'dark:0:lflt'
-
-  return (
-    <>
-      <label for={id}>Do you like it?</label>
-      <input id={id} type='checkbox' name='likeit' />
-    </>
-  );
-});
-```
-
-#### useSyncExternalStore
-
-The hook is useful for synchronizing render states with an external state management library such as Redux.
-
-```tsx
-import { useSyncExternalStore } from '@dark-engine/core';
-```
-
-```tsx
-const App = createComponent(() => {
-  const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
-
-  return <div>{state.isFetching ? 'loading...' : 'ola! 🤪'}</div>;
-});
-```
-
 <a name="ssr"></a>
 ## SSR (Server-Side Rendering)
 
@@ -1254,7 +1226,108 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />); // some magic and app works!
 ```
 
-A working example of an SSR application based on the express server is in StackBlitz example #10 
+A working example of an SSR application based on the express server is in StackBlitz example #10
+
+<a name="routing"></a>
+## Routing
+
+Dark provides routing as a separate package called @dark-engine/web-router. This is an isomorphic router designed for rendering universal web applications that work both on the client via the HTML5 Browser History API and on the server.
+
+npm:
+```
+npm install @dark-engine/web-router
+```
+yarn:
+```
+yarn add @dark-engine/web-router
+```
+
+```tsx
+import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
+```
+
+```tsx
+ const routes: Routes = [
+  {
+    path: 'home',
+    component: Home, // <-- component
+  },
+  {
+    path: 'about',
+    component: About,
+  },
+  {
+    path: 'contacts',
+    component: Contacts,
+  },
+  {
+    path: '**',
+    redirectTo: 'home',
+  },
+];
+
+const App = createComponent(() => {
+  return (
+    <Router routes={routes}>
+      {slot => {
+        return (
+          <>
+            <header>
+              <RouterLink to='/home'>home</RouterLink>
+              <RouterLink to='/about'>about</RouterLink>
+              <RouterLink to='/contacts'>contacts</RouterLink>
+            </header>
+            <main>{slot}</main> <-- route content will be placed here
+          </>
+        );
+      }}
+    </Router>
+  );
+});
+```
+
+Dark web-router supports nested routes, parameters, lazy loading, redirects, wildcards (notFound pages), combinations of wildcards and redirects, server-side rendering. You can read more about the router [here](https://github.com/atellmer/dark/tree/master/packages/web-server).
+
+<a name="others"></a>
+## Others
+#### useId
+
+useId is a hook for generating unique IDs that stable between renders.
+
+```tsx
+import { useId } from '@dark-engine/core';
+```
+
+```tsx
+const Checkbox = createComponent(() => {
+  const id = useId();
+
+  // generates something like this 'dark:0:lflt'
+
+  return (
+    <>
+      <label for={id}>Do you like it?</label>
+      <input id={id} type='checkbox' name='likeit' />
+    </>
+  );
+});
+```
+
+#### useSyncExternalStore
+
+The hook is useful for synchronizing render states with an external state management library such as Redux.
+
+```tsx
+import { useSyncExternalStore } from '@dark-engine/core';
+```
+
+```tsx
+const App = createComponent(() => {
+  const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
+
+  return <div>{state.isFetching ? 'loading...' : 'ola! 🤪'}</div>;
+});
+```
 
 Thanks everyone! 🙃
 
