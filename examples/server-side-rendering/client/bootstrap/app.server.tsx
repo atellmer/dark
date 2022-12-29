@@ -11,7 +11,7 @@ import Contacts from '../components/contacts';
 
 const routes: Routes = [
   {
-    path: 'home',
+    path: 'home/:id',
     component: Home,
     children: [
       {
@@ -42,7 +42,7 @@ const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'home',
+    redirectTo: 'home/:id',
   },
 ];
 
