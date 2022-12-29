@@ -44,7 +44,7 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 - [StackBlitz example #4 (drag-n-drop with Dark)](https://stackblitz.com/edit/darkapp-ccz57rk-ujdypw?file=index.tsx)
 - [StackBlitz example #5 (dark mode with Dark context)](https://stackblitz.com/edit/darkapp-ccz57rk-z41sup?file=index.tsx)
 - [StackBlitz example #6 (working with standard HTML input elements)](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
-- [StackBlitz example #7 (demo lazy loading routes via Dark and BaseRouter)](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=router.tsx,index.tsx)
+- [StackBlitz example #7 (client-side routing with lazy-loaded routes)](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=index.tsx)
 - [StackBlitz example #8 (spring animated image slider)](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
 - [StackBlitz example #9 (spring animated FAB button)](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
 - [StackBlitz example #10 (server-side rendering)](https://stackblitz.com/edit/darkapp-ccz57rk-3j65wa?file=server%2Fapp.ts)
