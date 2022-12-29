@@ -1271,7 +1271,7 @@ const App = createComponent(() => {
               <RouterLink to='/about'>about</RouterLink>
               <RouterLink to='/contacts'>contacts</RouterLink>
             </header>
-            <main>{slot}</main> <-- route content will be placed here
+            <main>{slot}</main> {/*<-- route content will be placed here*/}
           </>
         );
       }}
@@ -1280,7 +1280,7 @@ const App = createComponent(() => {
 });
 ```
 
-Dark web-router supports nested routes, parameters, lazy loading routes, redirects, wildcards (notFound pages), combinations of wildcards and redirects, server-side rendering. You can read more about the router [here](https://github.com/atellmer/dark/tree/master/packages/web-router).
+Dark web-router supports nested routes, parameters, lazy loading routes, redirects, wildcards (notFound pages), combinations of wildcards and redirects, server-side rendering. You can read more about the web-router [here](https://github.com/atellmer/dark/tree/master/packages/web-router).
 
 <a name="others"></a>
 ## Others
