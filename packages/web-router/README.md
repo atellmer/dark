@@ -293,3 +293,25 @@ const App = createComponent(({ url }) => {
 ```
 
 Full example SSR routing you can see in examples.
+
+## Imperative access to router
+
+```tsx
+const App = createComponent<AppProps>(({ url, routes }) => {
+  const ref = useRef<RouterRef>(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      ref.current.navigateTo('/about');
+    });
+  }, []);
+
+  return (
+    <Router ref={ref} routes={routes}>
+      {slot => slot}
+    </Router>
+  );
+});
+```
+
+

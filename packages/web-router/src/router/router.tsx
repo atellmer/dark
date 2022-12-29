@@ -1,9 +1,20 @@
-import { type DarkElement, h, createComponent, useMemo, useEffect, useLayoutEffect, useState } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type MutableRef,
+  h,
+  createComponent,
+  useMemo,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from '@dark-engine/core';
 
 import { SLASH, PROTOCOL_MARK } from '../constants';
 import { normalaizePathname } from '../utils';
 import { createRouterHistory } from '../history';
-import { createRouterLocation } from '../location';
+import { type RouterLocation, createRouterLocation } from '../location';
 import { type Routes, createRoutes, renderRoot, pathnameFromPath } from '../create-routes';
 import {
   type RouterHistoryContextValue,
@@ -20,56 +31,68 @@ export type RouterProps = {
   slot: (slot: DarkElement) => DarkElement;
 };
 
-const Router = createComponent<RouterProps>(({ url, baseURL = SLASH, routes: sourceRoutes, slot }) => {
-  if (useActiveRouteContext()) {
-    throw new Error('[web-router]: Parent active route context detected!');
-  }
-  const sourceURL = url || window.location.href;
-  const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
-  const history = useMemo(() => createRouterHistory(sourceURL), []);
-  const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
-  const { protocol, host, pathname, search } = location;
-  const { matched, params, rendered } = renderRoot(pathname, routes);
-  const scope = useMemo(() => ({ location }), []);
-  const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-  const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, matched, params }), [pathname, search]);
+export type RouterRef = {
+  navigateTo: (pathname: string) => void;
+  location: RouterLocation;
+};
 
-  scope.location = location;
-
-  useLayoutEffect(() => {
-    if (sourceURL !== scope.location.url) {
-      setLocation(createRouterLocation(sourceURL));
+const Router = forwardRef<RouterProps, RouterRef>(
+  createComponent(({ url, baseURL = SLASH, routes: sourceRoutes, slot }, ref) => {
+    if (useActiveRouteContext()) {
+      throw new Error('[web-router]: Parent active route context detected!');
     }
-  }, [sourceURL]);
+    const sourceURL = url || window.location.href;
+    const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
+    const history = useMemo(() => createRouterHistory(sourceURL), []);
+    const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
+    const { protocol, host, pathname, search } = location;
+    const { matched, params, rendered } = renderRoot(pathname, routes);
+    const scope = useMemo(() => ({ location }), []);
+    const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
+    const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, matched, params }), [pathname, search]);
 
-  useLayoutEffect(() => {
-    const unsubscribe = history.subscribe(spathname => {
-      const url = `${protocol}${PROTOCOL_MARK}${host}${spathname}`;
+    scope.location = location;
 
-      setLocation(createRouterLocation(url));
-    });
+    useLayoutEffect(() => {
+      if (sourceURL !== scope.location.url) {
+        setLocation(createRouterLocation(sourceURL));
+      }
+    }, [sourceURL]);
 
-    return () => {
-      unsubscribe();
-      history.dispose();
-    };
-  }, []);
+    useLayoutEffect(() => {
+      const unsubscribe = history.subscribe(spathname => {
+        const url = `${protocol}${PROTOCOL_MARK}${host}${spathname}`;
 
-  useEffect(() => {
-    if (!matched) return;
-    const spathname = pathname + search;
-    const newSpathname = pathnameFromPath(pathname, matched.cursor.fullPath) + search;
+        setLocation(createRouterLocation(url));
+      });
 
-    if (spathname !== newSpathname) {
-      history.replace(newSpathname);
-    }
-  }, [pathname, search]);
+      return () => {
+        unsubscribe();
+        history.dispose();
+      };
+    }, []);
 
-  return (
-    <RouterHistoryContext.Provider value={historyContext}>
-      <ActiveRouteContext.Provider value={routerContext}>{slot(rendered)}</ActiveRouteContext.Provider>
-    </RouterHistoryContext.Provider>
-  );
-});
+    useEffect(() => {
+      if (!matched) return;
+      const spathname = pathname + search;
+      const newSpathname = pathnameFromPath(pathname, matched.cursor.fullPath) + search;
+
+      if (spathname !== newSpathname) {
+        history.replace(newSpathname);
+      }
+    }, [pathname, search]);
+
+    useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
+      navigateTo: (pathname: string) => history.push(pathname),
+      location,
+    }));
+
+    return (
+      <RouterHistoryContext.Provider value={historyContext}>
+        <ActiveRouteContext.Provider value={routerContext}>{slot(rendered)}</ActiveRouteContext.Provider>
+      </RouterHistoryContext.Provider>
+    );
+  }),
+);
 
 export { Router };
