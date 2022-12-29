@@ -35,19 +35,19 @@ describe('[router/use-params]', () => {
       {
         path: 'first/:id',
         component: createComponent(() => {
-          const paramsMap = useParams();
+          const params = useParams();
 
-          return <div>first: {paramsMap.get('id')}</div>;
+          return <div>first: {params.get('id')}</div>;
         }),
       },
       {
         path: 'second/:x1',
         component: createComponent(({ slot }) => {
-          const paramsMap = useParams();
+          const params = useParams();
 
           return (
             <div>
-              second: {paramsMap.get('x1')}
+              second: {params.get('x1')}
               {slot}
             </div>
           );
@@ -56,11 +56,11 @@ describe('[router/use-params]', () => {
           {
             path: 'a/:x2',
             component: createComponent(() => {
-              const paramsMap = useParams();
+              const params = useParams();
 
               return (
                 <div>
-                  a: {paramsMap.get('x1')}|{paramsMap.get('x2')}
+                  a: {params.get('x1')}|{params.get('x2')}
                 </div>
               );
             }),

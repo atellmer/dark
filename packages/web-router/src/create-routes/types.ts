@@ -12,4 +12,4 @@ export type RouteDescriptor = {
 
 export type Routes = Array<RouteDescriptor>;
 
-export type ParamsMap = Map<string, string>;
+export type Params = Map<string, string>;

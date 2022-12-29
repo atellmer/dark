@@ -1247,7 +1247,7 @@ import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 ```
 
 ```tsx
- const routes: Routes = [
+const routes: Routes = [
   {
     path: 'home',
     component: Home, // <-- component
@@ -1286,7 +1286,7 @@ const App = createComponent(() => {
 });
 ```
 
-Dark web-router supports nested routes, parameters, lazy loading, redirects, wildcards (notFound pages), combinations of wildcards and redirects, server-side rendering. You can read more about the router [here](https://github.com/atellmer/dark/tree/master/packages/web-server).
+Dark web-router supports nested routes, parameters, lazy loading routes, redirects, wildcards (notFound pages), combinations of wildcards and redirects, server-side rendering. You can read more about the router [here](https://github.com/atellmer/dark/tree/master/packages/web-router).
 
 <a name="others"></a>
 ## Others

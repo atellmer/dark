@@ -3,7 +3,7 @@ import { type DarkElement, type Component, type StandardComponentProps, type Slo
 import { SLASH, WILDCARD } from '../constants';
 import { splitPath, normalaizePathname, detectIsParam, getParamName, sort } from '../utils';
 import { CurrentPathContext } from '../context';
-import type { Routes, RouteDescriptor, PathMatchStrategy, ParamsMap } from './types';
+import type { Routes, RouteDescriptor, PathMatchStrategy, Params } from './types';
 
 type RouteConstructorOptions = {
   prefix: string;
@@ -63,7 +63,7 @@ class Route {
   }
 }
 
-const getParamsMap = (pathname: string, route: Route): ParamsMap => {
+const getParamsMap = (pathname: string, route: Route): Params => {
   const sPathname = splitPath(pathname);
   const sPath = splitPath(route.fullPath);
   const map = new Map();
@@ -202,12 +202,12 @@ function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string):
 function renderRoot(pathname: string, routes: Array<Route>) {
   const matched = match(pathname, routes);
   const rendered = renderRoute(pathname, matched);
-  const paramsMap = matched ? getParamsMap(pathname, matched.cursor) : null;
+  const params = matched ? getParamsMap(pathname, matched.cursor) : null;
   const value = {
     pathname,
     matched,
     rendered,
-    paramsMap,
+    params,
   };
 
   return value;

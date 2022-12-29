@@ -29,10 +29,10 @@ const Router = createComponent<RouterProps>(({ url, baseURL = SLASH, routes: sou
   const history = useMemo(() => createRouterHistory(sourceURL), []);
   const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
   const { protocol, host, pathname, search } = location;
-  const { matched, paramsMap, rendered } = renderRoot(pathname, routes);
+  const { matched, params, rendered } = renderRoot(pathname, routes);
   const scope = useMemo(() => ({ location }), []);
   const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-  const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, matched, paramsMap }), [pathname, search]);
+  const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, matched, params }), [pathname, search]);
 
   scope.location = location;
 

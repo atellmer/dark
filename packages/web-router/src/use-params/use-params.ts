@@ -1,12 +1,12 @@
 import { useActiveRouteContext, checkContextValue } from '../context';
-import { type ParamsMap } from '../create-routes';
+import { type Params } from '../create-routes';
 
-function useParams(): ParamsMap {
+function useParams(): Params {
   const value = useActiveRouteContext();
 
   checkContextValue(value);
 
-  return value.paramsMap;
+  return value.params;
 }
 
-export { ParamsMap, useParams };
+export { Params, useParams };
