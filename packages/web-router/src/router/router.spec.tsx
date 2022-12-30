@@ -94,14 +94,17 @@ describe('[router/rendering]', () => {
     root.render(<App url='/xxx' />);
     expect(host.innerHTML).toBe(replacer);
 
+    root.render(<App url='/second' />);
+    expect(host.innerHTML).toBe(`<div>second</div>`);
+
     root.render(<App url='/second1' />);
     expect(host.innerHTML).toBe(replacer);
 
     root.render(<App url='/second/1' />);
-    expect(host.innerHTML).toBe(`<div>second</div>`);
+    expect(host.innerHTML).toBe(replacer);
 
     root.render(<App url='/first/1/xxx' />);
-    expect(host.innerHTML).toBe(`<div>first</div>`);
+    expect(host.innerHTML).toBe(replacer);
 
     root.render(<App url='/some/broken/url' />);
     expect(host.innerHTML).toBe(replacer);
@@ -158,7 +161,7 @@ describe('[router/rendering]', () => {
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
     root.render(<App url='/second/b/some/broken/route' />);
-    expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
+    expect(host.innerHTML).toBe(replacer);
 
     root.render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
@@ -591,7 +594,7 @@ describe('[router/rendering]', () => {
     expect(host.innerHTML).toBe(`<second><div>404</div></second>`);
 
     root.render(<App url='/second/a/broken/url' />);
-    expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
+    expect(host.innerHTML).toBe(`<second><div>404</div></second>`);
 
     root.render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<div>404</div>`);
@@ -718,10 +721,10 @@ describe('[router/rendering]', () => {
     expect(host.innerHTML).toBe(`<second><div>a</div></second>`);
 
     root.render(<App url='/second/b' />);
-    expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
+    expect(host.innerHTML).toBe(`<second><b>${replacer}</b></second>`);
 
     root.render(<App url='/second/b/' />);
-    expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
+    expect(host.innerHTML).toBe(`<second><b>${replacer}</b></second>`);
 
     root.render(<App url='/second/b/1' />);
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
@@ -736,7 +739,7 @@ describe('[router/rendering]', () => {
     expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
     root.render(<App url='/second/b/2/broken/url' />);
-    expect(host.innerHTML).toBe(`<second><b><div>2</div></b></second>`);
+    expect(host.innerHTML).toBe(`<second><b><div>1</div></b></second>`);
 
     root.render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
@@ -881,6 +884,10 @@ describe('[router/rendering]', () => {
           {
             path: '2',
             component: createComponent(() => <div>2</div>),
+          },
+          {
+            path: '',
+            redirectTo: '2',
           },
           {
             path: '**',

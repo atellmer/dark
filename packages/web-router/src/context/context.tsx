@@ -6,7 +6,7 @@ import { type Route } from '../create-routes';
 export type ActiveRouteContextValue = {
   location: RouterLocation;
   params: Map<string, string>;
-  matched: Route;
+  activeRoute: Route;
 };
 
 const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });

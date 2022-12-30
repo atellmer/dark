@@ -1,9 +1,10 @@
 import { h, createComponent } from '@dark-engine/core';
 
-const Home = createComponent(() => {
+const Home = createComponent(({ slot }) => {
   return (
     <article>
       <h1>Home</h1>
+      {slot}
       <p>
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium voluptatum et odio, ipsum cum distinctio,
         facilis consectetur praesentium nam soluta sint, doloremque illo dignissimos nihil. Nesciunt quibusdam accusamus

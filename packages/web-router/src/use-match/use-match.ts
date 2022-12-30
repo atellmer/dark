@@ -1,7 +1,7 @@
 import { useMemo } from '@dark-engine/core';
 
 import { useActiveRouteContext, useCurrentPathContext, checkContextValue } from '../context';
-import { pathnameFromPath } from '../create-routes';
+import { createPathname } from '../create-routes';
 
 export type Match = {
   path: string;
@@ -15,7 +15,7 @@ function useMatch(): Match {
   const {
     location: { pathname },
   } = activeRoute;
-  const url = useMemo(() => (path ? pathnameFromPath(pathname, path) : ''), [path, pathname]);
+  const url = useMemo(() => (path ? createPathname(pathname, path) : ''), [path, pathname]);
   const value: Match = { path, url };
 
   return value;

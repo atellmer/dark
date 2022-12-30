@@ -36,6 +36,7 @@ CDN:
 ```tsx
 import {
   type Routes,
+  type RouterRef,
   Router,
   RouterLink,
   useLocation,
@@ -63,7 +64,7 @@ const App = createComponent(() => {
               <RouterLink to='/first-component'>first-component</RouterLink>
               <RouterLink to='/second-component'>second-component</RouterLink>
             </header>
-            <main>{slot}</main> <-- route content will be placed here
+            <main>{slot}</main> {/*<-- route content will be placed here*/}
           </>
         );
       }}

@@ -15,7 +15,7 @@ import { SLASH, PROTOCOL_MARK } from '../constants';
 import { normalaizePathname } from '../utils';
 import { createRouterHistory } from '../history';
 import { type RouterLocation, createRouterLocation } from '../location';
-import { type Routes, createRoutes, renderRoot, pathnameFromPath } from '../create-routes';
+import { type Routes, createRoutes, resolveRoute, createPathname } from '../create-routes';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -46,10 +46,13 @@ const Router = forwardRef<RouterProps, RouterRef>(
     const history = useMemo(() => createRouterHistory(sourceURL), []);
     const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
     const { protocol, host, pathname, search } = location;
-    const { matched, params, rendered } = renderRoot(pathname, routes);
+    const { activeRoute, slot: slot$, params } = resolveRoute(pathname, routes);
     const scope = useMemo(() => ({ location }), []);
     const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-    const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, matched, params }), [pathname, search]);
+    const routerContext = useMemo<ActiveRouteContextValue>(
+      () => ({ location, activeRoute, params }),
+      [pathname, search],
+    );
 
     scope.location = location;
 
@@ -73,9 +76,9 @@ const Router = forwardRef<RouterProps, RouterRef>(
     }, []);
 
     useEffect(() => {
-      if (!matched) return;
+      if (!activeRoute) return;
       const spathname = pathname + search;
-      const newSpathname = pathnameFromPath(pathname, matched.cursor.fullPath) + search;
+      const newSpathname = createPathname(pathname, activeRoute.getPath()) + search;
 
       if (spathname !== newSpathname) {
         history.replace(newSpathname);
@@ -89,7 +92,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
     return (
       <RouterHistoryContext.Provider value={historyContext}>
-        <ActiveRouteContext.Provider value={routerContext}>{slot(rendered)}</ActiveRouteContext.Provider>
+        <ActiveRouteContext.Provider value={routerContext}>{slot(slot$)}</ActiveRouteContext.Provider>
       </RouterHistoryContext.Provider>
     );
   }),

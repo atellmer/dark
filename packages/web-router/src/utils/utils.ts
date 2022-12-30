@@ -1,5 +1,16 @@
 import { SLASH, PARAMETER, PROTOCOL_MARK, SEARCH_MARK } from '../constants';
 
+function pipe<T>(...fns: Array<Function>): (...args: Array<any>) => T {
+  const [fn, ...rest] = fns;
+
+  return (...args: Array<any>) => {
+    return rest.reduce(
+      (fn1, fn2) => () => fn2(fn1()),
+      () => fn(...args),
+    )();
+  };
+}
+
 function parseURL(url: string) {
   let body = url;
   let protocol = '';
@@ -59,4 +70,4 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
 
 const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
 
-export { parseURL, detectIsParam, getParamName, splitPath, normalaizePathname, sort, cm };
+export { pipe, parseURL, detectIsParam, getParamName, splitPath, normalaizePathname, sort, cm };

@@ -159,6 +159,7 @@ The public API is partially similar to the React API and includes 2 packages - c
 
 ```tsx
 import {
+  type DarkElement,
   h,
   View,
   Text,
@@ -195,6 +196,7 @@ import {
 ```
 ```tsx
 import {
+  type SyntheticEvent,
   render,
   createRoot,
   hydrateRoot,
@@ -209,6 +211,7 @@ import { renderToString } from '@dark-engine/platform-server';
 ```tsx
 import {
   type Routes,
+  type RouterRef,
   Router,
   RouterLink,
   useLocation,
