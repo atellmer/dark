@@ -223,11 +223,12 @@ function createPage(title: string, app: string) {
           animation-timing-function: ease-in-out;
         }
       </style>
+      <link rel="preload" href="build.js" as="script" />
     </head>
 
     <body>
       <div id="root">${app}</div>
-      <script src="./build.js"></script>
+      <script src="./build.js" defer></script>
     </body>
 
     </html>

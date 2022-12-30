@@ -49,7 +49,7 @@ function parseURL(url: string) {
   return {
     protocol,
     host,
-    pathname: lastSlash(pathname),
+    pathname: addSlashToEnd(pathname),
     search: createSearch(search),
     hash: createHash(hash),
   };
@@ -67,12 +67,12 @@ const split = (value: string, token: string) => value.split(token).filter(Boolea
 
 const splitPath = (path: string) => split(path, SLASH);
 
-const firstSlash = (path: string) => (path.startsWith(SLASH) ? path : SLASH + path);
+const addSlashToStart = (path: string) => (path.startsWith(SLASH) ? path : SLASH + path);
 
-const lastSlash = (path: string) => (path.endsWith(SLASH) ? path : path + SLASH);
+const addSlashToEnd = (path: string) => (path.endsWith(SLASH) ? path : path + SLASH);
 
 function normalaizePathname(spath: string) {
-  const { pathname, search, hash } = parseURL(firstSlash(spath));
+  const { pathname, search, hash } = parseURL(addSlashToStart(spath));
   const newSpath = pathname + search + hash;
 
   return newSpath;
