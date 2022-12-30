@@ -1,4 +1,4 @@
-import { SLASH, PARAMETER, PROTOCOL_MARK, SEARCH_MARK } from '../constants';
+import { SLASH, PARAMETER, PROTOCOL_MARK, HASH_MARK, SEARCH_MARK } from '../constants';
 
 function pipe<T>(...fns: Array<Function>): (...args: Array<any>) => T {
   const [fn, ...rest] = fns;
@@ -16,6 +16,7 @@ function parseURL(url: string) {
   let protocol = '';
   let host = '';
   let pathname = '';
+  let hash = '';
   let search = '';
 
   if (body.indexOf(PROTOCOL_MARK) !== -1) {
@@ -30,32 +31,49 @@ function parseURL(url: string) {
     pathname = splitted.filter((_, idx1) => idx1 >= idx).join('');
   } else {
     host = body;
-    pathname = SLASH;
+    pathname = pathname || SLASH;
   }
 
   if (pathname.indexOf(SEARCH_MARK) !== -1) {
-    [pathname, search] = pathname.split(SEARCH_MARK).filter(Boolean);
+    [pathname, search] = split(pathname, SEARCH_MARK);
+  }
+
+  if (body.indexOf(HASH_MARK) !== -1) {
+    if (search) {
+      [search, hash] = split(search, HASH_MARK);
+    } else {
+      [pathname, hash] = split(pathname, HASH_MARK);
+    }
   }
 
   return {
     protocol,
     host,
-    pathname: normalaizePathname(pathname),
+    pathname: lastSlash(pathname),
     search: createSearch(search),
+    hash: createHash(hash),
   };
 }
 
 const createSearch = (value: string) => (value ? `${SEARCH_MARK}${value}` : '');
 
+const createHash = (value: string) => (value ? `${HASH_MARK}${value}` : '');
+
 const detectIsParam = (value: string) => value && value.startsWith(PARAMETER);
 
 const getParamName = (value: string) => (detectIsParam(value) ? value.slice(1, value.length) : null);
 
-const splitPath = (path: string) => path.split(SLASH).filter(Boolean);
+const split = (value: string, token: string) => value.split(token).filter(Boolean);
+
+const splitPath = (path: string) => split(path, SLASH);
+
+const firstSlash = (path: string) => (path.startsWith(SLASH) ? path : SLASH + path);
+
+const lastSlash = (path: string) => (path.endsWith(SLASH) ? path : path + SLASH);
 
 function normalaizePathname(spath: string) {
-  const [path, search] = spath.split(SEARCH_MARK);
-  const newSpath = (path.endsWith(SLASH) ? path : path + SLASH) + createSearch(search);
+  const { pathname, search, hash } = parseURL(firstSlash(spath));
+  const newSpath = pathname + search + hash;
 
   return newSpath;
 }

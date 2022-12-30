@@ -591,8 +591,6 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
 function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   let nextFiber = alternate;
   let idx = 0;
-  let hasNoPrevKeys = false;
-  let hasNoNextKeys = false;
   const prevKeys: Array<DarkElementKey> = [];
   const nextKeys: Array<DarkElementKey> = [];
   const prevKeysMap: Record<DarkElementKey, boolean> = {};
@@ -605,12 +603,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const key = getElementKey(nextFiber.instance);
       const prevKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
-      if (process.env.NODE_ENV === 'development') {
-        if (detectIsEmpty(key)) {
-          hasNoPrevKeys = true;
-        }
-      }
-
       prevKeys.push(prevKey);
       prevKeysMap[prevKey] = true;
       keyedFibersMap[prevKey] = nextFiber;
@@ -622,12 +614,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       if (process.env.NODE_ENV === 'development') {
-        const isPlainNode = detectIsPlainVirtualNode(instance);
-
-        if (detectIsEmpty(key) && !isPlainNode) {
-          hasNoNextKeys = true;
-        }
-
         if (usedKeysMap[nextKey]) {
           error(`[Dark]: The key of node [${nextKey}] already has been used!`, [instance]);
         }
@@ -641,15 +627,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
 
     nextFiber = nextFiber ? nextFiber.nextSibling : null;
     idx++;
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    if (prevKeys.length !== nextKeys.length && hasNoNextKeys && hasNoPrevKeys) {
-      error(
-        `[Dark]: Operation of inserting, adding, replacing elements into list requires to have a unique key for every node (string or number, but not array index)!`,
-        children,
-      );
-    }
   }
 
   return {

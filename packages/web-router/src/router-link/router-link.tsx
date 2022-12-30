@@ -2,7 +2,7 @@ import { h, createComponent, useMemo, useEvent, detectIsFunction, type DarkEleme
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { useHistory } from '../use-history';
 import { useLocation } from '../use-location';
-import { normalaizePathname, cm } from '../utils';
+import { normalaizePathname, cm, parseURL } from '../utils';
 
 export type RoutreLinkProps = {
   to: string;
@@ -16,8 +16,8 @@ export type RoutreLinkProps = {
 const RouterLink = createComponent<RoutreLinkProps>(
   ({ to, activeClassName, className: sourceClassName, slot, onClick, ...rest }) => {
     const history = useHistory();
-    const { pathname } = useLocation();
-    const isActive = useMemo(() => detectIsActiveLink(pathname, to), [pathname]);
+    const { pathname, hash } = useLocation();
+    const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash]);
     const className = useMemo(
       () => cm(sourceClassName, isActive ? activeClassName : ''),
       [sourceClassName, activeClassName, isActive],
@@ -42,11 +42,10 @@ const RouterLink = createComponent<RoutreLinkProps>(
   },
 );
 
-function detectIsActiveLink(pathname: string, to: string): boolean {
-  const pathname$ = normalaizePathname(pathname);
-  const to$ = normalaizePathname(to);
+function detectIsActiveLink(pathname: string, hash: string, to: string): boolean {
+  const { pathname: to$, hash: hash$ } = parseURL(to);
 
-  return pathname$.indexOf(to$) !== -1;
+  return normalaizePathname(pathname).indexOf(to$) !== -1 && hash === hash$;
 }
 
 export { RouterLink };

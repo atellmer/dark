@@ -6,25 +6,34 @@ class RouterLocation {
   public protocol: string;
   public host: string;
   public pathname: string;
+  public hash: string;
   public search: string;
   public key: string;
-  private static nextId = 200000;
 
   constructor(url: string) {
     if (detectIsFalsy(url)) {
       throw new Error('[web-router]: RouterLocation must have initial url!');
     }
 
-    const { protocol, host, pathname, search } = parseURL(url);
+    const { protocol, host, pathname, hash, search } = parseURL(url);
 
     this.url = url;
     this.protocol = protocol;
     this.host = host;
     this.pathname = pathname;
+    this.hash = hash;
     this.search = search;
-    this.key = (++RouterLocation.nextId).toString(32);
+    this.key = createKey(pathname);
     Object.freeze(this);
   }
+}
+
+function createKey(pathname: string): string {
+  return pathname
+    .split('')
+    .map(x => x.charCodeAt(0))
+    .reduce((acc, x) => ((acc += x), acc), 200000)
+    .toString(32);
 }
 
 const createRouterLocation = (url: string) => new RouterLocation(url);

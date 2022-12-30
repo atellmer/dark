@@ -45,13 +45,13 @@ const Router = forwardRef<RouterProps, RouterRef>(
     const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
     const history = useMemo(() => createRouterHistory(sourceURL), []);
     const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
-    const { protocol, host, pathname, search } = location;
+    const { protocol, host, pathname, search, hash } = location;
     const { activeRoute, slot: slot$, params } = resolveRoute(pathname, routes);
     const scope = useMemo(() => ({ location }), []);
     const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
     const routerContext = useMemo<ActiveRouteContextValue>(
       () => ({ location, activeRoute, params }),
-      [pathname, search],
+      [pathname, search, hash],
     );
 
     scope.location = location;
@@ -77,13 +77,13 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
     useEffect(() => {
       if (!activeRoute) return;
-      const spathname = pathname + search;
-      const newSpathname = createPathname(pathname, activeRoute.getPath()) + search;
+      const spathname = pathname + search + hash;
+      const newSpathname = createPathname(pathname, activeRoute.getPath()) + search + hash;
 
       if (spathname !== newSpathname) {
         history.replace(newSpathname);
       }
-    }, [pathname, search]);
+    }, [pathname, search, hash]);
 
     useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
       navigateTo: (pathname: string) => history.push(pathname),

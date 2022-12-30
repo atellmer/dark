@@ -76,11 +76,12 @@ describe('[router/utils]', () => {
   });
 
   test('parseURL works correctly #9', () => {
-    const { protocol, host, pathname, search } = parseURL('/#/some/route?q="hello"');
+    const { protocol, host, pathname, hash, search } = parseURL('/some/route?q="hello"#one');
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/#/some/route/');
+    expect(pathname).toBe('/some/route/');
+    expect(hash).toBe('#one');
     expect(search).toBe('?q="hello"');
   });
 
