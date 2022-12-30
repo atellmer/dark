@@ -36,7 +36,7 @@ class Route {
     this.marker = rootPath;
     this.redirectTo = detectIsString(redirectTo)
       ? {
-          path: createPath(pathMatch, prefix, redirectTo),
+          path: createPath(pathMatch, prefix, createRootPath(redirectTo)),
           route: null,
         }
       : null;

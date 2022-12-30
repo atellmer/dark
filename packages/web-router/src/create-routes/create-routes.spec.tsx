@@ -238,7 +238,7 @@ describe('[router/create-routes]', () => {
     expect(resolve('/second/c', routes$).path).toBe('/second/c/');
   });
 
-  test('can work with root redirect correctly', () => {
+  test('can work with root redirect correctly #1', () => {
     const routes: Routes = [
       {
         path: 'first',
@@ -252,6 +252,34 @@ describe('[router/create-routes]', () => {
     const routes$ = createRoutes(routes);
 
     expect(resolve('/', routes$).path).toBe('/first/');
+  });
+
+  test('can work with root redirect correctly #2', () => {
+    const routes: Routes = [
+      {
+        path: '',
+        component: createComponent(() => null),
+      },
+      {
+        path: 'second',
+        component: createComponent(() => null),
+      },
+      {
+        path: 'third',
+        component: createComponent(() => null),
+      },
+      {
+        path: '**',
+        redirectTo: '',
+      },
+    ];
+    const routes$ = createRoutes(routes);
+
+    expect(resolve('/', routes$).path).toBe(`/${ROOT}/`);
+    expect(resolve('', routes$).path).toBe(`/${ROOT}/`);
+    expect(resolve('/broken', routes$).path).toBe(`/${ROOT}/`);
+    expect(resolve('/second', routes$).path).toBe(`/second/`);
+    expect(resolve('/third', routes$).path).toBe(`/third/`);
   });
 
   test('can work with root redirect with full path strategy correctly', () => {

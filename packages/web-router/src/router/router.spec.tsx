@@ -393,7 +393,7 @@ describe('[router/rendering]', () => {
     root.unmount();
   });
 
-  test('can work with root redirect correctly', () => {
+  test('can work with root redirect correctly #1', () => {
     const routes: Routes = [
       {
         path: 'first',
@@ -417,6 +417,54 @@ describe('[router/rendering]', () => {
 
     root.render(<App url='/' />);
     expect(host.innerHTML).toBe(`<div>first</div>`);
+
+    root.unmount();
+  });
+
+  test('can work with root redirect correctly #2', () => {
+    const routes: Routes = [
+      {
+        path: '',
+        component: createComponent(() => <div>root</div>),
+      },
+      {
+        path: 'second',
+        component: createComponent(() => <div>second</div>),
+      },
+      {
+        path: 'third',
+        component: createComponent(() => <div>third</div>),
+      },
+      {
+        path: '**',
+        redirectTo: '',
+      },
+    ];
+
+    const App = createComponent<AppProps>(({ url }) => {
+      return (
+        <Router routes={routes} url={url}>
+          {slot => slot}
+        </Router>
+      );
+    });
+
+    const root = createRoot(host);
+
+    root.render(<App url='/' />);
+    expect(host.innerHTML).toBe(`<div>root</div>`);
+
+    root.render(<App url='' />);
+    expect(host.innerHTML).toBe(`<div>root</div>`);
+
+    root.render(<App url='/broken' />);
+    expect(host.innerHTML).toBe(`<div>root</div>`);
+
+    root.render(<App url='/second' />);
+    expect(host.innerHTML).toBe(`<div>second</div>`);
+
+    root.render(<App url='/third' />);
+    expect(host.innerHTML).toBe(`<div>third</div>`);
 
     root.unmount();
   });
