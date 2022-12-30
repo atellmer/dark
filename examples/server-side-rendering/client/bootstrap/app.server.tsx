@@ -27,6 +27,10 @@ const routes: Routes = [
         component: HomeChildC,
       },
       {
+        path: '',
+        redirectTo: 'a',
+      },
+      {
         path: '**',
         redirectTo: 'a',
       },
