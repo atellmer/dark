@@ -25,14 +25,15 @@ class Route {
 
   constructor(options: RouteConstructorOptions) {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, component } = options;
-    const path$ = createPath(pathMatch, prefix, path || ROOT);
+    const rootPath = createRootPath(path);
+    const path$ = createPath(pathMatch, prefix, rootPath);
 
     this.path = path$;
     this.pathMatch = pathMatch;
     this.parent = parent;
     this.children = createRoutes(children, path$, this);
     this.level = parent ? parent.level + 1 : 0;
-    this.marker = path || ROOT;
+    this.marker = rootPath;
     this.redirectTo = detectIsString(redirectTo)
       ? {
           path: createPath(pathMatch, prefix, redirectTo),
@@ -244,6 +245,10 @@ function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string):
   const prefix$ = pathMatch === 'prefix' ? normalaizePathname(prefix) : '';
 
   return normalaizePathname(prefix$ ? `${prefix$}${path}` : path);
+}
+
+function createRootPath(path: string): string {
+  return path === SLASH || path === '' ? ROOT : path;
 }
 
 const getParamsMap = (pathname: string, route: Route): Params => {

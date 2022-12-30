@@ -33,42 +33,20 @@ const Spinner = createComponent(() => <div>Loading...</div>);
 
 const routes: Routes = [
   {
-    path: 'users',
-    component: createComponent(({ slot }) => <div>slot: {slot}</div>),
-    children: [
-      {
-        path: 'settings',
-        component: createComponent(() => <div>settings</div>),
-      },
-      {
-        path: '',
-        component: createComponent(() => <div>list</div>),
-      },
-      {
-        path: ':id',
-        component: createComponent(() => <div>user by id</div>),
-      },
-      {
-        path: '**',
-        redirectTo: '',
-      },
-    ],
+    path: 'home',
+    component: Home,
   },
   {
     path: 'about',
-    component: createComponent(() => <div>about</div>),
+    component: About,
   },
   {
     path: 'contacts',
-    component: createComponent(() => <div>contacts</div>),
-  },
-  {
-    path: '',
-    redirectTo: 'users',
+    component: Contacts,
   },
   {
     path: '**',
-    redirectTo: 'users',
+    redirectTo: 'home',
   },
 ];
 

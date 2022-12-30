@@ -949,4 +949,80 @@ describe('[router/rendering]', () => {
 
     root.unmount();
   });
+
+  test('can render combined roots, wildcards and parameters', () => {
+    const routes: Routes = [
+      {
+        path: 'first',
+        component: createComponent(({ slot }) => <first>{slot}</first>),
+        children: [
+          {
+            path: 'nested',
+            component: createComponent(() => <div>nested</div>),
+          },
+          {
+            path: ':id',
+            component: createComponent(() => <div>:id</div>),
+          },
+          {
+            path: '',
+            component: createComponent(() => <div>root</div>),
+          },
+          {
+            path: '**',
+            redirectTo: '',
+          },
+        ],
+      },
+      {
+        path: 'second',
+        component: createComponent(() => <div>second</div>),
+      },
+      {
+        path: 'third',
+        component: createComponent(() => <div>third</div>),
+      },
+      {
+        path: '',
+        redirectTo: 'first',
+      },
+      {
+        path: '**',
+        redirectTo: 'first',
+      },
+    ];
+
+    const App = createComponent<AppProps>(({ url }) => {
+      return (
+        <Router routes={routes} url={url}>
+          {slot => slot}
+        </Router>
+      );
+    });
+
+    const root = createRoot(host);
+
+    root.render(<App url='/' />);
+    expect(host.innerHTML).toBe(`<first><div>root</div></first>`);
+
+    root.render(<App url='/first' />);
+    expect(host.innerHTML).toBe(`<first><div>root</div></first>`);
+
+    root.render(<App url='/first/666' />);
+    expect(host.innerHTML).toBe(`<first><div>:id</div></first>`);
+
+    root.render(<App url='/first/666/broken' />);
+    expect(host.innerHTML).toBe(`<first><div>root</div></first>`);
+
+    root.render(<App url='/second' />);
+    expect(host.innerHTML).toBe(`<div>second</div>`);
+
+    root.render(<App url='/third' />);
+    expect(host.innerHTML).toBe(`<div>third</div>`);
+
+    root.render(<App url='/broken/url' />);
+    expect(host.innerHTML).toBe(`<first><div>root</div></first>`);
+
+    root.unmount();
+  });
 });

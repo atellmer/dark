@@ -1,7 +1,8 @@
 /** @jsx h */
 import { Routes } from './types';
-import { h, createComponent } from '@dark-engine/core';
+import { createComponent } from '@dark-engine/core';
 import { createRoutes, resolve } from './create-routes';
+import { ROOT } from '../constants';
 
 describe('[router/create-routes]', () => {
   test('can match simple routes correctly', () => {
@@ -645,5 +646,58 @@ describe('[router/create-routes]', () => {
     expect(resolve('/second/a/2', routes$).path).toBe('/second/a/2/');
     expect(resolve('/second/b', routes$).path).toBe('/third/');
     expect(resolve('/third/', routes$).path).toBe('/third/');
+  });
+
+  test('can work with combined roots, wildcards and parameters', () => {
+    const routes: Routes = [
+      {
+        path: 'first',
+        component: createComponent(() => null),
+        children: [
+          {
+            path: 'nested',
+            component: createComponent(() => null),
+          },
+          {
+            path: ':id',
+            component: createComponent(() => null),
+          },
+          {
+            path: '',
+            component: createComponent(() => null),
+          },
+          {
+            path: '**',
+            redirectTo: '',
+          },
+        ],
+      },
+      {
+        path: 'second',
+        component: createComponent(() => null),
+      },
+      {
+        path: 'third',
+        component: createComponent(() => null),
+      },
+      {
+        path: '',
+        redirectTo: 'first',
+      },
+      {
+        path: '**',
+        redirectTo: 'first',
+      },
+    ];
+    const routes$ = createRoutes(routes);
+
+    expect(resolve('/', routes$).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/first', routes$).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/first/nested', routes$).path).toBe('/first/nested/');
+    expect(resolve('/first/666', routes$).path).toBe(`/first/:id/`);
+    expect(resolve('/first/666/broken', routes$).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/second', routes$).path).toBe('/second/');
+    expect(resolve('/third/', routes$).path).toBe('/third/');
+    expect(resolve('/broken/url', routes$).path).toBe(`/first/${ROOT}/`);
   });
 });
