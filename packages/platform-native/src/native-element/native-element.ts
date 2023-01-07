@@ -1,90 +1,7 @@
-import {
-  Frame,
-  Page,
-  ContentView,
-  ScrollView,
-  RootLayout,
-  AbsoluteLayout,
-  DockLayout,
-  FlexboxLayout,
-  StackLayout,
-  GridLayout,
-  WrapLayout,
-  HtmlView,
-  WebView,
-  Label,
-  Button,
-} from '@nativescript/core';
-
-import { NodeType, detectIsNumber, ROOT } from '@dark-engine/core';
+import { NodeType, detectIsNumber, ROOT, detectIsFunction } from '@dark-engine/core';
 import { createSyntheticEventHandler } from '../events';
-
-const enum NSViewFlag {
-  CONTENT_VIEW = 'CONTENT_VIEW',
-  LAYOUT_VIEW = 'LAYOUT_VIEW',
-}
-
-type ElementFactory = any;
-
-type NSElementMeta = {
-  flag?: NSViewFlag;
-  skipNativeInstalling?: boolean;
-  add?: (childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) => void;
-  remove?: (childElement: TagNativeElement, parentElement: TagNativeElement) => void;
-};
-
-type NSElement = {
-  factory?: ElementFactory;
-  meta?: NSElementMeta;
-};
-
-const viewMap: Record<string, NSElement> = {};
-
-function registerElement(name: string, element: NSElement) {
-  viewMap[name] = element;
-}
-
-function getElement(name: string): NSElement {
-  return viewMap[name] || null;
-}
-
-registerElement(ROOT, { meta: { skipNativeInstalling: true } });
-
-registerElement('frame', {
-  factory: Frame,
-  meta: {
-    add: (childElement, parentElement) => {
-      const frame = parentElement.nativeView as Frame;
-
-      if (childElement.nativeView instanceof Page) {
-        frame.navigate({
-          create() {
-            return childElement.nativeView;
-          },
-        });
-      }
-    },
-    remove: () => {},
-  },
-});
-
-registerElement('page', { factory: Page, meta: { flag: NSViewFlag.CONTENT_VIEW } });
-registerElement('content-view', { factory: ContentView, meta: { flag: NSViewFlag.CONTENT_VIEW } });
-registerElement('scroll-view', { factory: ScrollView, meta: { flag: NSViewFlag.CONTENT_VIEW } });
-
-registerElement('root-layout', { factory: RootLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('absolute-layout', { factory: AbsoluteLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('dock-layout', { factory: DockLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('flexbox-layout', { factory: FlexboxLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('grid-layout', { factory: GridLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('stack-layout', { factory: StackLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('wrap-layout', { factory: WrapLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-
-registerElement('html-view', { factory: HtmlView });
-registerElement('web-view', { factory: WebView });
-
-registerElement('button', { factory: Button });
-registerElement('label', { factory: Label });
+import { NSViewFlag, getElement, type ElementFactory, type NSElementMeta } from '../registry';
+import { ATTR_TEXT } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -100,14 +17,14 @@ class TagNativeElement extends NativeElement {
   public attrs: Record<string, AttributeValue> = {};
   public children: Array<NativeElement> = [];
   public nativeView: ElementFactory;
-  public meta: NSElementMeta;
+  public meta: NSElementMeta = {};
   private eventListeners: Map<string, Function> = new Map();
 
   constructor(name: string) {
     super(NodeType.TAG);
     this.name = name;
 
-    const { factory, meta = null } = getElement(name);
+    const { factory, meta = {} } = getElement(name);
 
     if (!meta?.skipNativeInstalling) {
       this.nativeView = new factory();
@@ -167,7 +84,7 @@ class TagNativeElement extends NativeElement {
   removeChild(element: NativeElement) {
     const idx = this.children.findIndex(node => node === element);
 
-    if (idx > -1) {
+    if (idx !== -1) {
       this.children.splice(idx, 1);
       element.parentElement = null;
 
@@ -202,7 +119,7 @@ class TagNativeElement extends NativeElement {
       }
     }
 
-    this.setAttribute('text', text);
+    this.setAttribute(ATTR_TEXT, text);
   }
 
   dispatchEvent(eventName: string) {
@@ -264,23 +181,25 @@ class CommentNativeElement extends NativeElement {
 }
 
 function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
-  if (parentElement.meta?.skipNativeInstalling) return;
+  const { meta } = parentElement;
 
-  if (parentElement.meta?.add) {
-    return parentElement.meta.add(childElement, parentElement, idx);
+  if (meta.skipNativeInstalling) return;
+
+  if (detectIsFunction(meta.add)) {
+    return meta.add(childElement, parentElement, idx);
   }
 
   const parentView = parentElement.nativeView;
   const childView = childElement.nativeView;
 
   if (parentElement)
-    if (parentElement.meta?.flag === NSViewFlag.LAYOUT_VIEW) {
+    if (meta.flag === NSViewFlag.LAYOUT_VIEW) {
       if (detectIsNumber(idx)) {
         parentView.insertChild(childView, idx);
       } else {
         parentView.addChild(childView);
       }
-    } else if (parentElement.meta?.flag === NSViewFlag.CONTENT_VIEW) {
+    } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
       parentView.content = childView;
     } else {
       parentView._addChildFromBuilder(childView.constructor.name, childView);
@@ -288,18 +207,20 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
 }
 
 function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
-  if (parentElement.meta?.skipNativeInstalling) return;
+  const { meta } = parentElement;
 
-  if (parentElement.meta?.remove) {
-    return parentElement.meta.remove(childElement, parentElement);
+  if (meta.skipNativeInstalling) return;
+
+  if (detectIsFunction(meta.remove)) {
+    return meta.remove(childElement, parentElement);
   }
 
   const parentView = parentElement.nativeView;
   const childView = childElement.nativeView;
 
-  if (parentElement.meta?.flag == NSViewFlag.LAYOUT_VIEW) {
+  if (meta.flag == NSViewFlag.LAYOUT_VIEW) {
     parentView.removeChild(childView);
-  } else if (parentElement.meta?.flag === NSViewFlag.CONTENT_VIEW) {
+  } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
     parentView.content = null;
   } else {
     parentView._removeView(childView);

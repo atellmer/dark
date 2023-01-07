@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-export { run } from './render';
 export { type SyntheticEvent } from './events';
+export { run } from './render';
+export { registerElement } from './registry';
 
 export const version = process.env.VERSION;
 
