@@ -1,3 +1,5 @@
+import { Application } from '@nativescript/core';
+
 import {
   type DarkElement,
   ROOT,
@@ -14,7 +16,6 @@ import {
   TaskPriority,
   createReplacer,
 } from '@dark-engine/core';
-import { Application } from '@nativescript/core';
 import { TagNativeElement } from '../native-element';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';

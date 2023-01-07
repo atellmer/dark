@@ -1,33 +1,34 @@
+import { EventData } from '@nativescript/core';
+
 import type { TagNativeElement } from '../native-element';
 
-class SyntheticEvent<E extends Event, T = TagNativeElement> {
+class SyntheticEvent<E extends EventData, T = TagNativeElement> {
   public type = '';
   public sourceEvent: E = null;
   public target: T = null;
-  private propagation = true;
 
   constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
-    this.type = options.sourceEvent.type;
+    this.type = options.sourceEvent.eventName;
     this.sourceEvent = options.sourceEvent;
     this.target = options.target;
   }
+}
 
-  public stopPropagation() {
-    this.propagation = false;
-    this.sourceEvent.stopPropagation();
-  }
+function createSyntheticEventHandler(handler: Function) {
+  const syntheticHandler = (sourceEvent: EventData) => {
+    const event = new SyntheticEvent({
+      sourceEvent,
+      target: sourceEvent.object,
+    });
 
-  public preventDefault() {
-    this.sourceEvent.preventDefault();
-  }
+    handler(event);
+  };
 
-  public getPropagation() {
-    return this.propagation;
-  }
+  return syntheticHandler;
 }
 
 const detectIsEvent = (attrName: string) => attrName.startsWith('on');
 
 const getEventName = (attrName: string) => attrName.slice(2, attrName.length).toLowerCase();
 
-export { SyntheticEvent, detectIsEvent, getEventName };
+export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, getEventName };

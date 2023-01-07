@@ -75,7 +75,7 @@ function addAttributes(element: NativeElement, vNode: VirtualNode) {
 
     if (detectIsFunction(attrValue)) {
       if (detectIsEvent(attrName)) {
-        //TODO
+        tagElement.addEventListener(getEventName(attrName), attrValue);
       }
     } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
       tagElement.setAttribute(attrName, attrValue);
@@ -99,13 +99,17 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
     if (!detectIsUndefined(nextAttrValue)) {
       if (detectIsFunction(prevAttrValue)) {
         if (detectIsEvent(attrName) && prevAttrValue !== nextAttrValue) {
-          //TODO
+          tagElement.addEventListener(getEventName(attrName), nextAttrValue);
         }
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
         tagElement.setAttribute(attrName, nextAttrValue);
       }
     } else {
-      tagElement.removeAttribute(attrName);
+      if (detectIsEvent(attrName)) {
+        tagElement.removeEventListener(getEventName(attrName));
+      } else {
+        tagElement.removeAttribute(attrName);
+      }
     }
   }
 }

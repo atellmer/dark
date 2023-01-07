@@ -1,4 +1,3 @@
-import { NodeType, ATTR_REF, detectIsNumber } from '@dark-engine/core';
 import {
   Frame,
   Page,
@@ -16,6 +15,9 @@ import {
   Label,
   Button,
 } from '@nativescript/core';
+
+import { NodeType, detectIsNumber } from '@dark-engine/core';
+import { createSyntheticEventHandler } from '../events';
 
 const enum NSViewFlag {
   FRAME = 'FRAME',
@@ -75,6 +77,7 @@ class TagNativeElement extends NativeElement {
   public children: Array<NativeElement> = [];
   public nativeView: ElementFactory;
   public flag: NSViewFlag;
+  private eventListeners: Map<string, Function> = new Map();
 
   constructor(name: string) {
     super(NodeType.TAG);
@@ -82,7 +85,6 @@ class TagNativeElement extends NativeElement {
     const { factory, flag } = getElement(name);
 
     this.nativeView = new factory();
-    this.nativeView[ATTR_REF] = this;
     this.flag = flag;
   }
 
@@ -163,6 +165,25 @@ class TagNativeElement extends NativeElement {
     }
 
     this.setAttribute('text', text);
+  }
+
+  dispatchEvent(eventName: string) {
+    this.nativeView.notify({ eventName, object: this.nativeView });
+  }
+
+  addEventListener(eventName: string, handler: Function) {
+    const syntheticHandler = createSyntheticEventHandler(handler);
+
+    this.removeEventListener(eventName);
+    this.eventListeners.set(eventName, syntheticHandler);
+    this.nativeView.addEventListener(eventName, syntheticHandler);
+  }
+
+  removeEventListener(eventName: string) {
+    const handler = this.eventListeners.get(eventName);
+
+    this.eventListeners.delete(eventName);
+    handler && this.nativeView.removeEventListener(eventName, handler);
   }
 }
 
