@@ -17,11 +17,7 @@ const queueByPriority: QueueByPriority = {
   low1: [],
   low2: [],
 };
-const YEILD_INTERVAL = 4;
 const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
-let scheduledCallback: Callback = null;
-let deadline = 0;
-let isMessageLoopRunning = false;
 let currentTask: Task = null;
 
 class Task {
@@ -43,7 +39,7 @@ class Task {
   }
 }
 
-const shouldYeildToHost = () => getTime() >= deadline;
+const shouldYeildToHost = () => false;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
   const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
@@ -62,15 +58,9 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
   currentTask = queue.shift();
-  const isAnimation = currentTask.priority === TaskPriority.ANIMATION;
-
   currentTask.callback();
 
-  if (currentTask.forceSync || isAnimation) {
-    requestCallbackSync(workLoop);
-  } else {
-    requestCallback(workLoop);
-  }
+  requestCallback(workLoop);
 
   return true;
 }
@@ -84,7 +74,7 @@ function executeTasks() {
       pick(queueByPriority.animations) ||
       pick(queueByPriority.hight) ||
       pick(queueByPriority.normal) ||
-      requestIdleCallback(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));
+      setTimeout(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));
   }
 }
 
@@ -107,41 +97,8 @@ function checkOverdueTasks() {
   return false;
 }
 
-function performWorkUntilDeadline() {
-  if (scheduledCallback) {
-    deadline = getTime() + YEILD_INTERVAL;
-
-    try {
-      const hasMoreWork = scheduledCallback();
-
-      if (!hasMoreWork) {
-        currentTask = null;
-        isMessageLoopRunning = false;
-        scheduledCallback = null;
-        executeTasks();
-      } else {
-        port.postMessage(null);
-      }
-    } catch (error) {
-      port.postMessage(null);
-      throw error;
-    }
-  } else {
-    isMessageLoopRunning = false;
-  }
-}
-
 function requestCallback(callback: Callback) {
-  if (process.env.NODE_ENV === 'test') {
-    return requestCallbackSync(callback);
-  }
-
-  scheduledCallback = callback;
-
-  if (!isMessageLoopRunning) {
-    isMessageLoopRunning = true;
-    port.postMessage(null);
-  }
+  requestCallbackSync(callback);
 }
 
 function requestCallbackSync(callback: Callback) {
@@ -151,21 +108,5 @@ function requestCallbackSync(callback: Callback) {
   executeTasks();
   currentTask = null;
 }
-
-let channel: MessageChannel = null;
-let port: MessagePort = null;
-
-function setup() {
-  if (process.env.NODE_ENV === 'test') {
-    return;
-  }
-
-  channel = new MessageChannel();
-  port = channel.port2;
-
-  channel.port1.onmessage = performWorkUntilDeadline;
-}
-
-setup();
 
 export { shouldYeildToHost, scheduleCallback };

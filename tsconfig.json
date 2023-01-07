@@ -38,6 +38,12 @@
       "@dark-engine/platform-server/*": [
         "./packages/platform-server/src/*"
       ],
+      "@dark-engine/platform-native": [
+        "./packages/platform-native/src/index"
+      ],
+      "@dark-engine/platform-native/*": [
+        "./packages/platform-native/src/*"
+      ],
       "@dark-engine/web-router": [
         "./packages/web-router/src/index"
       ],

@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "module": "esnext",
+    "noEmitHelpers": true,
+    "noEmitOnError": true,
+    "sourceMap": true,
+    "lib": [
+      "ES6",
+      "ES7",
+      "dom"
+    ],
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "baseUrl": ".",
+    "paths": {
+      "@dark-engine/core": [
+        "../../packages/core/src/index"
+      ],
+      "@dark-engine/platform-native": [
+        "../../packages/platform-native/src/index"
+      ],
+      "~/*": [
+        "src/*"
+      ],
+      "@/*": [
+        "src/*"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "platforms"
+  ]
+}

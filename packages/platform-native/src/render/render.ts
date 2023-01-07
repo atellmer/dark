@@ -25,8 +25,8 @@ let nextRootId = -1;
 
 function inject() {
   platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-  platform.requestAnimationFrame = requestAnimationFrame.bind(this);
-  platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
+  platform.requestAnimationFrame = setTimeout.bind(this);
+  platform.cancelAnimationFrame = clearTimeout.bind(this);
   platform.scheduleCallback = scheduleCallback;
   platform.shouldYeildToHost = shouldYeildToHost;
   platform.applyCommit = applyCommit;
@@ -62,8 +62,8 @@ function render(element: DarkElement) {
     forceSync: true,
   });
 
-  const { nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
-  const nativeView = nativeElement.nativeView;
+  const fiber = currentRootStore.get() as Fiber<TagNativeElement>;
+  const nativeView = fiber.nativeElement.getNativeView();
 
   return nativeView;
 }
