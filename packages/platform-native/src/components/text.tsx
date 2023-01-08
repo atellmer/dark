@@ -1,12 +1,23 @@
-import { h, createComponent, type DarkElement } from '@dark-engine/core';
+import { Label as NSLabel } from '@nativescript/core';
+
+import { type DarkElement, h, createComponent, forwardRef } from '@dark-engine/core';
 import { LabelAttributes } from '../jsx-typings';
+import type { TagNativeElement } from '../native-element';
 
 export type TextProps = {
   slot: DarkElement;
 } & LabelAttributes;
 
-const Text = createComponent<TextProps>(({ slot, ...rest }) => {
-  return <label {...rest}>{slot}</label>;
-});
+export type TextRef = TagNativeElement<NSLabel>;
+
+const Text = forwardRef<TextProps, TextRef>(
+  createComponent(({ slot, ...rest }, ref) => {
+    return (
+      <label ref={ref} {...rest}>
+        {slot}
+      </label>
+    );
+  }),
+);
 
 export { Text };
