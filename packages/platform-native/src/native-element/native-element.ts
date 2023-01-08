@@ -18,12 +18,12 @@ class NativeElement {
   }
 }
 
-class TagNativeElement extends NativeElement {
+class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
   public name: string = null;
   public attrs: Record<string, AttributeValue> = {};
   public children: Array<NativeElement> = [];
-  public nativeView: NSElement;
-  public meta: NSElementMeta = {};
+  private nativeView: T;
+  private meta: NSElementMeta;
   private eventListeners: Map<string, Function> = new Map();
 
   constructor(name: string) {
@@ -32,18 +32,22 @@ class TagNativeElement extends NativeElement {
 
     const { create, meta } = getElementFactory(name);
 
-    this.nativeView = create();
+    this.nativeView = create() as T;
     this.meta = meta;
   }
 
-  public getNativeView() {
+  public getNativeView(): T {
     if (this.name === ROOT) {
       const tag = this.children[0] as TagNativeElement;
 
-      return tag.getNativeView();
+      return tag.getNativeView() as T;
     }
 
     return this.nativeView;
+  }
+
+  public getMeta(): NSElementMeta {
+    return this.meta;
   }
 
   public appendChild(element: NativeElement) {
@@ -196,7 +200,7 @@ class CommentNativeElement extends NativeElement {
 }
 
 function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
-  const { meta } = parentElement;
+  const meta = parentElement.getMeta();
 
   if (meta.isRoot) return;
 
@@ -204,8 +208,8 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
     return meta.add(childElement, parentElement, idx);
   }
 
-  const parentView = parentElement.nativeView;
-  const childView = childElement.nativeView;
+  const parentView = parentElement.getNativeView();
+  const childView = childElement.getNativeView();
 
   if (parentElement)
     if (meta.flag === NSViewFlag.LAYOUT_VIEW) {
@@ -228,7 +232,7 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
 }
 
 function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
-  const { meta } = parentElement;
+  const meta = parentElement.getMeta();
 
   if (meta.isRoot) return;
 
@@ -236,8 +240,8 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
     return meta.remove(childElement, parentElement);
   }
 
-  const parentView = parentElement.nativeView;
-  const childView = childElement.nativeView;
+  const parentView = parentElement.getNativeView();
+  const childView = childElement.getNativeView();
 
   if (meta.flag == NSViewFlag.LAYOUT_VIEW) {
     const layoutView = parentView as LayoutBase;

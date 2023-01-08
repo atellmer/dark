@@ -50,12 +50,13 @@ registerElement(ROOT, () => null, { isRoot: true });
 
 registerElement('frame', () => require('@nativescript/core').Frame, {
   add: (childElement, parentElement) => {
-    const frame = parentElement.nativeView as Frame;
+    const frame = parentElement.getNativeView() as Frame;
+    const content = childElement.getNativeView();
 
-    if (childElement.nativeView instanceof Page) {
+    if (content instanceof Page) {
       frame.navigate({
         create() {
-          return childElement.nativeView;
+          return content;
         },
       });
     } else {
@@ -87,8 +88,8 @@ registerElement('navigation-button', () => require('@nativescript/core').Navigat
 registerElement('activity-indicator', () => require('@nativescript/core').ActivityIndicator);
 registerElement('formatted-string', () => require('@nativescript/core').FormattedString, {
   add(childElement, parentElement, idx) {
-    const formattedString = parentElement.nativeView as unknown as FormattedString;
-    const span = childElement.nativeView as unknown as Span;
+    const formattedString = parentElement.getNativeView() as unknown as FormattedString;
+    const span = childElement.getNativeView() as unknown as Span;
 
     if (idx) {
       formattedString.spans.splice(idx, 0, span);
@@ -97,8 +98,8 @@ registerElement('formatted-string', () => require('@nativescript/core').Formatte
     formattedString.spans.push(span);
   },
   remove(childElement, parentElement) {
-    const formattedString = parentElement.nativeView as unknown as FormattedString;
-    const span = childElement.nativeView as unknown as Span;
+    const formattedString = parentElement.getNativeView() as unknown as FormattedString;
+    const span = childElement.getNativeView() as unknown as Span;
     const idx = formattedString.spans.indexOf(span);
 
     if (idx > -1) {

@@ -347,7 +347,7 @@ function getCurrentStep(x: number, list: Array<number>) {
 function getInitialValues(animations: Array<Animation>) {
   return animations.map(animation => {
     const { direction, from, to } = animation;
-    const value = direction ? (direction === 'forward' ? from : to) : 0;
+    const value = direction ? (direction === 'forward' ? from : to) : from;
 
     return value || 0;
   });

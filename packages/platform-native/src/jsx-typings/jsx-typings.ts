@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import type { CoreTypes } from '@nativescript/core';
+
 type AccessibilityLiveRegion = import('@nativescript/core').AccessibilityLiveRegion;
 type AccessibilityRole = import('@nativescript/core').AccessibilityRole;
 type AccessibilityState = import('@nativescript/core').AccessibilityState;
@@ -383,13 +384,13 @@ export type TextBaseAttributes = ViewAttributes & {
   whiteSpace?: 'initial' | 'normal' | 'nowrap';
 };
 
-type ContainerViewAttributes = ViewAttributes & {
+export type ContainerViewAttributes = ViewAttributes & {
   iosOverflowSafeArea?: boolean;
 };
 
-type CustomLayoutViewAttributes = ContainerViewAttributes & {};
+export type CustomLayoutViewAttributes = ContainerViewAttributes & {};
 
-type FrameBaseAttributes = CustomLayoutViewAttributes & {
+export type FrameBaseAttributes = CustomLayoutViewAttributes & {
   actionBarVisibility?: 'always' | 'never' | 'auto';
   animated?: boolean;
   backStack?: BackstackEntry[];
@@ -402,7 +403,7 @@ type FrameBaseAttributes = CustomLayoutViewAttributes & {
   transition?: NavigationTransition;
 };
 
-type FrameAttributes = WithStandardElementAttributes<
+export type FrameAttributes = WithStandardElementAttributes<
   FrameBaseAttributes & {
     actionBarVisibility?: 'always' | 'never' | 'auto';
     android?: AndroidFrame;
@@ -418,12 +419,12 @@ type FrameAttributes = WithStandardElementAttributes<
   }
 >;
 
-type ContentViewAttributes = CustomLayoutViewAttributes & {
+export type ContentViewAttributes = CustomLayoutViewAttributes & {
   content?: View;
   layoutView?: View;
 };
 
-type PageBaseAttributes = ContentViewAttributes & {
+export type PageBaseAttributes = ContentViewAttributes & {
   accessibilityAnnouncePageEnabled?: boolean;
   actionBar?: ActionBar;
   actionBarHidden?: string | boolean;
@@ -446,7 +447,7 @@ type PageBaseAttributes = ContentViewAttributes & {
   statusBarStyle?: 'light' | 'dark';
 };
 
-type PageAttributes = WithStandardElementAttributes<
+export type PageAttributes = WithStandardElementAttributes<
   PageBaseAttributes & {
     accessibilityAnnouncePageEnabled?: boolean;
     actionBar?: ActionBar;
@@ -466,7 +467,7 @@ type PageAttributes = WithStandardElementAttributes<
   }
 >;
 
-type ScrollViewAttributes = WithStandardElementAttributes<
+export type ScrollViewAttributes = WithStandardElementAttributes<
   ContentViewAttributes & {
     horizontalOffset?: number;
     isScrollEnabled?: string | boolean;
@@ -482,7 +483,7 @@ type ScrollViewAttributes = WithStandardElementAttributes<
   }
 >;
 
-type LayoutBaseAttributes = CustomLayoutViewAttributes & {
+export type LayoutBaseAttributes = CustomLayoutViewAttributes & {
   clipToBounds?: string | boolean;
   isPassThroughParentEnabled?: string | boolean;
   onClipToBoundsChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
@@ -494,25 +495,25 @@ type LayoutBaseAttributes = CustomLayoutViewAttributes & {
   paddingTop?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
 };
 
-type RootLayoutAttributes = WithStandardElementAttributes<GridLayoutAttributes & {}>;
+export type RootLayoutAttributes = WithStandardElementAttributes<GridLayoutAttributes & {}>;
 
-type AbsoluteLayoutAttributes = WithStandardElementAttributes<LayoutBaseAttributes & {}>;
+export type AbsoluteLayoutAttributes = WithStandardElementAttributes<LayoutBaseAttributes & {}>;
 
-type StackLayoutAttributes = WithStandardElementAttributes<
+export type StackLayoutAttributes = WithStandardElementAttributes<
   LayoutBaseAttributes & {
     onOrientationChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
     orientation?: 'horizontal' | 'vertical';
   }
 >;
 
-type DockLayoutAttributes = WithStandardElementAttributes<
+export type DockLayoutAttributes = WithStandardElementAttributes<
   LayoutBaseAttributes & {
     onStretchLastChildChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
     stretchLastChild?: string | boolean;
   }
 >;
 
-type FlexboxLayoutAttributes = WithStandardElementAttributes<
+export type FlexboxLayoutAttributes = WithStandardElementAttributes<
   LayoutBaseAttributes & {
     alignContent?: 'stretch' | 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
     alignItems?: 'stretch' | 'flex-start' | 'flex-end' | 'center' | 'baseline';
@@ -522,14 +523,14 @@ type FlexboxLayoutAttributes = WithStandardElementAttributes<
   }
 >;
 
-type GridLayoutAttributes = WithStandardElementAttributes<
+export type GridLayoutAttributes = WithStandardElementAttributes<
   LayoutBaseAttributes & {
     columns?: string;
     rows?: string;
   }
 >;
 
-type WrapLayoutAttributes = WithStandardElementAttributes<
+export type WrapLayoutAttributes = WithStandardElementAttributes<
   LayoutBaseAttributes & {
     effectiveItemHeight?: number;
     effectiveItemWidth?: number;
@@ -542,7 +543,7 @@ type WrapLayoutAttributes = WithStandardElementAttributes<
   }
 >;
 
-type ButtonAttributes = WithStandardElementAttributes<
+export type ButtonAttributes = WithStandardElementAttributes<
   TextBaseAttributes & {
     accessibilityRole?: AccessibilityRole;
     accessible?: boolean;
@@ -553,7 +554,7 @@ type ButtonAttributes = WithStandardElementAttributes<
   }
 >;
 
-type LabelAttributes = WithStandardElementAttributes<
+export type LabelAttributes = WithStandardElementAttributes<
   TextBaseAttributes & {
     android?: any;
     ios?: any;
@@ -561,7 +562,7 @@ type LabelAttributes = WithStandardElementAttributes<
   }
 >;
 
-type HtmlViewAttributes = Omit<
+export type HtmlViewAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -573,7 +574,7 @@ type HtmlViewAttributes = Omit<
   'slot'
 >;
 
-type WebViewAttributes = Omit<
+export type WebViewAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -591,7 +592,7 @@ type WebViewAttributes = Omit<
   'slot'
 >;
 
-type ActionBarAttributes = WithStandardElementAttributes<
+export type ActionBarAttributes = WithStandardElementAttributes<
   ViewAttributes & {
     actionItems?: ActionItems;
     android?: AndroidActionBarSettings;
@@ -612,7 +613,7 @@ type ActionBarAttributes = WithStandardElementAttributes<
   }
 >;
 
-type ActionItemAttributes = WithStandardElementAttributes<
+export type ActionItemAttributes = WithStandardElementAttributes<
   ViewBaseAttributes & {
     actionBar?: ActionBar;
     actionView?: View;
@@ -628,9 +629,9 @@ type ActionItemAttributes = WithStandardElementAttributes<
   }
 >;
 
-type NavigationButtonAttributes = WithStandardElementAttributes<ActionItemAttributes & {}>;
+export type NavigationButtonAttributes = WithStandardElementAttributes<ActionItemAttributes & {}>;
 
-type ActivityIndicatorAttributes = Omit<
+export type ActivityIndicatorAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -642,7 +643,7 @@ type ActivityIndicatorAttributes = Omit<
   'slot'
 >;
 
-type FormattedStringAttributes = WithStandardElementAttributes<
+export type FormattedStringAttributes = WithStandardElementAttributes<
   ViewBaseAttributes & {
     backgroundColor?: string | Color;
     color?: string | Color;
@@ -655,7 +656,7 @@ type FormattedStringAttributes = WithStandardElementAttributes<
   }
 >;
 
-type SpanAttributes = WithStandardElementAttributes<
+export type SpanAttributes = WithStandardElementAttributes<
   ViewBaseAttributes & {
     backgroundColor?: string | Color;
     color?: string | Color;
@@ -669,7 +670,7 @@ type SpanAttributes = WithStandardElementAttributes<
   }
 >;
 
-type ImageAttributes = Omit<
+export type ImageAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -694,7 +695,7 @@ type ImageAttributes = Omit<
   'slot'
 >;
 
-type ListPickerAttributes = WithStandardElementAttributes<
+export type ListPickerAttributes = WithStandardElementAttributes<
   ViewAttributes & {
     android?: any;
     ios?: any;
@@ -712,7 +713,7 @@ type ListPickerAttributes = WithStandardElementAttributes<
   }
 >;
 
-type PlaceholderAttributes = Omit<
+export type PlaceholderAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       onCreatingView?: (e: SyntheticEvent<CreateViewEventData>) => void;
@@ -721,7 +722,7 @@ type PlaceholderAttributes = Omit<
   'slot'
 >;
 
-type ProgressAttributes = Omit<
+export type ProgressAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -735,7 +736,7 @@ type ProgressAttributes = Omit<
   'slot'
 >;
 
-type SearchBarAttributes = Omit<
+export type SearchBarAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -755,7 +756,7 @@ type SearchBarAttributes = Omit<
   'slot'
 >;
 
-type SegmentedBarAttributes = WithStandardElementAttributes<
+export type SegmentedBarAttributes = WithStandardElementAttributes<
   ViewAttributes & {
     items?: string | SegmentedBarItem[];
     onItemsChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
@@ -766,13 +767,13 @@ type SegmentedBarAttributes = WithStandardElementAttributes<
   }
 >;
 
-type SegmentedBarItemAttributes = WithStandardElementAttributes<
+export type SegmentedBarItemAttributes = WithStandardElementAttributes<
   ViewBaseAttributes & {
     title?: string;
   }
 >;
 
-type SliderAttributes = Omit<
+export type SliderAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       accessibilityRole?: AccessibilityRole;
@@ -791,7 +792,7 @@ type SliderAttributes = Omit<
   'slot'
 >;
 
-type SwitchAttributes = Omit<
+export type SwitchAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -805,7 +806,7 @@ type SwitchAttributes = Omit<
   'slot'
 >;
 
-type EditableTextBaseAttributes = TextBaseAttributes & {
+export type EditableTextBaseAttributes = TextBaseAttributes & {
   autocapitalizationType?: 'none' | 'words' | 'sentences' | 'allcharacters';
   autocorrect?: string | boolean;
   autofillType?: string;
@@ -826,7 +827,7 @@ type EditableTextBaseAttributes = TextBaseAttributes & {
   updateTextTrigger?: 'focusLost' | 'textChanged';
 };
 
-type TextFieldAttributes = Omit<
+export type TextFieldAttributes = Omit<
   WithStandardElementAttributes<
     EditableTextBaseAttributes & {
       android?: any;
@@ -841,7 +842,7 @@ type TextFieldAttributes = Omit<
   'slot'
 >;
 
-type TextViewAttributes = Omit<
+export type TextViewAttributes = Omit<
   WithStandardElementAttributes<
     EditableTextBaseAttributes & {
       android?: any;
@@ -852,7 +853,7 @@ type TextViewAttributes = Omit<
   'slot'
 >;
 
-type DatePickerAttributes = Omit<
+export type DatePickerAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -884,7 +885,7 @@ type DatePickerAttributes = Omit<
   'slot'
 >;
 
-type TimePickerAttributes = Omit<
+export type TimePickerAttributes = Omit<
   WithStandardElementAttributes<
     ViewAttributes & {
       android?: any;
@@ -912,7 +913,7 @@ type TimePickerAttributes = Omit<
   'slot'
 >;
 
-type TabViewAttributes = WithStandardElementAttributes<
+export type TabViewAttributes = WithStandardElementAttributes<
   ViewAttributes & {
     android?: any;
     androidIconRenderingMode?: 'alwaysOriginal' | 'alwaysTemplate';
@@ -939,7 +940,7 @@ type TabViewAttributes = WithStandardElementAttributes<
   }
 >;
 
-type TabViewItemAttributes = WithStandardElementAttributes<
+export type TabViewItemAttributes = WithStandardElementAttributes<
   ViewBaseAttributes & {
     canBeLoaded?: boolean;
     iconSource?: string;
