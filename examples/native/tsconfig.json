@@ -6,6 +6,8 @@
     "noEmitHelpers": true,
     "noEmitOnError": true,
     "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "lib": [
       "ES6",
       "ES7",

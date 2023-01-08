@@ -1,84 +1,71 @@
-import { h, createComponent, useState, useRef } from '@dark-engine/core';
+import { h, Fragment, createComponent, useState, useRef, useEffect } from '@dark-engine/core';
+
+type Item = {
+  id: number;
+  name: string;
+};
+
+function randomize(list: Array<Item>) {
+  let currentIndex = list.length;
+  let randomIndex: number;
+
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [list[currentIndex], list[randomIndex]] = [list[randomIndex], list[currentIndex]];
+  }
+
+  return list;
+}
+
+const shuffle = (count: number) => {
+  let nextId = -1;
+  const items = Array(count)
+    .fill(0)
+    .map(() => ({
+      id: ++nextId,
+      name: `${nextId}`,
+    }));
+  const list = randomize(items);
+
+  return list;
+};
 
 const App = createComponent(() => {
-  const [count, setCount] = useState(0);
+  const [items, setItems] = useState(() => shuffle(10));
+
+  useEffect(() => {
+    setTimeout(() => {
+      console.log(
+        'items',
+        items.map(x => x.id),
+      );
+    }, 1000);
+  });
+
+  const handleShuffle = () => {
+    setItems(shuffle(items.length));
+  };
 
   return (
     <frame>
       <page actionBarHidden>
         <stack-layout>
-          <label>Hello world: {count}</label>
-          {count === 5 && <label>karamba!</label>}
-          <button class='button' onTap={() => setCount(count + 1)}>
-            fired {count} times
+          <button class='button' onTap={() => handleShuffle()}>
+            shuffle
           </button>
+          <stack-layout>
+            {items.map(item => {
+              return (
+                <Fragment key={item.id}>
+                  <label>item #{item.id}: 0</label>
+                  <label>item #{item.id}: 1</label>
+                </Fragment>
+              );
+            })}
+          </stack-layout>
         </stack-layout>
-        {/* <stack-layout>
-          <label>
-            <formatted-string>
-              <span color='#006600'>Words </span>
-              <span color='#990000' fontWeight='Bold'>
-                with{' '}
-              </span>
-              <span color='#ffcc00'>different </span>
-              <span>color.</span>
-            </formatted-string>
-          </label>
-        </stack-layout> */}
-        {/* <stack-layout>
-          <button class='button' onTap={() => setCount(count + 1)}>
-            [aaa]fired {count} times
-          </button>
-          <scroll-view scrollBarIndicatorVisible>
-            <stack-layout>
-              {Array(100)
-                .fill(null)
-                .map((_, idx) => {
-                  return (
-                    <label key={idx}>
-                      item #{idx + 1} : {count}
-                    </label>
-                  );
-                })}
-            </stack-layout>
-          </scroll-view>
-        </stack-layout> */}
-        {/* <slider value='10' minValue='0' maxValue='100' onLoaded={() => console.log('xxx')}/> */}
-        {/* <tab-view
-          selectedIndex={0}
-          onSelectedIndexChanged={() => {}}
-          androidTabsPosition='top'
-          androidOffscreenTabLimit='0'>
-          <tab-view-item title='Profile'>
-            <stack-layout>
-              <label text='1' textWrap />
-              <button text='Change Tab' onTap={() => console.log('tap', 1)} />
-            </stack-layout>
-          </tab-view-item>
-          <tab-view-item title='Stats'>
-            <stack-layout>
-              <label text='2' textWrap />
-              <button text='Change Tab' onTap={() => console.log('tap', 2)} />
-            </stack-layout>
-          </tab-view-item>
-          <tab-view-item title='Settings'>
-            <stack-layout>
-              <label text='3' textWrap />
-              <button text='Change Tab' onTap={() => console.log('tap', 3)} />
-            </stack-layout>
-          </tab-view-item>
-        </tab-view> */}
-        {/* <stack-layout>
-          <web-view
-            ref={ref}
-            src={`
-              <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
-              <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="red">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-              </svg>
-          `}
-          />
-        </stack-layout> */}
       </page>
     </frame>
   );

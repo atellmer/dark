@@ -26,6 +26,7 @@ const attrBlackListMap = {
   [ATTR_REF]: true,
   [ATTR_FLAG]: true,
 };
+let moves: Array<() => void> = [];
 
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
@@ -184,12 +185,57 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   });
 }
 
+function move(fiber: Fiber<NativeElement>) {
+  const sourceNodes = collectElements(fiber);
+  const sourceNode = sourceNodes[0];
+  const parentElement = sourceNode.parentElement;
+  const elementIdx = fiber.elementIdx;
+  const move = () => {
+    for (let i = 0; i < sourceNodes.length; i++) {
+      parentElement.insertBefore(sourceNodes[i], parentElement.children[elementIdx + i]);
+      parentElement.removeChild(parentElement.children[elementIdx + i + 1]);
+    }
+  };
+
+  for (let i = 0; i < sourceNodes.length; i++) {
+    const node = sourceNodes[i];
+
+    parentElement.insertBefore(new CommentNativeElement(`${elementIdx}:${i}`), node);
+    parentElement.removeChild(node);
+  }
+
+  moves.push(move);
+}
+
+function collectElements(fiber: Fiber<NativeElement>) {
+  const store: Array<NativeElement> = [];
+
+  walkFiber<NativeElement>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+      return stop();
+    }
+
+    if (!isReturn && nextFiber.nativeElement) {
+      store.push(nextFiber.nativeElement);
+
+      return resetIsDeepWalking();
+    }
+  });
+
+  return store;
+}
+
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.CREATE]: (fiber: Fiber<NativeElement>) => {
     if (fiber.nativeElement === null) return;
     commitCreation(fiber);
   },
   [EffectTag.UPDATE]: (fiber: Fiber<NativeElement>) => {
+    if (fiber.move) {
+      move(fiber);
+      fiber.move = false;
+    }
+
     if (
       fiber.nativeElement === null ||
       !detectIsVirtualNode(fiber.alternate.instance) ||
@@ -207,6 +253,12 @@ function applyCommit(fiber: Fiber<NativeElement>) {
   applyCommitMap[fiber.effectTag](fiber);
 }
 
-function finishCommitWork() {}
+function finishCommitWork() {
+  for (const move of moves) {
+    move();
+  }
+
+  moves = [];
+}
 
 export { createNativeElement, applyCommit, finishCommitWork };

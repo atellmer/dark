@@ -12,6 +12,10 @@ class NativeElement {
   constructor(type: NodeType) {
     this.type = type;
   }
+
+  public getText(): string {
+    return this.type;
+  }
 }
 
 class TagNativeElement extends NativeElement {
@@ -121,6 +125,10 @@ class TagNativeElement extends NativeElement {
     this.setAttribute(ATTR_TEXT, text);
   }
 
+  public getText() {
+    return this.getAttribute(ATTR_TEXT) as string;
+  }
+
   dispatchEvent(eventName: string) {
     this.nativeView.notify({ eventName, object: this.nativeView });
   }
@@ -160,6 +168,10 @@ class TextNativeElement extends NativeElement {
       this.parentElement.updateText();
     }
   }
+
+  public getText() {
+    return this._value;
+  }
 }
 
 class CommentNativeElement extends NativeElement {
@@ -176,6 +188,10 @@ class CommentNativeElement extends NativeElement {
 
   set value(value: string) {
     this._value = value;
+  }
+
+  public getText() {
+    return this._value;
   }
 }
 
