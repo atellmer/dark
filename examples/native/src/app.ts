@@ -1,3 +1,4 @@
+/// <reference path="../references.d.ts" />
 import { run } from '@dark-engine/platform-native';
 
 import App from './components/app';

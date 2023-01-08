@@ -1,28 +1,23 @@
-import { h, createComponent, useState, useRef, useEffect } from '@dark-engine/core';
+import { h, createComponent, useState, useRef } from '@dark-engine/core';
+
+module.hot.accept();
 
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    console.log('ref', ref);
-  }, []);
-
-  console.log('render', count);
 
   return (
     <frame>
-      <page xmlns='http://schemas.nativescript.org/tns.xsd' actionBarHidden>
-        {/* <stack-layout>
+      <page actionBarHidden>
+        <stack-layout>
           <label>Hello world: {count}</label>
           {count === 5 && <label>karamba!</label>}
           <button class='button' onTap={() => setCount(count + 1)}>
             fired {count} times
           </button>
-        </stack-layout> */}
+        </stack-layout>
         {/* <stack-layout>
           <button class='button' onTap={() => setCount(count + 1)}>
-            fired {count} times
+            [aaa]fired {count} times
           </button>
           <scroll-view scrollBarIndicatorVisible>
             <stack-layout>
@@ -63,7 +58,7 @@ const App = createComponent(() => {
             </stack-layout>
           </tab-view-item>
         </tab-view> */}
-        <stack-layout>
+        {/* <stack-layout>
           <web-view
             ref={ref}
             src={`
@@ -73,7 +68,7 @@ const App = createComponent(() => {
               </svg>
           `}
           />
-        </stack-layout>
+        </stack-layout> */}
       </page>
     </frame>
   );
