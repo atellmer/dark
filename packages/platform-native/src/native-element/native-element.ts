@@ -1,6 +1,6 @@
 import type { LayoutBase, View, ContentView } from '@nativescript/core';
 
-import { NodeType, detectIsNumber, ROOT, detectIsFunction } from '@dark-engine/core';
+import { NodeType, ROOT, detectIsNumber, detectIsFunction } from '@dark-engine/core';
 import { createSyntheticEventHandler } from '../events';
 import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
 import { ATTR_TEXT } from '../constants';

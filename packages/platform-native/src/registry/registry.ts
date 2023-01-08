@@ -1,44 +1,5 @@
 import { Page } from '@nativescript/core';
-import type {
-  Frame,
-  LayoutBase,
-  View,
-  ContentView,
-  AddChildFromBuilder,
-  ScrollView,
-  RootLayout,
-  AbsoluteLayout,
-  DockLayout,
-  FlexboxLayout,
-  StackLayout,
-  GridLayout,
-  WrapLayout,
-  HtmlView,
-  WebView,
-  ActionBar,
-  ActionItem,
-  NavigationButton,
-  ActivityIndicator,
-  Button,
-  DatePicker,
-  Label,
-  FormattedString,
-  Image,
-  ListPicker,
-  Placeholder,
-  Progress,
-  SearchBar,
-  SegmentedBar,
-  SegmentedBarItem,
-  Slider,
-  Span,
-  Switch,
-  TextField,
-  TextView,
-  TimePicker,
-  TabView,
-  TabViewItem,
-} from '@nativescript/core';
+import type { Frame, LayoutBase, View, ContentView, FormattedString, Span } from '@nativescript/core';
 
 import { ROOT } from '@dark-engine/core';
 import { type TagNativeElement } from '../native-element';
@@ -76,7 +37,13 @@ function registerElement(name: string, getType: () => new () => NSElement, meta:
 }
 
 function getElementFactory(name: string): NSElementFactory {
-  return viewMap[name] || null;
+  const factory = viewMap[name] || null;
+
+  if (!factory) {
+    throw new Error(`[Dark]: Element with name ${name} is not registered!`);
+  }
+
+  return factory;
 }
 
 registerElement(ROOT, () => null, { isRoot: true });
@@ -92,7 +59,7 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
         },
       });
     } else {
-      throw Error('[platform-native]: Frame must contain only Page!');
+      throw Error('[Dark]: Frame must contain only Page!');
     }
   },
   remove: () => {},
