@@ -3,3 +3,8 @@ export * from './text';
 export * from './touchable-opacity';
 export * from './image';
 export * from './scroll-view';
+export * from './switch';
+export * from './activity-indicator';
+export * from './text-field';
+export * from './button';
+export * from './list-picker';

@@ -1,5 +1,5 @@
 import { h, Fragment, createComponent, useState, useEffect } from '@dark-engine/core';
-import { View, Text, TouchableOpacity, Image, ScrollView } from '@dark-engine/platform-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, ListPicker } from '@dark-engine/platform-native';
 
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
@@ -20,6 +20,7 @@ const App = createComponent(() => {
           </Text>
         </View>
       </TouchableOpacity>
+      <ListPicker items={['item 1', 'item 2', 'item 3']} />
       <ScrollView>
         <Text textWrap>
           Lorem ipsum dolor sit, amet consectetur adipisicing elit. Laborum eum debitis nemo unde neque pariatur

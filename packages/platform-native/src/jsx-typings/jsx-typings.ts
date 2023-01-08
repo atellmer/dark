@@ -695,22 +695,25 @@ export type ImageAttributes = Omit<
   'slot'
 >;
 
-export type ListPickerAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    ios?: any;
-    isItemsSource?: boolean;
-    items?: string | any[] | ItemsSource;
-    onItemsChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onSelectedIndexChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onSelectedValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onTextFieldChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onValueFieldChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    selectedIndex?: string | number;
-    selectedValue?: string;
-    textField?: string;
-    valueField?: string;
-  }
+export type ListPickerAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      ios?: any;
+      isItemsSource?: boolean;
+      items?: string | any[] | ItemsSource;
+      onItemsChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onSelectedIndexChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onSelectedValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onTextFieldChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onValueFieldChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      selectedIndex?: string | number;
+      selectedValue?: string;
+      textField?: string;
+      valueField?: string;
+    }
+  >,
+  'slot'
 >;
 
 export type PlaceholderAttributes = Omit<
