@@ -32,6 +32,18 @@ const shuffle = (count: number) => {
   return list;
 };
 
+const Counter = createComponent(() => {
+  const [counter, setCounter] = useState(0);
+
+  return (
+    <>
+      <button onTap={() => setCounter(x => x + 1)}>increment</button>
+      <label color='red'>counter #1: {counter}</label>
+      <label color='red'>counter #2: {counter}</label>
+    </>
+  );
+});
+
 const App = createComponent(() => {
   const [items, setItems] = useState(() => shuffle(10));
 
@@ -56,6 +68,7 @@ const App = createComponent(() => {
             shuffle
           </button>
           <stack-layout>
+            <Counter />
             {items.map(item => {
               return (
                 <Fragment key={item.id}>
@@ -64,6 +77,7 @@ const App = createComponent(() => {
                 </Fragment>
               );
             })}
+            <Counter />
           </stack-layout>
         </stack-layout>
       </page>

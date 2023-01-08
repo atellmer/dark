@@ -7,8 +7,11 @@ module.exports = env => {
   // Learn how to customize:
   // https://docs.nativescript.org/webpack
   webpack.chainWebpack(config => {
-    config.resolve.extensions.add('.js');
+    config.resolve.extensions.add('.android.ts');
+    config.resolve.extensions.add('.ios.ts');
     config.resolve.extensions.add('.ts');
+    config.resolve.extensions.add('.android.tsx');
+    config.resolve.extensions.add('.ios.tsx');
     config.resolve.extensions.add('.tsx');
 
     config.resolve.alias.set('@dark-engine/core', resolve(__dirname, '../../packages/core/src'));
