@@ -1,12 +1,15 @@
 import { h, Fragment, createComponent, useState, useEffect } from '@dark-engine/core';
-import { View, Text, TouchableOpacity, Image, ScrollView, ListPicker } from '@dark-engine/platform-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Modal, Button } from '@dark-engine/platform-native';
 
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+
+  console.log('isOpen', isOpen);
 
   return (
     <View padding={8}>
-      <Text> count is: {count}</Text>
+      <Text>Count is: {count}</Text>
       <Image
         width='100%'
         height={400}
@@ -20,7 +23,15 @@ const App = createComponent(() => {
           </Text>
         </View>
       </TouchableOpacity>
-      <ListPicker items={['item 1', 'item 2', 'item 3']} />
+      <Modal isOpen={isOpen} fullscreen animated onRequestClose={() => setIsOpen(false)}>
+        <Text>Modal is: {count}</Text>
+        <Button backgroundColor='purple' color='#fff' onTap={() => setIsOpen(false)}>
+          Close modal
+        </Button>
+      </Modal>
+      <Button backgroundColor='purple' color='#fff' onTap={() => setIsOpen(true)}>
+        Open modal
+      </Button>
       <ScrollView>
         <Text textWrap>
           Lorem ipsum dolor sit, amet consectetur adipisicing elit. Laborum eum debitis nemo unde neque pariatur
