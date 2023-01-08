@@ -29,6 +29,11 @@ function createSyntheticEventHandler(handler: Function) {
 
 const detectIsEvent = (attrName: string) => attrName.startsWith('on');
 
-const getEventName = (attrName: string) => attrName.slice(2, attrName.length).toLowerCase();
+const getEventName = (attrName: string) =>
+  attrName
+    .slice(2, attrName.length)
+    .split('')
+    .map((x, idx) => (idx === 0 ? x.toLowerCase() : x))
+    .join('');
 
 export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, getEventName };

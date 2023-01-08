@@ -85,7 +85,6 @@ registerElement('action-bar', () => require('@nativescript/core').ActionBar);
 registerElement('action-item', () => require('@nativescript/core').ActionItem);
 registerElement('navigation-button', () => require('@nativescript/core').NavigationButton);
 registerElement('activity-indicator', () => require('@nativescript/core').ActivityIndicator);
-registerElement('date-picker', () => require('@nativescript/core').DatePicker);
 registerElement('formatted-string', () => require('@nativescript/core').FormattedString, {
   add(childElement, parentElement, idx) {
     const formattedString = parentElement.nativeView as unknown as FormattedString;
@@ -119,6 +118,7 @@ registerElement('slider', () => require('@nativescript/core').Slider);
 registerElement('switch', () => require('@nativescript/core').Switch);
 registerElement('text-field', () => require('@nativescript/core').TextField);
 registerElement('text-view', () => require('@nativescript/core').TextView);
+registerElement('date-picker', () => require('@nativescript/core').DatePicker);
 registerElement('time-picker', () => require('@nativescript/core').TimePicker);
 registerElement('tab-view', () => require('@nativescript/core').TabView);
 registerElement('tab-view-item', () => require('@nativescript/core').TabViewItem);

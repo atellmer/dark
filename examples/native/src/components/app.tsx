@@ -1,84 +1,21 @@
+import { PropertyChangeData } from '@nativescript/core';
 import { h, Fragment, createComponent, useState, useRef, useEffect } from '@dark-engine/core';
-
-type Item = {
-  id: number;
-  name: string;
-};
-
-function randomize(list: Array<Item>) {
-  let currentIndex = list.length;
-  let randomIndex: number;
-
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    [list[currentIndex], list[randomIndex]] = [list[randomIndex], list[currentIndex]];
-  }
-
-  return list;
-}
-
-const shuffle = (count: number) => {
-  let nextId = -1;
-  const items = Array(count)
-    .fill(0)
-    .map(() => ({
-      id: ++nextId,
-      name: `${nextId}`,
-    }));
-  const list = randomize(items);
-
-  return list;
-};
-
-const Counter = createComponent(() => {
-  const [counter, setCounter] = useState(0);
-
-  return (
-    <>
-      <button onTap={() => setCounter(x => x + 1)}>increment</button>
-      <label color='red'>counter #1: {counter}</label>
-      <label color='red'>counter #2: {counter}</label>
-    </>
-  );
-});
+import { type SyntheticEvent } from '@dark-engine/platform-native';
 
 const App = createComponent(() => {
-  const [items, setItems] = useState(() => shuffle(10));
+  const [value, setValue] = useState('Alex');
 
-  useEffect(() => {
-    setTimeout(() => {
-      console.log(
-        'items',
-        items.map(x => x.id),
-      );
-    }, 1000);
-  });
-
-  const handleShuffle = () => {
-    setItems(shuffle(items.length));
+  const handleChange = (e: SyntheticEvent<PropertyChangeData>) => {
+    setValue(e.sourceEvent.value);
   };
 
   return (
     <frame>
       <page actionBarHidden>
-        <stack-layout>
-          <button class='button' onTap={() => handleShuffle()}>
-            shuffle
-          </button>
-          <stack-layout>
-            <Counter />
-            {items.map(item => {
-              return (
-                <Fragment key={item.id}>
-                  <label>item #{item.id}: 0</label>
-                  <label>item #{item.id}: 1</label>
-                </Fragment>
-              );
-            })}
-            <Counter />
-          </stack-layout>
+        <stack-layout padding={8}>
+          <label>Hello 🥰, {value}</label>
+          <text-field text={value} onTextChange={handleChange} />
+          <text-field text={value} onTextChange={handleChange} />
         </stack-layout>
       </page>
     </frame>

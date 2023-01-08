@@ -561,28 +561,34 @@ type LabelAttributes = WithStandardElementAttributes<
   }
 >;
 
-type HtmlViewAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    html?: string;
-    ios?: any;
-    onHtmlChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-  }
+type HtmlViewAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      html?: string;
+      ios?: any;
+      onHtmlChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+    }
+  >,
+  'slot'
 >;
 
-type WebViewAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    canGoBack?: boolean;
-    canGoForward?: boolean;
-    disableZoom?: string | boolean;
-    ios?: any;
-    onSrcChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onDisableZoomChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onLoadFinished?: (e: SyntheticEvent<LoadEventData>) => void;
-    onLoadStarted?: (e: SyntheticEvent<WebViewInterfacesLoadEventData>) => void;
-    src?: string;
-  }
+type WebViewAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      canGoBack?: boolean;
+      canGoForward?: boolean;
+      disableZoom?: string | boolean;
+      ios?: any;
+      onSrcChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onDisableZoomChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onLoadFinished?: (e: SyntheticEvent<LoadEventData>) => void;
+      onLoadStarted?: (e: SyntheticEvent<WebViewInterfacesLoadEventData>) => void;
+      src?: string;
+    }
+  >,
+  'slot'
 >;
 
 type ActionBarAttributes = WithStandardElementAttributes<
@@ -624,42 +630,16 @@ type ActionItemAttributes = WithStandardElementAttributes<
 
 type NavigationButtonAttributes = WithStandardElementAttributes<ActionItemAttributes & {}>;
 
-type ActivityIndicatorAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    busy?: string | boolean;
-    ios?: any;
-    onBusyChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-  }
->;
-
-type DatePickerAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    date?: string | Date;
-    day?: string | number;
-    hour?: string | number;
-    ios?: any;
-    iosPreferredDatePickerStyle?: string | number;
-    maxDate?: string | Date;
-    minDate?: string | Date;
-    minute?: string | number;
-    month?: string | number;
-    onDateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onDayChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onIosPreferredDatePickerStyleChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMaxDateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinDateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMonthChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onSecondChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onShowTimeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onYearChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    second?: string | number;
-    showTime?: string | boolean;
-    year?: string | number;
-  }
+type ActivityIndicatorAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      busy?: string | boolean;
+      ios?: any;
+      onBusyChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+    }
+  >,
+  'slot'
 >;
 
 type FormattedStringAttributes = WithStandardElementAttributes<
@@ -689,26 +669,29 @@ type SpanAttributes = WithStandardElementAttributes<
   }
 >;
 
-type ImageAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    decodeHeight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
-    decodeWidth?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
-    imageSource?: string | ImageSource;
-    ios?: any;
-    isLoading?: string | boolean;
-    loadMode?: 'sync' | 'async';
-    onDecodeHeightChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onDecodeWidthChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onImageSourceChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onIsLoadingChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onLoadModeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onSrcChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onStretchChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    src?: string | any;
-    stretch?: 'none' | 'aspectFill' | 'aspectFit' | 'fill';
-    tintColor?: string | Color;
-  }
+type ImageAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      decodeHeight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+      decodeWidth?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+      imageSource?: string | ImageSource;
+      ios?: any;
+      isLoading?: string | boolean;
+      loadMode?: 'sync' | 'async';
+      onDecodeHeightChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onDecodeWidthChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onImageSourceChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onIsLoadingChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onLoadModeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onSrcChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onStretchChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      src?: string | any;
+      stretch?: 'none' | 'aspectFill' | 'aspectFit' | 'fill';
+      tintColor?: string | Color;
+    }
+  >,
+  'slot'
 >;
 
 type ListPickerAttributes = WithStandardElementAttributes<
@@ -729,38 +712,47 @@ type ListPickerAttributes = WithStandardElementAttributes<
   }
 >;
 
-type PlaceholderAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    onCreatingView?: (e: SyntheticEvent<CreateViewEventData>) => void;
-  }
+type PlaceholderAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      onCreatingView?: (e: SyntheticEvent<CreateViewEventData>) => void;
+    }
+  >,
+  'slot'
 >;
 
-type ProgressAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    ios?: any;
-    maxValue?: string | number;
-    onMaxValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    value?: string | number;
-  }
+type ProgressAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      ios?: any;
+      maxValue?: string | number;
+      onMaxValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      value?: string | number;
+    }
+  >,
+  'slot'
 >;
 
-type SearchBarAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    hint?: string;
-    ios?: any;
-    onClose?: (e: SyntheticEvent<EventData>) => void;
-    onHintChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onSubmit?: (e: SyntheticEvent<EventData>) => void;
-    onTextChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onTextFieldBackgroundColorChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onTextFieldHintColorChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    text?: string;
-    textFieldBackgroundColor?: string | Color;
-    textFieldHintColor?: string | Color;
-  }
+type SearchBarAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      hint?: string;
+      ios?: any;
+      onClose?: (e: SyntheticEvent<EventData>) => void;
+      onHintChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onSubmit?: (e: SyntheticEvent<EventData>) => void;
+      onTextChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onTextFieldBackgroundColorChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onTextFieldHintColorChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      text?: string;
+      textFieldBackgroundColor?: string | Color;
+      textFieldHintColor?: string | Color;
+    }
+  >,
+  'slot'
 >;
 
 type SegmentedBarAttributes = WithStandardElementAttributes<
@@ -780,31 +772,37 @@ type SegmentedBarItemAttributes = WithStandardElementAttributes<
   }
 >;
 
-type SliderAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    accessibilityRole?: AccessibilityRole;
-    accessibilityStep?: string | number;
-    accessible?: boolean;
-    android?: any;
-    ios?: any;
-    maxValue?: string | number;
-    minValue?: string | number;
-    onMaxValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    value?: string | number;
-  }
+type SliderAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      accessibilityRole?: AccessibilityRole;
+      accessibilityStep?: string | number;
+      accessible?: boolean;
+      android?: any;
+      ios?: any;
+      maxValue?: string | number;
+      minValue?: string | number;
+      onMaxValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onValueChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      value?: string | number;
+    }
+  >,
+  'slot'
 >;
 
-type SwitchAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    checked?: string | boolean;
-    ios?: any;
-    offBackgroundColor?: string | Color;
-    onCheckedChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onOffBackgroundColorChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-  }
+type SwitchAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      checked?: string | boolean;
+      ios?: any;
+      offBackgroundColor?: string | Color;
+      onCheckedChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onOffBackgroundColorChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+    }
+  >,
+  'slot'
 >;
 
 type EditableTextBaseAttributes = TextBaseAttributes & {
@@ -828,49 +826,90 @@ type EditableTextBaseAttributes = TextBaseAttributes & {
   updateTextTrigger?: 'focusLost' | 'textChanged';
 };
 
-type TextFieldAttributes = WithStandardElementAttributes<
-  EditableTextBaseAttributes & {
-    android?: any;
-    closeOnReturn?: string | boolean;
-    ios?: any;
-    onCloseOnReturnChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onSecureChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    secure?: string | boolean;
-    secureWithoutAutofill?: boolean;
-  }
+type TextFieldAttributes = Omit<
+  WithStandardElementAttributes<
+    EditableTextBaseAttributes & {
+      android?: any;
+      closeOnReturn?: string | boolean;
+      ios?: any;
+      onCloseOnReturnChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onSecureChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      secure?: string | boolean;
+      secureWithoutAutofill?: boolean;
+    }
+  >,
+  'slot'
 >;
 
-type TextViewAttributes = WithStandardElementAttributes<
-  EditableTextBaseAttributes & {
-    android?: any;
-    ios?: any;
-    maxLines?: number;
-  }
+type TextViewAttributes = Omit<
+  WithStandardElementAttributes<
+    EditableTextBaseAttributes & {
+      android?: any;
+      ios?: any;
+      maxLines?: number;
+    }
+  >,
+  'slot'
 >;
 
-type TimePickerAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    android?: any;
-    hour?: string | number;
-    ios?: any;
-    iosPreferredDatePickerStyle?: string | number;
-    maxHour?: string | number;
-    maxMinute?: string | number;
-    minHour?: string | number;
-    minMinute?: string | number;
-    minute?: string | number;
-    minuteInterval?: string | number;
-    onHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onIosPreferredDatePickerStyleChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMaxHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMaxMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onMinuteIntervalChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onTimeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    time?: string | Date;
-  }
+type DatePickerAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      date?: string | Date;
+      day?: string | number;
+      hour?: string | number;
+      ios?: any;
+      iosPreferredDatePickerStyle?: string | number;
+      maxDate?: string | Date;
+      minDate?: string | Date;
+      minute?: string | number;
+      month?: string | number;
+      onDateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onDayChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onIosPreferredDatePickerStyleChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMaxDateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinDateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMonthChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onSecondChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onShowTimeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onYearChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      second?: string | number;
+      showTime?: string | boolean;
+      year?: string | number;
+    }
+  >,
+  'slot'
+>;
+
+type TimePickerAttributes = Omit<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      android?: any;
+      hour?: string | number;
+      ios?: any;
+      iosPreferredDatePickerStyle?: string | number;
+      maxHour?: string | number;
+      maxMinute?: string | number;
+      minHour?: string | number;
+      minMinute?: string | number;
+      minute?: string | number;
+      minuteInterval?: string | number;
+      onHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onIosPreferredDatePickerStyleChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMaxHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMaxMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinHourChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinuteChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onMinuteIntervalChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onTimeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      time?: string | Date;
+    }
+  >,
+  'slot'
 >;
 
 type TabViewAttributes = WithStandardElementAttributes<
@@ -932,7 +971,6 @@ declare global {
       'action-item': ActionItemAttributes;
       'navigation-button': NavigationButtonAttributes;
       'activity-indicator': ActivityIndicatorAttributes;
-      'date-picker': DatePickerAttributes;
       'formatted-string': FormattedStringAttributes;
       span: SpanAttributes;
       image: ImageAttributes;
@@ -946,6 +984,7 @@ declare global {
       switch: SwitchAttributes;
       'text-field': TextFieldAttributes;
       'text-view': TextViewAttributes;
+      'date-picker': DatePickerAttributes;
       'time-picker': TimePickerAttributes;
       'tab-view': TabViewAttributes;
       'tab-view-item': TabViewItemAttributes;
