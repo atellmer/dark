@@ -1,7 +1,10 @@
-import {
+import { Page } from '@nativescript/core';
+import type {
   Frame,
-  Page,
+  LayoutBase,
+  View,
   ContentView,
+  AddChildFromBuilder,
   ScrollView,
   RootLayout,
   AbsoluteLayout,
@@ -45,84 +48,92 @@ export const enum NSViewFlag {
   LAYOUT_VIEW = 'LAYOUT_VIEW',
 }
 
-export type ElementFactory = any;
+export type NSElement = LayoutBase | ContentView | View;
 
 export type NSElementMeta = {
   flag?: NSViewFlag;
-  skipNativeInstalling?: boolean;
+  isRoot?: boolean;
   add?: (childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) => void;
   remove?: (childElement: TagNativeElement, parentElement: TagNativeElement) => void;
 };
 
-type NSElement = {
-  factory?: ElementFactory;
+type NSElementFactory = {
+  create?: () => NSElement;
   meta?: NSElementMeta;
 };
 
-const viewMap: Record<string, NSElement> = {};
+const viewMap: Record<string, NSElementFactory> = {};
 
-function registerElement(name: string, element: NSElement) {
-  viewMap[name] = element;
+function registerElement(name: string, getType: () => new () => NSElement, meta: NSElementMeta = {}) {
+  viewMap[name] = {
+    create: () => {
+      const type = getType();
+
+      return type ? new type() : null;
+    },
+    meta,
+  };
 }
 
-function getElement(name: string): NSElement {
+function getElementFactory(name: string): NSElementFactory {
   return viewMap[name] || null;
 }
 
-registerElement(ROOT, { meta: { skipNativeInstalling: true } });
+registerElement(ROOT, () => null, { isRoot: true });
 
-registerElement('frame', {
-  factory: Frame,
-  meta: {
-    add: (childElement, parentElement) => {
-      const frame = parentElement.nativeView as Frame;
+registerElement('frame', () => require('@nativescript/core').Frame, {
+  add: (childElement, parentElement) => {
+    const frame = parentElement.nativeView as Frame;
 
-      if (childElement.nativeView instanceof Page) {
-        frame.navigate({
-          create() {
-            return childElement.nativeView;
-          },
-        });
-      }
-    },
-    remove: () => {},
+    if (childElement.nativeView instanceof Page) {
+      frame.navigate({
+        create() {
+          return childElement.nativeView;
+        },
+      });
+    } else {
+      throw Error('[platform-native]: Frame must contain only Page!');
+    }
   },
+  remove: () => {},
 });
 
-registerElement('page', { factory: Page, meta: { flag: NSViewFlag.CONTENT_VIEW } });
-registerElement('content-view', { factory: ContentView, meta: { flag: NSViewFlag.CONTENT_VIEW } });
-registerElement('scroll-view', { factory: ScrollView, meta: { flag: NSViewFlag.CONTENT_VIEW } });
-registerElement('root-layout', { factory: RootLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('absolute-layout', { factory: AbsoluteLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('dock-layout', { factory: DockLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('flexbox-layout', { factory: FlexboxLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('grid-layout', { factory: GridLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('stack-layout', { factory: StackLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('wrap-layout', { factory: WrapLayout, meta: { flag: NSViewFlag.LAYOUT_VIEW } });
-registerElement('html-view', { factory: HtmlView });
-registerElement('web-view', { factory: WebView });
-registerElement('action-bar', { factory: ActionBar });
-registerElement('action-item', { factory: ActionItem });
-registerElement('navigation-button', { factory: NavigationButton });
-registerElement('activity-indicator', { factory: ActivityIndicator });
-registerElement('button', { factory: Button });
-registerElement('label', { factory: Label });
-registerElement('date-picker', { factory: DatePicker });
-registerElement('formatted-string', { factory: FormattedString });
-registerElement('image', { factory: Image });
-registerElement('list-picker', { factory: ListPicker });
-registerElement('placeholder', { factory: Placeholder });
-registerElement('progress', { factory: Progress });
-registerElement('search-bar', { factory: SearchBar });
-registerElement('segmented-bar', { factory: SegmentedBar });
-registerElement('segmented-bar-item', { factory: SegmentedBarItem });
-registerElement('slider', { factory: Slider });
-registerElement('span', { factory: Span });
-registerElement('switch', { factory: Switch });
-registerElement('text-field', { factory: TextField });
-registerElement('text-view', { factory: TextView });
-registerElement('time-picker', { factory: TimePicker });
-registerElement('tab-view', { factory: TabView });
-registerElement('tab-view-item', { factory: TabViewItem });
+registerElement('page', () => require('@nativescript/core').Page, { flag: NSViewFlag.CONTENT_VIEW });
+registerElement('content-view', () => require('@nativescript/core').ContentView, { flag: NSViewFlag.CONTENT_VIEW });
+registerElement('scroll-view', () => require('@nativescript/core').ScrollView, { flag: NSViewFlag.CONTENT_VIEW });
+registerElement('root-layout', () => require('@nativescript/core').RootLayout, { flag: NSViewFlag.LAYOUT_VIEW });
+registerElement('absolute-layout', () => require('@nativescript/core').AbsoluteLayout, {
+  flag: NSViewFlag.LAYOUT_VIEW,
+});
+registerElement('stack-layout', () => require('@nativescript/core').StackLayout, { flag: NSViewFlag.LAYOUT_VIEW });
+registerElement('dock-layout', () => require('@nativescript/core').DockLayout, { flag: NSViewFlag.LAYOUT_VIEW });
+registerElement('flexbox-layout', () => require('@nativescript/core').FlexboxLayout, { flag: NSViewFlag.LAYOUT_VIEW });
+registerElement('grid-layout', () => require('@nativescript/core').GridLayout, { flag: NSViewFlag.LAYOUT_VIEW });
+registerElement('wrap-layout', () => require('@nativescript/core').WrapLayout, { flag: NSViewFlag.LAYOUT_VIEW });
+registerElement('label', () => require('@nativescript/core').Label);
+registerElement('button', () => require('@nativescript/core').Button);
+registerElement('html-view', () => require('@nativescript/core').HtmlView);
+registerElement('web-view', () => require('@nativescript/core').WebView);
+registerElement('action-bar', () => require('@nativescript/core').ActionBar);
+registerElement('action-item', () => require('@nativescript/core').ActionItem);
+registerElement('navigation-button', () => require('@nativescript/core').NavigationButton);
+registerElement('activity-indicator', () => require('@nativescript/core').ActivityIndicator);
+registerElement('date-picker', () => require('@nativescript/core').DatePicker);
+registerElement('formatted-string', () => require('@nativescript/core').FormattedString);
+registerElement('image', () => require('@nativescript/core').Image);
+registerElement('list-picker', () => require('@nativescript/core').ListPicker);
+registerElement('placeholder', () => require('@nativescript/core').Placeholder);
+registerElement('progress', () => require('@nativescript/core').Progress);
+registerElement('search-bar', () => require('@nativescript/core').SearchBar);
+registerElement('segmented-bar', () => require('@nativescript/core').SegmentedBar);
+registerElement('segmented-bar-item', () => require('@nativescript/core').SegmentedBarItem);
+registerElement('slider', () => require('@nativescript/core').Slider);
+registerElement('span', () => require('@nativescript/core').Span);
+registerElement('switch', () => require('@nativescript/core').Switch);
+registerElement('text-field', () => require('@nativescript/core').TextField);
+registerElement('text-view', () => require('@nativescript/core').TextView);
+registerElement('time-picker', () => require('@nativescript/core').TimePicker);
+registerElement('tab-view', () => require('@nativescript/core').TabView);
+registerElement('tab-view-item', () => require('@nativescript/core').TabViewItem);
 
-export { getElement, registerElement };
+export { getElementFactory, registerElement };

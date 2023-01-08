@@ -1,7 +1,5 @@
 import { h, createComponent, useState, useRef } from '@dark-engine/core';
 
-module.hot.accept();
-
 const App = createComponent(() => {
   const [count, setCount] = useState(0);
 

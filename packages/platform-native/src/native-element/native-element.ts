@@ -1,6 +1,8 @@
+import type { LayoutBase, View, ContentView } from '@nativescript/core';
+
 import { NodeType, detectIsNumber, ROOT, detectIsFunction } from '@dark-engine/core';
 import { createSyntheticEventHandler } from '../events';
-import { NSViewFlag, getElement, type ElementFactory, type NSElementMeta } from '../registry';
+import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
 import { ATTR_TEXT } from '../constants';
 
 class NativeElement {
@@ -16,7 +18,7 @@ class TagNativeElement extends NativeElement {
   public name: string = null;
   public attrs: Record<string, AttributeValue> = {};
   public children: Array<NativeElement> = [];
-  public nativeView: ElementFactory;
+  public nativeView: NSElement;
   public meta: NSElementMeta = {};
   private eventListeners: Map<string, Function> = new Map();
 
@@ -24,12 +26,9 @@ class TagNativeElement extends NativeElement {
     super(NodeType.TAG);
     this.name = name;
 
-    const { factory, meta = {} } = getElement(name);
+    const { create, meta } = getElementFactory(name);
 
-    if (!meta?.skipNativeInstalling) {
-      this.nativeView = new factory();
-    }
-
+    this.nativeView = create();
     this.meta = meta;
   }
 
@@ -183,7 +182,7 @@ class CommentNativeElement extends NativeElement {
 function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
   const { meta } = parentElement;
 
-  if (meta.skipNativeInstalling) return;
+  if (meta.isRoot) return;
 
   if (detectIsFunction(meta.add)) {
     return meta.add(childElement, parentElement, idx);
@@ -194,22 +193,28 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
 
   if (parentElement)
     if (meta.flag === NSViewFlag.LAYOUT_VIEW) {
+      const layoutView = parentView as LayoutBase;
+
       if (detectIsNumber(idx)) {
-        parentView.insertChild(childView, idx);
+        layoutView.insertChild(childView, idx);
       } else {
-        parentView.addChild(childView);
+        layoutView.addChild(childView);
       }
     } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
-      parentView.content = childView;
+      const contentView = parentView as ContentView;
+
+      contentView.content = childView;
     } else {
-      parentView._addChildFromBuilder(childView.constructor.name, childView);
+      const viewWithBuilder = parentView as ContentView;
+
+      viewWithBuilder._addChildFromBuilder(childView.constructor.name, childView);
     }
 }
 
 function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
   const { meta } = parentElement;
 
-  if (meta.skipNativeInstalling) return;
+  if (meta.isRoot) return;
 
   if (detectIsFunction(meta.remove)) {
     return meta.remove(childElement, parentElement);
@@ -219,11 +224,17 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
   const childView = childElement.nativeView;
 
   if (meta.flag == NSViewFlag.LAYOUT_VIEW) {
-    parentView.removeChild(childView);
+    const layoutView = parentView as LayoutBase;
+
+    layoutView.removeChild(childView);
   } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
-    parentView.content = null;
+    const contentView = parentView as ContentView;
+
+    contentView.content = null;
   } else {
-    parentView._removeView(childView);
+    const view = parentView as View;
+
+    view._removeView(childView);
   }
 }
 
