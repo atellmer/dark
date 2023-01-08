@@ -85,7 +85,7 @@ class Fiber<N = NativeElement> {
   public isUsed = false;
   public idx = 0;
   public elementIdx = 0;
-  public batched: number | null = null;
+  public batched: number | NodeJS.Timeout | null = null;
   public catchException: (error: Error) => void;
   private static nextId = 0;
 

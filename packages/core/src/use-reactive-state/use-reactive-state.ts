@@ -1,15 +1,15 @@
-import { detectIsObject, detectIsNull } from '../helpers';
+import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { batch } from '../batch';
 
-function useReactiveState<T extends object>(value: T) {
+function useReactiveState<T extends object>(value: T | (() => T)) {
   if (!value) {
     throw new Error('[Dark]: initial value is not object or array');
   }
 
   const update = useUpdate();
-  const reactiveValue = useMemo(() => reactive(value, update), []);
+  const reactiveValue = useMemo(() => reactive(detectIsFunction(value) ? value() : value, update), []);
 
   return reactiveValue;
 }

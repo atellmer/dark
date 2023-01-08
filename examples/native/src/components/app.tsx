@@ -1,21 +1,21 @@
 import { PropertyChangeData } from '@nativescript/core';
-import { h, Fragment, createComponent, useState, useRef, useEffect } from '@dark-engine/core';
+import { h, Fragment, createComponent, useState, useRef, useEffect, useReactiveState } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-native';
 
 const App = createComponent(() => {
-  const [value, setValue] = useState('Alex');
+  const state = useReactiveState({ name: 'Alex' });
 
   const handleChange = (e: SyntheticEvent<PropertyChangeData>) => {
-    setValue(e.sourceEvent.value);
+    state.name = e.sourceEvent.value;
   };
 
   return (
     <frame>
       <page actionBarHidden>
         <stack-layout padding={8}>
-          <label>Hello 🥰, {value}</label>
-          <text-field text={value} onTextChange={handleChange} />
-          <text-field text={value} onTextChange={handleChange} />
+          <label>Hello 🥰, {state.name}</label>
+          <text-field text={state.name} onTextChange={handleChange} />
+          <text-field text={state.name} onTextChange={handleChange} />
         </stack-layout>
       </page>
     </frame>

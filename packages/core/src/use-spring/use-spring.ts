@@ -93,8 +93,8 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
 
   useEffect(() => {
     return () => {
-      scope.loopTimerId && window.clearTimeout(scope.loopTimerId);
-      scope.delayTimerId && window.clearTimeout(scope.delayTimerId);
+      scope.loopTimerId && clearTimeout(scope.loopTimerId as number);
+      scope.delayTimerId && clearTimeout(scope.delayTimerId as number);
       scope.keyes.forEach(key => delete store[key]);
     };
   }, []);
@@ -161,12 +161,12 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
         }
 
         scope.data[idx].values[direction].step++;
-        scope.loopTimerId = window.setTimeout(() => loop(direction), LOOP_INTERVAL);
+        scope.loopTimerId = setTimeout(() => loop(direction), LOOP_INTERVAL);
       };
 
       if (playingIdx >= 0) {
-        scope.loopTimerId && window.clearTimeout(scope.loopTimerId);
-        scope.delayTimerId && window.clearTimeout(scope.delayTimerId);
+        scope.loopTimerId && clearTimeout(scope.loopTimerId as number);
+        scope.delayTimerId && clearTimeout(scope.delayTimerId as number);
         scope.loopTimerId = null;
         scope.delayTimerId = null;
         const slice = scope.data[playingIdx];
@@ -230,8 +230,8 @@ type Direction = 'forward' | 'backward' | 'mirrored';
 
 type Scope = {
   getAnimations: (options: AnimationOptions) => Array<Animation>;
-  loopTimerId: number;
-  delayTimerId: number;
+  loopTimerId: number | NodeJS.Timeout;
+  delayTimerId: number | NodeJS.Timeout;
   skipFirstRendfer: boolean;
   playingIdx: number;
   data: Array<AnimationData>;
