@@ -14,6 +14,18 @@ const App = createComponent(() => {
           </button>
         </stack-layout>
         {/* <stack-layout>
+          <label>
+            <formatted-string>
+              <span color='#006600'>Words </span>
+              <span color='#990000' fontWeight='Bold'>
+                with{' '}
+              </span>
+              <span color='#ffcc00'>different </span>
+              <span>color.</span>
+            </formatted-string>
+          </label>
+        </stack-layout> */}
+        {/* <stack-layout>
           <button class='button' onTap={() => setCount(count + 1)}>
             [aaa]fired {count} times
           </button>

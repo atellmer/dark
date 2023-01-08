@@ -119,7 +119,28 @@ registerElement('action-item', () => require('@nativescript/core').ActionItem);
 registerElement('navigation-button', () => require('@nativescript/core').NavigationButton);
 registerElement('activity-indicator', () => require('@nativescript/core').ActivityIndicator);
 registerElement('date-picker', () => require('@nativescript/core').DatePicker);
-registerElement('formatted-string', () => require('@nativescript/core').FormattedString);
+registerElement('formatted-string', () => require('@nativescript/core').FormattedString, {
+  add(childElement, parentElement, idx) {
+    const formattedString = parentElement.nativeView as unknown as FormattedString;
+    const span = childElement.nativeView as unknown as Span;
+
+    if (idx) {
+      formattedString.spans.splice(idx, 0, span);
+      return;
+    }
+    formattedString.spans.push(span);
+  },
+  remove(childElement, parentElement) {
+    const formattedString = parentElement.nativeView as unknown as FormattedString;
+    const span = childElement.nativeView as unknown as Span;
+    const idx = formattedString.spans.indexOf(span);
+
+    if (idx > -1) {
+      formattedString.spans.splice(idx, 1);
+    }
+  },
+});
+registerElement('span', () => require('@nativescript/core').Span);
 registerElement('image', () => require('@nativescript/core').Image);
 registerElement('list-picker', () => require('@nativescript/core').ListPicker);
 registerElement('placeholder', () => require('@nativescript/core').Placeholder);
@@ -128,7 +149,6 @@ registerElement('search-bar', () => require('@nativescript/core').SearchBar);
 registerElement('segmented-bar', () => require('@nativescript/core').SegmentedBar);
 registerElement('segmented-bar-item', () => require('@nativescript/core').SegmentedBarItem);
 registerElement('slider', () => require('@nativescript/core').Slider);
-registerElement('span', () => require('@nativescript/core').Span);
 registerElement('switch', () => require('@nativescript/core').Switch);
 registerElement('text-field', () => require('@nativescript/core').TextField);
 registerElement('text-view', () => require('@nativescript/core').TextView);
