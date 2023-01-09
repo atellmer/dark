@@ -1,4 +1,4 @@
-import { type ScheduleCallbackOptions, getTime, workLoop, wipRootStore, TaskPriority } from '@dark-engine/core';
+import { type ScheduleCallbackOptions, getTime, workLoop, detectIsBusy, TaskPriority } from '@dark-engine/core';
 
 type Callback = () => boolean;
 
@@ -17,7 +17,9 @@ const queueByPriority: QueueByPriority = {
   low1: [],
   low2: [],
 };
+const YEILD_INTERVAL = 4;
 const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
+let deadline = 0;
 let currentTask: Task = null;
 
 class Task {
@@ -39,7 +41,7 @@ class Task {
   }
 }
 
-const shouldYeildToHost = () => false;
+const shouldYeildToHost = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
   const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
@@ -58,15 +60,21 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
   currentTask = queue.shift();
+  const isAnimation = currentTask.priority === TaskPriority.ANIMATION;
+
   currentTask.callback();
 
-  requestCallback(workLoop);
+  if (currentTask.forceSync || isAnimation) {
+    requestCallbackSync(workLoop);
+  } else {
+    requestCallback(workLoop);
+  }
 
   return true;
 }
 
 function executeTasks() {
-  const isBusy = Boolean(wipRootStore.get());
+  const isBusy = detectIsBusy();
 
   if (!isBusy) {
     checkOverdueTasks() ||
@@ -98,7 +106,27 @@ function checkOverdueTasks() {
 }
 
 function requestCallback(callback: Callback) {
-  requestCallbackSync(callback);
+  if (process.env.NODE_ENV === 'test') {
+    return requestCallbackSync(callback);
+  }
+
+  const loop = () => {
+    deadline = getTime() + YEILD_INTERVAL;
+
+    while (callback()) {
+      if (shouldYeildToHost() && detectIsBusy()) {
+        setTimeout(() => loop());
+        break;
+      }
+    }
+
+    if (!detectIsBusy()) {
+      executeTasks();
+      currentTask = null;
+    }
+  };
+
+  loop();
 }
 
 function requestCallbackSync(callback: Callback) {

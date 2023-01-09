@@ -1,4 +1,4 @@
-import { type ScheduleCallbackOptions, getTime, workLoop, wipRootStore, TaskPriority } from '@dark-engine/core';
+import { type ScheduleCallbackOptions, getTime, workLoop, TaskPriority, detectIsBusy } from '@dark-engine/core';
 
 type Callback = () => boolean;
 
@@ -76,7 +76,7 @@ function pick(queue: Array<Task>) {
 }
 
 function executeTasks() {
-  const isBusy = Boolean(wipRootStore.get());
+  const isBusy = detectIsBusy();
 
   if (!isBusy) {
     checkOverdueTasks() ||

@@ -1,4 +1,4 @@
-import { workLoop, wipRootStore } from '@dark-engine/core';
+import { workLoop, detectIsBusy } from '@dark-engine/core';
 
 type Callback = () => boolean;
 type Queue = Array<Task>;
@@ -35,7 +35,7 @@ function pick(queue: Array<Task>) {
 }
 
 function executeTasks() {
-  const isBusy = Boolean(wipRootStore.get());
+  const isBusy = detectIsBusy();
 
   if (!isBusy) {
     pick(queue);

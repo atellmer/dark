@@ -5,8 +5,6 @@ const App = createComponent(() => {
   const [count, setCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log('isOpen', isOpen);
-
   return (
     <View padding={8}>
       <Text>Count is: {count}</Text>

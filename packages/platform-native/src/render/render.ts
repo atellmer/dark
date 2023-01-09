@@ -25,8 +25,8 @@ let nextRootId = -1;
 
 function inject() {
   platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-  platform.requestAnimationFrame = setTimeout.bind(this);
-  platform.cancelAnimationFrame = clearTimeout.bind(this);
+  platform.requestAnimationFrame = requestAnimationFrame.bind(this);
+  platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
   platform.scheduleCallback = scheduleCallback;
   platform.shouldYeildToHost = shouldYeildToHost;
   platform.applyCommit = applyCommit;

@@ -43,7 +43,6 @@ import {
   getVirtualNodeFactoryFlag,
   detectIsTextVirtualNode,
   detectIsCommentVirtualNode,
-  detectIsPlainVirtualNode,
   createReplacer,
 } from '../view';
 import { detectIsMemo } from '../memo';
@@ -869,4 +868,6 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   return callback;
 }
 
-export { Fiber, workLoop, createUpdateCallback };
+const detectIsBusy = () => Boolean(wipRootStore.get());
+
+export { Fiber, workLoop, createUpdateCallback, detectIsBusy };
