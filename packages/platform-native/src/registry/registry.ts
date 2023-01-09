@@ -9,7 +9,7 @@ export const enum NSViewFlag {
   LAYOUT_VIEW = 'LAYOUT_VIEW',
 }
 
-export type NSElement = LayoutBase | ContentView | View;
+export type NSElement = Frame | Page | LayoutBase | ContentView | View;
 
 export type NSElementMeta = {
   flag?: NSViewFlag;
