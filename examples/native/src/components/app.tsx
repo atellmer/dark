@@ -35,12 +35,13 @@ type RouterProps = {
 
 const Router = createComponent<RouterProps>(({ routes }) => {
   const [path, setPath] = useState('');
-  const scope = useMemo(() => ({ refsMap: {}, sync: false }), []);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const scope = useMemo(() => ({ refsMap: {} }), []);
 
   useLayoutEffect(() => {
     navigateTo('home', false);
     setTimeout(() => {
-      scope.sync = true;
+      setIsLoaded(true);
     }, 500);
   }, []);
 
@@ -53,7 +54,7 @@ const Router = createComponent<RouterProps>(({ routes }) => {
       frame.animated = true;
       frame.transition = {
         name: 'slide',
-        duration: 1000,
+        duration: 300,
       };
     }
 
@@ -62,15 +63,15 @@ const Router = createComponent<RouterProps>(({ routes }) => {
   };
 
   return (
-    <frame animated={false}>
+    <frame animated={false} opacity={isLoaded ? 1 : 0}>
       {routes.map(x => {
         const setRef = (ref: TagNativeElement<NS.Page>) => {
           scope.refsMap[x.path] = ref;
         };
 
         return (
-          <page id={x.path} ref={setRef} actionBarHidden onNavigatingTo={() => scope.sync && setPath(x.path)}>
-            {x.component({ navigateTo })}
+          <page id={x.path} ref={setRef} actionBarHidden onNavigatingTo={() => isLoaded && setPath(x.path)}>
+            {isLoaded && x.component({ navigateTo })}
           </page>
         );
       })}
