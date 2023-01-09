@@ -1,7 +1,7 @@
 import { FlexboxLayout as NSFlexboxLayout } from '@nativescript/core';
 
 import { type DarkElement, h, createComponent, forwardRef } from '@dark-engine/core';
-import { FlexboxLayoutAttributes } from '../jsx-typings';
+import { FlexboxLayoutAttributes } from '../jsx';
 import type { TagNativeElement } from '../native-element';
 
 export type ViewProps = {

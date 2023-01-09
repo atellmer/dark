@@ -1,7 +1,7 @@
 import { ScrollView as NSScrollView } from '@nativescript/core';
 
 import { h, createComponent, forwardRef, type DarkElement } from '@dark-engine/core';
-import { ScrollViewAttributes } from '../jsx-typings';
+import { ScrollViewAttributes } from '../jsx';
 import type { TagNativeElement } from '../native-element';
 
 export type ScrollViewProps = {

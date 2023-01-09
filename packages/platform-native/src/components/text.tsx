@@ -1,7 +1,7 @@
 import { Label as NSLabel } from '@nativescript/core';
 
 import { type DarkElement, h, createComponent, forwardRef } from '@dark-engine/core';
-import { LabelAttributes } from '../jsx-typings';
+import { LabelAttributes } from '../jsx';
 import type { TagNativeElement } from '../native-element';
 
 export type TextProps = {

@@ -1,7 +1,7 @@
 import { ListPicker as NSListPicker } from '@nativescript/core';
 
 import { h, createComponent, forwardRef } from '@dark-engine/core';
-import { ListPickerAttributes } from '../jsx-typings';
+import { ListPickerAttributes } from '../jsx';
 import type { TagNativeElement } from '../native-element';
 
 export type ListPickerProps = {} & ListPickerAttributes;
