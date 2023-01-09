@@ -1,4 +1,4 @@
-import './jsx-typings';
+/// <reference path="jsx.d.ts" />
 export { type SyntheticEvent } from './events';
 export { run } from './render';
 export { registerElement } from './registry';

@@ -21,6 +21,7 @@ const App = createComponent(() => {
           </Text>
         </View>
       </TouchableOpacity>
+      {false}
       <Modal isOpen={isOpen} fullscreen animated onRequestClose={() => setIsOpen(false)}>
         <Text>Modal is: {count}</Text>
         <Button backgroundColor='purple' color='#fff' onTap={() => setIsOpen(false)}>

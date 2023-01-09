@@ -1452,4 +1452,70 @@ describe('[render]', () => {
     render$();
     expect(host.innerHTML).toBe(content(items));
   });
+
+  test('can render falsy items with container correctly #1', () => {
+    const content = () => dom`
+      <main>
+        <div>header</div>
+        ${replacer}
+        <div>footer</div>
+      </main>
+    `;
+
+    type ContainerProps = {
+      slot: DarkElement;
+    };
+
+    const Container = createComponent<ContainerProps>(({ slot }) => {
+      return <main>{slot}</main>;
+    });
+
+    const App = createComponent(() => {
+      return (
+        <Container>
+          <div>header</div>
+          {false}
+          <div>footer</div>
+        </Container>
+      );
+    });
+
+    const render$ = () => render(<App />, host);
+
+    render$();
+    expect(host.innerHTML).toBe(content());
+  });
+
+  test('can render falsy items with container correctly #2', () => {
+    const content = () => dom`
+      <main>
+        ${replacer}
+        <div>header</div>
+        <div>footer</div>
+      </main>
+    `;
+
+    type ContainerProps = {
+      slot: DarkElement;
+    };
+
+    const Container = createComponent<ContainerProps>(({ slot }) => {
+      return <main>{slot}</main>;
+    });
+
+    const App = createComponent(() => {
+      return (
+        <Container>
+          {false}
+          <div>header</div>
+          <div>footer</div>
+        </Container>
+      );
+    });
+
+    const render$ = () => render(<App />, host);
+
+    render$();
+    expect(host.innerHTML).toBe(content());
+  });
 });

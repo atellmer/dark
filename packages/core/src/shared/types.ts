@@ -13,7 +13,7 @@ export type RenderProps = (...args: Array<any>) => DarkElement;
 
 export type DarkElementKey = string | number;
 
-export type DarkElementInstance = VirtualNode | VirtualNodeFactory | ComponentFactory;
+export type DarkElementInstance = VirtualNode | VirtualNodeFactory | ComponentFactory | Nullable;
 
 export type Subscriber = () => void;
 

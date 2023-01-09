@@ -203,7 +203,7 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   const childrenIdx = 0;
   const alternate = nextFiber.alternate ? nextFiber.alternate.child : null;
   const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
-  const nextInstance: DarkElementInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] || null : null;
+  const nextInstance: DarkElementInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] : null;
   const hook = getHook(alternate, prevInstance, nextInstance);
   const provider = alternate ? alternate.provider : null;
   const fiber = new Fiber(hook, provider, childrenIdx);
@@ -212,7 +212,7 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
   fiber.elementIdx = nextFiber.nativeElement ? 0 : nextFiber.elementIdx;
-  instance = pertformInstance(instance, childrenIdx, fiber) || instance;
+  instance = pertformInstance(instance, childrenIdx, fiber);
   alternate && performAlternate(alternate, instance);
   performFiber(fiber, alternate, instance);
   alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
@@ -234,7 +234,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     const alternate = nextFiber.alternate ? nextFiber.alternate.nextSibling : null;
     const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
     const nextInstance: DarkElementInstance = hasChildrenProp(parentInstance)
-      ? parentInstance.children[childrenIdx] || null
+      ? parentInstance.children[childrenIdx]
       : null;
     const hook = getHook(alternate, prevInstance, nextInstance);
     const provider = alternate ? alternate.provider : null;
@@ -244,7 +244,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
     fiber.elementIdx = nextFiber.elementIdx + (nextFiber.nativeElement ? 1 : nextFiber.childrenElementsCount);
-    instance = pertformInstance(parentInstance, childrenIdx, fiber) || instance;
+    instance = pertformInstance(parentInstance, childrenIdx, fiber);
     alternate && performAlternate(alternate, instance);
     performFiber(fiber, alternate, instance);
     alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
@@ -505,21 +505,21 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
   }
 }
 
-function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fiber) {
-  let performedInstance: DarkElementInstance = null;
+function pertformInstance(parentInstance: DarkElementInstance, idx: number, fiber: Fiber) {
+  let instance: DarkElementInstance = null;
 
-  if (hasChildrenProp(instance)) {
-    const elements = detectIsArray(instance.children[idx])
-      ? flatten([instance.children[idx]])
-      : [instance.children[idx]];
+  if (hasChildrenProp(parentInstance)) {
+    const elements = detectIsArray(parentInstance.children[idx])
+      ? flatten([parentInstance.children[idx]])
+      : [parentInstance.children[idx]];
 
-    instance.children.splice(idx, 1, ...elements);
+    parentInstance.children.splice(idx, 1, ...elements);
 
-    performedInstance = instance.children[idx];
-    performedInstance = mountInstance(fiber, performedInstance);
+    instance = parentInstance.children[idx];
+    instance = mountInstance(fiber, instance);
   }
 
-  if (detectIsComponentFactory(performedInstance)) {
+  if (detectIsComponentFactory(instance)) {
     if (hasEffects(fiber)) {
       fiber.markEffectHost();
     }
@@ -532,12 +532,12 @@ function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fib
       fiber.markInsertionEffectHost();
     }
 
-    if (platform.detectIsPortal(performedInstance)) {
+    if (platform.detectIsPortal(instance)) {
       fiber.markPortalHost();
     }
   }
 
-  return performedInstance;
+  return instance;
 }
 
 function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
@@ -567,17 +567,16 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
   }
 
   if (hasChildrenProp(instance)) {
-    for (let i = 0; i < instance.children.length; i++) {
-      if (!instance.children[i]) {
-        instance.children[i] = supportConditional(instance.children[i]) as DarkElementInstance;
-      }
-    }
-
     instance.children = isComponentFactory
       ? instance.children
       : detectIsArray(instance.children)
       ? flatten([instance.children])
       : [instance.children];
+
+    for (let i = 0; i < instance.children.length; i++) {
+      if (instance.children[i]) continue;
+      instance.children[i] = supportConditional(instance.children[i]);
+    }
 
     if (isComponentFactory && factory.children.length === 0) {
       factory.children.push(createReplacer());
@@ -665,7 +664,7 @@ function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | 
   return flag;
 }
 
-function supportConditional(instance: DarkElement) {
+function supportConditional(instance: DarkElementInstance) {
   return detectIsFalsy(instance) ? createReplacer() : instance;
 }
 

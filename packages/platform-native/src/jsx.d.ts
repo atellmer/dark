@@ -60,8 +60,8 @@ type ViewBase = import('@nativescript/core').ViewBase;
 type WebViewInterfacesLoadEventData = import('@nativescript/core').LoadEventData;
 type iOSFrame = import('@nativescript/core/ui/frame').iOSFrame;
 
-import { KeyProps, SlotProps, RefProps, FlagProps } from '@dark-engine/core';
-import { type SyntheticEvent } from '../events';
+import type { KeyProps, SlotProps, RefProps, FlagProps } from '@dark-engine/core';
+import { type SyntheticEvent } from './events';
 
 type WithStandardElementAttributes<T> = T & KeyProps & SlotProps & RefProps & FlagProps;
 
