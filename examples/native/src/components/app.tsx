@@ -42,11 +42,11 @@ const Settings = createComponent(props => <TestComponent title='Settings' />);
 
 const Home = createComponent(props => {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name='Settings' component={Settings} options={{ title: 'Settings' }} />
-      <Stack.Screen name='Profile' component={Profile} options={{ title: 'Profile' }} />
-      <Stack.Screen name='Account' component={Account} options={{ title: 'Account' }} />
-    </Stack.Navigator>
+    <Tab.Navigator>
+      <Tab.Screen name='Account' component={Account} />
+      <Tab.Screen name='Profile' component={Profile} />
+      <Tab.Screen name='Settings' component={Settings} />
+    </Tab.Navigator>
   );
 });
 
@@ -60,11 +60,11 @@ const Tab = createBottomTabNavigator();
 const App = createComponent(() => {
   return (
     <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name='Home' component={Home} />
-        <Tab.Screen name='About' component={About} />
-        <Tab.Screen name='Contacts' component={Contacts} />
-      </Tab.Navigator>
+      <Stack.Navigator>
+        <Stack.Screen name='Home' component={Home} options={{ title: 'Home' }} />
+        <Stack.Screen name='About' component={About} options={{ title: 'About' }} />
+        <Stack.Screen name='Contacts' component={Contacts} options={{ title: 'Contacts' }} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 });

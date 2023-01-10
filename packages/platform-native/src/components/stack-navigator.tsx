@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
   useEvent,
+  useMemo,
 } from '@dark-engine/core';
 import { type NS } from '../';
 import { ActionBar } from './action-bar';
@@ -26,7 +27,8 @@ function createStackNavigator() {
 
   const Navigator = createComponent<NavigatorProps>(({ slot }) => {
     const contextValue = useNavigationContainerContext();
-    const defaultName = slot[slot.length - 1].props.name;
+    const scope = useMemo(() => ({ slot: [...slot].reverse() }), []);
+    const defaultName = scope.slot[scope.slot.length - 1].props.name;
     const frameRef = useRef<NS.Frame>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     [name, setName] = useState(defaultName);
@@ -51,9 +53,6 @@ function createStackNavigator() {
         ...options,
       };
 
-      console.log('nextName', nextName);
-      console.log('refsMap', Object.keys(refsMap));
-
       page.parent?._removeView(page);
       frame.navigate({
         create: () => page,
@@ -74,7 +73,7 @@ function createStackNavigator() {
     return (
       <stack-layout>
         <frame ref={frameRef} visibility={isLoaded ? 'visible' : 'hidden'}>
-          {slot}
+          {scope.slot}
         </frame>
       </stack-layout>
     );
