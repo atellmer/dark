@@ -1,8 +1,9 @@
-import { ActionBar as NSActionBar } from '@nativescript/core';
+import { ActionBar as NSActionBar, Page as NSPage } from '@nativescript/core';
 
 import { createComponent, forwardRef, useLayoutEffect, useRef, useImperativeHandle } from '@dark-engine/core';
 import { ActionBarAttributes } from '../jsx';
 import { factory } from '../factory';
+import { getTagNativeElement } from '../native-element';
 
 export type ActionBarProps = ActionBarAttributes;
 
@@ -18,9 +19,9 @@ const ActionBar = forwardRef<ActionBarProps, ActionBarRef>(
 
     useLayoutEffect(() => {
       const actionBar = rootRef.current;
-      const page = actionBar.page;
+      const page = actionBar.page || (getTagNativeElement(actionBar).parentElement.getNativeView() as NSPage);
 
-      actionBar.parent._removeView(actionBar);
+      actionBar.parent?._removeView(actionBar);
       page.actionBar = actionBar;
     }, []);
 

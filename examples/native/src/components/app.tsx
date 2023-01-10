@@ -1,145 +1,71 @@
-import { Frame } from '@nativescript/core';
+import { h, Fragment, createComponent } from '@dark-engine/core';
 import {
-  type Component,
-  type DarkElement,
-  type ComponentFactory,
-  type StandardComponentProps,
-  h,
-  Fragment,
-  createComponent,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useMemo,
-} from '@dark-engine/core';
-import { NS, ActionBar } from '@dark-engine/platform-native';
+  NavigationContainer,
+  createStackNavigator,
+  createBottomTabNavigator,
+  useNavigation,
+} from '@dark-engine/platform-native';
 
-function createStackNavigator() {
-  const refsMap: Record<string, NS.Page> = {};
-  let navigateTo: (name: string) => void;
-  let goBack: () => void;
-  let name = '';
-  let setName: (name: string) => void;
-
-  type NavigatorProps = {
-    slot: Array<ComponentFactory<ScreenProps & StandardComponentProps>>;
-  };
-
-  const Navigator = createComponent<NavigatorProps>(({ slot }) => {
-    const defaultName = slot[slot.length - 1].props.name;
-    const frameRef = useRef<NS.Frame>(null);
-    [name, setName] = useState(defaultName);
-
-    navigateTo = (nextName: string) => {
-      if (nextName === name) return;
-      const page = refsMap[nextName];
-      const frame = frameRef.current;
-
-      page.parent?._removeView(page);
-      frame.navigate({
-        create: () => page,
-        animated: true,
-        transition: {
-          name: 'slide',
-          duration: 200,
-        },
-      });
-      setName(nextName);
-    };
-
-    goBack = () => {
-      const frame = frameRef.current;
-
-      frame.goBack();
-    };
-
-    return (
-      <frame ref={frameRef}>
-        <page>{slot}</page>
-      </frame>
-    );
-  });
-
-  type ScreenProps = {
-    name: string;
-    component: Component<RouteComponentProps>;
-    options?: {
-      hasActionBar: boolean;
-    };
-  };
-
-  const Screen = createComponent<ScreenProps>(({ name, component, options = {} }) => {
-    const setRef = (ref: NS.Page) => {
-      refsMap[name] = ref;
-    };
-
-    return (
-      <page id={name} ref={setRef} onNavigatingTo={() => setName(name)}>
-        {component({ navigateTo, goBack })}
-      </page>
-    );
-  });
-
-  return {
-    Navigator,
-    Screen,
-  };
-}
-
-type RouteComponentProps = {
-  navigateTo: (name: string) => void;
-  goBack: () => void;
+type TestComponentProps = {
+  title: string;
 };
 
-type TestComponent = {
-  title: string;
-} & RouteComponentProps;
+const TestComponent = createComponent<TestComponentProps>(({ title }) => {
+  const { navigateTo, goBack } = useNavigation();
 
-const TestComponent = createComponent<TestComponent>(({ title, navigateTo, goBack }) => {
   return (
-    <stack-layout>
-      <label>{title}</label>
-      <button backgroundColor='purple' onTap={() => navigateTo('About')}>
-        go to About
-      </button>
-      <button backgroundColor='yellow' color='black' onTap={() => navigateTo('Contacts')}>
-        go to Contacts
-      </button>
-      <button backgroundColor='blue' onTap={() => navigateTo('Home')}>
-        go to Home
-      </button>
-      <button backgroundColor='blue' onTap={() => goBack()}>
-        back
-      </button>
-    </stack-layout>
+    <>
+      <stack-layout>
+        <label>{title}</label>
+        <button backgroundColor='blue' onTap={() => navigateTo('Account')}>
+          go to Account
+        </button>
+        <button backgroundColor='purple' onTap={() => navigateTo('Profile')}>
+          go to Profile
+        </button>
+        <button backgroundColor='yellow' color='black' onTap={() => navigateTo('Settings')}>
+          go to Settings
+        </button>
+        <button backgroundColor='blue' onTap={() => goBack()}>
+          back
+        </button>
+      </stack-layout>
+    </>
   );
 });
 
-const Stack = createStackNavigator();
+const Account = createComponent(props => <TestComponent title='Account' />);
 
-// const App = createComponent(() => {
-//   return (
-//     <Stack.Navigator>
-//       <Stack.Screen name='Contacts' component={TestComponent} />
-//       <Stack.Screen name='About' component={TestComponent} />
-//       <Stack.Screen name='Home' component={TestComponent} />
-//     </Stack.Navigator>
-//   );
-// });
+const Profile = createComponent(props => <TestComponent title='Profile' />);
+
+const Settings = createComponent(props => <TestComponent title='Settings' />);
+
+const Home = createComponent(props => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name='Settings' component={Settings} options={{ title: 'Settings' }} />
+      <Stack.Screen name='Profile' component={Profile} options={{ title: 'Profile' }} />
+      <Stack.Screen name='Account' component={Account} options={{ title: 'Account' }} />
+    </Stack.Navigator>
+  );
+});
+
+const About = createComponent(() => <label>About</label>);
+
+const Contacts = createComponent(() => <label>Contacts</label>);
+
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
 const App = createComponent(() => {
   return (
-    <frame>
-      <page>
-        <ActionBar title='hello world 2'>
-          <stack-layout orientation='horizontal'>
-            <label width='40' height='40' backgroundColor='red' verticalAlignment='middle' />
-            <label text='ActionBar Title' fontSize='24' verticalAlignment='middle' />
-          </stack-layout>
-        </ActionBar>
-      </page>
-    </frame>
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen name='Home' component={Home} />
+        <Tab.Screen name='About' component={About} />
+        <Tab.Screen name='Contacts' component={Contacts} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 });
 

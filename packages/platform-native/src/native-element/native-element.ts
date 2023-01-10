@@ -4,7 +4,7 @@ import { Page } from '@nativescript/core';
 import { NodeType, ROOT, detectIsNumber, detectIsFunction } from '@dark-engine/core';
 import { createSyntheticEventHandler } from '../events';
 import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
-import { ATTR_TEXT } from '../constants';
+import { ATTR_TEXT, DARK_NATIVE_ELEMENT } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -18,7 +18,6 @@ class NativeElement {
     return this.type;
   }
 }
-
 class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
   public name: string = null;
   public attrs: Record<string, AttributeValue> = {};
@@ -35,6 +34,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
 
     this.nativeView = create() as T;
     this.meta = meta;
+    this.nativeView && (this.nativeView[DARK_NATIVE_ELEMENT] = this);
   }
 
   public getNativeView(): T {
@@ -261,4 +261,8 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
 
 export type AttributeValue = string | number | boolean;
 
-export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement };
+function getTagNativeElement(view: NSElement) {
+  return view[DARK_NATIVE_ELEMENT] as TagNativeElement;
+}
+
+export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement, getTagNativeElement };
