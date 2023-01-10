@@ -17,23 +17,23 @@ import { type TagNativeElement, NS } from '@dark-engine/platform-native';
 
 function createStackNavigator() {
   const refsMap: Record<string, TagNativeElement<NS.Page>> = {};
+  let navigateTo: (name: string) => void;
+  let goBack: () => void;
+  let name = '';
+  let setName: (name: string) => void;
 
   type NavigatorProps = {
     slot: Array<ComponentFactory<ScreenProps & StandardComponentProps>>;
   };
 
-  let navigateTo = (name: string) => {};
-
-  let path = '';
-  let setPath = (name: string) => {};
-
   const Navigator = createComponent<NavigatorProps>(({ slot }) => {
     const defaultName = slot[slot.length - 1].props.name;
     const frameRef = useRef<TagNativeElement<NS.Frame>>(null);
-    [path, setPath] = useState(defaultName);
+    [name, setName] = useState(defaultName);
 
-    navigateTo = (path: string) => {
-      const ref = refsMap[path];
+    navigateTo = (nextName: string) => {
+      if (nextName === name) return;
+      const ref = refsMap[nextName];
       const page = ref.getNativeView() as NS.Page;
       const frame = frameRef.current.getNativeView();
 
@@ -46,7 +46,13 @@ function createStackNavigator() {
           duration: 200,
         },
       });
-      setPath(path);
+      setName(nextName);
+    };
+
+    goBack = () => {
+      const frame = frameRef.current.getNativeView();
+
+      frame.goBack();
     };
 
     return (
@@ -67,8 +73,8 @@ function createStackNavigator() {
     };
 
     return (
-      <page id={name} ref={setRef} actionBarHidden onNavigatingTo={() => setPath(name)}>
-        {component({ navigateTo })}
+      <page id={name} ref={setRef} actionBarHidden onNavigatingTo={() => setName(name)}>
+        {component({ navigateTo, goBack })}
       </page>
     );
   });
@@ -81,36 +87,64 @@ function createStackNavigator() {
 
 type RouteComponentProps = {
   navigateTo: (name: string) => void;
+  goBack: () => void;
 };
 
-const Home = createComponent<RouteComponentProps>(({ navigateTo }) => {
+const Home = createComponent<RouteComponentProps>(({ navigateTo, goBack }) => {
   return (
     <stack-layout>
       <label>Home</label>
       <button backgroundColor='purple' onTap={() => navigateTo('About')}>
         go to About
       </button>
-    </stack-layout>
-  );
-});
-
-const About = createComponent<RouteComponentProps>(({ navigateTo }) => {
-  return (
-    <stack-layout>
-      <label>About</label>
       <button backgroundColor='yellow' color='black' onTap={() => navigateTo('Contacts')}>
         go to Contacts
+      </button>
+      <button backgroundColor='blue' onTap={() => navigateTo('Home')}>
+        go to Home
+      </button>
+      <button backgroundColor='blue' onTap={() => goBack()}>
+        back
       </button>
     </stack-layout>
   );
 });
 
-const Contacts = createComponent<RouteComponentProps>(({ navigateTo }) => {
+const About = createComponent<RouteComponentProps>(({ navigateTo, goBack }) => {
+  return (
+    <stack-layout>
+      <label>About</label>
+      <button backgroundColor='purple' onTap={() => navigateTo('About')}>
+        go to About
+      </button>
+      <button backgroundColor='yellow' color='black' onTap={() => navigateTo('Contacts')}>
+        go to Contacts
+      </button>
+      <button backgroundColor='blue' onTap={() => navigateTo('Home')}>
+        go to Home
+      </button>
+      <button backgroundColor='blue' onTap={() => goBack()}>
+        back
+      </button>
+    </stack-layout>
+  );
+});
+
+const Contacts = createComponent<RouteComponentProps>(({ navigateTo, goBack }) => {
   return (
     <stack-layout>
       <label>Contacts</label>
+      <button backgroundColor='purple' onTap={() => navigateTo('About')}>
+        go to About
+      </button>
+      <button backgroundColor='yellow' color='black' onTap={() => navigateTo('Contacts')}>
+        go to Contacts
+      </button>
       <button backgroundColor='blue' onTap={() => navigateTo('Home')}>
         go to Home
+      </button>
+      <button backgroundColor='blue' onTap={() => goBack()}>
+        back
       </button>
     </stack-layout>
   );
