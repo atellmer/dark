@@ -40,15 +40,15 @@ const Profile = createComponent(props => <TestComponent title='Profile' />);
 
 const Settings = createComponent(props => <TestComponent title='Settings' />);
 
-const Home = createComponent(props => {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name='Account' component={Account} />
-      <Tab.Screen name='Profile' component={Profile} />
-      <Tab.Screen name='Settings' component={Settings} />
-    </Tab.Navigator>
-  );
-});
+// const Home = createComponent(props => {
+//   return (
+//     <Tab.Navigator>
+//       <Tab.Screen name='Account' component={Account} />
+//       <Tab.Screen name='Profile' component={Profile} />
+//       <Tab.Screen name='Settings' component={Settings} />
+//     </Tab.Navigator>
+//   );
+// });
 
 const About = createComponent(() => <label>About</label>);
 

@@ -29,10 +29,10 @@ function createStackNavigator() {
     const frameRef = useRef<NS.Frame>(null);
     [name, setName] = useState(defaultName);
 
-    const navigateTo = useEvent((nextName: string, options: NavigateToOptions = {}) => {
-      if (nextName === name) return;
-      const page = refsMap[nextName];
+    const navigateTo = useEvent((name: string, options: NavigateToOptions = {}) => {
+      const page = refsMap[name];
       const frame = frameRef.current;
+      if (frame.currentPage === page) return;
       const options$: NavigateToOptions = {
         animated: true,
         transition: {
@@ -43,11 +43,8 @@ function createStackNavigator() {
         ...options,
       };
 
-      frame.navigate({
-        create: () => page,
-        ...options$,
-      });
-      setName(nextName);
+      frame.navigate({ create: () => page, ...options$ });
+      setName(name);
     });
 
     const goBack = useEvent(() => {
@@ -59,11 +56,7 @@ function createStackNavigator() {
     contextValue.navigateTo = navigateTo;
     contextValue.goBack = goBack;
 
-    return (
-      <stack-layout>
-        <frame ref={frameRef}>{slot}</frame>
-      </stack-layout>
-    );
+    return <frame ref={frameRef}>{slot}</frame>;
   });
 
   type ScreenProps = {
