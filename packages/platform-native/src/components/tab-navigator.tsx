@@ -79,7 +79,7 @@ function createTabNavigator(position: Position) {
   const Screen = createComponent<TabScreenProps>(({ name, component }) => {
     return (
       <tab-view-item title={name}>
-        <frame>
+        <frame id={name}>
           <page id={name} actionBarHidden>
             {component()}
           </page>

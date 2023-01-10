@@ -37,7 +37,7 @@ function createStackNavigator() {
       const page = ref as NS.Page;
       const frame = frameRef.current;
 
-      page.parent?._removeView(page);
+      //page.parent?._removeView(page);
       frame.navigate({
         create: () => page,
         animated: true,

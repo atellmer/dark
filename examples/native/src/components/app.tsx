@@ -60,11 +60,11 @@ const Tab = createBottomTabNavigator();
 const App = createComponent(() => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name='Home' component={Home} options={{ title: 'Home' }} />
-        <Stack.Screen name='About' component={About} options={{ title: 'About' }} />
-        <Stack.Screen name='Contacts' component={Contacts} options={{ title: 'Contacts' }} />
-      </Stack.Navigator>
+      <Tab.Navigator>
+        <Tab.Screen name='Account' component={Account} />
+        <Tab.Screen name='Profile' component={Profile} />
+        <Tab.Screen name='Settings' component={Settings} />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 });

@@ -1,5 +1,4 @@
-import type { LayoutBase, View, ContentView } from '@nativescript/core';
-import { Page } from '@nativescript/core';
+import type { LayoutBase, View, ContentView, AddChildFromBuilder } from '@nativescript/core';
 
 import { NodeType, ROOT, detectIsNumber, detectIsFunction } from '@dark-engine/core';
 import { createSyntheticEventHandler } from '../events';
@@ -212,24 +211,23 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
   const parentView = parentElement.getNativeView();
   const childView = childElement.getNativeView();
 
-  if (parentElement)
-    if (meta.flag === NSViewFlag.LAYOUT_VIEW) {
-      const layoutView = parentView as LayoutBase;
+  if (meta.flag === NSViewFlag.LAYOUT_VIEW) {
+    const layoutView = parentView as LayoutBase;
 
-      if (detectIsNumber(idx)) {
-        layoutView.insertChild(childView, idx);
-      } else {
-        layoutView.addChild(childView);
-      }
-    } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
-      const contentView = parentView as ContentView;
-
-      contentView.content = childView;
+    if (detectIsNumber(idx)) {
+      layoutView.insertChild(childView, idx);
     } else {
-      const viewWithBuilder = parentView as ContentView;
-
-      viewWithBuilder._addChildFromBuilder(childView.constructor.name, childView);
+      layoutView.addChild(childView);
     }
+  } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
+    const contentView = parentView as ContentView;
+
+    contentView.content = childView;
+  } else {
+    const view = parentView as AddChildFromBuilder;
+
+    view._addChildFromBuilder(childView.constructor.name, childView);
+  }
 }
 
 function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {

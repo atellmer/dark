@@ -51,10 +51,12 @@ registerElement(ROOT, () => null, { isRoot: true });
 registerElement('frame', () => require('@nativescript/core').Frame, {
   add: (childElement, parentElement) => {
     const frame = parentElement.getNativeView() as Frame;
-    const content = childElement.getNativeView();
+    const page = childElement.getNativeView();
 
-    if (content instanceof Page) {
-      frame.navigate(() => content);
+    if (page instanceof Page) {
+      if (frame.navigationQueueIsEmpty()) {
+        frame.navigate(() => page);
+      }
     } else {
       throw Error('[Dark]: Frame must contain only Page!');
     }
@@ -62,7 +64,7 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
   remove: () => {},
 });
 
-registerElement('page', () => require('@nativescript/core').Page, { flag: NSViewFlag.CONTENT_VIEW });
+registerElement('page', () => require('@nativescript/core').Page);
 registerElement('content-view', () => require('@nativescript/core').ContentView, { flag: NSViewFlag.CONTENT_VIEW });
 registerElement('scroll-view', () => require('@nativescript/core').ScrollView, { flag: NSViewFlag.CONTENT_VIEW });
 registerElement('root-layout', () => require('@nativescript/core').RootLayout, { flag: NSViewFlag.LAYOUT_VIEW });
