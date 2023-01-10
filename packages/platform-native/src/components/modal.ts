@@ -1,7 +1,8 @@
-import { Button as NSButton, View as NSView, ShowModalOptions } from '@nativescript/core';
+import { type View as NSView, type ShowModalOptions } from '@nativescript/core';
 
-import { type DarkElement, h, createComponent, useRef, useEffect } from '@dark-engine/core';
+import { type DarkElement, createComponent, useRef, useEffect } from '@dark-engine/core';
 import { View, ViewRef } from './view';
+import { Button, type ButtonRef } from './button';
 
 export type ModalProps = {
   isOpen: boolean;
@@ -12,14 +13,11 @@ export type ModalProps = {
 };
 
 const Modal = createComponent<ModalProps>(({ isOpen, fullscreen, animated, slot, onRequestClose }) => {
-  const rootRef = useRef<NSButton>(null);
+  const rootRef = useRef<ButtonRef>(null);
   const childRef = useRef<ViewRef>(null);
   const modalRef = useRef<NSView>(null);
 
   useEffect(() => {
-    const rootNativeView = rootRef.current;
-    const childNativeView = childRef.current;
-
     if (isOpen) {
       const options: ShowModalOptions = {
         context: null,
@@ -28,18 +26,17 @@ const Modal = createComponent<ModalProps>(({ isOpen, fullscreen, animated, slot,
         closeCallback: onRequestClose,
       };
 
-      modalRef.current = rootNativeView.showModal(childNativeView, options);
+      modalRef.current = rootRef.current.showModal(childRef.current, options);
     } else if (modalRef.current) {
       modalRef.current.closeModal();
       modalRef.current = null;
     }
   }, [isOpen]);
 
-  return (
-    <button ref={rootRef} hidden>
-      <View ref={childRef}>{slot}</View>
-    </button>
-  );
+  return Button({
+    ref: rootRef,
+    slot: View({ ref: childRef, slot }),
+  });
 });
 
 export { Modal };

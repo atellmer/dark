@@ -1,26 +1,19 @@
 import { ActionBar as NSActionBar } from '@nativescript/core';
 
-import {
-  type DarkElement,
-  h,
-  createComponent,
-  forwardRef,
-  useLayoutEffect,
-  useRef,
-  useImperativeHandle,
-} from '@dark-engine/core';
+import { createComponent, forwardRef, useLayoutEffect, useRef, useImperativeHandle } from '@dark-engine/core';
 import { ActionBarAttributes } from '../jsx';
+import { factory } from '../factory';
 
-export type ActionBarProps = {
-  slot: DarkElement;
-} & ActionBarAttributes;
+export type ActionBarProps = ActionBarAttributes;
 
 export type ActionBarRef = {
   view: NSActionBar;
 };
 
+const actionBar = factory('action-bar');
+
 const ActionBar = forwardRef<ActionBarProps, ActionBarRef>(
-  createComponent(({ slot, ...rest }, ref) => {
+  createComponent((props, ref) => {
     const rootRef = useRef<NSActionBar>(null);
 
     useLayoutEffect(() => {
@@ -35,11 +28,7 @@ const ActionBar = forwardRef<ActionBarProps, ActionBarRef>(
       view: rootRef.current,
     }));
 
-    return (
-      <action-bar ref={rootRef} {...rest}>
-        {slot}
-      </action-bar>
-    );
+    return actionBar({ ref: rootRef, ...props });
   }),
 );
 

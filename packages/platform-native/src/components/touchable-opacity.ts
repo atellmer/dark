@@ -1,14 +1,6 @@
 import { TouchGestureEventData, AccessibilityRole } from '@nativescript/core';
 
-import {
-  type DarkElement,
-  h,
-  createComponent,
-  detectIsFunction,
-  useEvent,
-  useSpring,
-  useState,
-} from '@dark-engine/core';
+import { type DarkElement, createComponent, detectIsFunction, useEvent, useSpring, useState } from '@dark-engine/core';
 import { View, ViewProps } from './view';
 import { type SyntheticEvent } from '../events';
 
@@ -55,11 +47,13 @@ const TouchableOpacity = createComponent<TouchableOpacityProps>(({ disabled, slo
     }
   });
 
-  return (
-    <View accessibilityRole={AccessibilityRole.Button} {...rest} opacity={disabled ? 0.5 : x} onTouch={handleTouch}>
-      {slot}
-    </View>
-  );
+  return View({
+    accessibilityRole: AccessibilityRole.Button,
+    ...rest,
+    slot,
+    opacity: disabled ? 0.5 : x,
+    onTouch: handleTouch,
+  });
 });
 
 const DOWN_ANIMATION_DURATION = 50;
