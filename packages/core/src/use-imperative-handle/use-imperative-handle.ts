@@ -1,12 +1,10 @@
 import { useMemo } from '../use-memo';
-import type { MutableRef } from '../ref';
+import { type Ref, applyRef } from '../ref';
 
-function useImperativeHandle<T>(ref: MutableRef<T>, createHandle: () => T, deps?: Array<any>) {
+function useImperativeHandle<T>(ref: Ref<T>, createHandle: () => T, deps?: Array<any>) {
   const current = useMemo(() => createHandle(), deps || [{}]);
 
-  if (ref) {
-    ref.current = current;
-  }
+  ref && applyRef(ref, current);
 }
 
 export { useImperativeHandle };

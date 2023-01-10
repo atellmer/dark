@@ -9,3 +9,4 @@ export * from './text-field';
 export * from './button';
 export * from './list-picker';
 export * from './modal';
+export * from './action-bar';

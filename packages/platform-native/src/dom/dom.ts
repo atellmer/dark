@@ -17,9 +17,11 @@ import {
   detectIsTextVirtualNode,
   detectIsMutableRef,
   walkFiber,
+  applyRef as applyRef$,
 } from '@dark-engine/core';
 import { detectIsEvent, getEventName } from '../events';
 import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
+import { type NSElement } from '../registry';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
@@ -53,12 +55,8 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
   return createNativeElementMap[vNode.type](vNode);
 }
 
-function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
-  if (detectIsFunction(ref)) {
-    ref(element);
-  } else if (detectIsMutableRef(ref)) {
-    ref.current = element;
-  }
+function applyRef(ref: Ref<NSElement>, element: TagNativeElement) {
+  applyRef$(ref, element.getNativeView());
 }
 
 function addAttributes(element: NativeElement, vNode: VirtualNode) {
@@ -70,7 +68,7 @@ function addAttributes(element: NativeElement, vNode: VirtualNode) {
     const attrValue = vNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
-      applyRef(attrValue, element);
+      applyRef(attrValue, tagElement);
       continue;
     }
 
@@ -93,7 +91,7 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
     const nextAttrValue = nextVNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
-      applyRef(prevAttrValue, element);
+      applyRef(prevAttrValue, tagElement);
       continue;
     }
 

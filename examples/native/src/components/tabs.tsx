@@ -14,7 +14,7 @@ import {
   useMemo,
   batch,
 } from '@dark-engine/core';
-import { type TagNativeElement, type SyntheticEvent, NS } from '@dark-engine/platform-native';
+import { type SyntheticEvent, NS } from '@dark-engine/platform-native';
 
 let navigateTo = (name: string) => {};
 

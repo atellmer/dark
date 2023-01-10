@@ -2,13 +2,12 @@ import { FlexboxLayout as NSFlexboxLayout } from '@nativescript/core';
 
 import { type DarkElement, h, createComponent, forwardRef } from '@dark-engine/core';
 import { FlexboxLayoutAttributes } from '../jsx';
-import type { TagNativeElement } from '../native-element';
 
 export type ViewProps = {
   slot: DarkElement;
 } & FlexboxLayoutAttributes;
 
-export type ViewRef = TagNativeElement<NSFlexboxLayout>;
+export type ViewRef = NSFlexboxLayout;
 
 const View = forwardRef<ViewProps, ViewRef>(
   createComponent(({ slot, ...rest }, ref) => {

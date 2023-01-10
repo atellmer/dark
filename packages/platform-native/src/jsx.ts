@@ -35,7 +35,7 @@ export type NavigationButton = import('@nativescript/core').NavigationButton;
 export type NavigationData = import('@nativescript/core/ui/frame').NavigationData;
 export type NavigationEntry = import('@nativescript/core').NavigationEntry;
 export type NavigationTransition = import('@nativescript/core').NavigationTransition;
-export type ObservableArray<T1> = import('@nativescript/core').ObservableArray<T1>;
+export type ObservableArray<T> = import('@nativescript/core').ObservableArray<T>;
 export type Page = import('@nativescript/core').Page;
 export type PanGestureEventData = import('@nativescript/core').PanGestureEventData;
 export type PinchGestureEventData = import('@nativescript/core').PinchGestureEventData;
@@ -64,6 +64,8 @@ import type { KeyProps, SlotProps, RefProps, FlagProps } from '@dark-engine/core
 import { type SyntheticEvent } from './events';
 
 export type WithStandardElementAttributes<T> = T & KeyProps & SlotProps & RefProps & FlagProps;
+
+export type PartialSlot<T extends SlotProps> = Omit<T, 'slot'> & Partial<Pick<T, 'slot'>>;
 
 export type ObservableAttributes = {};
 
@@ -554,12 +556,14 @@ export type ButtonAttributes = WithStandardElementAttributes<
   }
 >;
 
-export type LabelAttributes = WithStandardElementAttributes<
-  TextBaseAttributes & {
-    android?: any;
-    ios?: any;
-    textWrap?: string | boolean;
-  }
+export type LabelAttributes = PartialSlot<
+  WithStandardElementAttributes<
+    TextBaseAttributes & {
+      android?: any;
+      ios?: any;
+      textWrap?: string | boolean;
+    }
+  >
 >;
 
 export type HtmlViewAttributes = Omit<
@@ -592,25 +596,19 @@ export type WebViewAttributes = Omit<
   'slot'
 >;
 
-export type ActionBarAttributes = WithStandardElementAttributes<
-  ViewAttributes & {
-    actionItems?: ActionItems;
-    android?: AndroidActionBarSettings;
-    androidContentInset?: string | number | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
-    androidContentInsetLeft?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
-    androidContentInsetRight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
-    effectiveContentInsetLeft?: number;
-    effectiveContentInsetRight?: number;
-    flat?: string | boolean;
-    ios?: any;
-    iosIconRenderingMode?: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
-    navigationButton?: NavigationButton;
-    onFlatChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onIosIconRenderingModeChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onTitleChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    title?: string;
-    titleView?: View;
-  }
+export type ActionBarAttributes = PartialSlot<
+  WithStandardElementAttributes<
+    ViewAttributes & {
+      androidContentInset?: string | number | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+      androidContentInsetLeft?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+      androidContentInsetRight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+      effectiveContentInsetLeft?: number;
+      effectiveContentInsetRight?: number;
+      flat?: string | boolean;
+      iosIconRenderingMode?: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
+      title?: string;
+    }
+  >
 >;
 
 export type ActionItemAttributes = WithStandardElementAttributes<

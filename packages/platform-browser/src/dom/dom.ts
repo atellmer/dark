@@ -20,6 +20,7 @@ import {
   detectIsMutableRef,
   walkFiber,
   isHydrateZone,
+  applyRef as applyRef$,
 } from '@dark-engine/core';
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
@@ -84,11 +85,7 @@ function detectIsVoidElement(tagName: string) {
 }
 
 function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
-  if (detectIsFunction(ref)) {
-    ref(element);
-  } else if (detectIsMutableRef(ref)) {
-    ref.current = element;
-  }
+  applyRef$(ref, element);
 }
 
 function addAttributes(element: NativeElement, vNode: VirtualNode) {

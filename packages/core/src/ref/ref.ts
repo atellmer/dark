@@ -1,7 +1,7 @@
-import { detectIsObject, detectIsNull } from '../helpers';
+import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
 import type { Component, ComponentFactory } from '../component';
 import type { RefProps } from '../shared';
-import type { MutableRef } from './types';
+import type { MutableRef, Ref } from './types';
 
 function forwardRef<P, R>(component: Component<P, R>) {
   return (props: P) => {
@@ -11,7 +11,7 @@ function forwardRef<P, R>(component: Component<P, R>) {
   };
 }
 
-const detectIsMutableRef = (ref: unknown): ref is MutableRef => {
+function detectIsMutableRef(ref: unknown): ref is MutableRef {
   if (!detectIsObject(ref) || detectIsNull(ref)) return false;
   const mutableRef = ref as MutableRef;
 
@@ -22,6 +22,14 @@ const detectIsMutableRef = (ref: unknown): ref is MutableRef => {
   }
 
   return false;
-};
+}
 
-export { forwardRef, detectIsMutableRef };
+function applyRef<T>(ref: Ref<T>, current: T) {
+  if (detectIsFunction(ref)) {
+    ref(current);
+  } else if (detectIsMutableRef(ref)) {
+    ref.current = current;
+  }
+}
+
+export { forwardRef, detectIsMutableRef, applyRef };
