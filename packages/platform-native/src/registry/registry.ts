@@ -54,11 +54,7 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
     const content = childElement.getNativeView();
 
     if (content instanceof Page) {
-      frame.navigate({
-        create() {
-          return content;
-        },
-      });
+      frame.navigate(() => content);
     } else {
       throw Error('[Dark]: Frame must contain only Page!');
     }

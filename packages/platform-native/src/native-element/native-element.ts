@@ -1,4 +1,5 @@
 import type { LayoutBase, View, ContentView } from '@nativescript/core';
+import { Page } from '@nativescript/core';
 
 import { NodeType, ROOT, detectIsNumber, detectIsFunction } from '@dark-engine/core';
 import { createSyntheticEventHandler } from '../events';

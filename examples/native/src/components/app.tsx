@@ -1,6 +1,9 @@
 import { Frame } from '@nativescript/core';
 import {
   type Component,
+  type DarkElement,
+  type ComponentFactory,
+  type StandardComponentProps,
   h,
   Fragment,
   createComponent,
@@ -10,84 +13,83 @@ import {
   useState,
   useMemo,
 } from '@dark-engine/core';
-import {
-  type TagNativeElement,
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  Modal,
-  Button,
-  NS,
-} from '@dark-engine/platform-native';
+import { type TagNativeElement, NS } from '@dark-engine/platform-native';
 
-type Route = {
-  path: string;
-  component: Component;
-};
+function createStackNavigator() {
+  const refsMap: Record<string, TagNativeElement<NS.Page>> = {};
 
-type Routes = Array<Route>;
-
-type RouterProps = {
-  routes: Routes;
-};
-
-const Router = createComponent<RouterProps>(({ routes }) => {
-  const [path, setPath] = useState('');
-  const [isLoaded, setIsLoaded] = useState(false);
-  const scope = useMemo(() => ({ refsMap: {} }), []);
-
-  useLayoutEffect(() => {
-    navigateTo('home', false);
-    setTimeout(() => {
-      setIsLoaded(true);
-    }, 500);
-  }, []);
-
-  const navigateTo = (path: string, animated = true) => {
-    const ref = scope.refsMap[path];
-    const page = ref.getNativeView() as NS.Page;
-    const frame = (page.frame || Frame.topmost()) as NS.Frame;
-
-    if (animated) {
-      frame.animated = true;
-      frame.transition = {
-        name: 'slide',
-        duration: 300,
-      };
-    }
-
-    frame.navigate(() => page);
-    setPath(path);
+  type NavigatorProps = {
+    slot: Array<ComponentFactory<ScreenProps & StandardComponentProps>>;
   };
 
-  return (
-    <frame animated={false} opacity={isLoaded ? 1 : 0}>
-      {routes.map(x => {
-        const setRef = (ref: TagNativeElement<NS.Page>) => {
-          scope.refsMap[x.path] = ref;
-        };
+  let navigateTo = (name: string) => {};
 
-        return (
-          <page id={x.path} ref={setRef} actionBarHidden onNavigatingTo={() => isLoaded && setPath(x.path)}>
-            {isLoaded && x.component({ navigateTo })}
-          </page>
-        );
-      })}
-    </frame>
-  );
-});
+  let path = '';
+  let setPath = (name: string) => {};
+
+  const Navigator = createComponent<NavigatorProps>(({ slot }) => {
+    const defaultName = slot[slot.length - 1].props.name;
+    const frameRef = useRef<TagNativeElement<NS.Frame>>(null);
+    [path, setPath] = useState(defaultName);
+
+    navigateTo = (path: string) => {
+      const ref = refsMap[path];
+      const page = ref.getNativeView() as NS.Page;
+      const frame = frameRef.current.getNativeView();
+
+      page.parent?._removeView(page);
+      frame.navigate({
+        create: () => page,
+        animated: true,
+        transition: {
+          name: 'slide',
+          duration: 200,
+        },
+      });
+      setPath(path);
+    };
+
+    return (
+      <frame ref={frameRef}>
+        <page actionBarHidden>{slot}</page>
+      </frame>
+    );
+  });
+
+  type ScreenProps = {
+    name: string;
+    component: Component<RouteComponentProps>;
+  };
+
+  const Screen = createComponent<ScreenProps>(({ name, component }) => {
+    const setRef = (ref: TagNativeElement<NS.Page>) => {
+      refsMap[name] = ref;
+    };
+
+    return (
+      <page id={name} ref={setRef} actionBarHidden onNavigatingTo={() => setPath(name)}>
+        {component({ navigateTo })}
+      </page>
+    );
+  });
+
+  return {
+    Navigator,
+    Screen,
+  };
+}
 
 type RouteComponentProps = {
-  navigateTo: (path: string) => void;
+  navigateTo: (name: string) => void;
 };
 
 const Home = createComponent<RouteComponentProps>(({ navigateTo }) => {
   return (
     <stack-layout>
       <label>Home</label>
-      <button onTap={() => navigateTo('about')}>go to About</button>
+      <button backgroundColor='purple' onTap={() => navigateTo('About')}>
+        go to About
+      </button>
     </stack-layout>
   );
 });
@@ -96,7 +98,9 @@ const About = createComponent<RouteComponentProps>(({ navigateTo }) => {
   return (
     <stack-layout>
       <label>About</label>
-      <button onTap={() => navigateTo('contacts')}>go to Contacts</button>
+      <button backgroundColor='yellow' color='black' onTap={() => navigateTo('Contacts')}>
+        go to Contacts
+      </button>
     </stack-layout>
   );
 });
@@ -105,28 +109,23 @@ const Contacts = createComponent<RouteComponentProps>(({ navigateTo }) => {
   return (
     <stack-layout>
       <label>Contacts</label>
-      <button onTap={() => navigateTo('home')}>go to Home</button>
+      <button backgroundColor='blue' onTap={() => navigateTo('Home')}>
+        go to Home
+      </button>
     </stack-layout>
   );
 });
 
-const routes: Routes = [
-  {
-    path: 'home',
-    component: Home,
-  },
-  {
-    path: 'about',
-    component: About,
-  },
-  {
-    path: 'contacts',
-    component: Contacts,
-  },
-];
+const Stack = createStackNavigator();
 
 const App = createComponent(() => {
-  return <Router routes={routes} />;
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name='Contacts' component={Contacts} />
+      <Stack.Screen name='About' component={About} />
+      <Stack.Screen name='Home' component={Home} />
+    </Stack.Navigator>
+  );
 });
 
 export default App;

@@ -608,6 +608,11 @@
   resolved "https://registry.yarnpkg.com/@nativescript/schematics-executor/-/schematics-executor-0.0.2.tgz#81d428b5a27d2ca9e06dc071e7eba8bd9fea4a92"
   integrity sha512-3pA0cXbkwu55+He71QO1oRE18wQyquk5t6vpM4laAFatI5w8n2dyHYSzM7pM6bN57zpcP2sk5u1q3YtYv0d2MQ==
 
+"@nativescript/theme@~3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@nativescript/theme/-/theme-3.0.2.tgz#9584ad8988dea937f0f32629b80954de886c6c20"
+  integrity sha512-ypwYyasTFRWbaxNwdqXgql9MUZsq82Stgd+zj4LEjp5cBQPPIWFeJ8uxWdtbpjHjjuTWYW/FCMmnuayOF7uK/g==
+
 "@nativescript/types-android@~8.4.0":
   version "8.4.0"
   resolved "https://registry.yarnpkg.com/@nativescript/types-android/-/types-android-8.4.0.tgz#2fa1325f43cd1343e53ddc51ef0ad1b42297c433"
