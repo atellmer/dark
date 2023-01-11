@@ -8,7 +8,6 @@ import {
   useState,
   useUpdate,
   useEvent,
-  useMemo,
   useRef,
   useLayoutEffect,
   batch,
@@ -31,15 +30,6 @@ function createTabNavigator(position: Position) {
   const descriptorsMap: Record<string, Descriptor> = {};
 
   const Navigator = createComponent<TabNavigatorProps>(({ slot }) => {
-    const names = useMemo(() => slot.map(x => x.props.name), []);
-    const byIdxMap: Record<string, string> = useMemo(
-      () => names.reduce((acc, name, idx) => ((acc[idx] = name), acc), {}),
-      [names],
-    );
-    const byNameMap: Record<string, number> = useMemo(
-      () => names.reduce((acc, name, idx) => ((acc[name] = idx), acc), {}),
-      [names],
-    );
     const stackNavigatorRef = useRef<StackNavigatorRef>(null);
     const [idx, setIdx] = useState(0);
     const update = useUpdate();
@@ -51,20 +41,16 @@ function createTabNavigator(position: Position) {
       const nextIdx = Number(e.sourceEvent.value);
 
       if (nextIdx !== idx) {
-        const name = byIdxMap[nextIdx];
+        const pathname = stackNavigatorRef.current.getPathnameByIdx(nextIdx);
 
         batch(() => {
           setIdx(nextIdx);
-          stackNavigatorRef.current.navigateTo(name);
+          stackNavigatorRef.current.navigateTo(pathname);
         });
       }
     });
 
-    const handleNavigate = useEvent((name: string) => {
-      const idx = byNameMap[name];
-
-      setIdx(idx);
-    });
+    const handleNavigate = useEvent((_, idx: number) => setIdx(idx));
 
     const descriptorKeys = Object.keys(descriptorsMap);
 

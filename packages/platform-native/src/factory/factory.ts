@@ -4,4 +4,7 @@ type TagProps = Omit<ViewDef, 'as' | 'isVoid'>;
 
 const factory = (as: string) => (props?: TagProps) => View({ as, ...(props || {}) });
 
-export { factory };
+const frame = factory('frame');
+const page = factory('page');
+
+export { factory, frame, page };
