@@ -3,7 +3,6 @@ import { PropertyChangeData } from '@nativescript/core';
 import {
   type ComponentFactory,
   type StandardComponentProps,
-  h,
   createComponent,
   useState,
   useUpdate,
@@ -14,6 +13,7 @@ import {
 } from '@dark-engine/core';
 import { type SyntheticEvent } from '../events';
 import { type StackNavigatorRef, createStackNavigator, type StackScreenProps } from './stack-navigator';
+import { frame, page, gridLayout, stackLayout, tabView, tabViewItem, label } from '../factory';
 
 type Position = 'top' | 'bottom';
 
@@ -54,33 +54,39 @@ function createTabNavigator(position: Position) {
 
     const descriptorKeys = Object.keys(descriptorsMap);
 
-    return (
-      <frame>
-        <page actionBarHidden>
-          <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
-            <stack-layout col={1} row={1}>
-              {descriptorKeys.length > 0 && (
-                <Stack.Navigator ref={stackNavigatorRef} onNavigate={handleNavigate}>
-                  {descriptorKeys.map(key => {
+    return frame({
+      slot: page({
+        actionBarHidden: true,
+        slot: gridLayout({
+          columns: '*',
+          rows: isBottom ? 'auto, *' : 'auto, auto',
+          slot: [
+            descriptorKeys.length > 0 &&
+              stackLayout({
+                col: 1,
+                row: 1,
+                slot: Stack.Navigator({
+                  ref: stackNavigatorRef,
+                  onNavigate: handleNavigate,
+                  slot: descriptorKeys.map(key => {
                     const { component, options } = descriptorsMap[key];
 
-                    return <Stack.Screen key={key} name={key} component={component} options={options} />;
-                  })}
-                </Stack.Navigator>
-              )}
-            </stack-layout>
-            <tab-view
-              col={1}
-              row={2}
-              androidTabsPosition={position}
-              selectedIndex={idx}
-              onSelectedIndexChange={handleIdxChange}>
-              {slot}
-            </tab-view>
-          </grid-layout>
-        </page>
-      </frame>
-    );
+                    return Stack.Screen({ key, name: key, component, options });
+                  }),
+                }),
+              }),
+            tabView({
+              col: 1,
+              row: 2,
+              androidTabsPosition: position,
+              selectedIndex: idx,
+              onSelectedIndexChange: handleIdxChange,
+              slot,
+            }),
+          ],
+        }),
+      }),
+    });
   });
 
   const Screen = createComponent<TabScreenProps>(({ name, component, options }) => {
@@ -90,11 +96,11 @@ function createTabNavigator(position: Position) {
       options,
     };
 
-    return (
-      <tab-view-item title={name} canBeLoaded>
-        <label text='' />
-      </tab-view-item>
-    );
+    return tabViewItem({
+      title: name,
+      canBeLoaded: true,
+      slot: label({ text: '' }),
+    });
   });
 
   return {

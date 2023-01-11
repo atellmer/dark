@@ -45,7 +45,6 @@ export type StackScreenOptions = {
 };
 
 type StackNavigatorContextValue = {
-  prefix: string;
   pathname: string;
   setPathname: (pathname: string) => void;
   navigateTo: (pathname: string, options?: NavigateToOptions) => void;
@@ -57,7 +56,6 @@ export type NavigateToOptions = {
 };
 
 const StackNavigatorContext = createContext<StackNavigatorContextValue>({
-  prefix: '/',
   pathname: '',
   setPathname: () => {},
   navigateTo: () => {},
@@ -70,8 +68,20 @@ function useStackNavigatorContext() {
   return value;
 }
 
+type ScreenNavigatorContextValue = {
+  prefix: string;
+  parentPrefix: string;
+};
+
+const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({ prefix: SLASH, parentPrefix: '' });
+
+function useScreenNavigatorContext() {
+  return useContext(ScreenNavigatorContext);
+}
+
 function useNavigation() {
-  const { navigateTo, goBack, prefix, pathname } = useStackNavigatorContext();
+  const { navigateTo, goBack, pathname } = useStackNavigatorContext();
+  const { parentPrefix: prefix } = useScreenNavigatorContext();
 
   return {
     navigateTo,
@@ -84,7 +94,7 @@ function useNavigation() {
 function createStackNavigator() {
   const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     createComponent(({ slot, onNavigate }, ref) => {
-      const { prefix } = useStackNavigatorContext();
+      const { prefix } = useScreenNavigatorContext();
       const names: Array<string> = useMemo(() => slot.map(x => x.props.name), []);
       const pathnames: Array<string> = useMemo(() => names.map(x => createPathname(x, prefix)), [names]);
       const frameRef = useRef<NS.Frame>(null);
@@ -108,23 +118,25 @@ function createStackNavigator() {
         return pathname;
       });
 
-      const navigateTo = useEvent((pathname$: string, options: NavigateToOptions = {}) => {
-        const pathname = normalizePathname(pathname$);
-        const page = refsMap[pathname];
+      const navigateTo = useEvent((sourcePathname: string, options: NavigateToOptions = {}) => {
+        const pathname$ = normalizePathname(sourcePathname);
+        const page = refsMap[pathname$];
         const frame = frameRef.current;
-        if (frame.currentPage === page) return;
+
+        if (!page || pathname === pathname$) return;
+
         const options$: NavigateToOptions = {
           animated: true,
           transition: {
             name: 'slide',
-            duration: 100,
+            duration: 200,
             curve: CoreTypes.AnimationCurve.easeInOut,
           },
           ...options,
         };
 
         frame.navigate({ create: () => page, ...options$ });
-        setPathname(pathname);
+        setPathname(pathname$);
       });
 
       const goBack = useEvent(() => {
@@ -134,7 +146,7 @@ function createStackNavigator() {
       });
 
       const contextValue = useMemo<StackNavigatorContextValue>(
-        () => ({ prefix, pathname, setPathname, navigateTo, goBack }),
+        () => ({ pathname: '', setPathname, navigateTo, goBack }),
         [],
       );
 
@@ -151,19 +163,26 @@ function createStackNavigator() {
 
   const Screen = createComponent<StackScreenProps>(({ name, component, options = {} }) => {
     const { title, headerShown = true } = options;
-    const { prefix, setPathname } = useStackNavigatorContext();
+    const { setPathname } = useStackNavigatorContext();
+    const { prefix } = useScreenNavigatorContext();
     const pathname = createPathname(name, prefix);
+    const contextValue = useMemo(() => ({ prefix: pathname, parentPrefix: prefix }), []);
 
     const setRef = (ref: NS.Page) => {
       refsMap[pathname] = ref;
     };
 
-    return page({
-      id: pathname,
-      ref: setRef,
-      actionBarHidden: !headerShown,
-      onNavigatingTo: () => setPathname(pathname),
-      slot: [ActionBar({ title }), component()],
+    return ScreenNavigatorContext.Provider({
+      value: contextValue,
+      slot: [
+        page({
+          id: pathname,
+          ref: setRef,
+          actionBarHidden: !headerShown,
+          onNavigatingTo: () => setPathname(pathname),
+          slot: [ActionBar({ title }), component()],
+        }),
+      ],
     });
   });
 
@@ -178,9 +197,13 @@ const createPathname = (name: string, prefix: string) => {
 };
 
 function normalizePathname(pathname: string) {
-  const normal = pathname.split(SLASH).filter(Boolean).join(SLASH) + SLASH;
+  const normal = prependSlash(pathname.split(SLASH).filter(Boolean).join(SLASH) + SLASH);
 
   return normal;
+}
+
+function prependSlash(pathname: string) {
+  return pathname.startsWith(SLASH) ? pathname : SLASH + pathname;
 }
 
 export { createStackNavigator, useNavigation };
