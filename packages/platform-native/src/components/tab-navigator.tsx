@@ -1,28 +1,35 @@
 import { PropertyChangeData } from '@nativescript/core';
 
 import {
-  type Component,
   type ComponentFactory,
   type StandardComponentProps,
   h,
   createComponent,
   useState,
+  useUpdate,
   useEvent,
   useMemo,
-  batch,
+  useRef,
+  useLayoutEffect,
 } from '@dark-engine/core';
 import { type SyntheticEvent } from '../events';
-import { useNavigationContainerContext } from './navigation-container';
+import { type StackNavigatorRef, createStackNavigator, type StackScreenProps } from './stack-navigator';
 
 type Position = 'top' | 'bottom';
 
+type TabNavigatorProps = {
+  slot: Array<ComponentFactory<TabScreenProps & StandardComponentProps>>;
+};
+
+type TabScreenProps = StackScreenProps;
+
+type Descriptor = TabScreenProps;
+
 function createTabNavigator(position: Position) {
-  type TabNavigatorProps = {
-    slot: Array<ComponentFactory<TabScreenProps & StandardComponentProps>>;
-  };
+  const Stack = createStackNavigator();
+  const descriptorsMap: Record<string, Descriptor> = {};
 
   const Navigator = createComponent<TabNavigatorProps>(({ slot }) => {
-    const contextValue = useNavigationContainerContext();
     const names = useMemo(() => slot.map(x => x.props.name), []);
     const byIdxMap: Record<string, string> = useMemo(
       () => names.reduce((acc, name, idx) => ((acc[idx] = name), acc), {}),
@@ -32,8 +39,14 @@ function createTabNavigator(position: Position) {
       () => names.reduce((acc, name, idx) => ((acc[name] = idx), acc), {}),
       [names],
     );
-    const [name, setName] = useState(names[0]);
+    const stackNavigatorRef = useRef<StackNavigatorRef>(null);
     const [idx, setIdx] = useState(0);
+    const update = useUpdate();
+    const isBottom = position === 'bottom';
+
+    useLayoutEffect(() => {
+      update();
+    }, []);
 
     const handleIdxChange = useEvent((e: SyntheticEvent<PropertyChangeData>) => {
       const nextIdx = Number(e.sourceEvent.value);
@@ -41,49 +54,54 @@ function createTabNavigator(position: Position) {
       if (nextIdx !== idx) {
         const name = byIdxMap[nextIdx];
 
-        batch(() => {
-          setName(name);
-          setIdx(nextIdx);
-        });
+        setIdx(nextIdx);
+        stackNavigatorRef.current.navigateTo(name);
       }
     });
 
-    const navigateTo = useEvent((nextName: string) => {
-      const idx = byNameMap[nextName];
+    const handleNavigate = useEvent((name: string) => {
+      const idx = byNameMap[name];
 
-      batch(() => {
-        setName(name);
-        setIdx(idx);
-      });
+      setIdx(idx);
     });
-
-    contextValue.navigateTo = navigateTo;
-    contextValue.goBack = () => {};
 
     return (
       <frame>
         <page actionBarHidden>
-          <tab-view selectedIndex={idx} androidTabsPosition={position} onSelectedIndexChange={handleIdxChange}>
-            {slot}
-          </tab-view>
+          <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
+            <stack-layout col={1} row={1}>
+              <Stack.Navigator ref={stackNavigatorRef} onNavigate={handleNavigate}>
+                {Object.keys(descriptorsMap).map(key => {
+                  const { component, options } = descriptorsMap[key];
+
+                  return <Stack.Screen key={key} name={key} component={component} options={options} />;
+                })}
+              </Stack.Navigator>
+            </stack-layout>
+            <tab-view
+              col={1}
+              row={2}
+              androidTabsPosition={position}
+              selectedIndex={idx}
+              onSelectedIndexChange={handleIdxChange}>
+              {slot}
+            </tab-view>
+          </grid-layout>
         </page>
       </frame>
     );
   });
 
-  type TabScreenProps = {
-    name: string;
-    component: Component;
-  };
+  const Screen = createComponent<TabScreenProps>(({ name, component, options }) => {
+    descriptorsMap[name] = {
+      name,
+      component,
+      options,
+    };
 
-  const Screen = createComponent<TabScreenProps>(({ name, component }) => {
     return (
-      <tab-view-item title={name}>
-        <frame id={name}>
-          <page id={name} actionBarHidden>
-            {component()}
-          </page>
-        </frame>
+      <tab-view-item title={name} canBeLoaded>
+        <label text='' />
       </tab-view-item>
     );
   });

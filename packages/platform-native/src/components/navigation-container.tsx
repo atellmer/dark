@@ -2,7 +2,7 @@ import { NavigationTransition } from '@nativescript/core';
 
 import { type ComponentFactory, h, createComponent, createContext, useContext, useMemo } from '@dark-engine/core';
 
-type NavigationContainerContextValue = {
+export type NavigationContainerContextValue = {
   navigateTo: (name: string, options?: NavigateToOptions) => void;
   goBack: () => void;
 };

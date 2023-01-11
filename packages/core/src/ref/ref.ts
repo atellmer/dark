@@ -4,8 +4,10 @@ import type { RefProps } from '../shared';
 import type { MutableRef, Ref } from './types';
 
 function forwardRef<P, R>(component: Component<P, R>) {
-  return (props: P) => {
-    const { ref, ...rest } = (props || {}) as P & RefProps<R>;
+  type Props = P & RefProps<any>;
+
+  return (props: Props) => {
+    const { ref, ...rest } = (props || {}) as Props;
 
     return component(rest as P, ref) as ComponentFactory<P, R>;
   };

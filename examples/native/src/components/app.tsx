@@ -61,9 +61,9 @@ const App = createComponent(() => {
   return (
     <NavigationContainer>
       <Tab.Navigator>
-        <Tab.Screen name='Account' component={Account} />
-        <Tab.Screen name='Profile' component={Profile} />
-        <Tab.Screen name='Settings' component={Settings} />
+        <Tab.Screen name='Account' component={Account} options={{ title: 'Account' }} />
+        <Tab.Screen name='Profile' component={Profile} options={{ title: 'Profile' }} />
+        <Tab.Screen name='Settings' component={Settings} options={{ title: 'Settings' }} />
       </Tab.Navigator>
     </NavigationContainer>
   );
