@@ -11,6 +11,7 @@ import {
   useMemo,
   useRef,
   useLayoutEffect,
+  batch,
 } from '@dark-engine/core';
 import { type SyntheticEvent } from '../events';
 import { type StackNavigatorRef, createStackNavigator, type StackScreenProps } from './stack-navigator';
@@ -44,9 +45,7 @@ function createTabNavigator(position: Position) {
     const update = useUpdate();
     const isBottom = position === 'bottom';
 
-    useLayoutEffect(() => {
-      update();
-    }, []);
+    useLayoutEffect(() => update(), []);
 
     const handleIdxChange = useEvent((e: SyntheticEvent<PropertyChangeData>) => {
       const nextIdx = Number(e.sourceEvent.value);
@@ -54,8 +53,10 @@ function createTabNavigator(position: Position) {
       if (nextIdx !== idx) {
         const name = byIdxMap[nextIdx];
 
-        setIdx(nextIdx);
-        stackNavigatorRef.current.navigateTo(name);
+        batch(() => {
+          setIdx(nextIdx);
+          stackNavigatorRef.current.navigateTo(name);
+        });
       }
     });
 
@@ -65,18 +66,22 @@ function createTabNavigator(position: Position) {
       setIdx(idx);
     });
 
+    const descriptorKeys = Object.keys(descriptorsMap);
+
     return (
       <frame>
         <page actionBarHidden>
           <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
             <stack-layout col={1} row={1}>
-              <Stack.Navigator ref={stackNavigatorRef} onNavigate={handleNavigate}>
-                {Object.keys(descriptorsMap).map(key => {
-                  const { component, options } = descriptorsMap[key];
+              {descriptorKeys.length > 0 && (
+                <Stack.Navigator ref={stackNavigatorRef} onNavigate={handleNavigate}>
+                  {descriptorKeys.map(key => {
+                    const { component, options } = descriptorsMap[key];
 
-                  return <Stack.Screen key={key} name={key} component={component} options={options} />;
-                })}
-              </Stack.Navigator>
+                    return <Stack.Screen key={key} name={key} component={component} options={options} />;
+                  })}
+                </Stack.Navigator>
+              )}
             </stack-layout>
             <tab-view
               col={1}

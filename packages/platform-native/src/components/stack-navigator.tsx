@@ -9,10 +9,11 @@ import {
   useRef,
   useState,
   useEvent,
-  useEffect,
   useImperativeHandle,
   detectIsFunction,
   forwardRef,
+  useLayoutEffect,
+  memo,
 } from '@dark-engine/core';
 import { type NS } from '../';
 import { ActionBar } from './action-bar';
@@ -50,11 +51,11 @@ function createStackNavigator() {
       const defaultName = slot[0].props.name;
       const frameRef = useRef<NS.Frame>(null);
       const box = useState(defaultName);
-      const name = box[0];
+      const [name] = box;
 
       setName = box[1];
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         detectIsFunction(onNavigate) && onNavigate(name);
       }, [name]);
 
@@ -106,7 +107,7 @@ function createStackNavigator() {
   });
 
   return {
-    Navigator,
+    Navigator: memo(Navigator),
     Screen,
   };
 }
