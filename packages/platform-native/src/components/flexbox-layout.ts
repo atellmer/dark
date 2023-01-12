@@ -4,13 +4,13 @@ import { createComponent, forwardRef } from '@dark-engine/core';
 import type { FlexboxLayoutAttributes } from '../jsx';
 import { flexboxLayout } from '../factory';
 
-export type ViewProps = FlexboxLayoutAttributes;
-export type ViewRef = NSFlexboxLayout;
+export type FlexboxLayoutProps = FlexboxLayoutAttributes;
+export type FlexboxLayoutRef = NSFlexboxLayout;
 
-const View = forwardRef<ViewProps, ViewRef>(
+const FlexboxLayout = forwardRef<FlexboxLayoutProps, FlexboxLayoutRef>(
   createComponent((props, ref) => {
-    return flexboxLayout({ ref, flexDirection: 'column', ...props });
+    return flexboxLayout({ ref, ...props });
   }),
 );
 
-export { View };
+export { FlexboxLayout };

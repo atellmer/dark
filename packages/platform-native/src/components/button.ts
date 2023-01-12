@@ -1,7 +1,7 @@
 import { Button as NSButton } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
-import { ButtonAttributes } from '../jsx';
+import type { ButtonAttributes } from '../jsx';
 import { button } from '../factory';
 
 export type ButtonProps = ButtonAttributes;

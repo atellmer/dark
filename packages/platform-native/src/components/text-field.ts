@@ -1,7 +1,7 @@
 import { TextField as NSTextField } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
-import { TextFieldAttributes } from '../jsx';
+import type { TextFieldAttributes } from '../jsx';
 import { textField } from '../factory';
 
 export type TextFieldProps = TextFieldAttributes;

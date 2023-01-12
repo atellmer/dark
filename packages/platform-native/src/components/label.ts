@@ -4,13 +4,13 @@ import { createComponent, forwardRef } from '@dark-engine/core';
 import type { LabelAttributes } from '../jsx';
 import { label } from '../factory';
 
-export type TextProps = LabelAttributes;
-export type TextRef = NSLabel;
+export type LabelProps = LabelAttributes;
+export type LabelRef = NSLabel;
 
-const Text = forwardRef<TextProps, TextRef>(
+const Label = forwardRef<LabelProps, LabelRef>(
   createComponent((props, ref) => {
     return label({ ref, ...props });
   }),
 );
 
-export { Text };
+export { Label };

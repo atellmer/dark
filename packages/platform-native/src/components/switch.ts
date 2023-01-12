@@ -1,7 +1,7 @@
 import { Switch as NSSwitch } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
-import { SwitchAttributes } from '../jsx';
+import type { SwitchAttributes } from '../jsx';
 import { _switch } from '../factory';
 
 export type SwitchProps = SwitchAttributes;
