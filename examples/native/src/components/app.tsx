@@ -6,7 +6,7 @@ const Home = createComponent(() => {
 
   return (
     <stack-layout>
-      <label>Contacts</label>
+      <label>Home</label>
       <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Home`)}>
         Home
       </button>

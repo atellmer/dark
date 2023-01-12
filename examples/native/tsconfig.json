@@ -24,6 +24,9 @@
       "@dark-engine/platform-native": [
         "../../packages/platform-native/src/index"
       ],
+      "@nativescript/core": [
+        "../../packages/platform-native/node_modules/@nativescript/core/index"
+      ],
       "~/*": [
         "src/*"
       ],

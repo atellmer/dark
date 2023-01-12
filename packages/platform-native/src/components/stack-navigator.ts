@@ -1,4 +1,4 @@
-import { CoreTypes, type NavigationTransition } from '@nativescript/core';
+import { CoreTypes, type NavigationTransition, type Page, type Frame } from '@nativescript/core';
 
 import {
   type Component,
@@ -17,12 +17,11 @@ import {
   useMemo,
   memo,
 } from '@dark-engine/core';
-import { type NS } from '..';
 import { ActionBar } from './action-bar';
 import { frame, page } from '../factory';
 import { SLASH } from '../constants';
 
-const refsMap: Record<string, NS.Page> = {};
+const refsMap: Record<string, Page> = {};
 
 export type StackNavigatorProps = {
   slot: Array<ComponentFactory<StackScreenProps & StandardComponentProps>>;
@@ -97,7 +96,7 @@ function createStackNavigator() {
       const { prefix } = useScreenNavigatorContext();
       const names: Array<string> = useMemo(() => slot.map(x => x.props.name), []);
       const pathnames: Array<string> = useMemo(() => names.map(x => createPathname(x, prefix)), [names]);
-      const frameRef = useRef<NS.Frame>(null);
+      const frameRef = useRef<Frame>(null);
       const [pathname, setPathname] = useState(pathnames[0]);
 
       useLayoutEffect(() => {
@@ -168,7 +167,7 @@ function createStackNavigator() {
     const pathname = createPathname(name, prefix);
     const contextValue = useMemo(() => ({ prefix: pathname, parentPrefix: prefix }), []);
 
-    const setRef = (ref: NS.Page) => {
+    const setRef = (ref: Page) => {
       refsMap[pathname] = ref;
     };
 
