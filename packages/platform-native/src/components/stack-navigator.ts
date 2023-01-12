@@ -3,6 +3,7 @@ import {
   type Component,
   type ComponentFactory,
   type StandardComponentProps,
+  type DarkElement,
   createComponent,
   createContext,
   useRef,
@@ -34,8 +35,9 @@ export type StackNavigatorRef = {
 
 export type StackScreenProps = {
   name: string;
-  component: Component;
+  component?: Component;
   options?: StackScreenOptions;
+  slot?: () => DarkElement;
   renderActionBar?: () => typeof ActionBar;
 };
 
@@ -161,7 +163,7 @@ function createStackNavigator() {
     }),
   );
 
-  const Screen = createComponent<StackScreenProps>(({ name, component, options = {}, renderActionBar }) => {
+  const Screen = createComponent<StackScreenProps>(({ name, component, options = {}, slot, renderActionBar }) => {
     const { title, headerShown = true } = options;
     const { setPathname } = useStackNavigatorContext();
     const { prefix } = useScreenNavigatorContext();
@@ -180,7 +182,10 @@ function createStackNavigator() {
           ref: setRef,
           actionBarHidden: !headerShown,
           onNavigatingTo: () => setPathname(pathname),
-          slot: [detectIsFunction(renderActionBar) ? renderActionBar() : ActionBar({ title }), component()],
+          slot: [
+            detectIsFunction(renderActionBar) ? renderActionBar() : ActionBar({ title }),
+            detectIsFunction(slot) ? slot() : component(),
+          ],
         }),
       ],
     });
