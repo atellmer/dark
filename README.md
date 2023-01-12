@@ -26,7 +26,7 @@ Dark is lightweight UI rendering engine for javascript apps without dependencies
 - 💥 Tree-shakeable
 - 🎊 Server-side rendering support
 - 🏄‍♂️ Out of box isomorphic routing
-- 🛰 Rendering to native platforms (Android, iOS) via <a href="https://nativescript.org/">{N} NativeScript</a>
+- 🛰 Rendering to native platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">{N} NativeScript</a>
 
 ## Demos
 
