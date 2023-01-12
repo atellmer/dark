@@ -69,9 +69,9 @@ function createTabNavigator(position: Position) {
                   ref: stackNavigatorRef,
                   onNavigate: handleNavigate,
                   slot: descriptorKeys.map(key => {
-                    const { component, options } = descriptorsMap[key];
+                    const { component, options, renderActionBar } = descriptorsMap[key];
 
-                    return Stack.Screen({ key, name: key, component, options });
+                    return Stack.Screen({ key, name: key, component, options, renderActionBar });
                   }),
                 }),
               }),
@@ -89,11 +89,12 @@ function createTabNavigator(position: Position) {
     });
   });
 
-  const Screen = createComponent<TabScreenProps>(({ name, component, options }) => {
+  const Screen = createComponent<TabScreenProps>(({ name, component, options, renderActionBar }) => {
     descriptorsMap[name] = {
       name,
       component,
       options,
+      renderActionBar,
     };
 
     return tabViewItem({

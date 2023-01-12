@@ -615,9 +615,9 @@ export type ActionItemAttributes = WithStandardElementAttributes<
   ViewBaseAttributes & {
     actionBar?: ActionBar;
     actionView?: View;
-    android?: AndroidActionItemSettings;
+    android?: Partial<AndroidActionItemSettings>;
     icon?: string;
-    ios?: IOSActionItemSettings;
+    ios?: Partial<IOSActionItemSettings>;
     onIconChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
     onTap?: (e: SyntheticEvent<EventData>) => void;
     onTextChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
@@ -627,7 +627,7 @@ export type ActionItemAttributes = WithStandardElementAttributes<
   }
 >;
 
-export type NavigationButtonAttributes = WithStandardElementAttributes<ActionItemAttributes & {}>;
+export type NavigationButtonAttributes = PartialSlot<WithStandardElementAttributes<ActionItemAttributes & {}>>;
 
 export type ActivityIndicatorAttributes = Omit<
   WithStandardElementAttributes<

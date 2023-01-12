@@ -36,6 +36,7 @@ export type StackScreenProps = {
   name: string;
   component: Component;
   options?: StackScreenOptions;
+  renderActionBar?: () => typeof ActionBar;
 };
 
 export type StackScreenOptions = {
@@ -160,7 +161,7 @@ function createStackNavigator() {
     }),
   );
 
-  const Screen = createComponent<StackScreenProps>(({ name, component, options = {} }) => {
+  const Screen = createComponent<StackScreenProps>(({ name, component, options = {}, renderActionBar }) => {
     const { title, headerShown = true } = options;
     const { setPathname } = useStackNavigatorContext();
     const { prefix } = useScreenNavigatorContext();
@@ -179,7 +180,7 @@ function createStackNavigator() {
           ref: setRef,
           actionBarHidden: !headerShown,
           onNavigatingTo: () => setPathname(pathname),
-          slot: [ActionBar({ title }), component()],
+          slot: [detectIsFunction(renderActionBar) ? renderActionBar() : ActionBar({ title }), component()],
         }),
       ],
     });

@@ -1,9 +1,9 @@
 import type { LayoutBase, View, ContentView, AddChildFromBuilder } from '@nativescript/core';
-import { NodeType, ROOT, detectIsNumber, detectIsFunction } from '@dark-engine/core';
+import { NodeType, ROOT, detectIsNumber, detectIsFunction, detectIsObject } from '@dark-engine/core';
 
 import { createSyntheticEventHandler } from '../events';
 import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
-import { ATTR_TEXT, DARK_NATIVE_ELEMENT } from '../constants';
+import { ANDROID, IOS, ATTR_TEXT, DARK_NATIVE_ELEMENT } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -109,7 +109,16 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
 
   public setAttribute(name: string, value: AttributeValue) {
     this.attrs[name] = value;
-    this.nativeView[name] = value;
+
+    if (name === ANDROID || name === IOS) {
+      if (detectIsObject(value)) {
+        for (const key of Object.keys(value)) {
+          this.nativeView[name][key] = value[key];
+        }
+      }
+    } else {
+      this.nativeView[name] = value;
+    }
   }
 
   public removeAttribute(name: string) {
@@ -257,7 +266,7 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
   }
 }
 
-export type AttributeValue = string | number | boolean;
+export type AttributeValue = string | number | boolean | object;
 
 function getTagNativeElement(view: NSElement) {
   return view[DARK_NATIVE_ELEMENT] as TagNativeElement;
