@@ -1,16 +1,14 @@
 import { ActionBar as NSActionBar } from '@nativescript/core';
-
 import { createComponent, forwardRef, useRef, useImperativeHandle } from '@dark-engine/core';
+
 import { ActionBarAttributes } from '../jsx';
-import { factory } from '../factory';
+import { actionBar } from '../factory';
 
 export type ActionBarProps = ActionBarAttributes;
 
 export type ActionBarRef = {
   view: NSActionBar;
 };
-
-const actionBar = factory('action-bar');
 
 const ActionBar = forwardRef<ActionBarProps, ActionBarRef>(
   createComponent((props, ref) => {

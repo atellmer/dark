@@ -1,6 +1,6 @@
 import type { LayoutBase, View, ContentView, AddChildFromBuilder } from '@nativescript/core';
-
 import { NodeType, ROOT, detectIsNumber, detectIsFunction } from '@dark-engine/core';
+
 import { createSyntheticEventHandler } from '../events';
 import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
 import { ATTR_TEXT, DARK_NATIVE_ELEMENT } from '../constants';

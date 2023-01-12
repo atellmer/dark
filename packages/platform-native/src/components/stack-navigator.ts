@@ -1,5 +1,4 @@
 import { CoreTypes, type NavigationTransition, type Page, type Frame } from '@nativescript/core';
-
 import {
   type Component,
   type ComponentFactory,
@@ -17,6 +16,7 @@ import {
   useMemo,
   memo,
 } from '@dark-engine/core';
+
 import { ActionBar } from './action-bar';
 import { frame, page } from '../factory';
 import { SLASH } from '../constants';

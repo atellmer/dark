@@ -1,7 +1,14 @@
-import { Page } from '@nativescript/core';
-import type { Frame, LayoutBase, View, ContentView, FormattedString, Span } from '@nativescript/core';
-
+import {
+  type Frame,
+  type LayoutBase,
+  type View,
+  type ContentView,
+  type FormattedString,
+  type Span,
+  Page,
+} from '@nativescript/core';
 import { ROOT } from '@dark-engine/core';
+
 import { type TagNativeElement } from '../native-element';
 
 export const enum NSViewFlag {

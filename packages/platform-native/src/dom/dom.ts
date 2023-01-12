@@ -15,10 +15,10 @@ import {
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
-  detectIsMutableRef,
   walkFiber,
   applyRef as applyRef$,
 } from '@dark-engine/core';
+
 import { detectIsEvent, getEventName } from '../events';
 import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
 import { type NSElement } from '../registry';

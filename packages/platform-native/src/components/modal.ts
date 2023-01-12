@@ -1,8 +1,8 @@
 import { type View as NSView, type ShowModalOptions } from '@nativescript/core';
-
 import { type DarkElement, createComponent, useRef, useEffect } from '@dark-engine/core';
-import { View, ViewRef } from './view';
-import { Button, type ButtonRef } from './button';
+
+import { type ViewRef, View } from './view';
+import { type ButtonRef, Button } from './button';
 
 export type ModalProps = {
   isOpen: boolean;

@@ -16,10 +16,7 @@ class SyntheticEvent<E extends EventData, T = TagNativeElement> {
 
 function createSyntheticEventHandler(handler: Function) {
   const syntheticHandler = (sourceEvent: EventData) => {
-    const event = new SyntheticEvent({
-      sourceEvent,
-      target: sourceEvent.object,
-    });
+    const event = new SyntheticEvent({ sourceEvent, target: sourceEvent.object });
 
     handler(event);
   };

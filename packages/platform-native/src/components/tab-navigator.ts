@@ -1,5 +1,4 @@
 import { PropertyChangeData } from '@nativescript/core';
-
 import {
   type ComponentFactory,
   type StandardComponentProps,
@@ -11,6 +10,7 @@ import {
   useLayoutEffect,
   batch,
 } from '@dark-engine/core';
+
 import { type SyntheticEvent } from '../events';
 import { type StackNavigatorRef, createStackNavigator, type StackScreenProps } from './stack-navigator';
 import { frame, page, gridLayout, stackLayout, tabView, tabViewItem, label } from '../factory';
