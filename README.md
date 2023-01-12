@@ -1,7 +1,7 @@
 <div align="center">
 <h1>Dark</h1>
 
-Dark is lightweight component-and-hook-based UI rendering engine for javascript apps without dependencies and written in TypeScript 💫
+Dark is lightweight UI rendering engine for javascript apps without dependencies and written in TypeScript (Browser, Server, Android, iOS) 💫
 
 <img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
@@ -24,8 +24,9 @@ Dark is lightweight component-and-hook-based UI rendering engine for javascript 
 - 🦄 Small size
 - 🌌 No dependencies
 - 💥 Tree-shakeable
-- 🎊 SSR support
+- 🎊 Server-side rendering support
 - 🏄‍♂️ Out of box isomorphic routing
+- 🛰 Rendering to native platforms (Android, iOS) via [{N} NativeScript]('https://nativescript.org/')
 
 ## Demos
 
@@ -78,10 +79,18 @@ yarn:
 ```
 yarn add @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
 ```
+## Installation for native platforms (Android, iOS)
+npm:
+```
+npm install @dark-engine/core @dark-engine/platform-native
+```
+yarn:
+```
+yarn add @dark-engine/core @dark-engine/platform-native
+```
 
 ## Usage
-
-The simple component:
+Simple example with component:
 
 ```tsx
 import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/core';
@@ -220,6 +229,54 @@ import {
   useMatch,
 } from '@dark-engine/web-router';
 ```
+```tsx
+import {
+  type SyntheticEvent,
+  run,
+  registerElement,
+  View,
+  Text,
+  Image,
+  Button,
+  ScrollView,
+  TouchableOpacity,
+  TextField,
+  Modal,
+  ActionBar,
+  ActionItem,
+  NavigationButton,
+  ActivityIndicator,
+  RootLayout,
+  AbsoluteLayout,
+  StackLayout,
+  FlexboxLayout,
+  GridLayout,
+  DockLayout,
+  WrapLayout,
+  ContentView,
+  HtmlView,
+  WebView,
+  Slider,
+  Switch,
+  Placeholder,
+  ListPicker,
+  DatePicker,
+  TimePicker,
+  Label,
+  TextView,
+  FormattedString,
+  Span,
+  TabView,
+  TabViewItem,
+  Frame,
+  Page,
+  factory,
+  useNavigation,
+  createStackNavigator,
+  createBottomTabNavigator,
+} from '@dark-engine/platform-native';
+```
+
 ## A little more about the core concepts...
 
 <a name="elements"></a>

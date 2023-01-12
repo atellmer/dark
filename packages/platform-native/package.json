@@ -1,7 +1,7 @@
 {
   "name": "@dark-engine/platform-native",
-  "version": "0.17.3",
-  "description": "Dark renderer for android and ios platforms",
+  "version": "0.18.0",
+  "description": "Dark renderer for native platforms (Android, iOS)",
   "author": "AlexPlex",
   "license": "MIT",
   "main": "./dist/cjs/index.js",
