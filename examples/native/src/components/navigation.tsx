@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { h, Fragment, createComponent } from '@dark-engine/core';
 import { createStackNavigator, createBottomTabNavigator, useNavigation, ActionBar } from '@dark-engine/platform-native';
 

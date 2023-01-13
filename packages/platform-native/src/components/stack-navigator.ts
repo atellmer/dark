@@ -211,4 +211,4 @@ function prependSlash(pathname: string) {
   return pathname.startsWith(SLASH) ? pathname : SLASH + pathname;
 }
 
-export { createStackNavigator, useNavigation };
+export { createStackNavigator };
