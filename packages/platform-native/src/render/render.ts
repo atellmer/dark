@@ -21,7 +21,6 @@ import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 
 let isInjected = false;
-let nextRootId = -1;
 
 function inject() {
   platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
@@ -40,16 +39,16 @@ function inject() {
 
 function render(element: DarkElement) {
   !isInjected && inject();
-  const rootId = getNextRootId();
 
   const callback = () => {
-    rootStore.set(rootId); // important order!
+    rootStore.set(0); // important order!
     const currentRoot = currentRootStore.get();
+    const isUpdate = Boolean(currentRoot);
     const fiber = new Fiber().mutate({
-      nativeElement: new TagNativeElement(ROOT),
+      nativeElement: isUpdate ? currentRoot.nativeElement : new TagNativeElement(ROOT),
       instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alternate: currentRoot,
-      effectTag: EffectTag.CREATE,
+      effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.CREATE,
     });
 
     fiberMountStore.reset();
@@ -68,12 +67,10 @@ function render(element: DarkElement) {
   return nativeView;
 }
 
-const getNextRootId = () => ++nextRootId;
-
 function run(element: DarkElement) {
   Application.run({
     create: () => render(element),
   });
 }
 
-export { run };
+export { run, render };

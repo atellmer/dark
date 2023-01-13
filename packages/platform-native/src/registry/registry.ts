@@ -68,7 +68,6 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
       throw Error('[Dark]: Frame must contain only Page!');
     }
   },
-  remove: () => {},
 });
 
 registerElement('page', () => require('@nativescript/core').Page);

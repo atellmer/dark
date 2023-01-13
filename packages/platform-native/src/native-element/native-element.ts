@@ -3,7 +3,7 @@ import { NodeType, ROOT, detectIsNumber, detectIsFunction, detectIsObject } from
 
 import { createSyntheticEventHandler } from '../events';
 import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
-import { ANDROID, IOS, ATTR_TEXT, DARK_NATIVE_ELEMENT } from '../constants';
+import { ANDROID, IOS, ATTR_TEXT } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -33,7 +33,6 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
 
     this.nativeView = create() as T;
     this.meta = meta;
-    this.nativeView && (this.nativeView[DARK_NATIVE_ELEMENT] = this);
   }
 
   public getNativeView(): T {
@@ -268,8 +267,4 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
 
 export type AttributeValue = string | number | boolean | object;
 
-function getTagNativeElement(view: NSElement) {
-  return view[DARK_NATIVE_ELEMENT] as TagNativeElement;
-}
-
-export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement, getTagNativeElement };
+export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement };

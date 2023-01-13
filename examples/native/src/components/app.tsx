@@ -1,81 +1,32 @@
-import { h, Fragment, createComponent } from '@dark-engine/core';
+import { AbsoluteLayout as NSAbsoluteLayout, Screen, View as NSView, Page as NSPage } from '@nativescript/core';
+import { h, Fragment, createComponent, useRef, useEffect } from '@dark-engine/core';
 import { createStackNavigator, createBottomTabNavigator, useNavigation, ActionBar } from '@dark-engine/platform-native';
 
-const Home = createComponent(() => {
-  const { navigateTo, goBack, prefix, pathname } = useNavigation();
-
-  return (
-    <stack-layout>
-      <label>Home</label>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Home`)}>
-        Home
-      </button>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/About`)}>
-        About
-      </button>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Contacts`)}>
-        Contacts
-      </button>
-    </stack-layout>
-  );
-});
-
-const About = createComponent(() => {
-  const { navigateTo, goBack, prefix } = useNavigation();
-
-  return (
-    <stack-layout>
-      <label>About</label>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Home`)}>
-        Home
-      </button>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/About`)}>
-        About
-      </button>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Contacts`)}>
-        Contacts
-      </button>
-    </stack-layout>
-  );
-});
-
-const Contacts = createComponent(() => {
-  const { navigateTo, goBack, prefix } = useNavigation();
-
-  return (
-    <stack-layout>
-      <label>Contacts</label>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Home`)}>
-        Home
-      </button>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/About`)}>
-        About
-      </button>
-      <button backgroundColor='blueviolet' onTap={() => navigateTo(`${prefix}/Contacts`)}>
-        Contacts
-      </button>
-    </stack-layout>
-  );
-});
-
-const Tab = createBottomTabNavigator();
-
 const App = createComponent(() => {
+  const rootRef = useRef<NSPage>(null);
+  const labelRef = useRef<NSAbsoluteLayout>(null);
+
   return (
-    <Tab.Navigator>
-      <Tab.Screen
-        name='Home'
-        component={Home}
-        renderActionBar={() => (
-          <ActionBar title='hello'>
-            <navigation-button text='Go back' android={{ systemIcon: 'ic_menu_back' }} />
-          </ActionBar>
-        )}
-      />
-      <Tab.Screen name='About' component={About} options={{ title: 'About' }} />
-      <Tab.Screen name='Contacts' component={Contacts} options={{ title: 'Contacts' }} />
-    </Tab.Navigator>
+    <frame>
+      <page ref={rootRef}>
+        <absolute-layout backgroundColor='purple'>
+          <label ref={labelRef} text='10,10' left='10' top='10' width='100' height='100' backgroundColor='#43b883' />
+          <label text='120,10' left='120' top='10' width='100' height='100' backgroundColor='#43b883' />
+          <label text='10,120' left='10' top='120' width='100' height='100' backgroundColor='#43b883' />
+          <label text='120,120' left='120' top='120' width='100' height='100' backgroundColor='#43b883' />
+        </absolute-layout>
+      </page>
+    </frame>
   );
 });
+
+const SCALE_FACTOR = Screen.mainScreen.scale;
+
+function getMeasuredSizeInDPI(view: NSView) {
+  return {
+    width: view.getMeasuredWidth() / SCALE_FACTOR,
+    height: view.getMeasuredHeight() / SCALE_FACTOR,
+  };
+}
 
 export default App;

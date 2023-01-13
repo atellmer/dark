@@ -1,5 +1,6 @@
 const { resolve } = require('path');
 const webpack = require('@nativescript/webpack');
+const { merge } = require('webpack-merge');
 
 module.exports = env => {
   webpack.init(env);
@@ -29,7 +30,18 @@ module.exports = env => {
       .options({
         transpileOnly: true,
       });
+
+    config.plugin('DefinePlugin').tap(args => {
+      args[0] = merge(args[0], {
+        __UI_USE_EXTERNAL_RENDERER__: true,
+        __UI_USE_XML_PARSER__: false,
+      });
+
+      return args;
+    });
   });
 
-  return webpack.resolveConfig();
+  const config = webpack.resolveConfig();
+
+  return config;
 };
