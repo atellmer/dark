@@ -13,7 +13,6 @@ export * from './modal';
 export * from './action-bar';
 export * from './action-item';
 export * from './navigation-button';
-export * from './stack-navigator';
 export * from './tab-navigator';
 export * from './root-layout';
 export * from './flexbox-layout';

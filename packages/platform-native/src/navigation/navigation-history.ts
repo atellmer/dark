@@ -48,6 +48,8 @@ class NavigationHistory {
           create: () => this.page,
           animated: false,
         });
+      case HistoryAction.REPLACE:
+        return null;
       case HistoryAction.BACK:
         return this.frame.goBack();
     }
@@ -66,6 +68,13 @@ class NavigationHistory {
     this.mapSubscribers();
   }
 
+  public replace(pathname: string) {
+    this.stack[this.cursor] = pathname;
+    this.cursor = this.stack.length - 1;
+    this.syncHistory(HistoryAction.REPLACE);
+    this.mapSubscribers();
+  }
+
   public back(sync = true) {
     this.cursor -= 1;
 
@@ -80,6 +89,7 @@ class NavigationHistory {
 
 enum HistoryAction {
   PUSH = 'PUSH',
+  REPLACE = 'REPLACE',
   BACK = 'BACK',
 }
 

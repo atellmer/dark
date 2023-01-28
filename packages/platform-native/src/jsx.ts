@@ -449,24 +449,26 @@ export type PageBaseAttributes = ContentViewAttributes & {
   statusBarStyle?: 'light' | 'dark';
 };
 
-export type PageAttributes = WithStandardElementAttributes<
-  PageBaseAttributes & {
-    accessibilityAnnouncePageEnabled?: boolean;
-    actionBar?: ActionBar;
-    actionBarHidden?: boolean;
-    androidStatusBarBackground?: string | Color;
-    backgroundSpanUnderStatusBar?: boolean;
-    enableSwipeBackNavigation?: boolean;
-    frame?: Frame;
-    hasActionBar?: boolean;
-    navigationContext?: any;
-    onAccessibilityPerformEscape?: () => boolean;
-    onNavigatedFrom?: (e: SyntheticEvent<NavigatedData>) => void;
-    onNavigatedTo?: (e: SyntheticEvent<NavigatedData>) => void;
-    onNavigatingFrom?: (e: SyntheticEvent<NavigatedData>) => void;
-    onNavigatingTo?: (e: SyntheticEvent<NavigatedData>) => void;
-    statusBarStyle?: 'light' | 'dark';
-  }
+export type PageAttributes = PartialSlot<
+  WithStandardElementAttributes<
+    PageBaseAttributes & {
+      accessibilityAnnouncePageEnabled?: boolean;
+      actionBar?: ActionBar;
+      actionBarHidden?: boolean;
+      androidStatusBarBackground?: string | Color;
+      backgroundSpanUnderStatusBar?: boolean;
+      enableSwipeBackNavigation?: boolean;
+      frame?: Frame;
+      hasActionBar?: boolean;
+      navigationContext?: any;
+      onAccessibilityPerformEscape?: () => boolean;
+      onNavigatedFrom?: (e: SyntheticEvent<NavigatedData>) => void;
+      onNavigatedTo?: (e: SyntheticEvent<NavigatedData>) => void;
+      onNavigatingFrom?: (e: SyntheticEvent<NavigatedData>) => void;
+      onNavigatingTo?: (e: SyntheticEvent<NavigatedData>) => void;
+      statusBarStyle?: 'light' | 'dark';
+    }
+  >
 >;
 
 export type ScrollViewAttributes = WithStandardElementAttributes<
