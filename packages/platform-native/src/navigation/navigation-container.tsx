@@ -12,7 +12,7 @@ import {
   createContext,
 } from '@dark-engine/core';
 
-import { createNavigationHistory, NavigationHistory } from './navigation-history';
+import { createNavigationHistory, NavigationHistory, type HistorySubscriber } from './navigation-history';
 import { SLASH } from '../constants';
 
 type NavigationContainerProps = {
@@ -43,16 +43,24 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
 
   const back = useEvent(() => scope.history.back());
 
-  const contextValue = useMemo<NavigationContextValue>(() => ({ pathname, push, replace, back }), [pathname]);
+  const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
+
+  const contextValue = useMemo<NavigationContextValue>(
+    () => ({ pathname, push, replace, back, subscribe }),
+    [pathname],
+  );
 
   return (
     <NavigationContext.Provider value={contextValue}>
       <frame>
         <page>
-          <frame ref={frameRef} hidden>
-            <page ref={pageRef} actionBarHidden />
-          </frame>
-          {slot}
+          <action-bar title='navigation'></action-bar>
+          <stack-layout>
+            <frame ref={frameRef} hidden>
+              <page ref={pageRef} actionBarHidden />
+            </frame>
+            {slot}
+          </stack-layout>
         </page>
       </frame>
     </NavigationContext.Provider>
@@ -68,6 +76,7 @@ type NavigationContextValue = {
   push: (pathname: string) => void;
   replace: (pathname: string) => void;
   back: () => void;
+  subscribe: (subscriber: HistorySubscriber) => () => void;
 };
 
 const NavigationContext = createContext<NavigationContextValue>(null);

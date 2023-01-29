@@ -3,13 +3,15 @@ import { h, Fragment, createComponent, useRef, useEffect } from '@dark-engine/co
 import { NavigationContainer, useNavigation, createStackNavigator } from '@dark-engine/platform-native';
 
 const Home = createComponent(() => {
+  const { push, back, pathname } = useNavigation();
+
   return (
     <stack-layout>
-      <label>home</label>
-      <button backgroundColor='purple' onTap={() => {}}>
+      <label>home: {pathname}</label>
+      <button backgroundColor='purple' onTap={() => push('/Contacts')}>
         forward
       </button>
-      <button backgroundColor='purple' onTap={() => {}}>
+      <button backgroundColor='purple' onTap={() => back()}>
         back
       </button>
     </stack-layout>

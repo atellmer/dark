@@ -1,5 +1,4 @@
 import { Frame, Page, NavigatedData } from '@nativescript/core';
-import { type SubscriberWithValue } from '@dark-engine/core';
 
 import { normalizePathname } from './utils';
 import { SLASH } from '../constants';
@@ -7,9 +6,10 @@ import { SLASH } from '../constants';
 class NavigationHistory {
   private stack: Array<string> = [];
   private cursor = -1;
-  private subscribers: Set<SubscriberWithValue<string>> = new Set();
+  private subscribers: Set<HistorySubscriber> = new Set();
   private frame: Frame;
   private page: Page;
+  private fromUserEvent = false;
   public dispose: () => void = null;
 
   constructor(frame: Frame, page: Page) {
@@ -19,6 +19,10 @@ class NavigationHistory {
     this.page = page;
 
     const handleBack = (e: NavigatedData) => {
+      if (this.fromUserEvent) {
+        this.fromUserEvent = false;
+        return;
+      }
       e.isBackNavigation && this.back(false);
     };
 
@@ -31,9 +35,9 @@ class NavigationHistory {
     this.page.on(NAVIGATED_FROM_EVENT, handleBack);
   }
 
-  private mapSubscribers() {
+  private mapSubscribers(action: HistoryAction) {
     for (const subscriber of this.subscribers) {
-      subscriber(this.getValue());
+      subscriber(this.getValue(), action);
     }
   }
 
@@ -55,39 +59,50 @@ class NavigationHistory {
     }
   }
 
-  public subscribe = (subscriber: SubscriberWithValue<string>) => {
+  public subscribe = (subscriber: HistorySubscriber) => {
     this.subscribers.add(subscriber);
 
     return () => this.subscribers.delete(subscriber);
   };
 
   public push(pathname: string) {
+    const action = HistoryAction.PUSH;
+
     this.stack.splice(this.cursor + 1, this.stack.length, pathname);
     this.cursor = this.stack.length - 1;
-    this.syncHistory(HistoryAction.PUSH);
-    this.mapSubscribers();
+    this.syncHistory(action);
+    this.mapSubscribers(action);
   }
 
   public replace(pathname: string) {
+    const action = HistoryAction.REPLACE;
+
     this.stack[this.cursor] = pathname;
     this.cursor = this.stack.length - 1;
-    this.syncHistory(HistoryAction.REPLACE);
-    this.mapSubscribers();
+    this.syncHistory(action);
+    this.mapSubscribers(action);
   }
 
   public back(sync = true) {
+    if (this.cursor === 0) return;
+
+    const action = HistoryAction.BACK;
+
+    this.fromUserEvent = sync;
     this.cursor -= 1;
 
     if (this.cursor < 0) {
       this.cursor = 0;
     }
 
-    sync && this.syncHistory(HistoryAction.BACK);
-    this.mapSubscribers();
+    sync && this.syncHistory(action);
+    this.mapSubscribers(action);
   }
 }
 
-enum HistoryAction {
+export type HistorySubscriber = (pathname: string, action: HistoryAction) => void;
+
+export enum HistoryAction {
   PUSH = 'PUSH',
   REPLACE = 'REPLACE',
   BACK = 'BACK',

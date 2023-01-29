@@ -4,7 +4,6 @@ import {
   type StandardComponentProps,
   type DarkElement,
   h,
-  Fragment,
   createComponent,
   createContext,
   detectIsFunction,
@@ -20,6 +19,7 @@ import {
 import { useNavigationContext } from './navigation-container';
 import { SLASH } from '../constants';
 import { createPathname } from './utils';
+import { HistoryAction } from './navigation-history';
 
 export type StackNavigatorProps = {
   slot: Array<ComponentFactory<StackScreenProps & StandardComponentProps>>;
@@ -34,29 +34,36 @@ export type StackScreenProps = {
 function createStackNavigator() {
   const Navigator = forwardRef<StackNavigatorProps, {}>(
     createComponent(({ slot }, _) => {
-      const { pathname, replace } = useNavigationContext();
+      const { pathname, replace, subscribe } = useNavigationContext();
       const { prefix } = useScreenNavigatorContext();
       const [currentTransition, setCurrentTransition] = useState<Transition>(null);
-      const scope = useMemo<Scope>(() => ({ transitionsQueue: [] }), []);
+      const scope = useMemo<Scope>(() => ({ transitionsQueue: [], pathname }), []);
       const pathnames = slot.map(x => createPathname(x.props.name, prefix));
       const slotsMap = keyBy(slot, x => createPathname(x.props.name, prefix), true);
 
-      useEffect(() => {
-        replace(pathnames[0]);
-      }, []);
+      scope.pathname = pathname;
 
       useEffect(() => {
-        const isMatch = pathnames.some(x => pathname.indexOf(x) !== -1);
-        if (!isMatch) return;
+        replace(pathnames[0]);
+
+        const unsubscribe = subscribe((pathname, action) => {
+          const isBack = action === HistoryAction.BACK;
+          const isMatch = detectIsMatch(pathname, pathnames);
+
+          isMatch && scheduleTransition(pathname, isBack);
+        });
+
+        return () => unsubscribe();
+      }, []);
+
+      const scheduleTransition = (to: string, isBack: boolean) => {
         const prevTransition = scope.transitionsQueue[scope.transitionsQueue.length - 1];
-        const transition: Transition = {
-          from: prevTransition?.to || currentTransition?.to || null,
-          to: pathname,
-        };
+        const from = prevTransition?.to || currentTransition?.to || scope.pathname;
+        const transition: Transition = { from, to, isBack };
 
         scope.transitionsQueue.push(transition);
         executeTransition();
-      }, [pathname]);
+      };
 
       const executeTransition = () => {
         if (currentTransition) return;
@@ -68,12 +75,9 @@ function createStackNavigator() {
       console.log('currentTransition', currentTransition);
 
       return (
-        <>
-          <action-bar title='navigation'></action-bar>
-          <absolute-layout width='100%' height='100%'>
-            {slot}
-          </absolute-layout>
-        </>
+        <absolute-layout width='100%' height='100%'>
+          {slot}
+        </absolute-layout>
       );
     }),
   );
@@ -99,10 +103,13 @@ function createStackNavigator() {
 type Transition = {
   from: string;
   to: string;
+  isBack: boolean;
+  duration?: number;
 };
 
 type Scope = {
   transitionsQueue: Array<Transition>;
+  pathname: string;
 };
 
 type ScreenNavigatorContextValue = {
@@ -114,6 +121,12 @@ const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({ pref
 
 function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);
+}
+
+function detectIsMatch(pathname: string, pathnames: Array<string>) {
+  const isMatch = pathnames.some(x => pathname.indexOf(x) !== -1);
+
+  return isMatch;
 }
 
 export { createStackNavigator };
