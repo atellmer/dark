@@ -22,7 +22,7 @@ import { createPathname } from './utils';
 import { HistoryAction } from './navigation-history';
 
 export type StackNavigatorProps = {
-  slot: Array<ComponentFactory<StackScreenProps & StandardComponentProps>>;
+  slot: Array<ScreenComponent>;
 };
 
 export type StackScreenProps = {
@@ -36,10 +36,9 @@ function createStackNavigator() {
     createComponent(({ slot }, _) => {
       const { pathname, replace, subscribe } = useNavigationContext();
       const { prefix } = useScreenNavigatorContext();
-      const [currentTransition, setCurrentTransition] = useState<Transition>(null);
+      const [transition, setTransition] = useState<Transition>(null);
       const scope = useMemo<Scope>(() => ({ transitionsQueue: [], pathname }), []);
       const pathnames = slot.map(x => createPathname(x.props.name, prefix));
-      const slotsMap = keyBy(slot, x => createPathname(x.props.name, prefix), true);
 
       scope.pathname = pathname;
 
@@ -58,25 +57,40 @@ function createStackNavigator() {
 
       const scheduleTransition = (to: string, isBack: boolean) => {
         const prevTransition = scope.transitionsQueue[scope.transitionsQueue.length - 1];
-        const from = prevTransition?.to || currentTransition?.to || scope.pathname;
-        const transition: Transition = { from, to, isBack };
+        const from = prevTransition?.to || transition?.to || scope.pathname;
+        const nextTransition: Transition = { from, to, isBack, duration: 1000 };
 
-        scope.transitionsQueue.push(transition);
+        scope.transitionsQueue.push(nextTransition);
         executeTransition();
       };
 
-      const executeTransition = () => {
-        if (currentTransition) return;
-        const transition = scope.transitionsQueue.shift();
+      const executeTransition = (fromCheck = false) => {
+        if (transition && !fromCheck) return;
+        const nextTransition = scope.transitionsQueue.shift();
+        if (!nextTransition) return setTransition(null);
 
-        setCurrentTransition(transition);
-
-        console.log('transition', transition);
+        setTransition(nextTransition);
+        setTimeout(() => {
+          executeTransition(true);
+        }, nextTransition.duration);
       };
+
+      const rendered = useMemo(
+        () => ({ items: getItems({ slot, transition, pathname, prefix }) }),
+        [transition, pathname],
+      );
+
+      const colors = ['green', 'blue'];
 
       return (
         <absolute-layout width='100%' height='100%'>
-          {slot}
+          {rendered.items.map((x, idx) => {
+            return (
+              <stack-layout key={x.props.name} width='100%' height='100%' backgroundColor={colors[idx]}>
+                {x}
+              </stack-layout>
+            );
+          })}
         </absolute-layout>
       );
     }),
@@ -104,7 +118,7 @@ type Transition = {
   from: string;
   to: string;
   isBack: boolean;
-  duration?: number;
+  duration: number;
 };
 
 type Scope = {
@@ -145,5 +159,26 @@ function getSegment(pathname: string, prefix: string) {
 
   return segment;
 }
+
+type GetItemsOptions = {
+  transition: Transition;
+  pathname: string;
+  prefix: string;
+  slot: Array<ScreenComponent>;
+};
+
+function getItems(options: GetItemsOptions): Array<ScreenComponent> {
+  const { slot, transition, pathname, prefix } = options;
+  const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
+  const segmentFrom = transition ? getSegment(transition.from, prefix) : null;
+  const segmentTo = getSegment(transition ? transition.to : pathname, prefix);
+  const factoryFrom = slotsMap[segmentFrom] || null;
+  const factoryTo = slotsMap[segmentTo] || null;
+  const items = [factoryFrom, factoryTo].filter(Boolean);
+
+  return items;
+}
+
+type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;
 
 export { createStackNavigator };
