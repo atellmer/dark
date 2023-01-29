@@ -13,7 +13,7 @@ import {
 } from '@dark-engine/core';
 
 import { createNavigationHistory, NavigationHistory, type HistorySubscriber } from './navigation-history';
-import { SLASH } from '../constants';
+import { SLASH } from './constants';
 
 type NavigationContainerProps = {
   slot: DarkElement;

@@ -31,7 +31,7 @@ import {
 
 import { type SyntheticEvent } from '../events';
 import { useNavigationContext } from './navigation-container';
-import { SLASH } from '../constants';
+import { SLASH } from './constants';
 import { createPathname, detectIsMatch, getSegment } from './utils';
 import { HistoryAction } from './navigation-history';
 
@@ -77,7 +77,7 @@ function createStackNavigator() {
         let animation: Animation = null;
 
         (async () => {
-          animation = createSlideAnimation({
+          animation = createAnimation({
             targetFrom: layoutFromRef.current,
             targetTo: layoutToRef.current,
             size: scope.size,
@@ -107,7 +107,13 @@ function createStackNavigator() {
       const scheduleTransition = (to: string, isBack: boolean) => {
         const prevTransition = scope.transitionsQueue[scope.transitionsQueue.length - 1];
         const from = prevTransition?.to || transition?.to || scope.pathname;
-        const nextTransition: Transition = { from, to, isBack, duration: TRANSITION_DURATION };
+        const nextTransition: Transition = {
+          from,
+          to,
+          isBack,
+          duration: DEFAULT_TRANSITION_DURATION,
+          type: AnimationType.SLIDE,
+        };
 
         scope.transitionsQueue.push(nextTransition);
         executeTransition();
@@ -171,13 +177,6 @@ function createStackNavigator() {
   };
 }
 
-type Transition = {
-  from: string;
-  to: string;
-  isBack: boolean;
-  duration: number;
-};
-
 type Scope = {
   transitionsQueue: Array<Transition>;
   pathname: string;
@@ -221,14 +220,63 @@ function getItems(options: GetItemsOptions): Array<ScreenComponent> {
 
 type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;
 
-type CreateSlideAnimationOptions = {
+type Transition = {
+  from: string;
+  to: string;
+  isBack: boolean;
+  duration: number;
+  type: AnimationType;
+};
+
+enum AnimationType {
+  SLIDE = 'SLIDE',
+  FADE = 'FADE',
+}
+
+type CreateAnimationOptions = {
   transition: Transition;
   targetFrom: StackLayout;
   targetTo: StackLayout;
   size: Size;
 };
 
-function createSlideAnimation(options: CreateSlideAnimationOptions): Animation {
+function createAnimation(options: CreateAnimationOptions) {
+  const { transition } = options;
+  const map = {
+    [AnimationType.FADE]: createFadeAnimation,
+    [AnimationType.SLIDE]: createSlideAnimation,
+  };
+
+  return map[transition.type] ? map[transition.type](options) : null;
+}
+
+function createFadeAnimation(options: CreateAnimationOptions): Animation {
+  const { transition, targetFrom, targetTo } = options;
+  const { duration } = transition;
+  const curve = CoreTypes.AnimationCurve.easeInOut;
+  const animations: Array<AnimationDefinition> = [
+    {
+      target: targetFrom,
+      opacity: 0,
+      duration,
+      curve,
+    },
+    {
+      target: targetTo,
+      opacity: 1,
+      duration,
+      curve,
+    },
+  ];
+  const animation = new Animation(animations);
+
+  targetTo.opacity = 0;
+  targetTo.visibility = 'visible';
+
+  return animation;
+}
+
+function createSlideAnimation(options: CreateAnimationOptions): Animation {
   const { transition, targetFrom, targetTo, size } = options;
   const { duration, isBack } = transition;
   const { width } = size;
@@ -256,6 +304,6 @@ function createSlideAnimation(options: CreateSlideAnimationOptions): Animation {
 }
 
 const FULL = '100%';
-const TRANSITION_DURATION = 200;
+const DEFAULT_TRANSITION_DURATION = 200;
 
 export { createStackNavigator };

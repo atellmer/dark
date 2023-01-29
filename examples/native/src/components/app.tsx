@@ -45,7 +45,7 @@ const Settings = createComponent(() => {
 
   return (
     <stack-layout backgroundColor='#ec407a' height='100%'>
-      <label>Contacts</label>
+      <label>Settings</label>
       <button backgroundColor='purple' onTap={() => push('/Home')}>
         go to home
       </button>

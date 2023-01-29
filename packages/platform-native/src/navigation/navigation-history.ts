@@ -1,7 +1,7 @@
 import { Frame, Page, NavigatedData } from '@nativescript/core';
 
 import { normalizePathname } from './utils';
-import { SLASH } from '../constants';
+import { SLASH } from './constants';
 
 class NavigationHistory {
   private stack: Array<string> = [];
