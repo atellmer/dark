@@ -1,8 +1,8 @@
 import { EventData } from '@nativescript/core';
 
-import type { TagNativeElement } from '../native-element';
+import { type NSElement } from '../registry';
 
-class SyntheticEvent<E extends EventData, T = TagNativeElement> {
+class SyntheticEvent<E extends EventData, T = NSElement> {
   public type = '';
   public sourceEvent: E = null;
   public target: T = null;

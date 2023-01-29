@@ -1,4 +1,14 @@
 import {
+  type AbsoluteLayout,
+  type StackLayout,
+  type EventData,
+  type AnimationDefinition,
+  Screen as DeviceScreen,
+  Animation,
+  CoreTypes,
+} from '@nativescript/core';
+
+import {
   type Component,
   type ComponentFactory,
   type StandardComponentProps,
@@ -8,17 +18,21 @@ import {
   createContext,
   detectIsFunction,
   forwardRef,
+  memo,
   useContext,
   useMemo,
-  memo,
   useState,
   useEffect,
+  useEvent,
+  useRef,
   keyBy,
+  error,
 } from '@dark-engine/core';
 
+import { type SyntheticEvent } from '../events';
 import { useNavigationContext } from './navigation-container';
 import { SLASH } from '../constants';
-import { createPathname } from './utils';
+import { createPathname, detectIsMatch, getSegment } from './utils';
 import { HistoryAction } from './navigation-history';
 
 export type StackNavigatorProps = {
@@ -37,8 +51,11 @@ function createStackNavigator() {
       const { pathname, replace, subscribe } = useNavigationContext();
       const { prefix } = useScreenNavigatorContext();
       const [transition, setTransition] = useState<Transition>(null);
-      const scope = useMemo<Scope>(() => ({ transitionsQueue: [], pathname }), []);
+      const scope = useMemo<Scope>(() => ({ transitionsQueue: [], size: null, pathname }), []);
       const pathnames = slot.map(x => createPathname(x.props.name, prefix));
+      const rootRef = useRef<AbsoluteLayout>(null);
+      const layoutFromRef = useRef<StackLayout>(null);
+      const layoutToRef = useRef<StackLayout>(null);
 
       scope.pathname = pathname;
 
@@ -55,10 +72,38 @@ function createStackNavigator() {
         return () => unsubscribe();
       }, []);
 
+      useEffect(() => {
+        if (!transition) return;
+        (async () => {
+          const animation = createSlideAnimation({
+            targetFrom: layoutFromRef.current,
+            targetTo: layoutToRef.current,
+            size: scope.size,
+            transition,
+          });
+
+          try {
+            await animation.play();
+            executeTransition(true);
+          } catch (err) {
+            error(err);
+          }
+        })();
+      }, [transition]);
+
+      const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
+        const { target } = e;
+        const scale = DeviceScreen.mainScreen.scale;
+        const width = target.getMeasuredWidth() / scale;
+        const height = target.getMeasuredHeight() / scale;
+
+        scope.size = { width, height };
+      });
+
       const scheduleTransition = (to: string, isBack: boolean) => {
         const prevTransition = scope.transitionsQueue[scope.transitionsQueue.length - 1];
         const from = prevTransition?.to || transition?.to || scope.pathname;
-        const nextTransition: Transition = { from, to, isBack, duration: 1000 };
+        const nextTransition: Transition = { from, to, isBack, duration: TRANSITION_DURATION };
 
         scope.transitionsQueue.push(nextTransition);
         executeTransition();
@@ -67,12 +112,14 @@ function createStackNavigator() {
       const executeTransition = (fromCheck = false) => {
         if (transition && !fromCheck) return;
         const nextTransition = scope.transitionsQueue.shift();
-        if (!nextTransition) return setTransition(null);
+        if (!nextTransition) {
+          layoutFromRef.current = null;
+          layoutToRef.current = null;
+
+          return setTransition(null);
+        }
 
         setTransition(nextTransition);
-        setTimeout(() => {
-          executeTransition(true);
-        }, nextTransition.duration);
       };
 
       const rendered = useMemo(
@@ -80,13 +127,18 @@ function createStackNavigator() {
         [transition, pathname],
       );
 
-      const colors = ['green', 'blue'];
-
       return (
-        <absolute-layout width='100%' height='100%'>
+        <absolute-layout ref={rootRef} width={FULL} height={FULL} onLayoutChanged={handleLayoutChanged}>
           {rendered.items.map((x, idx) => {
+            const isTo = idx === 1;
+
             return (
-              <stack-layout key={x.props.name} width='100%' height='100%' backgroundColor={colors[idx]}>
+              <stack-layout
+                ref={idx === 0 ? layoutFromRef : layoutToRef}
+                key={x.props.name}
+                width={FULL}
+                height={FULL}
+                visibility={isTo ? 'hidden' : 'visible'}>
                 {x}
               </stack-layout>
             );
@@ -124,6 +176,12 @@ type Transition = {
 type Scope = {
   transitionsQueue: Array<Transition>;
   pathname: string;
+  size: Size;
+};
+
+type Size = {
+  width: number;
+  height: number;
 };
 
 type ScreenNavigatorContextValue = {
@@ -135,29 +193,6 @@ const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({ pref
 
 function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);
-}
-
-type DetectIsMatchOptions = {
-  prevPathname: string;
-  nextPathname: string;
-  pathnames: Array<string>;
-  prefix: string;
-};
-
-function detectIsMatch(options: DetectIsMatchOptions) {
-  const { prevPathname, nextPathname, pathnames, prefix } = options;
-  const hasSameRoute = pathnames.some(x => nextPathname.indexOf(x) !== -1);
-  const nextSegment = getSegment(nextPathname, prefix);
-  const prevSegment = getSegment(prevPathname, prefix);
-  const isMatch = hasSameRoute && nextSegment !== prevSegment;
-
-  return isMatch;
-}
-
-function getSegment(pathname: string, prefix: string) {
-  const [segment] = pathname.replace(prefix, '').split(SLASH).filter(Boolean);
-
-  return segment;
 }
 
 type GetItemsOptions = {
@@ -180,5 +215,42 @@ function getItems(options: GetItemsOptions): Array<ScreenComponent> {
 }
 
 type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;
+
+type CreateSlideAnimationOptions = {
+  transition: Transition;
+  targetFrom: StackLayout;
+  targetTo: StackLayout;
+  size: Size;
+};
+
+function createSlideAnimation(options: CreateSlideAnimationOptions) {
+  const { transition, targetFrom, targetTo, size } = options;
+  const { duration, isBack } = transition;
+  const { width } = size;
+  const curve = CoreTypes.AnimationCurve.easeInOut;
+  const animations: Array<AnimationDefinition> = [
+    {
+      target: targetFrom,
+      translate: { x: isBack ? width : -1 * width, y: 0 },
+      duration,
+      curve,
+    },
+    {
+      target: targetTo,
+      translate: { x: 0, y: 0 },
+      duration,
+      curve,
+    },
+  ];
+  const animation = new Animation(animations);
+
+  targetTo.translateX = isBack ? -1 * width : width;
+  targetTo.visibility = 'visible';
+
+  return animation;
+}
+
+const FULL = '100%';
+const TRANSITION_DURATION = 200;
 
 export { createStackNavigator };

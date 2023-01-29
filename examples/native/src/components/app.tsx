@@ -6,13 +6,51 @@ const Home = createComponent(() => {
   const { push, back, pathname } = useNavigation();
 
   return (
-    <stack-layout>
-      <label>home: {pathname}</label>
+    <stack-layout backgroundColor='#26c6da' height='100%'>
+      <label>Home</label>
       <button backgroundColor='purple' onTap={() => push('/Contacts')}>
-        forward 1
+        go to contacts
       </button>
       <button backgroundColor='purple' onTap={() => push('/Settings')}>
-        forward 2
+        go to settings
+      </button>
+      <button backgroundColor='purple' onTap={() => back()}>
+        back
+      </button>
+    </stack-layout>
+  );
+});
+
+const Contacts = createComponent(() => {
+  const { push, back, pathname } = useNavigation();
+
+  return (
+    <stack-layout backgroundColor='#66bb6a' height='100%'>
+      <label>Contacts</label>
+      <button backgroundColor='purple' onTap={() => push('/Home')}>
+        go to home
+      </button>
+      <button backgroundColor='purple' onTap={() => push('/Settings')}>
+        go to settings
+      </button>
+      <button backgroundColor='purple' onTap={() => back()}>
+        back
+      </button>
+    </stack-layout>
+  );
+});
+
+const Settings = createComponent(() => {
+  const { push, back, pathname } = useNavigation();
+
+  return (
+    <stack-layout backgroundColor='#ec407a' height='100%'>
+      <label>Contacts</label>
+      <button backgroundColor='purple' onTap={() => push('/Home')}>
+        go to home
+      </button>
+      <button backgroundColor='purple' onTap={() => push('/Contacts')}>
+        go to contacts
       </button>
       <button backgroundColor='purple' onTap={() => back()}>
         back
@@ -28,8 +66,8 @@ const App = createComponent(() => {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name='Home'>{() => <Home />}</Stack.Screen>
-        <Stack.Screen name='Contacts'>{() => <label>Contacts</label>}</Stack.Screen>
-        <Stack.Screen name='Settings'>{() => <label>Settings</label>}</Stack.Screen>
+        <Stack.Screen name='Contacts'>{() => <Contacts />}</Stack.Screen>
+        <Stack.Screen name='Settings'>{() => <Settings />}</Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
