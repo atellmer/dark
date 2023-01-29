@@ -9,7 +9,10 @@ const Home = createComponent(() => {
     <stack-layout>
       <label>home: {pathname}</label>
       <button backgroundColor='purple' onTap={() => push('/Contacts')}>
-        forward
+        forward 1
+      </button>
+      <button backgroundColor='purple' onTap={() => push('/Settings')}>
+        forward 2
       </button>
       <button backgroundColor='purple' onTap={() => back()}>
         back

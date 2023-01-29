@@ -48,7 +48,7 @@ function createStackNavigator() {
 
         const unsubscribe = subscribe((pathname, action) => {
           const isBack = action === HistoryAction.BACK;
-          const isMatch = detectIsMatch(pathname, pathnames);
+          const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
 
           isMatch && scheduleTransition(pathname, isBack);
         });
@@ -70,9 +70,9 @@ function createStackNavigator() {
         const transition = scope.transitionsQueue.shift();
 
         setCurrentTransition(transition);
-      };
 
-      console.log('currentTransition', currentTransition);
+        console.log('transition', transition);
+      };
 
       return (
         <absolute-layout width='100%' height='100%'>
@@ -123,10 +123,27 @@ function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);
 }
 
-function detectIsMatch(pathname: string, pathnames: Array<string>) {
-  const isMatch = pathnames.some(x => pathname.indexOf(x) !== -1);
+type DetectIsMatchOptions = {
+  prevPathname: string;
+  nextPathname: string;
+  pathnames: Array<string>;
+  prefix: string;
+};
+
+function detectIsMatch(options: DetectIsMatchOptions) {
+  const { prevPathname, nextPathname, pathnames, prefix } = options;
+  const hasSameRoute = pathnames.some(x => nextPathname.indexOf(x) !== -1);
+  const nextSegment = getSegment(nextPathname, prefix);
+  const prevSegment = getSegment(prevPathname, prefix);
+  const isMatch = hasSameRoute && nextSegment !== prevSegment;
 
   return isMatch;
+}
+
+function getSegment(pathname: string, prefix: string) {
+  const [segment] = pathname.replace(prefix, '').split(SLASH).filter(Boolean);
+
+  return segment;
 }
 
 export { createStackNavigator };
