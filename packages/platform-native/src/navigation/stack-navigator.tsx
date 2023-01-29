@@ -74,8 +74,10 @@ function createStackNavigator() {
 
       useEffect(() => {
         if (!transition) return;
+        let animation: Animation = null;
+
         (async () => {
-          const animation = createSlideAnimation({
+          animation = createSlideAnimation({
             targetFrom: layoutFromRef.current,
             targetTo: layoutToRef.current,
             size: scope.size,
@@ -89,6 +91,8 @@ function createStackNavigator() {
             error(err);
           }
         })();
+
+        return () => animation?.cancel();
       }, [transition]);
 
       const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
@@ -109,9 +113,10 @@ function createStackNavigator() {
         executeTransition();
       };
 
-      const executeTransition = (fromCheck = false) => {
-        if (transition && !fromCheck) return;
+      const executeTransition = (force = false) => {
+        if (transition && !force) return;
         const nextTransition = scope.transitionsQueue.shift();
+
         if (!nextTransition) {
           layoutFromRef.current = null;
           layoutToRef.current = null;
@@ -130,7 +135,7 @@ function createStackNavigator() {
       return (
         <absolute-layout ref={rootRef} width={FULL} height={FULL} onLayoutChanged={handleLayoutChanged}>
           {rendered.items.map((x, idx) => {
-            const isTo = idx === 1;
+            const isHidden = idx === 1;
 
             return (
               <stack-layout
@@ -138,7 +143,7 @@ function createStackNavigator() {
                 key={x.props.name}
                 width={FULL}
                 height={FULL}
-                visibility={isTo ? 'hidden' : 'visible'}>
+                visibility={isHidden ? 'hidden' : 'visible'}>
                 {x}
               </stack-layout>
             );
@@ -223,7 +228,7 @@ type CreateSlideAnimationOptions = {
   size: Size;
 };
 
-function createSlideAnimation(options: CreateSlideAnimationOptions) {
+function createSlideAnimation(options: CreateSlideAnimationOptions): Animation {
   const { transition, targetFrom, targetTo, size } = options;
   const { duration, isBack } = transition;
   const { width } = size;
