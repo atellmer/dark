@@ -10,6 +10,7 @@ import {
   NavigationContainer,
   useNavigation,
   StackNavigator,
+  TabNavigator,
   NavigationTransitionName,
   type NavigationOptions,
 } from '@dark-engine/platform-native';
@@ -83,11 +84,11 @@ const useAnimatedPush = (push: (pathname: string, options?: NavigationOptions) =
 const App = createComponent(() => {
   return (
     <NavigationContainer>
-      <StackNavigator.Root>
-        <StackNavigator.Screen name='Home' component={Home} />
-        <StackNavigator.Screen name='Contacts' component={Contacts} />
-        <StackNavigator.Screen name='Settings' component={Settings} />
-      </StackNavigator.Root>
+      <TabNavigator.Root>
+        <TabNavigator.Screen name='Home' component={Home} />
+        <TabNavigator.Screen name='Contacts' component={Contacts} />
+        <TabNavigator.Screen name='Settings' component={Settings} />
+      </TabNavigator.Root>
     </NavigationContainer>
   );
 });

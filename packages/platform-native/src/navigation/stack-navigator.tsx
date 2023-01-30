@@ -24,6 +24,7 @@ import {
   useState,
   useEffect,
   useEvent,
+  useImperativeHandle,
   keyBy,
   error,
 } from '@dark-engine/core';
@@ -36,11 +37,19 @@ import { HistoryAction } from './navigation-history';
 
 export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;
+  onNavigate?: (pathname: string, idx: number) => void;
 };
 
-const Navigator = forwardRef<StackNavigatorProps, {}>(
-  createComponent(({ slot }, _) => {
-    const { pathname, replace, subscribe } = useNavigationContext();
+export type StackNavigatorRef = {
+  push: (pathname: string, options?: NavigationOptions) => void;
+  replace: (pathname: string) => void;
+  back: () => void;
+  getPathnameByIdx: (idx: number) => string;
+};
+
+const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
+  createComponent(({ slot, onNavigate }, ref) => {
+    const { pathname, push, replace, back, subscribe } = useNavigationContext();
     const { prefix } = useScreenNavigatorContext();
     const [transition, setTransition] = useState<Transition>(null);
     const scope = useMemo<Scope>(
@@ -57,8 +66,10 @@ const Navigator = forwardRef<StackNavigatorProps, {}>(
       const unsubscribe = subscribe((pathname, action, options) => {
         const isBack = action === HistoryAction.BACK;
         const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
+        const idx = pathnames.findIndex(x => x === pathname);
 
         isMatch && scheduleTransition(pathname, isBack, options);
+        detectIsFunction(onNavigate) && onNavigate(pathname, idx);
       });
 
       return () => unsubscribe();
@@ -99,6 +110,13 @@ const Navigator = forwardRef<StackNavigatorProps, {}>(
 
       return () => animation?.cancel();
     }, [transition]);
+
+    useImperativeHandle(ref, () => ({
+      push,
+      replace,
+      back,
+      getPathnameByIdx: (idx: number) => pathnames[idx],
+    }));
 
     const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
       scope.size = getMeasuredSizeInDPI(e.target);
@@ -357,6 +375,6 @@ function getMeasuredSizeInDPI(view: AbsoluteLayout): Size {
 
 const SCALE_FACTOR = DeviceScreen.mainScreen.scale;
 const FULL = '100%';
-const DEFAULT_TRANSITION_DURATION = 200;
+const DEFAULT_TRANSITION_DURATION = 100;
 
 export { StackNavigator };
