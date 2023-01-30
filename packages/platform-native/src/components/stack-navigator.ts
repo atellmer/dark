@@ -20,8 +20,8 @@ import {
 
 import { ActionBar } from './action-bar';
 import { frame, page } from '../factory';
-import { SLASH } from '../constants';
 
+const SLASH = '/';
 const refsMap: Record<string, Page> = {};
 
 export type StackNavigatorProps = {

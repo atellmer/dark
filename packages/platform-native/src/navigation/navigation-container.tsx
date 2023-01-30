@@ -13,7 +13,7 @@ import {
 } from '@dark-engine/core';
 
 import { createNavigationHistory, NavigationHistory, type HistorySubscriber } from './navigation-history';
-import { SLASH } from './constants';
+import { SLASH, TransitionName } from './constants';
 
 type NavigationContainerProps = {
   slot: DarkElement;
@@ -37,7 +37,7 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
     };
   }, []);
 
-  const push = useEvent((pathname: string) => scope.history.push(pathname));
+  const push = useEvent((pathname: string, options?: NavigationOptions) => scope.history.push(pathname, options));
 
   const replace = useEvent((pathname: string) => scope.history.replace(pathname));
 
@@ -73,7 +73,7 @@ type Scope = {
 
 type NavigationContextValue = {
   pathname: string;
-  push: (pathname: string) => void;
+  push: (pathname: string, options?: NavigationOptions) => void;
   replace: (pathname: string) => void;
   back: () => void;
   subscribe: (subscriber: HistorySubscriber) => () => void;
@@ -90,5 +90,16 @@ function useNavigationContext() {
 function useNavigation() {
   return useNavigationContext();
 }
+
+export type NavigationOptions = {
+  animated?: boolean;
+  transition?: AnimatedTransition;
+};
+
+type AnimatedTransition = {
+  name?: TransitionName;
+  duration?: number;
+  curve?: string;
+};
 
 export { NavigationContainer, useNavigationContext, useNavigation };

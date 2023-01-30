@@ -24,14 +24,13 @@ import {
   useState,
   useEffect,
   useEvent,
-  useRef,
   keyBy,
   error,
 } from '@dark-engine/core';
 
 import { type SyntheticEvent } from '../events';
-import { useNavigationContext } from './navigation-container';
-import { SLASH } from './constants';
+import { useNavigationContext, type NavigationOptions } from './navigation-container';
+import { SLASH, TransitionName } from './constants';
 import { createPathname, detectIsMatch, getSegment } from './utils';
 import { HistoryAction } from './navigation-history';
 
@@ -45,142 +44,173 @@ export type StackScreenProps = {
   slot?: () => DarkElement;
 };
 
-function createStackNavigator() {
-  const Navigator = forwardRef<StackNavigatorProps, {}>(
-    createComponent(({ slot }, _) => {
-      const { pathname, replace, subscribe } = useNavigationContext();
-      const { prefix } = useScreenNavigatorContext();
-      const [transition, setTransition] = useState<Transition>(null);
-      const scope = useMemo<Scope>(() => ({ transitionsQueue: [], size: null, pathname }), []);
-      const pathnames = slot.map(x => createPathname(x.props.name, prefix));
-      const rootRef = useRef<AbsoluteLayout>(null);
-      const layoutFromRef = useRef<StackLayout>(null);
-      const layoutToRef = useRef<StackLayout>(null);
+const Navigator = forwardRef<StackNavigatorProps, {}>(
+  createComponent(({ slot }, _) => {
+    const { pathname, replace, subscribe } = useNavigationContext();
+    const { prefix } = useScreenNavigatorContext();
+    const [transition, setTransition] = useState<Transition>(null);
+    const scope = useMemo<Scope>(
+      () => ({ transitionsQueue: [], backTransitionsStack: [], size: null, isBusy: false, refsMap: {}, pathname }),
+      [],
+    );
+    const pathnames = slot.map(x => createPathname(x.props.name, prefix));
 
-      scope.pathname = pathname;
+    scope.pathname = pathname;
 
-      useEffect(() => {
-        replace(pathnames[0]);
+    useEffect(() => {
+      replace(pathnames[0]);
 
-        const unsubscribe = subscribe((pathname, action) => {
-          const isBack = action === HistoryAction.BACK;
-          const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
+      const unsubscribe = subscribe((pathname, action, options) => {
+        const isBack = action === HistoryAction.BACK;
+        const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
 
-          isMatch && scheduleTransition(pathname, isBack);
-        });
+        isMatch && scheduleTransition(pathname, isBack, options);
+      });
 
-        return () => unsubscribe();
-      }, []);
+      return () => unsubscribe();
+    }, []);
 
-      useEffect(() => {
-        if (!transition) return;
-        let animation: Animation = null;
+    useEffect(() => {
+      if (!transition) return;
+      let animation: Animation = null;
 
+      if (transition.options.animated) {
         (async () => {
+          const targetFrom = matchRef(scope.refsMap, transition.from);
+          const targetTo = matchRef(scope.refsMap, transition.to);
+
+          if (!targetFrom || !targetTo) {
+            throw new Error('[Dark]: Can not resolve ref for transition!');
+          }
+
           animation = createAnimation({
-            targetFrom: layoutFromRef.current,
-            targetTo: layoutToRef.current,
+            targetFrom,
+            targetTo,
             size: scope.size,
             transition,
           });
 
           try {
             await animation.play();
-            executeTransition(true);
+            scope.isBusy = false;
+            executeTransitions();
           } catch (err) {
             error(err);
           }
         })();
+      } else {
+        scope.isBusy = false;
+        executeTransitions();
+      }
 
-        return () => animation?.cancel();
-      }, [transition]);
+      return () => animation?.cancel();
+    }, [transition]);
 
-      const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
-        const { target } = e;
-        const scale = DeviceScreen.mainScreen.scale;
-        const width = target.getMeasuredWidth() / scale;
-        const height = target.getMeasuredHeight() / scale;
+    const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
+      const { target } = e;
+      const scale = DeviceScreen.mainScreen.scale;
+      const width = target.getMeasuredWidth() / scale;
+      const height = target.getMeasuredHeight() / scale;
 
-        scope.size = { width, height };
-      });
+      scope.size = { width, height };
+    });
 
-      const scheduleTransition = (to: string, isBack: boolean) => {
+    const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
+      if (isBack) {
+        const transition = scope.backTransitionsStack.pop();
+
+        scope.transitionsQueue.push(transition);
+      } else {
         const prevTransition = scope.transitionsQueue[scope.transitionsQueue.length - 1];
         const from = prevTransition?.to || transition?.to || scope.pathname;
         const nextTransition: Transition = {
           from,
           to,
-          isBack,
-          duration: DEFAULT_TRANSITION_DURATION,
-          type: AnimationType.SLIDE,
+          isBack: false,
+          options: resolveNavigationOptions(options),
+        };
+        const backTransition: Transition = {
+          ...nextTransition,
+          isBack: true,
+          from: nextTransition.to,
+          to: nextTransition.from,
         };
 
         scope.transitionsQueue.push(nextTransition);
-        executeTransition();
-      };
+        scope.backTransitionsStack.push(backTransition);
+      }
 
-      const executeTransition = (force = false) => {
-        if (transition && !force) return;
-        const nextTransition = scope.transitionsQueue.shift();
+      executeTransitions();
+    };
 
-        if (!nextTransition) {
-          layoutFromRef.current = null;
-          layoutToRef.current = null;
+    const executeTransitions = () => {
+      if (scope.isBusy) return;
+      const nextTransition = scope.transitionsQueue.shift();
 
-          return setTransition(null);
-        }
+      if (!nextTransition) {
+        scope.refsMap = {};
 
-        setTransition(nextTransition);
-      };
+        return setTransition(null);
+      }
 
-      const rendered = useMemo(
-        () => ({ items: getItems({ slot, transition, pathname, prefix }) }),
-        [transition, pathname],
-      );
+      scope.isBusy = true;
+      setTransition(nextTransition);
+    };
 
-      return (
-        <absolute-layout ref={rootRef} width={FULL} height={FULL} onLayoutChanged={handleLayoutChanged}>
-          {rendered.items.map((x, idx) => {
-            const isHidden = idx === 1;
-
-            return (
-              <stack-layout
-                ref={idx === 0 ? layoutFromRef : layoutToRef}
-                key={x.props.name}
-                width={FULL}
-                height={FULL}
-                visibility={isHidden ? 'hidden' : 'visible'}>
-                {x}
-              </stack-layout>
-            );
-          })}
-        </absolute-layout>
-      );
-    }),
-  );
-
-  const Screen = createComponent<StackScreenProps>(({ name, component, slot }) => {
-    const { prefix } = useScreenNavigatorContext();
-    const pathname = createPathname(name, prefix);
-    const contextValue = useMemo(() => ({ prefix: pathname, parentPrefix: prefix }), []);
+    const rendered = useMemo(
+      () => ({ items: getItems({ slot, transition, pathname, prefix }) }),
+      [transition, pathname],
+    );
 
     return (
-      <ScreenNavigatorContext.Provider value={contextValue}>
-        {detectIsFunction(slot) ? slot() : component()}
-      </ScreenNavigatorContext.Provider>
-    );
-  });
+      <absolute-layout width={FULL} height={FULL} onLayoutChanged={handleLayoutChanged}>
+        {rendered.items.map((x, idx) => {
+          const isHidden = idx === 1;
+          const key = createPathname(x.props.name, prefix);
+          const setRef = (ref: StackLayout) => {
+            scope.refsMap[key] = ref;
+          };
 
-  return {
-    Navigator: memo(Navigator),
-    Screen,
-  };
-}
+          return (
+            <stack-layout
+              ref={setRef}
+              key={key}
+              width={FULL}
+              height={FULL}
+              visibility={isHidden ? 'hidden' : 'visible'}>
+              {x}
+            </stack-layout>
+          );
+        })}
+      </absolute-layout>
+    );
+  }),
+);
+
+const Screen = createComponent<StackScreenProps>(({ name, component, slot }) => {
+  const { prefix } = useScreenNavigatorContext();
+  const pathname = createPathname(name, prefix);
+  const contextValue = useMemo(() => ({ prefix: pathname, parentPrefix: prefix }), []);
+
+  return (
+    <ScreenNavigatorContext.Provider value={contextValue}>
+      {detectIsFunction(slot) ? slot() : component()}
+    </ScreenNavigatorContext.Provider>
+  );
+});
+
+const StackNavigator = {
+  Root: memo(Navigator),
+  Screen,
+};
 
 type Scope = {
   transitionsQueue: Array<Transition>;
+  backTransitionsStack: Array<Transition>;
+  isBusy: boolean;
   pathname: string;
   size: Size;
+  refsMap: Record<string, StackLayout>;
 };
 
 type Size = {
@@ -224,14 +254,8 @@ type Transition = {
   from: string;
   to: string;
   isBack: boolean;
-  duration: number;
-  type: AnimationType;
+  options: NavigationOptions;
 };
-
-enum AnimationType {
-  SLIDE = 'SLIDE',
-  FADE = 'FADE',
-}
 
 type CreateAnimationOptions = {
   transition: Transition;
@@ -241,19 +265,22 @@ type CreateAnimationOptions = {
 };
 
 function createAnimation(options: CreateAnimationOptions) {
-  const { transition } = options;
+  const {
+    transition: {
+      options: { transition },
+    },
+  } = options;
   const map = {
-    [AnimationType.FADE]: createFadeAnimation,
-    [AnimationType.SLIDE]: createSlideAnimation,
+    [TransitionName.FADE]: createFadeAnimation,
+    [TransitionName.SLIDE]: createSlideAnimation,
   };
 
-  return map[transition.type] ? map[transition.type](options) : null;
+  return map[transition.name] ? map[transition.name](options) : null;
 }
 
 function createFadeAnimation(options: CreateAnimationOptions): Animation {
   const { transition, targetFrom, targetTo } = options;
-  const { duration } = transition;
-  const curve = CoreTypes.AnimationCurve.easeInOut;
+  const { duration, curve } = transition.options.transition;
   const animations: Array<AnimationDefinition> = [
     {
       target: targetFrom,
@@ -278,9 +305,9 @@ function createFadeAnimation(options: CreateAnimationOptions): Animation {
 
 function createSlideAnimation(options: CreateAnimationOptions): Animation {
   const { transition, targetFrom, targetTo, size } = options;
-  const { duration, isBack } = transition;
+  const { duration, curve = CoreTypes.AnimationCurve.easeInOut } = transition.options.transition;
+  const { isBack } = transition;
   const { width } = size;
-  const curve = CoreTypes.AnimationCurve.easeInOut;
   const animations: Array<AnimationDefinition> = [
     {
       target: targetFrom,
@@ -303,7 +330,30 @@ function createSlideAnimation(options: CreateAnimationOptions): Animation {
   return animation;
 }
 
+function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOptions {
+  const animated = nextOptions?.animated || false;
+  const name = nextOptions?.transition?.name || TransitionName.SLIDE;
+  const duration = nextOptions?.transition?.duration || DEFAULT_TRANSITION_DURATION;
+  const curve = nextOptions?.transition?.curve || CoreTypes.AnimationCurve.easeInOut;
+  const options: NavigationOptions = {
+    animated,
+    transition: { name, duration, curve },
+  };
+
+  return options;
+}
+
+function matchRef(refsMap: Record<string, StackLayout>, pathname: string): StackLayout {
+  for (const key of Object.keys(refsMap)) {
+    if (pathname.indexOf(key) !== -1) {
+      return refsMap[key];
+    }
+  }
+
+  return null;
+}
+
 const FULL = '100%';
 const DEFAULT_TRANSITION_DURATION = 200;
 
-export { createStackNavigator };
+export { StackNavigator };

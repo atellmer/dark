@@ -2,6 +2,7 @@ import { Frame, Page, NavigatedData } from '@nativescript/core';
 
 import { normalizePathname } from './utils';
 import { SLASH } from './constants';
+import { type NavigationOptions } from './navigation-container';
 
 class NavigationHistory {
   private stack: Array<string> = [];
@@ -35,9 +36,9 @@ class NavigationHistory {
     this.page.on(NAVIGATED_FROM_EVENT, handleBack);
   }
 
-  private mapSubscribers(action: HistoryAction) {
+  private mapSubscribers(action: HistoryAction, options?: NavigationOptions) {
     for (const subscriber of this.subscribers) {
-      subscriber(this.getValue(), action);
+      subscriber(this.getValue(), action, options);
     }
   }
 
@@ -65,13 +66,13 @@ class NavigationHistory {
     return () => this.subscribers.delete(subscriber);
   };
 
-  public push(pathname: string) {
+  public push(pathname: string, options?: NavigationOptions) {
     const action = HistoryAction.PUSH;
 
     this.stack.splice(this.cursor + 1, this.stack.length, pathname);
     this.cursor = this.stack.length - 1;
     this.syncHistory(action);
-    this.mapSubscribers(action);
+    this.mapSubscribers(action, options);
   }
 
   public replace(pathname: string) {
@@ -100,7 +101,7 @@ class NavigationHistory {
   }
 }
 
-export type HistorySubscriber = (pathname: string, action: HistoryAction) => void;
+export type HistorySubscriber = (pathname: string, action: HistoryAction, options?: NavigationOptions) => void;
 
 export enum HistoryAction {
   PUSH = 'PUSH',
