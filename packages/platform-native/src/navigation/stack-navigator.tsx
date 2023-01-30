@@ -38,12 +38,6 @@ export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;
 };
 
-export type StackScreenProps = {
-  name: string;
-  component?: Component;
-  slot?: () => DarkElement;
-};
-
 const Navigator = forwardRef<StackNavigatorProps, {}>(
   createComponent(({ slot }, _) => {
     const { pathname, replace, subscribe } = useNavigationContext();
@@ -107,12 +101,7 @@ const Navigator = forwardRef<StackNavigatorProps, {}>(
     }, [transition]);
 
     const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
-      const { target } = e;
-      const scale = DeviceScreen.mainScreen.scale;
-      const width = target.getMeasuredWidth() / scale;
-      const height = target.getMeasuredHeight() / scale;
-
-      scope.size = { width, height };
+      scope.size = getMeasuredSizeInDPI(e.target);
     });
 
     const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
@@ -186,6 +175,12 @@ const Navigator = forwardRef<StackNavigatorProps, {}>(
     );
   }),
 );
+
+export type StackScreenProps = {
+  name: string;
+  component?: Component;
+  slot?: () => DarkElement;
+};
 
 const Screen = createComponent<StackScreenProps>(({ name, component, slot }) => {
   const { prefix } = useScreenNavigatorContext();
@@ -353,6 +348,14 @@ function matchRef(refsMap: Record<string, StackLayout>, pathname: string): Stack
   return null;
 }
 
+function getMeasuredSizeInDPI(view: AbsoluteLayout): Size {
+  return {
+    width: view.getMeasuredWidth() / SCALE_FACTOR,
+    height: view.getMeasuredHeight() / SCALE_FACTOR,
+  };
+}
+
+const SCALE_FACTOR = DeviceScreen.mainScreen.scale;
 const FULL = '100%';
 const DEFAULT_TRANSITION_DURATION = 200;
 
