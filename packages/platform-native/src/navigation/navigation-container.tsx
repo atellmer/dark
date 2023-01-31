@@ -87,10 +87,6 @@ function useNavigationContext() {
   return value;
 }
 
-function useNavigation() {
-  return useNavigationContext();
-}
-
 export type NavigationOptions = {
   animated?: boolean;
   transition?: AnimatedTransition;
@@ -102,4 +98,4 @@ type AnimatedTransition = {
   curve?: string;
 };
 
-export { NavigationContainer, useNavigationContext, useNavigation };
+export { NavigationContainer, useNavigationContext };

@@ -376,4 +376,4 @@ const SCALE_FACTOR = DeviceScreen.mainScreen.scale;
 const FULL = '100%';
 const DEFAULT_TRANSITION_DURATION = 100;
 
-export { StackNavigator };
+export { StackNavigator, useScreenNavigatorContext };

@@ -43,7 +43,7 @@ class NavigationHistory {
   }
 
   private getValue = () => {
-    return normalizePathname(this.stack[this.cursor]);
+    return this.stack[this.cursor];
   };
 
   private syncHistory(action: HistoryAction) {
@@ -68,8 +68,9 @@ class NavigationHistory {
 
   public push(pathname: string, options?: NavigationOptions) {
     const action = HistoryAction.PUSH;
+    const normalPathname = normalizePathname(pathname);
 
-    this.stack.splice(this.cursor + 1, this.stack.length, pathname);
+    this.stack.splice(this.cursor + 1, this.stack.length, normalPathname);
     this.cursor = this.stack.length - 1;
     this.syncHistory(action);
     this.mapSubscribers(action, options);
@@ -77,8 +78,9 @@ class NavigationHistory {
 
   public replace(pathname: string) {
     const action = HistoryAction.REPLACE;
+    const normalPathname = normalizePathname(pathname);
 
-    this.stack[this.cursor] = pathname;
+    this.stack[this.cursor] = normalPathname;
     this.cursor = this.stack.length - 1;
     this.syncHistory(action);
     this.mapSubscribers(action);

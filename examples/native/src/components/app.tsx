@@ -1,11 +1,5 @@
-import {
-  AbsoluteLayout as NSAbsoluteLayout,
-  Screen,
-  View as NSView,
-  Page as NSPage,
-  CoreTypes,
-} from '@nativescript/core';
-import { h, Fragment, createComponent, useRef, useEffect } from '@dark-engine/core';
+import { CoreTypes } from '@nativescript/core';
+import { h, Fragment, createComponent } from '@dark-engine/core';
 import {
   NavigationContainer,
   useNavigation,
@@ -16,19 +10,19 @@ import {
 } from '@dark-engine/platform-native';
 
 const Home = createComponent(() => {
-  const { push, back, pathname } = useNavigation();
-  const animatedPush = useAnimatedPush(push);
+  const { navigateTo: navigateTo$, goBack, match } = useNavigation();
+  const navigateTo = useAnimatedNavigation(navigateTo$);
 
   return (
     <stack-layout backgroundColor='#26c6da' height='100%'>
       <label>Home</label>
-      <button backgroundColor='purple' onTap={() => animatedPush('/Contacts')}>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Contacts`)}>
         go to contacts
       </button>
-      <button backgroundColor='purple' onTap={() => animatedPush('/Settings')}>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings`)}>
         go to settings
       </button>
-      <button backgroundColor='purple' onTap={() => back()}>
+      <button backgroundColor='purple' onTap={() => goBack()}>
         back
       </button>
     </stack-layout>
@@ -36,19 +30,19 @@ const Home = createComponent(() => {
 });
 
 const Contacts = createComponent(() => {
-  const { push, back, pathname } = useNavigation();
-  const animatedPush = useAnimatedPush(push);
+  const { navigateTo: navigateTo$, goBack, match } = useNavigation();
+  const navigateTo = useAnimatedNavigation(navigateTo$);
 
   return (
     <stack-layout backgroundColor='#66bb6a' height='100%'>
       <label>Contacts</label>
-      <button backgroundColor='purple' onTap={() => animatedPush('/Home')}>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
         go to home
       </button>
-      <button backgroundColor='purple' onTap={() => animatedPush('/Settings')}>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings`)}>
         go to settings
       </button>
-      <button backgroundColor='purple' onTap={() => back()}>
+      <button backgroundColor='purple' onTap={() => goBack()}>
         back
       </button>
     </stack-layout>
@@ -56,30 +50,31 @@ const Contacts = createComponent(() => {
 });
 
 const Settings = createComponent(() => {
-  const { push, back, pathname } = useNavigation();
-  const animatedPush = useAnimatedPush(push);
+  const { navigateTo: navigateTo$, goBack, match } = useNavigation();
+  const navigateTo = useAnimatedNavigation(navigateTo$);
 
   return (
     <stack-layout backgroundColor='#ec407a' height='100%'>
       <label>Settings</label>
-      <button backgroundColor='purple' onTap={() => animatedPush('/Home')}>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
         go to home
       </button>
-      <button backgroundColor='purple' onTap={() => animatedPush('/Contacts')}>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Contacts`)}>
         go to contacts
       </button>
-      <button backgroundColor='purple' onTap={() => back()}>
+      <button backgroundColor='purple' onTap={() => goBack()}>
         back
       </button>
     </stack-layout>
   );
 });
 
-const useAnimatedPush = (push: (pathname: string, options?: NavigationOptions) => void) => (pathname: string) =>
-  push(pathname, {
-    animated: true,
-    transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
-  });
+const useAnimatedNavigation =
+  (navigateTo: (pathname: string, options?: NavigationOptions) => void) => (pathname: string) =>
+    navigateTo(pathname, {
+      animated: true,
+      transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
+    });
 
 const App = createComponent(() => {
   return (
