@@ -10,8 +10,7 @@ import {
 } from '@dark-engine/platform-native';
 
 const Home = createComponent(() => {
-  const { navigateTo: navigateTo$, goBack, match } = useNavigation();
-  const navigateTo = useAnimatedNavigation(navigateTo$);
+  const { navigateTo, goBack, match } = useAnimatedNavigation();
 
   return (
     <stack-layout backgroundColor='#26c6da' height='100%'>
@@ -30,8 +29,7 @@ const Home = createComponent(() => {
 });
 
 const Contacts = createComponent(() => {
-  const { navigateTo: navigateTo$, goBack, match } = useNavigation();
-  const navigateTo = useAnimatedNavigation(navigateTo$);
+  const { navigateTo, goBack, match } = useAnimatedNavigation();
 
   return (
     <stack-layout backgroundColor='#66bb6a' height='100%'>
@@ -50,8 +48,7 @@ const Contacts = createComponent(() => {
 });
 
 const Settings = createComponent(() => {
-  const { navigateTo: navigateTo$, goBack, match } = useNavigation();
-  const navigateTo = useAnimatedNavigation(navigateTo$);
+  const { navigateTo, goBack, match } = useAnimatedNavigation();
 
   return (
     <stack-layout backgroundColor='#ec407a' height='100%'>
@@ -69,12 +66,18 @@ const Settings = createComponent(() => {
   );
 });
 
-const useAnimatedNavigation =
-  (navigateTo: (pathname: string, options?: NavigationOptions) => void) => (pathname: string) =>
-    navigateTo(pathname, {
-      animated: true,
-      transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
-    });
+function useAnimatedNavigation() {
+  const { navigateTo, ...rest } = useNavigation();
+
+  return {
+    navigateTo: (pathname: string) =>
+      navigateTo(pathname, {
+        animated: true,
+        transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
+      }),
+    ...rest,
+  };
+}
 
 const App = createComponent(() => {
   return (
