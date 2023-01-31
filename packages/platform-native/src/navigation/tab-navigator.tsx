@@ -53,8 +53,8 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
   return (
     <TabNavigatorContext.Provider value={contextValue}>
       <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
-        {descriptorKeys.length > 0 && (
-          <stack-layout col={1} row={1}>
+        <stack-layout col={1} row={1}>
+          {descriptorKeys.length > 0 && (
             <StackNavigator.Root ref={stackNavigatorRef} onNavigate={handleNavigate}>
               {descriptorKeys.map(key => {
                 const { component, slot } = descriptorsMap[key];
@@ -66,8 +66,8 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
                 );
               })}
             </StackNavigator.Root>
-          </stack-layout>
-        )}
+          )}
+        </stack-layout>
         <tab-view
           col={1}
           row={2}

@@ -79,21 +79,25 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       let animation: Animation = null;
 
       if (transition.options.animated) {
+        const targetFrom = matchRef(scope.refsMap, transition.from);
+        const targetTo = matchRef(scope.refsMap, transition.to);
+
+        if (!targetFrom || !targetTo) {
+          throw new Error('[Dark]: Can not resolve ref for transition!');
+        }
+
+        if (!scope.size) {
+          throw new Error('[Dark]: Can not find layout size for transition!');
+        }
+
+        animation = createAnimation({
+          targetFrom,
+          targetTo,
+          size: scope.size,
+          transition,
+        });
+
         (async () => {
-          const targetFrom = matchRef(scope.refsMap, transition.from);
-          const targetTo = matchRef(scope.refsMap, transition.to);
-
-          if (!targetFrom || !targetTo) {
-            throw new Error('[Dark]: Can not resolve ref for transition!');
-          }
-
-          animation = createAnimation({
-            targetFrom,
-            targetTo,
-            size: scope.size,
-            transition,
-          });
-
           try {
             await animation.play();
             scope.isBusy = false;
@@ -118,6 +122,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     }));
 
     const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
+      console.log('loaded');
       scope.size = getMeasuredSizeInDPI(e.target);
     });
 

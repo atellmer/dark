@@ -1,4 +1,4 @@
-import type { LayoutBase, View, ContentView, AddChildFromBuilder } from '@nativescript/core';
+import type { LayoutBase, View, ContentView, AddChildFromBuilder, EventData } from '@nativescript/core';
 import { NodeType, ROOT, detectIsNumber, detectIsFunction, detectIsObject } from '@dark-engine/core';
 
 import { createSyntheticEventHandler } from '../events';
@@ -23,7 +23,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
   public children: Array<NativeElement> = [];
   private nativeView: T;
   private meta: NSElementMeta;
-  private eventListeners: Map<string, Function> = new Map();
+  private eventListeners: Map<string, (e: EventData) => void> = new Map();
 
   constructor(name: string) {
     super(NodeType.TAG);
@@ -150,14 +150,14 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
 
     this.removeEventListener(eventName);
     this.eventListeners.set(eventName, syntheticHandler);
-    this.nativeView.addEventListener(eventName, syntheticHandler);
+    this.nativeView.on(eventName, syntheticHandler);
   }
 
   removeEventListener(eventName: string) {
     const handler = this.eventListeners.get(eventName);
 
     this.eventListeners.delete(eventName);
-    handler && this.nativeView.removeEventListener(eventName, handler);
+    this.nativeView.off(eventName, handler);
   }
 }
 
