@@ -7,7 +7,6 @@ import {
   Animation,
   CoreTypes,
 } from '@nativescript/core';
-
 import {
   type Component,
   type ComponentFactory,

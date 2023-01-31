@@ -4,11 +4,14 @@ import {
   type StandardComponentProps,
   h,
   createComponent,
+  createContext,
   useState,
   useUpdate,
+  useMemo,
   useEvent,
   useRef,
   useLayoutEffect,
+  useContext,
   batch,
   memo,
 } from '@dark-engine/core';
@@ -21,12 +24,12 @@ type TabNavigatorProps = {
   slot: Array<ComponentFactory<TabScreenProps & StandardComponentProps>>;
 };
 
-const descriptorsMap: Record<string, TabScreenProps> = {}; // TODO
-
 const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slot }) => {
   const stackNavigatorRef = useRef<StackNavigatorRef>(null);
   const [idx, setIdx] = useState(0);
   const update = useUpdate();
+  const contextValue = useMemo<TabNavigatorContextValue>(() => ({ descriptorsMap: {} }), []);
+  const { descriptorsMap } = contextValue;
   const isBottom = position === 'bottom';
 
   useLayoutEffect(() => update(), []);
@@ -48,38 +51,42 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
   const descriptorKeys = Object.keys(descriptorsMap);
 
   return (
-    <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
-      {descriptorKeys.length > 0 && (
-        <stack-layout col={1} row={1}>
-          <StackNavigator.Root ref={stackNavigatorRef} onNavigate={handleNavigate}>
-            {descriptorKeys.map(key => {
-              const { component, slot } = descriptorsMap[key];
+    <TabNavigatorContext.Provider value={contextValue}>
+      <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
+        {descriptorKeys.length > 0 && (
+          <stack-layout col={1} row={1}>
+            <StackNavigator.Root ref={stackNavigatorRef} onNavigate={handleNavigate}>
+              {descriptorKeys.map(key => {
+                const { component, slot } = descriptorsMap[key];
 
-              return (
-                <StackNavigator.Screen key={key} name={key} component={component}>
-                  {slot}
-                </StackNavigator.Screen>
-              );
-            })}
-          </StackNavigator.Root>
-        </stack-layout>
-      )}
-      <tab-view
-        col={1}
-        row={2}
-        androidTabsPosition={position}
-        selectedIndex={idx}
-        onSelectedIndexChange={handleIdxChange}>
-        {slot}
-      </tab-view>
-    </grid-layout>
+                return (
+                  <StackNavigator.Screen key={key} name={key} component={component}>
+                    {slot}
+                  </StackNavigator.Screen>
+                );
+              })}
+            </StackNavigator.Root>
+          </stack-layout>
+        )}
+        <tab-view
+          col={1}
+          row={2}
+          androidTabsPosition={position}
+          selectedIndex={idx}
+          onSelectedIndexChange={handleIdxChange}>
+          {slot}
+        </tab-view>
+      </grid-layout>
+    </TabNavigatorContext.Provider>
   );
 });
 
 type TabScreenProps = {} & StackScreenProps;
 
 const Screen = createComponent<TabScreenProps>(({ name, component, slot }) => {
-  descriptorsMap[name] = {
+  const value = useTabNavigatorContext();
+
+  value.descriptorsMap[name] = {
     name,
     component,
     slot,
@@ -91,6 +98,18 @@ const Screen = createComponent<TabScreenProps>(({ name, component, slot }) => {
     </tab-view-item>
   );
 });
+
+type TabNavigatorContextValue = {
+  descriptorsMap: Record<string, TabScreenProps>;
+};
+
+const TabNavigatorContext = createContext<TabNavigatorContextValue>(null);
+
+function useTabNavigatorContext() {
+  const value = useContext(TabNavigatorContext);
+
+  return value;
+}
 
 const TabNavigator = {
   Root: memo(Navigator),
