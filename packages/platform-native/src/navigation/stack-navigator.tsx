@@ -46,23 +46,29 @@ export type StackNavigatorRef = {
   getPathnameByIdx: (idx: number) => string;
 };
 
+const transitionsQueue: Array<Transition> = [];
+const backTransitionsStack: Array<Transition> = [];
+
 const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
   createComponent(({ slot, onNavigate }, ref) => {
     const { pathname, push, replace, back, subscribe } = useNavigationContext();
     const { prefix } = useScreenNavigatorContext();
     const [transition, setTransition] = useState<Transition>(null);
-    const scope = useMemo<Scope>(
-      () => ({ transitionsQueue: [], backTransitionsStack: [], size: null, isBusy: false, refsMap: {}, pathname }),
-      [],
-    );
-    const pathnames = slot.map(x => createPathname(x.props.name, prefix));
+    const scope = useMemo<Scope>(() => ({ size: null, isBusy: false, refsMap: {}, pathname }), []);
+    const names = slot.map(x => x.props.name);
+    const pathnames = names.map(x => createPathname(x, prefix));
     const entry = pathnames[0];
 
     scope.pathname = pathname;
 
     useEffect(() => {
-      replace(entry);
+      const segment = getSegment(pathname, prefix);
+      const canReplaceEntry = names.every(x => x !== segment);
 
+      canReplaceEntry && replace(entry);
+    }, []);
+
+    useEffect(() => {
       const unsubscribe = subscribe((pathname, action, options) => {
         const isBack = action === HistoryAction.BACK;
         const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
@@ -128,11 +134,11 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 
     const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
       if (isBack) {
-        const transition = scope.backTransitionsStack.pop();
+        const transition = backTransitionsStack.pop();
 
-        scope.transitionsQueue.push(transition);
+        transitionsQueue.push(transition);
       } else {
-        const prevTransition = scope.transitionsQueue[scope.transitionsQueue.length - 1];
+        const prevTransition = transitionsQueue[transitionsQueue.length - 1];
         const from = prevTransition?.to || transition?.to || scope.pathname;
         const nextTransition: Transition = {
           from,
@@ -147,8 +153,8 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
           to: nextTransition.from,
         };
 
-        scope.transitionsQueue.push(nextTransition);
-        scope.backTransitionsStack.push(backTransition);
+        transitionsQueue.push(nextTransition);
+        backTransitionsStack.push(backTransition);
       }
 
       executeTransitions();
@@ -156,7 +162,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 
     const executeTransitions = () => {
       if (scope.isBusy) return;
-      const nextTransition = scope.transitionsQueue.shift();
+      const nextTransition = transitionsQueue.shift();
 
       if (!nextTransition) {
         scope.refsMap = {};
@@ -226,8 +232,6 @@ const StackNavigator = {
 };
 
 type Scope = {
-  transitionsQueue: Array<Transition>;
-  backTransitionsStack: Array<Transition>;
   isBusy: boolean;
   pathname: string;
   size: Size;
