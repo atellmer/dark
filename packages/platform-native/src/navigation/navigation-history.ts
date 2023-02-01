@@ -40,6 +40,8 @@ class NavigationHistory {
     for (const subscriber of this.subscribers) {
       subscriber(this.getValue(), action, options);
     }
+
+    console.log('stack', this.stack);
   }
 
   private getValue = () => {
@@ -91,6 +93,7 @@ class NavigationHistory {
 
     const action = HistoryAction.BACK;
 
+    this.stack.pop();
     this.fromUserEvent = sync;
     this.cursor -= 1;
 

@@ -56,11 +56,12 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       [],
     );
     const pathnames = slot.map(x => createPathname(x.props.name, prefix));
+    const entry = pathnames[0];
 
     scope.pathname = pathname;
 
     useEffect(() => {
-      replace(pathnames[0]);
+      replace(entry);
 
       const unsubscribe = subscribe((pathname, action, options) => {
         const isBack = action === HistoryAction.BACK;
@@ -122,7 +123,6 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     }));
 
     const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
-      console.log('loaded');
       scope.size = getMeasuredSizeInDPI(e.target);
     });
 
@@ -169,8 +169,12 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     };
 
     const rendered = useMemo(
-      () => ({ items: getItems({ slot, transition, pathname, prefix }) }),
-      [transition, pathname],
+      () => ({
+        items: transition
+          ? getTransitionItems({ transition, prefix, slot })
+          : [getMatchedItem({ pathname, fallback: entry, prefix, slot })],
+      }),
+      [transition],
     );
 
     return (
@@ -246,23 +250,39 @@ function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);
 }
 
-type GetItemsOptions = {
+type GetTransitionItems = {
   transition: Transition;
-  pathname: string;
   prefix: string;
   slot: Array<ScreenComponent>;
 };
 
-function getItems(options: GetItemsOptions): Array<ScreenComponent> {
-  const { slot, transition, pathname, prefix } = options;
+function getTransitionItems(options: GetTransitionItems): Array<ScreenComponent> {
+  const { transition, prefix, slot } = options;
   const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
-  const segmentFrom = transition ? getSegment(transition.from, prefix) : null;
-  const segmentTo = getSegment(transition ? transition.to : pathname, prefix);
-  const factoryFrom = slotsMap[segmentFrom] || null;
-  const factoryTo = slotsMap[segmentTo] || null;
-  const items = [factoryFrom, factoryTo].filter(Boolean);
+  const segmentFrom = getSegment(transition.from, prefix);
+  const segmentTo = getSegment(transition.to, prefix);
+  const factoryFrom = slotsMap[segmentFrom];
+  const factoryTo = slotsMap[segmentTo];
+  const items = [factoryFrom, factoryTo].filter(Boolean) as [ScreenComponent, ScreenComponent];
 
   return items;
+}
+
+type GetMatchedItem = {
+  pathname: string;
+  fallback: string;
+  prefix: string;
+  slot: Array<ScreenComponent>;
+};
+
+function getMatchedItem(options: GetMatchedItem): ScreenComponent {
+  const { pathname, fallback, prefix, slot } = options;
+  const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
+  const segment1 = getSegment(pathname, prefix);
+  const segment2 = getSegment(fallback, prefix);
+  const item = slotsMap[segment1] || slotsMap[segment2] || null;
+
+  return item;
 }
 
 type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;
