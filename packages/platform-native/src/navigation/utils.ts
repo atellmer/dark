@@ -23,7 +23,7 @@ type DetectIsMatchOptions = {
 
 function detectIsMatch(options: DetectIsMatchOptions) {
   const { prevPathname, nextPathname, pathnames, prefix } = options;
-  const hasSameRoute = pathnames.some(x => nextPathname.indexOf(x) !== -1);
+  const hasSameRoute = detectIsMatchPathname(pathnames, nextPathname);
   const nextSegment = getSegment(nextPathname, prefix);
   const prevSegment = getSegment(prevPathname, prefix);
   const isMatch = hasSameRoute && nextSegment !== prevSegment;
@@ -37,4 +37,12 @@ function getSegment(pathname: string, prefix: string) {
   return segment;
 }
 
-export { createPathname, normalizePathname, prependSlash, detectIsMatch, getSegment };
+function detectIsMatchPathname(pathnames: Array<string>, pathname: string) {
+  return pathnames.some(x => pathname.indexOf(x) !== -1);
+}
+
+function getMatchedIdx(pathnames: Array<string>, pathname: string) {
+  return pathnames.findIndex(x => pathname.indexOf(x) !== -1);
+}
+
+export { createPathname, normalizePathname, prependSlash, detectIsMatch, getSegment, getMatchedIdx };

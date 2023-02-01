@@ -36,6 +36,7 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
 
   const handleIdxChange = useEvent((e: SyntheticEvent<PropertyChangeData>) => {
     const nextIdx = Number(e.sourceEvent.value);
+
     if (nextIdx !== idx) {
       const pathname = stackNavigatorRef.current.getPathnameByIdx(nextIdx);
 

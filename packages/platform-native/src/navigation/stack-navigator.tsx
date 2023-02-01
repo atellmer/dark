@@ -31,7 +31,7 @@ import {
 import { type SyntheticEvent } from '../events';
 import { useNavigationContext, type NavigationOptions } from './navigation-container';
 import { SLASH, TransitionName } from './constants';
-import { createPathname, detectIsMatch, getSegment } from './utils';
+import { createPathname, detectIsMatch, getMatchedIdx, getSegment } from './utils';
 import { HistoryAction } from './navigation-history';
 
 export type StackNavigatorProps = {
@@ -66,7 +66,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       const unsubscribe = subscribe((pathname, action, options) => {
         const isBack = action === HistoryAction.BACK;
         const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
-        const idx = pathnames.findIndex(x => x === pathname);
+        const idx = getMatchedIdx(pathnames, pathname);
 
         isMatch && scheduleTransition(pathname, isBack, options);
         detectIsFunction(onNavigate) && onNavigate(pathname, idx);
