@@ -23,10 +23,9 @@ import {
   useRef,
   useImperativeHandle,
   keyBy,
-  error,
 } from '@dark-engine/core';
 
-import { useNavigationContext, type NavigationOptions } from './navigation-container';
+import { useNavigationContext, type Transition } from './navigation-container';
 import { SLASH, TransitionName } from './constants';
 import { createPathname, getMatchedIdx, getSegments } from './utils';
 
@@ -41,20 +40,18 @@ export type StackNavigatorRef = {
 
 const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
   createComponent(({ slot, onNavigate }, ref) => {
-    const { pathname, transition, replace, subscribe, onCompleteTransition } = useNavigationContext();
+    const { pathname, transition, replace, subscribe } = useNavigationContext();
     const { prefix } = useScreenNavigatorContext();
-    const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const rootRef = useRef<AbsoluteLayout>(null);
     const names = slot.map(x => x.props.name);
     const pathnames = names.map(x => createPathname(x, prefix));
+    const inTransition = detectCanStartTransition(transition, pathnames, prefix);
+    const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const entry = pathnames[0];
 
     useEffect(() => {
-      const [segment] = getSegments(pathname, prefix);
-      const deep = names.every(x => x !== segment);
-
-      deep && replace(entry);
-    }, []);
+      detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
+    }, [pathname]);
 
     useEffect(() => {
       const unsubscribe = subscribe(pathname => {
@@ -69,37 +66,18 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     }, []);
 
     useEffect(() => {
-      if (!detectCanStartTransition(transition, pathnames, prefix)) return;
-      let animation: Animation = null;
+      if (!inTransition || !transition.options.animated) return;
+      const targetFrom = matchRef(scope.refsMap, transition.from);
+      const targetTo = matchRef(scope.refsMap, transition.to);
+      const size = getMeasuredSizeInDPI(rootRef.current);
+      const animation = createAnimation({
+        targetFrom,
+        targetTo,
+        transition,
+        size,
+      });
 
-      if (transition.options.animated) {
-        const targetFrom = matchRef(scope.refsMap, transition.from);
-        const targetTo = matchRef(scope.refsMap, transition.to);
-        const size = getMeasuredSizeInDPI(rootRef.current);
-
-        if (!targetFrom || !targetTo) {
-          throw new Error('[Dark]: Can not resolve ref for transition!');
-        }
-
-        animation = createAnimation({
-          targetFrom,
-          targetTo,
-          transition,
-          size,
-        });
-
-        (async () => {
-          try {
-            await animation.play();
-          } catch (err) {
-            error(err);
-          } finally {
-            onCompleteTransition();
-          }
-        })();
-      } else {
-        onCompleteTransition();
-      }
+      animation.play();
     }, [transition]);
 
     useImperativeHandle(ref, () => ({
@@ -108,7 +86,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 
     const rendered = useMemo(
       () => ({
-        items: detectCanStartTransition(transition, pathnames, prefix)
+        items: inTransition
           ? getTransitionItems({ transition, prefix, slot })
           : [getMatchedItem({ pathname, fallback: entry, prefix, slot })],
       }),
@@ -183,6 +161,14 @@ function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);
 }
 
+function detectCanReplacePathname(pathname: string, entry: string, prefix: string) {
+  const segments1 = getSegments(pathname, prefix);
+  const segments2 = getSegments(entry, prefix);
+  const canReplace = segments1.length < segments2.length;
+
+  return canReplace;
+}
+
 function detectCanStartTransition(transition: Transition, pathnames: Array<string>, prefix: string) {
   if (!transition) return false;
   const { from, to } = transition;
@@ -230,13 +216,6 @@ function getMatchedItem(options: GetMatchedItem): ScreenComponent {
 }
 
 type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;
-
-type Transition = {
-  from: string;
-  to: string;
-  isBack: boolean;
-  options: NavigationOptions;
-};
 
 type CreateAnimationOptions = {
   transition: Transition;

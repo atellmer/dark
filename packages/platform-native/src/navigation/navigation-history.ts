@@ -40,6 +40,8 @@ class NavigationHistory {
     for (const subscriber of this.subscribers) {
       subscriber(this.getValue(), action, options);
     }
+
+    console.log('this.stack', this.stack);
   }
 
   private getValue = () => {
@@ -73,6 +75,8 @@ class NavigationHistory {
   public push(pathname: string, options?: NavigationOptions) {
     const action = HistoryAction.PUSH;
     const normalPathname = normalizePathname(pathname);
+
+    if (normalPathname === this.stack[this.cursor]) return;
 
     this.stack.splice(this.cursor + 1, this.stack.length, normalPathname);
     this.cursor = this.stack.length - 1;

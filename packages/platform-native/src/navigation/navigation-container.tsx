@@ -28,16 +28,14 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
   const frameRef = useRef<Frame>(null);
   const pageRef = useRef<Page>(null);
   const [pathname, setPathname] = useState(SLASH);
+  const [transition, setTransition] = useState<Transition>(null, { forceSync: true });
   const scope = useMemo<Scope>(
-    () => ({ history: null, pathname, inTransition: false, transitions: { forward: [], backward: [] } }),
+    () => ({ history: null, inTransition: false, transitions: { forward: [], backward: [] } }),
     [],
   );
-  const [transition, setTransition] = useState<Transition>(null);
   const {
     transitions: { forward, backward },
   } = scope;
-
-  scope.pathname = pathname;
 
   useEffect(() => {
     const history = createNavigationHistory(frameRef.current, pageRef.current);
@@ -45,8 +43,8 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
       const isReplace = action === HistoryAction.REPLACE;
       const isBack = action === HistoryAction.BACK;
 
-      !isReplace && scheduleTransition(pathname, isBack, options);
       setPathname(pathname);
+      !isReplace && scheduleTransition(pathname, isBack, options);
     });
 
     scope.history = history;
@@ -56,6 +54,17 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
       history.dispose();
     };
   }, []);
+
+  useEffect(() => {
+    if (!transition) return;
+    const timeout = transition.options.animated ? transition.options.transition.duration : 0;
+    const timerId = setTimeout(() => {
+      scope.inTransition = false;
+      executeTransitions();
+    }, timeout + WAITING_TIMEOUT);
+
+    return () => clearTimeout(timerId);
+  }, [transition]);
 
   const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
     if (isBack) {
@@ -87,15 +96,11 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
   const executeTransitions = () => {
     if (scope.inTransition) return;
     const transition = forward.shift();
+
     if (!transition) return setTransition(null);
 
     scope.inTransition = true;
     setTransition(transition);
-  };
-
-  const handleCompleteTransition = () => {
-    scope.inTransition = false;
-    executeTransitions();
   };
 
   const push = useEvent((pathname: string, options?: NavigationOptions) => scope.history.push(pathname, options));
@@ -107,7 +112,7 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
   const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
 
   const contextValue = useMemo<NavigationContextValue>(
-    () => ({ pathname, transition, push, replace, back, subscribe, onCompleteTransition: handleCompleteTransition }),
+    () => ({ pathname, transition, push, replace, back, subscribe }),
     [pathname, transition],
   );
 
@@ -130,7 +135,6 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
 
 type Scope = {
   history: NavigationHistory;
-  pathname: string;
   inTransition: boolean;
   transitions: {
     forward: Array<Transition>;
@@ -138,7 +142,7 @@ type Scope = {
   };
 };
 
-type Transition = {
+export type Transition = {
   from: string;
   to: string;
   isBack: boolean;
@@ -163,7 +167,6 @@ type NavigationContextValue = {
   replace: (pathname: string) => void;
   back: () => void;
   subscribe: (subscriber: HistorySubscriber) => () => void;
-  onCompleteTransition: () => void;
 };
 
 const NavigationContext = createContext<NavigationContextValue>(null);
@@ -188,5 +191,6 @@ function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOpt
 }
 
 const DEFAULT_TRANSITION_DURATION = 100;
+const WAITING_TIMEOUT = 100;
 
 export { NavigationContainer, useNavigationContext };
