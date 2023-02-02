@@ -186,10 +186,10 @@ function useScreenNavigatorContext() {
 function detectCanStartTransition(transition: Transition, pathnames: Array<string>, prefix: string) {
   if (!transition) return false;
   const { from, to } = transition;
-  const [segment1] = from.replace(prefix, '').split(SLASH).filter(Boolean);
-  const [segment2] = to.replace(prefix, '').split(SLASH).filter(Boolean);
-  const segments = pathnames.map(x => x.replace(prefix, '').split(SLASH).filter(Boolean)[0]);
-  const canStart = segments.includes(segment1) && segments.includes(segment2) && segment1 !== segment2;
+  const [segment1] = getSegments(from, prefix);
+  const [segment2] = getSegments(to, prefix);
+  const segments = pathnames.map(x => getSegments(x, prefix)[0]);
+  const canStart = segment1 !== segment2 && segments.includes(segment1) && segments.includes(segment2);
 
   return canStart;
 }

@@ -64,21 +64,21 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
       forward.push(transition);
     } else {
       const from = scope.history.getBack();
-      const nextTransition: Transition = {
+      const forwardTransition: Transition = {
         from,
         to,
         isBack: false,
         options: resolveNavigationOptions(options),
       };
-      const backTransition: Transition = {
-        ...nextTransition,
+      const backwardTransition: Transition = {
+        ...forwardTransition,
         isBack: true,
-        from: nextTransition.to,
-        to: nextTransition.from,
+        from: forwardTransition.to,
+        to: forwardTransition.from,
       };
 
-      forward.push(nextTransition);
-      backward.push(backTransition);
+      forward.push(forwardTransition);
+      backward.push(backwardTransition);
     }
 
     executeTransitions();
