@@ -22,7 +22,10 @@ type NavigationContainerProps = {
 const NavigationContainer = createComponent<NavigationContainerProps>(({ slot }) => {
   const frameRef = useRef<Frame>(null);
   const pageRef = useRef<Page>(null);
-  const scope = useMemo<Scope>(() => ({ history: null }), []);
+  const scope = useMemo<Scope>(
+    () => ({ history: null, store: { inTransition: false, transitions: { forward: [], backward: [] } } }),
+    [],
+  );
   const [pathname, setPathname] = useState(SLASH);
 
   useEffect(() => {
@@ -46,7 +49,7 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
   const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
 
   const contextValue = useMemo<NavigationContextValue>(
-    () => ({ pathname, push, replace, back, subscribe }),
+    () => ({ pathname, push, replace, back, subscribe, store: scope.store }),
     [pathname],
   );
 
@@ -54,7 +57,7 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
     <NavigationContext.Provider value={contextValue}>
       <frame>
         <page>
-          <action-bar title='navigation'></action-bar>
+          <action-bar title='navigation'></action-bar> {/*TODO*/}
           <stack-layout>
             <frame ref={frameRef} hidden>
               <page ref={pageRef} actionBarHidden />
@@ -69,23 +72,23 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
 
 type Scope = {
   history: NavigationHistory;
+  store: Store;
 };
 
-type NavigationContextValue = {
-  pathname: string;
-  push: (pathname: string, options?: NavigationOptions) => void;
-  replace: (pathname: string) => void;
-  back: () => void;
-  subscribe: (subscriber: HistorySubscriber) => () => void;
+type Store = {
+  inTransition: boolean;
+  transitions: {
+    forward: Array<Transition>;
+    backward: Array<Transition>;
+  };
 };
 
-const NavigationContext = createContext<NavigationContextValue>(null);
-
-function useNavigationContext() {
-  const value = useContext(NavigationContext);
-
-  return value;
-}
+type Transition = {
+  from: string;
+  to: string;
+  isBack: boolean;
+  options: NavigationOptions;
+};
 
 export type NavigationOptions = {
   animated?: boolean;
@@ -97,5 +100,22 @@ type AnimatedTransition = {
   duration?: number;
   curve?: string;
 };
+
+type NavigationContextValue = {
+  pathname: string;
+  push: (pathname: string, options?: NavigationOptions) => void;
+  replace: (pathname: string) => void;
+  back: () => void;
+  subscribe: (subscriber: HistorySubscriber) => () => void;
+  store: Store;
+};
+
+const NavigationContext = createContext<NavigationContextValue>(null);
+
+function useNavigationContext() {
+  const value = useContext(NavigationContext);
+
+  return value;
+}
 
 export { NavigationContainer, useNavigationContext };

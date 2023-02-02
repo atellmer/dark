@@ -1,7 +1,6 @@
 import {
   type AbsoluteLayout,
   type StackLayout,
-  type EventData,
   type AnimationDefinition,
   Screen as DeviceScreen,
   Animation,
@@ -22,13 +21,12 @@ import {
   useMemo,
   useState,
   useEffect,
-  useEvent,
+  useRef,
   useImperativeHandle,
   keyBy,
   error,
 } from '@dark-engine/core';
 
-import { type SyntheticEvent } from '../events';
 import { useNavigationContext, type NavigationOptions } from './navigation-container';
 import { SLASH, TransitionName } from './constants';
 import { createPathname, detectIsMatch, getMatchedIdx, getSegment } from './utils';
@@ -46,15 +44,13 @@ export type StackNavigatorRef = {
   getPathnameByIdx: (idx: number) => string;
 };
 
-const transitionsQueue: Array<Transition> = [];
-const backTransitionsStack: Array<Transition> = [];
-
 const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
   createComponent(({ slot, onNavigate }, ref) => {
-    const { pathname, push, replace, back, subscribe } = useNavigationContext();
+    const { pathname, push, replace, back, subscribe, store } = useNavigationContext();
     const { prefix } = useScreenNavigatorContext();
     const [transition, setTransition] = useState<Transition>(null);
-    const scope = useMemo<Scope>(() => ({ size: null, isBusy: false, refsMap: {}, pathname }), []);
+    const scope = useMemo<Scope>(() => ({ refsMap: {}, pathname }), []);
+    const rootRef = useRef<AbsoluteLayout>(null);
     const names = slot.map(x => x.props.name);
     const pathnames = names.map(x => createPathname(x, prefix));
     const entry = pathnames[0];
@@ -88,37 +84,32 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       if (transition.options.animated) {
         const targetFrom = matchRef(scope.refsMap, transition.from);
         const targetTo = matchRef(scope.refsMap, transition.to);
+        const size = getMeasuredSizeInDPI(rootRef.current);
 
         if (!targetFrom || !targetTo) {
           throw new Error('[Dark]: Can not resolve ref for transition!');
         }
 
-        if (!scope.size) {
-          throw new Error('[Dark]: Can not find layout size for transition!');
-        }
-
         animation = createAnimation({
           targetFrom,
           targetTo,
-          size: scope.size,
           transition,
+          size,
         });
 
         (async () => {
           try {
             await animation.play();
-            scope.isBusy = false;
+            store.inTransition = false;
             executeTransitions();
           } catch (err) {
             error(err);
           }
         })();
       } else {
-        scope.isBusy = false;
+        store.inTransition = false;
         executeTransitions();
       }
-
-      return () => animation?.cancel();
     }, [transition]);
 
     useImperativeHandle(ref, () => ({
@@ -128,17 +119,15 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       getPathnameByIdx: (idx: number) => pathnames[idx],
     }));
 
-    const handleLayoutChanged = useEvent((e: SyntheticEvent<EventData, AbsoluteLayout>) => {
-      scope.size = getMeasuredSizeInDPI(e.target);
-    });
-
     const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
-      if (isBack) {
-        const transition = backTransitionsStack.pop();
+      const { transitions } = store;
 
-        transitionsQueue.push(transition);
+      if (isBack) {
+        const transition = transitions.backward.pop();
+
+        transitions.forward.push(transition);
       } else {
-        const prevTransition = transitionsQueue[transitionsQueue.length - 1];
+        const prevTransition = transitions.forward[transitions.forward.length - 1];
         const from = prevTransition?.to || transition?.to || scope.pathname;
         const nextTransition: Transition = {
           from,
@@ -153,16 +142,16 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
           to: nextTransition.from,
         };
 
-        transitionsQueue.push(nextTransition);
-        backTransitionsStack.push(backTransition);
+        transitions.forward.push(nextTransition);
+        transitions.backward.push(backTransition);
       }
 
       executeTransitions();
     };
 
     const executeTransitions = () => {
-      if (scope.isBusy) return;
-      const nextTransition = transitionsQueue.shift();
+      if (store.inTransition) return;
+      const nextTransition = store.transitions.forward.shift();
 
       if (!nextTransition) {
         scope.refsMap = {};
@@ -170,7 +159,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         return setTransition(null);
       }
 
-      scope.isBusy = true;
+      store.inTransition = true;
       setTransition(nextTransition);
     };
 
@@ -184,7 +173,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     );
 
     return (
-      <absolute-layout width={FULL} height={FULL} onLayoutChanged={handleLayoutChanged}>
+      <absolute-layout ref={rootRef} width={FULL} height={FULL}>
         {rendered.items.map((x, idx) => {
           const isHidden = idx === 1;
           const key = createPathname(x.props.name, prefix);
@@ -232,9 +221,7 @@ const StackNavigator = {
 };
 
 type Scope = {
-  isBusy: boolean;
   pathname: string;
-  size: Size;
   refsMap: Record<string, StackLayout>;
 };
 
