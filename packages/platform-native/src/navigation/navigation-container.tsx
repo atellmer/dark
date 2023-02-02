@@ -1,4 +1,4 @@
-import { Frame, Page } from '@nativescript/core';
+import { Frame, Page, CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
   h,
@@ -12,7 +12,12 @@ import {
   createContext,
 } from '@dark-engine/core';
 
-import { createNavigationHistory, NavigationHistory, type HistorySubscriber } from './navigation-history';
+import {
+  type HistorySubscriber,
+  createNavigationHistory,
+  NavigationHistory,
+  HistoryAction,
+} from './navigation-history';
 import { SLASH, TransitionName } from './constants';
 
 type NavigationContainerProps = {
@@ -22,15 +27,27 @@ type NavigationContainerProps = {
 const NavigationContainer = createComponent<NavigationContainerProps>(({ slot }) => {
   const frameRef = useRef<Frame>(null);
   const pageRef = useRef<Page>(null);
+  const [pathname, setPathname] = useState(SLASH);
   const scope = useMemo<Scope>(
-    () => ({ history: null, store: { inTransition: false, transitions: { forward: [], backward: [] } } }),
+    () => ({ history: null, pathname, inTransition: false, transitions: { forward: [], backward: [] } }),
     [],
   );
-  const [pathname, setPathname] = useState(SLASH);
+  const [transition, setTransition] = useState<Transition>(null);
+  const {
+    transitions: { forward, backward },
+  } = scope;
+
+  scope.pathname = pathname;
 
   useEffect(() => {
     const history = createNavigationHistory(frameRef.current, pageRef.current);
-    const unsubscribe = history.subscribe(pathname => setPathname(pathname));
+    const unsubscribe = history.subscribe((pathname, action, options) => {
+      const isReplace = action === HistoryAction.REPLACE;
+      const isBack = action === HistoryAction.BACK;
+
+      !isReplace && scheduleTransition(pathname, isBack, options);
+      setPathname(pathname);
+    });
 
     scope.history = history;
 
@@ -39,6 +56,47 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
       history.dispose();
     };
   }, []);
+
+  const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
+    if (isBack) {
+      const transition = backward.pop();
+
+      forward.push(transition);
+    } else {
+      const from = scope.history.getBack();
+      const nextTransition: Transition = {
+        from,
+        to,
+        isBack: false,
+        options: resolveNavigationOptions(options),
+      };
+      const backTransition: Transition = {
+        ...nextTransition,
+        isBack: true,
+        from: nextTransition.to,
+        to: nextTransition.from,
+      };
+
+      forward.push(nextTransition);
+      backward.push(backTransition);
+    }
+
+    executeTransitions();
+  };
+
+  const executeTransitions = () => {
+    if (scope.inTransition) return;
+    const transition = forward.shift();
+    if (!transition) return setTransition(null);
+
+    scope.inTransition = true;
+    setTransition(transition);
+  };
+
+  const handleCompleteTransition = () => {
+    scope.inTransition = false;
+    executeTransitions();
+  };
 
   const push = useEvent((pathname: string, options?: NavigationOptions) => scope.history.push(pathname, options));
 
@@ -49,8 +107,8 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
   const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
 
   const contextValue = useMemo<NavigationContextValue>(
-    () => ({ pathname, push, replace, back, subscribe, store: scope.store }),
-    [pathname],
+    () => ({ pathname, transition, push, replace, back, subscribe, onCompleteTransition: handleCompleteTransition }),
+    [pathname, transition],
   );
 
   return (
@@ -72,10 +130,7 @@ const NavigationContainer = createComponent<NavigationContainerProps>(({ slot })
 
 type Scope = {
   history: NavigationHistory;
-  store: Store;
-};
-
-type Store = {
+  pathname: string;
   inTransition: boolean;
   transitions: {
     forward: Array<Transition>;
@@ -102,12 +157,13 @@ type AnimatedTransition = {
 };
 
 type NavigationContextValue = {
+  transition: Transition | null;
   pathname: string;
   push: (pathname: string, options?: NavigationOptions) => void;
   replace: (pathname: string) => void;
   back: () => void;
   subscribe: (subscriber: HistorySubscriber) => () => void;
-  store: Store;
+  onCompleteTransition: () => void;
 };
 
 const NavigationContext = createContext<NavigationContextValue>(null);
@@ -117,5 +173,20 @@ function useNavigationContext() {
 
   return value;
 }
+
+function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOptions {
+  const animated = nextOptions?.animated || false;
+  const name = nextOptions?.transition?.name || TransitionName.SLIDE;
+  const duration = nextOptions?.transition?.duration || DEFAULT_TRANSITION_DURATION;
+  const curve = nextOptions?.transition?.curve || CoreTypes.AnimationCurve.easeInOut;
+  const options: NavigationOptions = {
+    animated,
+    transition: { name, duration, curve },
+  };
+
+  return options;
+}
+
+const DEFAULT_TRANSITION_DURATION = 100;
 
 export { NavigationContainer, useNavigationContext };

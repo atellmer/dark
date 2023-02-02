@@ -40,6 +40,8 @@ class NavigationHistory {
     for (const subscriber of this.subscribers) {
       subscriber(this.getValue(), action, options);
     }
+
+    console.log('this.stack', this.stack);
   }
 
   private getValue = () => {
@@ -59,6 +61,10 @@ class NavigationHistory {
         return this.frame.goBack();
     }
   }
+
+  public getBack = () => {
+    return this.stack[this.cursor - 1] || this.getValue();
+  };
 
   public subscribe = (subscriber: HistorySubscriber) => {
     this.subscribers.add(subscriber);

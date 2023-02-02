@@ -18,6 +18,7 @@ import {
 
 import { type SyntheticEvent } from '../events';
 import { StackNavigator, type StackNavigatorRef, type StackScreenProps } from './stack-navigator';
+import { useNavigationContext } from './navigation-container';
 
 type TabNavigatorProps = {
   position?: 'top' | 'bottom';
@@ -25,7 +26,8 @@ type TabNavigatorProps = {
 };
 
 const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slot }) => {
-  const stackNavigatorRef = useRef<StackNavigatorRef>(null);
+  const { push } = useNavigationContext();
+  const navRef = useRef<StackNavigatorRef>(null);
   const [idx, setIdx] = useState(0);
   const update = useUpdate();
   const contextValue = useMemo<TabNavigatorContextValue>(() => ({ descriptorsMap: {} }), []);
@@ -38,11 +40,11 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
     const nextIdx = Number(e.sourceEvent.value);
 
     if (nextIdx !== idx) {
-      const pathname = stackNavigatorRef.current.getPathnameByIdx(nextIdx);
+      const pathname = navRef.current.getPathnameByIdx(nextIdx);
 
       batch(() => {
         setIdx(nextIdx);
-        stackNavigatorRef.current.push(pathname, { animated: true });
+        push(pathname, { animated: true });
       });
     }
   });
@@ -56,7 +58,7 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
       <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
         <stack-layout col={1} row={1}>
           {descriptorKeys.length > 0 && (
-            <StackNavigator.Root ref={stackNavigatorRef} onNavigate={handleNavigate}>
+            <StackNavigator.Root ref={navRef} onNavigate={handleNavigate}>
               {descriptorKeys.map(key => {
                 const { component, slot } = descriptorsMap[key];
 

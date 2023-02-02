@@ -14,35 +14,14 @@ function prependSlash(pathname: string) {
   return pathname.startsWith(SLASH) ? pathname : SLASH + pathname;
 }
 
-type DetectIsMatchOptions = {
-  prevPathname: string;
-  nextPathname: string;
-  pathnames: Array<string>;
-  prefix: string;
-};
+function getSegments(pathname: string, prefix: string) {
+  const segments = pathname.replace(prefix, '').split(SLASH).filter(Boolean);
 
-function detectIsMatch(options: DetectIsMatchOptions) {
-  const { prevPathname, nextPathname, pathnames, prefix } = options;
-  const hasSameRoute = detectIsMatchPathname(pathnames, nextPathname);
-  const nextSegment = getSegment(nextPathname, prefix);
-  const prevSegment = getSegment(prevPathname, prefix);
-  const isMatch = hasSameRoute && nextSegment !== prevSegment;
-
-  return isMatch;
-}
-
-function getSegment(pathname: string, prefix: string) {
-  const [segment] = pathname.replace(prefix, '').split(SLASH).filter(Boolean);
-
-  return segment;
-}
-
-function detectIsMatchPathname(pathnames: Array<string>, pathname: string) {
-  return pathnames.some(x => pathname.indexOf(x) !== -1);
+  return segments;
 }
 
 function getMatchedIdx(pathnames: Array<string>, pathname: string) {
   return pathnames.findIndex(x => pathname.indexOf(x) !== -1);
 }
 
-export { createPathname, normalizePathname, prependSlash, detectIsMatch, getSegment, getMatchedIdx };
+export { createPathname, normalizePathname, prependSlash, getSegments, getMatchedIdx };

@@ -19,7 +19,6 @@ import {
   memo,
   useContext,
   useMemo,
-  useState,
   useEffect,
   useRef,
   useImperativeHandle,
@@ -29,8 +28,7 @@ import {
 
 import { useNavigationContext, type NavigationOptions } from './navigation-container';
 import { SLASH, TransitionName } from './constants';
-import { createPathname, detectIsMatch, getMatchedIdx, getSegment } from './utils';
-import { HistoryAction } from './navigation-history';
+import { createPathname, getMatchedIdx, getSegments } from './utils';
 
 export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;
@@ -38,47 +36,40 @@ export type StackNavigatorProps = {
 };
 
 export type StackNavigatorRef = {
-  push: (pathname: string, options?: NavigationOptions) => void;
-  replace: (pathname: string) => void;
-  back: () => void;
   getPathnameByIdx: (idx: number) => string;
 };
 
 const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
   createComponent(({ slot, onNavigate }, ref) => {
-    const { pathname, push, replace, back, subscribe, store } = useNavigationContext();
+    const { pathname, transition, replace, subscribe, onCompleteTransition } = useNavigationContext();
     const { prefix } = useScreenNavigatorContext();
-    const [transition, setTransition] = useState<Transition>(null);
-    const scope = useMemo<Scope>(() => ({ refsMap: {}, pathname }), []);
+    const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const rootRef = useRef<AbsoluteLayout>(null);
     const names = slot.map(x => x.props.name);
     const pathnames = names.map(x => createPathname(x, prefix));
     const entry = pathnames[0];
 
-    scope.pathname = pathname;
-
     useEffect(() => {
-      const segment = getSegment(pathname, prefix);
-      const canReplaceEntry = names.every(x => x !== segment);
+      const [segment] = getSegments(pathname, prefix);
+      const deep = names.every(x => x !== segment);
 
-      canReplaceEntry && replace(entry);
+      deep && replace(entry);
     }, []);
 
     useEffect(() => {
-      const unsubscribe = subscribe((pathname, action, options) => {
-        const isBack = action === HistoryAction.BACK;
-        const isMatch = detectIsMatch({ prevPathname: scope.pathname, nextPathname: pathname, pathnames, prefix });
-        const idx = getMatchedIdx(pathnames, pathname);
+      const unsubscribe = subscribe(pathname => {
+        if (detectIsFunction(onNavigate)) {
+          const idx = getMatchedIdx(pathnames, pathname);
 
-        isMatch && scheduleTransition(pathname, isBack, options);
-        detectIsFunction(onNavigate) && onNavigate(pathname, idx);
+          onNavigate(pathname, idx);
+        }
       });
 
       return () => unsubscribe();
     }, []);
 
     useEffect(() => {
-      if (!transition) return;
+      if (!detectCanStartTransition(transition, pathnames, prefix)) return;
       let animation: Animation = null;
 
       if (transition.options.animated) {
@@ -100,72 +91,24 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         (async () => {
           try {
             await animation.play();
-            store.inTransition = false;
-            executeTransitions();
           } catch (err) {
             error(err);
+          } finally {
+            onCompleteTransition();
           }
         })();
       } else {
-        store.inTransition = false;
-        executeTransitions();
+        onCompleteTransition();
       }
     }, [transition]);
 
     useImperativeHandle(ref, () => ({
-      push,
-      replace,
-      back,
       getPathnameByIdx: (idx: number) => pathnames[idx],
     }));
 
-    const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
-      const { transitions } = store;
-
-      if (isBack) {
-        const transition = transitions.backward.pop();
-
-        transitions.forward.push(transition);
-      } else {
-        const prevTransition = transitions.forward[transitions.forward.length - 1];
-        const from = prevTransition?.to || transition?.to || scope.pathname;
-        const nextTransition: Transition = {
-          from,
-          to,
-          isBack: false,
-          options: resolveNavigationOptions(options),
-        };
-        const backTransition: Transition = {
-          ...nextTransition,
-          isBack: true,
-          from: nextTransition.to,
-          to: nextTransition.from,
-        };
-
-        transitions.forward.push(nextTransition);
-        transitions.backward.push(backTransition);
-      }
-
-      executeTransitions();
-    };
-
-    const executeTransitions = () => {
-      if (store.inTransition) return;
-      const nextTransition = store.transitions.forward.shift();
-
-      if (!nextTransition) {
-        scope.refsMap = {};
-
-        return setTransition(null);
-      }
-
-      store.inTransition = true;
-      setTransition(nextTransition);
-    };
-
     const rendered = useMemo(
       () => ({
-        items: transition
+        items: detectCanStartTransition(transition, pathnames, prefix)
           ? getTransitionItems({ transition, prefix, slot })
           : [getMatchedItem({ pathname, fallback: entry, prefix, slot })],
       }),
@@ -221,7 +164,6 @@ const StackNavigator = {
 };
 
 type Scope = {
-  pathname: string;
   refsMap: Record<string, StackLayout>;
 };
 
@@ -241,6 +183,17 @@ function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);
 }
 
+function detectCanStartTransition(transition: Transition, pathnames: Array<string>, prefix: string) {
+  if (!transition) return false;
+  const { from, to } = transition;
+  const [segment1] = from.replace(prefix, '').split(SLASH).filter(Boolean);
+  const [segment2] = to.replace(prefix, '').split(SLASH).filter(Boolean);
+  const segments = pathnames.map(x => x.replace(prefix, '').split(SLASH).filter(Boolean)[0]);
+  const canStart = segments.includes(segment1) && segments.includes(segment2) && segment1 !== segment2;
+
+  return canStart;
+}
+
 type GetTransitionItems = {
   transition: Transition;
   prefix: string;
@@ -250,11 +203,11 @@ type GetTransitionItems = {
 function getTransitionItems(options: GetTransitionItems): Array<ScreenComponent> {
   const { transition, prefix, slot } = options;
   const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
-  const segmentFrom = getSegment(transition.from, prefix);
-  const segmentTo = getSegment(transition.to, prefix);
-  const factoryFrom = slotsMap[segmentFrom];
-  const factoryTo = slotsMap[segmentTo];
-  const items = [factoryFrom, factoryTo].filter(Boolean) as [ScreenComponent, ScreenComponent];
+  const [segment1] = getSegments(transition.from, prefix);
+  const [segment2] = getSegments(transition.to, prefix);
+  const factory1 = slotsMap[segment1];
+  const factory2 = slotsMap[segment2];
+  const items = [factory1, factory2].filter(Boolean);
 
   return items;
 }
@@ -269,9 +222,9 @@ type GetMatchedItem = {
 function getMatchedItem(options: GetMatchedItem): ScreenComponent {
   const { pathname, fallback, prefix, slot } = options;
   const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
-  const segment1 = getSegment(pathname, prefix);
-  const segment2 = getSegment(fallback, prefix);
-  const item = slotsMap[segment1] || slotsMap[segment2] || null;
+  const [segment1] = getSegments(pathname, prefix);
+  const [segment2] = getSegments(fallback, prefix);
+  const item = slotsMap[segment1] || slotsMap[segment2];
 
   return item;
 }
@@ -358,19 +311,6 @@ function createSlideAnimation(options: CreateAnimationOptions): Animation {
   return animation;
 }
 
-function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOptions {
-  const animated = nextOptions?.animated || false;
-  const name = nextOptions?.transition?.name || TransitionName.SLIDE;
-  const duration = nextOptions?.transition?.duration || DEFAULT_TRANSITION_DURATION;
-  const curve = nextOptions?.transition?.curve || CoreTypes.AnimationCurve.easeInOut;
-  const options: NavigationOptions = {
-    animated,
-    transition: { name, duration, curve },
-  };
-
-  return options;
-}
-
 function matchRef(refsMap: Record<string, StackLayout>, pathname: string): StackLayout {
   for (const key of Object.keys(refsMap)) {
     if (pathname.indexOf(key) !== -1) {
@@ -390,6 +330,5 @@ function getMeasuredSizeInDPI(view: AbsoluteLayout): Size {
 
 const SCALE_FACTOR = DeviceScreen.mainScreen.scale;
 const FULL = '100%';
-const DEFAULT_TRANSITION_DURATION = 100;
 
 export { StackNavigator, useScreenNavigatorContext };
