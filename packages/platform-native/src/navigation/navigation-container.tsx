@@ -3,13 +3,16 @@ import {
   type DarkElement,
   h,
   createComponent,
+  forwardRef,
   useRef,
   useEffect,
   useMemo,
   useState,
   useEvent,
   useContext,
+  useImperativeHandle,
   createContext,
+  detectIsFunction,
 } from '@dark-engine/core';
 
 import {
@@ -22,116 +25,130 @@ import { SLASH, TransitionName } from './constants';
 
 type NavigationContainerProps = {
   slot: DarkElement;
+  renderActionBar?: (pathname: string) => DarkElement;
+  onNavigate?: (pathname: string) => void;
 };
 
-const NavigationContainer = createComponent<NavigationContainerProps>(({ slot }) => {
-  const frameRef = useRef<Frame>(null);
-  const pageRef = useRef<Page>(null);
-  const [pathname, setPathname] = useState(SLASH);
-  const [transition, setTransition] = useState<Transition>(null, { forceSync: true });
-  const scope = useMemo<Scope>(
-    () => ({ history: null, inTransition: false, transitions: { forward: [], backward: [] } }),
-    [],
-  );
-  const {
-    transitions: { forward, backward },
-  } = scope;
+export type NavigationContainerRef = {
+  navigateTo: NavigationContextValue['push'];
+  goBack: NavigationContextValue['back'];
+};
 
-  useEffect(() => {
-    const history = createNavigationHistory(frameRef.current, pageRef.current);
-    const unsubscribe = history.subscribe((pathname, action, options) => {
-      const isReplace = action === HistoryAction.REPLACE;
-      const isBack = action === HistoryAction.BACK;
+const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
+  createComponent(({ slot, renderActionBar, onNavigate }, ref) => {
+    const frameRef = useRef<Frame>(null);
+    const pageRef = useRef<Page>(null);
+    const [pathname, setPathname] = useState(SLASH);
+    const [transition, setTransition] = useState<Transition>(null, { forceSync: true });
+    const scope = useMemo<Scope>(
+      () => ({ history: null, inTransition: false, transitions: { forward: [], backward: [] } }),
+      [],
+    );
+    const {
+      transitions: { forward, backward },
+    } = scope;
 
-      setPathname(pathname);
-      !isReplace && scheduleTransition(pathname, isBack, options);
-    });
+    useEffect(() => {
+      const history = createNavigationHistory(frameRef.current, pageRef.current);
+      const unsubscribe = history.subscribe((pathname, action, options) => {
+        const isReplace = action === HistoryAction.REPLACE;
+        const isBack = action === HistoryAction.BACK;
 
-    scope.history = history;
+        setPathname(pathname);
+        !isReplace && scheduleTransition(pathname, isBack, options);
+        detectIsFunction(onNavigate) && detectIsFunction(pathname);
+      });
 
-    return () => {
-      unsubscribe();
-      history.dispose();
-    };
-  }, []);
+      scope.history = history;
 
-  useEffect(() => {
-    if (!transition) return;
-    const timeout = transition.options.animated ? transition.options.transition.duration : 0;
-    const timerId = setTimeout(() => {
-      scope.inTransition = false;
+      return () => {
+        unsubscribe();
+        history.dispose();
+      };
+    }, []);
+
+    useEffect(() => {
+      if (!transition) return;
+      const timeout = transition.options.animated ? transition.options.transition.duration : 0;
+      const timerId = setTimeout(() => {
+        scope.inTransition = false;
+        executeTransitions();
+      }, timeout + WAITING_TIMEOUT);
+
+      return () => clearTimeout(timerId);
+    }, [transition]);
+
+    const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
+      if (isBack) {
+        const transition = backward.pop();
+
+        forward.push(transition);
+      } else {
+        const from = scope.history.getBack();
+        const forwardTransition: Transition = {
+          from,
+          to,
+          isBack: false,
+          options: resolveNavigationOptions(options),
+        };
+        const backwardTransition: Transition = {
+          ...forwardTransition,
+          isBack: true,
+          from: forwardTransition.to,
+          to: forwardTransition.from,
+        };
+
+        forward.push(forwardTransition);
+        backward.push(backwardTransition);
+      }
+
       executeTransitions();
-    }, timeout + WAITING_TIMEOUT);
+    };
 
-    return () => clearTimeout(timerId);
-  }, [transition]);
+    const executeTransitions = () => {
+      if (scope.inTransition) return;
+      const transition = forward.shift();
 
-  const scheduleTransition = (to: string, isBack: boolean, options?: NavigationOptions) => {
-    if (isBack) {
-      const transition = backward.pop();
+      if (!transition) return setTransition(null);
 
-      forward.push(transition);
-    } else {
-      const from = scope.history.getBack();
-      const forwardTransition: Transition = {
-        from,
-        to,
-        isBack: false,
-        options: resolveNavigationOptions(options),
-      };
-      const backwardTransition: Transition = {
-        ...forwardTransition,
-        isBack: true,
-        from: forwardTransition.to,
-        to: forwardTransition.from,
-      };
+      scope.inTransition = true;
+      setTransition(transition);
+    };
 
-      forward.push(forwardTransition);
-      backward.push(backwardTransition);
-    }
+    const push = useEvent((pathname: string, options?: NavigationOptions) => scope.history.push(pathname, options));
 
-    executeTransitions();
-  };
+    const replace = useEvent((pathname: string) => scope.history.replace(pathname));
 
-  const executeTransitions = () => {
-    if (scope.inTransition) return;
-    const transition = forward.shift();
+    const back = useEvent(() => scope.history.back());
 
-    if (!transition) return setTransition(null);
+    const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
 
-    scope.inTransition = true;
-    setTransition(transition);
-  };
+    const contextValue = useMemo<NavigationContextValue>(
+      () => ({ pathname, transition, push, replace, back, subscribe }),
+      [pathname, transition],
+    );
 
-  const push = useEvent((pathname: string, options?: NavigationOptions) => scope.history.push(pathname, options));
+    useImperativeHandle(ref, () => ({ navigateTo: push, goBack: back }), []);
 
-  const replace = useEvent((pathname: string) => scope.history.replace(pathname));
+    const hasActionBar = detectIsFunction(renderActionBar);
 
-  const back = useEvent(() => scope.history.back());
-
-  const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
-
-  const contextValue = useMemo<NavigationContextValue>(
-    () => ({ pathname, transition, push, replace, back, subscribe }),
-    [pathname, transition],
-  );
-
-  return (
-    <NavigationContext.Provider value={contextValue}>
-      <frame>
-        <page>
-          <action-bar title='navigation'></action-bar> {/*TODO*/}
-          <stack-layout>
-            <frame ref={frameRef} hidden>
-              <page ref={pageRef} actionBarHidden />
-            </frame>
-            {slot}
-          </stack-layout>
-        </page>
-      </frame>
-    </NavigationContext.Provider>
-  );
-});
+    return (
+      <NavigationContext.Provider value={contextValue}>
+        <frame>
+          <page actionBarHidden={!hasActionBar}>
+            {hasActionBar && renderActionBar(pathname)}
+            <stack-layout>
+              <frame ref={frameRef} hidden>
+                <page ref={pageRef} actionBarHidden />
+              </frame>
+              {slot}
+            </stack-layout>
+          </page>
+        </frame>
+      </NavigationContext.Provider>
+    );
+  }),
+);
 
 type Scope = {
   history: NavigationHistory;

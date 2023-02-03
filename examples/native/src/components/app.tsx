@@ -100,11 +100,11 @@ const Home = createComponent(() => {
 });
 
 const Contacts = createComponent(() => {
-  const { navigateTo, goBack, match } = useAnimatedNavigation();
+  const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
     <stack-layout backgroundColor='#66bb6a' height='100%'>
-      <label>Contacts</label>
+      <label>Contacts: {pathname}</label>
       <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
         go to Home
       </button>
@@ -119,11 +119,11 @@ const Contacts = createComponent(() => {
 });
 
 const Settings = createComponent(() => {
-  const { navigateTo, goBack, match } = useAnimatedNavigation();
+  const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
     <stack-layout backgroundColor='#ec407a' height='100%'>
-      <label>Settings</label>
+      <label>Settings: {pathname}</label>
       <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
         go to Home
       </button>
@@ -144,7 +144,7 @@ function useAnimatedNavigation() {
     navigateTo: (pathname: string) =>
       navigateTo(pathname, {
         animated: true,
-        transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
+        //transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
       }),
     ...rest,
   };
@@ -152,7 +152,7 @@ function useAnimatedNavigation() {
 
 const App = createComponent(() => {
   return (
-    <NavigationContainer>
+    <NavigationContainer renderActionBar={pathname => <action-bar title={pathname}></action-bar>}>
       <TabNavigator.Root>
         <TabNavigator.Screen name='Home' component={Home} />
         <TabNavigator.Screen name='Contacts' component={Contacts} />
