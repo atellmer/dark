@@ -84,9 +84,13 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
   );
 });
 
-type TabScreenProps = {} & StackScreenProps;
+type TabScreenProps = {
+  title?: string;
+  iconSource?: string;
+  class?: string;
+} & StackScreenProps;
 
-const Screen = createComponent<TabScreenProps>(({ name, component, slot }) => {
+const Screen = createComponent<TabScreenProps>(({ name, component, title, iconSource, class: className, slot }) => {
   const value = useTabNavigatorContext();
 
   value.descriptorsMap[name] = {
@@ -96,7 +100,7 @@ const Screen = createComponent<TabScreenProps>(({ name, component, slot }) => {
   };
 
   return (
-    <tab-view-item title={name} canBeLoaded>
+    <tab-view-item title={title || name} iconSource={iconSource} class={className} canBeLoaded>
       <label text='' />
     </tab-view-item>
   );

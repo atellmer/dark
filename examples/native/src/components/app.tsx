@@ -9,25 +9,6 @@ import {
   type NavigationOptions,
 } from '@dark-engine/platform-native';
 
-// const Home = createComponent(() => {
-//   const { navigateTo, goBack, match } = useAnimatedNavigation();
-
-//   return (
-//     <stack-layout backgroundColor='#26c6da' height='100%'>
-//       <label>Home</label>
-//       <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Contacts`)}>
-//         go to contacts
-//       </button>
-//       <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings`)}>
-//         go to settings
-//       </button>
-//       <button backgroundColor='purple' onTap={() => goBack()}>
-//         back
-//       </button>
-//     </stack-layout>
-//   );
-// });
-
 const Account = createComponent(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
   const id = params['id'] as number;
@@ -159,9 +140,9 @@ const App = createComponent(() => {
   return (
     <NavigationContainer>
       <TabNavigator.Root>
-        <TabNavigator.Screen name='Home' component={Home} />
-        <TabNavigator.Screen name='Contacts' component={Contacts} />
-        <TabNavigator.Screen name='Settings' component={Settings} />
+        <TabNavigator.Screen name='Home' title='&#xe800;' class='lnr' component={Home} />
+        <TabNavigator.Screen name='Contacts' title='&#xe830;' class='lnr' component={Contacts} />
+        <TabNavigator.Screen name='Settings' title='&#xe810;' class='lnr' component={Settings} />
       </TabNavigator.Root>
     </NavigationContainer>
   );

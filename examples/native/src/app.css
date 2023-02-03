@@ -7,3 +7,19 @@
  * Font icon class
  */
 
+@font-face {
+  font-family: 'Linearicons-Free';
+  src: url('fonts/Linearicons-Free.ttf?w118d') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.lnr {
+  font-family: 'Linearicons-Free';
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: uppercase;
+  line-height: 1;
+  font-size: 20;
+}
