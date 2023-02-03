@@ -271,9 +271,9 @@ import {
   Frame,
   Page,
   factory,
+  StackNavigator,
+  TabNavigator,
   useNavigation,
-  createStackNavigator,
-  createBottomTabNavigator,
 } from '@dark-engine/platform-native';
 ```
 
