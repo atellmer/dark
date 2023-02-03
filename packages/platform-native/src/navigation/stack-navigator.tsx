@@ -20,11 +20,13 @@ import {
   useContext,
   useMemo,
   useEffect,
+  useLayoutEffect,
   useRef,
   useImperativeHandle,
   keyBy,
 } from '@dark-engine/core';
 
+import { type Params } from './navigation-history';
 import { useNavigationContext, type Transition } from './navigation-container';
 import { SLASH, TransitionName } from './constants';
 import { createPathname, getMatchedIdx, getSegments } from './utils';
@@ -49,7 +51,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const entry = pathnames[0];
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
     }, [pathname]);
 
@@ -121,20 +123,31 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 export type StackScreenProps = {
   name: string;
   component?: Component;
+  initialParams?: Params;
   slot?: () => DarkElement;
 };
 
-const Screen = createComponent<StackScreenProps>(({ name, component, slot }) => {
-  const { prefix } = useScreenNavigatorContext();
-  const pathname = createPathname(name, prefix);
-  const contextValue = useMemo(() => ({ prefix: pathname, parentPrefix: prefix }), []);
+const Screen = createComponent<StackScreenProps>(
+  ({ name, component, initialParams, slot }) => {
+    const { prefix } = useScreenNavigatorContext();
+    const pathname = createPathname(name, prefix);
+    const contextValue = useMemo<ScreenNavigatorContextValue>(
+      () => ({ prefix: pathname, parentPrefix: prefix, initialParams }),
+      [],
+    );
 
-  return (
-    <ScreenNavigatorContext.Provider value={contextValue}>
-      {detectIsFunction(slot) ? slot() : component()}
-    </ScreenNavigatorContext.Provider>
-  );
-});
+    return (
+      <ScreenNavigatorContext.Provider value={contextValue}>
+        {detectIsFunction(slot) ? slot() : component()}
+      </ScreenNavigatorContext.Provider>
+    );
+  },
+  {
+    defaultProps: {
+      initialParams: {},
+    },
+  },
+);
 
 const StackNavigator = {
   Root: memo(Navigator),
@@ -153,9 +166,14 @@ type Size = {
 type ScreenNavigatorContextValue = {
   prefix: string;
   parentPrefix: string;
+  initialParams: Params;
 };
 
-const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({ prefix: SLASH, parentPrefix: '' });
+const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({
+  prefix: SLASH,
+  parentPrefix: '',
+  initialParams: {},
+});
 
 function useScreenNavigatorContext() {
   return useContext(ScreenNavigatorContext);

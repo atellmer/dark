@@ -11,6 +11,7 @@ class NavigationHistory {
   private frame: Frame;
   private page: Page;
   private fromUserEvent = false;
+  private params: Record<string, Record<string, Params>> = {};
   public dispose: () => void = null;
 
   constructor(frame: Frame, page: Page) {
@@ -42,9 +43,9 @@ class NavigationHistory {
     }
   }
 
-  private getValue = () => {
+  private getValue() {
     return this.stack[this.cursor];
-  };
+  }
 
   private syncHistory(action: HistoryAction) {
     switch (action) {
@@ -60,24 +61,38 @@ class NavigationHistory {
     }
   }
 
-  public getBack = () => {
+  public getBack() {
     return this.stack[this.cursor - 1] || this.getValue();
-  };
+  }
 
-  public subscribe = (subscriber: HistorySubscriber) => {
+  public getParams(pathname: string) {
+    return this.params[pathname] ? this.params[pathname][this.cursor] || null : null;
+  }
+
+  public subscribe(subscriber: HistorySubscriber) {
     this.subscribers.add(subscriber);
 
     return () => this.subscribers.delete(subscriber);
-  };
+  }
 
   public push(pathname: string, options?: NavigationOptions) {
     const action = HistoryAction.PUSH;
     const normalPathname = normalizePathname(pathname);
+    const params = options?.params || null;
 
     if (normalPathname === this.stack[this.cursor]) return;
 
     this.stack.splice(this.cursor + 1, this.stack.length, normalPathname);
     this.cursor = this.stack.length - 1;
+
+    if (params) {
+      if (!this.params[normalPathname]) {
+        this.params[normalPathname] = {};
+      }
+
+      this.params[normalPathname][this.cursor] = params;
+    }
+
     this.syncHistory(action);
     this.mapSubscribers(action, options);
   }
@@ -96,10 +111,15 @@ class NavigationHistory {
     if (this.cursor === 0) return;
 
     const action = HistoryAction.BACK;
+    const pathname = this.stack.pop();
+    const cursor = this.cursor;
 
-    this.stack.pop();
     this.fromUserEvent = sync;
     this.cursor -= 1;
+
+    if (this.params[pathname]) {
+      delete this.params[pathname][cursor];
+    }
 
     if (this.cursor < 0) {
       this.cursor = 0;
@@ -117,6 +137,10 @@ export enum HistoryAction {
   REPLACE = 'REPLACE',
   BACK = 'BACK',
 }
+
+type Parameter = string | number;
+
+export type Params = Record<string, Parameter>;
 
 const NAVIGATED_FROM_EVENT = 'navigatedFrom';
 

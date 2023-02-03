@@ -29,12 +29,14 @@ import {
 // });
 
 const Account = createComponent(() => {
-  const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
+  const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
+  const id = params['id'] as number;
 
   return (
     <stack-layout backgroundColor='#512da8' height='100%'>
       <label>Account: {pathname}</label>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Profile`)}>
+      <label>id: {id}</label>
+      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Profile`, { id: 12 })}>
         go to Profile
       </button>
       <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Dashboard`)}>
@@ -48,12 +50,14 @@ const Account = createComponent(() => {
 });
 
 const Profile = createComponent(() => {
-  const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
+  const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
+  const id = params['id'] as number;
 
   return (
     <stack-layout backgroundColor='#1976d2' height='100%'>
       <label>Profile: {pathname}</label>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Account`)}>
+      <label>id: {id}</label>
+      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Account`, { id: 10 })}>
         go to Account
       </button>
       <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Dashboard`)}>
@@ -91,8 +95,8 @@ const Home = createComponent(() => {
   return (
     <stack-layout backgroundColor='#26c6da' height='100%'>
       <StackNavigator.Root>
-        <StackNavigator.Screen name='Account' component={Account} />
-        <StackNavigator.Screen name='Profile' component={Profile} />
+        <StackNavigator.Screen name='Account' component={Account} initialParams={{ id: -1 }} />
+        <StackNavigator.Screen name='Profile' component={Profile} initialParams={{ id: -2 }} />
         <StackNavigator.Screen name='Dashboard' component={Dashboard} />
       </StackNavigator.Root>
     </stack-layout>
@@ -141,9 +145,10 @@ function useAnimatedNavigation() {
   const { navigateTo, ...rest } = useNavigation();
 
   return {
-    navigateTo: (pathname: string) =>
+    navigateTo: (pathname: string, params?: Record<string, string | number>) =>
       navigateTo(pathname, {
         animated: true,
+        params,
         //transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
       }),
     ...rest,
@@ -152,7 +157,7 @@ function useAnimatedNavigation() {
 
 const App = createComponent(() => {
   return (
-    <NavigationContainer renderActionBar={pathname => <action-bar title={pathname}></action-bar>}>
+    <NavigationContainer>
       <TabNavigator.Root>
         <TabNavigator.Screen name='Home' component={Home} />
         <TabNavigator.Screen name='Contacts' component={Contacts} />

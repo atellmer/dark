@@ -6,6 +6,7 @@ import {
   forwardRef,
   useRef,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   useEvent,
@@ -17,6 +18,7 @@ import {
 
 import {
   type HistorySubscriber,
+  type Params,
   createNavigationHistory,
   NavigationHistory,
   HistoryAction,
@@ -30,8 +32,8 @@ type NavigationContainerProps = {
 };
 
 export type NavigationContainerRef = {
-  navigateTo: NavigationContextValue['push'];
-  goBack: NavigationContextValue['back'];
+  navigateTo: Push;
+  goBack: Back;
 };
 
 const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
@@ -48,7 +50,7 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
       transitions: { forward, backward },
     } = scope;
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       const history = createNavigationHistory(frameRef.current, pageRef.current);
       const unsubscribe = history.subscribe((pathname, action, options) => {
         const isReplace = action === HistoryAction.REPLACE;
@@ -121,10 +123,12 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
 
     const back = useEvent(() => scope.history.back());
 
+    const getParams = useEvent((pathname: string) => scope.history.getParams(pathname));
+
     const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
 
     const contextValue = useMemo<NavigationContextValue>(
-      () => ({ pathname, transition, push, replace, back, subscribe }),
+      () => ({ pathname, transition, push, replace, back, getParams, subscribe }),
       [pathname, transition],
     );
 
@@ -169,6 +173,7 @@ export type Transition = {
 export type NavigationOptions = {
   animated?: boolean;
   transition?: AnimatedTransition;
+  params?: Params;
 };
 
 type AnimatedTransition = {
@@ -177,12 +182,19 @@ type AnimatedTransition = {
   curve?: string;
 };
 
+export type Push = (pathname: string, options?: NavigationOptions) => void;
+
+export type Replace = (pathname: string) => void;
+
+export type Back = () => void;
+
 type NavigationContextValue = {
   transition: Transition | null;
   pathname: string;
-  push: (pathname: string, options?: NavigationOptions) => void;
-  replace: (pathname: string) => void;
-  back: () => void;
+  push: Push;
+  replace: Replace;
+  back: Back;
+  getParams: (pathname: string) => Params;
   subscribe: (subscriber: HistorySubscriber) => () => void;
 };
 
@@ -202,6 +214,7 @@ function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOpt
   const options: NavigationOptions = {
     animated,
     transition: { name, duration, curve },
+    params: nextOptions.params,
   };
 
   return options;
