@@ -82,11 +82,11 @@ yarn add @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
 ## Installation for native platforms (Android, iOS)
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-native
+npm install @dark-engine/core @dark-engine/platform-native @nativescript/core
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-native
+yarn add @dark-engine/core @dark-engine/platform-native @nativescript/core
 ```
 
 ## Usage
