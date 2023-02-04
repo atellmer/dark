@@ -1,5 +1,5 @@
 import type { SegmentedBar as NSSegmentedBar } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SegmentedBarAttributes } from '../jsx';
 import { segmentedBar } from '../factory';
@@ -11,6 +11,6 @@ const SegmentedBar = forwardRef<SegmentedBarProps, SegmentedBarRef>(
   createComponent((props, ref) => {
     return segmentedBar({ ref, ...props });
   }),
-);
+) as Component<SegmentedBarProps, SegmentedBarRef>;
 
 export { SegmentedBar };

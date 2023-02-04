@@ -1,5 +1,5 @@
 import type { DockLayout as NSDockLayout } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { DockLayoutAttributes } from '../jsx';
 import { dockLayout } from '../factory';
@@ -11,6 +11,6 @@ const DockLayout = forwardRef<DockLayoutProps, DockLayoutRef>(
   createComponent((props, ref) => {
     return dockLayout({ ref, ...props });
   }),
-);
+) as Component<DockLayoutProps, DockLayoutRef>;
 
 export { DockLayout };

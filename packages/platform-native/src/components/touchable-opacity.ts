@@ -1,5 +1,13 @@
 import { type TouchGestureEventData, AccessibilityRole } from '@nativescript/core';
-import { type DarkElement, createComponent, detectIsFunction, useEvent, useSpring, useState } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type Component,
+  createComponent,
+  detectIsFunction,
+  useEvent,
+  useSpring,
+  useState,
+} from '@dark-engine/core';
 
 import { type ViewProps, View } from './view';
 import { type SyntheticEvent } from '../events';
@@ -54,7 +62,7 @@ const TouchableOpacity = createComponent<TouchableOpacityProps>(({ disabled, slo
     opacity: disabled ? 0.5 : x,
     onTouch: handleTouch,
   });
-});
+}) as Component<TouchableOpacityProps>;
 
 const DOWN_ANIMATION_DURATION = 50;
 const UP_ANIMATION_DURATION = 200;

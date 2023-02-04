@@ -1,5 +1,5 @@
 import type { ListPicker as NSListPicker } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ListPickerAttributes } from '../jsx';
 import { listPicker } from '../factory';
@@ -11,6 +11,6 @@ const ListPicker = forwardRef<ListPickerProps, ListPickerRef>(
   createComponent((props, ref) => {
     return listPicker({ ref, ...props });
   }),
-);
+) as Component<ListPickerProps, ListPickerRef>;
 
 export { ListPicker };

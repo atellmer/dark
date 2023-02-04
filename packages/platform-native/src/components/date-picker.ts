@@ -1,5 +1,5 @@
 import type { DatePicker as NSDatePicker } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { DatePickerAttributes } from '../jsx';
 import { datePicker } from '../factory';
@@ -11,6 +11,6 @@ const DatePicker = forwardRef<DatePickerProps, DatePickerRef>(
   createComponent((props, ref) => {
     return datePicker({ ref, ...props });
   }),
-);
+) as Component<DatePickerProps, DatePickerRef>;
 
 export { DatePicker };

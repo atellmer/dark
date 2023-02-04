@@ -1,5 +1,5 @@
 import type { Slider as NSSlider } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SliderAttributes } from '../jsx';
 import { slider } from '../factory';
@@ -11,6 +11,6 @@ const Slider = forwardRef<SliderProps, SliderRef>(
   createComponent((props, ref) => {
     return slider({ ref, ...props });
   }),
-);
+) as Component<SliderProps, SliderRef>;
 
 export { Slider };

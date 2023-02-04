@@ -1,5 +1,5 @@
 import type { Image as NSImage } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ImageAttributes } from '../jsx';
 import { image } from '../factory';
@@ -11,6 +11,6 @@ const Image = forwardRef<ImageProps, ImageRef>(
   createComponent((props, ref) => {
     return image({ ref, ...props });
   }),
-);
+) as Component<ImageProps, ImageRef>;
 
 export { Image };

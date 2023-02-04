@@ -1,5 +1,5 @@
 import type { Page as NSPage } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { PageAttributes } from '../jsx';
 import { page } from '../factory';
@@ -11,6 +11,6 @@ const Page = forwardRef<PageProps, PageRef>(
   createComponent((props, ref) => {
     return page({ ref, ...props });
   }),
-);
+) as Component<PageProps, PageRef>;
 
 export { Page };

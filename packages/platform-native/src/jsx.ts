@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { CoreTypes } from '@nativescript/core';
 
 export type AccessibilityLiveRegion = import('@nativescript/core').AccessibilityLiveRegion;
@@ -956,6 +957,7 @@ export type TabViewItemAttributes = WithStandardElementAttributes<
 declare global {
   namespace JSX {
     interface IntrinsicElements {
+      // @ts-ignore
       frame: FrameAttributes;
       page: PageAttributes;
       'content-view': ContentViewAttributes;

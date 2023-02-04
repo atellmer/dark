@@ -1,5 +1,5 @@
 import type { SearchBar as NSSearchBar } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SearchBarAttributes } from '../jsx';
 import { searchBar } from '../factory';
@@ -11,6 +11,6 @@ const SearchBar = forwardRef<SearchBarProps, SearchBarRef>(
   createComponent((props, ref) => {
     return searchBar({ ref, ...props });
   }),
-);
+) as Component<SearchBarProps, SearchBarRef>;
 
 export { SearchBar };

@@ -1,5 +1,5 @@
 import type { FlexboxLayout as NSFlexboxLayout } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { FlexboxLayoutAttributes } from '../jsx';
 import { flexboxLayout } from '../factory';
@@ -11,6 +11,6 @@ const FlexboxLayout = forwardRef<FlexboxLayoutProps, FlexboxLayoutRef>(
   createComponent((props, ref) => {
     return flexboxLayout({ ref, ...props });
   }),
-);
+) as Component<FlexboxLayoutProps, FlexboxLayoutRef>;
 
 export { FlexboxLayout };

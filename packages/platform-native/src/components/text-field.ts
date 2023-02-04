@@ -1,5 +1,5 @@
 import type { TextField as NSTextField } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { TextFieldAttributes } from '../jsx';
 import { textField } from '../factory';
@@ -11,6 +11,6 @@ const TextField = forwardRef<TextFieldProps, TextFieldRef>(
   createComponent((props, ref) => {
     return textField({ ref, ...props });
   }),
-);
+) as Component<TextFieldProps, TextFieldRef>;
 
 export { TextField };

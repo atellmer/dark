@@ -1,5 +1,5 @@
 import type { ActivityIndicator as NSActivityIndicator } from '@nativescript/core';
-import { createComponent, forwardRef } from '@dark-engine/core';
+import { type Component, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ActivityIndicatorAttributes } from '../jsx';
 import { activityIndicator } from '../factory';
@@ -11,6 +11,6 @@ const ActivityIndicator = forwardRef<ActivityIndicatorProps, ActivityIndicatorRe
   createComponent((props, ref) => {
     return activityIndicator({ ref, ...props });
   }),
-);
+) as Component<ActivityIndicatorProps, ActivityIndicatorRef>;
 
 export { ActivityIndicator };
