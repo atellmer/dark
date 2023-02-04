@@ -15,10 +15,10 @@ import {
   batch,
   memo,
 } from '@dark-engine/core';
+import { type SyntheticEvent } from '@dark-engine/platform-native';
 
-import { type SyntheticEvent } from '../events';
-import { StackNavigator, type StackNavigatorRef, type StackScreenProps } from './stack-navigator';
-import { useNavigationContext } from './navigation-container';
+import { StackNavigator, type StackNavigatorRef, type StackScreenProps } from '../stack-navigator';
+import { useNavigationContext } from '../navigation-container';
 
 type TabNavigatorProps = {
   position?: 'top' | 'bottom';

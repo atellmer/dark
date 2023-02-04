@@ -18,14 +18,17 @@
     "jsxFragmentFactory": "Fragment",
     "baseUrl": ".",
     "paths": {
+      "@nativescript/core": [
+        "../../packages/platform-native/node_modules/@nativescript/core/index"
+      ],
       "@dark-engine/core": [
         "../../packages/core/src/index"
       ],
       "@dark-engine/platform-native": [
         "../../packages/platform-native/src/index"
       ],
-      "@nativescript/core": [
-        "../../packages/platform-native/node_modules/@nativescript/core/index"
+      "@dark-engine/native-navigation": [
+        "../../packages/native-navigation/src/index"
       ],
       "~/*": [
         "src/*"

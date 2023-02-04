@@ -22,8 +22,8 @@ import {
   createNavigationHistory,
   NavigationHistory,
   HistoryAction,
-} from './navigation-history';
-import { SLASH, TransitionName } from './constants';
+} from '../history';
+import { SLASH, TransitionName } from '../constants';
 
 type NavigationContainerProps = {
   slot: DarkElement;

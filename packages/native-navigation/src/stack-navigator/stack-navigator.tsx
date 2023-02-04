@@ -26,10 +26,10 @@ import {
   keyBy,
 } from '@dark-engine/core';
 
-import { type Params } from './navigation-history';
-import { useNavigationContext, type Transition } from './navigation-container';
-import { SLASH, TransitionName } from './constants';
-import { createPathname, getMatchedIdx, getSegments } from './utils';
+import { type Params } from '../history';
+import { useNavigationContext, type Transition } from '../navigation-container';
+import { SLASH, TransitionName } from '../constants';
+import { createPathname, getMatchedIdx, getSegments } from '../utils';
 
 export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;

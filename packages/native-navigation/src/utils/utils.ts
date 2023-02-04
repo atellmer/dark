@@ -1,4 +1,4 @@
-import { SLASH } from './constants';
+import { SLASH } from '../constants';
 
 const createPathname = (name: string, prefix: string) => {
   return normalizePathname(`${prefix}${name}`);

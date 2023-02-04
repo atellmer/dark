@@ -5,6 +5,5 @@ export { registerElement } from './registry';
 export * from './components';
 export * from './native-element';
 export * from './factory';
-export * from './navigation';
 
 export const version = process.env.VERSION;

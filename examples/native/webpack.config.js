@@ -15,11 +15,15 @@ module.exports = env => {
     config.resolve.extensions.add('.ios.tsx');
     config.resolve.extensions.add('.tsx');
 
-    config.resolve.alias.set('@dark-engine/core', resolve(__dirname, '../../packages/core/src'));
-    config.resolve.alias.set('@dark-engine/platform-native', resolve(__dirname, '../../packages/platform-native/src'));
     config.resolve.alias.set(
       '@nativescript/core',
       resolve(__dirname, '../../packages/platform-native/node_modules/@nativescript/core'),
+    );
+    config.resolve.alias.set('@dark-engine/core', resolve(__dirname, '../../packages/core/src'));
+    config.resolve.alias.set('@dark-engine/platform-native', resolve(__dirname, '../../packages/platform-native/src'));
+    config.resolve.alias.set(
+      '@dark-engine/native-navigation',
+      resolve(__dirname, '../../packages/native-navigation/src'),
     );
 
     config.module

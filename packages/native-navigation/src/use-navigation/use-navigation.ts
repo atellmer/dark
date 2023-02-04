@@ -1,6 +1,6 @@
-import { type Params } from './navigation-history';
-import { useNavigationContext, type Push, type Back } from './navigation-container';
-import { useScreenNavigatorContext } from './stack-navigator';
+import { type Params } from '../history';
+import { useNavigationContext, type Push, type Back } from '../navigation-container';
+import { useScreenNavigatorContext } from '../stack-navigator';
 
 type Navigation = {
   match: {

@@ -1,13 +1,5 @@
-import { CoreTypes } from '@nativescript/core';
 import { h, Fragment, createComponent } from '@dark-engine/core';
-import {
-  NavigationContainer,
-  useNavigation,
-  StackNavigator,
-  TabNavigator,
-  NavigationTransitionName,
-  type NavigationOptions,
-} from '@dark-engine/platform-native';
+import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from '@dark-engine/native-navigation';
 
 const Account = createComponent(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
@@ -130,7 +122,6 @@ function useAnimatedNavigation() {
       navigateTo(pathname, {
         animated: true,
         params,
-        //transition: { duration: 1000, curve: CoreTypes.AnimationCurve.spring, name: NavigationTransitionName.SLIDE },
       }),
     ...rest,
   };

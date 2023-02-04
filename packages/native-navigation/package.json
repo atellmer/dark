@@ -1,7 +1,7 @@
 {
-  "name": "@dark-engine/platform-native",
+  "name": "@dark-engine/native-navigation",
   "version": "0.18.0",
-  "description": "Dark renderer for native platforms (Android, iOS)",
+  "description": "Dark navigation for nativescript platform",
   "author": "AlexPlex",
   "license": "MIT",
   "main": "./dist/cjs/index.js",
@@ -28,7 +28,8 @@
     "rendering",
     "app",
     "android",
-    "ios"
+    "ios",
+    "navigation"
   ],
   "devDependencies": {
     "@nativescript/core": "~8.4.0",
@@ -38,6 +39,7 @@
   },
   "peerDependencies": {
     "@dark-engine/core": "*",
+    "@dark-engine/platform-native": "*",
     "@nativescript/core": "*"
   },
   "exports": {

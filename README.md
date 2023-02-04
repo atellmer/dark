@@ -1,7 +1,7 @@
 <div align="center">
 <h1>Dark</h1>
 
-Dark is lightweight UI rendering engine for javascript apps without dependencies and written in TypeScript (Browser, Server, Android, iOS) 💫
+Dark is lightweight UI rendering engine for javascript apps without dependencies and written in TypeScript (supports Browser, Server, Android, iOS) 💫
 
 <img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
@@ -82,11 +82,11 @@ yarn add @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
 ## Installation for native platforms (Android, iOS)
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-native @nativescript/core
+npm install @nativescript/core @dark-engine/core @dark-engine/platform-native @dark-engine/native-navigation
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-native @nativescript/core
+yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native @dark-engine/native-navigation
 ```
 
 ## Usage
@@ -234,6 +234,7 @@ import {
   type SyntheticEvent,
   run,
   registerElement,
+  factory,
   View,
   Text,
   Image,
@@ -270,11 +271,17 @@ import {
   TabViewItem,
   Frame,
   Page,
-  factory,
+} from '@dark-engine/platform-native';
+```
+```tsx
+import {
+  type NavigationOptions,
+  NavigationTransitionName,
+  NavigationContainer,
   StackNavigator,
   TabNavigator,
   useNavigation,
-} from '@dark-engine/platform-native';
+} from '@dark-engine/native-navigation';
 ```
 
 ## A little more about the core concepts...
