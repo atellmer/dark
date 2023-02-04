@@ -1,4 +1,4 @@
-import { FlexboxLayout as NSFlexboxLayout } from '@nativescript/core';
+import type { FlexboxLayout as NSFlexboxLayout } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { FlexboxLayoutAttributes } from '../jsx';

@@ -1,4 +1,4 @@
-import { type Params } from '../history';
+import { type ParamsMap } from '../history';
 import { useNavigationContext, type Push, type Back } from '../navigation-container';
 import { useScreenNavigatorContext } from '../stack-navigator';
 
@@ -7,7 +7,7 @@ type Navigation = {
     pathname: string;
   };
   pathname: string;
-  params: Params;
+  params: ParamsMap;
   navigateTo: Push;
   goBack: Back;
 };
@@ -15,7 +15,7 @@ type Navigation = {
 function useNavigation(): Navigation {
   const { pathname, push, back, getParams } = useNavigationContext();
   const { prefix, parentPrefix, initialParams } = useScreenNavigatorContext();
-  const params = getParams(prefix) || initialParams;
+  const params = getParams(prefix) || new Map(Object.entries(initialParams));
   const value: Navigation = {
     match: {
       pathname: parentPrefix,

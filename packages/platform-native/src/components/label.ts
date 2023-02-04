@@ -1,4 +1,4 @@
-import { Label as NSLabel } from '@nativescript/core';
+import type { Label as NSLabel } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { LabelAttributes } from '../jsx';

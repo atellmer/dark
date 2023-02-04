@@ -1,4 +1,4 @@
-import { ListPicker as NSListPicker } from '@nativescript/core';
+import type { ListPicker as NSListPicker } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ListPickerAttributes } from '../jsx';

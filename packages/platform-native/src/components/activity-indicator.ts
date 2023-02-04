@@ -1,4 +1,4 @@
-import { ActivityIndicator as NSActivityIndicator } from '@nativescript/core';
+import type { ActivityIndicator as NSActivityIndicator } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ActivityIndicatorAttributes } from '../jsx';

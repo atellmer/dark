@@ -3,7 +3,7 @@ import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from
 
 const Account = createComponent(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
-  const id = params['id'] as number;
+  const id = params.get('id') as number;
 
   return (
     <stack-layout backgroundColor='#512da8' height='100%'>
@@ -24,7 +24,7 @@ const Account = createComponent(() => {
 
 const Profile = createComponent(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
-  const id = params['id'] as number;
+  const id = params.get('id') as number;
 
   return (
     <stack-layout backgroundColor='#1976d2' height='100%'>

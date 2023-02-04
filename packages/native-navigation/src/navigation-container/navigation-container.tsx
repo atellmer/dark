@@ -1,4 +1,4 @@
-import { Frame, Page, CoreTypes } from '@nativescript/core';
+import { type Frame, type Page, CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
   h,
@@ -18,7 +18,8 @@ import {
 
 import {
   type HistorySubscriber,
-  type Params,
+  type ParamsMap,
+  type ParamsObject,
   createNavigationHistory,
   NavigationHistory,
   HistoryAction,
@@ -173,7 +174,7 @@ export type Transition = {
 export type NavigationOptions = {
   animated?: boolean;
   transition?: AnimatedTransition;
-  params?: Params;
+  params?: ParamsObject;
 };
 
 type AnimatedTransition = {
@@ -194,7 +195,7 @@ type NavigationContextValue = {
   push: Push;
   replace: Replace;
   back: Back;
-  getParams: (pathname: string) => Params;
+  getParams: (pathname: string) => ParamsMap;
   subscribe: (subscriber: HistorySubscriber) => () => void;
 };
 

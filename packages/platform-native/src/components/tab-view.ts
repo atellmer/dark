@@ -1,4 +1,4 @@
-import { TabView as NSTabView } from '@nativescript/core';
+import type { TabView as NSTabView } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { TabViewAttributes } from '../jsx';

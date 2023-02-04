@@ -1,4 +1,4 @@
-import { Span as NSSpan } from '@nativescript/core';
+import type { Span as NSSpan } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SpanAttributes } from '../jsx';

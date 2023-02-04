@@ -1,4 +1,4 @@
-import { Image as NSImage } from '@nativescript/core';
+import type { Image as NSImage } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ImageAttributes } from '../jsx';

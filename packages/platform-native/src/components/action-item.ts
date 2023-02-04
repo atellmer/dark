@@ -1,4 +1,4 @@
-import { ActionItem as NSActionItem } from '@nativescript/core';
+import type { ActionItem as NSActionItem } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ActionItemAttributes } from '../jsx';

@@ -1,4 +1,4 @@
-import { DockLayout as NSDockLayout } from '@nativescript/core';
+import type { DockLayout as NSDockLayout } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { DockLayoutAttributes } from '../jsx';

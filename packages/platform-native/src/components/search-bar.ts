@@ -1,4 +1,4 @@
-import { SearchBar as NSSearchBar } from '@nativescript/core';
+import type { SearchBar as NSSearchBar } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SearchBarAttributes } from '../jsx';

@@ -1,4 +1,4 @@
-import { TimePicker as NSTimePicker } from '@nativescript/core';
+import type { TimePicker as NSTimePicker } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { TimePickerAttributes } from '../jsx';

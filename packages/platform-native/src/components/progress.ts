@@ -1,4 +1,4 @@
-import { Progress as NSProgress } from '@nativescript/core';
+import type { Progress as NSProgress } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ProgressAttributes } from '../jsx';

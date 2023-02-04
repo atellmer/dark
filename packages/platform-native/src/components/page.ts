@@ -1,4 +1,4 @@
-import { Page as NSPage } from '@nativescript/core';
+import type { Page as NSPage } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { PageAttributes } from '../jsx';

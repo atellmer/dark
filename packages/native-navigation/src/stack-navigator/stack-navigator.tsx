@@ -26,10 +26,10 @@ import {
   keyBy,
 } from '@dark-engine/core';
 
-import { type Params } from '../history';
-import { useNavigationContext, type Transition } from '../navigation-container';
 import { SLASH, TransitionName } from '../constants';
 import { createPathname, getMatchedIdx, getSegments } from '../utils';
+import { useNavigationContext, type Transition } from '../navigation-container';
+import { type ParamsObject } from '../history';
 
 export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;
@@ -123,7 +123,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 export type StackScreenProps = {
   name: string;
   component?: Component;
-  initialParams?: Params;
+  initialParams?: ParamsObject;
   slot?: () => DarkElement;
 };
 
@@ -166,7 +166,7 @@ type Size = {
 type ScreenNavigatorContextValue = {
   prefix: string;
   parentPrefix: string;
-  initialParams: Params;
+  initialParams: ParamsObject;
 };
 
 const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({

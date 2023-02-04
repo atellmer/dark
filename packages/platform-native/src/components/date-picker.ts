@@ -1,4 +1,4 @@
-import { DatePicker as NSDatePicker } from '@nativescript/core';
+import type { DatePicker as NSDatePicker } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { DatePickerAttributes } from '../jsx';

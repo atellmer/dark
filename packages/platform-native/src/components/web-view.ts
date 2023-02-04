@@ -1,4 +1,4 @@
-import { WebView as NSWebView } from '@nativescript/core';
+import type { WebView as NSWebView } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { WebViewAttributes } from '../jsx';

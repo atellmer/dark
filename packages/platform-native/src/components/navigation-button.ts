@@ -1,4 +1,4 @@
-import { NavigationButton as NSNavigationButton } from '@nativescript/core';
+import type { NavigationButton as NSNavigationButton } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { NavigationButtonAttributes } from '../jsx';

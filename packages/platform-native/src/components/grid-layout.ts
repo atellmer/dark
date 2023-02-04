@@ -1,4 +1,4 @@
-import { GridLayout as NSGridLayout } from '@nativescript/core';
+import type { GridLayout as NSGridLayout } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { GridLayoutAttributes } from '../jsx';

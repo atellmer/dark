@@ -1,4 +1,4 @@
-import { ContentView as NSContentView } from '@nativescript/core';
+import type { ContentView as NSContentView } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { ContentViewAttributes } from '../jsx';

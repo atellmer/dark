@@ -1,4 +1,4 @@
-import { FormattedString as NSFormattedString } from '@nativescript/core';
+import type { FormattedString as NSFormattedString } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { FormattedStringAttributes } from '../jsx';

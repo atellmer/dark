@@ -50,6 +50,12 @@
       "@dark-engine/web-router/*": [
         "./packages/web-router/src/*"
       ],
+      "@dark-engine/native-navigation": [
+        "./packages/native-navigation/src/index"
+      ],
+      "@dark-engine/native-navigation/*": [
+        "./packages/native-navigation/src/*"
+      ],
       "@test-utils": [
         "./test/utils"
       ]

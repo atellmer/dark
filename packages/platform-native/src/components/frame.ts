@@ -1,4 +1,4 @@
-import { Frame as NSFrame } from '@nativescript/core';
+import type { Frame as NSFrame } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { FrameAttributes } from '../jsx';

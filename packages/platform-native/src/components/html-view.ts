@@ -1,4 +1,4 @@
-import { HtmlView as NSHtmlView } from '@nativescript/core';
+import type { HtmlView as NSHtmlView } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { HtmlViewAttributes } from '../jsx';

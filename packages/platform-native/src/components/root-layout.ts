@@ -1,4 +1,4 @@
-import { RootLayout as NSRootLayout } from '@nativescript/core';
+import type { RootLayout as NSRootLayout } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { RootLayoutAttributes } from '../jsx';

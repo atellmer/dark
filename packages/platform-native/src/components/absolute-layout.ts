@@ -1,4 +1,4 @@
-import { AbsoluteLayout as NSAbsoluteLayout } from '@nativescript/core';
+import type { AbsoluteLayout as NSAbsoluteLayout } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { AbsoluteLayoutAttributes } from '../jsx';

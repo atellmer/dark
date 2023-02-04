@@ -1,4 +1,4 @@
-import { TextView as NSTextView } from '@nativescript/core';
+import type { TextView as NSTextView } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { TextViewAttributes } from '../jsx';

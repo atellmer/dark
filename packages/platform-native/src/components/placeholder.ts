@@ -1,4 +1,4 @@
-import { Placeholder as NSPlaceholder } from '@nativescript/core';
+import type { Placeholder as NSPlaceholder } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { PlaceholderAttributes } from '../jsx';

@@ -1,4 +1,4 @@
-import { SegmentedBar as NSSegmentedBar } from '@nativescript/core';
+import type { SegmentedBar as NSSegmentedBar } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SegmentedBarAttributes } from '../jsx';

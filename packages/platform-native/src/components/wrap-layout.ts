@@ -1,4 +1,4 @@
-import { WrapLayout as NSWrapLayout } from '@nativescript/core';
+import type { WrapLayout as NSWrapLayout } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { WrapLayoutAttributes } from '../jsx';

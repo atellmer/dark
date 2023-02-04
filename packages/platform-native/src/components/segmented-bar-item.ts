@@ -1,4 +1,4 @@
-import { SegmentedBarItem as NSSegmentedBarItem } from '@nativescript/core';
+import type { SegmentedBarItem as NSSegmentedBarItem } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SegmentedBarItemAttributes } from '../jsx';

@@ -1,4 +1,4 @@
-import { TouchGestureEventData, AccessibilityRole } from '@nativescript/core';
+import { type TouchGestureEventData, AccessibilityRole } from '@nativescript/core';
 import { type DarkElement, createComponent, detectIsFunction, useEvent, useSpring, useState } from '@dark-engine/core';
 
 import { type ViewProps, View } from './view';

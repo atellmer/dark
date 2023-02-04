@@ -1,4 +1,4 @@
-import { Slider as NSSlider } from '@nativescript/core';
+import type { Slider as NSSlider } from '@nativescript/core';
 import { createComponent, forwardRef } from '@dark-engine/core';
 
 import type { SliderAttributes } from '../jsx';

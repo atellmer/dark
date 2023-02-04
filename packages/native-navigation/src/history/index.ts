@@ -1,1 +1,1 @@
-export * from './navigation-history';
+export * from './history';

@@ -1,4 +1,4 @@
-import { PropertyChangeData } from '@nativescript/core';
+import { type PropertyChangeData } from '@nativescript/core';
 import {
   type ComponentFactory,
   type StandardComponentProps,
@@ -21,18 +21,16 @@ import { StackNavigator, type StackNavigatorRef, type StackScreenProps } from '.
 import { useNavigationContext } from '../navigation-container';
 
 type TabNavigatorProps = {
-  position?: 'top' | 'bottom';
   slot: Array<ComponentFactory<TabScreenProps & StandardComponentProps>>;
 };
 
-const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slot }) => {
+const Navigator = createComponent<TabNavigatorProps>(({ slot }) => {
   const { push } = useNavigationContext();
   const navRef = useRef<StackNavigatorRef>(null);
   const [idx, setIdx] = useState(0);
   const update = useUpdate();
   const contextValue = useMemo<TabNavigatorContextValue>(() => ({ descriptorsMap: {} }), []);
   const { descriptorsMap } = contextValue;
-  const isBottom = position === 'bottom';
 
   useLayoutEffect(() => update(), []);
 
@@ -55,7 +53,7 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
 
   return (
     <TabNavigatorContext.Provider value={contextValue}>
-      <grid-layout columns='*' rows={isBottom ? 'auto, *' : 'auto, auto'}>
+      <grid-layout columns='*' rows='auto, *'>
         <stack-layout col={1} row={1}>
           {descriptorKeys.length > 0 && (
             <StackNavigator.Root ref={navRef} onNavigate={handleNavigate}>
@@ -74,7 +72,7 @@ const Navigator = createComponent<TabNavigatorProps>(({ position = 'bottom', slo
         <tab-view
           col={1}
           row={2}
-          androidTabsPosition={position}
+          androidTabsPosition='bottom'
           selectedIndex={idx}
           onSelectedIndexChange={handleIdxChange}>
           {slot}

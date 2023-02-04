@@ -1,7 +1,7 @@
-import { Frame, Page, NavigatedData } from '@nativescript/core';
+import type { Frame, Page, NavigatedData } from '@nativescript/core';
 
-import { normalizePathname } from '../utils';
 import { SLASH } from '../constants';
+import { normalizePathname } from '../utils';
 import { type NavigationOptions } from '../navigation-container';
 
 class NavigationHistory {
@@ -11,7 +11,7 @@ class NavigationHistory {
   private frame: Frame;
   private page: Page;
   private fromUserEvent = false;
-  private params: Record<string, Record<string, Params>> = {};
+  private params: Record<string, Record<string, ParamsMap>> = {};
   public dispose: () => void = null;
 
   constructor(frame: Frame, page: Page) {
@@ -61,11 +61,11 @@ class NavigationHistory {
     }
   }
 
-  public getBack() {
+  public getBack(): string {
     return this.stack[this.cursor - 1] || this.getValue();
   }
 
-  public getParams(pathname: string) {
+  public getParams(pathname: string): ParamsMap {
     return this.params[pathname] ? this.params[pathname][this.cursor] || null : null;
   }
 
@@ -90,7 +90,7 @@ class NavigationHistory {
         this.params[normalPathname] = {};
       }
 
-      this.params[normalPathname][this.cursor] = params;
+      this.params[normalPathname][this.cursor] = new Map(Object.entries(params));
     }
 
     this.syncHistory(action);
@@ -138,9 +138,9 @@ export enum HistoryAction {
   BACK = 'BACK',
 }
 
-type Parameter = string | number;
+export type ParamsMap = Map<string, string | number>;
 
-export type Params = Record<string, Parameter>;
+export type ParamsObject = Record<string, number | string>;
 
 const NAVIGATED_FROM_EVENT = 'navigatedFrom';
 
