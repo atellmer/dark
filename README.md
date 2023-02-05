@@ -1392,7 +1392,7 @@ const App = createComponent(() => {
 });
 ```
 
-<a name="#native-platforms"></a>
+<a name="native-platforms"></a>
 
 ## Rendering to native platforms (Android or iOS)
 
