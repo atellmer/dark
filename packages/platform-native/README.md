@@ -5,6 +5,7 @@ Dark renderer to native platforms like Android and iOS via <a href="https://nati
 NativeScript is a free and open-source framework for building native mobile apps using JavaScript, or any other language that can transpile to JavaScript, for iOS and Android platforms. It allows developers to write a single codebase for both platforms, resulting in native performance and access to device-specific APIs, while still leveraging familiar web development tools and paradigms.
 
 [More about Dark](https://github.com/atellmer/dark)
+<br>
 [More about NativeScript](https://nativescript.org/)
 
 ## Installation
