@@ -315,4 +315,4 @@ const App = createComponent<AppProps>(({ url, routes }) => {
 });
 ```
 
-
+MIT © [Alex Plex](https://github.com/atellmer)

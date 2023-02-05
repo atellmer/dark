@@ -125,15 +125,14 @@ import {
 
 ## Mounting to native platform
 
-To mount you app you need to use run function
+To mount you app you need to use `run` function
 
 ```tsx
 import { run } from '@dark-engine/platform-native';
 
 import App from './components/app';
 
-run(App()); // After starting you app renders here to Android or iOS.
-
+run(App());
 ```
 
 ## Layout system
@@ -162,7 +161,7 @@ First of all you must install it in your app from npm:
 ```
 npm i @nstudio/nativescript-carousel
 ```
-Further, to register a new element, you need to use the `registerElement` function
+Further, to register a new element, you need to use the `registerElement` function:
 ```tsx
 import { registerElement } from '@dark-engine/platform-native';
 
@@ -190,14 +189,14 @@ After all this, a new plugin can be used like this:
 ```tsx
 return (
   <carousel height='100%' width='100%'>
-    <carousel-item id='slide1' backgroundColor='red' verticalAlignment='middle'>
-        <label text='Slide 1' backgroundColor='#fff' horizontalAlignment='center' />
+    <carousel-item id='slide1' backgroundColor='red'>
+      <label text='Slide 1' />
     </carousel-item>
-    <carousel-item id='slide1' backgroundColor='blue' verticalAlignment='middle'>
-        <label text='Slide 2' backgroundColor='#fff' horizontalAlignment='center' />
+    <carousel-item id='slide1' backgroundColor='blue'>
+      <label text='Slide 2' />
     </carousel-item>
-    <carousel-item id='slide1' backgroundColor='green' verticalAlignment='middle'>
-        <label text='Slide 3' backgroundColor='#fff' horizontalAlignment='center' />
+    <carousel-item id='slide1' backgroundColor='green'>
+      <label text='Slide 3' />
     </carousel-item>
   </carousel>
 )
@@ -230,14 +229,14 @@ import { Carousel, CarouselItem } from '@my-ui-kit';
 
 return (
   <Carousel height='100%' width='100%'>
-    <CarouselItem id='slide1' backgroundColor='red' verticalAlignment='middle'>
-        <Label text='Slide 1' backgroundColor='#fff' horizontalAlignment='center' />
+    <CarouselItem id='slide1' backgroundColor='red'>
+      <Label text='Slide 1' />
     </CarouselItem>
-    <CarouselItem id='slide1' backgroundColor='blue' verticalAlignment='middle'>
-        <Label text='Slide 2' backgroundColor='#fff' horizontalAlignment='center' />
+    <CarouselItem id='slide1' backgroundColor='blue'>
+      <Label text='Slide 2' />
     </CarouselItem>
-    <CarouselItem id='slide1' backgroundColor='green' verticalAlignment='middle'>
-        <Label text='Slide 3' backgroundColor='#fff' horizontalAlignment='center' />
+    <CarouselItem id='slide1' backgroundColor='green'>
+      <Label text='Slide 3' />
     </CarouselItem>
   </Carousel>
 );
@@ -265,7 +264,7 @@ const App = createComponent(() => {
 
 ## Navigation
 
-Any more or less complex application needs to be divided into several pages and navigate between them. Dark provides a package for this called `@dark-engine/native-navigation`, which implements navigation using `StackNavigator` and `TabNavigator`. This router also supports nested configuration and parameter passing.
+Any more or less complex application needs to be divided into several pages and navigate between them. Dark provides a package for this called `@dark-engine/native-navigation`, which implements navigation using `StackNavigator` and `TabNavigator`. This router also supports nested navigation and parameter passing.
 
 ```tsx
 import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigation';
@@ -285,3 +284,5 @@ const App = createComponent(() => {
 ```
 
 Full documentation about this package you can find [here](https://github.com/atellmer/dark/packages/native-navigation)
+
+MIT © [Alex Plex](https://github.com/atellmer)

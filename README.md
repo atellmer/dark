@@ -1396,7 +1396,7 @@ const App = createComponent(() => {
 
 ## Rendering to native platforms (Android, iOS)
 
-Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports javascript execution. Thanks to this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to NativeScript, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native` You can learn more about it [here](https://github.com/atellmer/dark/packages/platform-native).
+Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports JavaScript execution. Thanks to this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to NativeScript, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native` You can learn more about it [here](https://github.com/atellmer/dark/packages/platform-native).
 
 Thanks everyone! 🤛
 
