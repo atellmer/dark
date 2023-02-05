@@ -26,7 +26,7 @@ Dark is lightweight UI rendering engine for javascript apps without dependencies
 - 💥 Tree-shakeable
 - 🎊 Server-side rendering support
 - 🏄‍♂️ Out of box isomorphic routing
-- 🛰 Rendering to native platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">{N} NativeScript</a>
+- 🛰 Rendering to native platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
 
 ## Demos
 
@@ -57,36 +57,36 @@ This project was written in my free time as a hobby. I challenged myself: can I 
 ## Installation for browser
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/web-router 
+npm install @dark-engine/core @dark-engine/platform-browser
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/web-router
+yarn add @dark-engine/core @dark-engine/platform-browser
 ```
 CDN:
 ```html
 <script src="https://unpkg.com/@dark-engine/core/dist/umd/dark-core.production.min.js"></script>
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
-<script src="https://unpkg.com/@dark-engine/web-router/dist/umd/dark-web-router.production.min.js"></script>
 ```
 
 ## Installation for server
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
+npm install @dark-engine/core @dark-engine/platform-server
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-server @dark-engine/web-router
+yarn add @dark-engine/core @dark-engine/platform-server
 ```
+
 ## Installation for native platforms (Android, iOS)
 npm:
 ```
-npm install @nativescript/core @dark-engine/core @dark-engine/platform-native @dark-engine/native-navigation
+npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
 ```
 yarn:
 ```
-yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native @dark-engine/native-navigation
+yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
 ```
 
 ## Usage
@@ -161,6 +161,7 @@ createRoot(document.getElementById('root')).render(App());
 - [SSR (Server-Side Rendering)](#ssr)
 - [Routing](#routing)
 - [Others](#others)
+- [Rendering to native platforms]('#native-platforms')
 
 <a name="overview"></a>
 ## API overview
@@ -1390,6 +1391,12 @@ const App = createComponent(() => {
   return <div>{state.isFetching ? 'loading...' : 'ola! 🤪'}</div>;
 });
 ```
+
+<a name="#native-platforms"></a>
+
+## Rendering to native platforms (Android or iOS)
+
+Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports javascript execution. Thanks to this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to NativeScript, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native` You can learn more about it [here](https://github.com/atellmer/dark/packages/platform-native).
 
 Thanks everyone! 🤛
 

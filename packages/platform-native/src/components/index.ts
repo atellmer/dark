@@ -14,6 +14,7 @@ export * from './action-bar';
 export * from './action-item';
 export * from './navigation-button';
 export * from './root-layout';
+export * from './stack-layout';
 export * from './flexbox-layout';
 export * from './grid-layout';
 export * from './absolute-layout';

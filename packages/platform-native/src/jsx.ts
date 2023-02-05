@@ -548,15 +548,17 @@ export type WrapLayoutAttributes = WithStandardElementAttributes<
   }
 >;
 
-export type ButtonAttributes = WithStandardElementAttributes<
-  TextBaseAttributes & {
-    accessibilityRole?: AccessibilityRole;
-    accessible?: boolean;
-    android?: any;
-    ios?: any;
-    onTap?: (e: SyntheticEvent<EventData>) => void;
-    textWrap?: boolean;
-  }
+export type ButtonAttributes = PartialSlot<
+  WithStandardElementAttributes<
+    TextBaseAttributes & {
+      accessibilityRole?: AccessibilityRole;
+      accessible?: boolean;
+      android?: any;
+      ios?: any;
+      onTap?: (e: SyntheticEvent<EventData>) => void;
+      textWrap?: boolean;
+    }
+  >
 >;
 
 export type LabelAttributes = PartialSlot<
