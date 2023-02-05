@@ -265,7 +265,7 @@ const App = createComponent(() => {
 
 ## Navigation
 
-Any more or less complex application needs to be divided into several pages and navigate between them. Dark provides a package for this called `@dark-engine/native-navigation`, which implements navigation using `StackNavigator` and `TabNavigator`. This router also supports nested navigation and parameter passing.
+Any more or less complex application needs to be divided into several pages and navigate between them. Dark provides a package for this called `@dark-engine/native-navigation`, which implements navigation using `StackNavigator` and `TabNavigator`. This router also supports animated transitions, nested navigation and parameter passing.
 
 ```tsx
 import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigation';
