@@ -1,4 +1,4 @@
-# @dark-engine/native-navigation 🌒
+# @dark-engine/native-navigation 🌖
 
 Dark navigation for nativescript platform.
 

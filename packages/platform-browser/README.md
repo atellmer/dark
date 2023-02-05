@@ -1,4 +1,4 @@
-# @dark-engine/platform-browser 🌒
+# @dark-engine/platform-browser 🌖
 
 Dark renderer for browser.
 

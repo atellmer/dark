@@ -1,5 +1,5 @@
-# @dark-engine/core 🌒
+# @dark-engine/core 🌖
 
-Dark is lightweight component-and-hook-based UI rendering engine for javascript apps without dependencies and written in Typescript 💫
+Dark is lightweight UI rendering engine for javascript apps without dependencies and written in TypeScript 💫 <br> (Browser, Node.js, Android, iOS)
 
 [README](https://github.com/atellmer/dark)
