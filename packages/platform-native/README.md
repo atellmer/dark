@@ -2,10 +2,9 @@
 
 Dark renderer to native platforms like Android and iOS via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
 
-[More about Dark](https://github.com/atellmer/dark)
-
 NativeScript is a free and open-source framework for building native mobile apps using JavaScript, or any other language that can transpile to JavaScript, for iOS and Android platforms. It allows developers to write a single codebase for both platforms, resulting in native performance and access to device-specific APIs, while still leveraging familiar web development tools and paradigms.
 
+[More about Dark](https://github.com/atellmer/dark)
 [More about NativeScript](https://nativescript.org/)
 
 ## Installation
@@ -155,14 +154,15 @@ import {
 To learn more about how they work, you can visit the <a href="https://docs.nativescript.org/ui-and-styling.html" target="_blank">nativescript documentation page</a>
 
 ## Connecting 3rd party plugins
+In modern development, we can rarely do without third-party packages written by other developers. Therefore, we should always be able to include such plugins in our project.
 
-Suppose you want to connect a third party carousel plugin @nstudio/nativescript-carousel
+Suppose you want to connect a third party carousel plugin `@nstudio/nativescript-carousel`
 
 First of all you must install it in your app from npm:
 ```
 npm i @nstudio/nativescript-carousel
 ```
-Further, to register a new element, you need to use the registerElement function
+Further, to register a new element, you need to use the `registerElement` function
 ```tsx
 import { registerElement } from '@dark-engine/platform-native';
 
@@ -178,7 +178,7 @@ To avoid typescript JSX errors you should add new items to JSX:
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      carousel: any; //<-- describe carousel props here
+      'carousel': any; //<-- describe carousel props here
       'carousel-item': any; //<-- describe carousel-item props here
     }
   }
@@ -209,11 +209,12 @@ If you prefer to write nativescript components in PascalCase you need to wrap it
 import { createComponent } from '@dark-engine/core';
 import { factory } from '@dark-engine/platform-native';
 
-const carousel = factory('carousel');
-const carouselItem = factory('carousel-item');
 
 type CarouselProps = {};
 type CarouselItemProps = {};
+
+const carousel = factory('carousel');
+const carouselItem = factory('carousel-item');
 
 const Carousel = createComponent<CarouselProps>(props => carousel(props));
 const CarouselItem = createComponent<CarouselItemProps>(props => carouselItem(props));
@@ -244,7 +245,7 @@ return (
 
 ## Additional components
 
-Dark includes additional components of type View, Text, TouchableOpacity, Modal so that you can write an application in a almost similar to React Native style.
+Dark includes additional components of type `View`, `Text`, `TouchableOpacity`, `Modal` so that you can write an application in a almost similar to React Native style.
 
 ```tsx
 import { h, createComponent } from '@dark-engine/core';
@@ -264,4 +265,23 @@ const App = createComponent(() => {
 
 ## Navigation
 
-Any more or less complex application needs to be divided into several pages and navigate between them. Dark provides a package for this called [@dark-engine/native-navigation](https://github.com/atellmer/dark/packages/native-navigation)
+Any more or less complex application needs to be divided into several pages and navigate between them. Dark provides a package for this called `@dark-engine/native-navigation`, which implements navigation using `StackNavigator` and `TabNavigator`. This router also supports nested configuration and parameter passing.
+
+```tsx
+import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigation';
+
+const App = createComponent(() => {
+  return (
+    <NavigationContainer>
+      <StackNavigator.Root>
+        <StackNavigator.Screen name='Feed' component={Feed} />
+        <StackNavigator.Screen name='Friends' component={Friends} />
+        <StackNavigator.Screen name='Profile' component={Profile} />
+        <StackNavigator.Screen name='Settings' component={Settings} />
+      </StackNavigator.Root>
+    </NavigationContainer>
+  );
+});
+```
+
+Full documentation about this package you can find [here](https://github.com/atellmer/dark/packages/native-navigation)
