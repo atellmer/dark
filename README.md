@@ -161,7 +161,7 @@ createRoot(document.getElementById('root')).render(App());
 - [SSR (Server-Side Rendering)](#ssr)
 - [Routing](#routing)
 - [Others](#others)
-- [Rendering to native platforms]('#native-platforms')
+- [Rendering to native platforms](#native-platforms)
 
 <a name="overview"></a>
 ## API overview
