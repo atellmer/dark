@@ -209,7 +209,6 @@ If you prefer to write nativescript components in PascalCase you need to wrap it
 import { createComponent } from '@dark-engine/core';
 import { factory } from '@dark-engine/platform-native';
 
-
 type CarouselProps = {};
 type CarouselItemProps = {};
 
