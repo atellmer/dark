@@ -46,7 +46,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     const rootRef = useRef<AbsoluteLayout>(null);
     const names = slot.map(x => x.props.name);
     const pathnames = names.map(x => createPathname(x, prefix));
-    const inTransition = detectCanStartTransition(transition, pathnames, prefix);
+    const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
     const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const entry = pathnames[0];
 
@@ -67,7 +67,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     }, []);
 
     useEffect(() => {
-      if (!inTransition || !transition.options.animated) return;
+      if (!canStartTransition || !transition.options.animated) return;
       const targetFrom = matchRef(scope.refsMap, transition.from);
       const targetTo = matchRef(scope.refsMap, transition.to);
       const size = getMeasuredSizeInDPI(rootRef.current);
@@ -78,14 +78,22 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         size,
       });
 
-      animation.play();
+      animation.play().then(() => {
+        targetFrom.opacity = 1;
+        targetFrom.translateX = 0;
+        targetFrom.hidden = true;
+
+        targetTo.opacity = 1;
+        targetTo.translateX = 0;
+        targetTo.hidden = false;
+      });
     }, [transition]);
 
     useImperativeHandle(ref, () => ({
       getPathnameByIdx: (idx: number) => pathnames[idx],
     }));
 
-    const [segment] = inTransition ? getSegments(transition.from, prefix) : getSegments(pathname, prefix);
+    const [segment] = canStartTransition ? getSegments(transition.from, prefix) : getSegments(pathname, prefix);
     const isAnyMatch = names.some(x => x === segment);
 
     return (
@@ -93,18 +101,17 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         {slot.map((x, idx) => {
           const name = x.props.name;
           const key = createPathname(name, prefix);
-          const isHidden = isAnyMatch ? name !== segment : idx > 0;
+          const isHidden = isAnyMatch
+            ? name !== segment
+            : scope.refsMap[key]
+            ? Boolean(scope.refsMap[key].hidden)
+            : idx > 0;
           const setRef = (ref: StackLayout) => {
             scope.refsMap[key] = ref;
           };
 
           return (
-            <stack-layout
-              ref={setRef}
-              key={key}
-              width={FULL}
-              height={FULL}
-              visibility={isHidden ? 'hidden' : 'visible'}>
+            <stack-layout ref={setRef} key={key} width={FULL} height={FULL} hidden={isHidden}>
               {x}
             </stack-layout>
           );
@@ -149,7 +156,7 @@ const StackNavigator = {
 };
 
 type Scope = {
-  refsMap: Record<string, StackLayout>;
+  refsMap: Record<string, SyntheticStackLayout>;
 };
 
 type Size = {
@@ -197,7 +204,7 @@ type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProp
 type CreateAnimationOptions = {
   transition: Transition;
   targetFrom: StackLayout;
-  targetTo: StackLayout;
+  targetTo: SyntheticStackLayout;
   size: Size;
 };
 
@@ -235,7 +242,7 @@ function createFadeAnimation(options: CreateAnimationOptions): Animation {
   const animation = new Animation(animations);
 
   targetTo.opacity = 0;
-  targetTo.visibility = 'visible';
+  targetTo.hidden = false;
 
   return animation;
 }
@@ -262,12 +269,12 @@ function createSlideAnimation(options: CreateAnimationOptions): Animation {
   const animation = new Animation(animations);
 
   targetTo.translateX = isBack ? -1 * width : width;
-  targetTo.visibility = 'visible';
+  targetTo.hidden = false;
 
   return animation;
 }
 
-function matchRef(refsMap: Record<string, StackLayout>, pathname: string): StackLayout {
+function matchRef(refsMap: Record<string, SyntheticStackLayout>, pathname: string): SyntheticStackLayout {
   for (const key of Object.keys(refsMap)) {
     if (pathname.indexOf(key) !== -1) {
       return refsMap[key];
@@ -283,6 +290,10 @@ function getMeasuredSizeInDPI(view: AbsoluteLayout): Size {
     height: view.getMeasuredHeight() / SCALE_FACTOR,
   };
 }
+
+type SyntheticStackLayout = {
+  hidden?: boolean;
+} & StackLayout;
 
 const SCALE_FACTOR = DeviceScreen.mainScreen.scale;
 const FULL = '100%';

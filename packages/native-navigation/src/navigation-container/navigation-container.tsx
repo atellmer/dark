@@ -244,7 +244,7 @@ function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOpt
   return options;
 }
 
-const DEFAULT_TRANSITION_DURATION = 1500;
+const DEFAULT_TRANSITION_DURATION = 150;
 const WAITING_TIMEOUT = 100;
 
 export { NavigationContainer, useNavigationContext };
