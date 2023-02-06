@@ -1,4 +1,4 @@
-import { type Frame, type Page, type NavigatedData } from '@nativescript/core';
+import { Frame, Page, type NavigatedData, isAndroid, AndroidApplication } from '@nativescript/core';
 
 import { SLASH } from '../constants';
 import { normalizePathname } from '../utils';
@@ -20,21 +20,34 @@ class NavigationHistory {
     this.frame = frame;
     this.page = page;
 
-    const handleBack = (e: NavigatedData) => {
-      if (this.fromUserEvent) {
-        this.fromUserEvent = false;
-        return;
-      }
-      e.isBackNavigation && this.back(false);
-    };
+    if (isAndroid) {
+      const handleBack = () => this.back(false);
 
-    this.dispose = () => {
-      this.page.off(NAVIGATED_FROM_EVENT, handleBack);
-      this.subscribers.clear();
-      this.stack = [];
-      this.cursor = -1;
-    };
-    this.page.on(NAVIGATED_FROM_EVENT, handleBack);
+      AndroidApplication.on(AndroidApplication.activityBackPressedEvent, handleBack);
+
+      this.dispose = () => {
+        this.subscribers.clear();
+        this.stack = [];
+        this.cursor = -1;
+        AndroidApplication.off(AndroidApplication.activityBackPressedEvent, handleBack);
+      };
+    } else {
+      const handleBack = (e: NavigatedData) => {
+        if (this.fromUserEvent) {
+          this.fromUserEvent = false;
+          return;
+        }
+        e.isBackNavigation && this.back(false);
+      };
+
+      this.page.on(NAVIGATED_FROM_EVENT, handleBack);
+      this.dispose = () => {
+        this.subscribers.clear();
+        this.stack = [];
+        this.cursor = -1;
+        this.page.off(NAVIGATED_FROM_EVENT, handleBack);
+      };
+    }
   }
 
   private mapSubscribers(action: HistoryAction, options?: NavigationOptions) {

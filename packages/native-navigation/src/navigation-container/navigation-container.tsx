@@ -1,7 +1,8 @@
-import { type Frame, type Page, CoreTypes } from '@nativescript/core';
+import { type Frame, type Page, CoreTypes, isAndroid } from '@nativescript/core';
 import {
   type DarkElement,
   h,
+  Fragment,
   createComponent,
   forwardRef,
   useRef,
@@ -137,8 +138,24 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
 
     const hasActionBar = detectIsFunction(renderActionBar);
 
-    return (
-      <NavigationContext.Provider value={contextValue}>
+    const renderAndroid = () => {
+      return (
+        <>
+          <frame>
+            <page actionBarHidden={!hasActionBar}>
+              {hasActionBar && renderActionBar(pathname)}
+              {slot}
+            </page>
+          </frame>
+          <frame ref={frameRef} hidden>
+            <page ref={pageRef} actionBarHidden />
+          </frame>
+        </>
+      );
+    };
+
+    const renderIOS = () => {
+      return (
         <frame>
           <page actionBarHidden={!hasActionBar}>
             {hasActionBar && renderActionBar(pathname)}
@@ -150,6 +167,12 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
             </stack-layout>
           </page>
         </frame>
+      );
+    };
+
+    return (
+      <NavigationContext.Provider value={contextValue}>
+        {isAndroid ? renderAndroid() : renderIOS()}
       </NavigationContext.Provider>
     );
   }),
@@ -221,7 +244,7 @@ function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOpt
   return options;
 }
 
-const DEFAULT_TRANSITION_DURATION = 100;
+const DEFAULT_TRANSITION_DURATION = 150;
 const WAITING_TIMEOUT = 100;
 
 export { NavigationContainer, useNavigationContext };

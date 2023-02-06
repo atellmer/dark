@@ -14,7 +14,7 @@ const Account = createComponent(() => {
         <stack-layout>
           {items.map(x => {
             return (
-              <label
+              <stack-layout
                 padding={16}
                 borderBottomColor='#7e57c2'
                 borderTopColor='transparent'
@@ -22,8 +22,8 @@ const Account = createComponent(() => {
                 borderRightColor='transparent'
                 borderWidth={1}
                 onTap={() => navigateTo(`${match.pathname}/Profile`, { id: x })}>
-                {x}
-              </label>
+                <label>{x}</label>
+              </stack-layout>
             );
           })}
         </stack-layout>
