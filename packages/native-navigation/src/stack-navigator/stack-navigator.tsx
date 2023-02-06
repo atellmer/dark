@@ -23,7 +23,6 @@ import {
   useLayoutEffect,
   useRef,
   useImperativeHandle,
-  keyBy,
 } from '@dark-engine/core';
 
 import { SLASH, TransitionName } from '../constants';
@@ -86,20 +85,15 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       getPathnameByIdx: (idx: number) => pathnames[idx],
     }));
 
-    const rendered = useMemo(
-      () => ({
-        items: inTransition
-          ? getTransitionItems({ transition, prefix, slot })
-          : [getMatchedItem({ pathname, fallback: entry, prefix, slot })],
-      }),
-      [transition],
-    );
+    const [segment] = inTransition ? getSegments(transition.from, prefix) : getSegments(pathname, prefix);
+    const isAnyMatch = names.some(x => x === segment);
 
     return (
       <absolute-layout ref={rootRef} width={FULL} height={FULL}>
-        {rendered.items.map((x, idx) => {
-          const isHidden = idx === 1;
-          const key = createPathname(x.props.name, prefix);
+        {slot.map((x, idx) => {
+          const name = x.props.name;
+          const key = createPathname(name, prefix);
+          const isHidden = isAnyMatch ? name !== segment : idx > 0;
           const setRef = (ref: StackLayout) => {
             scope.refsMap[key] = ref;
           };
@@ -196,41 +190,6 @@ function detectCanStartTransition(transition: Transition, pathnames: Array<strin
   const canStart = segment1 !== segment2 && segments.includes(segment1) && segments.includes(segment2);
 
   return canStart;
-}
-
-type GetTransitionItems = {
-  transition: Transition;
-  prefix: string;
-  slot: Array<ScreenComponent>;
-};
-
-function getTransitionItems(options: GetTransitionItems): Array<ScreenComponent> {
-  const { transition, prefix, slot } = options;
-  const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
-  const [segment1] = getSegments(transition.from, prefix);
-  const [segment2] = getSegments(transition.to, prefix);
-  const factory1 = slotsMap[segment1];
-  const factory2 = slotsMap[segment2];
-  const items = [factory1, factory2].filter(Boolean);
-
-  return items;
-}
-
-type GetMatchedItem = {
-  pathname: string;
-  fallback: string;
-  prefix: string;
-  slot: Array<ScreenComponent>;
-};
-
-function getMatchedItem(options: GetMatchedItem): ScreenComponent {
-  const { pathname, fallback, prefix, slot } = options;
-  const slotsMap = keyBy(slot, x => x.props.name, true) as Record<string, ScreenComponent>;
-  const [segment1] = getSegments(pathname, prefix);
-  const [segment2] = getSegments(fallback, prefix);
-  const item = slotsMap[segment1] || slotsMap[segment2];
-
-  return item;
 }
 
 type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;

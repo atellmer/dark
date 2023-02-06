@@ -2,14 +2,15 @@
 # yarn lockfile v1
 
 
-"@nativescript/core@8.4.0":
-  version "8.4.0"
-  resolved "https://registry.yarnpkg.com/@nativescript/core/-/core-8.4.0.tgz#f01ac0d70552edecbcefe0d19ca9ea93ab6e5e28"
-  integrity sha512-hI4d3IA4p5o8GgT1WV4VHgPND552RyM0X1xUcQK2XU7vD16pDG9iUQwb9/FfJBkZzzrwDwr4Aw+gz59Yiy/LSQ==
+"@nativescript/core@~8.4.5":
+  version "8.4.7"
+  resolved "https://registry.yarnpkg.com/@nativescript/core/-/core-8.4.7.tgz#8463950154edb33f476ad9f0f0177838b0711cbf"
+  integrity sha512-F44w6v7TajGkZpSkq+vR2/pHrsQ9ByQRy/SXU1kNE8dZA5y6owOo2Dk0vcBD7Ab8sIqyedrI+eMYFtwN7jkB7A==
   dependencies:
     "@nativescript/hook" "~2.0.0"
     acorn "^8.7.0"
     css-tree "^1.1.2"
+    emoji-regex "^10.2.1"
     reduce-css-calc "^2.1.7"
     tslib "^2.0.0"
 
@@ -90,6 +91,11 @@ css-unit-converter@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/css-unit-converter/-/css-unit-converter-1.1.2.tgz#4c77f5a1954e6dbff60695ecb214e3270436ab21"
   integrity sha512-IiJwMC8rdZE0+xiEZHeru6YoONC4rfPMqGm2W85jMIbkFvv5nFTwJVFHam2eFrN6txmoUYFAFXiv8ICVeTO0MA==
+
+emoji-regex@^10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-10.2.1.tgz#a41c330d957191efd3d9dfe6e1e8e1e9ab048b3f"
+  integrity sha512-97g6QgOk8zlDRdgq1WxwgTMgEWGVAQvB5Fdpgc1MkNy56la5SKP9GsMXKDOdqwn90/41a8yPwIGk1Y6WVbeMQA==
 
 enhanced-resolve@^5.0.0:
   version "5.12.0"

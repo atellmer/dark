@@ -11,7 +11,7 @@
     "clean": "npx ns clean"
   },
   "dependencies": {
-    "@nativescript/core": "~8.4.0",
+    "@nativescript/core": "~8.4.5",
     "@nativescript/theme": "~3.0.2",
     "@nstudio/nativescript-carousel": "^8.0.3"
   },

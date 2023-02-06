@@ -54,7 +54,7 @@ const Navigator = createComponent<TabNavigatorProps>(({ slot }) => {
   return (
     <TabNavigatorContext.Provider value={contextValue}>
       <grid-layout columns='*' rows='auto, *'>
-        <stack-layout col={1} row={1}>
+        <stack-layout col={1} row={1} marginBottom={50}>
           {descriptorKeys.length > 0 && (
             <StackNavigator.Root ref={navRef} onNavigate={handleNavigate}>
               {descriptorKeys.map(key => {

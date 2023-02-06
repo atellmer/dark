@@ -1,4 +1,4 @@
-import type { Frame, Page, NavigatedData } from '@nativescript/core';
+import { type Frame, type Page, type NavigatedData } from '@nativescript/core';
 
 import { SLASH } from '../constants';
 import { normalizePathname } from '../utils';
