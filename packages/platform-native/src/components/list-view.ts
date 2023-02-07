@@ -1,4 +1,4 @@
-import { type ListView as NSListView, type ItemEventData, type ViewBase } from '@nativescript/core';
+import { ObservableArray, type ListView as NSListView, type ItemEventData, type ViewBase } from '@nativescript/core';
 import {
   type DarkElement,
   type Ref,
@@ -6,7 +6,6 @@ import {
   type StandardComponentProps,
   createComponent,
   useRef,
-  useEffect,
   useEvent,
   useImperativeHandle,
   forwardRef,
@@ -17,26 +16,34 @@ import type { ListViewAttributes } from '../jsx';
 import { listView } from '../factory';
 import { SyntheticEvent } from '../events';
 import { renderSubRoot } from '../render';
+import { NSElement } from '../registry';
 
 export type ListViewProps<T = any> = {
-  items: Array<T>;
+  items: Array<T> | ObservableArray<T>;
   slot: (options: SlotOptions<T>) => DarkElement;
+  onLoadMoreItems?: () => void;
 } & Omit<
   ListViewAttributes,
   'itemTemplate' | 'itemTemplates' | 'itemTemplateSelector' | 'itemIdGenerator' | 'onItemLoading'
 >;
 
-export type ListViewRef = {};
+export type ListViewRef = {
+  refresh: () => void;
+  scrollToIndex: (idx: number) => void;
+  scrollToIndexAnimated: (idx: number) => void;
+  isItemAtIndexVisible: (idx: number) => boolean;
+};
 
 const ListView: ListView = forwardRef<ListViewProps, ListViewRef>(
   createComponent(({ items, slot, ...rest }, ref) => {
     const rootRef = useRef<NSListView>(null);
 
-    useEffect(() => {
-      rootRef.current.refresh();
-    }, [items]);
-
-    useImperativeHandle(ref, () => ({}));
+    useImperativeHandle(ref, () => ({
+      refresh: () => rootRef.current.refresh(),
+      scrollToIndex: (idx: number) => rootRef.current.scrollToIndex(idx),
+      scrollToIndexAnimated: (idx: number) => rootRef.current.scrollToIndexAnimated(idx),
+      isItemAtIndexVisible: (idx: number) => rootRef.current.isItemAtIndexVisible(idx),
+    }));
 
     const handleItemLoading = useEvent((e: SyntheticEvent<ItemEventData>) => {
       const data = e.sourceEvent;
@@ -47,7 +54,7 @@ const ListView: ListView = forwardRef<ListViewProps, ListViewRef>(
       renderSubRoot(element, template => {
         const view = data.view || template;
 
-        patchElement(view, template);
+        patchElement(view, template, idx);
 
         data.view = view;
       });
@@ -73,16 +80,157 @@ const itemTemplates = [
   },
 ];
 
-function patchElement(target: ViewBase, source: ViewBase) {
+function patchElement<T>(target: ViewBase, source: ViewBase, idx: number) {
   const childrenTarget: Array<ViewBase> = [];
   const childrenSource: Array<ViewBase> = [];
-  const keys = ['text', 'color', 'backgroundColor', 'className', 'hidden', 'visibility'];
+  const keys = [
+    'accessibilityHidden',
+    'accessibilityHint',
+    'accessibilityIdentifier',
+    'accessibilityLabel',
+    'accessibilityLanguage',
+    'accessibilityLiveRegion',
+    'accessibilityMediaSession',
+    'accessibilityRole',
+    'accessibilityState',
+    'accessibilityValue',
+    'accessible',
+    'width',
+    'height',
+    'minHeight',
+    'minWidth',
+    'backgroundColor',
+    'backgroundImage',
+    'backgroundPosition',
+    'backgroundRepeat',
+    'backgroundSize',
+    'borderBottomColor',
+    'borderBottomLeftRadius',
+    'borderBottomRightRadius',
+    'borderBottomWidth',
+    'borderColor',
+    'borderLeftColor',
+    'borderLeftWidth',
+    'borderRadius',
+    'borderRightColor',
+    'borderRightWidth',
+    'borderTopColor',
+    'borderTopLeftRadius',
+    'borderTopRightRadius',
+    'borderTopWidth',
+    'borderWidth',
+    'boxShadow',
+    'color',
+    'horizontalAlignment',
+    'margin',
+    'marginBottom',
+    'marginLeft',
+    'marginRight',
+    'marginTop',
+    'opacity',
+    'originX',
+    'originY',
+    'perspective',
+    'rotate',
+    'rotateX',
+    'rotateY',
+    'scaleX',
+    'scaleY',
+    'textTransform',
+    'touchAnimation',
+    'touchDelay',
+    'translateX',
+    'translateY',
+    'verticalAlignment',
+    'visibility',
+    'busy',
+    'className',
+    'col',
+    'colSpan',
+    'column',
+    'columnSpan',
+    'dock',
+    'alignSelf',
+    'flexGrow',
+    'flexShrink',
+    'hidden',
+    'order',
+    'top',
+    'left',
+    'alignContent',
+    'alignItems',
+    'flexDirection',
+    'flexWrap',
+    'justifyContent',
+    'columns',
+    'rows',
+    'itemHeight',
+    'itemWidth',
+    'orientation',
+    'src',
+    'text',
+    'textWrap',
+    'fontFamily',
+    'fontSize',
+    'fontStyle',
+    'fontWeight',
+    'formattedText',
+    'letterSpacing',
+    'lineHeight',
+    'maxLines',
+    'textDecoration',
+    'loadMode',
+    'decodeHeight',
+    'decodeWidth',
+    'imageSource',
+    'textField',
+    'valueField',
+    'items',
+    'selectedIndex',
+    'selectedValue',
+    'maxValue',
+    'minValue',
+    'value',
+    'textFieldBackgroundColor',
+    'textFieldHintColor',
+    'selectedBackgroundColor',
+    'title',
+    'offBackgroundColor',
+    'autocapitalizationType',
+    'autocorrect',
+    'autofillType',
+    'editable',
+    'hint',
+    'keyboardType',
+    'maxLength',
+    'returnKeyType',
+    'updateTextTrigger',
+    'secure',
+    'secureWithoutAutofill',
+    'maxDate',
+    'minDate',
+    'minute',
+    'month',
+    'second',
+    'showTime',
+    'year',
+    'hour',
+    'maxHour',
+    'maxMinute',
+    'minHour',
+    'minMinute',
+    'minute',
+    'minuteInterval',
+    'time',
+  ];
 
   for (const key of keys) {
     if (!detectIsUndefined(target[key]) && !detectIsUndefined(source[key])) {
       target[key] = source[key];
     }
   }
+
+  target[ITEM_IDX] = idx;
 
   target.eachChild(x => {
     childrenTarget.push(x);
@@ -97,20 +245,24 @@ function patchElement(target: ViewBase, source: ViewBase) {
   });
 
   for (let i = 0; i < childrenSource.length; i++) {
-    patchElement(childrenTarget[i], childrenSource[i]);
+    patchElement(childrenTarget[i], childrenSource[i], idx);
   }
 }
 
 const itemTemplateSelector = () => DEFAULT_TEMPLATE;
 
-type MergedProps<T> = ListViewProps<T> & StandardComponentProps;
+const ITEM_IDX = '_ITEM_IDX';
 
-type ListView = <T>(props?: ListViewProps<T>, ref?: Ref) => ComponentFactory<MergedProps<T>>;
+const getListViewItemIdx = (view: NSElement) => view[ITEM_IDX];
 
 type SlotOptions<T> = {
   item: T;
   idx: number;
-  items: Array<T>;
+  items: ListViewProps<T>['items'];
 };
 
-export { ListView };
+type MergedProps<T> = ListViewProps<T> & StandardComponentProps;
+
+type ListView = <T>(props?: ListViewProps<T>, ref?: Ref) => ComponentFactory<MergedProps<T>>;
+
+export { ListView, getListViewItemIdx };
