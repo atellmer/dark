@@ -23,6 +23,7 @@ import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 import { type NSElement } from '../registry';
 
+const APP_ID = 0;
 let isInjected = false;
 
 function inject() {
@@ -48,7 +49,7 @@ type RenderOptions = {
 };
 
 function render(options: RenderOptions): NSElement {
-  const { element, rootId = 0, isRoot = true, onCompleted } = options;
+  const { element, rootId = APP_ID, isRoot = true, onCompleted } = options;
 
   !isInjected && inject();
 
@@ -72,14 +73,17 @@ function render(options: RenderOptions): NSElement {
     priority: TaskPriority.NORMAL,
     forceSync: true,
     onCompleted: () => {
-      if (!detectIsFunction(onCompleted)) return;
-      const nativeView = getRootNativeView();
+      if (detectIsFunction(onCompleted)) {
+        const nativeView = getRootNativeView();
 
-      onCompleted(nativeView);
+        if (!isRoot) {
+          unmountRoot(rootId, () => {});
+        }
 
-      if (!isRoot) {
-        unmountRoot(rootId, () => {});
+        onCompleted(nativeView);
       }
+
+      rootStore.set(APP_ID);
     },
   });
 

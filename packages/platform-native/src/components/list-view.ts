@@ -21,6 +21,7 @@ import { NSElement } from '../registry';
 export type ListViewProps<T = any> = {
   items: Array<T> | ObservableArray<T>;
   slot: (options: SlotOptions<T>) => DarkElement;
+  onItemTap?: (e: SyntheticEvent<ItemEventData>) => void;
   onLoadMoreItems?: () => void;
 } & Omit<
   ListViewAttributes,
