@@ -80,7 +80,7 @@ const itemTemplates = [
   },
 ];
 
-function patchElement<T>(target: ViewBase, source: ViewBase, idx: number) {
+function patchElement(target: ViewBase, source: ViewBase, idx: number) {
   const childrenTarget: Array<ViewBase> = [];
   const childrenSource: Array<ViewBase> = [];
   const keys = [

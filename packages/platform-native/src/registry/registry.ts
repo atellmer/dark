@@ -85,12 +85,16 @@ registerElement('grid-layout', () => require('@nativescript/core').GridLayout, {
 registerElement('wrap-layout', () => require('@nativescript/core').WrapLayout, { flag: NSViewFlag.LAYOUT_VIEW });
 registerElement('label', () => require('@nativescript/core').Label);
 registerElement('button', () => require('@nativescript/core').Button);
-registerElement('html-view', () => require('@nativescript/core').HtmlView);
-registerElement('web-view', () => require('@nativescript/core').WebView);
+registerElement('html-view', () => require('@nativescript/core').HtmlView, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('web-view', () => require('@nativescript/core').WebView, { flag: NSViewFlag.NO_CHILDREN });
 registerElement('action-bar', () => require('@nativescript/core').ActionBar);
 registerElement('action-item', () => require('@nativescript/core').ActionItem);
-registerElement('navigation-button', () => require('@nativescript/core').NavigationButton);
-registerElement('activity-indicator', () => require('@nativescript/core').ActivityIndicator);
+registerElement('navigation-button', () => require('@nativescript/core').NavigationButton, {
+  flag: NSViewFlag.NO_CHILDREN,
+});
+registerElement('activity-indicator', () => require('@nativescript/core').ActivityIndicator, {
+  flag: NSViewFlag.NO_CHILDREN,
+});
 registerElement('formatted-string', () => require('@nativescript/core').FormattedString, {
   add(childElement, parentElement, idx) {
     const formattedString = parentElement.getNativeView() as unknown as FormattedString;
@@ -113,21 +117,23 @@ registerElement('formatted-string', () => require('@nativescript/core').Formatte
   },
 });
 registerElement('span', () => require('@nativescript/core').Span);
-registerElement('image', () => require('@nativescript/core').Image);
-registerElement('list-picker', () => require('@nativescript/core').ListPicker);
-registerElement('placeholder', () => require('@nativescript/core').Placeholder);
-registerElement('progress', () => require('@nativescript/core').Progress);
-registerElement('search-bar', () => require('@nativescript/core').SearchBar);
+registerElement('image', () => require('@nativescript/core').Image, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('list-picker', () => require('@nativescript/core').ListPicker, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('placeholder', () => require('@nativescript/core').Placeholder, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('progress', () => require('@nativescript/core').Progress, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('search-bar', () => require('@nativescript/core').SearchBar, { flag: NSViewFlag.NO_CHILDREN });
 registerElement('segmented-bar', () => require('@nativescript/core').SegmentedBar);
-registerElement('segmented-bar-item', () => require('@nativescript/core').SegmentedBarItem);
-registerElement('slider', () => require('@nativescript/core').Slider);
-registerElement('switch', () => require('@nativescript/core').Switch);
-registerElement('text-field', () => require('@nativescript/core').TextField);
-registerElement('text-view', () => require('@nativescript/core').TextView);
-registerElement('date-picker', () => require('@nativescript/core').DatePicker);
-registerElement('time-picker', () => require('@nativescript/core').TimePicker);
+registerElement('segmented-bar-item', () => require('@nativescript/core').SegmentedBarItem, {
+  flag: NSViewFlag.NO_CHILDREN,
+});
+registerElement('slider', () => require('@nativescript/core').Slider, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('switch', () => require('@nativescript/core').Switch, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('text-field', () => require('@nativescript/core').TextField, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('text-view', () => require('@nativescript/core').TextView, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('date-picker', () => require('@nativescript/core').DatePicker, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('time-picker', () => require('@nativescript/core').TimePicker, { flag: NSViewFlag.NO_CHILDREN });
 registerElement('tab-view', () => require('@nativescript/core').TabView);
 registerElement('tab-view-item', () => require('@nativescript/core').TabViewItem);
-registerElement('list-view', () => require('@nativescript/core').ListView, { flag: NSViewFlag.NO_CHILDREN });
+registerElement('internal:list-view', () => require('@nativescript/core').ListView, { flag: NSViewFlag.NO_CHILDREN });
 
 export { getElementFactory, registerElement };
