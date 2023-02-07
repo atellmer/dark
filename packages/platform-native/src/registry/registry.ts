@@ -14,6 +14,7 @@ import { type TagNativeElement } from '../native-element';
 export const enum NSViewFlag {
   CONTENT_VIEW = 'CONTENT_VIEW',
   LAYOUT_VIEW = 'LAYOUT_VIEW',
+  NO_CHILDREN = 'NO_CHILDREN',
 }
 
 export type NSElement = Frame | Page | LayoutBase | ContentView | View;
@@ -127,5 +128,6 @@ registerElement('date-picker', () => require('@nativescript/core').DatePicker);
 registerElement('time-picker', () => require('@nativescript/core').TimePicker);
 registerElement('tab-view', () => require('@nativescript/core').TabView);
 registerElement('tab-view-item', () => require('@nativescript/core').TabViewItem);
+registerElement('list-view', () => require('@nativescript/core').ListView, { flag: NSViewFlag.NO_CHILDREN });
 
 export { getElementFactory, registerElement };

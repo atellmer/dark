@@ -20,6 +20,7 @@ export type ScheduleCallbackOptions = {
   priority?: TaskPriority;
   timeoutMs?: number;
   forceSync?: boolean;
+  onCompleted?: () => void;
 };
 
 const platform: Platform = {

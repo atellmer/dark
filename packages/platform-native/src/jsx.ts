@@ -956,6 +956,24 @@ export type TabViewItemAttributes = WithStandardElementAttributes<
   }
 >;
 
+export type ListViewAttributes = ViewAttributes & {
+  iosEstimatedRowHeight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+  itemIdGenerator?: (item: any, index: number, items: any) => number;
+  itemTemplate?: string | Template;
+  itemTemplateSelector?: string | ((item: any, index: number, items: any) => string);
+  itemTemplates?: string | KeyedTemplate[];
+  onIosEstimatedRowHeightChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+  onItemLoading?: (e: SyntheticEvent<ItemEventData>) => void;
+  onItemTap?: (e: SyntheticEvent<ItemEventData>) => void;
+  onItemTemplateChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+  onItemTemplatesChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+  onItemsChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+  onLoadMoreItems?: (e: SyntheticEvent<EventData>) => void;
+  onRowHeightChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+  rowHeight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
+  separatorColor?: string | Color;
+};
+
 declare global {
   namespace JSX {
     interface IntrinsicElements {

@@ -1,4 +1,11 @@
-import { type ScheduleCallbackOptions, getTime, workLoop, detectIsBusy, TaskPriority } from '@dark-engine/core';
+import {
+  type ScheduleCallbackOptions,
+  getTime,
+  workLoop,
+  detectIsBusy,
+  TaskPriority,
+  dummyFn,
+} from '@dark-engine/core';
 
 type Callback = () => boolean;
 
@@ -30,6 +37,7 @@ class Task {
   public priority: TaskPriority;
   public forceSync: boolean;
   public callback: () => void;
+  public onCompleted: () => void;
 
   constructor(options: Omit<Task, 'id'>) {
     this.id = ++Task.nextTaskId;
@@ -38,14 +46,15 @@ class Task {
     this.priority = options.priority;
     this.forceSync = options.forceSync;
     this.callback = options.callback;
+    this.onCompleted = options.onCompleted;
   }
 }
 
 const shouldYeildToHost = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
-  const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
-  const task = new Task({ time: getTime(), timeoutMs, priority, forceSync, callback });
+  const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false, onCompleted = dummyFn } = options || {};
+  const task = new Task({ time: getTime(), timeoutMs, priority, forceSync, callback, onCompleted });
   const map: Record<TaskPriority, () => void> = {
     [TaskPriority.ANIMATION]: () => queueByPriority.animations.push(task),
     [TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
@@ -121,8 +130,9 @@ function requestCallback(callback: Callback) {
     }
 
     if (!detectIsBusy()) {
-      executeTasks();
+      currentTask.onCompleted();
       currentTask = null;
+      executeTasks();
     }
   };
 
@@ -133,8 +143,9 @@ function requestCallbackSync(callback: Callback) {
   while (callback()) {
     //
   }
-  executeTasks();
+  currentTask.onCompleted();
   currentTask = null;
+  executeTasks();
 }
 
 export { shouldYeildToHost, scheduleCallback };

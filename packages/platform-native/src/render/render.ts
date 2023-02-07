@@ -14,11 +14,14 @@ import {
   fiberMountStore,
   TaskPriority,
   createReplacer,
+  unmountRoot,
+  detectIsFunction,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
 import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
+import { type NSElement } from '../registry';
 
 let isInjected = false;
 
@@ -37,11 +40,20 @@ function inject() {
   isInjected = true;
 }
 
-function render(element: DarkElement) {
+type RenderOptions = {
+  element: DarkElement;
+  rootId?: number;
+  isRoot?: boolean;
+  onCompleted?: (view: NSElement) => void;
+};
+
+function render(options: RenderOptions): NSElement {
+  const { element, rootId = 0, isRoot = true, onCompleted } = options;
+
   !isInjected && inject();
 
   const callback = () => {
-    rootStore.set(0); // important order!
+    rootStore.set(rootId);
     const currentRoot = currentRootStore.get();
     const isUpdate = Boolean(currentRoot);
     const fiber = new Fiber().mutate({
@@ -59,18 +71,51 @@ function render(element: DarkElement) {
   platform.scheduleCallback(callback, {
     priority: TaskPriority.NORMAL,
     forceSync: true,
+    onCompleted: () => {
+      if (!detectIsFunction(onCompleted)) return;
+      const nativeView = getRootNativeView();
+
+      onCompleted(nativeView);
+
+      if (!isRoot) {
+        unmountRoot(rootId, () => {});
+      }
+    },
   });
 
+  if (!isRoot) return null;
+
+  const nativeView = getRootNativeView();
+
+  return nativeView;
+}
+
+function getRootNativeView() {
   const fiber = currentRootStore.get() as Fiber<TagNativeElement>;
   const nativeView = fiber.nativeElement.getNativeView();
 
   return nativeView;
 }
 
-function run(element: DarkElement) {
-  Application.run({
-    create: () => render(element),
+let nextRootId = 0;
+
+function renderRoot(element: DarkElement) {
+  return render({ element });
+}
+
+function renderSubRoot(element: DarkElement, onCompleted: RenderOptions['onCompleted']) {
+  return render({
+    element,
+    isRoot: false,
+    rootId: ++nextRootId,
+    onCompleted,
   });
 }
 
-export { run, render };
+function run(element: DarkElement) {
+  Application.run({
+    create: () => renderRoot(element),
+  });
+}
+
+export { run, renderRoot, renderSubRoot };

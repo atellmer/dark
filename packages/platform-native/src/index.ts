@@ -1,6 +1,6 @@
 /// <reference path="jsx.ts" />
 export { type SyntheticEvent } from './events';
-export { run, render } from './render';
+export { run, renderRoot, renderSubRoot } from './render';
 export { registerElement } from './registry';
 export * from './components';
 export * from './native-element';

@@ -9,6 +9,7 @@ export * from './activity-indicator';
 export * from './text-field';
 export * from './button';
 export * from './list-picker';
+export * from './list-view';
 export * from './modal';
 export * from './action-bar';
 export * from './action-item';

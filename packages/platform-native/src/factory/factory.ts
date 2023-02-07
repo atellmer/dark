@@ -39,3 +39,4 @@ export const datePicker = factory('date-picker');
 export const timePicker = factory('time-picker');
 export const tabView = factory('tab-view');
 export const tabViewItem = factory('tab-view-item');
+export const listView = factory('list-view');

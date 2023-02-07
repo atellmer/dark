@@ -210,7 +210,7 @@ class CommentNativeElement extends NativeElement {
 function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
   const meta = parentElement.getMeta();
 
-  if (meta.isRoot) return;
+  if (meta.isRoot || meta.flag === NSViewFlag.NO_CHILDREN) return;
 
   if (detectIsFunction(meta.add)) {
     return meta.add(childElement, parentElement, idx);
@@ -241,7 +241,7 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
 function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
   const meta = parentElement.getMeta();
 
-  if (meta.isRoot) return;
+  if (meta.isRoot || meta.flag === NSViewFlag.NO_CHILDREN) return;
 
   if (detectIsFunction(meta.remove)) {
     return meta.remove(childElement, parentElement);
