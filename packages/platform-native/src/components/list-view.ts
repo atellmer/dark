@@ -82,6 +82,7 @@ const itemTemplates = [
 ];
 
 function patchElement(target: ViewBase, source: ViewBase, idx: number) {
+  if (!target || !source) return;
   const childrenTarget: Array<ViewBase> = [];
   const childrenSource: Array<ViewBase> = [];
   const keys = [

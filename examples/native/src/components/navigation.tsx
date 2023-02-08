@@ -1,5 +1,10 @@
 import { h, Fragment, createComponent } from '@dark-engine/core';
+import { ListView } from '@dark-engine/platform-native';
 import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from '@dark-engine/native-navigation';
+
+const items = Array(1000)
+  .fill(null)
+  .map((_, idx) => idx);
 
 const Account = createComponent(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
@@ -7,17 +12,18 @@ const Account = createComponent(() => {
 
   return (
     <stack-layout backgroundColor='#512da8' height='100%'>
-      <label>Account: {pathname}</label>
-      <label>id: {id}</label>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Profile`, { id: 12 })}>
-        go to Profile
-      </button>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Dashboard`)}>
-        go to Dashboard
-      </button>
-      <button backgroundColor='#d81b60' onTap={() => goBack()}>
-        back
-      </button>
+      <ListView
+        height='100%'
+        items={items}
+        onItemTap={e => navigateTo(`${match.pathname}/Profile`, { id: e.sourceEvent.index })}>
+        {({ item, idx }) => {
+          return (
+            <stack-layout backgroundColor={idx % 2 ? 'red' : 'yellow'}>
+              <label color={idx % 2 ? 'white' : 'black'}>item #{item}</label>
+            </stack-layout>
+          );
+        }}
+      </ListView>
     </stack-layout>
   );
 });
@@ -129,7 +135,7 @@ function useAnimatedNavigation() {
 
 const App = createComponent(() => {
   return (
-    <NavigationContainer>
+    <NavigationContainer defaultPathname='/Home/Account/'>
       <TabNavigator.Root>
         <TabNavigator.Screen name='Home' title='&#xe800;' class='lnr' component={Home} />
         <TabNavigator.Screen name='Contacts' title='&#xe830;' class='lnr' component={Contacts} />

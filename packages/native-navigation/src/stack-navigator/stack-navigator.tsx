@@ -26,9 +26,11 @@ import {
 } from '@dark-engine/core';
 
 import { SLASH, TransitionName } from '../constants';
-import { createPathname, getMatchedIdx, getSegments } from '../utils';
+import { createPathname, getMatchedIdx, getSegments, detectIsVisited } from '../utils';
 import { useNavigationContext, type Transition } from '../navigation-container';
 import { type ParamsObject } from '../history';
+
+const visitedMap: Record<string, boolean> = {};
 
 export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;
@@ -50,18 +52,24 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const entry = pathnames[0];
 
+    visitedMap[pathname] = true;
+
     useLayoutEffect(() => {
       detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
     }, [pathname]);
 
     useEffect(() => {
-      const unsubscribe = subscribe(pathname => {
+      const syncNavigation = (pathname: string) => {
         if (detectIsFunction(onNavigate)) {
           const idx = getMatchedIdx(pathnames, pathname);
 
           onNavigate(pathname, idx);
         }
-      });
+      };
+
+      syncNavigation(pathname);
+
+      const unsubscribe = subscribe(pathname => syncNavigation(pathname));
 
       return () => unsubscribe();
     }, []);
@@ -78,14 +86,16 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         size,
       });
 
-      animation.play().then(() => {
-        targetFrom.opacity = 1;
-        targetFrom.translateX = 0;
-        targetFrom.hidden = true;
+      setTimeout(() => {
+        animation.play().then(() => {
+          targetFrom.opacity = 1;
+          targetFrom.translateX = 0;
+          targetFrom.hidden = true;
 
-        targetTo.opacity = 1;
-        targetTo.translateX = 0;
-        targetTo.hidden = false;
+          targetTo.opacity = 1;
+          targetTo.translateX = 0;
+          targetTo.hidden = false;
+        });
       });
     }, [transition]);
 
@@ -136,10 +146,11 @@ const Screen = createComponent<StackScreenProps>(
       () => ({ prefix: pathname, parentPrefix: prefix, initialParams }),
       [],
     );
+    const isVisited = detectIsVisited(visitedMap, pathname);
 
     return (
       <ScreenNavigatorContext.Provider value={contextValue}>
-        {detectIsFunction(slot) ? slot() : component()}
+        {isVisited && (detectIsFunction(slot) ? slot() : component())}
       </ScreenNavigatorContext.Provider>
     );
   },

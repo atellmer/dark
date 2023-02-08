@@ -15,6 +15,7 @@ import {
   useImperativeHandle,
   createContext,
   detectIsFunction,
+  TaskPriority,
 } from '@dark-engine/core';
 
 import {
@@ -29,6 +30,7 @@ import { SLASH, TransitionName } from '../constants';
 
 type NavigationContainerProps = {
   slot: DarkElement;
+  defaultPathname: string;
   renderActionBar?: (pathname: string) => DarkElement;
   onNavigate?: (pathname: string) => void;
 };
@@ -39,11 +41,11 @@ export type NavigationContainerRef = {
 };
 
 const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
-  createComponent(({ slot, renderActionBar, onNavigate }, ref) => {
+  createComponent(({ slot, defaultPathname = SLASH, renderActionBar, onNavigate }, ref) => {
     const frameRef = useRef<Frame>(null);
     const pageRef = useRef<Page>(null);
-    const [pathname, setPathname] = useState(SLASH);
-    const [transition, setTransition] = useState<Transition>(null, { forceSync: true });
+    const [pathname, setPathname] = useState(defaultPathname);
+    const [transition, setTransition] = useState<Transition>(null, { priority: TaskPriority.ANIMATION });
     const scope = useMemo<Scope>(
       () => ({ history: null, inTransition: false, transitions: { forward: [], backward: [] } }),
       [],
@@ -53,7 +55,7 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
     } = scope;
 
     useLayoutEffect(() => {
-      const history = createNavigationHistory(frameRef.current, pageRef.current);
+      const history = createNavigationHistory(pathname, frameRef.current, pageRef.current);
       const unsubscribe = history.subscribe((pathname, action, options) => {
         const isReplace = action === HistoryAction.REPLACE;
         const isBack = action === HistoryAction.BACK;

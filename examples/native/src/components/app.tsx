@@ -1,4 +1,4 @@
-import { h, Fragment, createComponent } from '@dark-engine/core';
+import { h, createComponent } from '@dark-engine/core';
 import { ListView } from '@dark-engine/platform-native';
 import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from '@dark-engine/native-navigation';
 
@@ -6,9 +6,21 @@ const items = Array(1000)
   .fill(null)
   .map((_, idx) => idx);
 
-const Account = createComponent(() => {
-  const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
-  const id = params.get('id') as number;
+function useAnimatedNavigation() {
+  const { navigateTo, ...rest } = useNavigation();
+
+  return {
+    navigateTo: (pathname: string, params?: Record<string, string | number>) =>
+      navigateTo(pathname, {
+        animated: true,
+        params,
+      }),
+    ...rest,
+  };
+}
+
+const List = createComponent(() => {
+  const { navigateTo, match } = useAnimatedNavigation();
 
   return (
     <stack-layout backgroundColor='#512da8' height='100%'>
@@ -30,14 +42,14 @@ const Account = createComponent(() => {
 
 const Profile = createComponent(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
-  const id = params.get('id') as number;
+  const id = Number(params.get('id'));
 
   return (
     <stack-layout backgroundColor='#1976d2' height='100%'>
       <label>Profile: {pathname}</label>
       <label>id: {id}</label>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Account`, { id: 10 })}>
-        go to Account
+      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/List`)}>
+        go to List
       </button>
       <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Dashboard`)}>
         go to Dashboard
@@ -58,8 +70,8 @@ const Dashboard = createComponent(() => {
       <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Profile`)}>
         go to Profile
       </button>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Account`)}>
-        go to Account
+      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/List`)}>
+        go to List
       </button>
       <button backgroundColor='#d81b60' onTap={() => goBack()}>
         back
@@ -69,13 +81,11 @@ const Dashboard = createComponent(() => {
 });
 
 const Home = createComponent(() => {
-  const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
-
   return (
     <stack-layout backgroundColor='#26c6da' height='100%'>
       <StackNavigator.Root>
-        <StackNavigator.Screen name='Account' component={Account} initialParams={{ id: -1 }} />
-        <StackNavigator.Screen name='Profile' component={Profile} initialParams={{ id: -2 }} />
+        <StackNavigator.Screen name='List' component={List} />
+        <StackNavigator.Screen name='Profile' component={Profile} initialParams={{ id: -1 }} />
         <StackNavigator.Screen name='Dashboard' component={Dashboard} />
       </StackNavigator.Root>
     </stack-layout>
@@ -120,22 +130,9 @@ const Settings = createComponent(() => {
   );
 });
 
-function useAnimatedNavigation() {
-  const { navigateTo, ...rest } = useNavigation();
-
-  return {
-    navigateTo: (pathname: string, params?: Record<string, string | number>) =>
-      navigateTo(pathname, {
-        animated: true,
-        params,
-      }),
-    ...rest,
-  };
-}
-
 const App = createComponent(() => {
   return (
-    <NavigationContainer>
+    <NavigationContainer defaultPathname='/Home/List'>
       <TabNavigator.Root>
         <TabNavigator.Screen name='Home' title='&#xe800;' class='lnr' component={Home} />
         <TabNavigator.Screen name='Contacts' title='&#xe830;' class='lnr' component={Contacts} />

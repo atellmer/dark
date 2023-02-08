@@ -1,6 +1,5 @@
 import { Frame, Page, type NavigatedData, isAndroid, AndroidApplication } from '@nativescript/core';
 
-import { SLASH } from '../constants';
 import { normalizePathname } from '../utils';
 import { type NavigationOptions } from '../navigation-container';
 
@@ -14,8 +13,8 @@ class NavigationHistory {
   private params: Record<string, Record<string, ParamsMap>> = {};
   public dispose: () => void = null;
 
-  constructor(frame: Frame, page: Page) {
-    this.stack.push(SLASH);
+  constructor(root: string, frame: Frame, page: Page) {
+    this.stack.push(normalizePathname(root));
     this.cursor = this.stack.length - 1;
     this.frame = frame;
     this.page = page;
@@ -157,6 +156,6 @@ export type ParamsObject = Record<string, number | string>;
 
 const NAVIGATED_FROM_EVENT = 'navigatedFrom';
 
-const createNavigationHistory = (frame: Frame, page: Page) => new NavigationHistory(frame, page);
+const createNavigationHistory = (root: string, frame: Frame, page: Page) => new NavigationHistory(root, frame, page);
 
 export { NavigationHistory, createNavigationHistory };

@@ -12,7 +12,6 @@ import {
   useRef,
   useLayoutEffect,
   useContext,
-  batch,
   memo,
 } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-native';
@@ -40,10 +39,7 @@ const Navigator = createComponent<TabNavigatorProps>(({ slot }) => {
     if (nextIdx !== idx) {
       const pathname = navRef.current.getPathnameByIdx(nextIdx);
 
-      batch(() => {
-        setIdx(nextIdx);
-        push(pathname, { animated: true });
-      });
+      push(pathname, { animated: true });
     }
   });
 

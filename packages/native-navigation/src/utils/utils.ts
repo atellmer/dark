@@ -24,4 +24,15 @@ function getMatchedIdx(pathnames: Array<string>, pathname: string) {
   return pathnames.findIndex(x => pathname.indexOf(x) !== -1);
 }
 
-export { createPathname, normalizePathname, prependSlash, getSegments, getMatchedIdx };
+function detectIsVisited(map: Record<string, boolean>, pathname: string) {
+  for (const key of Object.keys(map)) {
+    const source = key.length >= pathname.length ? key : pathname;
+    const target = key.length < pathname.length ? key : pathname;
+
+    if (source.indexOf(target) !== -1) return true;
+  }
+
+  return false;
+}
+
+export { createPathname, normalizePathname, prependSlash, getSegments, getMatchedIdx, detectIsVisited };
