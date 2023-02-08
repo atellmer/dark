@@ -51,11 +51,12 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
     const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
     const hiddensMap = useMemo(() => createHiddensMap({ transition, pathnames, pathname, prefix }), [transition]);
-    const entry = pathnames[0];
 
     visitedMap[pathname] = true;
 
     useLayoutEffect(() => {
+      const entry = pathnames[0];
+
       detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
     }, [pathname]);
 
@@ -137,17 +138,17 @@ function createHiddensMap(options: CreateHiddensMapOptions) {
   const hiddensMap: Record<string, boolean> = {};
 
   for (const key of pathnames) {
-    hiddensMap[key] = detectIsHidden({ transition, key, pathname, prefix });
+    hiddensMap[key] = detectIsHiddenWithTransition({ transition, key, pathname, prefix });
   }
 
   if (transition) {
-    const count = Object.keys(hiddensMap).reduce((acc, key) => {
+    const totalMatched = Object.keys(hiddensMap).reduce((acc, key) => {
       const x = !hiddensMap[key] ? 1 : 0;
 
       return (acc += x);
     }, 0);
 
-    if (count > 2) {
+    if (totalMatched > 2) {
       for (const key of pathnames) {
         hiddensMap[key] = key !== pathnames[0];
       }
@@ -164,37 +165,28 @@ type DetectIsHiddenOptions = {
   prefix: string;
 };
 
-function detectIsHidden(options: DetectIsHiddenOptions) {
+function detectIsHiddenWithTransition(options: DetectIsHiddenOptions) {
   const { transition, key, pathname, prefix } = options;
   const keySegments = getSegments(key, prefix);
   let isHidden = false;
 
   if (transition) {
     const { from, to } = transition;
-    let isHiddenFrom = false;
-    let isHiddenTo = false;
-    const segments1 = getSegments(from, prefix);
-    const segments2 = getSegments(to, prefix);
-
-    for (let i = 0; i < segments1.length; i++) {
-      if (keySegments[i] && keySegments[i] !== segments1[i]) {
-        isHiddenFrom = true;
-        break;
-      }
-    }
-
-    for (let i = 0; i < segments2.length; i++) {
-      if (keySegments[i] && keySegments[i] !== segments2[i]) {
-        isHiddenTo = true;
-        break;
-      }
-    }
+    const isHiddenFrom = detectIsHidden(keySegments, from, prefix);
+    const isHiddenTo = detectIsHidden(keySegments, to, prefix);
 
     isHidden = isHiddenFrom && isHiddenTo;
 
     return isHidden;
   }
 
+  isHidden = detectIsHidden(keySegments, pathname, prefix);
+
+  return isHidden;
+}
+
+function detectIsHidden(keySegments: Array<string>, pathname: string, prefix: string) {
+  let isHidden = false;
   const segments = getSegments(pathname, prefix);
 
   for (let i = 0; i < segments.length; i++) {
