@@ -44,12 +44,12 @@ function inject() {
 type RenderOptions = {
   element: DarkElement;
   rootId?: number;
-  isRoot?: boolean;
+  isSubRoot?: boolean;
   onCompleted?: (view: NSElement) => void;
 };
 
 function render(options: RenderOptions): NSElement {
-  const { element, rootId = APP_ID, isRoot = true, onCompleted } = options;
+  const { element, rootId = APP_ID, isSubRoot = false, onCompleted } = options;
 
   !isInjected && inject();
 
@@ -76,7 +76,7 @@ function render(options: RenderOptions): NSElement {
       if (detectIsFunction(onCompleted)) {
         const nativeView = getRootNativeView();
 
-        if (!isRoot) {
+        if (isSubRoot) {
           unmountRoot(rootId, () => {});
         }
 
@@ -87,7 +87,7 @@ function render(options: RenderOptions): NSElement {
     },
   });
 
-  if (!isRoot) return null;
+  if (isSubRoot) return null;
 
   const nativeView = getRootNativeView();
 
@@ -101,7 +101,7 @@ function getRootNativeView() {
   return nativeView;
 }
 
-let nextRootId = 0;
+let nextRootId = APP_ID;
 
 function renderRoot(element: DarkElement) {
   return render({ element });
@@ -110,7 +110,7 @@ function renderRoot(element: DarkElement) {
 function renderSubRoot(element: DarkElement, onCompleted: RenderOptions['onCompleted']) {
   return render({
     element,
-    isRoot: false,
+    isSubRoot: true,
     rootId: ++nextRootId,
     onCompleted,
   });
