@@ -49,7 +49,6 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     const names = slot.map(x => x.props.name);
     const pathnames = names.map(x => createPathname(x, prefix));
     const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
-    const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
     const hiddensMap = useMemo(() => createHiddensMap({ transition, pathnames, pathname, prefix }), [transition]);
 
     visitedMap[pathname] = true;
@@ -61,16 +60,12 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     }, [pathname]);
 
     useLayoutEffect(() => {
+      const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
       if (!canStartTransition || !transition.options.animated) return;
       const targetFrom = matchRef(scope.refsMap, transition.from);
       const targetTo = matchRef(scope.refsMap, transition.to);
       const size = getMeasuredSizeInDPI(rootRef.current);
-      const animation = createAnimation({
-        targetFrom,
-        targetTo,
-        transition,
-        size,
-      });
+      const animation = createAnimation({ targetFrom, targetTo, transition, size });
 
       setTimeout(() => {
         animation.play().then(() => {
@@ -125,6 +120,66 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     );
   }),
 );
+
+export type StackScreenProps = {
+  name: string;
+  component?: Component;
+  initialParams?: ParamsObject;
+  slot?: () => DarkElement;
+};
+
+const Screen = createComponent<StackScreenProps>(
+  ({ name, component, initialParams, slot }) => {
+    const { prefix } = useScreenNavigatorContext();
+    const pathname = createPathname(name, prefix);
+    const contextValue = useMemo<ScreenNavigatorContextValue>(
+      () => ({ prefix: pathname, parentPrefix: prefix, initialParams }),
+      [],
+    );
+    const isVisited = detectIsVisited(visitedMap, pathname);
+
+    return (
+      <ScreenNavigatorContext.Provider value={contextValue}>
+        {isVisited && (detectIsFunction(slot) ? slot() : component())}
+      </ScreenNavigatorContext.Provider>
+    );
+  },
+  {
+    defaultProps: {
+      initialParams: {},
+    },
+  },
+);
+
+const StackNavigator = {
+  Root: memo(Navigator),
+  Screen,
+};
+
+type Scope = {
+  refsMap: Record<string, SyntheticStackLayout>;
+};
+
+type Size = {
+  width: number;
+  height: number;
+};
+
+type ScreenNavigatorContextValue = {
+  prefix: string;
+  parentPrefix: string;
+  initialParams: ParamsObject;
+};
+
+const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({
+  prefix: SLASH,
+  parentPrefix: '',
+  initialParams: {},
+});
+
+function useScreenNavigatorContext() {
+  return useContext(ScreenNavigatorContext);
+}
 
 type CreateHiddensMapOptions = {
   transition: Transition;
@@ -197,66 +252,6 @@ function detectIsHidden(keySegments: Array<string>, pathname: string, prefix: st
   }
 
   return isHidden;
-}
-
-export type StackScreenProps = {
-  name: string;
-  component?: Component;
-  initialParams?: ParamsObject;
-  slot?: () => DarkElement;
-};
-
-const Screen = createComponent<StackScreenProps>(
-  ({ name, component, initialParams, slot }) => {
-    const { prefix } = useScreenNavigatorContext();
-    const pathname = createPathname(name, prefix);
-    const contextValue = useMemo<ScreenNavigatorContextValue>(
-      () => ({ prefix: pathname, parentPrefix: prefix, initialParams }),
-      [],
-    );
-    const isVisited = detectIsVisited(visitedMap, pathname);
-
-    return (
-      <ScreenNavigatorContext.Provider value={contextValue}>
-        {isVisited && (detectIsFunction(slot) ? slot() : component())}
-      </ScreenNavigatorContext.Provider>
-    );
-  },
-  {
-    defaultProps: {
-      initialParams: {},
-    },
-  },
-);
-
-const StackNavigator = {
-  Root: memo(Navigator),
-  Screen,
-};
-
-type Scope = {
-  refsMap: Record<string, SyntheticStackLayout>;
-};
-
-type Size = {
-  width: number;
-  height: number;
-};
-
-type ScreenNavigatorContextValue = {
-  prefix: string;
-  parentPrefix: string;
-  initialParams: ParamsObject;
-};
-
-const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({
-  prefix: SLASH,
-  parentPrefix: '',
-  initialParams: {},
-});
-
-function useScreenNavigatorContext() {
-  return useContext(ScreenNavigatorContext);
 }
 
 function detectCanReplacePathname(pathname: string, entry: string, prefix: string) {
