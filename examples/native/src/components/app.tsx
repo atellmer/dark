@@ -1,5 +1,5 @@
 import { h, createComponent } from '@dark-engine/core';
-import { ListView } from '@dark-engine/platform-native';
+import { ListView, ActionBar, Modal } from '@dark-engine/platform-native';
 import {
   NavigationContainer,
   useNavigation,
@@ -132,18 +132,44 @@ const Settings = createComponent(() => {
       <button backgroundColor='purple' onTap={() => goBack()}>
         back
       </button>
+      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings/Modal`)}>
+        go to Setting/Modal
+      </button>
     </stack-layout>
+  );
+});
+
+const ModalNavigator = createComponent(() => {
+  const { goBack, pathname } = useAnimatedNavigation();
+  const isModalOpen = pathname.indexOf('/Modal') !== -1;
+
+  return (
+    <Modal isOpen={isModalOpen}>
+      <stack-layout padding={32}>
+        <label>Hello from ModalNavigator</label>
+        <button backgroundColor='purple' onTap={goBack}>
+          close
+        </button>
+      </stack-layout>
+    </Modal>
   );
 });
 
 const App = createComponent(() => {
   return (
-    <NavigationContainer defaultPathname='/Home/List'>
-      <TabNavigator.Root>
-        <TabNavigator.Screen name='Home' title='&#xe800;' class='lnr' component={Home} />
-        <TabNavigator.Screen name='Contacts' title='&#xe830;' class='lnr' component={Contacts} />
-        <TabNavigator.Screen name='Settings' title='&#xe810;' class='lnr' component={Settings} />
-      </TabNavigator.Root>
+    <NavigationContainer
+      defaultPathname='/Home/List'
+      renderActionBar={pathname => {
+        return <ActionBar title={pathname} />;
+      }}>
+      <stack-layout>
+        <TabNavigator.Root>
+          <TabNavigator.Screen name='Home' title='&#xe800;' class='lnr' component={Home} />
+          <TabNavigator.Screen name='Contacts' title='&#xe830;' class='lnr' component={Contacts} />
+          <TabNavigator.Screen name='Settings' title='&#xe810;' class='lnr' component={Settings} />
+        </TabNavigator.Root>
+        <ModalNavigator />
+      </stack-layout>
     </NavigationContainer>
   );
 });

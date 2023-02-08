@@ -9,7 +9,7 @@ export type ModalProps = {
   fullscreen?: boolean;
   animated?: boolean;
   slot: DarkElement;
-  onRequestClose: () => void;
+  onRequestClose?: () => void;
 };
 
 const Modal = createComponent<ModalProps>(({ isOpen, fullscreen, animated, slot, onRequestClose }) => {
@@ -35,6 +35,7 @@ const Modal = createComponent<ModalProps>(({ isOpen, fullscreen, animated, slot,
 
   return Button({
     ref: rootRef,
+    hidden: true,
     slot: View({ ref: childRef, slot }),
   });
 }) as Component<ModalProps>;
