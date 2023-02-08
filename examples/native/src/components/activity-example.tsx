@@ -1,10 +1,14 @@
 import { PropertyChangeData } from '@nativescript/core';
-import { h, Fragment, createComponent, useState, useRef, useEffect, useReactiveState } from '@dark-engine/core';
-import { type SyntheticEvent, TouchableOpacity } from '@dark-engine/platform-native';
+import { h, Fragment, createComponent, useState, useEffect, useReactiveState } from '@dark-engine/core';
+import { type SyntheticEvent } from '@dark-engine/platform-native';
 
-const Spinner = createComponent(() => {
+type SpinnerProps = {
+  isFetching: boolean;
+};
+
+const Spinner = createComponent<SpinnerProps>(({ isFetching }) => {
   return (
-    <flexbox-layout height='100%' justifyContent='center' alignItems='center'>
+    <flexbox-layout hidden={!isFetching} height='100%' justifyContent='center' alignItems='center'>
       <activity-indicator busy />
     </flexbox-layout>
   );
@@ -24,14 +28,15 @@ const App = createComponent(() => {
     state.name = e.sourceEvent.value;
   };
 
-  if (isFetching) return <Spinner />;
-
   return (
-    <stack-layout padding={8}>
-      <label>Hello 🥰, {state.name}</label>
-      <text-field text={state.name} onTextChange={handleChange} />
-      <text-field text={state.name} onTextChange={handleChange} />
-    </stack-layout>
+    <>
+      <Spinner isFetching={isFetching} />
+      <stack-layout hidden={isFetching} padding={8}>
+        <label>Hello 🥰, {state.name}</label>
+        <text-field text={state.name} onTextChange={handleChange} />
+        <text-field text={state.name} onTextChange={handleChange} />
+      </stack-layout>
+    </>
   );
 });
 

@@ -110,6 +110,7 @@ import {
   Slider,
   Switch,
   Placeholder,
+  ListView,
   ListPicker,
   DatePicker,
   TimePicker,
@@ -151,7 +152,74 @@ import {
   WrapLayout,
 } from '@dark-engine/platform-native';
 ```
-To learn more about how they work, you can visit the <a href="https://docs.nativescript.org/ui-and-styling.html" target="_blank">nativescript documentation page</a>
+To learn more about how they work, you can visit the <a href="https://docs.nativescript.org/ui-and-styling.html" target="_blank">NativeScript documentation</a>
+
+## Conditional rendering
+
+You can use conditional rendering, but be aware that NativeScript is sensitive to frequent insertions and removals from the element tree. Therefore, whenever possible, an alternative approach should be used - the hidden and visible attributes, more about which can be found in the <a href="https://docs.nativescript.org/best-practices/if-things.html#from-various-frontend-framework-flavors" target="_blank">NativeScript documentation</a>
+
+```tsx
+// variant 1
+return (
+  <>
+    {
+      isFetching
+      ? <FlexboxLayout
+          height='100%'
+          justifyContent='center'
+          alignItems='center'>
+          <ActivityIndicator busy />
+        </FlexboxLayout>
+      : <StackLayout>
+          <Label>Hello 🥰</Label>
+        </StackLayout>
+    }
+  </>
+);
+```
+
+```tsx
+// variant 2
+return (
+  <>
+    <FlexboxLayout
+      hidden={!isFetching}
+      height='100%'
+      justifyContent='center'
+      alignItems='center'>
+      <ActivityIndicator busy />
+    </FlexboxLayout>
+    <StackLayout hidden={isFetching}>
+      <Label>Hello 🥰</Label>
+    </StackLayout>
+  </>
+);
+```
+
+## List rendering
+
+In order to display lists of items, it is recommended to use the ListView component, which implements the virtual list behavior when only those items that are inside the viewport are rendered. Of course, you can also use normal rendering via `map`, however, in terms of performance, NativeScript is very sensitive to the number of elements in the application, as well as inserting and removing them from the tree. Therefore, virtualization should be used as much as possible.
+
+```tsx
+import { ListView } from '@dark-engine/platform-native';
+```
+
+```tsx
+return (
+  <ListView
+    height='100%'
+    items={items}
+    onItemTap={() => console.log('tapped!')}>
+    {({ item, idx }) => {
+      return (
+        <StackLayout backgroundColor={idx % 2 ? 'red' : 'yellow'}>
+          <Label color={idx % 2 ? 'white' : 'black'}>item #{item}</Label>
+        </StackLayout>
+      );
+    }}
+  </ListView>
+);
+```
 
 ## Connecting 3rd party plugins
 In modern development, we can rarely do without third-party packages written by other developers. Therefore, we should always be able to include such plugins in our project.
@@ -178,8 +246,8 @@ To avoid typescript JSX errors you should add new items to JSX:
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'carousel': any; //<-- describe carousel props here
-      'carousel-item': any; //<-- describe carousel-item props here
+      'carousel': CarouselProps; //<-- describe carousel props here
+      'carousel-item': CarouselItemProps; //<-- describe carousel-item props here
     }
   }
 }
