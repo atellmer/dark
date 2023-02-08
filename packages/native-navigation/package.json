@@ -1,7 +1,7 @@
 {
   "name": "@dark-engine/native-navigation",
   "version": "0.18.0",
-  "description": "Dark navigation for nativescript platform",
+  "description": "Dark navigation for NativeScript platform",
   "author": "AlexPlex",
   "license": "MIT",
   "main": "./dist/cjs/index.js",

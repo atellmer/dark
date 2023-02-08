@@ -339,7 +339,7 @@ import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigat
 
 const App = createComponent(() => {
   return (
-    <NavigationContainer>
+    <NavigationContainer defaultPathname='/Feed'>
       <StackNavigator.Root>
         <StackNavigator.Screen name='Feed' component={Feed} />
         <StackNavigator.Screen name='Friends' component={Friends} />
@@ -352,5 +352,7 @@ const App = createComponent(() => {
 ```
 
 Full documentation about this package you can find [here](https://github.com/atellmer/dark/packages/native-navigation)
+
+# LICENSE
 
 MIT © [Alex Plex](https://github.com/atellmer)

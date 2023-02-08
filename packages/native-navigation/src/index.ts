@@ -1,4 +1,4 @@
-export { TransitionName as NavigationTransitionName } from './constants';
+export { TransitionName } from './constants';
 export { type NavigationOptions, NavigationContainer } from './navigation-container';
 export * from './stack-navigator';
 export * from './tab-navigator';

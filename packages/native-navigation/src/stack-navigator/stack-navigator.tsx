@@ -226,8 +226,8 @@ function createAnimation(options: CreateAnimationOptions) {
     },
   } = options;
   const map = {
-    [TransitionName.FADE]: createFadeAnimation,
-    [TransitionName.SLIDE]: createSlideAnimation,
+    [TransitionName.fade]: createFadeAnimation,
+    [TransitionName.slide]: createSlideAnimation,
   };
 
   return map[transition.name] ? map[transition.name](options) : null;

@@ -234,7 +234,7 @@ function useNavigationContext() {
 
 function resolveNavigationOptions(nextOptions: NavigationOptions): NavigationOptions {
   const animated = nextOptions?.animated || false;
-  const name = nextOptions?.transition?.name || TransitionName.SLIDE;
+  const name = nextOptions?.transition?.name || TransitionName.slide;
   const duration = nextOptions?.transition?.duration || DEFAULT_TRANSITION_DURATION;
   const curve = nextOptions?.transition?.curve || CoreTypes.AnimationCurve.easeInOut;
   const options: NavigationOptions = {

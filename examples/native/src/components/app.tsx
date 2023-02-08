@@ -1,6 +1,13 @@
+import { CoreTypes } from '@nativescript/core';
 import { h, createComponent } from '@dark-engine/core';
 import { ListView } from '@dark-engine/platform-native';
-import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from '@dark-engine/native-navigation';
+import {
+  NavigationContainer,
+  useNavigation,
+  StackNavigator,
+  TabNavigator,
+  TransitionName,
+} from '@dark-engine/native-navigation';
 
 const items = Array(1000)
   .fill(null)
@@ -14,6 +21,11 @@ function useAnimatedNavigation() {
       navigateTo(pathname, {
         animated: true,
         params,
+        transition: {
+          curve: CoreTypes.AnimationCurve.spring,
+          name: TransitionName.slide,
+          duration: 1500,
+        },
       }),
     ...rest,
   };
