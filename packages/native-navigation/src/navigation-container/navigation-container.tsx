@@ -27,6 +27,7 @@ import {
   HistoryAction,
 } from '../history';
 import { SLASH, TransitionName } from '../constants';
+import { normalizePathname } from '../utils';
 
 type NavigationContainerProps = {
   slot: DarkElement;
@@ -44,7 +45,7 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
   createComponent(({ slot, defaultPathname = SLASH, renderActionBar, onNavigate }, ref) => {
     const frameRef = useRef<Frame>(null);
     const pageRef = useRef<Page>(null);
-    const [pathname, setPathname] = useState(defaultPathname);
+    const [pathname, setPathname] = useState(normalizePathname(defaultPathname));
     const [transition, setTransition] = useState<Transition>(null, { priority: TaskPriority.ANIMATION });
     const scope = useMemo<Scope>(
       () => ({ history: null, inTransition: false, transitions: { forward: [], backward: [] } }),

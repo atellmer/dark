@@ -48,8 +48,9 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     const rootRef = useRef<AbsoluteLayout>(null);
     const names = slot.map(x => x.props.name);
     const pathnames = names.map(x => createPathname(x, prefix));
-    const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
     const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
+    const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
+    const hiddensMap = useMemo(() => createHiddensMap({ transition, pathnames, pathname, prefix }), [transition]);
     const entry = pathnames[0];
 
     visitedMap[pathname] = true;
@@ -58,23 +59,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
     }, [pathname]);
 
-    useEffect(() => {
-      const syncNavigation = (pathname: string) => {
-        if (detectIsFunction(onNavigate)) {
-          const idx = getMatchedIdx(pathnames, pathname);
-
-          onNavigate(pathname, idx);
-        }
-      };
-
-      syncNavigation(pathname);
-
-      const unsubscribe = subscribe(pathname => syncNavigation(pathname));
-
-      return () => unsubscribe();
-    }, []);
-
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (!canStartTransition || !transition.options.animated) return;
       const targetFrom = matchRef(scope.refsMap, transition.from);
       const targetTo = matchRef(scope.refsMap, transition.to);
@@ -99,23 +84,32 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       });
     }, [transition]);
 
+    useEffect(() => {
+      const syncNavigation = (pathname: string) => {
+        if (detectIsFunction(onNavigate)) {
+          const idx = getMatchedIdx(pathnames, pathname);
+
+          onNavigate(pathname, idx);
+        }
+      };
+
+      syncNavigation(pathname);
+
+      const unsubscribe = subscribe(pathname => syncNavigation(pathname));
+
+      return () => unsubscribe();
+    }, []);
+
     useImperativeHandle(ref, () => ({
       getPathnameByIdx: (idx: number) => pathnames[idx],
     }));
 
-    const [segment] = canStartTransition ? getSegments(transition.from, prefix) : getSegments(pathname, prefix);
-    const isAnyMatch = names.some(x => x === segment);
-
     return (
       <absolute-layout ref={rootRef} width={FULL} height={FULL}>
-        {slot.map((x, idx) => {
+        {slot.map(x => {
           const name = x.props.name;
           const key = createPathname(name, prefix);
-          const isHidden = isAnyMatch
-            ? name !== segment
-            : scope.refsMap[key]
-            ? Boolean(scope.refsMap[key].hidden)
-            : idx > 0;
+          const isHidden = Boolean(hiddensMap[key]);
           const setRef = (ref: StackLayout) => {
             scope.refsMap[key] = ref;
           };
@@ -130,6 +124,88 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     );
   }),
 );
+
+type CreateHiddensMapOptions = {
+  transition: Transition;
+  pathnames: Array<string>;
+  pathname: string;
+  prefix: string;
+};
+
+function createHiddensMap(options: CreateHiddensMapOptions) {
+  const { transition, pathnames, pathname, prefix } = options;
+  const hiddensMap: Record<string, boolean> = {};
+
+  for (const key of pathnames) {
+    hiddensMap[key] = detectIsHidden({ transition, key, pathname, prefix });
+  }
+
+  if (transition) {
+    const count = Object.keys(hiddensMap).reduce((acc, key) => {
+      const x = !hiddensMap[key] ? 1 : 0;
+
+      return (acc += x);
+    }, 0);
+
+    if (count > 2) {
+      for (const key of pathnames) {
+        hiddensMap[key] = key !== pathnames[0];
+      }
+    }
+  }
+
+  return hiddensMap;
+}
+
+type DetectIsHiddenOptions = {
+  transition: Transition;
+  key: string;
+  pathname: string;
+  prefix: string;
+};
+
+function detectIsHidden(options: DetectIsHiddenOptions) {
+  const { transition, key, pathname, prefix } = options;
+  const keySegments = getSegments(key, prefix);
+  let isHidden = false;
+
+  if (transition) {
+    const { from, to } = transition;
+    let isHiddenFrom = false;
+    let isHiddenTo = false;
+    const segments1 = getSegments(from, prefix);
+    const segments2 = getSegments(to, prefix);
+
+    for (let i = 0; i < segments1.length; i++) {
+      if (keySegments[i] && keySegments[i] !== segments1[i]) {
+        isHiddenFrom = true;
+        break;
+      }
+    }
+
+    for (let i = 0; i < segments2.length; i++) {
+      if (keySegments[i] && keySegments[i] !== segments2[i]) {
+        isHiddenTo = true;
+        break;
+      }
+    }
+
+    isHidden = isHiddenFrom && isHiddenTo;
+
+    return isHidden;
+  }
+
+  const segments = getSegments(pathname, prefix);
+
+  for (let i = 0; i < segments.length; i++) {
+    if (keySegments[i] && keySegments[i] !== segments[i]) {
+      isHidden = true;
+      break;
+    }
+  }
+
+  return isHidden;
+}
 
 export type StackScreenProps = {
   name: string;
@@ -214,7 +290,7 @@ type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProp
 
 type CreateAnimationOptions = {
   transition: Transition;
-  targetFrom: StackLayout;
+  targetFrom: SyntheticStackLayout;
   targetTo: SyntheticStackLayout;
   size: Size;
 };
@@ -254,6 +330,7 @@ function createFadeAnimation(options: CreateAnimationOptions): Animation {
 
   targetTo.opacity = 0;
   targetTo.hidden = false;
+  targetFrom.hidden = false;
 
   return animation;
 }
@@ -281,6 +358,7 @@ function createSlideAnimation(options: CreateAnimationOptions): Animation {
 
   targetTo.translateX = isBack ? -1 * width : width;
   targetTo.hidden = false;
+  targetFrom.hidden = false;
 
   return animation;
 }
