@@ -6,13 +6,12 @@ import { type ButtonRef, Button } from './button';
 
 export type ModalProps = {
   isOpen: boolean;
-  fullscreen?: boolean;
-  animated?: boolean;
   slot: DarkElement;
+  closeOnTapOverlay?: boolean;
   onRequestClose?: () => void;
-};
+} & Omit<ShowModalOptions, 'context' | 'closeCallback' | 'cancelable'>;
 
-const Modal = createComponent<ModalProps>(({ isOpen, fullscreen, animated, slot, onRequestClose }) => {
+const Modal = createComponent<ModalProps>(({ isOpen, slot, closeOnTapOverlay = false, onRequestClose, ...rest }) => {
   const rootRef = useRef<ButtonRef>(null);
   const childRef = useRef<ViewRef>(null);
   const modalRef = useRef<NSView>(null);
@@ -20,9 +19,9 @@ const Modal = createComponent<ModalProps>(({ isOpen, fullscreen, animated, slot,
   useEffect(() => {
     if (isOpen) {
       const options: ShowModalOptions = {
+        ...rest,
         context: null,
-        animated,
-        fullscreen,
+        cancelable: closeOnTapOverlay,
         closeCallback: onRequestClose,
       };
 

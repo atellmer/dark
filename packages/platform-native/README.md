@@ -310,9 +310,29 @@ return (
 );
 ```
 
+## Modals
+
+To insert content in modal window you need to use a special component `Modal`.
+
+```tsx
+import { Modal } from '@dark-engine/platform-native';
+```
+
+```tsx
+const [isOpen, setIsOpen] = useState(false);
+
+return (
+  <Modal isOpen={isOpen} animated onRequestClose={() => setIsOpen(false)}>
+    <stack-layout padding={32}>
+      <label>Hello from Modal</label>
+    </stack-layout>
+  </Modal>
+);
+```
+
 ## Additional components
 
-Dark includes additional components of type `View`, `Text`, `TouchableOpacity`, `Modal` so that you can write an application in a almost similar to React Native style.
+Dark includes additional components of type `View`, `Text`, `TouchableOpacity`, so that you can write an application in a almost similar to React Native style.
 
 ```tsx
 import { h, createComponent } from '@dark-engine/core';

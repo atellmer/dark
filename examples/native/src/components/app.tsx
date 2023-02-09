@@ -144,7 +144,7 @@ const ModalNavigator = createComponent(() => {
   const isModalOpen = pathname.indexOf('/Modal') !== -1;
 
   return (
-    <Modal isOpen={isModalOpen}>
+    <Modal isOpen={isModalOpen} animated>
       <stack-layout padding={32}>
         <label>Hello from ModalNavigator</label>
         <button backgroundColor='purple' onTap={goBack}>
