@@ -37,7 +37,9 @@ In order to use navigation, you need to wrap the application root in a `Navigati
 
 ```tsx
 import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigation';
+```
 
+```tsx
 const App = createComponent(() => {
   return (
     <NavigationContainer defaultPathname='/Feed'>
@@ -57,7 +59,9 @@ The `TabNavigator` is a wrapper around the `StackNavigator` that displays tab bu
 
 ```tsx
 import { NavigationContainer, TabNavigator } from '@dark-engine/native-navigation';
+```
 
+```tsx
 const App = createComponent(() => {
   return (
     <NavigationContainer defaultPathname='/Feed'>
