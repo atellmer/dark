@@ -29,27 +29,19 @@ const App = createComponent(() => {
   };
 
   return (
-    <>
-      <Spinner isFetching={isFetching} />
-      <stack-layout hidden={isFetching} padding={8}>
-        <label>Hello 🥰, {state.name}</label>
-        <text-field text={state.name} onTextChange={handleChange} />
-        <text-field text={state.name} onTextChange={handleChange} />
-      </stack-layout>
-    </>
-  );
-});
-
-const Router = createComponent(() => {
-  return (
     <frame>
       <page actionBarHidden>
         <stack-layout>
-          <App />
+          <Spinner isFetching={isFetching} />
+          <stack-layout hidden={isFetching} padding={8}>
+            <label>Hello 🥰, {state.name}</label>
+            <text-field text={state.name} onTextChange={handleChange} />
+            <text-field text={state.name} onTextChange={handleChange} />
+          </stack-layout>
         </stack-layout>
       </page>
     </frame>
   );
 });
 
-export default Router;
+export default App;

@@ -75,7 +75,7 @@ const App = createComponent(() => {
 
 ## Environment Setup
 
-Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/native" target="_blank">here</a>
+Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/nativescript" target="_blank">here</a>
 
 ## API
 
