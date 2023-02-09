@@ -371,7 +371,7 @@ const App = createComponent(() => {
 });
 ```
 
-Full documentation about this package you can find [here](https://github.com/atellmer/dark/packages/native-navigation)
+Full documentation about this package you can find [here](https://github.com/atellmer/dark/tree/master/packages/native-navigation)
 
 # LICENSE
 
