@@ -1,12 +1,6 @@
 import { h, createComponent } from '@dark-engine/core';
 import { ListView, ActionBar, Modal } from '@dark-engine/platform-native';
-import {
-  NavigationContainer,
-  useNavigation,
-  StackNavigator,
-  TabNavigator,
-  TransitionName,
-} from '@dark-engine/native-navigation';
+import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from '@dark-engine/native-navigation';
 
 const items = Array(1000)
   .fill(null)
@@ -144,7 +138,7 @@ const ModalNavigator = createComponent(() => {
   const isModalOpen = pathname.indexOf('/Modal') !== -1;
 
   return (
-    <Modal isOpen={isModalOpen}>
+    <Modal isOpen={isModalOpen} animated>
       <stack-layout padding={32}>
         <label>Hello from ModalNavigator</label>
         <button backgroundColor='purple' onTap={goBack}>

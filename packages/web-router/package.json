@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/web-router",
-  "version": "0.17.3",
+  "version": "0.18.0",
   "description": "The isomorphic Dark router designed for rendering universal web applications that work both on the client and on the server",
   "author": "AlexPlex",
   "license": "MIT",
