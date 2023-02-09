@@ -261,10 +261,10 @@ return (
     <carousel-item id='slide1' backgroundColor='red'>
       <label text='Slide 1' />
     </carousel-item>
-    <carousel-item id='slide1' backgroundColor='blue'>
+    <carousel-item id='slide2' backgroundColor='blue'>
       <label text='Slide 2' />
     </carousel-item>
-    <carousel-item id='slide1' backgroundColor='green'>
+    <carousel-item id='slide3' backgroundColor='green'>
       <label text='Slide 3' />
     </carousel-item>
   </carousel>
@@ -300,10 +300,10 @@ return (
     <CarouselItem id='slide1' backgroundColor='red'>
       <Label text='Slide 1' />
     </CarouselItem>
-    <CarouselItem id='slide1' backgroundColor='blue'>
+    <CarouselItem id='slide2' backgroundColor='blue'>
       <Label text='Slide 2' />
     </CarouselItem>
-    <CarouselItem id='slide1' backgroundColor='green'>
+    <CarouselItem id='slide3' backgroundColor='green'>
       <Label text='Slide 3' />
     </CarouselItem>
   </Carousel>
