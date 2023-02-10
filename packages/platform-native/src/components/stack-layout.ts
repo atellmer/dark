@@ -8,9 +8,12 @@ export type StackLayoutProps = StackLayoutAttributes;
 export type StackLayoutRef = NSStackLayout;
 
 const StackLayout = forwardRef<StackLayoutProps, StackLayoutRef>(
-  createComponent((props, ref) => {
-    return stackLayout({ ref, ...props });
-  }),
+  createComponent(
+    (props, ref) => {
+      return stackLayout({ ref, ...props });
+    },
+    { displayName: 'StackLayout' },
+  ),
 ) as Component<StackLayoutProps, StackLayoutRef>;
 
 export { StackLayout };

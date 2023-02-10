@@ -128,7 +128,7 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
 
     const back = useEvent(() => scope.history.back());
 
-    const getParams = useEvent((pathname: string) => scope.history.getParams(pathname));
+    const getParams = useEvent((pathname: string) => (scope.history ? scope.history.getParams(pathname) : null));
 
     const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
 

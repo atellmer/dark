@@ -16,6 +16,7 @@ import {
   createReplacer,
   unmountRoot,
   detectIsFunction,
+  detectCanApplyUpdate,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
@@ -50,6 +51,8 @@ type RenderOptions = {
 
 function render(options: RenderOptions): NSElement {
   const { element, rootId = APP_ID, isSubRoot = false, onCompleted } = options;
+
+  if (!detectCanApplyUpdate()) return;
 
   !isInjected && inject();
 

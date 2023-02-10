@@ -1,11 +1,25 @@
 import { hot } from '../scope';
 
-function hot$(update: () => void) {
-  if (process.env.NODE_ENV === 'development') {
-    hot.set(true);
-  }
+let apply = true;
 
-  update();
+function hot$(update: () => void) {
+  apply = false;
+
+  setTimeout(() => {
+    if (process.env.NODE_ENV === 'development') {
+      hot.set(true);
+    }
+    apply = true;
+    update();
+  });
 }
 
-export { hot$ as hot };
+const detectCanApplyUpdate = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return apply;
+  }
+
+  return true;
+};
+
+export { hot$ as hot, detectCanApplyUpdate };
