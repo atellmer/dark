@@ -446,12 +446,16 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 }
 
 function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+  if (process.env.NODE_ENV === 'development') {
+    if (hot.get()) return;
+  }
+
   const prevFactory = alternate.instance as ComponentFactory;
   const nextFactory = instance as ComponentFactory;
   if (fiber.move || nextFactory.type !== prevFactory.type) return;
   const prevProps = prevFactory.props;
   const nextProps = nextFactory.props;
-  const skip = hot.get() ? false : !nextFactory.shouldUpdate(prevProps, nextProps);
+  const skip = !nextFactory.shouldUpdate(prevProps, nextProps);
 
   if (skip) {
     fiberMountStore.deepWalking.set(false);
