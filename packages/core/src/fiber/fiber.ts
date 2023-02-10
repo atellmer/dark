@@ -25,6 +25,7 @@ import {
   isInsertionEffectsZone,
   detectHasRegisteredLazy,
   isHydrateZone,
+  hot,
 } from '../scope';
 import {
   type ComponentFactory,
@@ -305,7 +306,7 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
     const prevKey = hasAlternate ? getElementKey(alternate.instance) : null;
     const nextKey = hasAlternate ? getElementKey(instance) : null;
     const isSameKeys = prevKey === nextKey;
-    const isSameTypes = hasAlternate && getInstanceType(alternate.instance) === getInstanceType(instance);
+    const isSameTypes = hasAlternate && detectIsSameInstanceTypes(alternate.instance, instance);
 
     isUpdate = isSameTypes && isSameKeys;
   }
@@ -369,9 +370,7 @@ function canAddToDeletions(fiber: Fiber) {
 }
 
 function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
-  const alternateType = getInstanceType(alternate.instance);
-  const elementType = getInstanceType(instance);
-  const isSameType = elementType === alternateType;
+  const isSameType = detectIsSameInstanceTypes(alternate.instance, instance);
   const flag = getElementFlag(instance);
   const hasNoMovesFlag = flag && flag[Flag.HAS_NO_MOVES];
 
@@ -693,7 +692,7 @@ function detectIsSameComponentFactoryTypesWithSameKeys(
     nextInstance &&
     detectIsComponentFactory(prevInstance) &&
     detectIsComponentFactory(nextInstance) &&
-    prevInstance.type === nextInstance.type
+    detectIsSameInstanceTypes(prevInstance, nextInstance, true)
   ) {
     const prevKey = prevInstance ? getElementKey(prevInstance) : null;
     const nextKey = nextInstance ? getElementKey(nextInstance) : null;
@@ -702,6 +701,32 @@ function detectIsSameComponentFactoryTypesWithSameKeys(
   }
 
   return false;
+}
+
+function detectIsSameInstanceTypes(
+  prevInstance: DarkElementInstance,
+  nextInstance: DarkElementInstance,
+  isComponentFactories = false,
+) {
+  if (process.env.NODE_ENV === 'development') {
+    if (hot.get()) {
+      if (detectIsComponentFactory(prevInstance) && detectIsComponentFactory(nextInstance)) {
+        return prevInstance.displayName === nextInstance.displayName;
+      }
+    }
+  }
+
+  if (isComponentFactories) {
+    const prevFactory = prevInstance as ComponentFactory;
+    const nextFactory = nextInstance as ComponentFactory;
+
+    return prevFactory.type === nextFactory.type;
+  }
+
+  const prevType = getInstanceType(prevInstance);
+  const nextType = getInstanceType(nextInstance);
+
+  return prevType === nextType;
 }
 
 function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
@@ -724,6 +749,9 @@ function createHook(): Hook {
 }
 
 function commitChanges() {
+  if (process.env.NODE_ENV === 'development') {
+    hot.set(false);
+  }
   if (isHydrateZone.get() && detectHasRegisteredLazy()) return flush(null); // important order
   const wipFiber = wipRootStore.get();
   const isDynamic = platform.detectIsDynamic();

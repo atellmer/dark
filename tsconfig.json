@@ -18,6 +18,7 @@
       "ES2021",
       "dom"
     ],
+    "typeRoots": ["node_modules/@types"],
     "baseUrl": ".",
     "paths": {
       "@dark-engine/core": [

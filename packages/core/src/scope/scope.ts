@@ -25,6 +25,7 @@ class Store {
   public isUpdateHookZone = false;
   public isBatchZone = false;
   public isHydrateZone = false;
+  public isHot = false;
   public lazy: Set<number> = new Set();
 }
 
@@ -163,6 +164,11 @@ const isHydrateZone = {
   set: (value: boolean) => (store.get().isHydrateZone = value),
 };
 
+const hot = {
+  get: () => store.get()?.isHot || false,
+  set: (value: boolean) => (store.get().isHot = value),
+};
+
 const registerLazy = () => {
   const { id } = currentFiberStore.get();
 
@@ -193,6 +199,7 @@ export {
   isUpdateHookZone,
   isBatchZone,
   isHydrateZone,
+  hot,
   registerLazy,
   unregisterLazy,
   detectHasRegisteredLazy,
