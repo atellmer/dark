@@ -33,7 +33,7 @@ export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
 export { SplitUpdate, useSplitUpdate } from './split-update';
-export { hot, detectCanApplyUpdate } from './hot';
+export { hot } from './hot';
 export * from './view';
 export * from './constants';
 
