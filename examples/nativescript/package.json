@@ -4,10 +4,14 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm run android",
-    "android": "npx ns run android --no-hmr",
-    "ios": "npx ns run ios --no-hmr",
-    "debug:android": "npx ns debug android --no-hmr",
-    "debug:ios": "npx ns debug ios --no-hmr",
+    "android": "npx ns run android",
+    "android:nohmr": "npx ns run android --no-hmr",
+    "ios": "npx ns run ios",
+    "ios:nohmr": "npx ns run ios --no-hmr",
+    "debug:android": "npx ns debug android",
+    "debug:android:nohmr": "npx ns debug android --no-hmr",
+    "debug:ios": "npx ns debug ios",
+    "debug:ios:nohmr": "npx ns debug ios --no-hmr",
     "clean": "npx ns clean"
   },
   "dependencies": {
