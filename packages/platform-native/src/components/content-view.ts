@@ -8,9 +8,7 @@ export type ContentViewProps = ContentViewAttributes;
 export type ContentViewRef = NSContentView;
 
 const ContentView = forwardRef<ContentViewProps, ContentViewRef>(
-  createComponent((props, ref) => {
-    return contentView({ ref, ...props });
-  }),
+  createComponent((props, ref) => contentView({ ref, ...props }), { displayName: 'ContentView' }),
 ) as Component<ContentViewProps, ContentViewRef>;
 
 export { ContentView };

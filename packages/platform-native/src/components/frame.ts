@@ -8,9 +8,7 @@ export type FrameProps = FrameAttributes;
 export type FrameRef = NSFrame;
 
 const Frame = forwardRef<FrameProps, FrameRef>(
-  createComponent((props, ref) => {
-    return frame({ ref, ...props });
-  }),
+  createComponent((props, ref) => frame({ ref, ...props }), { displayName: 'Frame' }),
 ) as Component<FrameProps, FrameRef>;
 
 export { Frame };

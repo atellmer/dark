@@ -107,6 +107,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
   }
 
   public setAttribute(name: string, value: AttributeValue) {
+    this.nativeView[INITIAL_ATTR_VALUE] = this.nativeView[name];
     this.attrs[name] = value;
 
     if (name === ANDROID || name === IOS) {
@@ -121,8 +122,9 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
   }
 
   public removeAttribute(name: string) {
+    this.nativeView[name] = this.nativeView[INITIAL_ATTR_VALUE];
+    delete this.nativeView[INITIAL_ATTR_VALUE];
     delete this.attrs[name];
-    delete this.nativeView[name];
   }
 
   public updateText() {
@@ -266,5 +268,7 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
 }
 
 export type AttributeValue = string | number | boolean | object;
+
+export const INITIAL_ATTR_VALUE = '_INITIAL_ATTR_VALUE';
 
 export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement };

@@ -8,9 +8,7 @@ export type ListPickerProps = ListPickerAttributes;
 export type ListPickerRef = NSListPicker;
 
 const ListPicker = forwardRef<ListPickerProps, ListPickerRef>(
-  createComponent((props, ref) => {
-    return listPicker({ ref, ...props });
-  }),
+  createComponent((props, ref) => listPicker({ ref, ...props }), { displayName: 'ListPicker' }),
 ) as Component<ListPickerProps, ListPickerRef>;
 
 export { ListPicker };

@@ -8,9 +8,7 @@ export type ImageProps = ImageAttributes;
 export type ImageRef = NSImage;
 
 const Image = forwardRef<ImageProps, ImageRef>(
-  createComponent((props, ref) => {
-    return image({ ref, ...props });
-  }),
+  createComponent((props, ref) => image({ ref, ...props }), { displayName: 'Image' }),
 ) as Component<ImageProps, ImageRef>;
 
 export { Image };

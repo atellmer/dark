@@ -8,9 +8,7 @@ export type GridLayoutProps = GridLayoutAttributes;
 export type GridLayoutRef = NSGridLayout;
 
 const GridLayout = forwardRef<GridLayoutProps, GridLayoutRef>(
-  createComponent((props, ref) => {
-    return gridLayout({ ref, ...props });
-  }),
+  createComponent((props, ref) => gridLayout({ ref, ...props }), { displayName: 'GridLayout' }),
 ) as Component<GridLayoutProps, GridLayoutRef>;
 
 export { GridLayout };

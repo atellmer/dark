@@ -11,15 +11,18 @@ export type ActionBarRef = {
 };
 
 const ActionBar = forwardRef<ActionBarProps, ActionBarRef>(
-  createComponent((props, ref) => {
-    const rootRef = useRef<NSActionBar>(null);
+  createComponent(
+    (props, ref) => {
+      const rootRef = useRef<NSActionBar>(null);
 
-    useImperativeHandle(ref, () => ({
-      view: rootRef.current,
-    }));
+      useImperativeHandle(ref, () => ({
+        view: rootRef.current,
+      }));
 
-    return actionBar({ ref: rootRef, ...props });
-  }),
+      return actionBar({ ref: rootRef, ...props });
+    },
+    { displayName: 'ActionBar' },
+  ),
 ) as Component<ActionBarProps, ActionBarRef>;
 
 export { ActionBar };

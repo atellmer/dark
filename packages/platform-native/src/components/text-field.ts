@@ -8,9 +8,7 @@ export type TextFieldProps = TextFieldAttributes;
 export type TextFieldRef = NSTextField;
 
 const TextField = forwardRef<TextFieldProps, TextFieldRef>(
-  createComponent((props, ref) => {
-    return textField({ ref, ...props });
-  }),
+  createComponent((props, ref) => textField({ ref, ...props }), { displayName: 'TextField' }),
 ) as Component<TextFieldProps, TextFieldRef>;
 
 export { TextField };

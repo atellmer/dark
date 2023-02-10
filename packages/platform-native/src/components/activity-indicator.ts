@@ -8,9 +8,7 @@ export type ActivityIndicatorProps = ActivityIndicatorAttributes;
 export type ActivityIndicatorRef = NSActivityIndicator;
 
 const ActivityIndicator = forwardRef<ActivityIndicatorProps, ActivityIndicatorRef>(
-  createComponent((props, ref) => {
-    return activityIndicator({ ref, ...props });
-  }),
+  createComponent((props, ref) => activityIndicator({ ref, ...props }), { displayName: 'ActivityIndicator' }),
 ) as Component<ActivityIndicatorProps, ActivityIndicatorRef>;
 
 export { ActivityIndicator };

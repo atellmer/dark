@@ -8,9 +8,7 @@ export type ProgressProps = ProgressAttributes;
 export type ProgressRef = NSProgress;
 
 const Progress = forwardRef<ProgressProps, ProgressRef>(
-  createComponent((props, ref) => {
-    return progress({ ref, ...props });
-  }),
+  createComponent((props, ref) => progress({ ref, ...props }), { displayName: 'Progress' }),
 ) as Component<ProgressProps, ProgressRef>;
 
 export { Progress };

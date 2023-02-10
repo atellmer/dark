@@ -8,9 +8,7 @@ export type SegmentedBarItemProps = SegmentedBarItemAttributes;
 export type SegmentedBarItemRef = NSSegmentedBarItem;
 
 const SegmentedBarItem = forwardRef<SegmentedBarItemProps, SegmentedBarItemRef>(
-  createComponent((props, ref) => {
-    return segmentedBarItem({ ref, ...props });
-  }),
+  createComponent((props, ref) => segmentedBarItem({ ref, ...props }), { displayName: 'SegmentedBarItem' }),
 ) as Component<SegmentedBarItemProps, SegmentedBarItemRef>;
 
 export { SegmentedBarItem };

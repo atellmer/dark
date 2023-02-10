@@ -36,40 +36,43 @@ export type ListViewRef = {
 };
 
 const ListView: ListView = forwardRef<ListViewProps, ListViewRef>(
-  createComponent(({ items, slot, ...rest }, ref) => {
-    const rootRef = useRef<NSListView>(null);
+  createComponent(
+    ({ items, slot, ...rest }, ref) => {
+      const rootRef = useRef<NSListView>(null);
 
-    useImperativeHandle(ref, () => ({
-      refresh: () => rootRef.current.refresh(),
-      scrollToIndex: (idx: number) => rootRef.current.scrollToIndex(idx),
-      scrollToIndexAnimated: (idx: number) => rootRef.current.scrollToIndexAnimated(idx),
-      isItemAtIndexVisible: (idx: number) => rootRef.current.isItemAtIndexVisible(idx),
-    }));
+      useImperativeHandle(ref, () => ({
+        refresh: () => rootRef.current.refresh(),
+        scrollToIndex: (idx: number) => rootRef.current.scrollToIndex(idx),
+        scrollToIndexAnimated: (idx: number) => rootRef.current.scrollToIndexAnimated(idx),
+        isItemAtIndexVisible: (idx: number) => rootRef.current.isItemAtIndexVisible(idx),
+      }));
 
-    const handleItemLoading = useEvent((e: SyntheticEvent<ItemEventData>) => {
-      const data = e.sourceEvent;
-      const idx = data.index;
-      const item = items[idx];
-      const element = slot({ item, idx, items });
+      const handleItemLoading = useEvent((e: SyntheticEvent<ItemEventData>) => {
+        const data = e.sourceEvent;
+        const idx = data.index;
+        const item = items[idx];
+        const element = slot({ item, idx, items });
 
-      renderSubRoot(element, template => {
-        const view = data.view || template;
+        renderSubRoot(element, template => {
+          const view = data.view || template;
 
-        patchElement(view, template, idx);
+          patchElement(view, template, idx);
 
-        data.view = view;
+          data.view = view;
+        });
       });
-    });
 
-    return listView({
-      ...rest,
-      ref: rootRef,
-      items,
-      itemTemplates,
-      itemTemplateSelector,
-      onItemLoading: handleItemLoading,
-    });
-  }),
+      return listView({
+        ...rest,
+        ref: rootRef,
+        items,
+        itemTemplates,
+        itemTemplateSelector,
+        onItemLoading: handleItemLoading,
+      });
+    },
+    { displayName: 'ListView' },
+  ),
 );
 
 const DEFAULT_TEMPLATE = 'default';

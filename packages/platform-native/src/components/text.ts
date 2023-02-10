@@ -8,9 +8,7 @@ export type TextProps = LabelAttributes;
 export type TextRef = NSLabel;
 
 const Text = forwardRef<TextProps, TextRef>(
-  createComponent((props, ref) => {
-    return label({ ref, ...props });
-  }),
+  createComponent((props, ref) => label({ ref, ...props }), { displayName: ':Text' }),
 ) as Component<TextProps, TextRef>;
 
 export { Text };

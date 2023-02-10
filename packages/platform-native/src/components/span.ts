@@ -8,9 +8,7 @@ export type SpanProps = SpanAttributes;
 export type SpanRef = NSSpan;
 
 const Span = forwardRef<SpanProps, SpanRef>(
-  createComponent((props, ref) => {
-    return span({ ref, ...props });
-  }),
+  createComponent((props, ref) => span({ ref, ...props }), { displayName: 'Span' }),
 ) as Component<SpanProps, SpanRef>;
 
 export { Span };

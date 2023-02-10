@@ -8,9 +8,7 @@ export type NavigationButtonProps = NavigationButtonAttributes;
 export type NavigationButtonRef = NSNavigationButton;
 
 const NavigationButton = forwardRef<NavigationButtonProps, NavigationButtonRef>(
-  createComponent((props, ref) => {
-    return navigationButton({ ref, ...props });
-  }),
+  createComponent((props, ref) => navigationButton({ ref, ...props }), { displayName: 'NavigationButton' }),
 ) as Component<NavigationButtonProps, NavigationButtonRef>;
 
 export { NavigationButton };

@@ -8,9 +8,7 @@ export type ActionItemProps = ActionItemAttributes;
 export type ActionItemRef = NSActionItem;
 
 const ActionItem = forwardRef<ActionItemProps, ActionItemRef>(
-  createComponent((props, ref) => {
-    return actionItem({ ref, ...props });
-  }),
+  createComponent((props, ref) => actionItem({ ref, ...props }), { displayName: 'ActionItem' }),
 ) as Component<ActionItemProps, ActionItemRef>;
 
 export { ActionItem };

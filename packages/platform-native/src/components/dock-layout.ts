@@ -8,9 +8,7 @@ export type DockLayoutProps = DockLayoutAttributes;
 export type DockLayoutRef = NSDockLayout;
 
 const DockLayout = forwardRef<DockLayoutProps, DockLayoutRef>(
-  createComponent((props, ref) => {
-    return dockLayout({ ref, ...props });
-  }),
+  createComponent((props, ref) => dockLayout({ ref, ...props }), { displayName: 'DockLayout' }),
 ) as Component<DockLayoutProps, DockLayoutRef>;
 
 export { DockLayout };

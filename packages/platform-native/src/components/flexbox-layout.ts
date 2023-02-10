@@ -8,9 +8,7 @@ export type FlexboxLayoutProps = FlexboxLayoutAttributes;
 export type FlexboxLayoutRef = NSFlexboxLayout;
 
 const FlexboxLayout = forwardRef<FlexboxLayoutProps, FlexboxLayoutRef>(
-  createComponent((props, ref) => {
-    return flexboxLayout({ ref, ...props });
-  }),
+  createComponent((props, ref) => flexboxLayout({ ref, ...props }), { displayName: 'FlexboxLayout' }),
 ) as Component<FlexboxLayoutProps, FlexboxLayoutRef>;
 
 export { FlexboxLayout };

@@ -8,9 +8,7 @@ export type FormattedStringProps = FormattedStringAttributes;
 export type FormattedStringRef = NSFormattedString;
 
 const FormattedString = forwardRef<FormattedStringProps, FormattedStringRef>(
-  createComponent((props, ref) => {
-    return formattedString({ ref, ...props });
-  }),
+  createComponent((props, ref) => formattedString({ ref, ...props }), { displayName: 'FormattedString' }),
 ) as Component<FormattedStringProps, FormattedStringRef>;
 
 export { FormattedString };

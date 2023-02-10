@@ -8,9 +8,7 @@ export type RootLayoutProps = RootLayoutAttributes;
 export type RootLayoutRef = NSRootLayout;
 
 const RootLayout = forwardRef<RootLayoutProps, RootLayoutRef>(
-  createComponent((props, ref) => {
-    return rootLayout({ ref, ...props });
-  }),
+  createComponent((props, ref) => rootLayout({ ref, ...props }), { displayName: 'RootLayout' }),
 ) as Component<RootLayoutProps, RootLayoutRef>;
 
 export { RootLayout };

@@ -8,9 +8,7 @@ export type PlaceholderProps = PlaceholderAttributes;
 export type PlaceholderRef = NSPlaceholder;
 
 const Placeholder = forwardRef<PlaceholderProps, PlaceholderRef>(
-  createComponent((props, ref) => {
-    return placeholder({ ref, ...props });
-  }),
+  createComponent((props, ref) => placeholder({ ref, ...props }), { displayName: 'Placeholder' }),
 ) as Component<PlaceholderProps, PlaceholderRef>;
 
 export { Placeholder };

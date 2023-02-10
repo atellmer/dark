@@ -8,9 +8,7 @@ export type TimePickerProps = TimePickerAttributes;
 export type TimePickerRef = NSTimePicker;
 
 const TimePicker = forwardRef<TimePickerProps, TimePickerRef>(
-  createComponent((props, ref) => {
-    return timePicker({ ref, ...props });
-  }),
+  createComponent((props, ref) => timePicker({ ref, ...props }), { displayName: 'TimePicker' }),
 ) as Component<TimePickerProps, TimePickerRef>;
 
 export { TimePicker };

@@ -8,9 +8,7 @@ export type SearchBarProps = SearchBarAttributes;
 export type SearchBarRef = NSSearchBar;
 
 const SearchBar = forwardRef<SearchBarProps, SearchBarRef>(
-  createComponent((props, ref) => {
-    return searchBar({ ref, ...props });
-  }),
+  createComponent((props, ref) => searchBar({ ref, ...props }), { displayName: 'SearchBar' }),
 ) as Component<SearchBarProps, SearchBarRef>;
 
 export { SearchBar };

@@ -8,9 +8,7 @@ export type TextViewProps = TextViewAttributes;
 export type TextViewRef = NSTextView;
 
 const TextView = forwardRef<TextViewProps, TextViewRef>(
-  createComponent((props, ref) => {
-    return textView({ ref, ...props });
-  }),
+  createComponent((props, ref) => textView({ ref, ...props }), { displayName: 'TextView' }),
 ) as Component<TextViewProps, TextViewRef>;
 
 export { TextView };

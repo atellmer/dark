@@ -37,65 +37,68 @@ export type RouterRef = {
 };
 
 const Router = forwardRef<RouterProps, RouterRef>(
-  createComponent(({ url, baseURL = SLASH, routes: sourceRoutes, slot }, ref) => {
-    if (useActiveRouteContext()) {
-      throw new Error('[web-router]: Parent active route context detected!');
-    }
-    const sourceURL = url || window.location.href;
-    const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
-    const history = useMemo(() => createRouterHistory(sourceURL), []);
-    const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
-    const { protocol, host, pathname, search, hash } = location;
-    const { activeRoute, slot: slot$, params } = resolveRoute(pathname, routes);
-    const scope = useMemo(() => ({ location }), []);
-    const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-    const routerContext = useMemo<ActiveRouteContextValue>(
-      () => ({ location, activeRoute, params }),
-      [pathname, search, hash],
-    );
-
-    scope.location = location;
-
-    useLayoutEffect(() => {
-      if (sourceURL !== scope.location.url) {
-        setLocation(createRouterLocation(sourceURL));
+  createComponent(
+    ({ url, baseURL = SLASH, routes: sourceRoutes, slot }, ref) => {
+      if (useActiveRouteContext()) {
+        throw new Error('[web-router]: Parent active route context detected!');
       }
-    }, [sourceURL]);
+      const sourceURL = url || window.location.href;
+      const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
+      const history = useMemo(() => createRouterHistory(sourceURL), []);
+      const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
+      const { protocol, host, pathname, search, hash } = location;
+      const { activeRoute, slot: slot$, params } = resolveRoute(pathname, routes);
+      const scope = useMemo(() => ({ location }), []);
+      const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
+      const routerContext = useMemo<ActiveRouteContextValue>(
+        () => ({ location, activeRoute, params }),
+        [pathname, search, hash],
+      );
 
-    useLayoutEffect(() => {
-      const unsubscribe = history.subscribe(spathname => {
-        const url = `${protocol}${PROTOCOL_MARK}${host}${spathname}`;
+      scope.location = location;
 
-        setLocation(createRouterLocation(url));
-      });
+      useLayoutEffect(() => {
+        if (sourceURL !== scope.location.url) {
+          setLocation(createRouterLocation(sourceURL));
+        }
+      }, [sourceURL]);
 
-      return () => {
-        unsubscribe();
-        history.dispose();
-      };
-    }, []);
+      useLayoutEffect(() => {
+        const unsubscribe = history.subscribe(spathname => {
+          const url = `${protocol}${PROTOCOL_MARK}${host}${spathname}`;
 
-    useEffect(() => {
-      if (!activeRoute) return;
-      const spathname = pathname + search + hash;
-      const newSpathname = createPathname(pathname, activeRoute.getPath()) + search + hash;
+          setLocation(createRouterLocation(url));
+        });
 
-      if (spathname !== newSpathname) {
-        history.replace(newSpathname);
-      }
-    }, [pathname, search, hash]);
+        return () => {
+          unsubscribe();
+          history.dispose();
+        };
+      }, []);
 
-    useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
-      navigateTo: (pathname: string) => history.push(pathname),
-      location,
-    }));
+      useEffect(() => {
+        if (!activeRoute) return;
+        const spathname = pathname + search + hash;
+        const newSpathname = createPathname(pathname, activeRoute.getPath()) + search + hash;
 
-    return (
-      <RouterHistoryContext.Provider value={historyContext}>
-        <ActiveRouteContext.Provider value={routerContext}>{slot(slot$)}</ActiveRouteContext.Provider>
-      </RouterHistoryContext.Provider>
-    );
-  }),
+        if (spathname !== newSpathname) {
+          history.replace(newSpathname);
+        }
+      }, [pathname, search, hash]);
+
+      useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
+        navigateTo: (pathname: string) => history.push(pathname),
+        location,
+      }));
+
+      return (
+        <RouterHistoryContext.Provider value={historyContext}>
+          <ActiveRouteContext.Provider value={routerContext}>{slot(slot$)}</ActiveRouteContext.Provider>
+        </RouterHistoryContext.Provider>
+      );
+    },
+    { displayName: 'Router' },
+  ),
 );
 
 export { Router };

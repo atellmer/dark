@@ -8,9 +8,7 @@ export type TabViewItemProps = TabViewItemAttributes;
 export type TabViewItemRef = NSTabViewItem;
 
 const TabViewItem = forwardRef<TabViewItemProps, TabViewItemRef>(
-  createComponent((props, ref) => {
-    return tabViewItem({ ref, ...props });
-  }),
+  createComponent((props, ref) => tabViewItem({ ref, ...props }), { displayName: 'TabViewItem' }),
 ) as Component<TabViewItemProps, TabViewItemRef>;
 
 export { TabViewItem };

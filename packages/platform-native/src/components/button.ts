@@ -8,9 +8,7 @@ export type ButtonProps = ButtonAttributes;
 export type ButtonRef = NSButton;
 
 const Button = forwardRef<ButtonProps, ButtonRef>(
-  createComponent((props, ref) => {
-    return button({ ref, ...props });
-  }),
+  createComponent((props, ref) => button({ ref, ...props }), { displayName: 'Button' }),
 ) as Component<ButtonProps, ButtonRef>;
 
 export { Button };

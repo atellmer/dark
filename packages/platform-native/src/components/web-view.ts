@@ -8,9 +8,7 @@ export type WebViewProps = WebViewAttributes;
 export type WebViewRef = NSWebView;
 
 const WebView = forwardRef<WebViewProps, WebViewRef>(
-  createComponent((props, ref) => {
-    return webView({ ref, ...props });
-  }),
+  createComponent((props, ref) => webView({ ref, ...props }), { displayName: 'WebView' }),
 ) as Component<WebViewProps, WebViewRef>;
 
 export { WebView };

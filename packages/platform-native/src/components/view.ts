@@ -8,9 +8,7 @@ export type ViewProps = FlexboxLayoutAttributes;
 export type ViewRef = NSFlexboxLayout;
 
 const View = forwardRef<ViewProps, ViewRef>(
-  createComponent((props, ref) => {
-    return flexboxLayout({ ref, flexDirection: 'column', ...props });
-  }),
+  createComponent((props, ref) => flexboxLayout({ ref, flexDirection: 'column', ...props }), { displayName: ':View' }),
 ) as Component<ViewProps, ViewRef>;
 
 export { View };

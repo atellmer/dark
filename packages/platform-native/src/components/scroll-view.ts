@@ -8,9 +8,7 @@ export type ScrollViewProps = ScrollViewAttributes;
 export type ScrollRef = NSScrollView;
 
 const ScrollView = forwardRef<ScrollViewProps, ScrollRef>(
-  createComponent((props, ref) => {
-    return scrollView({ ref, ...props });
-  }),
+  createComponent((props, ref) => scrollView({ ref, ...props }), { displayName: 'ScrollView' }),
 ) as Component<ScrollViewProps, ScrollRef>;
 
 export { ScrollView };

@@ -8,12 +8,7 @@ export type LabelProps = LabelAttributes;
 export type LabelRef = NSLabel;
 
 const Label = forwardRef<LabelProps, LabelRef>(
-  createComponent(
-    (props, ref) => {
-      return label({ ref, ...props });
-    },
-    { displayName: 'Label' },
-  ),
+  createComponent((props, ref) => label({ ref, ...props }), { displayName: 'Label' }),
 ) as Component<LabelProps, LabelRef>;
 
 export { Label };

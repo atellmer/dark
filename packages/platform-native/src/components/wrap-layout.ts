@@ -8,9 +8,7 @@ export type WrapLayoutProps = WrapLayoutAttributes;
 export type WrapLayoutRef = NSWrapLayout;
 
 const WrapLayout = forwardRef<WrapLayoutProps, WrapLayoutRef>(
-  createComponent((props, ref) => {
-    return wrapLayout({ ref, ...props });
-  }),
+  createComponent((props, ref) => wrapLayout({ ref, ...props }), { displayName: 'WrapLayout' }),
 ) as Component<WrapLayoutProps, WrapLayoutRef>;
 
 export { WrapLayout };

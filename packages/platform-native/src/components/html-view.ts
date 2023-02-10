@@ -8,9 +8,7 @@ export type HtmlViewProps = HtmlViewAttributes;
 export type HtmlViewRef = NSHtmlView;
 
 const HtmlView = forwardRef<HtmlViewProps, HtmlViewRef>(
-  createComponent((props, ref) => {
-    return htmlView({ ref, ...props });
-  }),
+  createComponent((props, ref) => htmlView({ ref, ...props }), { displayName: 'HtmlView' }),
 ) as Component<HtmlViewProps, HtmlViewRef>;
 
 export { HtmlView };

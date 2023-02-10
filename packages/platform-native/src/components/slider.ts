@@ -8,9 +8,7 @@ export type SliderProps = SliderAttributes;
 export type SliderRef = NSSlider;
 
 const Slider = forwardRef<SliderProps, SliderRef>(
-  createComponent((props, ref) => {
-    return slider({ ref, ...props });
-  }),
+  createComponent((props, ref) => slider({ ref, ...props }), { displayName: 'Slider' }),
 ) as Component<SliderProps, SliderRef>;
 
 export { Slider };

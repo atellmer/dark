@@ -8,9 +8,7 @@ export type AbsoluteLayoutProps = AbsoluteLayoutAttributes;
 export type AbsoluteLayoutRef = NSAbsoluteLayout;
 
 const AbsoluteLayout = forwardRef<AbsoluteLayoutProps, AbsoluteLayoutRef>(
-  createComponent((props, ref) => {
-    return absoluteLayout({ ref, ...props });
-  }),
+  createComponent((props, ref) => absoluteLayout({ ref, ...props }), { displayName: 'AbsoluteLayout' }),
 ) as Component<AbsoluteLayoutProps, AbsoluteLayoutRef>;
 
 export { AbsoluteLayout };

@@ -8,9 +8,7 @@ export type PageProps = PageAttributes;
 export type PageRef = NSPage;
 
 const Page = forwardRef<PageProps, PageRef>(
-  createComponent((props, ref) => {
-    return page({ ref, ...props });
-  }),
+  createComponent((props, ref) => page({ ref, ...props }), { displayName: 'Page' }),
 ) as Component<PageProps, PageRef>;
 
 export { Page };

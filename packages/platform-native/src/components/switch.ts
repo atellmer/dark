@@ -8,9 +8,7 @@ export type SwitchProps = SwitchAttributes;
 export type SwitchRef = NSSwitch;
 
 const Switch = forwardRef<SwitchProps, SwitchRef>(
-  createComponent((props, ref) => {
-    return _switch({ ref, ...props });
-  }),
+  createComponent((props, ref) => _switch({ ref, ...props }), { displayName: 'Switch' }),
 ) as Component<SwitchProps, SwitchRef>;
 
 export { Switch };

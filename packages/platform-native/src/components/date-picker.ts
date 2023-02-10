@@ -8,9 +8,7 @@ export type DatePickerProps = DatePickerAttributes;
 export type DatePickerRef = NSDatePicker;
 
 const DatePicker = forwardRef<DatePickerProps, DatePickerRef>(
-  createComponent((props, ref) => {
-    return datePicker({ ref, ...props });
-  }),
+  createComponent((props, ref) => datePicker({ ref, ...props }), { displayName: 'DatePicker' }),
 ) as Component<DatePickerProps, DatePickerRef>;
 
 export { DatePicker };
