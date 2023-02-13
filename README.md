@@ -52,6 +52,7 @@ Dark is lightweight UI rendering engine for javascript apps without dependencies
 - [StackBlitz example #9 (spring animated FAB button)](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
 - [StackBlitz example #10 (server-side rendering)](https://stackblitz.com/edit/darkapp-ccz57rk-3j65wa?file=server%2Fapp.ts)
 - [StackBlitz example #11 (universal dark app (ssr + hydration + lazy + parameterized routing))](https://stackblitz.com/edit/darkapp-ccz57rk-n5zjg6?file=server%2Fapp.ts,client%2Fcomponents%2Fapp.tsx)
+- [StackBlitz example #12 (Hot Module Replacement (HMR) in dev mode)](https://stackblitz.com/edit/darkapp-ccz57rk-cnkbqk?file=app.tsx)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
