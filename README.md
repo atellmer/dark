@@ -82,7 +82,7 @@ yarn:
 yarn add @dark-engine/core @dark-engine/platform-server
 ```
 
-## Installation for native platforms (Android, iOS)
+## Installation for mobile platforms (Android, iOS)
 npm:
 ```
 npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
