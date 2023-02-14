@@ -111,7 +111,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     this.attrs[name] = value;
 
     if (name === ANDROID || name === IOS) {
-      if (detectIsObject(value)) {
+      if (detectIsObject(value) && this.nativeView[name]) {
         for (const key of Object.keys(value)) {
           this.nativeView[name][key] = value[key];
         }

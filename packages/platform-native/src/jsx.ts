@@ -616,20 +616,22 @@ export type ActionBarAttributes = PartialSlot<
   >
 >;
 
-export type ActionItemAttributes = WithStandardElementAttributes<
-  ViewBaseAttributes & {
-    actionBar?: ActionBar;
-    actionView?: View;
-    android?: Partial<AndroidActionItemSettings>;
-    icon?: string;
-    ios?: Partial<IOSActionItemSettings>;
-    onIconChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onTap?: (e: SyntheticEvent<EventData>) => void;
-    onTextChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    onVisibilityChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
-    text?: string;
-    visibility?: string;
-  }
+export type ActionItemAttributes = PartialSlot<
+  WithStandardElementAttributes<
+    ViewBaseAttributes & {
+      actionBar?: ActionBar;
+      actionView?: View;
+      android?: Partial<AndroidActionItemSettings>;
+      icon?: string;
+      ios?: Partial<IOSActionItemSettings>;
+      onIconChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onTap?: (e: SyntheticEvent<EventData>) => void;
+      onTextChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      onVisibilityChange?: (e: SyntheticEvent<PropertyChangeData>) => void;
+      text?: string;
+      visibility?: string;
+    }
+  >
 >;
 
 export type NavigationButtonAttributes = PartialSlot<WithStandardElementAttributes<ActionItemAttributes & {}>>;

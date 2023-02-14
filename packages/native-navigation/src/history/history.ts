@@ -1,4 +1,4 @@
-import { Frame, Page, type NavigatedData, isAndroid, AndroidApplication } from '@nativescript/core';
+import { Frame, Page, isAndroid, AndroidApplication } from '@nativescript/core';
 
 import { normalizePathname } from '../utils';
 import { type NavigationOptions } from '../navigation-container';
@@ -9,7 +9,6 @@ class NavigationHistory {
   private subscribers: Set<HistorySubscriber> = new Set();
   private frame: Frame;
   private page: Page;
-  private fromUserEvent = false;
   private params: Record<string, Record<string, ParamsMap>> = {};
   public dispose: () => void = null;
 
@@ -31,20 +30,10 @@ class NavigationHistory {
         AndroidApplication.off(AndroidApplication.activityBackPressedEvent, handleBack);
       };
     } else {
-      const handleBack = (e: NavigatedData) => {
-        if (this.fromUserEvent) {
-          this.fromUserEvent = false;
-          return;
-        }
-        e.isBackNavigation && this.back(false);
-      };
-
-      this.page.on(NAVIGATED_FROM_EVENT, handleBack);
       this.dispose = () => {
         this.subscribers.clear();
         this.stack = [];
         this.cursor = -1;
-        this.page.off(NAVIGATED_FROM_EVENT, handleBack);
       };
     }
   }
@@ -126,7 +115,6 @@ class NavigationHistory {
     const pathname = this.stack.pop();
     const cursor = this.cursor;
 
-    this.fromUserEvent = sync;
     this.cursor -= 1;
 
     if (this.params[pathname]) {
@@ -153,8 +141,6 @@ export enum HistoryAction {
 export type ParamsMap = Map<string, string | number>;
 
 export type ParamsObject = Record<string, number | string>;
-
-const NAVIGATED_FROM_EVENT = 'navigatedFrom';
 
 const createNavigationHistory = (root: string, frame: Frame, page: Page) => new NavigationHistory(root, frame, page);
 

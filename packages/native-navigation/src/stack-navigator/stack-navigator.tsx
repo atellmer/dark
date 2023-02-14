@@ -70,13 +70,17 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 
         setTimeout(() => {
           animation.play().then(() => {
-            targetFrom.opacity = 1;
+            targetFrom.opacity = 0;
             targetFrom.translateX = 0;
             targetFrom.hidden = true;
 
             targetTo.opacity = 1;
             targetTo.translateX = 0;
             targetTo.hidden = false;
+
+            setTimeout(() => {
+              targetFrom.opacity = 1;
+            });
           });
         });
       }, [transition]);

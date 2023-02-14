@@ -1,8 +1,7 @@
-import { type Frame, type Page, CoreTypes, isAndroid } from '@nativescript/core';
+import { type Frame, type Page, CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
   h,
-  Fragment,
   createComponent,
   forwardRef,
   useRef,
@@ -32,13 +31,18 @@ import { normalizePathname } from '../utils';
 type NavigationContainerProps = {
   slot: DarkElement;
   defaultPathname: string;
-  renderActionBar?: (pathname: string) => DarkElement;
+  renderActionBar?: (options: RenderActionOptions) => DarkElement;
   onNavigate?: (pathname: string) => void;
 };
 
 export type NavigationContainerRef = {
   navigateTo: Push;
   goBack: Back;
+};
+
+export type RenderActionOptions = {
+  pathname: string;
+  goBack: () => void;
 };
 
 const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
@@ -142,41 +146,17 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
 
       const hasActionBar = detectIsFunction(renderActionBar);
 
-      const renderAndroid = () => {
-        return (
-          <>
-            <frame>
-              <page actionBarHidden={!hasActionBar}>
-                {hasActionBar && renderActionBar(pathname)}
-                {slot}
-              </page>
-            </frame>
-            <frame ref={frameRef} hidden>
-              <page ref={pageRef} actionBarHidden />
-            </frame>
-          </>
-        );
-      };
-
-      const renderIOS = () => {
-        return (
-          <frame>
-            <page actionBarHidden={!hasActionBar}>
-              {hasActionBar && renderActionBar(pathname)}
-              <stack-layout>
-                <frame ref={frameRef} hidden>
-                  <page ref={pageRef} actionBarHidden />
-                </frame>
-                {slot}
-              </stack-layout>
-            </page>
-          </frame>
-        );
-      };
-
       return (
         <NavigationContext.Provider value={contextValue}>
-          {isAndroid ? renderAndroid() : renderIOS()}
+          <frame>
+            <page actionBarHidden={!hasActionBar}>
+              {hasActionBar && renderActionBar({ pathname, goBack: back })}
+              {slot}
+            </page>
+          </frame>
+          <frame ref={frameRef} hidden>
+            <page ref={pageRef} actionBarHidden />
+          </frame>
         </NavigationContext.Provider>
       );
     },
