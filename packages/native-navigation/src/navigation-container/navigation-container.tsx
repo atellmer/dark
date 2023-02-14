@@ -31,7 +31,7 @@ import { normalizePathname } from '../utils';
 type NavigationContainerProps = {
   slot: DarkElement;
   defaultPathname: string;
-  renderActionBar?: (options: RenderActionOptions) => DarkElement;
+  renderActionBar?: (options: RenderActionBarOptions) => DarkElement;
   onNavigate?: (pathname: string) => void;
 };
 
@@ -40,7 +40,7 @@ export type NavigationContainerRef = {
   goBack: Back;
 };
 
-export type RenderActionOptions = {
+export type RenderActionBarOptions = {
   pathname: string;
   goBack: () => void;
 };

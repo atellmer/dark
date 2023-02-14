@@ -1,5 +1,5 @@
 export { TransitionName } from './constants';
-export { type NavigationOptions, NavigationContainer } from './navigation-container';
+export { type NavigationOptions, type RenderActionBarOptions, NavigationContainer } from './navigation-container';
 export * from './stack-navigator';
 export * from './tab-navigator';
 export * from './use-navigation';
