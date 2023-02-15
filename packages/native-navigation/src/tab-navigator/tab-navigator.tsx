@@ -153,6 +153,18 @@ type TabNavigatorContextValue = {
   tabColor: string;
 };
 
+type BottomNavigationOptions = {
+  height: number;
+  borderRadius: number;
+  shift: number;
+  compensate: number;
+  backgroundColor: string;
+  opacity: number;
+  padding: number;
+  activeTabColor: string;
+  tabColor: string;
+};
+
 const TabNavigatorContext = createContext<TabNavigatorContextValue>(null);
 
 function useTabNavigatorContext() {
@@ -164,18 +176,6 @@ function useTabNavigatorContext() {
 const TabNavigator = {
   Root: memo(Navigator),
   Screen,
-};
-
-type BottomNavigationOptions = {
-  height: number;
-  borderRadius: number;
-  shift: number;
-  compensate: number;
-  backgroundColor: string;
-  opacity: number;
-  padding: number;
-  activeTabColor: string;
-  tabColor: string;
 };
 
 export { TabNavigator };

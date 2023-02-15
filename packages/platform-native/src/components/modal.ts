@@ -35,6 +35,7 @@ const Modal = createComponent<ModalProps>(
 
     return Button({
       ref: rootRef,
+      key: isOpen ? 1 : 2,
       hidden: true,
       slot: View({ ref: childRef, slot }),
     });
