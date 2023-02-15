@@ -53,6 +53,7 @@ const App = createComponent(() => {
   );
 });
 ```
+
 ## Navigation via `TabNavigator`
 
 The `TabNavigator` is a wrapper around the `StackNavigator` that displays tab buttons at the bottom to control screens. Using the `StackNavigator` wrapping approach, you can also implement a navigation strategy through a Drawer or Modal.
@@ -75,6 +76,8 @@ const App = createComponent(() => {
   );
 });
 ```
+
+You can customize Tabs view through passing `bottomNavigationOptions` to `TabNavigator.Root` and `renderTab` to `TabNavigator.Screen` to render tabs with icons.
 
 ## Navigating to screen
 
