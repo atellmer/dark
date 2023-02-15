@@ -1,11 +1,11 @@
-import { type PropertyChangeData } from '@nativescript/core';
+import { type AbsoluteLayout, type StackLayout, AccessibilityRole } from '@nativescript/core';
 import {
+  type DarkElement,
   type ComponentFactory,
   type StandardComponentProps,
   h,
   createComponent,
   createContext,
-  useState,
   useUpdate,
   useMemo,
   useEvent,
@@ -14,46 +14,69 @@ import {
   useContext,
   memo,
 } from '@dark-engine/core';
-import { type SyntheticEvent } from '@dark-engine/platform-native';
 
-import { StackNavigator, type StackNavigatorRef, type StackScreenProps } from '../stack-navigator';
+import {
+  type StackNavigatorRef,
+  type StackScreenProps,
+  StackNavigator,
+  useScreenNavigatorContext,
+} from '../stack-navigator';
 import { useNavigationContext } from '../navigation-container';
+import { createPathname, detectIsMatch } from '../utils';
 
 type TabNavigatorProps = {
+  bottomNavigationOptions?: Partial<BottomNavigationOptions>;
   slot: Array<ComponentFactory<TabScreenProps & StandardComponentProps>>;
 };
 
 const Navigator = createComponent<TabNavigatorProps>(
-  ({ slot }) => {
-    const { push } = useNavigationContext();
+  ({ bottomNavigationOptions, slot }) => {
     const navRef = useRef<StackNavigatorRef>(null);
-    const [idx, setIdx] = useState(0);
+    const layoutRef = useRef<AbsoluteLayout>(null);
+    const bottomRef = useRef<StackLayout>(null);
     const update = useUpdate();
-    const contextValue = useMemo<TabNavigatorContextValue>(() => ({ descriptorsMap: {} }), []);
+    const {
+      height = 64,
+      borderRadius = 10,
+      shift = 4,
+      compensate = 0,
+      backgroundColor = '#000a12',
+      opacity = 1,
+      padding = 8,
+      activeTabColor = '#e91e63',
+      tabColor = '#fff',
+    } = bottomNavigationOptions || {};
+    const contextValue = useMemo<TabNavigatorContextValue>(
+      () => ({ descriptorsMap: {}, count: slot.length, activeTabColor, tabColor }),
+      [],
+    );
     const { descriptorsMap } = contextValue;
 
     useLayoutEffect(() => update(), []);
 
-    const handleIdxChange = useEvent((e: SyntheticEvent<PropertyChangeData>) => {
-      const nextIdx = Number(e.sourceEvent.value);
+    const handleLayoutChange = useEvent(() => {
+      const bottomNavigation = bottomRef.current;
+      const size = layoutRef.current.getActualSize();
 
-      if (nextIdx !== idx) {
-        const pathname = navRef.current.getPathnameByIdx(nextIdx);
-
-        push(pathname, { animated: true });
-      }
+      setTimeout(() => {
+        bottomNavigation.top = size.height - height - (shift + compensate);
+        bottomNavigation.left = shift;
+        bottomNavigation.width = size.width - 2 * shift;
+        bottomNavigation.height = height;
+        bottomNavigation.borderRadius = borderRadius;
+      });
     });
 
-    const handleNavigate = useEvent((_, idx: number) => setIdx(idx));
+    const handleTap = useEvent(() => {});
 
     const descriptorKeys = Object.keys(descriptorsMap);
 
     return (
       <TabNavigatorContext.Provider value={contextValue}>
-        <grid-layout columns='*' rows='auto, *'>
-          <stack-layout col={1} row={1} marginBottom={50}>
+        <absolute-layout ref={layoutRef} onLayoutChanged={handleLayoutChange}>
+          <stack-layout width='100%' height='100%'>
             {descriptorKeys.length > 0 && (
-              <StackNavigator.Root ref={navRef} onNavigate={handleNavigate}>
+              <StackNavigator.Root ref={navRef}>
                 {descriptorKeys.map(key => {
                   const { component, slot } = descriptorsMap[key];
 
@@ -66,15 +89,18 @@ const Navigator = createComponent<TabNavigatorProps>(
               </StackNavigator.Root>
             )}
           </stack-layout>
-          <tab-view
-            col={1}
-            row={2}
-            androidTabsPosition='bottom'
-            selectedIndex={idx}
-            onSelectedIndexChange={handleIdxChange}>
+          <flexbox-layout
+            ref={bottomRef}
+            backgroundColor={backgroundColor}
+            opacity={opacity}
+            justifyContent='space-between'
+            alignItems='center'
+            paddingLeft={padding}
+            paddingRight={padding}
+            onTap={handleTap}>
             {slot}
-          </tab-view>
-        </grid-layout>
+          </flexbox-layout>
+        </absolute-layout>
       </TabNavigatorContext.Provider>
     );
   },
@@ -82,32 +108,49 @@ const Navigator = createComponent<TabNavigatorProps>(
 );
 
 type TabScreenProps = {
-  title?: string;
-  iconSource?: string;
-  class?: string;
+  renderTab?: (name: string, isActive: boolean) => DarkElement;
 } & StackScreenProps;
 
 const Screen = createComponent<TabScreenProps>(
-  ({ name, component, title, iconSource, class: className, slot }) => {
-    const value = useTabNavigatorContext();
+  ({ name, component, renderTab, slot }) => {
+    const { push, pathname: currentPathname } = useNavigationContext();
+    const { descriptorsMap, count, activeTabColor, tabColor } = useTabNavigatorContext();
+    const { prefix } = useScreenNavigatorContext();
+    const pathname = createPathname(name, prefix);
+    const isActive = detectIsMatch(currentPathname, pathname);
+    const width = 100 / count;
 
-    value.descriptorsMap[name] = {
-      name,
-      component,
-      slot,
-    };
+    const handleTap = useEvent(() => push(pathname, { animated: true }));
+
+    descriptorsMap[name] = { name, component, slot };
 
     return (
-      <tab-view-item title={title || name} iconSource={iconSource} class={className} canBeLoaded>
-        <label text='' />
-      </tab-view-item>
+      <stack-layout accessibilityRole={AccessibilityRole.Button} width={`${width}%`} onTap={handleTap}>
+        <flexbox-layout
+          flexDirection='column'
+          justifyContent='center'
+          alignItems='center'
+          color={isActive ? activeTabColor : tabColor}>
+          {renderTab(name, isActive)}
+        </flexbox-layout>
+      </stack-layout>
     );
   },
-  { displayName: 'TabNavigator.Screen' },
+  {
+    displayName: 'TabNavigator.Screen',
+    defaultProps: {
+      renderTab: name => <label>{name}</label>,
+    },
+  },
 );
 
+type TabDescriptor = Omit<TabScreenProps, 'renderTab'>;
+
 type TabNavigatorContextValue = {
-  descriptorsMap: Record<string, TabScreenProps>;
+  descriptorsMap: Record<string, TabDescriptor>;
+  count: number;
+  activeTabColor: string;
+  tabColor: string;
 };
 
 const TabNavigatorContext = createContext<TabNavigatorContextValue>(null);
@@ -121,6 +164,18 @@ function useTabNavigatorContext() {
 const TabNavigator = {
   Root: memo(Navigator),
   Screen,
+};
+
+type BottomNavigationOptions = {
+  height: number;
+  borderRadius: number;
+  shift: number;
+  compensate: number;
+  backgroundColor: string;
+  opacity: number;
+  padding: number;
+  activeTabColor: string;
+  tabColor: string;
 };
 
 export { TabNavigator };

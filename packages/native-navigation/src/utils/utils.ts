@@ -21,7 +21,7 @@ function getSegments(pathname: string, prefix: string) {
 }
 
 function getMatchedIdx(pathnames: Array<string>, pathname: string) {
-  return pathnames.findIndex(x => pathname.indexOf(x) !== -1);
+  return pathnames.findIndex(x => detectIsMatch(pathname, x));
 }
 
 function detectIsVisited(map: Record<string, boolean>, pathname: string) {
@@ -29,10 +29,16 @@ function detectIsVisited(map: Record<string, boolean>, pathname: string) {
     const source = key.length >= pathname.length ? key : pathname;
     const target = key.length < pathname.length ? key : pathname;
 
-    if (source.indexOf(target) !== -1) return true;
+    if (detectIsMatch(source, target)) return true;
   }
 
   return false;
 }
 
-export { createPathname, normalizePathname, prependSlash, getSegments, getMatchedIdx, detectIsVisited };
+function detectIsMatch(currentPathname: string, pathname: string) {
+  const isMatch = currentPathname.indexOf(pathname) !== -1;
+
+  return isMatch;
+}
+
+export { createPathname, normalizePathname, prependSlash, getSegments, getMatchedIdx, detectIsVisited, detectIsMatch };
