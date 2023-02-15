@@ -197,20 +197,20 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@dark-engine/core@0.18.0":
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/@dark-engine/core/-/core-0.18.0.tgz#2468a43fb538ae1c63a93d6c50f45d24d12cb637"
-  integrity sha512-ZKh5astPY9WusD6EO56wuddSWdAxnmFH4Gz47Iit5XoUQPrj/Vxh5iE/auJ3iNcQIwYxkKppSeRffpfvAOZFZA==
+"@dark-engine/core@0.18.2":
+  version "0.18.2"
+  resolved "https://registry.yarnpkg.com/@dark-engine/core/-/core-0.18.2.tgz#bae38166bb014dc41e023053e2d892a8d169877a"
+  integrity sha512-WtT/n1BGIL+JDxC0tiPabDMX4tFyEGLWAdEDiYi/P1QpBIOhHFn0Wf5WLCBxG9PchUsV0zuGCOWojb+J8gFLXg==
 
-"@dark-engine/native-navigation@0.18.0":
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/@dark-engine/native-navigation/-/native-navigation-0.18.0.tgz#4158f532fe5648439f0d8b6b65e018a64db8ce29"
-  integrity sha512-FGoCVrVP9AVc0RS/Obiz11XKGAeqItbcIvFYTfcmYeSZA71xWIIiLlcDoKOQuvalYvMXl7Avb4SLxz5ovA0Tbw==
+"@dark-engine/native-navigation@0.18.2":
+  version "0.18.2"
+  resolved "https://registry.yarnpkg.com/@dark-engine/native-navigation/-/native-navigation-0.18.2.tgz#929a9f83ef8ef0d6cd57d34c9cc40d4e80e32e68"
+  integrity sha512-GYVZfSXZQvbOjGf+XcHQXrEzwsdFCcrrW8YrSo4c6lhte7c4WbmIhytfWqGmt/tOaJoCJlO/m4qB3+1pcrDliw==
 
-"@dark-engine/platform-native@0.18.0":
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/@dark-engine/platform-native/-/platform-native-0.18.0.tgz#aa8816272aa35f267047b8f7c5ef10599eb98bc5"
-  integrity sha512-dBYKe8Q9uqyLbhAUPX7jZAlP+esw57JjRTwxI5ILICmJNmfQJbaOSDyXkyXz+tTAh9HQfhZA7Evy/SrRgvcrBw==
+"@dark-engine/platform-native@0.18.2":
+  version "0.18.2"
+  resolved "https://registry.yarnpkg.com/@dark-engine/platform-native/-/platform-native-0.18.2.tgz#b8ffc00c27e3eb23ff0d68b0f3a697648a19eb2d"
+  integrity sha512-bOEZDzXbS81Ayokg89TdTTJqu3An3pE+NO+Qwd1Qq7Ya1F/a8Pv8il4Dp/jGX3unInyotnmTRy2/7zlmgSDq/A==
 
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
@@ -1348,7 +1348,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-big-integer@1.6.x, big-integer@^1.6.44, big-integer@^1.6.7:
+big-integer@1.6.x, big-integer@^1.6.7:
   version "1.6.51"
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
   integrity sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==
@@ -1392,12 +1392,11 @@ bplist-creator@0.1.0:
   dependencies:
     stream-buffers "2.2.x"
 
-bplist-parser@0.2.0:
+bplist-parser@0.2.0, "bplist-parser@https://github.com/telerik/node-bplist-parser/tarball/master":
   version "0.2.0"
-  resolved "https://registry.yarnpkg.com/bplist-parser/-/bplist-parser-0.2.0.tgz#43a9d183e5bf9d545200ceac3e712f79ebbe8d0e"
-  integrity sha512-z0M+byMThzQmD9NILRniCUXYsYpjwnlO8N5uCFaCqIOpqRsJCrQL9NK3JsD67CN5a08nF5oIL2bD6loTdHOuKw==
+  resolved "https://github.com/telerik/node-bplist-parser/tarball/master#5fb055968d4aaad9068bea64332151898287b456"
   dependencies:
-    big-integer "^1.6.44"
+    big-integer "^1.6.7"
 
 bplist-parser@0.3.1:
   version "0.3.1"
@@ -1405,12 +1404,6 @@ bplist-parser@0.3.1:
   integrity sha512-PyJxiNtA5T2PlLIeBot4lbp7rj4OadzjnMZD/G5zuBNt8ei/yCU7+wW0h2bag9vr8c+/WuRWmSxbqAl9hL1rBA==
   dependencies:
     big-integer "1.6.x"
-
-"bplist-parser@https://github.com/telerik/node-bplist-parser/tarball/master":
-  version "0.2.0"
-  resolved "https://github.com/telerik/node-bplist-parser/tarball/master#5fb055968d4aaad9068bea64332151898287b456"
-  dependencies:
-    big-integer "^1.6.7"
 
 brace-expansion@^1.1.7:
   version "1.1.11"

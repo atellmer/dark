@@ -11,9 +11,9 @@
     "clean": "npx ns clean"
   },
   "dependencies": {
-    "@dark-engine/core": "0.18.0",
-    "@dark-engine/platform-native": "0.18.0",
-    "@dark-engine/native-navigation": "0.18.0",
+    "@dark-engine/core": "0.18.2",
+    "@dark-engine/platform-native": "0.18.2",
+    "@dark-engine/native-navigation": "0.18.2",
     "@nativescript/core": "~8.4.5",
     "@nativescript/theme": "~3.0.2",
     "@nstudio/nativescript-carousel": "^8.0.3"

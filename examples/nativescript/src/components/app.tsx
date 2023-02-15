@@ -1,6 +1,20 @@
-import { h, createComponent } from '@dark-engine/core';
-import { ListView, ActionBar, Modal } from '@dark-engine/platform-native';
-import { NavigationContainer, useNavigation, StackNavigator, TabNavigator } from '@dark-engine/native-navigation';
+import { isAndroid } from '@nativescript/core';
+import { h, Fragment, createComponent } from '@dark-engine/core';
+import {
+  ListView,
+  ActionBar,
+  Modal,
+  NavigationButton,
+  ActionItem,
+  TouchableOpacity,
+} from '@dark-engine/platform-native';
+import {
+  type RenderActionBarOptions,
+  NavigationContainer,
+  useNavigation,
+  StackNavigator,
+  TabNavigator,
+} from '@dark-engine/native-navigation';
 
 const items = Array(1000)
   .fill(null)
@@ -27,11 +41,13 @@ const List = createComponent(() => {
       <ListView
         height='100%'
         items={items}
-        onItemTap={e => navigateTo(`${match.pathname}/Profile`, { id: e.sourceEvent.index })}>
+        onItemTap={e => {
+          navigateTo(`${match.pathname}/Profile`, { id: e.sourceEvent.index });
+        }}>
         {({ item, idx }) => {
           return (
-            <stack-layout backgroundColor={idx % 2 ? 'red' : 'yellow'}>
-              <label color={idx % 2 ? 'white' : 'black'}>item #{item}</label>
+            <stack-layout backgroundColor={idx % 2 ? '#f48fb1' : '#fff59d'}>
+              <label color='black'>item #{item}</label>
             </stack-layout>
           );
         }}
@@ -150,17 +166,54 @@ const ModalNavigator = createComponent(() => {
 });
 
 const App = createComponent(() => {
+  const renderAndroidActionBar = ({ pathname, goBack }: RenderActionBarOptions) => {
+    return (
+      <ActionBar title={pathname}>
+        <NavigationButton text='Go back' android={{ systemIcon: 'ic_menu_back' }} onTap={goBack}></NavigationButton>
+      </ActionBar>
+    );
+  };
+
+  const renderIOSActionBar = ({ pathname, goBack }: RenderActionBarOptions) => {
+    return (
+      <ActionBar title={pathname}>
+        <NavigationButton visibility='collapse' />
+        <ActionItem ios={{ position: 'left' } as any}>
+          <TouchableOpacity onPress={goBack}>
+            <flexbox-layout color='#fff' marginLeft={-12}>
+              <label text='&#xe875;' class='lnr' fontSize={20}></label>
+              <label fontSize={16}>back</label>
+            </flexbox-layout>
+          </TouchableOpacity>
+        </ActionItem>
+      </ActionBar>
+    );
+  };
+
+  const renderTab = (name: string) => {
+    const iconsMap = {
+      Home: () => <label class='lnr' text='&#xe800;' />,
+      Contacts: () => <label class='lnr' text='&#xe830;' />,
+      Settings: () => <label class='lnr' text='&#xe810;' />,
+    };
+
+    return (
+      <>
+        {iconsMap[name]()}
+        <label>{name}</label>
+      </>
+    );
+  };
+
   return (
     <NavigationContainer
       defaultPathname='/Home/List'
-      renderActionBar={pathname => {
-        return <ActionBar title={pathname} />;
-      }}>
+      renderActionBar={isAndroid ? renderAndroidActionBar : renderIOSActionBar}>
       <stack-layout>
-        <TabNavigator.Root>
-          <TabNavigator.Screen name='Home' title='&#xe800;' class='lnr' component={Home} />
-          <TabNavigator.Screen name='Contacts' title='&#xe830;' class='lnr' component={Contacts} />
-          <TabNavigator.Screen name='Settings' title='&#xe810;' class='lnr' component={Settings} />
+        <TabNavigator.Root bottomNavigationOptions={{ compensate: isAndroid ? 0 : 64 }}>
+          <TabNavigator.Screen name='Home' component={Home} renderTab={renderTab} />
+          <TabNavigator.Screen name='Contacts' component={Contacts} renderTab={renderTab} />
+          <TabNavigator.Screen name='Settings' component={Settings} renderTab={renderTab} />
         </TabNavigator.Root>
         <ModalNavigator />
       </stack-layout>
@@ -168,4 +221,4 @@ const App = createComponent(() => {
   );
 });
 
-export default App;
+export { App };
