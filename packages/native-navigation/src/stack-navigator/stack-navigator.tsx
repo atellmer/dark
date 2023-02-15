@@ -2,7 +2,7 @@ import {
   type AbsoluteLayout,
   type StackLayout,
   type AnimationDefinition,
-  Screen as DeviceScreen,
+  type Size,
   Animation,
   CoreTypes,
 } from '@nativescript/core';
@@ -26,7 +26,7 @@ import {
 } from '@dark-engine/core';
 
 import { SLASH, TransitionName } from '../constants';
-import { createPathname, getMatchedIdx, getSegments, detectIsVisited } from '../utils';
+import { createPathname, getSegments, detectIsVisited } from '../utils';
 import { useNavigationContext, type Transition } from '../navigation-container';
 import { type ParamsObject } from '../history';
 
@@ -34,12 +34,10 @@ const visitedMap: Record<string, boolean> = {};
 
 export type StackNavigatorProps = {
   slot: Array<ScreenComponent>;
-  onNavigate?: (pathname: string, idx: number) => void;
+  onNavigate?: (pathname: string) => void;
 };
 
-export type StackNavigatorRef = {
-  getPathnameByIdx: (idx: number) => string;
-};
+export type StackNavigatorRef = {};
 
 const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
   createComponent(
@@ -65,7 +63,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         if (!canStartTransition || !transition.options.animated) return;
         const targetFrom = matchRef(scope.refsMap, transition.from);
         const targetTo = matchRef(scope.refsMap, transition.to);
-        const size = getMeasuredSizeInDPI(rootRef.current);
+        const size = rootRef.current.getActualSize();
         const animation = createAnimation({ targetFrom, targetTo, transition, size });
 
         setTimeout(() => {
@@ -86,13 +84,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       }, [transition]);
 
       useEffect(() => {
-        const syncNavigation = (pathname: string) => {
-          if (detectIsFunction(onNavigate)) {
-            const idx = getMatchedIdx(pathnames, pathname);
-
-            onNavigate(pathname, idx);
-          }
-        };
+        const syncNavigation = (pathname: string) => detectIsFunction(onNavigate) && onNavigate(pathname);
 
         syncNavigation(pathname);
 
@@ -101,9 +93,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
         return () => unsubscribe();
       }, []);
 
-      useImperativeHandle(ref, () => ({
-        getPathnameByIdx: (idx: number) => pathnames[idx],
-      }));
+      useImperativeHandle(ref, () => ({}));
 
       return (
         <absolute-layout ref={rootRef} width={FULL} height={FULL}>
@@ -166,11 +156,6 @@ const StackNavigator = {
 
 type Scope = {
   refsMap: Record<string, SyntheticStackLayout>;
-};
-
-type Size = {
-  width: number;
-  height: number;
 };
 
 type ScreenNavigatorContextValue = {
@@ -368,18 +353,10 @@ function matchRef(refsMap: Record<string, SyntheticStackLayout>, pathname: strin
   return null;
 }
 
-function getMeasuredSizeInDPI(view: AbsoluteLayout): Size {
-  return {
-    width: view.getMeasuredWidth() / SCALE_FACTOR,
-    height: view.getMeasuredHeight() / SCALE_FACTOR,
-  };
-}
-
 type SyntheticStackLayout = {
   hidden?: boolean;
 } & StackLayout;
 
-const SCALE_FACTOR = DeviceScreen.mainScreen.scale;
 const FULL = '100%';
 
 export { StackNavigator, useScreenNavigatorContext };
