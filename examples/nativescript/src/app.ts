@@ -1,7 +1,7 @@
 /// <reference path="../references.d.ts" />
 import { run } from '@dark-engine/platform-native';
 
-import App from './components/app';
+import { App } from './components/app';
 
 // In NativeScript, the app.ts file is the entry point to your application. You
 // can use this file to perform app-level initialization, but the primary
