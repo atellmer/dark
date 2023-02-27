@@ -1,7 +1,8 @@
 /** @jsx h */
-import { createTestHostNode, createReplacerString } from '@test-utils';
 import { h, createComponent } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
+
+import { createTestHostNode, createReplacerString } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { useHistory } from '../use-history';

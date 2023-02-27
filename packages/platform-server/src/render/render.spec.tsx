@@ -1,5 +1,4 @@
 /** @jsx h */
-import { dom, createReplacerString } from '@test-utils';
 import {
   h,
   Fragment,
@@ -11,6 +10,8 @@ import {
   useLayoutEffect,
   useEffect,
 } from '@dark-engine/core';
+
+import { dom, createReplacerString } from '@test-utils';
 import { renderToString } from './render';
 
 jest.useFakeTimers();

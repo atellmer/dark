@@ -1,6 +1,7 @@
 /** @jsx h */
-import { Routes } from './types';
 import { createComponent } from '@dark-engine/core';
+
+import { Routes } from './types';
 import { createRoutes, resolve } from './create-routes';
 import { ROOT } from '../constants';
 

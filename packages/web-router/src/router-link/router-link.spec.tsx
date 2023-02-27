@@ -1,7 +1,8 @@
 /** @jsx h */
-import { createTestHostNode, createReplacerString, click, dom } from '@test-utils';
 import { h, Fragment, createComponent } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
+
+import { createTestHostNode, createReplacerString, click, dom } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { RouterLink } from './router-link';
