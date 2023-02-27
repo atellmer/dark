@@ -68,7 +68,7 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
 
           setPathname(pathname);
           !isReplace && scheduleTransition(pathname, isBack, options);
-          detectIsFunction(onNavigate) && detectIsFunction(pathname);
+          detectIsFunction(onNavigate) && onNavigate(pathname);
         });
 
         scope.history = history;
