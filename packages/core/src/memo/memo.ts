@@ -5,7 +5,6 @@ import {
   createComponent,
   detectIsComponent,
 } from '../component';
-import { forwardRef } from '../ref';
 import type { SlotProps, RefProps } from '../shared';
 
 const $$memo = Symbol('memo');
@@ -29,19 +28,11 @@ function memo<P, R = unknown>(
   shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
 ) {
   type Props = P & Omit<StandardComponentProps, 'ref'> & RefProps<R>;
-  const component$ = forwardRef(
-    createComponent<Props, R>(
-      (props, ref) => {
-        ref && (props.ref = ref);
-
-        return component(props);
-      },
-      {
-        token: $$memo,
-        shouldUpdate,
-      },
-    ),
-  );
+  const component$ = createComponent<Props, R>(props => component(props), {
+    token: $$memo,
+    keepRef: true,
+    shouldUpdate,
+  });
 
   return component$ as ComponentFactory<Props, R>;
 }

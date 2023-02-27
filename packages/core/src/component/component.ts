@@ -1,5 +1,5 @@
-import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
+import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
@@ -9,6 +9,7 @@ const defaultOptions: ComponentOptions<any> = {
   displayName: '',
   defaultProps: {},
   token: $$component,
+  keepRef: false,
 };
 class Component<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
@@ -38,11 +39,11 @@ class Component<P extends StandardComponentProps = any, R = any> {
 
 function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
   const computedOptions = { ...defaultOptions, ...options } as ComponentOptions<P>;
-  const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
+  const { token, defaultProps, displayName, shouldUpdate, keepRef } = computedOptions;
   const component = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
     const mprops = { ...defaultProps, ...props };
 
-    if (mprops.ref) {
+    if (!keepRef && mprops.ref) {
       delete mprops.ref;
 
       if (process.env.NODE_ENV === 'development') {
@@ -58,9 +59,9 @@ function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: Com
 
 const detectIsComponent = (instance: unknown): instance is Component => instance instanceof Component;
 
-const getComponentKey = (factory: Component): DarkElementKey =>
-  !detectIsEmpty(factory.props[ATTR_KEY]) ? factory.props[ATTR_KEY] : null;
+const getComponentKey = (instance: Component): DarkElementKey =>
+  !detectIsEmpty(instance.props[ATTR_KEY]) ? instance.props[ATTR_KEY] : null;
 
-const getComponentFlag = (factory: Component): Record<Flag, boolean> | null => factory.props[ATTR_FLAG] || null;
+const getComponentFlag = (instance: Component): Record<Flag, boolean> | null => instance.props[ATTR_FLAG] || null;
 
 export { Component, createComponent, detectIsComponent, getComponentKey, getComponentFlag };
