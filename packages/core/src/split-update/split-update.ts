@@ -1,5 +1,5 @@
 import type { DarkElementKey, DarkElement, Subscribe, SubscriberWithValue } from '../shared';
-import { createComponent, type ComponentFactory, type StandardComponentProps } from '../component';
+import { createComponent, type Component, type StandardComponentProps } from '../component';
 import { type Ref } from '../ref';
 import { createContext, useContext } from '../context';
 import { useUpdate } from '../use-update';
@@ -109,6 +109,6 @@ type SplitUpdateContextValue<T = any> = {
 
 type MergedProps<T> = SplitUpdateProps<T> & StandardComponentProps;
 
-type SplitUpdate = <T>(props?: MergedProps<T>, ref?: Ref) => ComponentFactory<MergedProps<T>>;
+type SplitUpdate = <T>(props?: MergedProps<T>, ref?: Ref) => Component<MergedProps<T>>;
 
 export { SplitUpdate, useSplitUpdate };

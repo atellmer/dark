@@ -3,7 +3,6 @@ import {
   h,
   createComponent,
   Fragment,
-  Component,
   View,
   useMemo,
   useEffect,
@@ -11,6 +10,7 @@ import {
   useState,
   type DarkElement,
   type Ref,
+  type Component,
   type ComponentFactory,
   type TagVirtualNodeFactory,
 } from '@dark-engine/core';
@@ -28,7 +28,7 @@ function injectStyle(className: string, css: string) {
   return () => document.head.removeChild(styleElement);
 }
 
-function createStyledComponent<P>(tag: Component | ((props: P) => TagVirtualNodeFactory)) {
+function createStyledComponent<P>(tag: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
   return (literals: TemplateStringsArray, ...args: Array<(p: P) => string | false>) => {
     const staticArgs = args.filter(x => typeof x !== 'function');
     const dynamicArgs = args.filter(x => typeof x === 'function');
@@ -67,11 +67,11 @@ function createStyledComponent<P>(tag: Component | ((props: P) => TagVirtualNode
 
     type UnionProps = P & { slot?: DarkElement; ref?: Ref<HTMLElement> };
 
-    return StyledComponent as unknown as (props?: UnionProps, ref?: Ref<any>) => ComponentFactory<P, Ref<any>>;
+    return StyledComponent as unknown as (props?: UnionProps, ref?: Ref<any>) => Component<P, Ref<any>>;
   };
 }
 
-function styled<P>(component: Component<P>) {
+function styled<P>(component: ComponentFactory<P>) {
   return createStyledComponent<P>(component);
 }
 

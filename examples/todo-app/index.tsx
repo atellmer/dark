@@ -21,8 +21,8 @@ type TextFieldProps = {
   onChange: (e: SyntheticEvent<InputEvent, HTMLInputElement>, value: string) => void;
 };
 
-const TextField = forwardRef(
-  createComponent<TextFieldProps, HTMLInputElement>((props, ref) => {
+const TextField = forwardRef<TextFieldProps, HTMLInputElement>(
+  createComponent((props, ref) => {
     const { value, fulllWidth, onEnter, onChange } = props;
 
     const handleChange = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => {

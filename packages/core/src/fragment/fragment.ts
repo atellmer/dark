@@ -1,4 +1,4 @@
-import { createComponent, detectIsComponentFactory } from '../component';
+import { createComponent, detectIsComponent } from '../component';
 import type { KeyProps, SlotProps } from '../shared';
 
 type FragmentProps = Required<SlotProps> & KeyProps;
@@ -9,6 +9,6 @@ const Fragment = createComponent<FragmentProps>(({ slot }) => slot || null, {
   token: $$fragment,
 });
 
-const detectIsFragment = (factory: unknown) => detectIsComponentFactory(factory) && factory.token === $$fragment;
+const detectIsFragment = (instance: unknown) => detectIsComponent(instance) && instance.token === $$fragment;
 
 export { Fragment, detectIsFragment };

@@ -2,7 +2,7 @@ import { ObservableArray, type ListView as NSListView, type ItemEventData, type 
 import {
   type DarkElement,
   type Ref,
-  type ComponentFactory,
+  type Component,
   type StandardComponentProps,
   createComponent,
   useRef,
@@ -268,6 +268,6 @@ type SlotOptions<T> = {
 
 type MergedProps<T> = ListViewProps<T> & StandardComponentProps;
 
-type ListView = <T>(props?: ListViewProps<T>, ref?: Ref) => ComponentFactory<MergedProps<T>>;
+type ListView = <T>(props?: ListViewProps<T>, ref?: Ref) => Component<MergedProps<T>>;
 
 export { ListView, getListViewItemIdx };

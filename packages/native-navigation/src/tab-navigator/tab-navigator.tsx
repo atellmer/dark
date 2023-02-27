@@ -1,7 +1,7 @@
 import { type AbsoluteLayout, type StackLayout, AccessibilityRole } from '@nativescript/core';
 import {
   type DarkElement,
-  type ComponentFactory,
+  type Component,
   type StandardComponentProps,
   h,
   createComponent,
@@ -26,7 +26,7 @@ import { createPathname, detectIsMatch } from '../utils';
 
 type TabNavigatorProps = {
   bottomNavigationOptions?: Partial<BottomNavigationOptions>;
-  slot: Array<ComponentFactory<TabScreenProps & StandardComponentProps>>;
+  slot: Array<Component<TabScreenProps & StandardComponentProps>>;
 };
 
 const Navigator = createComponent<TabNavigatorProps>(

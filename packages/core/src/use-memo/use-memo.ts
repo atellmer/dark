@@ -1,6 +1,6 @@
 import type { DarkElement, SlotProps } from '../shared';
 import { detectIsUndefined, detectIsArray, detectIsDepsDifferent } from '../helpers';
-import { detectIsComponentFactory, createComponent } from '../component';
+import { detectIsComponent, createComponent } from '../component';
 import { detectIsVirtualNodeFactory } from '../view';
 import { currentFiberStore } from '../scope';
 import { Fragment } from '../fragment';
@@ -11,7 +11,7 @@ type MemoProps = Required<SlotProps>;
 const Memo = createComponent<MemoProps>(({ slot }) => slot, { token: $$memo });
 
 function wrap<T>(value: T, isDepsDifferent: boolean) {
-  const check = (value: T) => detectIsVirtualNodeFactory(value) || detectIsComponentFactory(value);
+  const check = (value: T) => detectIsVirtualNodeFactory(value) || detectIsComponent(value);
 
   if (detectIsArray(value) ? check(value[0]) : check(value)) {
     const slot = value as unknown as DarkElement;

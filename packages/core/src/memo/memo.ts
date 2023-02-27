@@ -1,13 +1,12 @@
 import {
-  type Component,
   type ComponentFactory,
   type StandardComponentProps,
   type ShouldUpdate,
   createComponent,
-  detectIsComponentFactory,
+  detectIsComponent,
 } from '../component';
-import type { RefProps, SlotProps } from '../shared';
-import { type Ref, forwardRef } from '../ref';
+import { forwardRef } from '../ref';
+import type { SlotProps, RefProps } from '../shared';
 
 const $$memo = Symbol('memo');
 
@@ -23,22 +22,28 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   return false;
 };
 
-const detectIsMemo = (factory: unknown) => detectIsComponentFactory(factory) && factory.token === $$memo;
+const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;
 
-function memo<T>(
-  component: (props?: T, ref?: Ref) => ComponentFactory<T>,
-  shouldUpdate: ShouldUpdate<T & SlotProps> = defaultShouldUpdate,
-): Component<T & StandardComponentProps> {
-  return forwardRef(
-    createComponent(
-      (props: T & RefProps, ref) => {
+function memo<P, R = unknown>(
+  component: ComponentFactory<P, R>,
+  shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
+) {
+  type Props = P & Omit<StandardComponentProps, 'ref'> & RefProps<R>;
+  const component$ = forwardRef(
+    createComponent<Props, R>(
+      (props, ref) => {
         ref && (props.ref = ref);
 
         return component(props);
       },
-      { token: $$memo, shouldUpdate },
+      {
+        token: $$memo,
+        shouldUpdate,
+      },
     ),
   );
+
+  return component$ as ComponentFactory<Props, R>;
 }
 
 export { $$memo, memo, detectIsMemo };

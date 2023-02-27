@@ -4,7 +4,7 @@ import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { View, detectIsVirtualNode, VirtualNodeFactory } from '../view';
 import { useEffect } from '../use-effect';
-import { createComponent, detectIsComponentFactory, getComponentFactoryKey } from './component';
+import { createComponent, detectIsComponent, getComponentKey } from './component';
 
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -79,17 +79,17 @@ describe('[create-component]', () => {
     expect(Component().token).toBe(token);
   });
 
-  test('detectIsComponentFactory works correctly', () => {
+  test('detectIsComponent works correctly', () => {
     const Component = createComponent(() => null);
 
-    expect(detectIsComponentFactory(Component())).toBeTruthy();
+    expect(detectIsComponent(Component())).toBeTruthy();
   });
 
-  test('getComponentFactoryKey works correctly', () => {
+  test('getComponentKey works correctly', () => {
     const Component = createComponent(() => null);
     const key = 'somekey';
 
-    expect(getComponentFactoryKey(Component({ key }))).toBe(key);
+    expect(getComponentKey(Component({ key }))).toBe(key);
   });
 
   test('component unmounts when key changed', () => {

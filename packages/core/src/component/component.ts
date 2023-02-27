@@ -2,7 +2,7 @@ import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import type { DarkElementKey, DarkElementInstance } from '../shared';
 import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
-import type { CreateElement, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
+import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
 
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {
@@ -10,7 +10,7 @@ const defaultOptions: ComponentOptions<any> = {
   defaultProps: {},
   token: $$component,
 };
-class ComponentFactory<P extends StandardComponentProps = any, R = any> {
+class Component<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
   public token: Symbol;
   public props: P;
@@ -39,10 +39,7 @@ class ComponentFactory<P extends StandardComponentProps = any, R = any> {
 function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
   const computedOptions = { ...defaultOptions, ...options } as ComponentOptions<P>;
   const { token, defaultProps, displayName, shouldUpdate } = computedOptions;
-  const component = (
-    props = {} as P & StandardComponentProps,
-    ref?: Ref<R>,
-  ): ComponentFactory<P & StandardComponentProps> => {
+  const component = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
     const mprops = { ...defaultProps, ...props };
 
     if (mprops.ref) {
@@ -53,18 +50,17 @@ function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: Com
       }
     }
 
-    return new ComponentFactory(type, token, mprops, ref, shouldUpdate, displayName);
+    return new Component(type, token, mprops, ref, shouldUpdate, displayName);
   };
 
-  return component;
+  return component as ComponentFactory<P & StandardComponentProps, R>;
 }
 
-const detectIsComponentFactory = (factory: unknown): factory is ComponentFactory => factory instanceof ComponentFactory;
+const detectIsComponent = (instance: unknown): instance is Component => instance instanceof Component;
 
-const getComponentFactoryKey = (factory: ComponentFactory): DarkElementKey =>
+const getComponentKey = (factory: Component): DarkElementKey =>
   !detectIsEmpty(factory.props[ATTR_KEY]) ? factory.props[ATTR_KEY] : null;
 
-const getComponentFactoryFlag = (factory: ComponentFactory): Record<Flag, boolean> | null =>
-  factory.props[ATTR_FLAG] || null;
+const getComponentFlag = (factory: Component): Record<Flag, boolean> | null => factory.props[ATTR_FLAG] || null;
 
-export { ComponentFactory, createComponent, detectIsComponentFactory, getComponentFactoryKey, getComponentFactoryFlag };
+export { Component, createComponent, detectIsComponent, getComponentKey, getComponentFlag };

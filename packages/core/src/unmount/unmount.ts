@@ -1,6 +1,6 @@
 import { type Fiber } from '../fiber';
 import { platform } from '../platform';
-import { detectIsComponentFactory } from '../component';
+import { detectIsComponent } from '../component';
 import { dropEffects } from '../use-effect';
 import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
@@ -13,7 +13,7 @@ function unmountFiber(fiber: Fiber) {
 
   walkFiber(fiber, ({ nextFiber, isReturn, stop }) => {
     if (nextFiber === fiber.nextSibling) return stop();
-    if (!isReturn && detectIsComponentFactory(nextFiber.instance)) {
+    if (!isReturn && detectIsComponent(nextFiber.instance)) {
       // important order
       nextFiber.insertionEffectHost && dropInsertionEffects(nextFiber.hook);
       nextFiber.layoutEffectHost && dropLayoutEffects(nextFiber.hook);

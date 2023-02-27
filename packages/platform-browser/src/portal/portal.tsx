@@ -1,9 +1,9 @@
 import {
   type Fiber,
   type DarkElement,
-  type ComponentFactory,
+  type Component,
   createComponent,
-  detectIsComponentFactory,
+  detectIsComponent,
   useMemo,
 } from '@dark-engine/core';
 
@@ -33,8 +33,8 @@ const Portal = createComponent<PortalProps>(
   { token: $$portal },
 );
 
-const detectIsPortal = (factory: unknown): factory is ComponentFactory =>
-  detectIsComponentFactory(factory) && factory.token === $$portal;
+const detectIsPortal = (instance: unknown): instance is Component =>
+  detectIsComponent(instance) && instance.token === $$portal;
 
 const getPortalContainer = (factory: unknown): TagNativeElement | null =>
   detectIsPortal(factory) ? factory.props[$$portal] : null;

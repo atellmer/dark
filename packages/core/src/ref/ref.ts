@@ -3,13 +3,13 @@ import type { Component, ComponentFactory } from '../component';
 import type { RefProps } from '../shared';
 import type { MutableRef, Ref } from './types';
 
-function forwardRef<P, R>(component: Component<P, R>) {
-  type Props = P & RefProps<any>;
+function forwardRef<P, R>(component: ComponentFactory<P, R>): ComponentFactory<P & RefProps<R>, R> {
+  type Props = P & RefProps<R>;
 
   return (props: Props) => {
     const { ref, ...rest } = (props || {}) as Props;
 
-    return component(rest as P, ref) as ComponentFactory<P, R>;
+    return component(rest as P, ref) as Component<P, R>;
   };
 }
 

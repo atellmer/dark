@@ -27,12 +27,7 @@ import {
   isHydrateZone,
   hot,
 } from '../scope';
-import {
-  type ComponentFactory,
-  detectIsComponentFactory,
-  getComponentFactoryKey,
-  getComponentFactoryFlag,
-} from '../component';
+import { type Component, detectIsComponent, getComponentKey, getComponentFlag } from '../component';
 import {
   type TagVirtualNode,
   detectIsVirtualNode,
@@ -450,12 +445,12 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
     if (hot.get()) return;
   }
 
-  const prevFactory = alternate.instance as ComponentFactory;
-  const nextFactory = instance as ComponentFactory;
-  if (fiber.move || nextFactory.type !== prevFactory.type) return;
-  const prevProps = prevFactory.props;
-  const nextProps = nextFactory.props;
-  const skip = !nextFactory.shouldUpdate(prevProps, nextProps);
+  const prevComponent = alternate.instance as Component;
+  const nextComponent = instance as Component;
+  if (fiber.move || nextComponent.type !== prevComponent.type) return;
+  const prevProps = prevComponent.props;
+  const nextProps = nextComponent.props;
+  const skip = !nextComponent.shouldUpdate(prevProps, nextProps);
 
   if (skip) {
     fiberMountStore.deepWalking.set(false);
@@ -522,7 +517,7 @@ function pertformInstance(parentInstance: DarkElementInstance, idx: number, fibe
     instance = mountInstance(fiber, instance);
   }
 
-  if (detectIsComponentFactory(instance)) {
+  if (detectIsComponent(instance)) {
     if (hasEffects(fiber)) {
       fiber.markEffectHost();
     }
@@ -544,24 +539,24 @@ function pertformInstance(parentInstance: DarkElementInstance, idx: number, fibe
 }
 
 function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
-  const isComponentFactory = detectIsComponentFactory(instance);
-  const factory = instance as ComponentFactory;
+  const isComponent = detectIsComponent(instance);
+  const component = instance as Component;
 
-  if (isComponentFactory) {
+  if (isComponent) {
     try {
-      let result = factory.type(factory.props, factory.ref);
+      let result = component.type(component.props, component.ref);
 
-      if (detectIsArray(result) && !detectIsFragment(factory)) {
+      if (detectIsArray(result) && !detectIsFragment(component)) {
         result = Fragment({ slot: result });
       } else if (detectIsString(result) || detectIsNumber(result)) {
         result = Text(result);
       }
 
-      factory.children = detectIsArray(result)
+      component.children = detectIsArray(result)
         ? (flatten([result]) as Array<DarkElementInstance>)
         : ([result] as Array<DarkElementInstance>);
     } catch (err) {
-      factory.children = [];
+      component.children = [];
       fiber.setError(err);
       error(err);
     }
@@ -570,7 +565,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
   }
 
   if (hasChildrenProp(instance)) {
-    instance.children = isComponentFactory
+    instance.children = isComponent
       ? instance.children
       : detectIsArray(instance.children)
       ? flatten([instance.children])
@@ -581,8 +576,8 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       instance.children[i] = supportConditional(instance.children[i]);
     }
 
-    if (isComponentFactory && factory.children.length === 0) {
-      factory.children.push(createReplacer());
+    if (isComponent && component.children.length === 0) {
+      component.children.push(createReplacer());
     }
   }
 
@@ -644,8 +639,8 @@ function createIndexKey(idx: number) {
 }
 
 function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
-  const key = detectIsComponentFactory(instance)
-    ? getComponentFactoryKey(instance)
+  const key = detectIsComponent(instance)
+    ? getComponentKey(instance)
     : detectIsVirtualNodeFactory(instance)
     ? getVirtualNodeFactoryKey(instance)
     : detectIsTagVirtualNode(instance)
@@ -656,8 +651,8 @@ function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
 }
 
 function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | null {
-  const flag = detectIsComponentFactory(instance)
-    ? getComponentFactoryFlag(instance)
+  const flag = detectIsComponent(instance)
+    ? getComponentFlag(instance)
     : detectIsVirtualNodeFactory(instance)
     ? getVirtualNodeFactoryFlag(instance)
     : detectIsTagVirtualNode(instance)
@@ -678,28 +673,28 @@ function getInstanceType(instance: DarkElementInstance): string | Function {
     ? instance.name
     : detectIsVirtualNode(instance)
     ? instance.type
-    : detectIsComponentFactory(instance)
+    : detectIsComponent(instance)
     ? instance.type
     : null;
 }
 
-function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | ComponentFactory {
-  return detectIsTagVirtualNode(element) || detectIsComponentFactory(element);
+function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | Component {
+  return detectIsTagVirtualNode(element) || detectIsComponent(element);
 }
 
-function detectIsSameComponentFactoryTypesWithSameKeys(
+function detectIsSameComponentTypesWithSameKeys(
   prevInstance: DarkElementInstance | null,
   nextInstance: DarkElementInstance | null,
 ) {
   if (
     prevInstance &&
     nextInstance &&
-    detectIsComponentFactory(prevInstance) &&
-    detectIsComponentFactory(nextInstance) &&
+    detectIsComponent(prevInstance) &&
+    detectIsComponent(nextInstance) &&
     detectIsSameInstanceTypes(prevInstance, nextInstance, true)
   ) {
-    const prevKey = prevInstance ? getElementKey(prevInstance) : null;
-    const nextKey = nextInstance ? getElementKey(nextInstance) : null;
+    const prevKey = getElementKey(prevInstance);
+    const nextKey = getElementKey(nextInstance);
 
     return prevKey === nextKey;
   }
@@ -714,17 +709,17 @@ function detectIsSameInstanceTypes(
 ) {
   if (process.env.NODE_ENV === 'development') {
     if (hot.get()) {
-      if (detectIsComponentFactory(prevInstance) && detectIsComponentFactory(nextInstance)) {
+      if (detectIsComponent(prevInstance) && detectIsComponent(nextInstance)) {
         return prevInstance.displayName === nextInstance.displayName;
       }
     }
   }
 
   if (isComponentFactories) {
-    const prevFactory = prevInstance as ComponentFactory;
-    const nextFactory = nextInstance as ComponentFactory;
+    const prevComponent = prevInstance as Component;
+    const nextComponent = nextInstance as Component;
 
-    return prevFactory.type === nextFactory.type;
+    return prevComponent.type === nextComponent.type;
   }
 
   const prevType = getInstanceType(prevInstance);
@@ -734,11 +729,11 @@ function detectIsSameInstanceTypes(
 }
 
 function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
-  if (alternate && detectIsSameComponentFactoryTypesWithSameKeys(prevInstance, nextInstance)) {
+  if (alternate && detectIsSameComponentTypesWithSameKeys(prevInstance, nextInstance)) {
     return alternate.hook;
   }
 
-  if (detectIsComponentFactory(nextInstance)) {
+  if (detectIsComponent(nextInstance)) {
     return createHook();
   }
 

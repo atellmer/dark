@@ -120,7 +120,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
 
 export type StackScreenProps = {
   name: string;
-  component?: Component;
+  component?: ComponentFactory;
   initialParams?: ParamsObject;
   slot?: () => DarkElement;
 };
@@ -266,7 +266,7 @@ function detectCanStartTransition(transition: Transition, pathnames: Array<strin
   return canStart;
 }
 
-type ScreenComponent = ComponentFactory<StackScreenProps & StandardComponentProps>;
+type ScreenComponent = Component<StackScreenProps & StandardComponentProps>;
 
 type CreateAnimationOptions = {
   transition: Transition;

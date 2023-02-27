@@ -1,7 +1,7 @@
 import { type TouchGestureEventData, AccessibilityRole } from '@nativescript/core';
 import {
   type DarkElement,
-  type Component,
+  type ComponentFactory,
   createComponent,
   detectIsFunction,
   useEvent,
@@ -65,7 +65,7 @@ const TouchableOpacity = createComponent<TouchableOpacityProps>(
     });
   },
   { displayName: 'TouchableOpacity' },
-) as Component<TouchableOpacityProps>;
+) as ComponentFactory<TouchableOpacityProps>;
 
 const DOWN_ANIMATION_DURATION = 50;
 const UP_ANIMATION_DURATION = 200;

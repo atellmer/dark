@@ -1,5 +1,5 @@
 import { type View as NSView, type ShowModalOptions } from '@nativescript/core';
-import { type DarkElement, type Component, createComponent, useRef, useEffect } from '@dark-engine/core';
+import { type DarkElement, type ComponentFactory, createComponent, useRef, useEffect } from '@dark-engine/core';
 
 import { type ViewRef, View } from './view';
 import { type ButtonRef, Button } from './button';
@@ -41,6 +41,6 @@ const Modal = createComponent<ModalProps>(
     });
   },
   { displayName: 'Modal' },
-) as Component<ModalProps>;
+) as ComponentFactory<ModalProps>;
 
 export { Modal };

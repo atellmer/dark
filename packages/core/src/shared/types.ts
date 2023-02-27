@@ -1,9 +1,9 @@
-import type { ComponentFactory } from '../component';
+import type { ComponentFactory, Component } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
 import { type Ref } from '../ref';
 import { type Flag } from '../constants';
 
-export type DarkElement = NestedArray<ComponentFactory | VirtualNode | RenderProps | Nullable | string | number>;
+export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | string | number>;
 
 export type Nullable = null | false | undefined;
 
@@ -13,7 +13,7 @@ export type RenderProps = (...args: Array<any>) => DarkElement;
 
 export type DarkElementKey = string | number;
 
-export type DarkElementInstance = VirtualNode | VirtualNodeFactory | ComponentFactory | Nullable;
+export type DarkElementInstance = VirtualNode | VirtualNodeFactory | Component | ComponentFactory | Nullable;
 
 export type Subscriber = () => void;
 

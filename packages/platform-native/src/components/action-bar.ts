@@ -1,5 +1,5 @@
 import type { ActionBar as NSActionBar } from '@nativescript/core';
-import { type Component, createComponent, forwardRef, useRef, useImperativeHandle } from '@dark-engine/core';
+import { type ComponentFactory, createComponent, forwardRef, useRef, useImperativeHandle } from '@dark-engine/core';
 
 import type { ActionBarAttributes } from '../jsx';
 import { actionBar } from '../factory';
@@ -23,6 +23,6 @@ const ActionBar = forwardRef<ActionBarProps, ActionBarRef>(
     },
     { displayName: 'ActionBar' },
   ),
-) as Component<ActionBarProps, ActionBarRef>;
+) as ComponentFactory<ActionBarProps, ActionBarRef>;
 
 export { ActionBar };

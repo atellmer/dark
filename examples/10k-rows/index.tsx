@@ -121,7 +121,7 @@ const Header = createComponent<HeaderProps>(
   },
 );
 
-const MemoHeader = memo<HeaderProps>(Header);
+const MemoHeader = memo(Header);
 
 type RowProps = {
   id: number;
@@ -150,7 +150,7 @@ const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
   );
 });
 
-const MemoRow = memo<RowProps>(Row);
+const MemoRow = memo(Row);
 
 type ListProps = {
   items: List;

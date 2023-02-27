@@ -1,4 +1,4 @@
-import { type Component, createComponent, detectIsComponentFactory } from '../component';
+import { type ComponentFactory, createComponent, detectIsComponent } from '../component';
 import { detectIsFunction } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useContext } from '../context';
@@ -9,9 +9,9 @@ import { registerLazy, unregisterLazy, detectHasRegisteredLazy, isHydrateZone } 
 
 const $$lazy = Symbol('lazy');
 
-const componentsMap: Map<Function, Component> = new Map();
+const componentsMap: Map<Function, ComponentFactory> = new Map();
 
-function lazy<P, R = unknown>(module: () => Promise<{ default: Component<P> }>, done?: () => void) {
+function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<P> }>, done?: () => void) {
   return forwardRef(
     createComponent<P, R>(
       (props, ref) => {
@@ -49,10 +49,10 @@ function lazy<P, R = unknown>(module: () => Promise<{ default: Component<P> }>, 
   );
 }
 
-const detectIsLazy = (factory: unknown) => detectIsComponentFactory(factory) && factory.token === $$lazy;
+const detectIsLazy = (instance: unknown) => detectIsComponent(instance) && instance.token === $$lazy;
 
-function fetchModule(module: () => Promise<{ default: Component }>) {
-  return new Promise<Component>(resolve => {
+function fetchModule(module: () => Promise<{ default: ComponentFactory }>) {
+  return new Promise<ComponentFactory>(resolve => {
     module().then(module => {
       if (!module.default) {
         throw new Error('[Dark]: Lazy loaded component should be exported as default!');

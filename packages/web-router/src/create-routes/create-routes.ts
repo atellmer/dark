@@ -1,4 +1,4 @@
-import { type DarkElement, type Component, type SlotProps, keyBy, detectIsString } from '@dark-engine/core';
+import { type DarkElement, type ComponentFactory, type SlotProps, keyBy, detectIsString } from '@dark-engine/core';
 
 import { SLASH, WILDCARD, ROOT } from '../constants';
 import { pipe, splitPath, normalaizePathname, detectIsParam, getParamName, sort } from '../utils';
@@ -57,7 +57,7 @@ class Route {
 
     while (nextRoute) {
       const value = nextRoute.getPath();
-      const component = nextRoute.component as Component<SlotProps>;
+      const component = nextRoute.component as ComponentFactory<SlotProps>;
 
       slot = CurrentPathContext.Provider({ value, slot: [component({ slot })] });
       nextRoute = nextRoute.parent;

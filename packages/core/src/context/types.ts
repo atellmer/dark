@@ -1,4 +1,4 @@
-import type { Component } from '../component';
+import type { ComponentFactory } from '../component';
 import type { DarkElement, Subscribe, SubscriberWithValue, SlotProps, KeyProps } from '../shared';
 
 export type ContexProviderProps<T> = {
@@ -7,8 +7,8 @@ export type ContexProviderProps<T> = {
   KeyProps;
 
 export type Context<T = unknown> = {
-  Provider: Component<ContexProviderProps<T>>;
-  Consumer: Component<SlotProps<(value: T) => DarkElement>>;
+  Provider: ComponentFactory<ContexProviderProps<T>>;
+  Consumer: ComponentFactory<SlotProps<(value: T) => DarkElement>>;
   displayName?: string;
   defaultValue: T;
 };

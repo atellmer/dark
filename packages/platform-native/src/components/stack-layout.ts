@@ -1,5 +1,5 @@
 import type { StackLayout as NSStackLayout } from '@nativescript/core';
-import { type Component, createComponent, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, createComponent, forwardRef } from '@dark-engine/core';
 
 import type { StackLayoutAttributes } from '../jsx';
 import { stackLayout } from '../factory';
@@ -9,6 +9,6 @@ export type StackLayoutRef = NSStackLayout;
 
 const StackLayout = forwardRef<StackLayoutProps, StackLayoutRef>(
   createComponent((props, ref) => stackLayout({ ref, ...props }), { displayName: 'StackLayout' }),
-) as Component<StackLayoutProps, StackLayoutRef>;
+) as ComponentFactory<StackLayoutProps, StackLayoutRef>;
 
 export { StackLayout };
