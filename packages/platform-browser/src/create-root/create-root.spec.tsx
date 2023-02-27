@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h, createComponent, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
+
 import { createRoot } from './create-root';
 
 let host: HTMLElement = null;

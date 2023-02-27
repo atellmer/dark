@@ -1,4 +1,5 @@
 import { detectIsFunction, eventsStore } from '@dark-engine/core';
+
 import type { TagNativeElement } from '../native-element';
 
 type BrowserEventConstructor = (type: string, event: Event) => void;

@@ -17,11 +17,11 @@ import {
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
-  detectIsMutableRef,
   walkFiber,
   isHydrateZone,
   applyRef as applyRef$,
 } from '@dark-engine/core';
+
 import { detectIsPortal, getPortalContainer } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { SVG_TAG_NAMES, VOID_TAG_NAMES } from '../constants';

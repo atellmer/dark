@@ -6,6 +6,7 @@ import {
   detectIsComponentFactory,
   useMemo,
 } from '@dark-engine/core';
+
 import type { TagNativeElement } from '../native-element';
 
 const $$portal = Symbol('portal');

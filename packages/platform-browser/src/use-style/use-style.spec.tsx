@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h, createComponent } from '@dark-engine/core';
+
 import { render } from '../render';
 import { useStyle } from './use-style';
 

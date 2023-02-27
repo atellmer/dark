@@ -1,6 +1,7 @@
 /** @jsx h */
-import { click } from '@test-utils';
 import { h, createComponent } from '@dark-engine/core';
+
+import { click } from '@test-utils';
 import { createRoot } from '../create-root';
 import { SyntheticEvent } from './events';
 

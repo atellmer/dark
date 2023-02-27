@@ -1,6 +1,7 @@
 /** @jsx h */
-import { dom } from '@test-utils';
 import { h, createComponent } from '@dark-engine/core';
+
+import { dom } from '@test-utils';
 import { render } from '../render';
 import { createPortal } from './portal';
 

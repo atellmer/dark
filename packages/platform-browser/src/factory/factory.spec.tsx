@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h, detectIsVirtualNodeFactory, TagVirtualNode } from '@dark-engine/core';
+
 import { factory } from './factory';
 
 describe('[factory]', () => {

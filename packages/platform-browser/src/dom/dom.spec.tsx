@@ -1,6 +1,7 @@
 /** @jsx h */
-import { setInputValue, dom } from '@test-utils';
 import { h, Fragment, createComponent, useState } from '@dark-engine/core';
+
+import { setInputValue, dom } from '@test-utils';
 import { createRoot } from '../create-root';
 import { type SyntheticEvent } from '../events';
 

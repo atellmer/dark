@@ -1,5 +1,4 @@
 /** @jsx h */
-import { click, dom } from '@test-utils';
 import {
   h,
   Fragment,
@@ -9,6 +8,8 @@ import {
   useEffect,
   useState,
 } from '@dark-engine/core';
+
+import { click, dom } from '@test-utils';
 import { hydrateRoot } from './hydrate-root';
 
 let host: HTMLElement = null;

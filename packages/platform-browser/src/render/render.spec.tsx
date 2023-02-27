@@ -1,5 +1,4 @@
 /** @jsx h */
-import { dom, createTestHostNode, createReplacerString } from '@test-utils';
 import {
   h,
   Fragment,
@@ -14,6 +13,8 @@ import {
   type MutableRef,
   type DarkElement,
 } from '@dark-engine/core';
+
+import { dom, createTestHostNode, createReplacerString } from '@test-utils';
 import { render } from './render';
 
 type Item = { id: number; name: string };
