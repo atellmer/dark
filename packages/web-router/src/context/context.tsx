@@ -1,4 +1,5 @@
 import { createContext, useContext } from '@dark-engine/core';
+
 import { type RouterLocation } from '../location';
 import { type RouterHistory } from '../history';
 import { type Route } from '../create-routes';

@@ -1,4 +1,5 @@
 import { detectIsFalsy } from '@dark-engine/core';
+
 import { parseURL } from '../utils';
 
 class RouterLocation {

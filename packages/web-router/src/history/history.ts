@@ -1,4 +1,5 @@
 import { detectIsFalsy, type SubscriberWithValue } from '@dark-engine/core';
+
 import { normalaizePathname, parseURL } from '../utils';
 
 const browserHistory = globalThis.history;
