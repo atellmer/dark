@@ -1,5 +1,6 @@
 /** @jsx h */
-import { render } from '@dark-engine/platform-browser/render';
+import { render } from '@dark-engine/platform-browser';
+
 import { h } from '../element';
 import { View, detectIsVirtualNode, VirtualNodeFactory } from '../view';
 import { useEffect } from '../use-effect';

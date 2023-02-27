@@ -1,3 +1,4 @@
+import { platform } from '../platform';
 import {
   flatten,
   error,
@@ -8,7 +9,6 @@ import {
   detectIsNumber,
   detectIsFunction,
 } from '../helpers';
-import { platform } from '../platform';
 import {
   wipRootStore,
   currentRootStore,

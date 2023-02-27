@@ -1,6 +1,7 @@
 /** @jsx h */
-import { waitNextTick } from '@test-utils';
 import { render } from '@dark-engine/platform-browser';
+
+import { waitNextTick } from '@test-utils';
 import { createComponent } from '../component';
 import { useSpring } from './use-spring';
 import { useState } from '../use-state';

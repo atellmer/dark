@@ -1,6 +1,7 @@
 /** @jsx h */
+import { render } from '@dark-engine/platform-browser';
+
 import { dom } from '@test-utils';
-import { render } from '@dark-engine/platform-browser/render';
 import { h } from '../element';
 import { createComponent } from '../component';
 import { SplitUpdate, useSplitUpdate } from './split-update';

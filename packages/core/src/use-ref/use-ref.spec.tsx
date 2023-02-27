@@ -1,5 +1,6 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
+
 import { h } from '../element';
 import { createComponent } from '../component';
 import { MutableRef } from '../ref';

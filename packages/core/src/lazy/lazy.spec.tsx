@@ -1,6 +1,7 @@
 /** @jsx h */
-import { dom, createReplacerString } from '@test-utils';
 import { render } from '@dark-engine/platform-browser';
+
+import { dom, createReplacerString } from '@test-utils';
 import { h } from '../element';
 import { createComponent } from '../component';
 import { lazy } from './lazy';

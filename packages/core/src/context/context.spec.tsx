@@ -1,6 +1,7 @@
 /** @jsx h */
-import { dom } from '@test-utils';
 import { render } from '@dark-engine/platform-browser';
+
+import { dom } from '@test-utils';
 import { createComponent } from '../component';
 import { h } from '../element';
 import { useState } from '../use-state';

@@ -1,5 +1,6 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
+
 import { createComponent } from '../component';
 import { useEffect } from '../use-effect';
 import { useUpdate } from '../use-update';

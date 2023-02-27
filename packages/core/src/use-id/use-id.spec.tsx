@@ -1,6 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
-import { createComponent } from '../component/component';
+
+import { createComponent } from '../component';
 import { useId } from './use-id';
 
 let hostOne: HTMLElement = null;
