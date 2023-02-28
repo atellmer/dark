@@ -15,13 +15,13 @@ function wrap<T>(value: T, isDepsDifferent: boolean) {
 
   if (detectIsArray(value) ? check(value[0]) : check(value)) {
     const slot = value as unknown as DarkElement;
-    const factory = Memo({
+    const component = Memo({
       slot: Fragment({ slot }),
     });
 
-    factory.shouldUpdate = () => isDepsDifferent;
+    component.shouldUpdate = () => isDepsDifferent;
 
-    return factory;
+    return component;
   }
 
   return value;

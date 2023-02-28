@@ -11,7 +11,7 @@ export type Platform = {
   applyCommit: (fiber: Fiber) => void;
   finishCommitWork: () => void;
   detectIsDynamic: () => boolean;
-  detectIsPortal: (factory: unknown) => boolean;
+  detectIsPortal: (instance: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
   restart: () => void;
 };

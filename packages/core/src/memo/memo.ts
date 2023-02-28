@@ -28,13 +28,12 @@ function memo<P, R = unknown>(
   shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
 ) {
   type Props = P & Omit<StandardComponentProps, 'ref'> & RefProps<R>;
-  const component$ = createComponent<Props, R>(props => component(props), {
+
+  return createComponent<Props, R>(props => component(props), {
     token: $$memo,
     keepRef: true,
     shouldUpdate,
-  });
-
-  return component$ as ComponentFactory<Props, R>;
+  }) as ComponentFactory<Props, R>;
 }
 
 export { $$memo, memo, detectIsMemo };

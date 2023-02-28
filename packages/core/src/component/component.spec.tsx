@@ -60,9 +60,9 @@ describe('[create-component]', () => {
 
       return null;
     });
-    const factory = Component({ one: 'hello', two: 'world' });
+    const component = Component({ one: 'hello', two: 'world' });
 
-    factory.type(factory.props);
+    component.type(component.props);
   });
 
   test('provides correct displayName', () => {

@@ -36,8 +36,8 @@ const Portal = createComponent<PortalProps>(
 const detectIsPortal = (instance: unknown): instance is Component =>
   detectIsComponent(instance) && instance.token === $$portal;
 
-const getPortalContainer = (factory: unknown): TagNativeElement | null =>
-  detectIsPortal(factory) ? factory.props[$$portal] : null;
+const getPortalContainer = (instance: unknown): TagNativeElement | null =>
+  detectIsPortal(instance) ? instance.props[$$portal] : null;
 
 function unmountPortal(fiber: Fiber<TagNativeElement>) {
   const container = getPortalContainer(fiber.instance);
