@@ -29,10 +29,6 @@ describe('[SSR]', () => {
     expect(renderToString(Comment('Hey baby 😍'))).toBe('<!--Hey baby 😍-->');
   });
 
-  test('can render comment correctly', () => {
-    expect(renderToString(Comment('Hey baby 😍'))).toBe('<!--Hey baby 😍-->');
-  });
-
   test('can render nullable correctly', () => {
     expect(renderToString(null)).toBe(replacer);
     expect(renderToString('')).toBe(replacer);

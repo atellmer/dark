@@ -150,9 +150,7 @@ const makePoints = (count: number, scope: any) => {
   return setAnchors(newPoints, scope);
 };
 
-const renderPoint = (point: Point, idx: number) => {
-  return <Point key={idx} point={point} />;
-};
+const renderPoint = (point: Point, idx: number) => Point({ key: idx, point });
 
 const map = (items: Array<Point>, cb: (x: any, idx: number) => any) => {
   const points = [];

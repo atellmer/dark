@@ -183,7 +183,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
       }
 
       if (delay) {
-        scope.delayTimerId = window.setTimeout(() => loop(direction), delay);
+        scope.delayTimerId = setTimeout(() => loop(direction), delay);
       } else {
         loop(direction);
       }

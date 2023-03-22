@@ -39,6 +39,12 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
 
     if (idx >= source.length) {
       level--;
+      if (!levelMap[level]) {
+        levelMap[level] = {
+          idx: 0,
+          source: [],
+        };
+      }
       levelMap[level].idx++;
       continue;
     }

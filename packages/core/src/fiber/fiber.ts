@@ -37,8 +37,7 @@ import {
   getVirtualNodeFactoryKey,
   getTagVirtualNodeFlag,
   getVirtualNodeFactoryFlag,
-  detectIsTextVirtualNode,
-  detectIsCommentVirtualNode,
+  detectIsPlainVirtualNode,
   createReplacer,
 } from '../view';
 import { detectIsMemo } from '../memo';
@@ -275,8 +274,7 @@ function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) 
   const stop = fromUpdate && wipFiber.parent === fiber.parent;
 
   if (
-    detectIsTextVirtualNode(fiber.instance) ||
-    detectIsCommentVirtualNode(fiber.instance) ||
+    detectIsPlainVirtualNode(fiber.instance) ||
     (detectIsTagVirtualNode(fiber.instance) && fiber.instance.children.length === 0)
   ) {
     fiber.childrenElementsCount = 1;
@@ -300,10 +298,10 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
     const hasAlternate = Boolean(alternate);
     const prevKey = hasAlternate ? getElementKey(alternate.instance) : null;
     const nextKey = hasAlternate ? getElementKey(instance) : null;
-    const isSameKeys = prevKey === nextKey;
-    const isSameTypes = hasAlternate && detectIsSameInstanceTypes(alternate.instance, instance);
+    const areSameKeys = prevKey === nextKey;
+    const areSameTypes = hasAlternate && detectAreSameInstanceTypes(alternate.instance, instance);
 
-    isUpdate = isSameTypes && isSameKeys;
+    isUpdate = areSameTypes && areSameKeys;
   }
 
   fiber.instance = instance;
@@ -343,10 +341,8 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
 }
 
 function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
-  const vNode = createReplacer();
-
   return new Fiber().mutate({
-    instance: vNode,
+    instance: createReplacer(),
     parent: alternate,
     marker: marker + '',
     effectTag: EffectTag.CREATE,
@@ -365,13 +361,13 @@ function canAddToDeletions(fiber: Fiber) {
 }
 
 function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
-  const isSameType = detectIsSameInstanceTypes(alternate.instance, instance);
+  const areSameTypes = detectAreSameInstanceTypes(alternate.instance, instance);
   const flag = getElementFlag(instance);
   const hasNoMovesFlag = flag && flag[Flag.HAS_NO_MOVES];
 
   alternate.isUsed = true;
 
-  if (!isSameType) {
+  if (!areSameTypes) {
     if (canAddToDeletions(alternate)) {
       alternate.effectTag = EffectTag.DELETE;
       deletionsStore.add(alternate);
@@ -552,9 +548,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
         result = Text(result);
       }
 
-      component.children = detectIsArray(result)
-        ? (flatten([result]) as Array<DarkElementInstance>)
-        : ([result] as Array<DarkElementInstance>);
+      component.children = (detectIsArray(result) ? flatten([result]) : [result]) as Array<DarkElementInstance>;
     } catch (err) {
       component.children = [];
       fiber.setError(err);
@@ -682,7 +676,7 @@ function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNod
   return detectIsTagVirtualNode(element) || detectIsComponent(element);
 }
 
-function detectIsSameComponentTypesWithSameKeys(
+function detectAreSameComponentTypesWithSameKeys(
   prevInstance: DarkElementInstance | null,
   nextInstance: DarkElementInstance | null,
 ) {
@@ -691,7 +685,7 @@ function detectIsSameComponentTypesWithSameKeys(
     nextInstance &&
     detectIsComponent(prevInstance) &&
     detectIsComponent(nextInstance) &&
-    detectIsSameInstanceTypes(prevInstance, nextInstance, true)
+    detectAreSameInstanceTypes(prevInstance, nextInstance, true)
   ) {
     const prevKey = getElementKey(prevInstance);
     const nextKey = getElementKey(nextInstance);
@@ -702,7 +696,7 @@ function detectIsSameComponentTypesWithSameKeys(
   return false;
 }
 
-function detectIsSameInstanceTypes(
+function detectAreSameInstanceTypes(
   prevInstance: DarkElementInstance,
   nextInstance: DarkElementInstance,
   isComponentFactories = false,
@@ -729,7 +723,7 @@ function detectIsSameInstanceTypes(
 }
 
 function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
-  if (alternate && detectIsSameComponentTypesWithSameKeys(prevInstance, nextInstance)) {
+  if (alternate && detectAreSameComponentTypesWithSameKeys(prevInstance, nextInstance)) {
     return alternate.hook;
   }
 
@@ -778,9 +772,10 @@ function commitChanges() {
     isDynamic && layoutEffects.forEach(fn => fn());
     isLayoutEffectsZone.set(false);
 
-    setTimeout(() => {
-      isDynamic && effects.forEach(fn => fn());
-    });
+    isDynamic &&
+      setTimeout(() => {
+        effects.forEach(fn => fn());
+      });
 
     flush(wipFiber);
   });

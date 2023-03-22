@@ -6,8 +6,6 @@ import { NodeType, type ViewDef } from './types';
 
 export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;
-export type TextVirtualNodeFactory = () => TextVirtualNode;
-export type CommentVirtualNodeFactory = () => CommentVirtualNode;
 
 const $$virtualNode = Symbol('virtual-node');
 
@@ -22,7 +20,7 @@ class VirtualNode {
 class TagVirtualNode extends VirtualNode {
   public name: string = null;
   public attrs: Record<string, any> = {};
-  public children: Array<VirtualNodeFactory | ComponentFactory> = [];
+  public children: Array<TextVirtualNode | CommentVirtualNode | VirtualNodeFactory | ComponentFactory> = [];
 
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
@@ -99,12 +97,8 @@ function Text(source: string | number): TextVirtualNode {
 
 Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
 
-function Comment(text: string): CommentVirtualNodeFactory {
-  const factory = () => new CommentVirtualNode(text);
-
-  factory[$$virtualNode] = true;
-
-  return factory;
+function Comment(text: string): CommentVirtualNode {
+  return new CommentVirtualNode(text);
 }
 
 export {
@@ -117,12 +111,12 @@ export {
   detectIsCommentVirtualNode,
   detectIsTextVirtualNode,
   detectIsPlainVirtualNode,
+  detectIsVirtualNodeFactory,
   getTagVirtualNodeKey,
   getTagVirtualNodeFlag,
   getVirtualNodeFactoryKey,
   getVirtualNodeFactoryFlag,
   createReplacer,
-  detectIsVirtualNodeFactory,
   View,
   Text,
   Comment,

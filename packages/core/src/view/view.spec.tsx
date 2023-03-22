@@ -17,11 +17,10 @@ describe('[View, Text, Comment]', () => {
     expect(text.value).toBe('Hello');
   });
 
-  test('Comment creates the factory', () => {
-    const factory = Comment('Hello');
+  test('Comment creates the comment virtual node', () => {
+    const comment = Comment('Hello');
 
-    expect(factory).toBeInstanceOf(Function);
-    expect(factory()).toBeInstanceOf(CommentVirtualNode);
-    expect(factory().value).toBe('Hello');
+    expect(comment).toBeInstanceOf(CommentVirtualNode);
+    expect(comment.value).toBe('Hello');
   });
 });
