@@ -122,8 +122,13 @@ function addAttributes(element: NativeElement, vNode: VirtualNode) {
   }
 }
 
+const patchAttrBlackMap = {
+  transform: true,
+  fill: true,
+};
+
 function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
-  const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
+  const attrNames = Object.keys(nextVNode.attrs);
   const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
@@ -145,12 +150,16 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
           });
         }
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
-        const stop = patchProperties({
-          tagName: nextVNode.name,
-          element: tagElement,
-          attrValue: nextAttrValue,
-          attrName,
-        });
+        let stop = false;
+
+        if (!patchAttrBlackMap[attrName]) {
+          stop = patchProperties({
+            tagName: nextVNode.name,
+            element: tagElement,
+            attrValue: nextAttrValue,
+            attrName,
+          });
+        }
 
         !stop && tagElement.setAttribute(attrName, nextAttrValue);
       }
@@ -366,13 +375,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
       fiber.move = false;
     }
 
-    if (
-      fiber.nativeElement === null ||
-      !detectIsVirtualNode(fiber.alternate.instance) ||
-      !detectIsVirtualNode(fiber.instance)
-    ) {
-      return;
-    }
+    if (fiber.nativeElement === null) return;
     trackUpdate && trackUpdate(fiber.nativeElement);
     commitUpdate(fiber);
   },

@@ -147,6 +147,7 @@ function workLoop() {
   }
 
   if (!nextUnitOfWork && wipFiber) {
+    //Promise.resolve().then(commitChanges);
     commitChanges();
   }
 
@@ -687,10 +688,7 @@ function detectAreSameComponentTypesWithSameKeys(
     detectIsComponent(nextInstance) &&
     detectAreSameInstanceTypes(prevInstance, nextInstance, true)
   ) {
-    const prevKey = getElementKey(prevInstance);
-    const nextKey = getElementKey(nextInstance);
-
-    return prevKey === nextKey;
+    return getElementKey(prevInstance) === getElementKey(nextInstance);
   }
 
   return false;
@@ -716,10 +714,7 @@ function detectAreSameInstanceTypes(
     return prevComponent.type === nextComponent.type;
   }
 
-  const prevType = getInstanceType(prevInstance);
-  const nextType = getInstanceType(nextInstance);
-
-  return prevType === nextType;
+  return getInstanceType(prevInstance) === getInstanceType(nextInstance);
 }
 
 function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
@@ -773,6 +768,7 @@ function commitChanges() {
     isLayoutEffectsZone.set(false);
 
     isDynamic &&
+      effects.length > 0 &&
       setTimeout(() => {
         effects.forEach(fn => fn());
       });

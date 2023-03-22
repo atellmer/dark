@@ -1,11 +1,21 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority, Flag } from '@dark-engine/core';
+import {
+  h,
+  View,
+  createComponent,
+  useState,
+  useEffect,
+  useMemo,
+  useUpdate,
+  TaskPriority,
+  Flag,
+} from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
-startFPSMonitor();
-startMemMonitor();
+// startFPSMonitor();
+// startMemMonitor();
 
 const Demo = createComponent(() => {
   const [numPoints, setNumPoints] = useState(1000, {
@@ -54,7 +64,7 @@ type VizDemoProps = {
 };
 
 const VizDemo = createComponent<VizDemoProps>(({ count }) => {
-  const update = useUpdate();
+  const update = useUpdate({ forceSync: true });
   const scope = useMemo(
     () => ({
       layout: 0,
@@ -150,7 +160,16 @@ const makePoints = (count: number, scope: any) => {
   return setAnchors(newPoints, scope);
 };
 
-const renderPoint = (point: Point, idx: number) => Point({ key: idx, point });
+const renderPoint = (point: Point, idx: number) => {
+  return View({
+    as: 'rect',
+    class: 'point',
+    key: idx,
+    flag,
+    transform: `translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`,
+    fill: point.color,
+  });
+};
 
 const map = (items: Array<Point>, cb: (x: any, idx: number) => any) => {
   const points = [];
@@ -166,23 +185,6 @@ type Point = {
   x: number;
   y: number;
   color: string;
-};
-
-type PointProps = {
-  key: number;
-  point: Point;
-};
-
-const Point = ({ key, point }: PointProps) => {
-  return (
-    <rect
-      class='point'
-      flag={flag}
-      key={key}
-      transform={`translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`}
-      fill={point.color}
-    />
-  );
 };
 
 const theta = Math.PI * (3 - Math.sqrt(5));

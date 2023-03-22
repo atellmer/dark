@@ -7,6 +7,13 @@ type OnLoopOptions<T> = {
   stop: () => void;
 };
 
+const options: OnLoopOptions<any> = {
+  nextFiber: null,
+  isReturn: null,
+  resetIsDeepWalking: null,
+  stop: null,
+};
+
 function walkFiber<T = unknown>(fiber: Fiber<T>, onLoop: (options: OnLoopOptions<T>) => void) {
   let nextFiber = fiber;
   let isDeepWalking = true;
@@ -18,12 +25,12 @@ function walkFiber<T = unknown>(fiber: Fiber<T>, onLoop: (options: OnLoopOptions
   const stop = () => (isStopped = true);
 
   while (nextFiber) {
-    onLoop({
-      nextFiber: nextFiber as Fiber<T>,
-      isReturn,
-      resetIsDeepWalking,
-      stop,
-    });
+    options.nextFiber = nextFiber;
+    options.isReturn = isReturn;
+    options.resetIsDeepWalking = resetIsDeepWalking;
+    options.stop = stop;
+
+    onLoop(options);
 
     if (isStopped) {
       break;
