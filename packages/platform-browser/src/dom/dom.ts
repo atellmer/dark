@@ -335,7 +335,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
   },
   [EffectTag.UPDATE]: (fiber: Fiber<NativeElement>) => {
     fiber.move && (move(fiber), (fiber.move = false));
-    if (fiber.nativeElement === null || detectIsComponent(fiber)) return;
+    if (fiber.nativeElement === null || detectIsComponent(fiber.instance)) return;
     trackUpdate && trackUpdate(fiber.nativeElement);
     commitUpdate(fiber);
   },
