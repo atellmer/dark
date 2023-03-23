@@ -16,6 +16,7 @@ import {
   NodeType,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
+  detectIsPlainVirtualNode,
   walkFiber,
   isHydrateZone,
   applyRef as applyRef$,
@@ -282,17 +283,9 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
   const prevInstance = fiber.alternate.instance as VirtualNode;
   const nextInstance = fiber.instance as VirtualNode;
 
-  if (
-    detectIsTextVirtualNode(prevInstance) &&
-    detectIsTextVirtualNode(nextInstance) &&
-    prevInstance.value !== nextInstance.value
-  ) {
-    return (element.textContent = nextInstance.value);
-  }
-
-  if (detectIsTagVirtualNode(prevInstance) && detectIsTagVirtualNode(nextInstance)) {
-    return updateAttributes(element, prevInstance, nextInstance);
-  }
+  detectIsPlainVirtualNode(prevInstance) && detectIsPlainVirtualNode(nextInstance)
+    ? prevInstance.value !== nextInstance.value && (element.textContent = nextInstance.value)
+    : updateAttributes(element, prevInstance as TagVirtualNode, nextInstance as TagVirtualNode);
 }
 
 function commitDeletion(fiber: Fiber<NativeElement>) {
