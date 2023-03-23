@@ -126,7 +126,7 @@ export type StackScreenProps = {
 };
 
 const Screen = createComponent<StackScreenProps>(
-  ({ name, component, initialParams, slot }) => {
+  ({ name, component, initialParams = {}, slot }) => {
     const { prefix } = useScreenNavigatorContext();
     const pathname = createPathname(name, prefix);
     const contextValue = useMemo<ScreenNavigatorContextValue>(
@@ -143,9 +143,6 @@ const Screen = createComponent<StackScreenProps>(
   },
   {
     displayName: 'StackNavigator.Screen',
-    defaultProps: {
-      initialParams: {},
-    },
   },
 );
 

@@ -148,7 +148,6 @@ function workLoop() {
   }
 
   if (!nextUnitOfWork && wipFiber) {
-    //Promise.resolve().then(commitChanges);
     commitChanges();
   }
 

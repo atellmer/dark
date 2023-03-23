@@ -21,14 +21,14 @@ Dark is lightweight UI rendering engine for javascript apps without dependencies
 - 🧶 Based on the Fiber architecture
 - ⚡️ Сan use without build tools
 - 🦾 Strongly typed
-- 🦄 Small size
+- 🦄 Small size (10x smaller than React)
 - 🌌 No dependencies
 - 💥 Tree-shakeable
-- 🎊 Server-side rendering support
-- 🥱 Lazy loading modules support
-- ☄️ Hot module replacement support
+- 🎊 Server-side rendering
+- 🥱 Lazy loading modules
+- ☄️ Hot module replacement
 - 🏄‍♂️ Out of box isomorphic routing
-- 🛰 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
+- 🚢 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
 
 ## Demos
 

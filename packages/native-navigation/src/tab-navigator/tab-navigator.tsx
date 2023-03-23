@@ -112,7 +112,7 @@ type TabScreenProps = {
 } & StackScreenProps;
 
 const Screen = createComponent<TabScreenProps>(
-  ({ name, component, renderTab, slot }) => {
+  ({ name, component, renderTab = defaultRenderTab, slot }) => {
     const { push, pathname: currentPathname } = useNavigationContext();
     const { descriptorsMap, count, activeTabColor, tabColor } = useTabNavigatorContext();
     const { prefix } = useScreenNavigatorContext();
@@ -138,11 +138,10 @@ const Screen = createComponent<TabScreenProps>(
   },
   {
     displayName: 'TabNavigator.Screen',
-    defaultProps: {
-      renderTab: name => <label>{name}</label>,
-    },
   },
 );
+
+const defaultRenderTab = (name: string) => <label>{name}</label>;
 
 type TabDescriptor = Omit<TabScreenProps, 'renderTab'>;
 
