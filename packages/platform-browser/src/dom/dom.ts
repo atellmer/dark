@@ -17,6 +17,7 @@ import {
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
   detectIsPlainVirtualNode,
+  detectIsComponent,
   walkFiber,
   isHydrateZone,
   applyRef as applyRef$,
@@ -334,7 +335,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
   },
   [EffectTag.UPDATE]: (fiber: Fiber<NativeElement>) => {
     fiber.move && (move(fiber), (fiber.move = false));
-    if (fiber.nativeElement === null) return;
+    if (fiber.nativeElement === null || detectIsComponent(fiber)) return;
     trackUpdate && trackUpdate(fiber.nativeElement);
     commitUpdate(fiber);
   },
