@@ -14,8 +14,8 @@ import {
 } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
-// startFPSMonitor();
-// startMemMonitor();
+startFPSMonitor();
+startMemMonitor();
 
 const Demo = createComponent(() => {
   const [numPoints, setNumPoints] = useState(1000, {
@@ -64,7 +64,7 @@ type VizDemoProps = {
 };
 
 const VizDemo = createComponent<VizDemoProps>(({ count }) => {
-  const update = useUpdate({ forceSync: true });
+  const update = useUpdate();
   const scope = useMemo(
     () => ({
       layout: 0,

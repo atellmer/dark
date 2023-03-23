@@ -33,11 +33,6 @@ import type {
   AttributeValue,
 } from '../native-element';
 
-type DOMFragment = {
-  fragment: DocumentFragment;
-  callback: () => void;
-};
-
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
@@ -48,7 +43,6 @@ const patchPropsBlackListMap = {
   fill: true,
 };
 
-let fragmentsMap: Map<NativeElement, DOMFragment> = new Map();
 let moves: Array<() => void> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
@@ -86,8 +80,7 @@ function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
   applyRef$(ref, element);
 }
 
-function addAttributes(element: NativeElement, vNode: VirtualNode) {
-  if (!detectIsTagVirtualNode(vNode)) return;
+function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
   const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -228,20 +221,7 @@ function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<Tag
 }
 
 function append(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
-  const { fragment } =
-    fragmentsMap.get(parentElement) ||
-    ({
-      fragment: document.createDocumentFragment(),
-      callback: () => {},
-    } as DOMFragment);
-
-  fragmentsMap.set(parentElement, {
-    fragment,
-    callback: () => {
-      parentElement.appendChild(fragment);
-    },
-  });
-  fragment.appendChild(fiber.nativeElement);
+  parentElement.appendChild(fiber.nativeElement);
 }
 
 function insert(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
@@ -275,7 +255,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
   }
 
-  addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
+  detectIsTagVirtualNode(fiber.instance) && addAttributes(fiber.nativeElement, fiber.instance);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
@@ -367,15 +347,10 @@ function applyCommit(fiber: Fiber<NativeElement>) {
 }
 
 function finishCommitWork() {
-  for (const { callback } of fragmentsMap.values()) {
-    callback();
-  }
-
   for (const move of moves) {
     move();
   }
 
-  fragmentsMap = new Map();
   moves = [];
   isHydrateZone.set(false);
 }
