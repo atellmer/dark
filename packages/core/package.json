@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/core",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "description": "Dark is lightweight UI rendering engine for javascript apps without dependencies and written in TypeScript (Browser, Node.js, Android, iOS) 💫",
   "author": "AlexPlex",
   "license": "MIT",
