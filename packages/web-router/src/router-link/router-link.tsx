@@ -15,7 +15,7 @@ export type RoutreLinkProps = {
 };
 
 const RouterLink = createComponent<RoutreLinkProps>(
-  ({ to, activeClassName, className: sourceClassName, slot, onClick, ...rest }) => {
+  ({ to, activeClassName = 'router-link-active', className: sourceClassName, slot, onClick, ...rest }) => {
     const history = useHistory();
     const { pathname, hash } = useLocation();
     const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash]);
@@ -38,9 +38,6 @@ const RouterLink = createComponent<RoutreLinkProps>(
   },
   {
     displayName: 'RouterLink',
-    defaultProps: {
-      activeClassName: 'router-link-active',
-    },
   },
 );
 

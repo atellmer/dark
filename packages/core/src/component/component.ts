@@ -7,7 +7,6 @@ import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, S
 const $$component = Symbol('component');
 const defaultOptions: ComponentOptions<any> = {
   displayName: '',
-  defaultProps: {},
   token: $$component,
   keepRef: false,
 };
@@ -39,19 +38,17 @@ class Component<P extends StandardComponentProps = any, R = any> {
 
 function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
   const computedOptions = { ...defaultOptions, ...options } as ComponentOptions<P>;
-  const { token, defaultProps, displayName, shouldUpdate, keepRef } = computedOptions;
+  const { token, displayName, shouldUpdate, keepRef } = computedOptions;
   const component = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
-    const mprops = { ...defaultProps, ...props };
-
-    if (!keepRef && mprops.ref) {
-      delete mprops.ref;
+    if (!keepRef && props.ref) {
+      delete props.ref;
 
       if (process.env.NODE_ENV === 'development') {
         error(`[Dark]: To use ref you need to wrap the createComponent with forwardRef!`);
       }
     }
 
-    return new Component(type, token, mprops, ref, shouldUpdate, displayName);
+    return new Component(type, token, props, ref, shouldUpdate, displayName);
   };
 
   return component as ComponentFactory<P & StandardComponentProps, R>;

@@ -4,7 +4,6 @@ import type { Ref } from '../ref';
 
 export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   displayName?: string;
-  defaultProps?: Partial<P>;
   token?: Symbol;
   keepRef?: boolean;
   shouldUpdate?: ShouldUpdate<P>;
