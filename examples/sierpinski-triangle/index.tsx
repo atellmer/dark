@@ -111,6 +111,7 @@ type AppProps = {
 };
 
 const App = createComponent<AppProps>(props => {
+  const [isEnabled, setIsEnable] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const defferedSeconds = useDeferredValue(seconds);
   const elapsed = props.elapsed;
@@ -133,24 +134,29 @@ const App = createComponent<AppProps>(props => {
   }));
 
   return (
-    <div style={style.container}>
-      <MemoSierpinskiTriangle x={0} y={0} s={1000}>
-        {defferedSeconds}
-      </MemoSierpinskiTriangle>
+    <div style='padding: 16px'>
+      <label>
+        <input type='checkbox' onInput={() => setIsEnable(x => !x)} />
+        Enable deferred updates
+      </label>
+      <p>
+        If deferred updates enabled timer won't render on slow devices <br /> (You can enable CPU throttling here)
+      </p>
+      <div style={style.container}>
+        <MemoSierpinskiTriangle x={0} y={0} s={1000}>
+          {isEnabled ? defferedSeconds : seconds}
+        </MemoSierpinskiTriangle>
+      </div>
     </div>
   );
 });
 
 const start = new Date().getTime();
 
-function update() {
+function run() {
   render(<App elapsed={new Date().getTime() - start} />, domElement);
 
-  requestAnimationFrame(update);
-}
-
-function run() {
-  requestAnimationFrame(update);
+  requestAnimationFrame(run);
 }
 
 run();

@@ -1,7 +1,17 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, createComponent, useState, useEffect, useMemo, useUpdate, TaskPriority, Flag } from '@dark-engine/core';
+import {
+  h,
+  View,
+  createComponent,
+  useState,
+  useEffect,
+  useMemo,
+  useUpdate,
+  TaskPriority,
+  Flag,
+} from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
@@ -151,7 +161,14 @@ const makePoints = (count: number, scope: any) => {
 };
 
 const renderPoint = (point: Point, idx: number) => {
-  return <Point key={idx} point={point} />;
+  return View({
+    as: 'rect',
+    class: 'point',
+    key: idx,
+    flag,
+    transform: `translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`,
+    fill: point.color,
+  });
 };
 
 const map = (items: Array<Point>, cb: (x: any, idx: number) => any) => {
@@ -168,23 +185,6 @@ type Point = {
   x: number;
   y: number;
   color: string;
-};
-
-type PointProps = {
-  key: number;
-  point: Point;
-};
-
-const Point = ({ key, point }: PointProps) => {
-  return (
-    <rect
-      class='point'
-      flag={flag}
-      key={key}
-      transform={`translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`}
-      fill={point.color}
-    />
-  );
 };
 
 const theta = Math.PI * (3 - Math.sqrt(5));
