@@ -10,6 +10,7 @@ class Store {
   public nextUnitOfWork: Fiber = null;
   public events: Map<string, WeakMap<object, Function>> = new Map();
   public unsubscribers: Array<() => void> = [];
+  public candidates: Set<Fiber> = new Set();
   public deletions: Set<Fiber> = new Set();
   public fiberMount: FiberMountStore = {
     level: 0,
@@ -73,6 +74,12 @@ const eventsStore = {
   get: () => store.get().events,
   addUnsubscriber: (fn: () => void) => store.get().unsubscribers.push(fn),
   unsubscribe: (id: number) => store.get(id).unsubscribers.forEach(fn => fn()),
+};
+
+const candidatesStore = {
+  get: () => store.get().candidates,
+  add: (fiber: Fiber) => store.get().candidates.add(fiber),
+  reset: () => (store.get().candidates = new Set()),
 };
 
 const deletionsStore = {
@@ -189,6 +196,7 @@ export {
   nextUnitOfWorkStore,
   currentFiberStore,
   eventsStore,
+  candidatesStore,
   deletionsStore,
   fiberMountStore,
   effectsStore,

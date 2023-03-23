@@ -14,7 +14,6 @@ import {
   detectIsBoolean,
   keyBy,
   NodeType,
-  detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
   walkFiber,
@@ -43,6 +42,11 @@ const attrBlackListMap = {
   [ATTR_REF]: true,
   [ATTR_FLAG]: true,
 };
+const patchPropsBlackListMap = {
+  transform: true,
+  fill: true,
+};
+
 let fragmentsMap: Map<NativeElement, DOMFragment> = new Map();
 let moves: Array<() => void> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
@@ -52,23 +56,16 @@ const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
     const tagNode = vNode as TagVirtualNode;
-    const node = detectIsSvgElement(tagNode.name)
+
+    return detectIsSvgElement(tagNode.name)
       ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
       : document.createElement(tagNode.name);
-
-    return node;
   },
   [NodeType.TEXT]: (vNode: VirtualNode): TextNativeElement => {
-    const textNode = vNode as TextVirtualNode;
-    const node = document.createTextNode(textNode.value);
-
-    return node;
+    return document.createTextNode((vNode as TextVirtualNode).value);
   },
   [NodeType.COMMENT]: (vNode: VirtualNode): CommentNativeElement => {
-    const commentNode = vNode as CommentVirtualNode;
-    const node = document.createComment(commentNode.value);
-
-    return node;
+    return document.createComment((vNode as CommentVirtualNode).value);
   },
 };
 
@@ -122,11 +119,6 @@ function addAttributes(element: NativeElement, vNode: VirtualNode) {
   }
 }
 
-const patchAttrBlackMap = {
-  transform: true,
-  fill: true,
-};
-
 function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
   const attrNames = Object.keys(nextVNode.attrs);
   const tagElement = element as TagNativeElement;
@@ -150,16 +142,14 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
           });
         }
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
-        let stop = false;
-
-        if (!patchAttrBlackMap[attrName]) {
-          stop = patchProperties({
-            tagName: nextVNode.name,
-            element: tagElement,
-            attrValue: nextAttrValue,
-            attrName,
-          });
-        }
+        const stop = !patchPropsBlackListMap[attrName]
+          ? patchProperties({
+              tagName: nextVNode.name,
+              element: tagElement,
+              attrValue: nextAttrValue,
+              attrName,
+            })
+          : false;
 
         !stop && tagElement.setAttribute(attrName, nextAttrValue);
       }
@@ -370,11 +360,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
     commitCreation(fiber);
   },
   [EffectTag.UPDATE]: (fiber: Fiber<NativeElement>) => {
-    if (fiber.move) {
-      move(fiber);
-      fiber.move = false;
-    }
-
+    fiber.move && (move(fiber), (fiber.move = false));
     if (fiber.nativeElement === null) return;
     trackUpdate && trackUpdate(fiber.nativeElement);
     commitUpdate(fiber);

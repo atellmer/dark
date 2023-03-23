@@ -13,6 +13,7 @@ import {
   wipRootStore,
   currentRootStore,
   nextUnitOfWorkStore,
+  candidatesStore,
   deletionsStore,
   fiberMountStore,
   currentFiberStore,
@@ -213,6 +214,8 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   performFiber(fiber, alternate, instance);
   alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
 
+  candidatesStore.add(fiber);
+
   return {
     fiber$: fiber,
     instance$: instance,
@@ -244,6 +247,8 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     alternate && performAlternate(alternate, instance);
     performFiber(fiber, alternate, instance);
     alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
+
+    candidatesStore.add(fiber);
 
     return {
       fiber$$: fiber,
@@ -743,8 +748,8 @@ function commitChanges() {
   if (isHydrateZone.get() && detectHasRegisteredLazy()) return flush(null); // important order
   const wipFiber = wipRootStore.get();
   const isDynamic = platform.detectIsDynamic();
-  const insertionEffects = insertionEffectsStore.get();
   const deletions = deletionsStore.get();
+  const candidates = candidatesStore.get();
   const fromUpdate = isUpdateHookZone.get();
 
   // important order
@@ -753,64 +758,54 @@ function commitChanges() {
     platform.applyCommit(fiber);
   }
 
-  isInsertionEffectsZone.set(true);
-  isDynamic && insertionEffects.forEach(fn => fn());
-  isInsertionEffectsZone.set(false);
-
+  isDynamic && runInsertionEffects();
   fromUpdate && syncElementIndices(wipFiber);
 
-  commitWork(wipFiber, () => {
-    const layoutEffects = layoutEffectsStore.get();
-    const effects = effectsStore.get();
+  for (const fiber of candidates) {
+    platform.applyCommit(fiber);
+    fiber.alternate = null;
+  }
 
-    isLayoutEffectsZone.set(true);
-    isDynamic && layoutEffects.forEach(fn => fn());
-    isLayoutEffectsZone.set(false);
+  wipFiber.alternate = null;
+  platform.finishCommitWork();
 
-    isDynamic &&
-      effects.length > 0 &&
-      setTimeout(() => {
-        effects.forEach(fn => fn());
-      });
+  isDynamic && runLayoutEffects();
+  isDynamic && runEffects();
 
-    flush(wipFiber);
-  });
+  flush(wipFiber);
+}
+
+function runInsertionEffects() {
+  isInsertionEffectsZone.set(true);
+  insertionEffectsStore.get().forEach(fn => fn());
+  isInsertionEffectsZone.set(false);
+}
+
+function runLayoutEffects() {
+  isLayoutEffectsZone.set(true);
+  layoutEffectsStore.get().forEach(fn => fn());
+  isLayoutEffectsZone.set(false);
+}
+
+function runEffects() {
+  const effects = effectsStore.get();
+
+  effects.length > 0 && setTimeout(() => effects.forEach(fn => fn()));
 }
 
 function flush(wipFiber: Fiber) {
-  const fromUpdate = isUpdateHookZone.get();
-
   wipRootStore.set(null); // important order
+  candidatesStore.reset();
   deletionsStore.reset();
   insertionEffectsStore.reset();
   layoutEffectsStore.reset();
   effectsStore.reset();
 
-  if (fromUpdate) {
+  if (isUpdateHookZone.get()) {
     isUpdateHookZone.set(false);
   } else {
     currentRootStore.set(wipFiber);
   }
-}
-
-function commitWork(fiber: Fiber, onComplete: Function) {
-  walkFiber(fiber.child, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
-    const skip = nextFiber.effectTag === EffectTag.SKIP;
-
-    if (nextFiber === fiber) return stop();
-
-    if (skip) {
-      resetIsDeepWalking();
-    } else if (!isReturn) {
-      platform.applyCommit(nextFiber);
-    }
-
-    nextFiber.alternate = null;
-  });
-
-  fiber.alternate = null;
-  platform.finishCommitWork();
-  onComplete();
 }
 
 function getParentFiberWithNativeElement(fiber: Fiber) {
