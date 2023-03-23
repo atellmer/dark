@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/platform-server",
-  "version": "0.19.1",
+  "version": "0.19.2",
   "description": "Dark renderer for server",
   "author": "AlexPlex",
   "license": "MIT",
