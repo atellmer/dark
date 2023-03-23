@@ -2,15 +2,15 @@
 # yarn lockfile v1
 
 
-"@dark-engine/core@0.19.1":
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/@dark-engine/core/-/core-0.19.1.tgz#85c587504cf0f5082442687f3eed6ae60630913a"
-  integrity sha512-AOHZoZc+53yBYd0qbwbHep2afJ9reLcBnWcEwe9Ri+ZOUAJi5W3OAifNZnvZFp2XCGmU4QhJ2BfG3P5inDAm8g==
+"@dark-engine/core@0.19.2":
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/@dark-engine/core/-/core-0.19.2.tgz#ff27028e0df88ab4fcf0bdd0f722f229102d67e9"
+  integrity sha512-pMAY1UAQLxmxSdmgFnoKPbjvGKzXvhfDL5AKWf36XyYDruxCohRYIbUTKWGhotGHwckQ8DheLXR4dpUu8AF2vA==
 
-"@dark-engine/platform-browser@0.19.1":
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/@dark-engine/platform-browser/-/platform-browser-0.19.1.tgz#e4026ecad6e8354e696d02027ceb39b23e9c5585"
-  integrity sha512-xQcUcf1SNh5hxF+D1DqExle7wL2UulFymDSfZyGCVDmKquXjiM5LvWFNhsl3o5K1oMcbnrTWNsBp6UedvamLlw==
+"@dark-engine/platform-browser@0.19.2":
+  version "0.19.2"
+  resolved "https://registry.yarnpkg.com/@dark-engine/platform-browser/-/platform-browser-0.19.2.tgz#3b2ebb7a9412bf2bb4fda37f34bdfdb68217296f"
+  integrity sha512-E9R+nf/1Y9OUWXGwxffBfRStjIcmF4QWLfxeeLEKFOSZ06chpG8m7IAJ2ytRTnkEm3zM/Mlqv3uI/wOoocKufQ==
 
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
