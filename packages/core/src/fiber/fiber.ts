@@ -328,9 +328,7 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
     fiber.effectTag = EffectTag.CREATE;
   }
 
-  if (fiber.nativeElement) {
-    fiber.incrementChildrenElementsCount();
-  }
+  fiber.nativeElement && fiber.incrementChildrenElementsCount();
 }
 
 function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
@@ -448,60 +446,46 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
 
   const prevComponent = alternate.instance as Component;
   const nextComponent = instance as Component;
+
   if (fiber.move || nextComponent.type !== prevComponent.type) return;
-  const prevProps = prevComponent.props;
-  const nextProps = nextComponent.props;
-  const skip = !nextComponent.shouldUpdate(prevProps, nextProps);
 
-  if (skip) {
-    fiberMountStore.deepWalking.set(false);
-    const diff = fiber.elementIdx - alternate.elementIdx;
-    const deep = diff !== 0;
+  const shouldUpdate = nextComponent.shouldUpdate(prevComponent.props, nextComponent.props);
 
-    fiber.mutate({
-      ...alternate,
-      alternate,
-      id: fiber.id,
-      idx: fiber.idx,
-      parent: fiber.parent,
-      nextSibling: fiber.nextSibling,
-      elementIdx: fiber.elementIdx,
-      effectTag: EffectTag.SKIP,
-    });
+  if (shouldUpdate) return;
 
-    walkFiber(fiber.child, ({ nextFiber, stop }) => {
-      if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
-        return stop();
-      }
+  fiberMountStore.deepWalking.set(false);
+  fiber.mutate({
+    ...alternate,
+    alternate,
+    id: fiber.id,
+    idx: fiber.idx,
+    parent: fiber.parent,
+    nextSibling: fiber.nextSibling,
+    elementIdx: fiber.elementIdx,
+    effectTag: EffectTag.SKIP,
+  });
 
-      if (nextFiber.parent === alternate) {
-        nextFiber.parent = fiber;
-      }
+  const diff = fiber.elementIdx - alternate.elementIdx;
+  const deep = diff !== 0;
 
-      if (deep) {
-        nextFiber.elementIdx += diff;
-        if (nextFiber.parent !== fiber && nextFiber.nativeElement) return stop();
-      } else if (nextFiber === alternate.child.child) return stop();
-    });
+  walkFiber(fiber.child, ({ nextFiber, stop }) => {
+    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) return stop();
 
-    fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
-
-    if (alternate.effectHost) {
-      fiber.markEffectHost();
+    if (nextFiber.parent === alternate) {
+      nextFiber.parent = fiber;
     }
 
-    if (alternate.layoutEffectHost) {
-      fiber.markLayoutEffectHost();
-    }
+    if (deep) {
+      nextFiber.elementIdx += diff;
+      if (nextFiber.parent !== fiber && nextFiber.nativeElement) return stop();
+    } else if (nextFiber === alternate.child.child) return stop();
+  });
 
-    if (alternate.insertionEffectHost) {
-      fiber.markInsertionEffectHost();
-    }
-
-    if (alternate.portalHost) {
-      fiber.markPortalHost();
-    }
-  }
+  fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
+  alternate.effectHost && fiber.markEffectHost();
+  alternate.layoutEffectHost && fiber.markLayoutEffectHost();
+  alternate.insertionEffectHost && fiber.markInsertionEffectHost();
+  alternate.portalHost && fiber.markPortalHost();
 }
 
 function pertformInstance(parentInstance: DarkElementInstance, idx: number, fiber: Fiber) {
