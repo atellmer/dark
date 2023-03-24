@@ -345,10 +345,10 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
 
 function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
   return new Fiber().mutate({
+    effectTag: EffectTag.CREATE,
     instance: createReplacer(),
     parent: alternate,
     marker: marker + '',
-    effectTag: EffectTag.CREATE,
   });
 }
 
@@ -447,23 +447,23 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
   const prevComponent = alternate.instance as Component;
   const nextComponent = instance as Component;
 
-  if (fiber.move || nextComponent.type !== prevComponent.type) return;
-
-  const shouldUpdate = nextComponent.shouldUpdate(prevComponent.props, nextComponent.props);
-
-  if (shouldUpdate) return;
+  if (
+    fiber.move ||
+    nextComponent.type !== prevComponent.type ||
+    nextComponent.shouldUpdate(prevComponent.props, nextComponent.props)
+  )
+    return;
 
   fiberMountStore.deepWalking.set(false);
-  fiber.mutate({
-    ...alternate,
-    alternate,
-    id: fiber.id,
-    idx: fiber.idx,
-    parent: fiber.parent,
-    nextSibling: fiber.nextSibling,
-    elementIdx: fiber.elementIdx,
-    effectTag: EffectTag.SKIP,
-  });
+  fiber.effectTag = EffectTag.SKIP;
+  fiber.alternate = alternate;
+  fiber.nativeElement = alternate.nativeElement;
+  fiber.child = alternate.child;
+  fiber.hook = alternate.hook;
+  fiber.provider = alternate.provider;
+  fiber.childrenCount = alternate.childrenCount;
+  fiber.childrenElementsCount = alternate.childrenElementsCount;
+  fiber.catchException = alternate.catchException;
 
   const diff = fiber.elementIdx - alternate.elementIdx;
   const deep = diff !== 0;
@@ -503,21 +503,10 @@ function pertformInstance(parentInstance: DarkElementInstance, idx: number, fibe
   }
 
   if (detectIsComponent(instance)) {
-    if (hasEffects(fiber)) {
-      fiber.markEffectHost();
-    }
-
-    if (hasLayoutEffects(fiber)) {
-      fiber.markLayoutEffectHost();
-    }
-
-    if (hasInsertionEffects(fiber)) {
-      fiber.markInsertionEffectHost();
-    }
-
-    if (platform.detectIsPortal(instance)) {
-      fiber.markPortalHost();
-    }
+    hasEffects(fiber) && fiber.markEffectHost();
+    hasLayoutEffects(fiber) && fiber.markLayoutEffectHost();
+    hasInsertionEffects(fiber) && fiber.markInsertionEffectHost();
+    platform.detectIsPortal(instance) && fiber.markPortalHost();
   }
 
   return instance;
@@ -848,7 +837,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     isUpdateHookZone.set(true);
     fiberMountStore.reset();
 
-    fiber.alternate = new Fiber().mutate({ ...fiber });
+    fiber.alternate = new Fiber().mutate(fiber);
     fiber.marker = '🍒';
     fiber.effectTag = EffectTag.UPDATE;
     fiber.childrenElementsCount = 0;
