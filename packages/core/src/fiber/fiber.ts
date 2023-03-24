@@ -493,7 +493,7 @@ function pertformInstance(parentInstance: DarkElementInstance, idx: number, fibe
 
   if (hasChildrenProp(parentInstance)) {
     const elements = detectIsArray(parentInstance.children[idx])
-      ? flatten([parentInstance.children[idx]])
+      ? flatten(parentInstance.children[idx] as unknown as Array<DarkElementInstance>)
       : [parentInstance.children[idx]];
 
     parentInstance.children.splice(idx, 1, ...elements);
@@ -526,7 +526,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
         result = Text(result);
       }
 
-      component.children = (detectIsArray(result) ? flatten([result]) : [result]) as Array<DarkElementInstance>;
+      component.children = (detectIsArray(result) ? flatten(result) : [result]) as Array<DarkElementInstance>;
     } catch (err) {
       component.children = [];
       fiber.setError(err);
@@ -540,7 +540,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
     instance.children = isComponent
       ? instance.children
       : detectIsArray(instance.children)
-      ? flatten([instance.children])
+      ? flatten(instance.children)
       : [instance.children];
 
     for (let i = 0; i < instance.children.length; i++) {
