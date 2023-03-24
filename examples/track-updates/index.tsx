@@ -3,7 +3,7 @@ import {
   View,
   Text,
   Fragment,
-  createComponent,
+  component,
   memo,
   useCallback,
   SplitUpdate,
@@ -76,7 +76,7 @@ type HeaderProps = {
   onClear: () => void;
 };
 
-const Header = createComponent<HeaderProps>(
+const Header = component<HeaderProps>(
   ({ onCreate, onPrepend, onAppend, onInsertDifferent, onUpdateAll, onSwap, onClear }) => {
     return div({
       style:
@@ -129,7 +129,7 @@ type RowProps = {
   onHighlight: (id: number) => void;
 };
 
-const Row = createComponent<RowProps>(({ id, onRemove, onHighlight }) => {
+const Row = component<RowProps>(({ id, onRemove, onHighlight }) => {
   const { name, selected } = useSplitUpdate<ListItem>(
     map => map[id],
     x => `${x.name}:${x.selected}`,
@@ -158,7 +158,7 @@ type ListProps = {
   onHighlight: (id: number) => void;
 };
 
-const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
+const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
   return (
     <table class='table'>
       <tbody>
@@ -179,7 +179,7 @@ const List = createComponent<ListProps>(({ items, onRemove, onHighlight }) => {
 
 const MemoList = memo(List);
 
-const Bench = createComponent(() => {
+const Bench = component(() => {
   const handleCreate = useCallback(() => {
     state.list = buildData(10);
     measurer.start('create');

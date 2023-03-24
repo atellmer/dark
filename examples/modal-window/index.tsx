@@ -1,6 +1,6 @@
 import {
   h,
-  createComponent,
+  component,
   useEffect,
   useState,
   useMemo,
@@ -15,7 +15,7 @@ type OverlayProps = {
   onRequestClose: () => void;
 };
 
-const Overlay = createComponent<OverlayProps>(({ x, onRequestClose }) => {
+const Overlay = component<OverlayProps>(({ x, onRequestClose }) => {
   const style = useStyle(styled => ({
     container: styled`
       position: fixed;
@@ -38,7 +38,7 @@ type ModalProps = {
   onRequestClose: () => void;
 };
 
-const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) => {
+const Modal = component<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) => {
   const host = useMemo<HTMLDivElement>(() => document.createElement('div'), []);
   const [isOpen, setIsOpen] = useState(isOpenX);
   const scope = useMemo(() => ({ isClosing: false }), []);
@@ -146,7 +146,7 @@ const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClo
   return isOpenX ? createPortal(renderModal(), host) : null;
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [timer, setTimer] = useState(0);
 

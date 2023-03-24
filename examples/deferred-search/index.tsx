@@ -1,4 +1,4 @@
-import { h, createComponent, useState, useMemo, useDeferredValue } from '@dark-engine/core';
+import { h, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 function generateProducts() {
@@ -24,7 +24,7 @@ type ProductListProps = {
   products: Array<string>;
 };
 
-const ProductList = createComponent<ProductListProps>(({ products }) => {
+const ProductList = component<ProductListProps>(({ products }) => {
   const deferredProducts = useDeferredValue(products);
   const items = useMemo(() => {
     return deferredProducts.map(product => <li key={product}>{product}</li>);
@@ -33,7 +33,7 @@ const ProductList = createComponent<ProductListProps>(({ products }) => {
   return <ul>{items}</ul>;
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const [name, setName] = useState('');
   const deferredName = useDeferredValue(name);
   const filteredProducts = useMemo(() => filterProducts(deferredName), [deferredName]);

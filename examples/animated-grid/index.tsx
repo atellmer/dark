@@ -1,7 +1,7 @@
 import {
   h,
   Fragment,
-  createComponent,
+  component,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -65,7 +65,7 @@ type AnimatedListSlotOptions<T> = {
   itemRef: (idx: number, key: Key) => (ref: HTMLElement) => void;
 };
 
-const XAnimatedList = createComponent<AnimatedListProps>(({ items: xItems, getKey, duration = 1000, slot }) => {
+const XAnimatedList = component<AnimatedListProps>(({ items: xItems, getKey, duration = 1000, slot }) => {
   const [items, setItems] = useState(xItems);
   const containerRef = useRef<HTMLElement>(null);
   const scope = useMemo<Scope>(
@@ -203,7 +203,7 @@ const AnimatedList = XAnimatedList as <T>(props?: MergedProps<T>, ref?: Ref) => 
 
 // usage
 
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState({ items: shuffle(100) });
 
   const handleShuffle = () => {

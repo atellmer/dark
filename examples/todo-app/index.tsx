@@ -1,4 +1,4 @@
-import { Text, createComponent, useState, useRef, forwardRef } from '@dark-engine/core';
+import { Text, component, useState, useRef, forwardRef } from '@dark-engine/core';
 import { createRoot, div, button, input, label, type SyntheticEvent } from '@dark-engine/platform-browser';
 
 class TodoTask {
@@ -22,7 +22,7 @@ type TextFieldProps = {
 };
 
 const TextField = forwardRef(
-  createComponent<TextFieldProps, HTMLInputElement>((props, ref) => {
+  component<TextFieldProps, HTMLInputElement>((props, ref) => {
     const { value, fulllWidth, onEnter, onChange } = props;
 
     const handleChange = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => {
@@ -49,7 +49,7 @@ type CheckboxProps = {
   onChange: (e, value: boolean) => void;
 };
 
-const Checkbox = createComponent<CheckboxProps>(props => {
+const Checkbox = component<CheckboxProps>(props => {
   const { value, labelText, onChange } = props;
 
   const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => onChange(e, !value);
@@ -73,7 +73,7 @@ type TaskItemProps = {
   onRemove: (id: number) => void;
 };
 
-const TaskItem = createComponent<TaskItemProps>(props => {
+const TaskItem = component<TaskItemProps>(props => {
   const { task, onComplete, onRemove } = props;
 
   const handleCompleted = (_, completed: boolean) => onComplete(task.id, completed);
@@ -106,7 +106,7 @@ const TaskItem = createComponent<TaskItemProps>(props => {
   });
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const [tasks, setTasks] = useState<Array<TodoTask>>(() => [
     new TodoTask('Learn Dark', true),
     new TodoTask('Learn React', true),

@@ -4,7 +4,7 @@ import { interpolateViridis } from 'd3-scale-chromatic';
 import {
   h,
   View,
-  createComponent,
+  component,
   useState,
   useEffect,
   useMemo,
@@ -17,7 +17,7 @@ import { render } from '@dark-engine/platform-browser';
 startFPSMonitor();
 startMemMonitor();
 
-const Demo = createComponent(() => {
+const Demo = component(() => {
   const [numPoints, setNumPoints] = useState(1000, {
     priority: TaskPriority.HIGH,
   });
@@ -63,7 +63,7 @@ type VizDemoProps = {
   count: number;
 };
 
-const VizDemo = createComponent<VizDemoProps>(({ count }) => {
+const VizDemo = component<VizDemoProps>(({ count }) => {
   const update = useUpdate();
   const scope = useMemo(
     () => ({
