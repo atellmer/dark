@@ -5,11 +5,6 @@ import type { Ref } from '../ref';
 import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
 
 const $$component = Symbol('component');
-const defaultOptions: ComponentOptions<any> = {
-  displayName: '',
-  token: $$component,
-  keepRef: false,
-};
 class Component<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
   public token: Symbol;
@@ -28,7 +23,7 @@ class Component<P extends StandardComponentProps = any, R = any> {
     displayName: string,
   ) {
     this.type = type || null;
-    this.token = token || null;
+    this.token = token || $$component;
     this.props = props || null;
     this.ref = ref || null;
     this.shouldUpdate = shouldUpdate || null;
@@ -37,8 +32,7 @@ class Component<P extends StandardComponentProps = any, R = any> {
 }
 
 function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
-  const computedOptions = { ...defaultOptions, ...options } as ComponentOptions<P>;
-  const { token, displayName, shouldUpdate, keepRef } = computedOptions;
+  const { token, displayName, shouldUpdate, keepRef = false } = options;
   const component = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
     if (!keepRef && props.ref) {
       delete props.ref;
