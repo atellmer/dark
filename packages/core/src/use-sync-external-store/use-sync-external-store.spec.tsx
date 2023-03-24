@@ -1,7 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useSyncExternalStore } from './use-sync-external-store';
 
 let host: HTMLElement = null;
@@ -39,7 +39,7 @@ describe('[use-sync-external-store]', () => {
     const store = createStore(0);
     let state: number;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       state = useSyncExternalStore(store.subscribe, store.getState);
 
       return null;

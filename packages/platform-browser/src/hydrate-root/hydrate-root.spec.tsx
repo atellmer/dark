@@ -2,7 +2,7 @@
 import {
   h,
   Fragment,
-  createComponent,
+  component,
   useInsertionEffect,
   useLayoutEffect,
   useEffect,
@@ -22,7 +22,7 @@ beforeEach(() => {
 
 describe('[hydrate-root]', () => {
   test('has methods', () => {
-    const App = createComponent(() => {
+    const App = component(() => {
       return null;
     });
     const root = hydrateRoot(host, <App />);
@@ -33,7 +33,7 @@ describe('[hydrate-root]', () => {
   test('unmount clears all effects and unmounts root node correctly', () => {
     const dropFn = jest.fn();
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useInsertionEffect(() => {
         return () => dropFn();
       }, []);
@@ -49,7 +49,7 @@ describe('[hydrate-root]', () => {
       return <div>child</div>;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         return () => dropFn();
       }, []);
@@ -81,7 +81,7 @@ describe('[hydrate-root]', () => {
   });
 
   test('can reuse DOM', () => {
-    const App = createComponent(() => {
+    const App = component(() => {
       const [x, setX] = useState(0);
 
       const handleClick = () => setX(x + 1);

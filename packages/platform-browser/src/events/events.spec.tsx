@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
 import { click } from '@test-utils';
 import { createRoot } from '../create-root';
@@ -23,7 +23,7 @@ describe('[events]', () => {
   test('can pass synthetic event', () => {
     let event: SyntheticEvent<MouseEvent, HTMLButtonElement> = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
         event = e;
       };
@@ -46,7 +46,7 @@ describe('[events]', () => {
     const mockFn = jest.fn();
     let button: HTMLButtonElement = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleClick = () => mockFn();
 
       return <button onClick={handleClick}>click</button>;
@@ -72,7 +72,7 @@ describe('[events]', () => {
     const mockFn = jest.fn();
     let button: HTMLButtonElement = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleClick = () => mockFn();
 
       return <button onClick={handleClick}>click</button>;
@@ -100,7 +100,7 @@ describe('[events]', () => {
       return addEventListener(...args);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleClick = () => mockFn2();
 
       return <button onClick={handleClick}>click</button>;
@@ -120,7 +120,7 @@ describe('[events]', () => {
     const mockFn1 = jest.fn();
     const mockFn2 = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleDivClick = () => mockFn1();
       const handleButtonClick = () => mockFn2();
 
@@ -144,7 +144,7 @@ describe('[events]', () => {
     const mockFn1 = jest.fn();
     const mockFn2 = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleDivClick = () => mockFn1();
       const handleButtonClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
         e.stopPropagation();
@@ -170,7 +170,7 @@ describe('[events]', () => {
   test('can prevent default behaviour', () => {
     let event: SyntheticEvent<MouseEvent, HTMLButtonElement> = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
         e.preventDefault();
         event = e;

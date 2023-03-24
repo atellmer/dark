@@ -1,7 +1,7 @@
-import { h, createComponent, useState } from '@dark-engine/core';
+import { h, component, useState } from '@dark-engine/core';
 import { ListView } from '@dark-engine/platform-native';
 
-const App = createComponent(() => {
+const App = component(() => {
   const [items, setItems] = useState<Array<number>>(() =>
     Array(1000)
       .fill(null)

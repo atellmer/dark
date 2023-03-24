@@ -2,7 +2,7 @@ import {
   type ComponentFactory,
   type StandardComponentProps,
   type ShouldUpdate,
-  createComponent,
+  component,
   detectIsComponent,
 } from '../component';
 import type { SlotProps, RefProps } from '../shared';
@@ -24,12 +24,12 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
 const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;
 
 function memo<P, R = unknown>(
-  component: ComponentFactory<P, R>,
+  factory: ComponentFactory<P, R>,
   shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
 ) {
   type Props = P & Omit<StandardComponentProps, 'ref'> & RefProps<R>;
 
-  return createComponent<Props, R>(props => component(props), {
+  return component<Props, R>(props => factory(props), {
     token: $$memo,
     keepRef: true,
     shouldUpdate,

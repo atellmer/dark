@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useUpdate } from '../use-update';
 import { useLayoutEffect } from './use-layout-effect';
 
@@ -15,7 +15,7 @@ beforeEach(() => {
 describe('[use-layout-effect]', () => {
   test('runs sync', () => {
     const effectFn = jest.fn();
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => effectFn(), []);
 
       return null;
@@ -32,7 +32,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => mockFn(), []);
 
       return null;
@@ -56,7 +56,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ x }) => {
+    const App = component<AppProps>(({ x }) => {
       useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
@@ -90,7 +90,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
@@ -115,7 +115,7 @@ describe('[use-layout-effect]', () => {
   test('drops effect on unmount event', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => {
         effectFn();
         return () => dropFn();
@@ -147,7 +147,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => {
         effectFn1();
         return () => dropFn1();
@@ -189,7 +189,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useLayoutEffect(() => {
         effectFn2();
         return () => dropFn2();
@@ -198,7 +198,7 @@ describe('[use-layout-effect]', () => {
       return null;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => {
         effectFn1();
         return () => dropFn1();
@@ -238,7 +238,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useLayoutEffect(() => {
         render$();
       }, []);
@@ -259,7 +259,7 @@ describe('[use-layout-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const update = useUpdate();
 
       useLayoutEffect(() => {

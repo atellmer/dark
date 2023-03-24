@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { lazy } from '../lazy';
 import { Suspense } from './suspense';
 
@@ -36,7 +36,7 @@ describe('[Suspense]', () => {
       <div>lazy</div>
     `;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <Suspense fallback={<div>loading...</div>}>
           <LazyComponent />

@@ -1,4 +1,4 @@
-import { h, Fragment, createComponent, lazy, Suspense, type DarkElement } from '@dark-engine/core';
+import { h, Fragment, component, lazy, Suspense, type DarkElement } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, RouterLink, useLocation } from '@dark-engine/web-router';
 
@@ -10,7 +10,7 @@ type ShellProps = {
   slot: DarkElement;
 };
 
-const Shell = createComponent<ShellProps>(({ slot }) => {
+const Shell = component<ShellProps>(({ slot }) => {
   const { key } = useLocation();
 
   return (
@@ -29,7 +29,7 @@ const Shell = createComponent<ShellProps>(({ slot }) => {
   );
 });
 
-const Spinner = createComponent(() => <div>Loading...</div>);
+const Spinner = component(() => <div>Loading...</div>);
 
 const routes: Routes = [
   {
@@ -50,7 +50,7 @@ const routes: Routes = [
   },
 ];
 
-const App = createComponent(() => {
+const App = component(() => {
   return <Router routes={routes}>{slot => <Shell>{slot}</Shell>}</Router>;
 });
 

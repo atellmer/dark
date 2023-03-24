@@ -28,7 +28,7 @@
   <!-- deps end -->
   <script>
     // export from global variables
-    const { View, Text, createComponent, useState } = DarkCore;
+    const { View, Text, component, useState } = DarkCore;
     const { render } = DarkPlatformBrowser;
 
     // start coding...
@@ -36,7 +36,7 @@
     const input = props => View({ ...props, void: true, as: 'input' });
 
     // App component
-    const App = createComponent(() => {
+    const App = component(() => {
       const [value, setValue] = useState('xxx');
 
       const handleInput = e => setValue(e.target.value);

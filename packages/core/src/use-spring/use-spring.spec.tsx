@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { waitNextTick } from '@test-utils';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useSpring } from './use-spring';
 import { useState } from '../use-state';
 import { platform } from '../platform';
@@ -27,7 +27,7 @@ describe('[use-spring]', () => {
     const mirrored: Array<number> = [];
     let state: boolean = null;
     let setState: (value: boolean) => void = null;
-    const App = createComponent(() => {
+    const App = component(() => {
       [state, setState] = useState(false);
       const {
         values: [x1],
@@ -118,7 +118,7 @@ describe('[use-spring]', () => {
     let x2: number;
     let state: boolean = null;
     let setState: (value: boolean) => void = null;
-    const App = createComponent(() => {
+    const App = component(() => {
       [state, setState] = useState<boolean>(null);
       const {
         values: [x11, x22],
@@ -191,7 +191,7 @@ describe('[use-spring]', () => {
     let x: number;
     let state: boolean = null;
     let setState: (value: boolean) => void = null;
-    const App = createComponent(() => {
+    const App = component(() => {
       [state, setState] = useState<boolean>(null);
       useSpring(
         {
@@ -243,7 +243,7 @@ describe('[use-spring]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [state, setState] = useState(false);
       useSpring(
         {
@@ -293,7 +293,7 @@ describe('[use-spring]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [count, setCount] = useState(0);
       useSpring(
         {
@@ -339,7 +339,7 @@ describe('[use-spring]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useSpring(
         {
           state: true,

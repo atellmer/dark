@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useRef } from '../use-ref';
 import { forwardRef } from './ref';
 import { MutableRef } from './types';
@@ -17,11 +17,11 @@ describe('[forward-ref]', () => {
   test('component ref is not available without forwarding', () => {
     let ref: MutableRef = null;
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       return <div />;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       ref = useRef(null);
 
       return <Child ref={ref} />;
@@ -34,9 +34,9 @@ describe('[forward-ref]', () => {
   test('can forward ref', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
-    const Child = forwardRef(createComponent((_, ref) => <div ref={ref} />));
+    const Child = forwardRef(component((_, ref) => <div ref={ref} />));
 
-    const App = createComponent(() => {
+    const App = component(() => {
       ref = useRef(null);
 
       return <Child ref={ref} />;

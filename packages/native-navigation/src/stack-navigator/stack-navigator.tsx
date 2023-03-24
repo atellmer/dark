@@ -12,7 +12,7 @@ import {
   type StandardComponentProps,
   type DarkElement,
   h,
-  createComponent,
+  component,
   createContext,
   detectIsFunction,
   forwardRef,
@@ -40,7 +40,7 @@ export type StackNavigatorProps = {
 export type StackNavigatorRef = {};
 
 const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
-  createComponent(
+  component(
     ({ slot, onNavigate }, ref) => {
       const { pathname, transition, replace, subscribe } = useNavigationContext();
       const { prefix } = useScreenNavigatorContext();
@@ -125,7 +125,7 @@ export type StackScreenProps = {
   slot?: () => DarkElement;
 };
 
-const Screen = createComponent<StackScreenProps>(
+const Screen = component<StackScreenProps>(
   ({ name, component, initialParams = {}, slot }) => {
     const { prefix } = useScreenNavigatorContext();
     const pathname = createPathname(name, prefix);

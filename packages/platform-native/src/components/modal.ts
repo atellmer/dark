@@ -1,5 +1,5 @@
 import { type View as NSView, type ShowModalOptions } from '@nativescript/core';
-import { type DarkElement, type ComponentFactory, createComponent, useRef, useEffect } from '@dark-engine/core';
+import { type DarkElement, type ComponentFactory, component, useRef, useEffect } from '@dark-engine/core';
 
 import { type ViewRef, View } from './view';
 import { type ButtonRef, Button } from './button';
@@ -11,7 +11,7 @@ export type ModalProps = {
   onRequestClose?: () => void;
 } & Omit<ShowModalOptions, 'context' | 'closeCallback' | 'cancelable'>;
 
-const Modal = createComponent<ModalProps>(
+const Modal = component<ModalProps>(
   ({ isOpen, slot, closeOnTapOverlay = false, onRequestClose, ...rest }) => {
     const rootRef = useRef<ButtonRef>(null);
     const childRef = useRef<ViewRef>(null);

@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useReducer } from './use-reducer';
 
 let host: HTMLElement = null;
@@ -40,7 +40,7 @@ describe('[use-reducer]', () => {
       }
     }
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [state, dispatch] = useReducer(reducer, initialState);
 
       return <div>Count: {state.count}</div>;

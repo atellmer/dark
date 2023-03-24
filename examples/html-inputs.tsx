@@ -1,7 +1,7 @@
-import { h, Fragment, createComponent, useState } from '@dark-engine/core';
+import { h, Fragment, component, useState } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
 
-const App = createComponent(() => {
+const App = component(() => {
   const [textInputValue, setTextInputValue] = useState('hello');
   const [passwordInputValue, setPasswordInputValue] = useState('12345');
   const [numberInputValue, setNumberInputValue] = useState(10);

@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useUpdate } from './use-update';
 
 let host: HTMLElement = null;
@@ -15,7 +15,7 @@ describe('[use-update]', () => {
   test('can make update', () => {
     const mockFn = jest.fn();
     let update: () => void = null;
-    const App = createComponent(() => {
+    const App = component(() => {
       update = useUpdate();
 
       mockFn();
@@ -38,7 +38,7 @@ describe('[use-update]', () => {
     const childFn = jest.fn();
     let update: () => void = null;
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       update = useUpdate();
 
       childFn();
@@ -46,7 +46,7 @@ describe('[use-update]', () => {
       return null;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       appFn();
 
       return <Child />;

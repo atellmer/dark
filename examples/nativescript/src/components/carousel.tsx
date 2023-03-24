@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { registerElement } from '@dark-engine/platform-native';
 
 registerElement('carousel', () => require('@nstudio/nativescript-carousel').Carousel);
@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const MyCarousel = createComponent(() => {
+const MyCarousel = component(() => {
   return (
     <carousel height='100%' width='100%' showIndicator={false} onPageChanged={() => console.log('page changed')}>
       <carousel-item id='slide1' backgroundColor='red'>
@@ -36,7 +36,7 @@ const MyCarousel = createComponent(() => {
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <frame>
       <page actionBarHidden>

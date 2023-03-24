@@ -1,5 +1,5 @@
 import type { DarkElementKey, DarkElement, Subscribe, SubscriberWithValue } from '../shared';
-import { createComponent, type Component, type StandardComponentProps } from '../component';
+import { component, type Component, type StandardComponentProps } from '../component';
 import { type Ref } from '../ref';
 import { createContext, useContext } from '../context';
 import { useUpdate } from '../use-update';
@@ -15,7 +15,7 @@ type SplitUpdateProps<T = any> = {
   slot: DarkElement;
 };
 
-const SplitUpdate: SplitUpdate = createComponent<SplitUpdateProps>(props => {
+const SplitUpdate: SplitUpdate = component<SplitUpdateProps>(props => {
   const { list, getKey, slot } = props;
   const scope = useMemo<Scope>(() => ({ list, subscribers: new Set() }), []);
   const map = useMemo(() => ({ value: keyBy(list, x => getKey(x), true) }), [list, getKey]);
@@ -65,7 +65,7 @@ type SplitUpdateGuardProps = {
 };
 
 const SplitUpdateGuard = memo(
-  createComponent<SplitUpdateGuardProps>(({ slot }) => slot),
+  component<SplitUpdateGuardProps>(({ slot }) => slot),
   (_, nextProps) => nextProps.canSplit === false,
 );
 

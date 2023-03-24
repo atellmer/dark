@@ -1,7 +1,7 @@
 import {
   h,
   Fragment,
-  createComponent,
+  component,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -65,126 +65,124 @@ type AnimatedListSlotOptions<T> = {
   itemRef: (idx: number, key: Key) => (ref: HTMLElement) => void;
 };
 
-const AnimatedList: AnimatedList = createComponent<AnimatedListProps>(
-  ({ items: xItems, getKey, duration = 1000, slot }) => {
-    const [items, setItems] = useState(xItems);
-    const containerRef = useRef<HTMLElement>(null);
-    const scope = useMemo<Scope>(
-      () => ({
-        refs: { indexed: {}, keyed: {} },
-        rects: {},
-        items,
-        timerId: null,
-        timerId2: null,
-        firstRender: true,
-        isTransition: false,
-      }),
-      [],
-    );
+const AnimatedList: AnimatedList = component<AnimatedListProps>(({ items: xItems, getKey, duration = 1000, slot }) => {
+  const [items, setItems] = useState(xItems);
+  const containerRef = useRef<HTMLElement>(null);
+  const scope = useMemo<Scope>(
+    () => ({
+      refs: { indexed: {}, keyed: {} },
+      rects: {},
+      items,
+      timerId: null,
+      timerId2: null,
+      firstRender: true,
+      isTransition: false,
+    }),
+    [],
+  );
 
-    useEffect(() => {
-      const setRects = () => {
-        let idx = 0;
-
-        for (const node of Array.from(containerRef.current.children)) {
-          scope.rects[idx] = node.getBoundingClientRect();
-          idx++;
-        }
-      };
-
-      setRects();
-      window.addEventListener('resize', setRects);
-
-      return () => window.removeEventListener('resize', setRects);
-    }, []);
-
-    useLayoutEffect(() => {
-      if (scope.firstRender) return;
-      scope.isTransition = true;
-      !scope.timerId && addStyles(items, true);
-      scope.items = xItems;
-      requestAnimationFrame(() => {
-        forceBrowserReflow();
-        addStyles(xItems, false);
-      });
-    }, [xItems]);
-
-    useEffect(() => {
-      if (scope.firstRender) return;
-      removeStyles(items);
-    }, [items]);
-
-    useEffect(() => {
-      scope.firstRender = false;
-    }, [items]);
-
-    const addStyles = (items: Array<unknown>, mount: boolean) => {
+  useEffect(() => {
+    const setRects = () => {
       let idx = 0;
 
-      for (const item of items) {
-        const rect = scope.rects[idx];
-        const key = getKey(item);
-        const ref = scope.refs.keyed[key];
-
-        ref.style.setProperty('position', 'absolute');
-        ref.style.setProperty('width', `${rect.width}px`);
-        ref.style.setProperty('height', `${rect.height}px`);
-        ref.style.setProperty('transform', `translate(${rect.left}px, ${rect.top}px)`);
-
-        if (!mount) {
-          ref.style.setProperty(
-            'transition',
-            `transform ${duration}ms ease-in-out, opacity ${duration / 2}ms ease-in-out`,
-          );
-          ref.style.setProperty('opacity', `0.5`);
-        }
-
+      for (const node of Array.from(containerRef.current.children)) {
+        scope.rects[idx] = node.getBoundingClientRect();
         idx++;
       }
-
-      !mount && scope.timerId && window.clearTimeout(scope.timerId);
-      scope.timerId = window.setTimeout(() => {
-        scope.timerId = null;
-        setItems(scope.items);
-      }, duration);
     };
 
-    const removeStyles = (items: Array<unknown>) => {
+    setRects();
+    window.addEventListener('resize', setRects);
+
+    return () => window.removeEventListener('resize', setRects);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (scope.firstRender) return;
+    scope.isTransition = true;
+    !scope.timerId && addStyles(items, true);
+    scope.items = xItems;
+    requestAnimationFrame(() => {
+      forceBrowserReflow();
+      addStyles(xItems, false);
+    });
+  }, [xItems]);
+
+  useEffect(() => {
+    if (scope.firstRender) return;
+    removeStyles(items);
+  }, [items]);
+
+  useEffect(() => {
+    scope.firstRender = false;
+  }, [items]);
+
+  const addStyles = (items: Array<unknown>, mount: boolean) => {
+    let idx = 0;
+
+    for (const item of items) {
+      const rect = scope.rects[idx];
+      const key = getKey(item);
+      const ref = scope.refs.keyed[key];
+
+      ref.style.setProperty('position', 'absolute');
+      ref.style.setProperty('width', `${rect.width}px`);
+      ref.style.setProperty('height', `${rect.height}px`);
+      ref.style.setProperty('transform', `translate(${rect.left}px, ${rect.top}px)`);
+
+      if (!mount) {
+        ref.style.setProperty(
+          'transition',
+          `transform ${duration}ms ease-in-out, opacity ${duration / 2}ms ease-in-out`,
+        );
+        ref.style.setProperty('opacity', `0.5`);
+      }
+
+      idx++;
+    }
+
+    !mount && scope.timerId && window.clearTimeout(scope.timerId);
+    scope.timerId = window.setTimeout(() => {
+      scope.timerId = null;
+      setItems(scope.items);
+    }, duration);
+  };
+
+  const removeStyles = (items: Array<unknown>) => {
+    for (const item of items) {
+      const key = getKey(item);
+      const ref = scope.refs.keyed[key];
+
+      ref.style.setProperty('transition', `opacity ${duration / 2}ms ease-in-out`);
+      ref.style.setProperty('opacity', `1`);
+      ref.style.removeProperty('position');
+      ref.style.removeProperty('width');
+      ref.style.removeProperty('height');
+      ref.style.removeProperty('transform');
+    }
+
+    scope.isTransition = false;
+
+    scope.timerId2 && window.clearTimeout(scope.timerId2);
+    scope.timerId2 = window.setTimeout(() => {
+      scope.timerId2 = null;
+      if (scope.isTransition) return;
       for (const item of items) {
         const key = getKey(item);
         const ref = scope.refs.keyed[key];
 
-        ref.style.setProperty('transition', `opacity ${duration / 2}ms ease-in-out`);
-        ref.style.setProperty('opacity', `1`);
-        ref.style.removeProperty('position');
-        ref.style.removeProperty('width');
-        ref.style.removeProperty('height');
-        ref.style.removeProperty('transform');
+        ref.removeAttribute('style');
       }
+    }, duration / 2);
+  };
 
-      scope.isTransition = false;
+  const itemRef = (idx: number, key: Key) => (ref: HTMLElement) => {
+    scope.refs.indexed[idx] = ref;
+    scope.refs.keyed[key] = ref;
+  };
 
-      scope.timerId2 && window.clearTimeout(scope.timerId2);
-      scope.timerId2 = window.setTimeout(() => {
-        scope.timerId2 = null;
-        if (scope.isTransition) return;
-        for (const item of items) {
-          const key = getKey(item);
-          const ref = scope.refs.keyed[key];
-
-          ref.removeAttribute('style');
-        }
-      }, duration / 2);
-    };
-
-    const itemRef = (idx: number, key: Key) => (ref: HTMLElement) => {
-      scope.refs.indexed[idx] = ref;
-      scope.refs.keyed[key] = ref;
-    };
-
-    return slot({ items, containerRef, itemRef });
-  },
-);
+  return slot({ items, containerRef, itemRef });
+});
 
 type Scope<T = unknown> = {
   refs: {
@@ -205,7 +203,7 @@ type AnimatedList = <T>(props?: MergedProps<T>, ref?: Ref) => Component<MergedPr
 
 // usage
 
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState({ items: shuffle(100) });
 
   const handleShuffle = () => {

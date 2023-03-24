@@ -1,7 +1,7 @@
 import {
   h,
   Fragment,
-  createComponent,
+  component,
   useEffect,
   useRef,
   useState,
@@ -14,7 +14,7 @@ import {
 } from '@dark-engine/core';
 import { createRoot, useStyle } from '@dark-engine/platform-browser';
 
-// const App = createComponent(() => {
+// const App = component(() => {
 //   const [isOpen, setIsOpen] = useState(false);
 //   const [mass, setMass] = useState(1);
 //   const [stiffness, setStiffness] = useState(1);
@@ -140,7 +140,7 @@ type IconProps = {
   size: number;
 };
 
-const ChevronIcon = createComponent<IconProps>(({ size }) => {
+const ChevronIcon = component<IconProps>(({ size }) => {
   return (
     <svg
       stroke='currentColor'
@@ -165,7 +165,7 @@ type SpringSliderProps = {
   items: Array<string>;
 };
 
-const SpringSlider = createComponent<SpringSliderProps>(({ items }) => {
+const SpringSlider = component<SpringSliderProps>(({ items }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isForward, setIsForward] = useState<boolean>(null);
   const scope = useMemo(() => ({ x: 100 }), []);
@@ -345,7 +345,7 @@ const SpringSlider = createComponent<SpringSliderProps>(({ items }) => {
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const items = [
     'https://images.unsplash.com/photo-1669628699191-8ea36457df25?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=765&q=80',
     'https://images.unsplash.com/photo-1669439350109-a8c52e02eb6e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
@@ -364,7 +364,7 @@ const App = createComponent(() => {
   );
 });
 
-// const App = createComponent(() => {
+// const App = component(() => {
 //   const [isOpen, setIsOpen] = useState(false);
 //   const {
 //     values: [x],
@@ -425,7 +425,7 @@ const App = createComponent(() => {
 //   );
 // });
 
-// const App = createComponent(() => {
+// const App = component(() => {
 //   const [items, setItems] = useState(() =>
 //     Array(1000)
 //       .fill(null)
@@ -463,7 +463,7 @@ const App = createComponent(() => {
 //   onRemove: (id: number) => void;
 // };
 
-// const Item = createComponent<ItemProps>(({ id, onRemove }) => {
+// const Item = component<ItemProps>(({ id, onRemove }) => {
 //   const scope = useMemo(() => ({ isRemoved: false }), []);
 //   const ref = useRef<HTMLDivElement>(null);
 //   const withMount = id <= 30;
@@ -545,7 +545,7 @@ const App = createComponent(() => {
 //   size: number;
 // };
 
-// const CloseIcon = createComponent<IconProps>(({ size }) => {
+// const CloseIcon = component<IconProps>(({ size }) => {
 //   return (
 //     <svg
 //       stroke='currentColor'
@@ -561,7 +561,7 @@ const App = createComponent(() => {
 //   );
 // });
 
-// const AddIcon = createComponent<IconProps>(({ size }) => {
+// const AddIcon = component<IconProps>(({ size }) => {
 //   return (
 //     <svg
 //       stroke='currentColor'
@@ -576,7 +576,7 @@ const App = createComponent(() => {
 //   );
 // });
 
-// const App = createComponent(() => {
+// const App = component(() => {
 //   const CARD_WIDTH = 500;
 //   const CARD_HEIGHT = 500;
 //   const BUTTON_SIZE = 50;
@@ -742,7 +742,7 @@ const App = createComponent(() => {
 //   slot: DarkElement;
 // };
 
-// const Item = createComponent<ItemProps>(({ isOpen, delay, slot }) => {
+// const Item = component<ItemProps>(({ isOpen, delay, slot }) => {
 //   const scope = useMemo(() => ({ over: false, delay }), []);
 //   const [clicks, setClicks] = useState(0);
 //   scope.delay = delay;

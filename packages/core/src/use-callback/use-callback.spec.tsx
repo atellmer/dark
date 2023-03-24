@@ -1,7 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useCallback } from './use-callback';
 
 let host: HTMLElement = null;
@@ -13,7 +13,7 @@ beforeEach(() => {
 describe('[use-callback]', () => {
   test('returns function', () => {
     let handler: () => void;
-    const App = createComponent(() => {
+    const App = component(() => {
       handler = useCallback(() => {}, []);
 
       return null;
@@ -30,7 +30,7 @@ describe('[use-callback]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handler = useCallback(() => {}, []);
 
       handlers.push(handler);
@@ -54,7 +54,7 @@ describe('[use-callback]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ count }) => {
+    const App = component<AppProps>(({ count }) => {
       const handler = useCallback(() => {}, [count]);
 
       handlers.push(handler);

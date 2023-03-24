@@ -4,7 +4,7 @@ import { render } from '@dark-engine/platform-browser';
 import { h } from '../element';
 import { View, detectIsVirtualNode, VirtualNodeFactory } from '../view';
 import { useEffect } from '../use-effect';
-import { createComponent, detectIsComponent, getComponentKey } from './component';
+import { component, detectIsComponent, getComponentKey } from './component';
 
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -18,7 +18,7 @@ beforeEach(() => {
 describe('[create-component]', () => {
   test('does not throw error', () => {
     const compile = () => {
-      const Component = createComponent(() => null);
+      const Component = component(() => null);
       Component();
     };
 
@@ -27,7 +27,7 @@ describe('[create-component]', () => {
 
   test('type call does not throw error', () => {
     const compile = () => {
-      const Component = createComponent(() => null);
+      const Component = component(() => null);
       Component().type({});
     };
 
@@ -35,7 +35,7 @@ describe('[create-component]', () => {
   });
 
   test('type returns virtual node factory', () => {
-    const Component = createComponent(() => div());
+    const Component = component(() => div());
     const vNodeFactory = Component().type({}) as VirtualNodeFactory;
 
     expect(vNodeFactory).toBeInstanceOf(Function);
@@ -43,7 +43,7 @@ describe('[create-component]', () => {
   });
 
   test('type can return null', () => {
-    const Component = createComponent(() => null);
+    const Component = component(() => null);
     const element = Component().type({});
 
     expect(element).toBeNull();
@@ -54,39 +54,39 @@ describe('[create-component]', () => {
       one: string;
       two: string;
     };
-    const Component = createComponent<ComponentProps>(({ one, two }) => {
+    const Component = component<ComponentProps>(({ one, two }) => {
       expect(one).toBe('hello');
       expect(two).toBe('world');
 
       return null;
     });
-    const component = Component({ one: 'hello', two: 'world' });
+    const instance = Component({ one: 'hello', two: 'world' });
 
-    component.type(component.props);
+    instance.type(instance.props);
   });
 
   test('provides correct displayName', () => {
     const displayName = 'MyComponent';
-    const Component = createComponent(() => null, { displayName });
+    const Component = component(() => null, { displayName });
 
     expect(Component().displayName).toBe(displayName);
   });
 
   test('provides token correctly', () => {
     const token = Symbol();
-    const Component = createComponent(() => null, { token });
+    const Component = component(() => null, { token });
 
     expect(Component().token).toBe(token);
   });
 
   test('detectIsComponent works correctly', () => {
-    const Component = createComponent(() => null);
+    const Component = component(() => null);
 
     expect(detectIsComponent(Component())).toBeTruthy();
   });
 
   test('getComponentKey works correctly', () => {
-    const Component = createComponent(() => null);
+    const Component = component(() => null);
     const key = 'somekey';
 
     expect(getComponentKey(Component({ key }))).toBe(key);
@@ -103,7 +103,7 @@ describe('[create-component]', () => {
       render(App(props), host);
     };
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useEffect(() => {
         return () => dropFn();
       }, []);
@@ -111,7 +111,7 @@ describe('[create-component]', () => {
       return <div>child</div>;
     });
 
-    const App = createComponent<AppProps>(({ x }) => {
+    const App = component<AppProps>(({ x }) => {
       return <Child key={x} />;
     });
 

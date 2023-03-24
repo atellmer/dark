@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { h } from '../element';
 import { useState } from '../use-state';
 import { createContext, useContext } from './context';
@@ -35,18 +35,18 @@ describe('[context]', () => {
 
     const ThemeContext = createContext<Theme>('light');
 
-    const Item = createComponent(() => {
+    const Item = component(() => {
       return <ThemeContext.Consumer>{value => <div>{value}</div>}</ThemeContext.Consumer>;
     });
 
-    const Content = createComponent(() => {
+    const Content = component(() => {
       return [<Item />];
     });
 
     let theme: Theme;
     let setTheme: (value: Theme) => void;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return [
@@ -71,7 +71,7 @@ describe('[context]', () => {
     const ThemeContext = createContext<Theme>('light');
     const LangContext = createContext('ru');
 
-    const Item = createComponent(() => {
+    const Item = component(() => {
       return (
         <ThemeContext.Consumer>
           {theme => (
@@ -87,7 +87,7 @@ describe('[context]', () => {
       );
     });
 
-    const Content = createComponent(() => {
+    const Content = component(() => {
       return [<Item />];
     });
 
@@ -96,7 +96,7 @@ describe('[context]', () => {
     let lang: Lang;
     let setLang: (value: Lang) => void;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
       [lang, setLang] = useState<Lang>('de');
 
@@ -128,11 +128,11 @@ describe('[context]', () => {
     const FormContext = createContext(1);
     const value = 20;
 
-    const Item = createComponent(() => {
+    const Item = component(() => {
       return <FormContext.Consumer>{value => <div>{value}</div>}</FormContext.Consumer>;
     });
 
-    const Content = createComponent(() => {
+    const Content = component(() => {
       return [
         <FormContext.Provider value={value}>
           <Item />
@@ -140,7 +140,7 @@ describe('[context]', () => {
       ];
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return [
         <FormContext.Provider value={10}>
           <Content />
@@ -160,7 +160,7 @@ describe('[use-context]', () => {
     `;
     const ThemeContext = createContext<Theme>('light');
 
-    const Item = createComponent(() => {
+    const Item = component(() => {
       const value = useContext(ThemeContext);
 
       return <div>{value}</div>;
@@ -169,7 +169,7 @@ describe('[use-context]', () => {
     let theme: Theme;
     let setTheme: (value: Theme) => void;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return [
@@ -198,18 +198,18 @@ describe('[use-context]', () => {
     type Theme = 'light' | 'dark';
     const ThemeContext = createContext<Theme>('light');
 
-    const Consumer = createComponent(() => {
+    const Consumer = component(() => {
       const value = useContext(ThemeContext);
 
       return <div>{value}</div>;
     });
 
-    const StaticLayout = memo(createComponent(() => <Consumer />));
+    const StaticLayout = memo(component(() => <Consumer />));
 
     let theme: Theme;
     let setTheme: (value: Theme) => void;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return (
@@ -238,7 +238,7 @@ describe('[use-context]', () => {
     `;
     const ThemeContext = createContext<Theme>('light');
 
-    const Consumer = createComponent(() => {
+    const Consumer = component(() => {
       const value = useContext(ThemeContext);
 
       return <div>{value}</div>;
@@ -248,12 +248,12 @@ describe('[use-context]', () => {
       slot: DarkElement;
     };
 
-    const StaticLayout = memo(createComponent<StaticLayoutProps>(({ slot }) => slot));
+    const StaticLayout = memo(component<StaticLayoutProps>(({ slot }) => slot));
 
     let theme: Theme;
     let setTheme: (value: Theme) => void;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return (

@@ -2,7 +2,7 @@ import { type TouchGestureEventData, AccessibilityRole } from '@nativescript/cor
 import {
   type DarkElement,
   type ComponentFactory,
-  createComponent,
+  component,
   detectIsFunction,
   useEvent,
   useSpring,
@@ -18,7 +18,7 @@ export type TouchableOpacityProps = {
   onPress: (e: SyntheticEvent<TouchGestureEventData>) => void;
 } & ViewProps;
 
-const TouchableOpacity = createComponent<TouchableOpacityProps>(
+const TouchableOpacity = component<TouchableOpacityProps>(
   ({ disabled, slot, onPress, ...rest }) => {
     const [isPressed, setIsPressed] = useState(false);
     const {

@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { createTestHostNode } from '@test-utils';
@@ -28,7 +28,7 @@ describe('[router/use-location]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => {
+        component: component(() => {
           history = useHistory();
           location = useLocation();
 
@@ -37,7 +37,7 @@ describe('[router/use-location]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => {
+        component: component(() => {
           location = useLocation();
 
           return <div>second</div>;
@@ -45,7 +45,7 @@ describe('[router/use-location]', () => {
       },
     ];
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 

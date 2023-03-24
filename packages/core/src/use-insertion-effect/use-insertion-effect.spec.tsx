@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { useEffect } from '../use-effect';
@@ -19,7 +19,7 @@ beforeEach(() => {
 describe('[use-insertion-effect]', () => {
   test('runs sync', () => {
     const effectFn = jest.fn();
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => effectFn(), []);
 
       return null;
@@ -36,7 +36,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => mockFn(), []);
 
       return null;
@@ -60,7 +60,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ x }) => {
+    const App = component<AppProps>(({ x }) => {
       useInsertionEffect(() => {
         effectFn();
         return () => dropFn();
@@ -94,7 +94,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         effectFn();
         return () => dropFn();
@@ -119,7 +119,7 @@ describe('[use-insertion-effect]', () => {
   test('drops effect on unmount event', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         effectFn();
         return () => dropFn();
@@ -151,7 +151,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         effectFn1();
         return () => dropFn1();
@@ -193,7 +193,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useInsertionEffect(() => {
         effectFn2();
         return () => dropFn2();
@@ -202,7 +202,7 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         effectFn1();
         return () => dropFn1();
@@ -244,7 +244,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         effectFn3();
       });
@@ -280,7 +280,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         return () => dropFn3();
       });
@@ -314,7 +314,7 @@ describe('[use-insertion-effect]', () => {
     const dropFn2 = jest.fn();
     const dropFn3 = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         return () => dropFn3();
       }, []);
@@ -346,7 +346,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         render$();
       }, []);
@@ -367,7 +367,7 @@ describe('[use-insertion-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const update = useUpdate();
 
       useInsertionEffect(() => {

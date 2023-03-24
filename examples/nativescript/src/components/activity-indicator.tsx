@@ -1,12 +1,12 @@
 import { PropertyChangeData } from '@nativescript/core';
-import { h, Fragment, createComponent, useState, useEffect, useReactiveState } from '@dark-engine/core';
+import { h, Fragment, component, useState, useEffect, useReactiveState } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-native';
 
 type SpinnerProps = {
   isFetching: boolean;
 };
 
-const Spinner = createComponent<SpinnerProps>(({ isFetching }) => {
+const Spinner = component<SpinnerProps>(({ isFetching }) => {
   return (
     <flexbox-layout hidden={!isFetching} height='100%' justifyContent='center' alignItems='center'>
       <activity-indicator busy />
@@ -14,7 +14,7 @@ const Spinner = createComponent<SpinnerProps>(({ isFetching }) => {
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState({ name: 'Alex' });
   const [isFetching, setIsFetching] = useState(true);
 

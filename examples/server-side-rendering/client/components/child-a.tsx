@@ -1,9 +1,9 @@
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { useParams } from '@dark-engine/web-router';
 
 import { AnimatedRoute } from './animated-route';
 
-const ChildA = createComponent(() => {
+const ChildA = component(() => {
   const params = useParams();
 
   return (

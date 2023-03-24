@@ -2,7 +2,7 @@ import {
   type Fiber,
   type DarkElement,
   type Component,
-  createComponent,
+  component,
   detectIsComponent,
   useMemo,
 } from '@dark-engine/core';
@@ -24,7 +24,7 @@ type PortalProps = {
   slot: DarkElement;
 };
 
-const Portal = createComponent<PortalProps>(
+const Portal = component<PortalProps>(
   ({ slot, ...rest }) => {
     useMemo(() => (rest[$$portal].innerHTML = ''), []);
 

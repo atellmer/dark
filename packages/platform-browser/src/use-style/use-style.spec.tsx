@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
 import { render } from '../render';
 import { useStyle } from './use-style';
@@ -14,7 +14,7 @@ describe('[use-style]', () => {
   test('useStyle works correctly', () => {
     let style: { root: string; button: string };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       style = useStyle(styled => ({
         root: styled`
           position: absolute;

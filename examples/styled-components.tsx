@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   h,
-  createComponent,
+  component,
   Fragment,
   View,
   useMemo,
@@ -41,7 +41,7 @@ function createStyledComponent<P>(tag: ComponentFactory | ((props: P) => TagVirt
 
     injectStyle(staticClassName, css);
 
-    const StyledComponent = createComponent<P>(props => {
+    const StyledComponent = component<P>(props => {
       const css = dynamicArgs.map(fn => fn(props) || '').join('');
       const dynamicClassName = useMemo(() => {
         return css ? dynamicClassNamesMap[css] || `dxx-${++dynamicClassNameId}` : '';
@@ -132,7 +132,7 @@ const Input = styled.input<InputProps>`
   border: 2px solid #6f74dd;
 `;
 
-const App = createComponent(() => {
+const App = component(() => {
   const [count, setCount] = useState(0);
   const [text, setText] = useState('Hello');
   const colors = ['red', 'yellow', 'green'] as Array<ColorVariant>;

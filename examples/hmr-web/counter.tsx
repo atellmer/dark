@@ -1,6 +1,6 @@
-import { h, Fragment, createComponent, useState } from '@dark-engine/core';
+import { h, Fragment, component, useState } from '@dark-engine/core';
 
-const Counter = createComponent(() => {
+const Counter = component(() => {
   const [count, setCount] = useState(0);
 
   const handleClick = () => setCount(count + 1);

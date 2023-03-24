@@ -2,7 +2,7 @@ import type { DarkElement } from '../shared';
 import type { Fiber } from '../fiber';
 import { detectIsFunction } from '../helpers';
 import { currentFiberStore } from '../scope';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useMemo } from '../use-memo';
 import { useUpdate } from '../use-update';
@@ -28,7 +28,7 @@ function createContext<T>(defaultValue: T, options?: CreateContextOptions): Cont
 }
 
 function createProvider<T>(context: Context<T>, defaultValue: T, displayName: string) {
-  return createComponent<ContexProviderProps<T>>(
+  return component<ContexProviderProps<T>>(
     ({ value = defaultValue, slot }) => {
       const fiber = currentFiberStore.get();
 
@@ -66,7 +66,7 @@ type ConsumerProps<T> = {
 };
 
 function createConsumer<T>(context: Context<T>, displayName: string) {
-  return createComponent<ConsumerProps<T>>(
+  return component<ConsumerProps<T>>(
     ({ slot }) => {
       const value = useContext(context);
 

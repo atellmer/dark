@@ -1,6 +1,6 @@
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
-const About = createComponent(() => {
+const About = component(() => {
   return (
     <article>
       <h1>About</h1>

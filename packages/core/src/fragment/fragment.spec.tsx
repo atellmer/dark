@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { Fragment } from './fragment';
 
 let host: HTMLElement = null;
@@ -19,7 +19,7 @@ describe('[Fragment]', () => {
       <div>2</div>
       <div>3</div>
     `;
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <Fragment>
           <div>1</div>

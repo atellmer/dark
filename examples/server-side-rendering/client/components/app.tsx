@@ -1,4 +1,4 @@
-import { h, createComponent, Suspense, type DarkElement } from '@dark-engine/core';
+import { h, component, Suspense, type DarkElement } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
 import { Spinner } from './spinner';
@@ -7,7 +7,7 @@ type ShellProps = {
   slot: DarkElement;
 };
 
-const Shell = createComponent<ShellProps>(({ slot }) => {
+const Shell = component<ShellProps>(({ slot }) => {
   return (
     <Suspense fallback={<Spinner />}>
       <header>
@@ -25,7 +25,7 @@ export type AppProps = {
   routes: Routes;
 };
 
-const App = createComponent<AppProps>(({ url, routes }) => {
+const App = component<AppProps>(({ url, routes }) => {
   return (
     <Router routes={routes} url={url}>
       {slot => <Shell>{slot}</Shell>}

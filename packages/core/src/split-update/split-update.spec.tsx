@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { SplitUpdate, useSplitUpdate } from './split-update';
 
 let host: HTMLElement = null;
@@ -55,7 +55,7 @@ describe('[split-update]', () => {
     let items = buildData(10);
     const size = items.length;
 
-    const ListItem = createComponent<ItemProps>(({ id }) => {
+    const ListItem = component<ItemProps>(({ id }) => {
       const { selected } = useSplitUpdate<ListItem>(
         map => map[id],
         x => x.selected + '',
@@ -70,7 +70,7 @@ describe('[split-update]', () => {
       );
     });
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return (
         <SplitUpdate list={items} getKey={getKey}>
           {items.map(x => {

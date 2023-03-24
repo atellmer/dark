@@ -2,7 +2,7 @@ import {
   type DarkElement,
   type MutableRef,
   h,
-  createComponent,
+  component,
   useMemo,
   useEffect,
   useLayoutEffect,
@@ -37,7 +37,7 @@ export type RouterRef = {
 };
 
 const Router = forwardRef<RouterProps, RouterRef>(
-  createComponent(
+  component(
     ({ url, baseURL = SLASH, routes: sourceRoutes, slot }, ref) => {
       if (useActiveRouteContext()) {
         throw new Error('[web-router]: Parent active route context detected!');

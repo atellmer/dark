@@ -4,7 +4,7 @@ import {
   Fragment,
   Text,
   Comment,
-  createComponent,
+  component,
   useState,
   useInsertionEffect,
   useLayoutEffect,
@@ -51,7 +51,7 @@ describe('[SSR]', () => {
         </div>
       `;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const [count, setCount] = useState(0);
 
       return (
@@ -73,7 +73,7 @@ describe('[SSR]', () => {
   test('can not fire effects', () => {
     const effectFn = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         effectFn();
       }, []);

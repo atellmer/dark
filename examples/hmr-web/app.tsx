@@ -1,8 +1,8 @@
-import { h, Fragment, createComponent } from '@dark-engine/core';
+import { h, Fragment, component } from '@dark-engine/core';
 
 import { Counter } from './counter';
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <>
       <h1>You can see all updates immediately without page reload</h1>

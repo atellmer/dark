@@ -3,7 +3,7 @@ import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import {
   h,
   Text,
-  createComponent,
+  component,
   memo,
   useState,
   useEffect,
@@ -29,7 +29,7 @@ type DotProps = {
   slot: DarkElement;
 };
 
-const Dot = createComponent<DotProps>(props => {
+const Dot = component<DotProps>(props => {
   const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
   const s = props.size * 1.3;
   const style = useStyle(styled => ({
@@ -75,7 +75,7 @@ type SierpinskiTriangleProps = {
   slot: DarkElement;
 };
 
-const SierpinskiTriangle = createComponent<SierpinskiTriangleProps>(({ x, y, s, slot }) => {
+const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }) => {
   if (s <= targetSize) {
     return (
       <MemoDot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
@@ -110,7 +110,7 @@ type AppProps = {
   elapsed: number;
 };
 
-const App = createComponent<AppProps>(props => {
+const App = component<AppProps>(props => {
   const [isEnabled, setIsEnable] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const defferedSeconds = useDeferredValue(seconds);

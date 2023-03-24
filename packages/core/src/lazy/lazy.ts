@@ -1,4 +1,4 @@
-import { type ComponentFactory, createComponent, detectIsComponent } from '../component';
+import { type ComponentFactory, component, detectIsComponent } from '../component';
 import { detectIsFunction } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useContext } from '../context';
@@ -13,7 +13,7 @@ const componentsMap: Map<Function, ComponentFactory> = new Map();
 
 function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<P> }>, done?: () => void) {
   return forwardRef(
-    createComponent<P, R>(
+    component<P, R>(
       (props, ref) => {
         if (detectIsServer()) {
           throw new Error('[Dark]: You should render only non-lazy components on the server!');

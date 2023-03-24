@@ -1,13 +1,4 @@
-import {
-  h,
-  createComponent,
-  useEffect,
-  useState,
-  useMemo,
-  Fragment,
-  useSpring,
-  type DarkElement,
-} from '@dark-engine/core';
+import { h, component, useEffect, useState, useMemo, Fragment, useSpring, type DarkElement } from '@dark-engine/core';
 import { render, createPortal, useStyle } from '@dark-engine/platform-browser';
 
 type OverlayProps = {
@@ -15,7 +6,7 @@ type OverlayProps = {
   onRequestClose: () => void;
 };
 
-const Overlay = createComponent<OverlayProps>(({ x, onRequestClose }) => {
+const Overlay = component<OverlayProps>(({ x, onRequestClose }) => {
   const style = useStyle(styled => ({
     container: styled`
       position: fixed;
@@ -38,7 +29,7 @@ type ModalProps = {
   onRequestClose: () => void;
 };
 
-const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) => {
+const Modal = component<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) => {
   const host = useMemo<HTMLDivElement>(() => document.createElement('div'), []);
   const [isOpen, setIsOpen] = useState(isOpenX);
   const scope = useMemo(() => ({ isClosing: false }), []);
@@ -146,7 +137,7 @@ const Modal = createComponent<ModalProps>(({ isOpen: isOpenX, slot, onRequestClo
   return isOpenX ? createPortal(renderModal(), host) : null;
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [timer, setTimer] = useState(0);
 

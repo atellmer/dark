@@ -2,7 +2,7 @@ import { type Frame, type Page, CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
   h,
-  createComponent,
+  component,
   forwardRef,
   useRef,
   useEffect,
@@ -46,7 +46,7 @@ export type RenderActionBarOptions = {
 };
 
 const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
-  createComponent(
+  component(
     ({ slot, defaultPathname = SLASH, renderActionBar, onNavigate }, ref) => {
       const frameRef = useRef<Frame>(null);
       const pageRef = useRef<Page>(null);

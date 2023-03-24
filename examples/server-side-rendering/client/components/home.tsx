@@ -1,4 +1,4 @@
-import { h, createComponent, type DarkElement, useState, useEffect } from '@dark-engine/core';
+import { h, component, type DarkElement, useState, useEffect } from '@dark-engine/core';
 import { RouterLink, useMatch, useHistory, useParams, useLocation } from '@dark-engine/web-router';
 
 import { AnimatedRoute } from './animated-route';
@@ -7,7 +7,7 @@ type HomeProps = {
   slot: DarkElement;
 };
 
-const Home = createComponent<HomeProps>(({ slot }) => {
+const Home = component<HomeProps>(({ slot }) => {
   const { url } = useMatch();
   const history = useHistory();
   const params = useParams();

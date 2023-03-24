@@ -54,7 +54,7 @@ const routes: Routes = [
   { path: 'second-component', component: SecondComponent },
 ];
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <Router routes={routes}>
       {slot => {
@@ -81,7 +81,7 @@ The order of routes is important because the Router uses a first-match wins stra
 ```tsx
 import { useLocation, useMatch } from '@dark-engine/web-router';
 
-const FirstComponent = createComponent(() => {
+const FirstComponent = component(() => {
   const location = useLocation(); // url, protocol, host, pathname, search, key
   const match = useMatch(); // url prefix for links
 
@@ -226,7 +226,7 @@ Then get access for parameter through hook
 ```tsx
 import { useParams } from '@dark-engine/web-router';
 
-const FirstComponent = createComponent(() => {
+const FirstComponent = component(() => {
   const params = useParams();
   const selectedId = Number(params.get('id'));
 
@@ -288,7 +288,7 @@ app.get('*', (req, res) => {
 ```
 
 ```tsx
-const App = createComponent(({ url }) => {
+const App = component(({ url }) => {
   <Router routes={routes} url={url}>{slot => slot}</Router>
 })
 ```
@@ -298,7 +298,7 @@ Full example SSR routing you can see in examples.
 ## Imperative access to router
 
 ```tsx
-const App = createComponent<AppProps>(({ url, routes }) => {
+const App = component<AppProps>(({ url, routes }) => {
   const ref = useRef<RouterRef>(null);
 
   useEffect(() => {

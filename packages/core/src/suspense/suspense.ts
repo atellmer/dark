@@ -1,4 +1,4 @@
-import { createComponent } from '../component';
+import { component } from '../component';
 import { createContext } from '../context';
 import { useMemo } from '../use-memo';
 import type { DarkElement, SlotProps } from '../shared';
@@ -11,7 +11,7 @@ type SuspenseContextValue = {} & Pick<SuspenseProps, 'fallback'>;
 
 const SuspenseContext = createContext<SuspenseContextValue>({ fallback: null });
 
-const Suspense = createComponent<SuspenseProps>(({ fallback, slot }) => {
+const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   if (!fallback) {
     throw new Error(`[Dark]: Suspense fallback not found!`);
   }

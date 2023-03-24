@@ -4,7 +4,7 @@ import {
   type Component,
   type StandardComponentProps,
   h,
-  createComponent,
+  component,
   createContext,
   useUpdate,
   useMemo,
@@ -29,7 +29,7 @@ type TabNavigatorProps = {
   slot: Array<Component<TabScreenProps & StandardComponentProps>>;
 };
 
-const Navigator = createComponent<TabNavigatorProps>(
+const Navigator = component<TabNavigatorProps>(
   ({ bottomNavigationOptions, slot }) => {
     const navRef = useRef<StackNavigatorRef>(null);
     const layoutRef = useRef<AbsoluteLayout>(null);
@@ -111,7 +111,7 @@ type TabScreenProps = {
   renderTab?: (name: string, isActive: boolean) => DarkElement;
 } & StackScreenProps;
 
-const Screen = createComponent<TabScreenProps>(
+const Screen = component<TabScreenProps>(
   ({ name, component, renderTab = defaultRenderTab, slot }) => {
     const { push, pathname: currentPathname } = useNavigationContext();
     const { descriptorsMap, count, activeTabColor, tabColor } = useTabNavigatorContext();

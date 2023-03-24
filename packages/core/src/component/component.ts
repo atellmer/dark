@@ -31,21 +31,21 @@ class Component<P extends StandardComponentProps = any, R = any> {
   }
 }
 
-function createComponent<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
+function component<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
   const { token, displayName, shouldUpdate, keepRef = false } = options;
-  const component = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
+  const factory = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
     if (!keepRef && props.ref) {
       delete props.ref;
 
       if (process.env.NODE_ENV === 'development') {
-        error(`[Dark]: To use ref you need to wrap the createComponent with forwardRef!`);
+        error(`[Dark]: To use ref you need to wrap the component with forwardRef!`);
       }
     }
 
     return new Component(type, token, props, ref, shouldUpdate, displayName);
   };
 
-  return component as ComponentFactory<P & StandardComponentProps, R>;
+  return factory as ComponentFactory<P & StandardComponentProps, R>;
 }
 
 const detectIsComponent = (instance: unknown): instance is Component => instance instanceof Component;
@@ -55,11 +55,4 @@ const getComponentKey = (instance: Component): DarkElementKey =>
 
 const getComponentFlag = (instance: Component): Record<Flag, boolean> | null => instance.props[ATTR_FLAG] || null;
 
-export {
-  Component,
-  createComponent,
-  createComponent as component,
-  detectIsComponent,
-  getComponentKey,
-  getComponentFlag,
-};
+export { Component, component, detectIsComponent, getComponentKey, getComponentFlag };

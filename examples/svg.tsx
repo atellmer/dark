@@ -1,11 +1,11 @@
-import { h, createComponent, Fragment } from '@dark-engine/core';
+import { h, component, Fragment } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 type IconProps = {
   size: number;
 };
 
-const PeaceIcon = createComponent<IconProps>(({ size }) => {
+const PeaceIcon = component<IconProps>(({ size }) => {
   return (
     <svg
       stroke='currentColor'
@@ -20,7 +20,7 @@ const PeaceIcon = createComponent<IconProps>(({ size }) => {
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <>
       <style>

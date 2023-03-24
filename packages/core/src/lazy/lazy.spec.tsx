@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom, createReplacerString } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { lazy } from './lazy';
 
 let host: HTMLElement = null;
@@ -31,7 +31,7 @@ describe('[lazy]', () => {
       <div>lazy</div>
     `;
 
-    const App = createComponent(() => <LazyComponent />);
+    const App = component(() => <LazyComponent />);
 
     render(App(), host);
     expect(host.innerHTML).toBe(createReplacerString());

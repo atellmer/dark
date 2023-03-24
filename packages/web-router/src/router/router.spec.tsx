@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { createTestHostNode, createReplacerString } from '@test-utils';
@@ -26,19 +26,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -64,19 +64,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -117,29 +117,29 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(() => <div>a</div>),
+            component: component(() => <div>a</div>),
           },
           {
             path: 'b',
-            component: createComponent(() => <div>b</div>),
+            component: component(() => <div>b</div>),
           },
         ],
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -174,37 +174,37 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(({ slot }) => <a>{slot}</a>),
+            component: component(({ slot }) => <a>{slot}</a>),
             children: [
               {
                 path: '1',
-                component: createComponent(() => <div>1</div>),
+                component: component(() => <div>1</div>),
               },
               {
                 path: '2',
-                component: createComponent(() => <div>2</div>),
+                component: component(() => <div>2</div>),
               },
             ],
           },
           {
             path: 'b',
-            component: createComponent(({ slot }) => <b>{slot}</b>),
+            component: component(({ slot }) => <b>{slot}</b>),
             children: [
               {
                 path: '1',
-                component: createComponent(() => <div>1</div>),
+                component: component(() => <div>1</div>),
               },
               {
                 path: '2',
-                component: createComponent(() => <div>2</div>),
+                component: component(() => <div>2</div>),
               },
             ],
           },
@@ -216,7 +216,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -264,15 +264,15 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -310,10 +310,10 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'fourth',
-        component: createComponent(() => <div>fourth</div>),
+        component: component(() => <div>fourth</div>),
       },
     ];
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -346,7 +346,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -358,7 +358,7 @@ describe('[router/rendering]', () => {
           },
           {
             path: 'c',
-            component: createComponent(() => <div>c</div>),
+            component: component(() => <div>c</div>),
           },
         ],
       },
@@ -368,11 +368,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'fourth',
-        component: createComponent(() => <div>fourth</div>),
+        component: component(() => <div>fourth</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -398,7 +398,7 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: '',
@@ -406,7 +406,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -426,15 +426,15 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => <div>root</div>),
+        component: component(() => <div>root</div>),
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
       {
         path: '**',
@@ -442,7 +442,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -474,7 +474,7 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: '/',
@@ -482,7 +482,7 @@ describe('[router/rendering]', () => {
         pathMatch: 'full',
       },
     ];
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -502,11 +502,11 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: '/second/a',
@@ -515,13 +515,13 @@ describe('[router/rendering]', () => {
           },
           {
             path: 'b',
-            component: createComponent(() => <div>b</div>),
+            component: component(() => <div>b</div>),
           },
         ],
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -541,19 +541,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(() => <div>a</div>),
+            component: component(() => <div>a</div>),
           },
           {
             path: 'b',
-            component: createComponent(() => <div>b</div>),
+            component: component(() => <div>b</div>),
           },
         ],
       },
@@ -563,11 +563,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: '**',
-        component: createComponent(() => <div>404</div>),
+        component: component(() => <div>404</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -596,23 +596,23 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(() => <div>a</div>),
+            component: component(() => <div>a</div>),
           },
           {
             path: 'b',
-            component: createComponent(() => <div>b</div>),
+            component: component(() => <div>b</div>),
           },
           {
             path: '**',
-            component: createComponent(() => <div>404</div>),
+            component: component(() => <div>404</div>),
           },
         ],
       },
@@ -622,11 +622,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: '**',
-        component: createComponent(() => <div>404</div>),
+        component: component(() => <div>404</div>),
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -655,19 +655,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(() => <div>a</div>),
+            component: component(() => <div>a</div>),
           },
           {
             path: 'b',
-            component: createComponent(() => <div>b</div>),
+            component: component(() => <div>b</div>),
           },
           {
             path: '**',
@@ -681,7 +681,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -710,27 +710,27 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(() => <div>a</div>),
+            component: component(() => <div>a</div>),
           },
           {
             path: 'b',
-            component: createComponent(({ slot }) => <b>{slot}</b>),
+            component: component(({ slot }) => <b>{slot}</b>),
             children: [
               {
                 path: '1',
-                component: createComponent(() => <div>1</div>),
+                component: component(() => <div>1</div>),
               },
               {
                 path: '2',
-                component: createComponent(() => <div>2</div>),
+                component: component(() => <div>2</div>),
               },
               {
                 path: '**',
@@ -750,7 +750,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -800,25 +800,25 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second/:id',
-        component: createComponent(({ slot }) => <second>{slot}</second>),
+        component: component(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: createComponent(() => <div>a</div>),
+            component: component(() => <div>a</div>),
           },
           {
             path: 'b/:id',
-            component: createComponent(() => <div>b</div>),
+            component: component(() => <div>b</div>),
           },
         ],
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -847,19 +847,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second/a/1',
-        component: createComponent(() => <div>second/a/1</div>),
+        component: component(() => <div>second/a/1</div>),
       },
       {
         path: 'second/a/2',
-        component: createComponent(() => <div>second/a/2</div>),
+        component: component(() => <div>second/a/2</div>),
       },
       {
         path: 'second/a',
-        component: createComponent(() => <div>second/a</div>),
+        component: component(() => <div>second/a</div>),
       },
       {
         path: 'second/b',
@@ -867,11 +867,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
       {
         path: '**',
@@ -879,7 +879,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -920,19 +920,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second/a',
-        component: createComponent(({ slot }) => <second:a>{slot}</second:a>),
+        component: component(({ slot }) => <second:a>{slot}</second:a>),
         children: [
           {
             path: '1',
-            component: createComponent(() => <div>1</div>),
+            component: component(() => <div>1</div>),
           },
           {
             path: '2',
-            component: createComponent(() => <div>2</div>),
+            component: component(() => <div>2</div>),
           },
           {
             path: '',
@@ -950,11 +950,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
       {
         path: '**',
@@ -962,7 +962,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}
@@ -1003,19 +1003,19 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(({ slot }) => <first>{slot}</first>),
+        component: component(({ slot }) => <first>{slot}</first>),
         children: [
           {
             path: 'nested',
-            component: createComponent(() => <div>nested</div>),
+            component: component(() => <div>nested</div>),
           },
           {
             path: ':id',
-            component: createComponent(() => <div>:id</div>),
+            component: component(() => <div>:id</div>),
           },
           {
             path: '',
-            component: createComponent(() => <div>root</div>),
+            component: component(() => <div>root</div>),
           },
           {
             path: '**',
@@ -1025,11 +1025,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
       {
         path: '',
@@ -1041,7 +1041,7 @@ describe('[router/rendering]', () => {
       },
     ];
 
-    const App = createComponent<AppProps>(({ url }) => {
+    const App = component<AppProps>(({ url }) => {
       return (
         <Router routes={routes} url={url}>
           {slot => slot}

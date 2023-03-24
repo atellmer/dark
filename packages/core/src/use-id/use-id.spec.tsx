@@ -1,7 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useId } from './use-id';
 
 let hostOne: HTMLElement = null;
@@ -21,7 +21,7 @@ describe('[use-id]', () => {
     let firstId: string = null;
     let id: string = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       id = useId();
 
       return null;
@@ -46,7 +46,7 @@ describe('[use-id]', () => {
     let idOne: string = null;
     let idTwo: string = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       idOne = useId();
       idTwo = useId();
 
@@ -77,13 +77,13 @@ describe('[use-id]', () => {
     let idOne: string = null;
     let idTwo: string = null;
 
-    const AppOne = createComponent(() => {
+    const AppOne = component(() => {
       idOne = useId();
 
       return null;
     });
 
-    const AppTwo = createComponent(() => {
+    const AppTwo = component(() => {
       idTwo = useId();
 
       return null;

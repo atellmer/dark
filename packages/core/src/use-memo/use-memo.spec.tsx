@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useMemo } from './use-memo';
 import { DarkElement } from '../shared';
 
@@ -22,7 +22,7 @@ describe('[use-memo]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       memoValue = useMemo(() => value, []);
 
       return null;
@@ -44,7 +44,7 @@ describe('[use-memo]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<{ x: number }>(({ x }) => {
+    const App = component<{ x: number }>(({ x }) => {
       useMemo(() => mockFn(), [x]);
 
       return null;
@@ -74,8 +74,8 @@ describe('[use-memo]', () => {
       render(App(props), host);
     };
 
-    const Item = createComponent<{ slot: DarkElement }>(({ slot }) => <div>Item: {slot}</div>);
-    const App = createComponent<{ x: number }>(({ x }) => {
+    const Item = component<{ slot: DarkElement }>(({ slot }) => <div>Item: {slot}</div>);
+    const App = component<{ x: number }>(({ x }) => {
       const value = useMemo(
         () => (
           <div>

@@ -1,6 +1,6 @@
 import {
   h,
-  createComponent,
+  component,
   useState,
   useRef,
   useEffect,
@@ -24,7 +24,7 @@ type SurfaceSlotOptions = {
   setIsDragging: (value: boolean) => void;
 };
 
-const Surface = createComponent<SurfaceProps>(({ slot }) => {
+const Surface = component<SurfaceProps>(({ slot }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [activeDraggableID, setActiveDraggableID] = useState<ID | null>(null);
   const style = useStyle(styled => ({
@@ -76,7 +76,7 @@ type DraggableProps = {
   setIsDragging: (value: boolean) => void;
 };
 
-const Draggable = createComponent<DraggableProps>(
+const Draggable = component<DraggableProps>(
   ({ isDragging, draggableID, activeDraggableID, setIsDragging, setActiveDraggableID, slot }) => {
     const [coord, setCoord] = useState({ x: 0, y: 0 }, { priority: TaskPriority.ANIMATION });
     const [rect, setRect] = useState<DOMRect | null>(null);
@@ -165,7 +165,7 @@ const Draggable = createComponent<DraggableProps>(
   },
 );
 
-const App = createComponent(() => {
+const App = component(() => {
   const style = useStyle(styled => ({
     box: styled`
       display: flex;

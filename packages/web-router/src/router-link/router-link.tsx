@@ -1,4 +1,4 @@
-import { h, createComponent, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
+import { h, component, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
 import { useHistory } from '../use-history';
@@ -14,7 +14,7 @@ export type RoutreLinkProps = {
   onClick?: (e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => void;
 };
 
-const RouterLink = createComponent<RoutreLinkProps>(
+const RouterLink = component<RoutreLinkProps>(
   ({ to, activeClassName = 'router-link-active', className: sourceClassName, slot, onClick, ...rest }) => {
     const history = useHistory();
     const { pathname, hash } = useLocation();

@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useUpdate } from '../use-update';
 import { useEffect } from './use-effect';
 
@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('[use-effect]', () => {
   test('runs async', () => {
     const effectFn = jest.fn();
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => effectFn(), []);
 
       return null;
@@ -36,7 +36,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => mockFn(), []);
 
       return null;
@@ -62,7 +62,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ x }) => {
+    const App = component<AppProps>(({ x }) => {
       useEffect(() => {
         effectFn();
         return () => dropFn();
@@ -100,7 +100,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         effectFn();
         return () => dropFn();
@@ -129,7 +129,7 @@ describe('[use-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         effectFn();
         return () => dropFn();
@@ -164,7 +164,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         effectFn1();
         return () => dropFn1();
@@ -209,7 +209,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useEffect(() => {
         effectFn2();
         return () => dropFn2();
@@ -218,7 +218,7 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         effectFn1();
         return () => dropFn1();
@@ -261,7 +261,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useEffect(() => {
         render$();
       }, []);
@@ -283,7 +283,7 @@ describe('[use-effect]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const update = useUpdate();
 
       useEffect(() => {

@@ -1,8 +1,8 @@
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
 import { AnimatedRoute } from './animated-route';
 
-const About = createComponent(() => {
+const About = component(() => {
   return (
     <AnimatedRoute>
       <h1>About</h1>

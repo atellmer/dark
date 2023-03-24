@@ -1,5 +1,5 @@
 import { isAndroid } from '@nativescript/core';
-import { h, Fragment, createComponent } from '@dark-engine/core';
+import { h, Fragment, component } from '@dark-engine/core';
 import {
   ListView,
   ActionBar,
@@ -33,7 +33,7 @@ function useAnimatedNavigation() {
   };
 }
 
-const List = createComponent(() => {
+const List = component(() => {
   const { navigateTo, match } = useAnimatedNavigation();
 
   return (
@@ -56,7 +56,7 @@ const List = createComponent(() => {
   );
 });
 
-const Profile = createComponent(() => {
+const Profile = component(() => {
   const { navigateTo, goBack, match, pathname, params } = useAnimatedNavigation();
   const id = Number(params.get('id'));
 
@@ -77,7 +77,7 @@ const Profile = createComponent(() => {
   );
 });
 
-const Dashboard = createComponent(() => {
+const Dashboard = component(() => {
   const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
@@ -96,7 +96,7 @@ const Dashboard = createComponent(() => {
   );
 });
 
-const Home = createComponent(() => {
+const Home = component(() => {
   return (
     <stack-layout backgroundColor='#26c6da' height='100%'>
       <StackNavigator.Root>
@@ -108,7 +108,7 @@ const Home = createComponent(() => {
   );
 });
 
-const Contacts = createComponent(() => {
+const Contacts = component(() => {
   const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
@@ -127,7 +127,7 @@ const Contacts = createComponent(() => {
   );
 });
 
-const Settings = createComponent(() => {
+const Settings = component(() => {
   const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
@@ -149,7 +149,7 @@ const Settings = createComponent(() => {
   );
 });
 
-const ModalNavigator = createComponent(() => {
+const ModalNavigator = component(() => {
   const { goBack, pathname } = useAnimatedNavigation();
   const isModalOpen = pathname.indexOf('/Modal') !== -1;
 
@@ -165,7 +165,7 @@ const ModalNavigator = createComponent(() => {
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const renderAndroidActionBar = ({ pathname, goBack }: RenderActionBarOptions) => {
     return (
       <ActionBar title={pathname}>

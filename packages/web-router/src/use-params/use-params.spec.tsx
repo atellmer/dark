@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { createTestHostNode, createReplacerString } from '@test-utils';
@@ -27,7 +27,7 @@ describe('[router/use-params]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => {
+        component: component(() => {
           history = useHistory();
 
           return <div>root</div>;
@@ -35,7 +35,7 @@ describe('[router/use-params]', () => {
       },
       {
         path: 'first/:id',
-        component: createComponent(() => {
+        component: component(() => {
           const params = useParams();
 
           return <div>first: {params.get('id')}</div>;
@@ -43,7 +43,7 @@ describe('[router/use-params]', () => {
       },
       {
         path: 'second/:x1',
-        component: createComponent(({ slot }) => {
+        component: component(({ slot }) => {
           const params = useParams();
 
           return (
@@ -56,7 +56,7 @@ describe('[router/use-params]', () => {
         children: [
           {
             path: 'a/:x2',
-            component: createComponent(() => {
+            component: component(() => {
               const params = useParams();
 
               return (
@@ -70,7 +70,7 @@ describe('[router/use-params]', () => {
       },
     ];
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 

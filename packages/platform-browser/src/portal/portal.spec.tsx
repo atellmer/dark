@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
 import { dom } from '@test-utils';
 import { render } from '../render';
@@ -23,7 +23,7 @@ describe('[createPortal]', () => {
     `;
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return [<div>app</div>, createPortal(<div>{value}</div>, portal)];
     });
 
@@ -43,7 +43,7 @@ describe('[createPortal]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ isOpen }) => {
+    const App = component<AppProps>(({ isOpen }) => {
       return [<div>header</div>, isOpen && createPortal(<div>{value}</div>, portal), <div>footer</div>];
     });
 
@@ -69,7 +69,7 @@ describe('[createPortal]', () => {
       <div>${value}</div>
     `;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return [
         <div>header</div>,
         createPortal(
@@ -105,7 +105,7 @@ describe('[createPortal]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ isOpen }) => {
+    const App = component<AppProps>(({ isOpen }) => {
       return [
         <div>header</div>,
         isOpen &&

@@ -40,7 +40,7 @@ import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigat
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <NavigationContainer defaultPathname='/Feed'>
       <StackNavigator.Root>
@@ -63,7 +63,7 @@ import { NavigationContainer, TabNavigator } from '@dark-engine/native-navigatio
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <NavigationContainer defaultPathname='/Feed'>
       <TabNavigator.Root>
@@ -145,7 +145,7 @@ useEffect(() => {
 You can nest navigators to create nested screens like `/Home/Dashboard`, `/Home/Profile` and so on.
 
 ```tsx
-const Home = createComponent(() => {
+const Home = component(() => {
   return (
     <StackLayout height='100%'>
       <StackNavigator.Root>
@@ -156,7 +156,7 @@ const Home = createComponent(() => {
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <NavigationContainer defaultPathname='/Home/Dashboard'>
       <TabNavigator.Root>

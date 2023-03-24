@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useError } from './use-error';
 
 let host: HTMLElement = null;
@@ -33,7 +33,7 @@ describe('[use-error]', () => {
       hasError: boolean;
     };
 
-    const Chlld = createComponent<ChildProps>(({ hasError }) => {
+    const Chlld = component<ChildProps>(({ hasError }) => {
       if (hasError) {
         throw new Error();
       }
@@ -45,7 +45,7 @@ describe('[use-error]', () => {
       hasError?: boolean;
     };
 
-    const App = createComponent<AppProps>(({ hasError }) => {
+    const App = component<AppProps>(({ hasError }) => {
       const error = useError();
 
       if (error) {
@@ -92,7 +92,7 @@ describe('[use-error]', () => {
       hasError: boolean;
     };
 
-    const Chlld = createComponent<ChildProps>(({ hasError }) => {
+    const Chlld = component<ChildProps>(({ hasError }) => {
       if (hasError) {
         throw new Error();
       }
@@ -104,7 +104,7 @@ describe('[use-error]', () => {
       hasError?: boolean;
     };
 
-    const App = createComponent<AppProps>(({ hasError }) => {
+    const App = component<AppProps>(({ hasError }) => {
       const error = useError();
 
       if (error) {

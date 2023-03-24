@@ -1,4 +1,4 @@
-import { h, Fragment, createComponent, useReactiveState, useEffect } from '@dark-engine/core';
+import { h, Fragment, component, useReactiveState, useEffect } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 type State = {
@@ -6,7 +6,7 @@ type State = {
   list: Array<{ count: number }>;
 };
 
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState<State>({
     count: 0,
     list: [{ count: 0 }],

@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useDeferredValue } from './use-deferred-value';
@@ -29,7 +29,7 @@ describe('[use-deferred-value]', () => {
       <div>${value}</div>
     `;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const [value, setValue] = useState(0);
       const deferred = useDeferredValue(value);
 

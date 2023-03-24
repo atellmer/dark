@@ -4,7 +4,7 @@ import {
   type Ref,
   type Component,
   type StandardComponentProps,
-  createComponent,
+  component,
   useRef,
   useEvent,
   useImperativeHandle,
@@ -36,7 +36,7 @@ export type ListViewRef = {
 };
 
 const ListView: ListView = forwardRef<ListViewProps, ListViewRef>(
-  createComponent(
+  component(
     ({ items, slot, ...rest }, ref) => {
       const rootRef = useRef<NSListView>(null);
 

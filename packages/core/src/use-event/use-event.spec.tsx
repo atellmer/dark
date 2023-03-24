@@ -1,6 +1,6 @@
 import { render } from '@dark-engine/platform-browser';
 
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useEvent } from './use-event';
 
 let host: HTMLElement = null;
@@ -21,7 +21,7 @@ describe('[use-event]', () => {
       x: number;
     };
 
-    const App = createComponent<AppProps>(({ x }) => {
+    const App = component<AppProps>(({ x }) => {
       const handler = useEvent(() => x);
 
       handlers.push(handler);

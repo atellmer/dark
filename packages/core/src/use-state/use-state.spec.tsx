@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component/component';
+import { component } from '../component/component';
 import { useState } from './use-state';
 
 let host: HTMLElement = null;
@@ -19,7 +19,7 @@ describe('[use-state]', () => {
     `;
     let count: number;
     let setCount: (x: number | ((x: number) => number)) => void;
-    const App = createComponent(() => {
+    const App = component(() => {
       [count, setCount] = useState(0);
 
       return <div>{count}</div>;
@@ -46,7 +46,7 @@ describe('[use-state]', () => {
     `;
     let count: number;
     let setCount: (value: number) => void;
-    const App = createComponent(() => {
+    const App = component(() => {
       [count, setCount] = useState(0);
 
       return [<div>text</div>, <div>{count}</div>];
@@ -99,7 +99,7 @@ describe('[use-state]', () => {
     let setCountsOne = [];
     let setCountsTwo = [];
 
-    const CounterOne = createComponent<ItemProps>(({ id }) => {
+    const CounterOne = component<ItemProps>(({ id }) => {
       const [count, setCount] = useState(0);
 
       setCountsOne.push(setCount);
@@ -114,7 +114,7 @@ describe('[use-state]', () => {
       );
     });
 
-    const CounterTwo = createComponent(() => {
+    const CounterTwo = component(() => {
       const [count, setCount] = useState(0);
 
       setCountsTwo.push(setCount);
@@ -122,7 +122,7 @@ describe('[use-state]', () => {
       return <div>{count}</div>;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return items.map(x => {
         return <CounterOne key={x.id} id={x.id} />;
       });
@@ -192,7 +192,7 @@ describe('[use-state]', () => {
 
     let setCounts: Array<(value: number) => void> = [];
 
-    const Item = createComponent<ItemProps>(({ id }) => {
+    const Item = component<ItemProps>(({ id }) => {
       const [count, setCount] = useState(0);
 
       setCounts.push(setCount);
@@ -204,7 +204,7 @@ describe('[use-state]', () => {
       );
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return items.map(x => <Item key={x.id} id={x.id} />);
     });
 
@@ -276,7 +276,7 @@ describe('[use-state]', () => {
 
     let setCounts: Array<(value: number) => void> = [];
 
-    const Item = createComponent<ItemProps>(({ id }) => {
+    const Item = component<ItemProps>(({ id }) => {
       const [count, setCount] = useState(0);
 
       setCounts.push(setCount);
@@ -288,7 +288,7 @@ describe('[use-state]', () => {
       );
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return items.map(x => {
         return (
           <div key={x.id}>
@@ -342,7 +342,7 @@ describe('[use-state]', () => {
           `;
     let flag: boolean;
     let setFlag: (value: boolean) => void;
-    const App = createComponent(() => {
+    const App = component(() => {
       [flag, setFlag] = useState(false);
 
       if (flag) return <div>flag</div>;

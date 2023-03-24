@@ -1,7 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useUpdate } from '../use-update';
 import { batch } from './batch';
@@ -22,7 +22,7 @@ describe('[batch]', () => {
   test('component renders many times after several updates without batch', () => {
     const mockFn = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const update = useUpdate();
 
       useEffect(() => {
@@ -44,7 +44,7 @@ describe('[batch]', () => {
   test('component renders 1 time per batch', () => {
     const mockFn = jest.fn();
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const update = useUpdate();
 
       useEffect(() => {

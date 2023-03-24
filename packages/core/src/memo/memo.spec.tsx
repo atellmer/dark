@@ -1,7 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { createComponent } from '../component';
+import { component } from '../component';
 import { memo } from './memo';
 
 let host: HTMLElement = null;
@@ -18,7 +18,7 @@ describe('[memo]', () => {
       render(MemoApp(props), host);
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       mockFn();
       return null;
     });
@@ -39,7 +39,7 @@ describe('[memo]', () => {
       render(MemoApp(props), host);
     };
 
-    const App = createComponent<AppProps>(() => {
+    const App = component<AppProps>(() => {
       mockFn();
       return null;
     });

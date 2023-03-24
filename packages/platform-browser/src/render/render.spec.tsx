@@ -2,7 +2,7 @@
 import {
   h,
   Fragment,
-  createComponent,
+  component,
   View,
   Text,
   Comment,
@@ -41,7 +41,7 @@ beforeEach(() => {
 
 describe('[render]', () => {
   test('doesn not throw error', () => {
-    const App = createComponent(() => null);
+    const App = component(() => null);
     const render$ = () => {
       render(App(), host);
     };
@@ -106,7 +106,7 @@ describe('[render]', () => {
       <div></div>
       <div></div>
     `;
-    const App = createComponent(() => [div(), div(), div()]);
+    const App = component(() => [div(), div(), div()]);
 
     render(App(), host);
     expect(host.innerHTML).toBe(content);
@@ -137,13 +137,13 @@ describe('[render]', () => {
       render(App(props), host);
     };
 
-    const ListItem = createComponent<ListItemProps>(({ slot }) => {
+    const ListItem = component<ListItemProps>(({ slot }) => {
       return div({
         slot,
       });
     });
 
-    const ListOne = createComponent<{ items: AppProps['items'] }>(({ items }) => {
+    const ListOne = component<{ items: AppProps['items'] }>(({ items }) => {
       return items.map(x => {
         return ListItem({
           key: x.id,
@@ -152,7 +152,7 @@ describe('[render]', () => {
       });
     });
 
-    const ListTwo = createComponent<{ items: AppProps['items'] }>(({ items }) => {
+    const ListTwo = component<{ items: AppProps['items'] }>(({ items }) => {
       return items.map(x => {
         return ListItem({
           key: x.id,
@@ -161,7 +161,7 @@ describe('[render]', () => {
       });
     });
 
-    const App = createComponent<AppProps>(({ one, items }) => {
+    const App = component<AppProps>(({ one, items }) => {
       return [
         div({ slot: Text('header') }),
         one ? ListOne({ items }) : ListTwo({ items }),
@@ -196,7 +196,7 @@ describe('[render]', () => {
       render(App(props), host);
     };
 
-    const App = createComponent<AppProps>(({ show }) => {
+    const App = component<AppProps>(({ show }) => {
       return [div({ slot: Text('header') }), show && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
     });
 
@@ -231,14 +231,14 @@ describe('[render]', () => {
     const itemAttr = 'data-item';
     let items = [];
 
-    const ListItem = createComponent<ListItemProps>(({ slot }) => {
+    const ListItem = component<ListItemProps>(({ slot }) => {
       return div({
         [itemAttr]: true,
         slot,
       });
     });
 
-    const List = createComponent<AppProps>(({ items }) => {
+    const List = component<AppProps>(({ items }) => {
       return items.map(x => {
         return ListItem({
           key: x.id,
@@ -247,7 +247,7 @@ describe('[render]', () => {
       });
     });
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
@@ -400,7 +400,7 @@ describe('[render]', () => {
     const itemAttrName = 'data-item';
     let items = [];
 
-    const List = createComponent<AppProps>(({ items }) => {
+    const List = component<AppProps>(({ items }) => {
       return items.map(x => {
         return div({
           key: x.id,
@@ -410,7 +410,7 @@ describe('[render]', () => {
       });
     });
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
@@ -562,7 +562,7 @@ describe('[render]', () => {
         <div></div>
         <div></div>
       `;
-      const App = createComponent(() => [div(), div(), div()]);
+      const App = component(() => [div(), div(), div()]);
 
       render(App(), host);
       expect(host.innerHTML).toBe(content);
@@ -578,11 +578,11 @@ describe('[render]', () => {
         <div></div>
       `;
 
-      const Item = createComponent(() => {
+      const Item = component(() => {
         return [[[div({ id: 'one' })]], div({ id: 'two' })];
       });
 
-      const App = createComponent(() => [[[[div()], [[div()]], div()]], [Item()], div()]);
+      const App = component(() => [[[[div()], [[div()]], div()]], [Item()], div()]);
 
       render(App(), host);
       expect(host.innerHTML).toBe(content);
@@ -600,7 +600,7 @@ describe('[render]', () => {
       let ref: MutableRef<HTMLDivElement> = null;
       let node: HTMLDivElement = null;
 
-      const App = createComponent<AppProps>(({ x }) => {
+      const App = component<AppProps>(({ x }) => {
         ref = useRef<HTMLDivElement>(null);
 
         return div({ ref, key: x });
@@ -637,13 +637,13 @@ describe('[render]', () => {
       render(App(props), host);
     };
 
-    const NestedArray = createComponent<AppProps>(({ count }) => {
+    const NestedArray = component<AppProps>(({ count }) => {
       return Array(count)
         .fill(0)
         .map((_, idx) => <p key={idx}>{idx}</p>);
     });
 
-    const App = createComponent<AppProps>(({ count }) => [
+    const App = component<AppProps>(({ count }) => [
       <div>1</div>,
       <div>2</div>,
       <NestedArray count={count} />,
@@ -665,7 +665,7 @@ describe('[render]', () => {
       dynamic: boolean;
     };
     const text = 'I am dynamic tag';
-    const App = createComponent<AppProps>(({ dynamic }) => {
+    const App = component<AppProps>(({ dynamic }) => {
       const Tag = dynamic ? span : div;
 
       return Tag({ slot: Text(text) });
@@ -696,11 +696,11 @@ describe('[render]', () => {
       render(App(props), host);
     };
 
-    const CustomItem = createComponent(({ slot }) => {
+    const CustomItem = component(({ slot }) => {
       return <span>{slot}</span>;
     });
 
-    const App = createComponent<AppProps>(({ dynamic }) => {
+    const App = component<AppProps>(({ dynamic }) => {
       const Tag = dynamic ? CustomItem : 'div';
 
       return <Tag>{text}</Tag>;
@@ -732,9 +732,9 @@ describe('[render]', () => {
       render(App(props), host);
     };
 
-    const Hello = createComponent(() => <span>hello</span>);
-    const Name = createComponent<NameProps>(({ slot }) => <span>{slot}</span>);
-    const App = createComponent<AppProps>(({ name }) => {
+    const Hello = component(() => <span>hello</span>);
+    const Name = component<NameProps>(({ slot }) => <span>{slot}</span>);
+    const App = component<AppProps>(({ name }) => {
       return (
         <div>
           <Hello />
@@ -788,11 +788,11 @@ describe('[render]', () => {
       items[items.length - 2] = temp;
     };
 
-    const ListItem = createComponent<Item>(({ id }) => {
+    const ListItem = component<Item>(({ id }) => {
       return [<div>1: {id}</div>, <div>2: {id}</div>];
     });
 
-    const List = createComponent(() => {
+    const List = component(() => {
       return items.map(x => {
         return <ListItem key={x.id} id={x.id} name={x.name} />;
       });
@@ -833,11 +833,11 @@ describe('[render]', () => {
       items = [];
     };
 
-    const ListItem = createComponent<Item>(({ id }) => {
+    const ListItem = component<Item>(({ id }) => {
       return [<div>1: {id}</div>];
     });
 
-    const List = createComponent(() => {
+    const List = component(() => {
       return items.map((x, idx) => {
         return <ListItem key={idx} id={x.id} name={x.name} />;
       });
@@ -876,7 +876,7 @@ describe('[render]', () => {
       n: number;
     };
 
-    const Box = createComponent<BoxProps>(({ n }) => {
+    const Box = component<BoxProps>(({ n }) => {
       const [show, setShow] = useState(true);
 
       const handleClick = () => setShow(x => !x);
@@ -901,7 +901,7 @@ describe('[render]', () => {
       );
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <>
           <Box n={1} />
@@ -973,7 +973,7 @@ describe('[render]', () => {
       }));
     };
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return items.map(x => <div key={x.id}>{x.name}</div>);
     });
 
@@ -1039,11 +1039,11 @@ describe('[render]', () => {
       }));
     };
 
-    const Item = createComponent<ItemProps>(({ item }) => {
+    const Item = component<ItemProps>(({ item }) => {
       return <div>{item.name}</div>;
     });
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
@@ -1110,12 +1110,12 @@ describe('[render]', () => {
     };
 
     const Item = memo(
-      createComponent<ItemProps>(({ item }) => {
+      component<ItemProps>(({ item }) => {
         return <div>{item.name}</div>;
       }),
     );
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
@@ -1189,7 +1189,7 @@ describe('[render]', () => {
       }));
     };
 
-    const Item = createComponent<ItemProps>(({ item }) => {
+    const Item = component<ItemProps>(({ item }) => {
       return (
         <>
           <div>{item.name}</div>
@@ -1199,7 +1199,7 @@ describe('[render]', () => {
       );
     });
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
@@ -1291,7 +1291,7 @@ describe('[render]', () => {
 
     let updateList: () => void;
 
-    const Item = createComponent<ItemProps>(({ item }) => {
+    const Item = component<ItemProps>(({ item }) => {
       return (
         <>
           <div>{item.name}</div>
@@ -1302,7 +1302,7 @@ describe('[render]', () => {
     });
 
     const List = memo(
-      createComponent(() => {
+      component(() => {
         const update = useUpdate();
 
         updateList = update;
@@ -1311,7 +1311,7 @@ describe('[render]', () => {
       }),
     );
 
-    const App = createComponent<AppProps>(({ show }) => {
+    const App = component<AppProps>(({ show }) => {
       return (
         <>
           {show && (
@@ -1412,13 +1412,13 @@ describe('[render]', () => {
       items = newItems;
     };
 
-    const List = createComponent<AppProps>(({ items }) => {
+    const List = component<AppProps>(({ items }) => {
       return items.map(x => {
         return <div key={x.id}>{x.name}</div>;
       });
     });
 
-    const App = createComponent<AppProps>(({ items }) => {
+    const App = component<AppProps>(({ items }) => {
       return (
         <div>
           <div>header 1</div>
@@ -1467,11 +1467,11 @@ describe('[render]', () => {
       slot: DarkElement;
     };
 
-    const Container = createComponent<ContainerProps>(({ slot }) => {
+    const Container = component<ContainerProps>(({ slot }) => {
       return <main>{slot}</main>;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <Container>
           <div>header</div>
@@ -1500,11 +1500,11 @@ describe('[render]', () => {
       slot: DarkElement;
     };
 
-    const Container = createComponent<ContainerProps>(({ slot }) => {
+    const Container = component<ContainerProps>(({ slot }) => {
       return <main>{slot}</main>;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <Container>
           {false}

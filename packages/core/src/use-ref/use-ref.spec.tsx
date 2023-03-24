@@ -2,7 +2,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { MutableRef } from '../ref';
 import { useRef } from './use-ref';
 
@@ -16,7 +16,7 @@ describe('[use-ref]', () => {
   test('can store ref correctly', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       ref = useRef(null);
 
       return <div ref={ref} />;

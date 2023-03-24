@@ -1,5 +1,5 @@
 /** @jsx h */
-import { createComponent } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 
 import { Routes } from './types';
 import { createRoutes, resolve } from './create-routes';
@@ -10,15 +10,15 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -35,15 +35,15 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -61,25 +61,25 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -96,37 +96,37 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
             children: [
               {
                 path: '1',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
               {
                 path: '2',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
             ],
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
             children: [
               {
                 path: '1',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
               {
                 path: '2',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
             ],
           },
@@ -158,11 +158,11 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -188,7 +188,7 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'fourth',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -207,7 +207,7 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
@@ -219,7 +219,7 @@ describe('[router/create-routes]', () => {
           },
           {
             path: 'c',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
@@ -229,7 +229,7 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'fourth',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -243,7 +243,7 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '',
@@ -259,15 +259,15 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '**',
@@ -287,7 +287,7 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '/',
@@ -304,11 +304,11 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: '/second/a',
@@ -317,7 +317,7 @@ describe('[router/create-routes]', () => {
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
@@ -331,19 +331,19 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
@@ -353,7 +353,7 @@ describe('[router/create-routes]', () => {
       },
       {
         path: '**',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -367,23 +367,23 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: '**',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
@@ -393,7 +393,7 @@ describe('[router/create-routes]', () => {
       },
       {
         path: '**',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
     const routes$ = createRoutes(routes);
@@ -408,19 +408,19 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: '**',
@@ -445,27 +445,27 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: 'b',
-            component: createComponent(() => null),
+            component: component(() => null),
             children: [
               {
                 path: '1',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
               {
                 path: '2',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
               {
                 path: '**',
@@ -503,19 +503,19 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second/:id',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'a',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: 'b/:id',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
@@ -532,15 +532,15 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'child-a',
-            component: createComponent(() => null),
+            component: component(() => null),
             children: [
               {
                 path: '/second/child-a/1',
@@ -549,19 +549,19 @@ describe('[router/create-routes]', () => {
               },
               {
                 path: '2',
-                component: createComponent(() => null),
+                component: component(() => null),
               },
             ],
           },
           {
             path: 'child-b',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
         ],
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '**',
@@ -577,19 +577,19 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second/a/1',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second/a/2',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second/a',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second/b',
@@ -597,11 +597,11 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '**',
@@ -624,19 +624,19 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'second/a',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: '1',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: '2',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: '',
@@ -654,11 +654,11 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '**',
@@ -681,19 +681,19 @@ describe('[router/create-routes]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => null),
+        component: component(() => null),
         children: [
           {
             path: 'nested',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: ':id',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: '',
-            component: createComponent(() => null),
+            component: component(() => null),
           },
           {
             path: '**',
@@ -703,11 +703,11 @@ describe('[router/create-routes]', () => {
       },
       {
         path: 'second',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: 'third',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
       {
         path: '',

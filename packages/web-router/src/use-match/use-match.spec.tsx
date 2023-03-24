@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { createTestHostNode } from '@test-utils';
@@ -27,7 +27,7 @@ describe('[router/use-match]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => {
+        component: component(() => {
           history = useHistory();
           match = useMatch();
 
@@ -36,7 +36,7 @@ describe('[router/use-match]', () => {
       },
       {
         path: 'second/:id',
-        component: createComponent(() => {
+        component: component(() => {
           match = useMatch();
 
           return <div>second</div>;
@@ -44,7 +44,7 @@ describe('[router/use-match]', () => {
       },
     ];
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 

@@ -21,9 +21,9 @@ yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
 ## Usage
 
 ```tsx
-import { h, createComponent, useState } from '@dark-engine/core';
+import { h, component, useState } from '@dark-engine/core';
 
-const App = createComponent(() => {
+const App = component(() => {
   const [count, setCount] = useState(0);
 
    return (
@@ -36,10 +36,10 @@ const App = createComponent(() => {
 
 Dark provides wrappers for all nativescript primitives as components. So you can write code above like this:
 ```tsx
-import { h, createComponent, useState } from '@dark-engine/core';
+import { h, component, useState } from '@dark-engine/core';
 import { FlexboxLayout, Button } from '@dark-engine/platform-native';
 
-const App = createComponent(() => {
+const App = component(() => {
   const [count, setCount] = useState(0);
 
   return (
@@ -52,10 +52,10 @@ const App = createComponent(() => {
 
 Also you can write any code without JSX:
 ```tsx
-import { createComponent, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { FlexboxLayout, Button } from '@dark-engine/platform-native';
 
-const App = createComponent(() => {
+const App = component(() => {
   const [count, setCount] = useState(0);
 
   return FlexboxLayout({
@@ -271,10 +271,10 @@ return (
 )
 ```
 
-If you prefer to write nativescript components in PascalCase you need to wrap it with createComponent:
+If you prefer to write nativescript components in PascalCase you need to wrap it with component:
 
 ```tsx
-import { createComponent } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { factory } from '@dark-engine/platform-native';
 
 type CarouselProps = {};
@@ -283,8 +283,8 @@ type CarouselItemProps = {};
 const carousel = factory('carousel');
 const carouselItem = factory('carousel-item');
 
-const Carousel = createComponent<CarouselProps>(props => carousel(props));
-const CarouselItem = createComponent<CarouselItemProps>(props => carouselItem(props));
+const Carousel = component<CarouselProps>(props => carousel(props));
+const CarouselItem = component<CarouselItemProps>(props => carouselItem(props));
 
 export { Carousel, CarouselItem };
 ```
@@ -335,10 +335,10 @@ return (
 Dark includes additional components of type `View`, `Text`, `TouchableOpacity`, so that you can write an application in a almost similar to React Native style.
 
 ```tsx
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { View, Text, TouchableOpacity } from '@dark-engine/platform-native';
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <View justifyContent='center'>
       <TouchableOpacity padding={32} backgroundColor='#4caf50' onPress={() => console.log('press')}>
@@ -357,7 +357,7 @@ Any more or less complex application needs to be divided into several pages and 
 ```tsx
 import { NavigationContainer, StackNavigator } from '@dark-engine/native-navigation';
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <NavigationContainer defaultPathname='/Feed'>
       <StackNavigator.Root>

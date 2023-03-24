@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, Fragment, createComponent, useState } from '@dark-engine/core';
+import { h, Fragment, component, useState } from '@dark-engine/core';
 
 import { setInputValue, dom } from '@test-utils';
 import { createRoot } from '../create-root';
@@ -18,7 +18,7 @@ describe('[DOM]', () => {
     let inputOne: HTMLInputElement = null;
     let inputTwo: HTMLInputElement = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const [value, setValue] = useState('');
 
       const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => {
@@ -50,7 +50,7 @@ describe('[DOM]', () => {
     const content = () => dom`
       <input data-attr-1="true" data-attr-2="true" data-attr-3="false" data-attr-4="true" data-attr-5="666">
     `;
-    const App = createComponent(() => {
+    const App = component(() => {
       return <input data-attr-1='true' data-attr-2={true} data-attr-3={false} data-attr-4 data-attr-5='666' />;
     });
     const root = createRoot(host);
@@ -72,7 +72,7 @@ describe('[DOM]', () => {
     const root = createRoot(host);
     const render$ = (props: AppProps) => root.render(App(props));
 
-    const App = createComponent<AppProps>(({ required }) => {
+    const App = component<AppProps>(({ required }) => {
       return <input required={required} data-required={required} />;
     });
 
@@ -97,7 +97,7 @@ describe('[DOM]', () => {
       root.render(App(props));
     };
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <svg
           stroke='currentColor'

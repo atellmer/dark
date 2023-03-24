@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, createComponent, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { h, component, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
 
 import { createRoot } from './create-root';
 
@@ -13,7 +13,7 @@ beforeEach(() => {
 
 describe('[create-root]', () => {
   test('has methods', () => {
-    const App = createComponent(() => {
+    const App = component(() => {
       return null;
     });
     const root = createRoot(host);
@@ -26,7 +26,7 @@ describe('[create-root]', () => {
   test('unmount clears all effects and unmounts root node correctly', () => {
     const dropFn = jest.fn();
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useInsertionEffect(() => {
         return () => dropFn();
       }, []);
@@ -42,7 +42,7 @@ describe('[create-root]', () => {
       return <div>child</div>;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         return () => dropFn();
       }, []);

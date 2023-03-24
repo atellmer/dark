@@ -2,7 +2,7 @@
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
-import { createComponent } from '../component';
+import { component } from '../component';
 import { useInsertionEffect } from '../use-insertion-effect';
 import { useLayoutEffect } from '../use-layout-effect';
 import { useEffect } from '../use-effect';
@@ -19,7 +19,7 @@ describe('[unmount]', () => {
   test('clears all effects correctly', () => {
     const dropFn = jest.fn();
 
-    const Child = createComponent(() => {
+    const Child = component(() => {
       useInsertionEffect(() => {
         return () => dropFn();
       }, []);
@@ -35,7 +35,7 @@ describe('[unmount]', () => {
       return null;
     });
 
-    const App = createComponent(() => {
+    const App = component(() => {
       useInsertionEffect(() => {
         return () => dropFn();
       }, []);

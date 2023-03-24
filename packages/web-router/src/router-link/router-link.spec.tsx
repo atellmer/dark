@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, Fragment, createComponent } from '@dark-engine/core';
+import { h, Fragment, component } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
 
 import { createTestHostNode, createReplacerString, click, dom } from '@test-utils';
@@ -34,19 +34,19 @@ describe('[router/router-link]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: createComponent(() => <div>first</div>),
+        component: component(() => <div>first</div>),
       },
       {
         path: 'second',
-        component: createComponent(() => <div>second</div>),
+        component: component(() => <div>second</div>),
       },
       {
         path: 'third',
-        component: createComponent(() => <div>third</div>),
+        component: component(() => <div>third</div>),
       },
     ];
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <Router routes={routes}>
           {slot => {
@@ -93,11 +93,11 @@ describe('[router/router-link]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
 
-    const App = createComponent(() => {
+    const App = component(() => {
       return (
         <Router routes={routes}>
           {() => {
@@ -123,13 +123,13 @@ describe('[router/router-link]', () => {
     const routes: Routes = [
       {
         path: '',
-        component: createComponent(() => null),
+        component: component(() => null),
       },
     ];
 
     let defaultPrevented = false;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       const handleClick = (e: SyntheticEvent<MouseEvent>) => {
         defaultPrevented = e.sourceEvent.defaultPrevented;
       };

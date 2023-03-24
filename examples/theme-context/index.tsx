@@ -1,7 +1,7 @@
 import {
   h,
   Fragment,
-  createComponent,
+  component,
   createContext,
   useContext,
   useState,
@@ -23,7 +23,7 @@ const ThemeContext = createContext<ThemeMode>(null);
 
 const useTheme = () => useContext(ThemeContext);
 
-const Body = createComponent(() => {
+const Body = component(() => {
   const { theme } = useTheme();
 
   useLayoutEffect(() => {
@@ -39,7 +39,7 @@ const Body = createComponent(() => {
   return null;
 });
 
-const DarkModeSwitch = createComponent(() => {
+const DarkModeSwitch = component(() => {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   const style = useStyle(styled => ({
@@ -84,7 +84,7 @@ type StaticLayoutProps = {
 };
 
 const StaticLayout = memo(
-  createComponent<StaticLayoutProps>(({ slot }) => {
+  component<StaticLayoutProps>(({ slot }) => {
     renders++;
 
     return (
@@ -96,7 +96,7 @@ const StaticLayout = memo(
   }),
 );
 
-const App = createComponent(() => {
+const App = component(() => {
   const [theme, setTheme] = useState<Theme>('light');
   const context = useMemo(() => ({ theme, setTheme }), [theme]);
   const style = useStyle(styled => ({

@@ -3,7 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
 import { h } from '../element';
-import { createComponent } from '../component/component';
+import { component } from '../component/component';
 import { useReactiveState } from './use-reactive-state';
 
 let host: HTMLElement = null;
@@ -24,7 +24,7 @@ describe('[use-reactive-state]', () => {
 
     let state: State;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       state = useReactiveState<State>({ count: 0 });
 
       return <div>{state.count}</div>;
@@ -57,7 +57,7 @@ describe('[use-reactive-state]', () => {
 
     let state: State;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       state = useReactiveState<State>({
         child: {
           child: {
@@ -90,7 +90,7 @@ describe('[use-reactive-state]', () => {
 
     let state: State;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       state = useReactiveState<State>([]);
 
       return <div>{state.length}</div>;
@@ -111,7 +111,7 @@ describe('[use-reactive-state]', () => {
   test('throws exception when initial state is no defined', () => {
     let error = null;
 
-    const App = createComponent(() => {
+    const App = component(() => {
       try {
         useReactiveState(null);
       } catch (err) {

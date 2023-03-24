@@ -1,11 +1,11 @@
-import { h, Fragment, createComponent, useState, useEffect, type DarkElement } from '@dark-engine/core';
+import { h, Fragment, component, useState, useEffect, type DarkElement } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 type TimerProps = {
   slot: (value: number) => DarkElement;
 };
 
-const Timer = createComponent<TimerProps>(({ slot }) => {
+const Timer = component<TimerProps>(({ slot }) => {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const Timer = createComponent<TimerProps>(({ slot }) => {
   return slot(seconds);
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <>
       <div>Timer component is just a logic component without view...</div>,

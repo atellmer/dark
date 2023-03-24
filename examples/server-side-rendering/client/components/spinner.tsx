@@ -1,6 +1,6 @@
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
-const Spinner = createComponent(() => (
+const Spinner = component(() => (
   <div class='sp-layout'>
     <div class='sp sp-hydrogen'></div>
   </div>
