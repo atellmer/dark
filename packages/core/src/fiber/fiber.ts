@@ -201,9 +201,11 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
   const alternate = nextFiber.alternate ? nextFiber.alternate.child : null;
   const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
   const nextInstance: DarkElementInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] : null;
-  const hook = getHook(alternate, prevInstance, nextInstance);
-  const provider = alternate ? alternate.provider : null;
-  const fiber = new Fiber(hook, provider, childrenIdx);
+  const fiber = new Fiber(
+    getHook(alternate, prevInstance, nextInstance),
+    alternate ? alternate.provider : null,
+    childrenIdx,
+  );
 
   currentFiberStore.set(fiber);
   fiber.parent = nextFiber;
@@ -235,9 +237,11 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     const nextInstance: DarkElementInstance = hasChildrenProp(parentInstance)
       ? parentInstance.children[childrenIdx]
       : null;
-    const hook = getHook(alternate, prevInstance, nextInstance);
-    const provider = alternate ? alternate.provider : null;
-    const fiber = new Fiber(hook, provider, childrenIdx);
+    const fiber = new Fiber(
+      getHook(alternate, prevInstance, nextInstance),
+      alternate ? alternate.provider : null,
+      childrenIdx,
+    );
 
     currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
@@ -493,21 +497,22 @@ function pertformInstance(parentInstance: DarkElementInstance, idx: number, fibe
   let instance: DarkElementInstance = null;
 
   if (hasChildrenProp(parentInstance)) {
-    const elements = detectIsArray(parentInstance.children[idx])
-      ? flatten(parentInstance.children[idx] as unknown as Array<DarkElementInstance>)
-      : [parentInstance.children[idx]];
+    if (detectIsArray(parentInstance.children[idx])) {
+      parentInstance.children.splice(
+        idx,
+        1,
+        ...flatten(parentInstance.children[idx] as unknown as Array<DarkElementInstance>),
+      );
+    }
 
-    parentInstance.children.splice(idx, 1, ...elements);
+    instance = mountInstance(fiber, parentInstance.children[idx]);
 
-    instance = parentInstance.children[idx];
-    instance = mountInstance(fiber, instance);
-  }
-
-  if (detectIsComponent(instance)) {
-    hasEffects(fiber) && fiber.markEffectHost();
-    hasLayoutEffects(fiber) && fiber.markLayoutEffectHost();
-    hasInsertionEffects(fiber) && fiber.markInsertionEffectHost();
-    platform.detectIsPortal(instance) && fiber.markPortalHost();
+    if (detectIsComponent(instance)) {
+      hasEffects(fiber) && fiber.markEffectHost();
+      hasLayoutEffects(fiber) && fiber.markLayoutEffectHost();
+      hasInsertionEffects(fiber) && fiber.markInsertionEffectHost();
+      platform.detectIsPortal(instance) && fiber.markPortalHost();
+    }
   }
 
   return instance;
@@ -696,22 +701,14 @@ function detectAreSameInstanceTypes(
 }
 
 function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
-  if (alternate && detectAreSameComponentTypesWithSameKeys(prevInstance, nextInstance)) {
-    return alternate.hook;
-  }
-
-  if (detectIsComponent(nextInstance)) {
-    return createHook();
-  }
+  if (alternate && detectAreSameComponentTypesWithSameKeys(prevInstance, nextInstance)) return alternate.hook;
+  if (detectIsComponent(nextInstance)) return createHook();
 
   return null;
 }
 
 function createHook(): Hook {
-  return {
-    idx: 0,
-    values: [],
-  };
+  return { idx: 0, values: [] };
 }
 
 function commitChanges() {
@@ -839,7 +836,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     fiberMountStore.reset();
 
     fiber.alternate = new Fiber().mutate(fiber);
-    fiber.marker = '🍒';
+    fiber.marker = '🔥';
     fiber.effectTag = EffectTag.UPDATE;
     fiber.childrenElementsCount = 0;
     fiber.child = null;
