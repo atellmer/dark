@@ -5,6 +5,7 @@ import { createContext, useContext } from '../context';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useEffect } from '../use-effect';
+import { useLayoutEffect } from '../use-layout-effect';
 import { useCallback } from '../use-callback';
 import { memo } from '../memo';
 import { keyBy } from '../helpers';
@@ -38,9 +39,12 @@ const SplitUpdate: SplitUpdate = component<SplitUpdateProps>(props => {
     scope.list = [...list];
   }, [list]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!canSplit) return;
-    scope.subscribers.forEach(fn => fn(map.value));
+
+    for (const subscriber of scope.subscribers) {
+      subscriber(map.value);
+    }
   }, [list]);
 
   const subscribe = useCallback((subscriber: (map: Record<DarkElementKey, unknown>) => void) => {
@@ -66,7 +70,7 @@ type SplitUpdateGuardProps = {
 
 const SplitUpdateGuard = memo(
   component<SplitUpdateGuardProps>(({ slot }) => slot),
-  (_, nextProps) => nextProps.canSplit === false,
+  (_, n) => n.canSplit === false,
 );
 
 const SplitUpdateContext = createContext<SplitUpdateContextValue>(null);

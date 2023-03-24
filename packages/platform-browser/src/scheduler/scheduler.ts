@@ -81,10 +81,11 @@ function executeTasks() {
   if (!isBusy) {
     checkOverdueTasks() ||
       gc() ||
-      pick(queueByPriority.animations) ||
-      pick(queueByPriority.hight) ||
-      pick(queueByPriority.normal) ||
-      requestIdleCallback(() => pick(queueByPriority.low1) || pick(queueByPriority.low2));
+      (queueByPriority.animations.length > 0 && pick(queueByPriority.animations)) ||
+      (queueByPriority.hight.length > 0 && pick(queueByPriority.hight)) ||
+      (queueByPriority.normal.length > 0 && pick(queueByPriority.normal)) ||
+      (queueByPriority.low1.length > 0 && requestIdleCallback(() => pick(queueByPriority.low1))) ||
+      (queueByPriority.low2.length > 0 && requestIdleCallback(() => pick(queueByPriority.low2)));
   }
 }
 

@@ -1,4 +1,15 @@
-import { h, View, Text, Fragment, component, memo, useCallback, SplitUpdate, useSplitUpdate } from '@dark-engine/core';
+import {
+  h,
+  View,
+  Text,
+  Fragment,
+  component,
+  memo,
+  useUpdate,
+  useCallback,
+  SplitUpdate,
+  useSplitUpdate,
+} from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -111,7 +122,7 @@ const Header = component<HeaderProps>(
   },
 );
 
-const MemoHeader = memo(Header);
+const MemoHeader = memo(Header, () => false);
 
 type RowProps = {
   id: number;
@@ -163,6 +174,7 @@ const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
 const MemoList = memo(List);
 
 const Bench = component(() => {
+  const forceUpdate = useUpdate({ forceSync: true });
   const handleCreate = useCallback(() => {
     state.list = buildData(10000);
     measurer.start('create');
@@ -250,8 +262,4 @@ const getKey = (x: ListItem) => x.id;
 
 const root = createRoot(document.getElementById('root'));
 
-function forceUpdate() {
-  root.render(<Bench />);
-}
-
-forceUpdate();
+root.render(<Bench />);
