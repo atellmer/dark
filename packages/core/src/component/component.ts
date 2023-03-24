@@ -55,4 +55,11 @@ const getComponentKey = (instance: Component): DarkElementKey =>
 
 const getComponentFlag = (instance: Component): Record<Flag, boolean> | null => instance.props[ATTR_FLAG] || null;
 
-export { Component, createComponent, detectIsComponent, getComponentKey, getComponentFlag };
+export {
+  Component,
+  createComponent,
+  createComponent as component,
+  detectIsComponent,
+  getComponentKey,
+  getComponentFlag,
+};

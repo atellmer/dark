@@ -30,6 +30,14 @@ Dark is lightweight UI rendering engine for javascript apps without dependencies
 - 🏄‍♂️ Out of box isomorphic routing
 - 🚢 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
 
+```tsx
+const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
+
+<Greeting name='Taylor Swift' />
+// or
+Greeting({ name: 'Taylor Swift' })
+```
+
 ## Demos
 
 - [1k components](https://atellmer.github.io/dark/examples/1k-components/)
@@ -97,10 +105,10 @@ yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
 Simple example with component:
 
 ```tsx
-import { h, Fragment, createComponent, useReactiveState } from '@dark-engine/core';
+import { h, Fragment, component, useReactiveState } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState({ name: 'Alex' });
 
   const handleInput = (e) => {
@@ -121,10 +129,10 @@ createRoot(document.getElementById('root')).render(<App />);
 This code can be rewritten without using JSX like this:
 
 ```tsx
-import { Text, createComponent, useReactiveState } from '@dark-engine/core';
+import { Text, component, useReactiveState } from '@dark-engine/core';
 import { createRoot, div, input } from '@dark-engine/platform-browser';
 
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState({ name: 'Alex' });
 
   const handleInput = (e) => {
@@ -179,7 +187,7 @@ import {
   Text,
   Comment,
   Fragment,
-  createComponent,
+  component,
   createContext,
   memo,
   lazy,
@@ -389,13 +397,13 @@ root.unmount();
 A couple of examples of working with conditions:
 
 ```tsx
-const Component = createComponent(({ isOpen }) => {
+const Component = component(({ isOpen }) => {
   return isOpen ? <div>Hello</div> : null
 });
 ```
 
 ```tsx
-const Component = createComponent(({ isOpen }) => {
+const Component = component(({ isOpen }) => {
   return (
     <Fragment>
       <div>Hello</div>
@@ -406,7 +414,7 @@ const Component = createComponent(({ isOpen }) => {
 ```
 
 ```tsx
-const Component = createComponent(({ isOpen }) => {
+const Component = component(({ isOpen }) => {
   return (
     <Fragment>
       <div>Hello</div>
@@ -419,7 +427,7 @@ const Component = createComponent(({ isOpen }) => {
 <a name="list-rendering"></a>
 ## List rendering
 ```tsx
-const List = createComponent(({ items }) => {
+const List = component(({ items }) => {
   return (
     <Fragment>
       {
@@ -435,7 +443,7 @@ const List = createComponent(({ items }) => {
 or without Fragment
 
 ```tsx
-const List = createComponent(({ items }) => {
+const List = component(({ items }) => {
   return items.map(x => <div key={x.id}>{x.title}</div>);
 });
 ```
@@ -446,10 +454,10 @@ Note that every item must have key to identification itself. As key you can use 
 
 Components are the reusable building blocks of your application, encapsulating the presentation and logic of how they work.
 
-#### createComponent
+#### component
 
 ```tsx
-import { createComponent } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 ```
 
 This is a fundamental function that creates components with their own logic and possibly nested components.
@@ -460,7 +468,7 @@ type SkyProps = {
   color: string;
 };
 
-const Sky = createComponent<SkyProps>(({ color }) => {
+const Sky = component<SkyProps>(({ color }) => {
   return <div style={`color: ${color}`}>My color is {color}</div>;
 });
 
@@ -470,7 +478,7 @@ render(<Sky color='deepskyblue' />, document.getElementById('root'));
 A component can return an array of elements:
 
 ```tsx
-const App = createComponent(props => {
+const App = component(props => {
   return [
     <header>Header</header>,
     <div>Content</div>,
@@ -506,7 +514,7 @@ return (
 If a child element is passed to the component, it will appear in props as slot:
 
 ```tsx
-const App = createComponent(({ slot }) => {
+const App = component(({ slot }) => {
   return (
     <>
       <header>Header</header>
@@ -523,7 +531,7 @@ render(<App>Content</App>, document.getElementById('root'));
 You can put components into themself to get recursion if you want. But every recursion must have return condition for out. In other case we will have infinity loop. Recursive rendering might be useful for tree building or something else.
 
 ```tsx
-const RecursiveItem = createComponent<RecursiveItemProps>(({ level, currentLevel = 0 }) => {
+const RecursiveItem = component<RecursiveItemProps>(({ level, currentLevel = 0 }) => {
   if (currentLevel === level) return null;
 
   return (
@@ -534,7 +542,7 @@ const RecursiveItem = createComponent<RecursiveItemProps>(({ level, currentLevel
   );
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   return <RecursiveItem level={5} />;
 });
 ```
@@ -578,7 +586,7 @@ import { useState } from '@dark-engine/core';
 This is a hook to store the state and call to update a piece of the interface.
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   const [count, setCount] = useState(0);
 
   return <button onClick={() => setCount(count + 1)}>fired {count} times</button>;
@@ -600,7 +608,7 @@ import { useReactiveState } from '@dark-engine/core';
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   const state = useReactiveState({ count: 0 });
 
   return (
@@ -634,7 +642,7 @@ function reducer(state: State, action: Action) {
   }
 }
 
-const App = createComponent(() => {
+const App = component(() => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
@@ -660,7 +668,7 @@ import { useEffect } from '@dark-engine/core';
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   const [albums, setAlbums] = useState<Array<Album>>([]);
 
   useEffect(() => {
@@ -735,13 +743,13 @@ import { memo } from '@dark-engine/core';
 ```
 
 ```tsx
-const StaticComponent = memo(createComponent(() => {
+const StaticComponent = memo(component(() => {
   console.log('StaticComponent render!');
 
   return <div>I'm static</div>;
 }));
 
-const App = createComponent(() => {
+const App = component(() => {
   console.log('App render!');
 
   useEffect(() => {
@@ -867,7 +875,7 @@ This fixes an issue with an unresponsive interface when user input occurs, based
 Returns a delayed value that may lag behind the main value. It can be combined with each other and with useMemo and memo for amazing responsiveness results...
 
 ```tsx
-const Items = createComponent(({ items }) => {
+const Items = component(({ items }) => {
   const deferredItems = useDeferredValue(items);
   const elements = useMemo(() => {
     return deferredItems.map(item => <li key={item.id}>{item.name}</li>);
@@ -886,7 +894,7 @@ import { SplitUpdate, useSplitUpdate } from '@dark-engine/core';
 ```
 
 ```tsx
-const Item = createComponent(({ id }) => {
+const Item = component(({ id }) => {
   const item = useSplitUpdate(
     map => map[id], // selector
     x => `${x.name}:${x.selected}`, // detect changes of this part
@@ -897,7 +905,7 @@ const Item = createComponent(({ id }) => {
 
 const getKey = x => x.id;
 
-const App = createComponent(({ items }) => { // items is large list
+const App = component(({ items }) => { // items is large list
   return (
     <SplitUpdate list={items} getKey={getKey}>
       {items.map(x => <Item key={x.id} id={x.id} />)}
@@ -947,7 +955,7 @@ type DogRef = {
 };
 
 const Dog = forwardRef<{}, DogRef>(
-  createComponent((_, ref) => {
+  component((_, ref) => {
     useImperativeHandle(
       ref,
       () => ({
@@ -960,7 +968,7 @@ const Dog = forwardRef<{}, DogRef>(
   }),
 );
 
-const App = createComponent(() => {
+const App = component(() => {
   const dogRef = useRef<DogRef>(null);
 
   useEffect(() => {
@@ -983,7 +991,7 @@ type BrokenComponentProps = {
   hasError: boolean;
 };
 
-const BrokenComponent = createComponent<BrokenComponentProps>(({ hasError }) => {
+const BrokenComponent = component<BrokenComponentProps>(({ hasError }) => {
   if (hasError) {
     throw new Error('oh no!');
   }
@@ -991,7 +999,7 @@ const BrokenComponent = createComponent<BrokenComponentProps>(({ hasError }) => 
   return <div>BrokenComponent</div>;
 });
 
-const App = createComponent(() => {
+const App = component(() => {
   const [hasError, setHasError] = useState(false);
   const error = useError();
 
@@ -1028,14 +1036,14 @@ const ThemeContext = createContext<Theme>('light');
 
 const useTheme = () => useContext(ThemeContext);
 
-const ThemeConsumer = createComponent(() => {
+const ThemeConsumer = component(() => {
   const theme = useTheme();
   console.log('render ThemeConsumer!');
 
   return <div style='font-size: 20vw;'>{theme === 'light' ? '☀️' : '🌙'}</div>;
 });
 
-const StaticLayout = memo(createComponent(() => {
+const StaticLayout = memo(component(() => {
   console.log('render StaticLayout!');
 
   return (
@@ -1046,7 +1054,7 @@ const StaticLayout = memo(createComponent(() => {
   );
 }));
 
-const App = createComponent(() => {
+const App = component(() => {
   const [theme, setTheme] = useState<Theme>('light');
 
   const handleToggleTheme = () => setTheme(x => (x === 'dark' ? 'light' : 'dark'));
@@ -1079,7 +1087,7 @@ import { useSpring } from '@dark-engine/core';
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   const [isOpen, setIsOpen] = useState(false);
   const {
     values: [x],
@@ -1125,7 +1133,7 @@ type NewPageProps = {};
 
 const NewPage = lazy<NewPageProps>(() => import('./new-page'));
 
-const App = createComponent(() => {
+const App = component(() => {
   const [isNewPage, setIsNewPage] = useState(false);
 
   const handleToggle = () => setIsNewPage(x => !x);
@@ -1213,7 +1221,7 @@ import { createPortal } from '@dark-engine/platform-browser';
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   const portalHost = useMemo(() => document.createElement('div'), []);
 
   useLayoutEffect(() => {
@@ -1285,9 +1293,9 @@ server.get('/', (req, res) => {
 
 ```tsx
 // client/app.tsx
-import { h, createComponent } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 
-const App = createComponent(() => <div>Hello World</div>);
+const App = component(() => <div>Hello World</div>);
 
 export { App };
 ```
@@ -1334,7 +1342,7 @@ const routes: Routes = [
   },
 ];
 
-const App = createComponent(() => {
+const App = component(() => {
   return (
     <Router routes={routes}>
       {slot => {
@@ -1367,7 +1375,7 @@ import { useId } from '@dark-engine/core';
 ```
 
 ```tsx
-const Checkbox = createComponent(() => {
+const Checkbox = component(() => {
   const id = useId();
 
   // generates something like this 'dark:0:lflt'
@@ -1390,7 +1398,7 @@ import { useSyncExternalStore } from '@dark-engine/core';
 ```
 
 ```tsx
-const App = createComponent(() => {
+const App = component(() => {
   const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
 
   return <div>{state.isFetching ? 'loading...' : 'ola! 🤪'}</div>;
