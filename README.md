@@ -1,7 +1,7 @@
 <div align="center">
 <h1>Dark</h1>
 
-Dark is lightweight UI rendering engine for javascript apps without dependencies and written in TypeScript 💫 <br> (Browser, Node.js, Android, iOS)
+The lightweight and powerful UI rendering engine without dependencies and written in TypeScript 💫 <br> (Browser, Node.js, Android, iOS)
 
 <img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
@@ -11,7 +11,9 @@ Dark is lightweight UI rendering engine for javascript apps without dependencies
 <img alt="bundle size router" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/web-router?label=size%20[router]&style=flat&colorA=000063&colorB=673ab7">
 </div>
 
-![Dark](./assets/cover.jpg) 
+<div align="center"> 
+  <img src="./assets/cover.jpg">
+</div>
 
 ## Features
 - 🌟 Reactive
@@ -38,7 +40,9 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 Greeting({ name: 'Taylor Swift' })
 ```
 
-![Dark](./assets/hello.jpg) 
+<div align="center"> 
+  <img src="./assets/hello.jpg">
+</div>
 
 ## Demos
 
