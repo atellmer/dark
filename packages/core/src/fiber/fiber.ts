@@ -135,14 +135,25 @@ class Fiber<N = NativeElement> {
   }
 }
 
+type Box = {
+  fiber$$: Fiber;
+  fiber$: Fiber;
+  instance$: DarkElementInstance;
+};
+
 function workLoop() {
   const wipFiber = wipRootStore.get();
   let nextUnitOfWork = nextUnitOfWorkStore.get();
   let shouldYield = false;
   let hasMoreWork = Boolean(nextUnitOfWork);
+  const box: Box = {
+    fiber$$: null,
+    fiber$: null,
+    instance$: null,
+  };
 
   while (nextUnitOfWork && !shouldYield) {
-    nextUnitOfWork = performUnitOfWork(nextUnitOfWork);
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWork, box);
     nextUnitOfWorkStore.set(nextUnitOfWork);
     hasMoreWork = Boolean(nextUnitOfWork);
     shouldYield = platform.shouldYeildToHost();
@@ -155,7 +166,7 @@ function workLoop() {
   return hasMoreWork;
 }
 
-function performUnitOfWork(fiber: Fiber) {
+function performUnitOfWork(fiber: Fiber, box: Box) {
   let isDeepWalking = true;
   let nextFiber = fiber;
   let instance = fiber.instance;
@@ -168,41 +179,59 @@ function performUnitOfWork(fiber: Fiber) {
       const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
 
       if (hasChildren) {
-        const { fiber$, instance$ } = performChild(nextFiber, instance);
+        performChild(nextFiber, instance, box);
 
-        nextFiber = fiber$;
-        instance = instance$;
+        nextFiber = box.fiber$;
+        instance = box.instance$;
 
-        if (fiber$) return fiber$;
+        box.fiber$$ = null;
+        box.fiber$ = null;
+        box.instance$ = null;
+
+        if (nextFiber) return nextFiber;
       } else {
-        const { fiber$$, fiber$, instance$ } = performSibling(nextFiber, instance);
+        performSibling(nextFiber, instance, box);
 
-        nextFiber = fiber$;
-        instance = instance$;
+        const nextFiber$ = box.fiber$$;
 
-        if (fiber$$) return fiber$$;
+        nextFiber = box.fiber$;
+        instance = box.instance$;
+
+        box.fiber$$ = null;
+        box.fiber$ = null;
+        box.instance$ = null;
+
+        if (nextFiber$) return nextFiber$;
       }
     } else {
-      const { fiber$$, fiber$, instance$ } = performSibling(nextFiber, instance);
+      performSibling(nextFiber, instance, box);
 
-      nextFiber = fiber$;
-      instance = instance$;
+      const nextFiber$ = box.fiber$$;
 
-      if (fiber$$) return fiber$$;
+      nextFiber = box.fiber$;
+      instance = box.instance$;
+
+      box.fiber$$ = null;
+      box.fiber$ = null;
+      box.instance$ = null;
+
+      if (nextFiber$) return nextFiber$;
     }
 
     if (nextFiber.parent === null) return null;
   }
 }
 
-function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
+function performChild(nextFiber: Fiber, instance: DarkElementInstance, box: Box) {
   fiberMountStore.jumpToChild();
   const childrenIdx = 0;
   const alternate = nextFiber.alternate ? nextFiber.alternate.child : null;
-  const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
-  const nextInstance: DarkElementInstance = hasChildrenProp(instance) ? instance.children[childrenIdx] : null;
   const fiber = new Fiber(
-    getHook(alternate, prevInstance, nextInstance),
+    getHook(
+      alternate,
+      alternate ? alternate.instance : null,
+      hasChildrenProp(instance) ? instance.children[childrenIdx] : null,
+    ),
     alternate ? alternate.provider : null,
     childrenIdx,
   );
@@ -218,13 +247,12 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance) {
 
   candidatesStore.add(fiber);
 
-  return {
-    fiber$: fiber,
-    instance$: instance,
-  };
+  box.fiber$$ = null;
+  box.fiber$ = fiber;
+  box.instance$ = instance;
 }
 
-function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
+function performSibling(nextFiber: Fiber, instance: DarkElementInstance, box: Box) {
   fiberMountStore.jumpToSibling();
   const parentInstance = nextFiber.parent.instance;
   const childrenIdx = fiberMountStore.getIndex();
@@ -233,12 +261,12 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
   if (hasSibling) {
     fiberMountStore.deepWalking.set(true);
     const alternate = nextFiber.alternate ? nextFiber.alternate.nextSibling : null;
-    const prevInstance: DarkElementInstance = alternate ? alternate.instance : null;
-    const nextInstance: DarkElementInstance = hasChildrenProp(parentInstance)
-      ? parentInstance.children[childrenIdx]
-      : null;
     const fiber = new Fiber(
-      getHook(alternate, prevInstance, nextInstance),
+      getHook(
+        alternate,
+        alternate ? alternate.instance : null,
+        hasChildrenProp(parentInstance) ? parentInstance.children[childrenIdx] : null,
+      ),
       alternate ? alternate.provider : null,
       childrenIdx,
     );
@@ -254,11 +282,11 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
 
     candidatesStore.add(fiber);
 
-    return {
-      fiber$$: fiber,
-      fiber$: fiber,
-      instance$: instance,
-    };
+    box.fiber$$ = fiber;
+    box.fiber$ = fiber;
+    box.instance$ = instance;
+
+    return;
   } else {
     fiberMountStore.jumpToParent();
     fiberMountStore.deepWalking.set(false);
@@ -270,11 +298,9 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance) {
     }
   }
 
-  return {
-    fiber$$: null,
-    fiber$: nextFiber,
-    instance$: instance,
-  };
+  box.fiber$$ = null;
+  box.fiber$ = nextFiber;
+  box.instance$ = instance;
 }
 
 function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) {
