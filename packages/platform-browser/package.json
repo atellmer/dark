@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/platform-browser",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "description": "Dark renderer for browser",
   "author": "AlexPlex",
   "license": "MIT",
