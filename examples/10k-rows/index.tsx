@@ -1,19 +1,18 @@
 import {
-  h,
-  View,
   Text,
-  Fragment,
   component,
   memo,
+  $$memo,
   useUpdate,
   useCallback,
   SplitUpdate,
   useSplitUpdate,
+  Flag,
+  type DarkElementInstance,
 } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+import { createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
-const div = (props = {}) => View({ ...props, as: 'div' });
-const button = (props = {}) => View({ ...props, as: 'button' });
+const flag = { [Flag.HAS_NO_MOVES]: true };
 
 const createMeasurer = () => {
   let startTime;
@@ -130,28 +129,44 @@ type RowProps = {
   onHighlight: (id: number) => void;
 };
 
-const Row = component<RowProps>(({ id, onRemove, onHighlight }) => {
-  const { name, selected } = useSplitUpdate<ListItem>(
-    map => map[id],
-    x => `${x.name}:${x.selected}`,
-  );
-  const handleRemove = useCallback(() => onRemove(id), []);
-  const handleHighlight = useCallback(() => onHighlight(id), []);
+const Row = component<RowProps>(
+  ({ id, onRemove, onHighlight }) => {
+    const { name, selected } = useSplitUpdate<ListItem>(
+      map => map[id],
+      x => `${x.name}:${x.selected}`,
+    );
+    const handleRemove = useCallback(() => onRemove(id), []);
+    const handleHighlight = useCallback(() => onHighlight(id), []);
 
-  return (
-    <tr class={selected ? 'selected' : undefined}>
-      <td class='cell'>{name}</td>
-      <td class='cell'>qqq</td>
-      <td class='cell'>xxx</td>
-      <td class='cell'>
-        <button onClick={handleRemove}>remove</button>
-        <button onClick={handleHighlight}>highlight</button>
-      </td>
-    </tr>
-  );
-});
+    //console.log('render', id);
 
-const MemoRow = memo(Row);
+    return tr({
+      class: selected ? 'selected' : undefined,
+      flag,
+      slot: [
+        td({ class: 'cell', flag, slot: Text(name) }),
+        td({ class: 'cell', flag, slot: Text('qqq') }),
+        td({ class: 'cell', flag, slot: Text('xxx') }),
+        td({
+          class: 'cell',
+          flag,
+          slot: [
+            button({ flag, onClick: handleRemove, slot: Text('remove') }),
+            button({ flag, onClick: handleHighlight, slot: Text('highlight') }),
+          ],
+        }),
+      ],
+    });
+  },
+  // {
+  //   displayName: 'x',
+  //   token: $$memo,
+  //   keepRef: true,
+  //   shouldUpdate: () => false,
+  // },
+);
+
+const MemoRow = memo(Row, () => false)
 
 type ListProps = {
   items: List;
@@ -160,16 +175,32 @@ type ListProps = {
 };
 
 const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
-  return (
-    <table class='table'>
-      <tbody>
-        {items.map(item => {
-          return <MemoRow key={item.id} id={item.id} onRemove={onRemove} onHighlight={onHighlight} />;
-        })}
-      </tbody>
-    </table>
+  const renderRow = useCallback(
+    (item: ListItem) =>
+      MemoRow({
+        key: item.id,
+        id: item.id,
+        onRemove,
+        onHighlight,
+      }),
+    [],
   );
+
+  return table({
+    class: 'table',
+    slot: tbody({ slot: map(items, renderRow) }),
+  });
 });
+
+function map<T>(items: Array<T>, cb: (item: T) => DarkElementInstance) {
+  const rendered: Array<DarkElementInstance> = [];
+
+  for (const item of items) {
+    rendered.push(cb(item));
+  }
+
+  return rendered;
+}
 
 const MemoList = memo(List);
 
@@ -240,26 +271,30 @@ const Bench = component(() => {
     measurer.stop();
   }, []);
 
-  return (
-    <>
-      <MemoHeader
-        onCreate={handleCreate}
-        onPrepend={handlePrepend}
-        onAppend={handleAppend}
-        onInsertDifferent={handleInsertDifferent}
-        onUpdateAll={handleUpdateAll}
-        onSwap={handleSwap}
-        onClear={handleClear}
-      />
-      <SplitUpdate list={state.list} getKey={getKey}>
-        <MemoList items={state.list} onRemove={handleRemove} onHighlight={handleHightlight} />
-      </SplitUpdate>
-    </>
-  );
+  return [
+    MemoHeader({
+      onCreate: handleCreate,
+      onPrepend: handlePrepend,
+      onAppend: handleAppend,
+      onInsertDifferent: handleInsertDifferent,
+      onUpdateAll: handleUpdateAll,
+      onSwap: handleSwap,
+      onClear: handleClear,
+    }),
+    SplitUpdate({
+      list: state.list,
+      getKey,
+      slot: MemoList({
+        items: state.list,
+        onRemove: handleRemove,
+        onHighlight: handleHightlight,
+      }),
+    }),
+  ];
 });
 
 const getKey = (x: ListItem) => x.id;
 
 const root = createRoot(document.getElementById('root'));
 
-root.render(<Bench />);
+root.render(Bench());

@@ -409,6 +409,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   } else if (
     hasChildrenProp(alternate.instance) &&
     hasChildrenProp(instance) &&
+    alternate.childrenCount !== 0 &&
     (hasNoMovesFlag ? alternate.childrenCount !== instance.children.length : true)
   ) {
     const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
@@ -495,22 +496,18 @@ function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstan
   fiber.childrenCount = alternate.childrenCount;
   fiber.childrenElementsCount = alternate.childrenElementsCount;
   fiber.catchException = alternate.catchException;
+  fiber.child && (fiber.child.parent = fiber);
 
   const diff = fiber.elementIdx - alternate.elementIdx;
   const deep = diff !== 0;
 
-  walkFiber(fiber.child, ({ nextFiber, stop }) => {
-    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) return stop();
-
-    if (nextFiber.parent === alternate) {
-      nextFiber.parent = fiber;
-    }
-
-    if (deep) {
+  if (deep) {
+    walkFiber(fiber.child, ({ nextFiber, stop }) => {
+      if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) return stop();
       nextFiber.elementIdx += diff;
       if (nextFiber.parent !== fiber && nextFiber.nativeElement) return stop();
-    } else if (nextFiber === alternate.child.child) return stop();
-  });
+    });
+  }
 
   fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
   alternate.effectHost && fiber.markEffectHost();
