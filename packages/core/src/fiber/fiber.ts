@@ -244,7 +244,7 @@ function performChild(nextFiber: Fiber, box: Box) {
   instance$ = pertformInstance(instance$, childrenIdx, fiber);
   alternate && performAlternate(alternate, instance$);
   performFiber(fiber, alternate, instance$);
-  alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, fiber.instance);
+  alternate && detectIsMemo(fiber.instance) && performMemo(fiber);
 
   candidatesStore.add(fiber);
 
@@ -279,7 +279,7 @@ function performSibling(nextFiber: Fiber, box: Box) {
     instance$ = pertformInstance(instance$, childrenIdx, fiber);
     alternate && performAlternate(alternate, instance$);
     performFiber(fiber, alternate, instance$);
-    alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, fiber.instance);
+    alternate && detectIsMemo(fiber.instance) && performMemo(fiber);
 
     candidatesStore.add(fiber);
 
@@ -469,13 +469,14 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   }
 }
 
-function performMemo(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+function performMemo(fiber: Fiber) {
   if (__DEV__) {
     if (hot.get()) return;
   }
 
+  const alternate = fiber.alternate;
   const prevComponent = alternate.instance as Component;
-  const nextComponent = instance as Component;
+  const nextComponent = fiber.instance as Component;
 
   if (
     fiber.move ||
