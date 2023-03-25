@@ -515,34 +515,31 @@ function performMemo(fiber: Fiber) {
   alternate.portalHost && fiber.markPortalHost();
 }
 
-function pertformInstance(parentInstance: DarkElementInstance, idx: number, fiber: Fiber) {
-  let instance: DarkElementInstance = null;
+function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fiber) {
+  let instance$: DarkElementInstance = null;
 
-  if (hasChildrenProp(parentInstance)) {
-    if (detectIsArray(parentInstance.children[idx])) {
-      parentInstance.children.splice(
-        idx,
-        1,
-        ...flatten(parentInstance.children[idx] as unknown as Array<DarkElementInstance>),
-      );
+  if (hasChildrenProp(instance)) {
+    if (detectIsArray(instance.children[idx])) {
+      instance.children.splice(idx, 1, ...flatten(instance.children[idx] as unknown as Array<DarkElementInstance>));
     }
 
-    instance = mountInstance(fiber, parentInstance.children[idx]);
+    instance$ = mountInstance(fiber, instance.children[idx]);
 
-    if (detectIsComponent(instance)) {
+    if (detectIsComponent(instance$)) {
       hasEffects(fiber) && fiber.markEffectHost();
       hasLayoutEffects(fiber) && fiber.markLayoutEffectHost();
       hasInsertionEffects(fiber) && fiber.markInsertionEffectHost();
-      platform.detectIsPortal(instance) && fiber.markPortalHost();
+      platform.detectIsPortal(instance$) && fiber.markPortalHost();
     }
   }
 
-  return instance;
+  return instance$;
 }
 
 function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
-  const isComponent = detectIsComponent(instance);
-  const component = instance as Component;
+  let instance$ = instance;
+  const isComponent = detectIsComponent(instance$);
+  const component = instance$ as Component;
 
   if (isComponent) {
     try {
@@ -560,20 +557,20 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
       fiber.setError(err);
       error(err);
     }
-  } else if (detectIsVirtualNodeFactory(instance)) {
-    instance = instance();
+  } else if (detectIsVirtualNodeFactory(instance$)) {
+    instance$ = instance$();
   }
 
-  if (hasChildrenProp(instance)) {
-    instance.children = isComponent
-      ? instance.children
-      : detectIsArray(instance.children)
-      ? flatten(instance.children)
-      : [instance.children];
+  if (hasChildrenProp(instance$)) {
+    instance$.children = isComponent
+      ? instance$.children
+      : detectIsArray(instance$.children)
+      ? flatten(instance$.children)
+      : [instance$.children];
 
-    for (let i = 0; i < instance.children.length; i++) {
-      if (instance.children[i]) continue;
-      instance.children[i] = supportConditional(instance.children[i]);
+    for (let i = 0; i < instance$.children.length; i++) {
+      if (instance$.children[i]) continue;
+      instance$.children[i] = supportConditional(instance$.children[i]);
     }
 
     if (isComponent && component.children.length === 0) {
@@ -581,7 +578,7 @@ function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
     }
   }
 
-  return instance;
+  return instance$;
 }
 
 function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
