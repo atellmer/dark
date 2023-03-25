@@ -93,7 +93,7 @@ function useSplitUpdate<T>(selector: (map: Record<DarkElementKey, T>) => T, dete
       scope.detectedChange = detectedChange;
     });
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
   scope.detectedChange = detectedChange;

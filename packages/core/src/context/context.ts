@@ -93,7 +93,7 @@ function useContext<T>(context: Context<T>): T {
       }
     });
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, [hasProvider]);
 
   scope.value = value;

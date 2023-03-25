@@ -140,9 +140,6 @@ type RowProps = {
 };
 
 const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) => {
-  const handleRemove = useCallback(() => onRemove(id), []);
-  const handleHighlight = useCallback(() => onHighlight(id), []);
-
   return tr({
     class: selected ? 'selected' : undefined,
     flag,
@@ -153,8 +150,8 @@ const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) 
       td({
         class: 'cell',
         slot: [
-          button({ onClick: handleRemove, slot: Text('remove') }),
-          button({ onClick: handleHighlight, slot: Text('highlight') }),
+          button({ onClick: () => onRemove(id), slot: Text('remove') }),
+          button({ onClick: () => onHighlight(id), slot: Text('highlight') }),
         ],
       }),
     ],
