@@ -331,13 +331,10 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
 
   if (fiber.effectTag !== EffectTag.CREATE) {
-    const hasAlternate = Boolean(alternate);
-    const prevKey = hasAlternate ? getElementKey(alternate.instance) : null;
-    const nextKey = hasAlternate ? getElementKey(instance) : null;
-    const areSameKeys = prevKey === nextKey;
-    const areSameTypes = hasAlternate && detectAreSameInstanceTypes(alternate.instance, instance);
-
-    isUpdate = areSameTypes && areSameKeys;
+    isUpdate =
+      alternate &&
+      detectAreSameInstanceTypes(alternate.instance, instance) &&
+      (alternate ? getElementKey(alternate.instance) : null) === getElementKey(instance);
   }
 
   fiber.instance = instance;
