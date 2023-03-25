@@ -98,29 +98,27 @@ const fiberMountStore = {
       isDeepWalking: true,
     };
   },
-  getIndex: () => store.get().fiberMount.navigation[store.get().fiberMount.level],
+  getIndex: () => {
+    const { fiberMount } = store.get();
+
+    return fiberMount.navigation[fiberMount.level];
+  },
   jumpToChild: () => {
     const { fiberMount } = store.get();
-    const level = fiberMount.level;
-    const nextLevel = level + 1;
 
-    fiberMount.level = nextLevel;
-    fiberMount.navigation[nextLevel] = 0;
+    fiberMount.level = fiberMount.level + 1;
+    fiberMount.navigation[fiberMount.level] = 0;
   },
   jumpToParent: () => {
     const { fiberMount } = store.get();
-    const level = fiberMount.level;
-    const nextLevel = level - 1;
 
-    fiberMount.navigation[level] = 0;
-    fiberMount.level = nextLevel;
+    fiberMount.navigation[fiberMount.level] = 0;
+    fiberMount.level = fiberMount.level - 1;
   },
   jumpToSibling: () => {
     const { fiberMount } = store.get();
-    const level = fiberMount.level;
-    const idx = fiberMount.navigation[level] + 1;
 
-    fiberMount.navigation[level] = idx;
+    fiberMount.navigation[fiberMount.level] = fiberMount.navigation[fiberMount.level] + 1;
   },
   deepWalking: {
     get: () => store.get().fiberMount.isDeepWalking,
