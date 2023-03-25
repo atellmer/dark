@@ -29,7 +29,7 @@ function memo<P, R = unknown>(
 ) {
   type Props = P & Omit<StandardComponentProps, 'ref'> & RefProps<R>;
 
-  return component<Props, R>(props => factory(props), {
+  return component<Props, R>(factory, {
     token: $$memo,
     keepRef: true,
     shouldUpdate,

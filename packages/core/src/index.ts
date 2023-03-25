@@ -7,7 +7,7 @@ export { Fragment } from './fragment';
 export * from './platform';
 export * from './helpers';
 export { lazy } from './lazy';
-export { memo, $$memo } from './memo';
+export { memo } from './memo';
 export * from './ref';
 export * from './scope';
 export * from './shared';

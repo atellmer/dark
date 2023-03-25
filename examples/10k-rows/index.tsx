@@ -2,7 +2,6 @@ import {
   Text,
   component,
   memo,
-  $$memo,
   useUpdate,
   useCallback,
   SplitUpdate,
@@ -129,44 +128,34 @@ type RowProps = {
   onHighlight: (id: number) => void;
 };
 
-const Row = component<RowProps>(
-  ({ id, onRemove, onHighlight }) => {
-    const { name, selected } = useSplitUpdate<ListItem>(
-      map => map[id],
-      x => `${x.name}:${x.selected}`,
-    );
-    const handleRemove = useCallback(() => onRemove(id), []);
-    const handleHighlight = useCallback(() => onHighlight(id), []);
+const Row = component<RowProps>(({ id, onRemove, onHighlight }) => {
+  const { name, selected } = useSplitUpdate<ListItem>(
+    map => map[id],
+    x => `${x.name}:${x.selected}`,
+  );
+  const handleRemove = useCallback(() => onRemove(id), []);
+  const handleHighlight = useCallback(() => onHighlight(id), []);
 
-    //console.log('render', id);
+  return tr({
+    class: selected ? 'selected' : undefined,
+    flag,
+    slot: [
+      td({ class: 'cell', flag, slot: Text(name) }),
+      td({ class: 'cell', flag, slot: Text('qqq') }),
+      td({ class: 'cell', flag, slot: Text('xxx') }),
+      td({
+        class: 'cell',
+        flag,
+        slot: [
+          button({ flag, onClick: handleRemove, slot: Text('remove') }),
+          button({ flag, onClick: handleHighlight, slot: Text('highlight') }),
+        ],
+      }),
+    ],
+  });
+});
 
-    return tr({
-      class: selected ? 'selected' : undefined,
-      flag,
-      slot: [
-        td({ class: 'cell', flag, slot: Text(name) }),
-        td({ class: 'cell', flag, slot: Text('qqq') }),
-        td({ class: 'cell', flag, slot: Text('xxx') }),
-        td({
-          class: 'cell',
-          flag,
-          slot: [
-            button({ flag, onClick: handleRemove, slot: Text('remove') }),
-            button({ flag, onClick: handleHighlight, slot: Text('highlight') }),
-          ],
-        }),
-      ],
-    });
-  },
-  // {
-  //   displayName: 'x',
-  //   token: $$memo,
-  //   keepRef: true,
-  //   shouldUpdate: () => false,
-  // },
-);
-
-const MemoRow = memo(Row, () => false)
+const MemoRow = memo(Row, () => false);
 
 type ListProps = {
   items: List;

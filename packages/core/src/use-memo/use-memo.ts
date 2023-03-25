@@ -10,16 +10,17 @@ type MemoProps = Required<SlotProps>;
 
 const Memo = component<MemoProps>(({ slot }) => slot, { token: $$memo });
 
-function wrap<T>(value: T, isDepsDifferent: boolean) {
-  const check = (value: T) => detectIsVirtualNodeFactory(value) || detectIsComponent(value);
+function check<T>(value: T) {
+  return detectIsVirtualNodeFactory(value) || detectIsComponent(value);
+}
 
+function wrap<T>(value: T, isDifferent: boolean) {
   if (detectIsArray(value) ? check(value[0]) : check(value)) {
-    const slot = value as unknown as DarkElement;
     const component = Memo({
-      slot: Fragment({ slot }),
+      slot: Fragment({ slot: value as unknown as DarkElement }),
     });
 
-    component.shouldUpdate = () => isDepsDifferent;
+    component.shouldUpdate = () => isDifferent;
 
     return component;
   }
@@ -27,8 +28,8 @@ function wrap<T>(value: T, isDepsDifferent: boolean) {
   return value;
 }
 
-function processValue<T>(getValue: () => T, isDepsDifferent = false) {
-  return wrap(getValue(), isDepsDifferent);
+function processValue<T>(getValue: () => T, isDifferent = false) {
+  return wrap(getValue(), isDifferent);
 }
 
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
@@ -50,13 +51,11 @@ function useMemo<T>(getValue: () => T, deps: Array<any>): T {
   }
 
   const hookValue = values[idx];
-  const prevDeps = hookValue.deps as Array<any>;
-  const isDepsDifferent = detectIsDepsDifferent(deps, prevDeps);
-  const computedGetValue = isDepsDifferent ? getValue : () => hookValue.value;
+  const isDifferent = detectIsDepsDifferent(deps, hookValue.deps as Array<any>);
+  const getValue$ = isDifferent ? getValue : () => hookValue.value;
 
   hookValue.deps = deps;
-  hookValue.value = processValue(computedGetValue, isDepsDifferent);
-
+  hookValue.value = processValue(getValue$, isDifferent);
   hook.idx++;
 
   return hookValue.value;
