@@ -1,11 +1,8 @@
-import { resolve, dirname } from 'path';
+import { resolve, dirname } from 'node:path';
 import webpack from 'webpack';
-import { createRequire } from 'node:module';
 
 import { alias } from '../../webpack.alias.mjs';
 
-const require$ = createRequire(import.meta.url);
-const package$ = require$('./package.json');
 const __dirname = resolve(dirname(''));
 const libraryName = 'DarkPlatformBrowser';
 const libraryNameKebabCase = 'dark-platform-browser';
@@ -45,7 +42,6 @@ const config = env => ({
   plugins: [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': env.production ? JSON.stringify('production') : JSON.stringify('development'),
-      'process.env.VERSION': JSON.stringify(package$.version),
     }),
   ],
 });

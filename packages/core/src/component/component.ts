@@ -1,5 +1,5 @@
 import type { DarkElementKey, DarkElementInstance } from '../shared';
-import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
+import { __DEV__, ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
@@ -37,7 +37,7 @@ function component<P, R = unknown>(type: CreateElement<P, R>, options: Component
     if (!keepRef && props.ref) {
       delete props.ref;
 
-      if (process.env.NODE_ENV === 'development') {
+      if (__DEV__) {
         error(`[Dark]: To use ref you need to wrap the component with forwardRef!`);
       }
     }

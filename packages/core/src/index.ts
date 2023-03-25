@@ -11,6 +11,7 @@ export { memo } from './memo';
 export * from './ref';
 export * from './scope';
 export * from './shared';
+export { VERSION } from './constants';
 export { Suspense } from './suspense';
 export { useCallback } from './use-callback';
 export { useDeferredValue } from './use-deferred-value';
@@ -36,8 +37,6 @@ export { SplitUpdate, useSplitUpdate } from './split-update';
 export { hot } from './hot';
 export * from './view';
 export * from './constants';
-
-export const version = process.env.VERSION;
 
 declare global {
   namespace JSX {

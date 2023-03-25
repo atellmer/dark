@@ -1,3 +1,5 @@
+export const VERSION = '0.20.0';
+export const __DEV__ = process.env.NODE_ENV === 'development';
 export const ROOT = 'root';
 export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';

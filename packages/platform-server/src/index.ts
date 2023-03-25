@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
+export { VERSION } from './constants';
 export { renderToString } from './render';
-
-export const version = process.env.VERSION;
 
 declare global {
   namespace JSX {
