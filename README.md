@@ -72,7 +72,7 @@ Greeting({ name: 'Taylor Swift' })
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
 
-## Installation for browser
+## Installation for browser (Single-page apps)
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser
@@ -87,17 +87,17 @@ CDN:
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
 ```
 
-## Installation for server
+## Installation for Node.js (Universal apps)
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-server
+npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-server
+yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
 
-## Installation for mobile platforms (Android, iOS)
+## Installation for mobile platforms (Android and iOS native apps)
 npm:
 ```
 npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
