@@ -179,7 +179,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
       const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
 
       if (hasChildren) {
-        performChild(nextFiber, instance, box);
+        performChild(nextFiber, box);
 
         nextFiber = box.fiber$;
         instance = box.instance$;
@@ -190,7 +190,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
 
         if (nextFiber) return nextFiber;
       } else {
-        performSibling(nextFiber, instance, box);
+        performSibling(nextFiber, box);
 
         const nextFiber$ = box.fiber$$;
 
@@ -204,7 +204,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         if (nextFiber$) return nextFiber$;
       }
     } else {
-      performSibling(nextFiber, instance, box);
+      performSibling(nextFiber, box);
 
       const nextFiber$ = box.fiber$$;
 
@@ -222,15 +222,16 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
   }
 }
 
-function performChild(nextFiber: Fiber, instance: DarkElementInstance, box: Box) {
+function performChild(nextFiber: Fiber, box: Box) {
   fiberMountStore.jumpToChild();
+  let instance$ = nextFiber.instance;
   const childrenIdx = 0;
   const alternate = nextFiber.alternate ? nextFiber.alternate.child : null;
   const fiber = new Fiber(
     getHook(
       alternate,
       alternate ? alternate.instance : null,
-      hasChildrenProp(instance) ? instance.children[childrenIdx] : null,
+      hasChildrenProp(instance$) ? instance$.children[childrenIdx] : null,
     ),
     alternate ? alternate.provider : null,
     childrenIdx,
@@ -240,23 +241,23 @@ function performChild(nextFiber: Fiber, instance: DarkElementInstance, box: Box)
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
   fiber.elementIdx = nextFiber.nativeElement ? 0 : nextFiber.elementIdx;
-  instance = pertformInstance(instance, childrenIdx, fiber);
-  alternate && performAlternate(alternate, instance);
-  performFiber(fiber, alternate, instance);
-  alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
+  instance$ = pertformInstance(instance$, childrenIdx, fiber);
+  alternate && performAlternate(alternate, instance$);
+  performFiber(fiber, alternate, instance$);
+  alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, fiber.instance);
 
   candidatesStore.add(fiber);
 
   box.fiber$$ = null;
   box.fiber$ = fiber;
-  box.instance$ = instance;
+  box.instance$ = instance$;
 }
 
-function performSibling(nextFiber: Fiber, instance: DarkElementInstance, box: Box) {
+function performSibling(nextFiber: Fiber, box: Box) {
   fiberMountStore.jumpToSibling();
-  const parentInstance = nextFiber.parent.instance;
+  let instance$ = nextFiber.parent.instance;
   const childrenIdx = fiberMountStore.getIndex();
-  const hasSibling = hasChildrenProp(parentInstance) && parentInstance.children[childrenIdx];
+  const hasSibling = hasChildrenProp(instance$) && instance$.children[childrenIdx];
 
   if (hasSibling) {
     fiberMountStore.deepWalking.set(true);
@@ -265,7 +266,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance, box: Bo
       getHook(
         alternate,
         alternate ? alternate.instance : null,
-        hasChildrenProp(parentInstance) ? parentInstance.children[childrenIdx] : null,
+        hasChildrenProp(instance$) ? instance$.children[childrenIdx] : null,
       ),
       alternate ? alternate.provider : null,
       childrenIdx,
@@ -275,23 +276,23 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance, box: Bo
     fiber.parent = nextFiber.parent;
     nextFiber.nextSibling = fiber;
     fiber.elementIdx = nextFiber.elementIdx + (nextFiber.nativeElement ? 1 : nextFiber.childrenElementsCount);
-    instance = pertformInstance(parentInstance, childrenIdx, fiber);
-    alternate && performAlternate(alternate, instance);
-    performFiber(fiber, alternate, instance);
-    alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, instance);
+    instance$ = pertformInstance(instance$, childrenIdx, fiber);
+    alternate && performAlternate(alternate, instance$);
+    performFiber(fiber, alternate, instance$);
+    alternate && detectIsMemo(fiber.instance) && performMemo(fiber, alternate, fiber.instance);
 
     candidatesStore.add(fiber);
 
     box.fiber$$ = fiber;
     box.fiber$ = fiber;
-    box.instance$ = instance;
+    box.instance$ = instance$;
 
     return;
   } else {
     fiberMountStore.jumpToParent();
     fiberMountStore.deepWalking.set(false);
     nextFiber = nextFiber.parent;
-    instance = nextFiber.instance;
+    instance$ = nextFiber.instance;
 
     if (hasChildrenProp(nextFiber.instance)) {
       nextFiber.instance.children = [];
@@ -300,7 +301,7 @@ function performSibling(nextFiber: Fiber, instance: DarkElementInstance, box: Bo
 
   box.fiber$$ = null;
   box.fiber$ = nextFiber;
-  box.instance$ = instance;
+  box.instance$ = instance$;
 }
 
 function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) {
