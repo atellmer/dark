@@ -133,32 +133,39 @@ const StaticLayout = memo(
 
 type RowProps = {
   id: number;
-  selected: boolean;
-  name: string;
   onRemove: (id: number) => void;
   onHighlight: (id: number) => void;
 };
 
-const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) => {
+const Row = component<RowProps>(({ id, onRemove, onHighlight }) => {
+  const { name, selected } = useSplitUpdate<ListItem>(
+    map => map[id],
+    x => `${x.name}:${x.selected}`,
+  );
+
   return tr({
     class: selected ? 'selected' : undefined,
     flag,
     slot: [
       td({ class: 'cell', slot: Text(name) }),
-      td({ class: 'cell', slot: Text('qqq') }),
-      td({ class: 'cell', slot: Text('xxx') }),
-      td({
-        class: 'cell',
+      StaticLayout({
         slot: [
-          button({ onClick: () => onRemove(id), slot: Text('remove') }),
-          button({ onClick: () => onHighlight(id), slot: Text('highlight') }),
+          td({ class: 'cell', slot: Text('qqq') }),
+          td({ class: 'cell', slot: Text('xxx') }),
+          td({
+            class: 'cell',
+            slot: [
+              button({ onClick: () => onRemove(id), slot: Text('remove') }),
+              button({ onClick: () => onHighlight(id), slot: Text('highlight') }),
+            ],
+          }),
         ],
       }),
     ],
   });
 });
 
-const MemoRow = memo(Row, (p, n) => p.selected !== n.selected || p.name !== n.name);
+const MemoRow = memo(Row, () => false);
 
 type ListProps = {
   items: List;
@@ -172,8 +179,6 @@ const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
       MemoRow({
         key: item.id,
         id: item.id,
-        selected: item.selected,
-        name: item.name,
         onRemove,
         onHighlight,
       }),
@@ -275,10 +280,14 @@ const Bench = component(() => {
       onSwap: handleSwap,
       onClear: handleClear,
     }),
-    MemoList({
-      items: state.list,
-      onRemove: handleRemove,
-      onHighlight: handleHightlight,
+    SplitUpdate({
+      list: state.list,
+      getKey,
+      slot: MemoList({
+        items: state.list,
+        onRemove: handleRemove,
+        onHighlight: handleHightlight,
+      }),
     }),
   ];
 });

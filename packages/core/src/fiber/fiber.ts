@@ -751,7 +751,7 @@ function commitChanges() {
   fromUpdate && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
-    platform.applyCommit(fiber);
+    fiber.effectTag !== EffectTag.SKIP && platform.applyCommit(fiber);
     fiber.alternate = null;
   }
 
