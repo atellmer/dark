@@ -7,7 +7,7 @@ import {
   SplitUpdate,
   useSplitUpdate,
   Flag,
-  type DarkElementInstance,
+  type DarkElement,
 } from '@dark-engine/core';
 import { createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
@@ -122,6 +122,15 @@ const Header = component<HeaderProps>(
 
 const MemoHeader = memo(Header, () => false);
 
+type StaticLayoutProps = {
+  slot: DarkElement;
+};
+
+const StaticLayout = memo(
+  component<StaticLayoutProps>(({ slot }) => slot),
+  () => false,
+);
+
 type RowProps = {
   id: number;
   onRemove: (id: number) => void;
@@ -140,15 +149,19 @@ const Row = component<RowProps>(({ id, onRemove, onHighlight }) => {
     class: selected ? 'selected' : undefined,
     flag,
     slot: [
-      td({ class: 'cell', flag, slot: Text(name) }),
-      td({ class: 'cell', flag, slot: Text('qqq') }),
-      td({ class: 'cell', flag, slot: Text('xxx') }),
-      td({
-        class: 'cell',
+      td({ class: 'cell', slot: Text(name) }),
+      StaticLayout({
         flag,
         slot: [
-          button({ flag, onClick: handleRemove, slot: Text('remove') }),
-          button({ flag, onClick: handleHighlight, slot: Text('highlight') }),
+          td({ class: 'cell', slot: Text('qqq') }),
+          td({ class: 'cell', slot: Text('xxx') }),
+          td({
+            class: 'cell',
+            slot: [
+              button({ onClick: handleRemove, slot: Text('remove') }),
+              button({ onClick: handleHighlight, slot: Text('highlight') }),
+            ],
+          }),
         ],
       }),
     ],
@@ -181,8 +194,8 @@ const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
   });
 });
 
-function map<T>(items: Array<T>, cb: (item: T) => DarkElementInstance) {
-  const rendered: Array<DarkElementInstance> = [];
+function map<T>(items: Array<T>, cb: (item: T) => DarkElement) {
+  const rendered: Array<DarkElement> = [];
 
   for (const item of items) {
     rendered.push(cb(item));
