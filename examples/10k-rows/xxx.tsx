@@ -1,14 +1,4 @@
-import {
-  Text,
-  component,
-  memo,
-  useUpdate,
-  useCallback,
-  SplitUpdate,
-  useSplitUpdate,
-  Flag,
-  type DarkElement,
-} from '@dark-engine/core';
+import { Text, component, memo, useUpdate, useCallback, Flag, type DarkElement } from '@dark-engine/core';
 import { createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag = { [Flag.HAS_NO_MOVES]: true };
@@ -121,15 +111,6 @@ const Header = component<HeaderProps>(
 );
 
 const MemoHeader = memo(Header, () => false);
-
-type StaticLayoutProps = {
-  slot: DarkElement;
-};
-
-const StaticLayout = memo(
-  component<StaticLayoutProps>(({ slot }) => slot),
-  () => false,
-);
 
 type RowProps = {
   id: number;
@@ -282,8 +263,6 @@ const Bench = component(() => {
     }),
   ];
 });
-
-const getKey = (x: ListItem) => x.id;
 
 const root = createRoot(document.getElementById('root'));
 

@@ -200,7 +200,6 @@ import {
   batch,
   forwardRef,
   Suspense,
-  SplitUpdate,
   useMemo,
   useCallback,
   useEvent,
@@ -217,7 +216,6 @@ import {
   useReducer,
   useReactiveState,
   useDeferredValue,
-  useSplitUpdate,
   useSyncExternalStore,
   detectIsServer,
 } from '@dark-engine/core';
@@ -740,7 +738,7 @@ useInsertionEffect(() => {
 <a name="optimization"></a>
 ## Performance optimization
 
-Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, batched, deferred and split updates.
+Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, batched and deferred updates.
 
 ### memo
 
@@ -845,7 +843,7 @@ Similar to useCallback but has no dependencies. Ensures the return of the same f
 
 #### batch
 
-Enables only the last render call in this animation frame.
+Enables only the last render call in this tick.
 
 ```tsx
 import { batch } from '@dark-engine/core';
@@ -888,35 +886,6 @@ const Items = component(({ items }) => {
   }, [deferredItems]);
 
   return <ul>{elements}</ul>;
-});
-```
-
-#### SplitUpdate and useSplitUpdate
-
-These two guys are used in combination with each other for performance updates on large lists. The main idea: if the number of elements in the list has not changed and the order of the element keys has remained the same, but only internal data, such as text or style, has been updated, then a large render can be split into a series of small synchronous updates that update only the children that have changed. To see it in action, you can go to the 10k rows example page.
-
-```tsx
-import { SplitUpdate, useSplitUpdate } from '@dark-engine/core';
-```
-
-```tsx
-const Item = component(({ id }) => {
-  const item = useSplitUpdate(
-    map => map[id], // selector
-    x => `${x.name}:${x.selected}`, // detect changes of this part
-  );
-
-  return <div>{id}:{item.name}:{item.selected + ''}</div>;
-});
-
-const getKey = x => x.id;
-
-const App = component(({ items }) => { // items is large list
-  return (
-    <SplitUpdate list={items} getKey={getKey}>
-      {items.map(x => <Item key={x.id} id={x.id} />)}
-    </SplitUpdate>
-  );
 });
 ```
 

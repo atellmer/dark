@@ -33,7 +33,6 @@ export { useSpring, type Animation } from './use-spring';
 export { walkFiber } from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
-export { SplitUpdate, useSplitUpdate } from './split-update';
 export { hot } from './hot';
 export * from './view';
 export * from './constants';
