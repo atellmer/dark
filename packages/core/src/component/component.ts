@@ -1,8 +1,10 @@
 import type { DarkElementKey, DarkElementInstance } from '../shared';
-import { __DEV__, ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
+import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
+
+const __DEV__ = process.env.NODE_ENV === 'development';
 
 const $$component = Symbol('component');
 class Component<P extends StandardComponentProps = any, R = any> {

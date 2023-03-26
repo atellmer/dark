@@ -1,5 +1,6 @@
 import { hot } from '../scope';
-import { __DEV__ } from '../constants';
+
+const __DEV__ = process.env.NODE_ENV === 'development';
 
 function hot$(update: () => void) {
   if (__DEV__) {

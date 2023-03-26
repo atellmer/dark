@@ -44,7 +44,7 @@ import {
 import { detectIsMemo } from '../memo';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
-import { __DEV__, INDEX_KEY, TYPE, Flag } from '../constants';
+import { INDEX_KEY, TYPE, Flag } from '../constants';
 import { type NativeElement, type Hook, EffectTag } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
@@ -53,6 +53,8 @@ import { walkFiber } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
+
+const __DEV__ = process.env.NODE_ENV === 'development';
 
 const cloneTagMap = {
   [EffectTag.CREATE]: true,
