@@ -54,8 +54,6 @@ import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
 
-const __DEV__ = process.env.NODE_ENV === 'development';
-
 const cloneTagMap = {
   [EffectTag.CREATE]: true,
 };
@@ -431,33 +429,33 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       if (nextKey !== prevKey) {
         if (nextKey !== null && !prevKeysMap[nextKey]) {
           if (prevKey !== null && !nextKeysMap[prevKey]) {
-            __DEV__ && result.push([[nextKey, prevKey], 'replace']);
+            process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'replace']);
             nextKeyFiber.effectTag = EffectTag.CREATE;
             prevKeyFiber.effectTag = EffectTag.DELETE;
             deletionsStore.add(prevKeyFiber);
           } else {
-            __DEV__ && result.push([nextKey, 'insert']);
+            process.env.NODE_ENV !== 'production' && result.push([nextKey, 'insert']);
             nextKeyFiber.effectTag = EffectTag.CREATE;
             p++;
             size++;
           }
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         } else if (!nextKeysMap[prevKey]) {
-          __DEV__ && result.push([prevKey, 'remove']);
+          process.env.NODE_ENV !== 'production' && result.push([prevKey, 'remove']);
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.add(prevKeyFiber);
           n++;
           idx--;
           size++;
         } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-          __DEV__ && result.push([[nextKey, prevKey], 'move']);
+          process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'move']);
           nextKeyFiber.effectTag = EffectTag.UPDATE;
           prevKeyFiber.effectTag = EffectTag.UPDATE;
           nextKeyFiber.move = true;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         }
       } else if (nextKey !== null) {
-        __DEV__ && result.push([nextKey, 'stable']);
+        process.env.NODE_ENV !== 'production' && result.push([nextKey, 'stable']);
         nextKeyFiber.effectTag = EffectTag.UPDATE;
         nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
       }
@@ -471,7 +469,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
 }
 
 function performMemo(fiber: Fiber) {
-  if (__DEV__) {
+  if (process.env.NODE_ENV !== 'production') {
     if (hot.get()) return;
   }
 
@@ -607,7 +605,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       const key = getElementKey(instance);
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
-      if (__DEV__) {
+      if (process.env.NODE_ENV !== 'production') {
         if (usedKeysMap[nextKey]) {
           error(`[Dark]: The key of node [${nextKey}] already has been used!`, [instance]);
         }
@@ -702,8 +700,8 @@ function detectAreSameInstanceTypes(
   nextInstance: DarkElementInstance,
   isComponentFactories = false,
 ) {
-  if (__DEV__) {
-    if (hot.get()) {
+  if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV === 'development' && hot.get()) {
       if (detectIsComponent(prevInstance) && detectIsComponent(nextInstance)) {
         return prevInstance.displayName === nextInstance.displayName;
       }
@@ -732,8 +730,8 @@ function createHook(): Hook {
 }
 
 function commitChanges() {
-  if (__DEV__) {
-    hot.set(false);
+  if (process.env.NODE_ENV !== 'production') {
+    process.env.NODE_ENV === 'development' && hot.set(false);
   }
   if (isHydrateZone.get() && detectHasRegisteredLazy()) return flush(null); // important order
   const wipFiber = wipRootStore.get();

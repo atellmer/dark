@@ -4,8 +4,6 @@ import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
 
-const __DEV__ = process.env.NODE_ENV === 'development';
-
 const $$component = Symbol('component');
 class Component<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
@@ -39,7 +37,7 @@ function component<P, R = unknown>(type: CreateElement<P, R>, options: Component
     if (!keepRef && props.ref) {
       delete props.ref;
 
-      if (__DEV__) {
+      if (process.env.NODE_ENV !== 'production') {
         error(`[Dark]: To use ref you need to wrap the component with forwardRef!`);
       }
     }

@@ -1,10 +1,8 @@
 import { hot } from '../scope';
 
-const __DEV__ = process.env.NODE_ENV === 'development';
-
 function hot$(update: () => void) {
-  if (__DEV__) {
-    hot.set(true);
+  if (process.env.NODE_ENV !== 'production') {
+    process.env.NODE_ENV === 'development' && hot.set(true);
   }
   update();
 }
