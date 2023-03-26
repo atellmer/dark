@@ -40,10 +40,6 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 Greeting({ name: 'Taylor Swift' })
 ```
 
-<div align="center"> 
-  <img src="./assets/hello.jpg">
-</div>
-
 ## Demos
 
 - [1k components](https://atellmer.github.io/dark/examples/1k-components/)
