@@ -34,18 +34,39 @@ const atom = <T>(value: T = undefined) => new Atom(value);
 
 const defaultShouldUpdate = () => true;
 
-function useAtom<T>(atom: Atom<T>, shouldUpdate: (p: T, n: T) => boolean = defaultShouldUpdate): T {
+type Value<T = unknown> = [Atom<T>, ((p: T, n: T) => boolean)?];
+
+function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
+  values: [
+    Value<T1>,
+    Value<T2>?,
+    Value<T3>?,
+    Value<T4>?,
+    Value<T5>?,
+    Value<T6>?,
+    Value<T7>?,
+    Value<T8>?,
+    Value<T9>?,
+    Value<T10>?,
+  ],
+) {
   const update = useUpdate({ forceSync: true });
 
   useEffect(() => {
-    const unsubscribe = atom.subscribe((p, n) => {
-      shouldUpdate(p, n) && update();
-    });
+    const unsubscribes: Array<() => void> = [];
 
-    return unsubscribe;
+    for (const [atom, shouldUpdate = defaultShouldUpdate] of values) {
+      const unsubscribe = atom.subscribe((p: any, n: any) => {
+        shouldUpdate(p, n) && update();
+      });
+
+      unsubscribes.push(unsubscribe);
+    }
+
+    return () => unsubscribes.forEach(x => x());
   }, []);
 
-  return atom.get();
+  return values.map((x: Value) => x[0].get()) as [T1, T2?, T3?, T4?, T5?, T6?, T7?, T8?, T9?, T10?];
 }
 
-export { atom, Atom, useAtom };
+export { Atom, atom, useAtom };

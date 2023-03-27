@@ -17,7 +17,7 @@ function unmountFiber(fiber: Fiber) {
       return resetIsDeepWalking();
 
     if (!isReturn && detectIsComponent(nextFiber.instance)) {
-      const hasValues = nextFiber.hook?.values.length > 0;
+      const hasValues = nextFiber.hook.values.length > 0;
       // important order
       nextFiber.insertionEffectHost && hasValues && dropInsertionEffects(nextFiber.hook);
       nextFiber.layoutEffectHost && hasValues && dropLayoutEffects(nextFiber.hook);
