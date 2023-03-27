@@ -3,7 +3,7 @@ import { useEffect } from '../use-effect';
 
 type AtomSubscriber<T> = (p: T, n: T) => void;
 
-class Atom<T> {
+class Atom<T = unknown> {
   private value: T;
   private subscribers: Set<AtomSubscriber<T>> = new Set();
 
@@ -23,7 +23,7 @@ class Atom<T> {
     this.subscribers.forEach(x => x(value$, value));
   }
 
-  public subscribe(subscriber: AtomSubscriber<T>) {
+  public on(subscriber: AtomSubscriber<T>) {
     this.subscribers.add(subscriber);
 
     return () => this.subscribers.delete(subscriber);
@@ -56,11 +56,11 @@ function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
     const unsubscribes: Array<() => void> = [];
 
     for (const [atom, shouldUpdate = defaultShouldUpdate] of values) {
-      const unsubscribe = atom.subscribe((p: any, n: any) => {
+      const off = atom.on((p: any, n: any) => {
         shouldUpdate(p, n) && update();
       });
 
-      unsubscribes.push(unsubscribe);
+      unsubscribes.push(off);
     }
 
     return () => unsubscribes.forEach(x => x());
@@ -69,4 +69,6 @@ function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
   return values.map((x: Value) => x[0].get()) as [T1, T2?, T3?, T4?, T5?, T6?, T7?, T8?, T9?, T10?];
 }
 
-export { Atom, atom, useAtom };
+const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
+
+export { Atom, atom, useAtom, detectIsAtom };
