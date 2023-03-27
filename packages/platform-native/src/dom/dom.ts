@@ -170,7 +170,7 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
 
-  walkFiber<NativeElement>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+  walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
       return stop();
     }
@@ -208,7 +208,7 @@ function move(fiber: Fiber<NativeElement>) {
 function collectElements(fiber: Fiber<NativeElement>) {
   const store: Array<NativeElement> = [];
 
-  walkFiber<NativeElement>(fiber, ({ nextFiber, isReturn, resetIsDeepWalking, stop }) => {
+  walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
       return stop();
     }

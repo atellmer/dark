@@ -1,11 +1,4 @@
-import {
-  type Fiber,
-  type DarkElement,
-  type Component,
-  component,
-  detectIsComponent,
-  useMemo,
-} from '@dark-engine/core';
+import { type Fiber, type DarkElement, type Component, component, detectIsComponent, useMemo } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 

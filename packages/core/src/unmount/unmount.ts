@@ -11,10 +11,11 @@ import { currentRootStore, eventsStore, rootStore } from '../scope';
 function unmountFiber(fiber: Fiber) {
   if (!fiber.insertionEffectHost && !fiber.layoutEffectHost && !fiber.effectHost && !fiber.portalHost) return;
 
-  walkFiber(fiber, ({ nextFiber, isReturn, stop, resetIsDeepWalking }) => {
+  walkFiber(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.nextSibling) return stop();
     if (!nextFiber.insertionEffectHost && !nextFiber.layoutEffectHost && !nextFiber.effectHost && !nextFiber.portalHost)
       return resetIsDeepWalking();
+
     if (!isReturn && detectIsComponent(nextFiber.instance)) {
       const hasValues = nextFiber.hook?.values.length > 0;
       // important order

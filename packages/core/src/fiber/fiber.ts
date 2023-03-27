@@ -500,7 +500,7 @@ function performMemo(fiber: Fiber) {
   const deep = diff !== 0;
 
   if (deep) {
-    walkFiber(fiber.child, ({ nextFiber, stop }) => {
+    walkFiber(fiber.child, (nextFiber, _, __, stop) => {
       if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) return stop();
       nextFiber.elementIdx += diff;
       if (nextFiber.parent !== fiber && nextFiber.nativeElement) return stop();
@@ -818,7 +818,7 @@ function syncElementIndices(fiber: Fiber) {
 
   fiber.incrementChildrenElementsCount(diff, true);
 
-  walkFiber(parentFiber.child, ({ nextFiber, resetIsDeepWalking, isReturn, stop }) => {
+  walkFiber(parentFiber.child, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === parentFiber) return stop();
     if (nextFiber === fiber) {
       isRight = true;
