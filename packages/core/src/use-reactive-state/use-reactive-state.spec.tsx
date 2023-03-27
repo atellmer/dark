@@ -4,7 +4,8 @@ import { render } from '@dark-engine/platform-browser';
 import { dom } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component/component';
-import { useReactiveState } from './use-reactive-state';
+import { type Atom, atom } from '../use-atom';
+import { useReactiveState, detectIsProxy } from './use-reactive-state';
 
 let host: HTMLElement = null;
 
@@ -123,5 +124,25 @@ describe('[use-reactive-state]', () => {
 
     render(App(), host);
     expect(error).toBeTruthy();
+  });
+
+  test('skip atoms', () => {
+    type State = {
+      proxy: object;
+      atom: Atom;
+    };
+
+    let state: State;
+
+    const App = component(() => {
+      state = useReactiveState<State>({ atom: atom(), proxy: {} });
+
+      return null;
+    });
+
+    render(App(), host);
+    expect(detectIsProxy(state)).toBe(true);
+    expect(detectIsProxy(state.proxy)).toBe(true);
+    expect(detectIsProxy(state.atom)).toBe(false);
   });
 });

@@ -5,6 +5,8 @@ import { useMemo } from '../use-memo';
 import { batch } from '../batch';
 import { detectIsAtom } from '../use-atom';
 
+const $$proxy = Symbol('proxy');
+
 function useReactiveState<T extends object>(value: T | (() => T), options?: ScheduleCallbackOptions) {
   if (!value) throw new Error('[Dark]: initial value is not object or array');
   const update = useUpdate(options);
@@ -21,10 +23,11 @@ function reactive<T extends object>(value: T, update: () => void, useBatch = tru
     const keys = Object.keys(value);
 
     proxy = new Proxy(value, {
-      set: (target, prop, value) => {
-        if (Object.is(target[prop], value)) return true;
+      get: (target, key) => key === $$proxy || target[key],
+      set: (target, key, value) => {
+        if (Object.is(target[key], value)) return true;
 
-        target[prop] = reactive(value, update, useBatch);
+        target[key] = reactive(value, update, useBatch);
 
         useBatch ? batch(update) : update();
 
@@ -40,4 +43,6 @@ function reactive<T extends object>(value: T, update: () => void, useBatch = tru
   return proxy;
 }
 
-export { useReactiveState };
+const detectIsProxy = (value: object) => Boolean(value[$$proxy]);
+
+export { useReactiveState, detectIsProxy };

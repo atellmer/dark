@@ -111,9 +111,7 @@ const Header = component<HeaderProps>(
         }),
         button({
           slot: Text('unmount app'),
-          onClick: () => {
-            root.unmount();
-          },
+          onClick: () => root.unmount(),
         }),
       ],
     });
