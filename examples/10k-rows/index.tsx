@@ -1,4 +1,15 @@
-import { Text, component, memo, useUpdate, useMemo, Flag, type DarkElement } from '@dark-engine/core';
+import {
+  type DarkElement,
+  Text,
+  component,
+  memo,
+  useUpdate,
+  useMemo,
+  Flag,
+  type Atom,
+  atom,
+  useAtom,
+} from '@dark-engine/core';
 import { type SyntheticEvent, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag = { [Flag.HAS_NO_MOVES]: true };
@@ -44,7 +55,7 @@ const StaticLayout = memo(
 const fn = () => {};
 
 let nextId = 0;
-const buildData = (count: number, prefix = ''): Array<ListItem> => {
+const buildData = (count: number, prefix = ''): Array<DataItem> => {
   return Array(count)
     .fill(0)
     .map(() => ({
@@ -55,7 +66,7 @@ const buildData = (count: number, prefix = ''): Array<ListItem> => {
     }));
 };
 
-type ListItem = { id: number; name: string; selected: boolean; update: () => void };
+type DataItem = { id: number; name: string };
 
 type HeaderProps = {
   onCreate: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
@@ -115,16 +126,15 @@ const Header = component<HeaderProps>(
 const MemoHeader = memo(Header, () => false);
 
 type RowProps = {
-  item: ListItem;
+  item: DataItem;
+  selected$: Atom<number>;
   onRemove: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
   onHighlight: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
 };
 
-const Row = component<RowProps>(({ item, onRemove, onHighlight }) => {
-  const update = useUpdate({ forceSync: true });
-  const { id, selected, name } = item;
-
-  item.update = update;
+const Row = component<RowProps>(({ item, selected$, onRemove, onHighlight }) => {
+  const { id, name } = item;
+  const selected = useAtom(selected$, (p, n) => p === item.id || n === item.id) === item.id;
 
   return tr({
     class: selected ? 'selected' : undefined,
@@ -157,12 +167,13 @@ const Row = component<RowProps>(({ item, onRemove, onHighlight }) => {
 const MemoRow = memo(Row, () => false);
 
 type ListProps = {
-  items: Array<ListItem>;
+  items: Array<DataItem>;
+  selected$: Atom<number>;
   onRemove: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
   onHighlight: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
 };
 
-const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
+const List = component<ListProps>(({ items, selected$, onRemove, onHighlight }) => {
   const rows: Array<DarkElement> = [];
 
   for (const item of items) {
@@ -170,6 +181,7 @@ const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
       MemoRow({
         key: item.id,
         item,
+        selected$,
         onRemove,
         onHighlight,
       }),
@@ -183,7 +195,8 @@ const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
 });
 
 const Bench = component(() => {
-  const state = useMemo<{ list: Array<ListItem> }>(() => ({ list: [] }), []);
+  const state = useMemo<{ list: Array<DataItem> }>(() => ({ list: [] }), []);
+  const selected$ = useMemo<Atom<number>>(() => atom(), []);
   const forceUpdate = useUpdate({ forceSync: true });
 
   const handleCreate = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
@@ -247,7 +260,6 @@ const Bench = component(() => {
 
     for (let i = 0; i < state.list.length; i += 10) {
       state.list[i].name = state.list[i].name + '!!!';
-      state.list[i].update();
     }
 
     measurer.stop();
@@ -255,10 +267,7 @@ const Bench = component(() => {
   const handleHightlight = (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    const idx = state.list.findIndex(x => x.id === id);
-
-    state.list[idx].selected = !state.list[idx].selected;
-    state.list[idx].update();
+    selected$.set(id);
     measurer.stop();
   };
 
@@ -274,6 +283,7 @@ const Bench = component(() => {
     }),
     List({
       items: state.list,
+      selected$,
       onRemove: handleRemove,
       onHighlight: handleHightlight,
     }),

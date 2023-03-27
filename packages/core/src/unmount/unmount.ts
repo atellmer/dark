@@ -11,13 +11,16 @@ import { currentRootStore, eventsStore, rootStore } from '../scope';
 function unmountFiber(fiber: Fiber) {
   if (!fiber.insertionEffectHost && !fiber.layoutEffectHost && !fiber.effectHost && !fiber.portalHost) return;
 
-  walkFiber(fiber, ({ nextFiber, isReturn, stop }) => {
+  walkFiber(fiber, ({ nextFiber, isReturn, stop, resetIsDeepWalking }) => {
     if (nextFiber === fiber.nextSibling) return stop();
+    if (!nextFiber.insertionEffectHost && !nextFiber.layoutEffectHost && !nextFiber.effectHost && !nextFiber.portalHost)
+      return resetIsDeepWalking();
     if (!isReturn && detectIsComponent(nextFiber.instance)) {
+      const hasValues = nextFiber.hook?.values.length > 0;
       // important order
-      nextFiber.insertionEffectHost && dropInsertionEffects(nextFiber.hook);
-      nextFiber.layoutEffectHost && dropLayoutEffects(nextFiber.hook);
-      nextFiber.effectHost && dropEffects(nextFiber.hook);
+      nextFiber.insertionEffectHost && hasValues && dropInsertionEffects(nextFiber.hook);
+      nextFiber.layoutEffectHost && hasValues && dropLayoutEffects(nextFiber.hook);
+      nextFiber.effectHost && hasValues && dropEffects(nextFiber.hook);
       nextFiber.portalHost && platform.unmountPortal(nextFiber);
     }
   });

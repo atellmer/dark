@@ -38,7 +38,8 @@ function component<P, R = unknown>(type: CreateElement<P, R>, options: Component
       delete props.ref;
 
       if (process.env.NODE_ENV !== 'production') {
-        error(`[Dark]: To use ref you need to wrap the component with forwardRef!`);
+        process.env.NODE_ENV === 'development' &&
+          error(`[Dark]: To use ref you need to wrap the component with forwardRef!`);
       }
     }
 
