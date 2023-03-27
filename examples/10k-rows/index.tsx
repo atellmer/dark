@@ -164,88 +164,86 @@ const Row = component<RowProps>(({ id, item$, selected$, onRemove, onHighlight }
 const MemoRow = memo(Row, () => false);
 
 type State = {
-  list$: Array<Atom<DataItem>>;
+  listX: Array<Atom<DataItem>>;
   selected$: Atom<number>;
 };
 
 const Bench = component(() => {
-  const stateX = useReactiveState<State>({ selected$: atom(), list$: [] }, { forceSync: true });
-
-  //console.log('stateX', stateX);
+  const state = useReactiveState<State>({ selected$: atom(), listX: [] }, { forceSync: true });
 
   const handleCreate = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('create');
     e.stopPropagation();
-    stateX.list$ = buildData(10000);
+    state.listX = buildData(10000);
     measurer.stop();
   };
   const handlePrepend = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    const list = [...buildData(1000, '!!!'), ...stateX.list$];
+    const list = [...buildData(1000, '!!!'), ...state.listX];
 
-    stateX.list$ = list;
+    state.listX = list;
     measurer.stop();
   };
   const handleAppend = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('append');
     e.stopPropagation();
-    const list = [...stateX.list$, ...buildData(1000, '!!!')];
+    const list = [...state.listX, ...buildData(1000, '!!!')];
 
-    stateX.list$ = list;
+    state.listX = list;
     measurer.stop();
   };
   const handleInsertDifferent = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    const list = [...stateX.list$];
+    const list = [...state.listX];
 
     list.splice(0, 0, ...buildData(5, '***'));
     list.splice(8, 0, ...buildData(2, '***'));
-    stateX.list$ = list;
+
+    state.listX = list;
     measurer.stop();
   };
   const handleSwap = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
-    if (stateX.list$.length === 0) return;
+    if (state.listX.length === 0) return;
     measurer.start('swap');
     e.stopPropagation();
-    const list = [...stateX.list$];
+    const list = [...state.listX];
     const temp = list[1];
 
     list[1] = list[list.length - 2];
     list[list.length - 2] = temp;
 
-    stateX.list$ = list;
+    state.listX = list;
     measurer.stop();
   };
   const handleClear = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('clear');
     e.stopPropagation();
-    stateX.list$ = [];
-    stateX.selected$.set(undefined);
+    state.listX = [];
+    state.selected$.set(undefined);
     measurer.stop();
   };
   const handleRemove = (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('remove');
     e.stopPropagation();
-    const list = [...stateX.list$];
+    const list = [...state.listX];
     const idx = list.findIndex(x => x.get().id === id);
 
     idx !== -1 && list.splice(idx, 1);
 
-    stateX.list$ = list;
-    stateX.selected$.set(undefined);
-
+    state.listX = list;
+    state.selected$.set(undefined);
     measurer.stop();
   };
   const handleUpdateAll = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('update every 10th');
     e.stopPropagation();
 
-    for (let i = 0; i < stateX.list$.length; i += 10) {
-      const item = stateX.list$[i].get();
+    for (let i = 0; i < state.listX.length; i += 10) {
+      const item = state.listX[i].get();
 
-      stateX.list$[i].set({ ...item, name: item.name + '!!!' });
+      state.listX[i].set({ ...item, name: item.name + '!!!' });
     }
 
     measurer.stop();
@@ -253,13 +251,13 @@ const Bench = component(() => {
   const handleHightlight = (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    stateX.selected$.set(id);
+    state.selected$.set(id);
     measurer.stop();
   };
 
   const rows: Array<DarkElement> = [];
 
-  for (const item$ of stateX.list$) {
+  for (const item$ of state.listX) {
     const id = item$.get().id;
 
     rows.push(
@@ -267,7 +265,7 @@ const Bench = component(() => {
         key: id,
         id,
         item$,
-        selected$: stateX.selected$,
+        selected$: state.selected$,
         onRemove: handleRemove,
         onHighlight: handleHightlight,
       }),
