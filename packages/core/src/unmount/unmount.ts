@@ -13,8 +13,7 @@ function unmountFiber(fiber: Fiber) {
 
   walkFiber(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next) return stop();
-    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.efHost && !nextFiber.pHost)
-      return resetIsDeepWalking();
+    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.efHost && !nextFiber.pHost) return resetIsDeepWalking();
 
     if (!isReturn && detectIsComponent(nextFiber.inst)) {
       const hasValues = nextFiber.hook.values.length > 0;

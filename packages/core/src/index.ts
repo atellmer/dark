@@ -13,6 +13,7 @@ export * from './ref';
 export * from './scope';
 export * from './shared';
 export { VERSION } from './constants';
+export { Guard } from './guard';
 export { Suspense } from './suspense';
 export { useCallback } from './use-callback';
 export { useDeferredValue } from './use-deferred-value';

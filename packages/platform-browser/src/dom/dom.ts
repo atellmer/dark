@@ -24,7 +24,7 @@ import {
   applyRef as applyRef$,
 } from '@dark-engine/core';
 
-import { detectIsPortal, getPortalContainer } from '../portal';
+import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { SVG_TAG_NAMES, VOID_TAG_NAMES } from '../constants';
 import type {
@@ -207,19 +207,14 @@ const patchPropertiesSpecialCasesMap: Record<
 };
 
 function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<TagNativeElement> {
-  let nextFiber = fiber;
+  let nextFiber = fiber as Fiber<TagNativeElement>;
 
   while (nextFiber) {
     nextFiber = nextFiber.parent;
-
-    if (detectIsPortal(nextFiber.inst)) {
-      nextFiber.element = getPortalContainer(nextFiber.inst);
-    }
-
-    if (nextFiber.element) return nextFiber as Fiber<TagNativeElement>;
+    if (nextFiber.element) return nextFiber;
   }
 
-  return nextFiber as Fiber<TagNativeElement>;
+  return nextFiber;
 }
 
 function commitCreation(fiber: Fiber<NativeElement>) {
@@ -325,13 +320,13 @@ function collectElements(fiber: Fiber<NativeElement>) {
 
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
-    if (fiber.element === null) return;
+    if (fiber.element === null || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitCreation(fiber);
   },
   [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
     fiber.move && (move(fiber), (fiber.move = false));
-    if (fiber.element === null || detectIsComponent(fiber.inst)) return;
+    if (fiber.element === null || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },

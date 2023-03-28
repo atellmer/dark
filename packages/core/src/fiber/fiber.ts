@@ -336,7 +336,7 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
 
   fiber.inst = instance;
   fiber.alt = alternate || null;
-  fiber.element = isUpdate ? alternate.element : null;
+  fiber.element = fiber.element || (isUpdate ? alternate.element : null);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
 
   if (alternate && alternate.move) {
