@@ -44,9 +44,9 @@ function renderToString(element: DarkElement): string {
   const callback = () => {
     rootStore.set(rootId);
     const fiber = new Fiber().mutate({
-      nativeElement: new TagNativeElement(ROOT),
-      instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      effectTag: EffectTag.CREATE,
+      element: new TagNativeElement(ROOT),
+      inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
+      tag: EffectTag.C,
     });
 
     fiberMountStore.reset();
@@ -56,7 +56,7 @@ function renderToString(element: DarkElement): string {
 
   platform.scheduleCallback(callback);
 
-  const { nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
+  const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
   const content = nativeElement.renderToString(true);
 
   unmountRoot(rootId, () => {});

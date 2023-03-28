@@ -35,7 +35,7 @@ const getPortalContainer = (instance: unknown): TagNativeElement | null =>
   detectIsPortal(instance) ? instance.props[$$portal] : null;
 
 function unmountPortal(fiber: Fiber<TagNativeElement>) {
-  const container = getPortalContainer(fiber.instance);
+  const container = getPortalContainer(fiber.inst);
 
   if (container) {
     container.textContent = '';

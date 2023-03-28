@@ -54,35 +54,31 @@ import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
 
-const cloneTagMap = {
-  [EffectTag.CREATE]: true,
-};
-
 class Fiber<N = NativeElement> {
   public id = 0;
-  public nativeElement: N = null;
-  public parent: Fiber<N> = null;
-  public child: Fiber<N> = null;
-  public nextSibling: Fiber<N> = null;
-  public alternate: Fiber<N> = null;
-  public move = false;
-  public effectTag: EffectTag = null;
-  public instance: DarkElementInstance = null;
-  public hook: Hook | null = null;
-  public provider: Map<Context, ContextProviderValue> = null;
-  public effectHost = false;
-  public layoutEffectHost = false;
-  public insertionEffectHost = false;
-  public portalHost = false;
-  public childrenCount = 0;
-  public childrenElementsCount = 0;
-  public marker = '';
-  public isUsed = false;
-  public idx = 0;
-  public elementIdx = 0;
-  public batched: number | NodeJS.Timeout | null = null;
-  public flush = false;
-  public catchException: (error: Error) => void;
+  public cc = 0; // child fibers count
+  public cec = 0; // child native elements count
+  public idx = 0; // idx of fiber in the parent fiber
+  public eidx = 0; // native element idx
+  public element: N = null; // native element
+  public parent: Fiber<N> = null; // parent fiber
+  public child: Fiber<N> = null; // child fiber
+  public next: Fiber<N> = null; // next sibling fiber
+  public alt: Fiber<N> = null; // alternate fiber (previous)
+  public move = false; // flag of reordering in list
+  public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
+  public inst: DarkElementInstance = null; // instance of component or virtual node
+  public hook: Hook | null = null; // hook
+  public provider: Map<Context, ContextProviderValue> = null; // provider of context
+  public efHost = false; // effect host
+  public lefHost = false; // layout effect host
+  public iefHost = false; // insertion effect host
+  public pHost = false; // portal host
+  public marker = ''; // for dev
+  public used = false; // flag if fiber already been rendered
+  public batch: number | NodeJS.Timeout | null = null; // timer for batching
+  public flush = false; // flag for optimizing removing of all elements in parent fiber
+  public catch: (error: Error) => void;
   private static nextId = 0;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
@@ -102,33 +98,33 @@ class Fiber<N = NativeElement> {
     return this;
   }
 
-  public markEffectHost() {
-    this.effectHost = true;
-    this.parent && !this.parent.effectHost && this.parent.markEffectHost();
+  public markEFHost() {
+    this.efHost = true;
+    this.parent && !this.parent.efHost && this.parent.markEFHost();
   }
 
-  public markLayoutEffectHost() {
-    this.layoutEffectHost = true;
-    this.parent && !this.parent.layoutEffectHost && this.parent.markLayoutEffectHost();
+  public markLEFHost() {
+    this.lefHost = true;
+    this.parent && !this.parent.lefHost && this.parent.markLEFHost();
   }
 
-  public markInsertionEffectHost() {
-    this.insertionEffectHost = true;
-    this.parent && !this.parent.insertionEffectHost && this.parent.markInsertionEffectHost();
+  public markIEFHost() {
+    this.iefHost = true;
+    this.parent && !this.parent.iefHost && this.parent.markIEFHost();
   }
 
-  public markPortalHost() {
-    this.portalHost = true;
-    this.parent && !this.parent.portalHost && this.parent.markPortalHost();
+  public markPHost() {
+    this.pHost = true;
+    this.parent && !this.parent.pHost && this.parent.markPHost();
   }
 
-  public incrementChildrenElementsCount(count = 1, force = false) {
+  public incCEC(count = 1, force = false) {
     incrementChildrenElementsCount(this, count, force);
   }
 
   public setError(error: Error) {
-    if (detectIsFunction(this.catchException)) {
-      this.catchException(error);
+    if (detectIsFunction(this.catch)) {
+      this.catch(error);
     } else if (this.parent) {
       this.parent.setError(error);
     }
@@ -169,7 +165,7 @@ function workLoop() {
 function performUnitOfWork(fiber: Fiber, box: Box) {
   let isDeepWalking = true;
   let nextFiber = fiber;
-  let instance = fiber.instance;
+  let instance = fiber.inst;
 
   while (true) {
     isDeepWalking = fiberMountStore.deepWalking.get();
@@ -224,13 +220,13 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
 
 function performChild(nextFiber: Fiber, box: Box) {
   fiberMountStore.jumpToChild();
-  let instance$ = nextFiber.instance;
+  let instance$ = nextFiber.inst;
   const childrenIdx = 0;
-  const alternate = nextFiber.alternate ? nextFiber.alternate.child : null;
+  const alternate = nextFiber.alt ? nextFiber.alt.child : null;
   const fiber = new Fiber(
     getHook(
       alternate,
-      alternate ? alternate.instance : null,
+      alternate ? alternate.inst : null,
       hasChildrenProp(instance$) ? instance$.children[childrenIdx] : null,
     ),
     alternate ? alternate.provider : null,
@@ -240,11 +236,11 @@ function performChild(nextFiber: Fiber, box: Box) {
   currentFiberStore.set(fiber);
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
-  fiber.elementIdx = nextFiber.nativeElement ? 0 : nextFiber.elementIdx;
+  fiber.eidx = nextFiber.element ? 0 : nextFiber.eidx;
   instance$ = pertformInstance(instance$, childrenIdx, fiber);
   alternate && performAlternate(alternate, instance$);
   performFiber(fiber, alternate, instance$);
-  alternate && detectIsMemo(fiber.instance) && performMemo(fiber);
+  alternate && detectIsMemo(fiber.inst) && performMemo(fiber);
 
   candidatesStore.add(fiber);
 
@@ -255,17 +251,17 @@ function performChild(nextFiber: Fiber, box: Box) {
 
 function performSibling(nextFiber: Fiber, box: Box) {
   fiberMountStore.jumpToSibling();
-  let instance$ = nextFiber.parent.instance;
+  let instance$ = nextFiber.parent.inst;
   const childrenIdx = fiberMountStore.getIndex();
   const hasSibling = hasChildrenProp(instance$) && instance$.children[childrenIdx];
 
   if (hasSibling) {
     fiberMountStore.deepWalking.set(true);
-    const alternate = nextFiber.alternate ? nextFiber.alternate.nextSibling : null;
+    const alternate = nextFiber.alt ? nextFiber.alt.next : null;
     const fiber = new Fiber(
       getHook(
         alternate,
-        alternate ? alternate.instance : null,
+        alternate ? alternate.inst : null,
         hasChildrenProp(instance$) ? instance$.children[childrenIdx] : null,
       ),
       alternate ? alternate.provider : null,
@@ -274,12 +270,12 @@ function performSibling(nextFiber: Fiber, box: Box) {
 
     currentFiberStore.set(fiber);
     fiber.parent = nextFiber.parent;
-    nextFiber.nextSibling = fiber;
-    fiber.elementIdx = nextFiber.elementIdx + (nextFiber.nativeElement ? 1 : nextFiber.childrenElementsCount);
+    nextFiber.next = fiber;
+    fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
     instance$ = pertformInstance(instance$, childrenIdx, fiber);
     alternate && performAlternate(alternate, instance$);
     performFiber(fiber, alternate, instance$);
-    alternate && detectIsMemo(fiber.instance) && performMemo(fiber);
+    alternate && detectIsMemo(fiber.inst) && performMemo(fiber);
 
     candidatesStore.add(fiber);
 
@@ -292,10 +288,10 @@ function performSibling(nextFiber: Fiber, box: Box) {
     fiberMountStore.jumpToParent();
     fiberMountStore.deepWalking.set(false);
     nextFiber = nextFiber.parent;
-    instance$ = nextFiber.instance;
+    instance$ = nextFiber.inst;
 
-    if (hasChildrenProp(nextFiber.instance)) {
-      nextFiber.instance.children = [];
+    if (hasChildrenProp(nextFiber.inst)) {
+      nextFiber.inst.children = [];
     }
   }
 
@@ -311,61 +307,61 @@ function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) 
   const stop = fromUpdate && wipFiber.parent === fiber.parent;
 
   if (
-    detectIsPlainVirtualNode(fiber.instance) ||
-    (detectIsTagVirtualNode(fiber.instance) && fiber.instance.children.length === 0)
+    detectIsPlainVirtualNode(fiber.inst) ||
+    (detectIsTagVirtualNode(fiber.inst) && fiber.inst.children.length === 0)
   ) {
-    fiber.childrenElementsCount = 1;
+    fiber.cec = 1;
   }
 
   if (fromUpdate && stop && !force) return;
 
-  fiber.parent.childrenElementsCount += count;
+  fiber.parent.cec += count;
 
-  if (!fiber.parent.nativeElement) {
-    fiber.parent.incrementChildrenElementsCount(count);
+  if (!fiber.parent.element) {
+    fiber.parent.incCEC(count);
   }
 }
 
 function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   let isUpdate = false;
 
-  cloneTagMap[fiber.parent.effectTag] && (fiber.effectTag = fiber.parent.effectTag);
+  fiber.parent.tag === EffectTag.C && (fiber.tag = fiber.parent.tag);
 
-  if (fiber.effectTag !== EffectTag.CREATE) {
+  if (fiber.tag !== EffectTag.C) {
     isUpdate =
       alternate &&
-      detectAreSameInstanceTypes(alternate.instance, instance) &&
-      (alternate ? getElementKey(alternate.instance) : null) === getElementKey(instance);
+      detectAreSameInstanceTypes(alternate.inst, instance) &&
+      (alternate ? getElementKey(alternate.inst) : null) === getElementKey(instance);
   }
 
-  fiber.instance = instance;
-  fiber.alternate = alternate || null;
-  fiber.nativeElement = isUpdate ? alternate.nativeElement : null;
-  fiber.effectTag = isUpdate ? EffectTag.UPDATE : EffectTag.CREATE;
+  fiber.inst = instance;
+  fiber.alt = alternate || null;
+  fiber.element = isUpdate ? alternate.element : null;
+  fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
 
   if (alternate && alternate.move) {
     fiber.move = alternate.move;
     alternate.move = false;
   }
 
-  if (hasChildrenProp(fiber.instance)) {
-    fiber.childrenCount = fiber.instance.children.length;
+  if (hasChildrenProp(fiber.inst)) {
+    fiber.cc = fiber.inst.children.length;
   }
 
-  if (!fiber.nativeElement && detectIsVirtualNode(fiber.instance)) {
-    fiber.nativeElement = platform.createNativeElement(fiber.instance);
-    fiber.effectTag = EffectTag.CREATE;
+  if (!fiber.element && detectIsVirtualNode(fiber.inst)) {
+    fiber.element = platform.createNativeElement(fiber.inst);
+    fiber.tag = EffectTag.C;
   }
 
-  fiber.nativeElement && fiber.incrementChildrenElementsCount();
+  fiber.element && fiber.incCEC();
 }
 
 function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
-  if (idx === 0 || (fiber.child && fiber.child.effectTag === EffectTag.DELETE)) {
+  if (idx === 0 || (fiber.child && fiber.child.tag === EffectTag.D)) {
     fiber.child = child;
     child.parent = fiber;
   } else {
-    fiber.nextSibling = child;
+    fiber.next = child;
     child.parent = fiber.parent;
   }
 
@@ -374,8 +370,8 @@ function insertToFiber(idx: number, fiber: Fiber, child: Fiber) {
 
 function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
   return new Fiber().mutate({
-    effectTag: EffectTag.CREATE,
-    instance: createReplacer(),
+    tag: EffectTag.C,
+    inst: createReplacer(),
     parent: alternate,
     marker: marker + '',
   });
@@ -385,7 +381,7 @@ function canAddToDeletions(fiber: Fiber) {
   let nextFiber = fiber.parent;
 
   while (nextFiber) {
-    if (nextFiber.effectTag === EffectTag.DELETE) return false;
+    if (nextFiber.tag === EffectTag.D) return false;
     nextFiber = nextFiber.parent;
   }
 
@@ -393,22 +389,22 @@ function canAddToDeletions(fiber: Fiber) {
 }
 
 function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
-  const areSameTypes = detectAreSameInstanceTypes(alternate.instance, instance);
+  const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
-  const hasNoMovesFlag = flag && flag[Flag.HAS_NO_MOVES];
+  const hasNoMovesFlag = flag && flag[Flag.HNM];
 
-  alternate.isUsed = true;
+  alternate.used = true;
 
   if (!areSameTypes) {
     if (canAddToDeletions(alternate)) {
-      alternate.effectTag = EffectTag.DELETE;
+      alternate.tag = EffectTag.D;
       deletionsStore.add(alternate);
     }
   } else if (
-    hasChildrenProp(alternate.instance) &&
+    hasChildrenProp(alternate.inst) &&
     hasChildrenProp(instance) &&
-    alternate.childrenCount !== 0 &&
-    (hasNoMovesFlag ? alternate.childrenCount !== instance.children.length : true)
+    alternate.cc !== 0 &&
+    (hasNoMovesFlag ? alternate.cc !== instance.children.length : true)
   ) {
     const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
       alternate.child,
@@ -432,19 +428,19 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
         if (nextKey !== null && !prevKeysMap[nextKey]) {
           if (prevKey !== null && !nextKeysMap[prevKey]) {
             process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'replace']);
-            nextKeyFiber.effectTag = EffectTag.CREATE;
-            prevKeyFiber.effectTag = EffectTag.DELETE;
+            nextKeyFiber.tag = EffectTag.C;
+            prevKeyFiber.tag = EffectTag.D;
             deletionsStore.add(prevKeyFiber);
           } else {
             process.env.NODE_ENV !== 'production' && result.push([nextKey, 'insert']);
-            nextKeyFiber.effectTag = EffectTag.CREATE;
+            nextKeyFiber.tag = EffectTag.C;
             p++;
             size++;
           }
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         } else if (!nextKeysMap[prevKey]) {
           process.env.NODE_ENV !== 'production' && result.push([prevKey, 'remove']);
-          prevKeyFiber.effectTag = EffectTag.DELETE;
+          prevKeyFiber.tag = EffectTag.D;
           deletionsStore.add(prevKeyFiber);
           flush && (prevKeyFiber.flush = true);
           n++;
@@ -452,14 +448,14 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           size++;
         } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
           process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'move']);
-          nextKeyFiber.effectTag = EffectTag.UPDATE;
-          prevKeyFiber.effectTag = EffectTag.UPDATE;
+          nextKeyFiber.tag = EffectTag.U;
+          prevKeyFiber.tag = EffectTag.U;
           nextKeyFiber.move = true;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         }
       } else if (nextKey !== null) {
         process.env.NODE_ENV !== 'production' && result.push([nextKey, 'stable']);
-        nextKeyFiber.effectTag = EffectTag.UPDATE;
+        nextKeyFiber.tag = EffectTag.U;
         nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
       }
 
@@ -476,45 +472,45 @@ function performMemo(fiber: Fiber) {
     if (hot.get()) return;
   }
 
-  const alternate = fiber.alternate;
-  const prevComponent = alternate.instance as Component;
-  const nextComponent = fiber.instance as Component;
+  const alternate = fiber.alt;
+  const prevComponent = alternate.inst as Component;
+  const nextComponent = fiber.inst as Component;
 
   if (
     fiber.move ||
     nextComponent.type !== prevComponent.type ||
-    nextComponent.shouldUpdate(prevComponent.props, nextComponent.props)
+    nextComponent.su(prevComponent.props, nextComponent.props)
   )
     return;
 
   fiberMountStore.deepWalking.set(false);
-  fiber.effectTag = EffectTag.SKIP;
-  fiber.alternate = alternate;
-  fiber.nativeElement = alternate.nativeElement;
+  fiber.tag = EffectTag.S;
+  fiber.alt = alternate;
+  fiber.element = alternate.element;
   fiber.child = alternate.child;
   fiber.hook = alternate.hook;
   fiber.provider = alternate.provider;
-  fiber.childrenCount = alternate.childrenCount;
-  fiber.childrenElementsCount = alternate.childrenElementsCount;
-  fiber.catchException = alternate.catchException;
+  fiber.cc = alternate.cc;
+  fiber.cec = alternate.cec;
+  fiber.catch = alternate.catch;
   fiber.child && (fiber.child.parent = fiber);
 
-  const diff = fiber.elementIdx - alternate.elementIdx;
+  const diff = fiber.eidx - alternate.eidx;
   const deep = diff !== 0;
 
   if (deep) {
     walkFiber(fiber.child, (nextFiber, _, __, stop) => {
-      if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) return stop();
-      nextFiber.elementIdx += diff;
-      if (nextFiber.parent !== fiber && nextFiber.nativeElement) return stop();
+      if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
+      nextFiber.eidx += diff;
+      if (nextFiber.parent !== fiber && nextFiber.element) return stop();
     });
   }
 
-  fiber.incrementChildrenElementsCount(alternate.childrenElementsCount);
-  alternate.effectHost && fiber.markEffectHost();
-  alternate.layoutEffectHost && fiber.markLayoutEffectHost();
-  alternate.insertionEffectHost && fiber.markInsertionEffectHost();
-  alternate.portalHost && fiber.markPortalHost();
+  fiber.incCEC(alternate.cec);
+  alternate.efHost && fiber.markEFHost();
+  alternate.lefHost && fiber.markLEFHost();
+  alternate.iefHost && fiber.markIEFHost();
+  alternate.pHost && fiber.markPHost();
 }
 
 function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fiber) {
@@ -528,10 +524,10 @@ function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fib
     instance$ = mountInstance(fiber, instance.children[idx]);
 
     if (detectIsComponent(instance$)) {
-      hasEffects(fiber) && fiber.markEffectHost();
-      hasLayoutEffects(fiber) && fiber.markLayoutEffectHost();
-      hasInsertionEffects(fiber) && fiber.markInsertionEffectHost();
-      platform.detectIsPortal(instance$) && fiber.markPortalHost();
+      hasEffects(fiber) && fiber.markEFHost();
+      hasLayoutEffects(fiber) && fiber.markLEFHost();
+      hasInsertionEffects(fiber) && fiber.markIEFHost();
+      platform.detectIsPortal(instance$) && fiber.markPHost();
     }
   }
 
@@ -595,7 +591,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
-      const key = getElementKey(nextFiber.instance);
+      const key = getElementKey(nextFiber.inst);
       const prevKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       prevKeys.push(prevKey);
@@ -620,7 +616,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       nextKeysMap[nextKey] = true;
     }
 
-    nextFiber = nextFiber ? nextFiber.nextSibling : null;
+    nextFiber = nextFiber ? nextFiber.next : null;
     idx++;
   }
 
@@ -706,7 +702,7 @@ function detectAreSameInstanceTypes(
   if (process.env.NODE_ENV !== 'production') {
     if (process.env.NODE_ENV === 'development' && hot.get()) {
       if (detectIsComponent(prevInstance) && detectIsComponent(nextInstance)) {
-        return prevInstance.displayName === nextInstance.displayName;
+        return prevInstance.dn === nextInstance.dn;
       }
     }
   }
@@ -753,11 +749,11 @@ function commitChanges() {
   fromUpdate && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
-    fiber.effectTag !== EffectTag.SKIP && platform.applyCommit(fiber);
-    fiber.alternate = null;
+    fiber.tag !== EffectTag.S && platform.applyCommit(fiber);
+    fiber.alt = null;
   }
 
-  wipFiber.alternate = null;
+  wipFiber.alt = null;
   platform.finishCommitWork();
 
   isDynamic && runLayoutEffects();
@@ -805,7 +801,7 @@ function getParentFiberWithNativeElement(fiber: Fiber) {
   while (parentFiber) {
     parentFiber = parentFiber.parent;
 
-    if (parentFiber && parentFiber.nativeElement) {
+    if (parentFiber && parentFiber.element) {
       break;
     }
   }
@@ -814,12 +810,12 @@ function getParentFiberWithNativeElement(fiber: Fiber) {
 }
 
 function syncElementIndices(fiber: Fiber) {
-  const diff = fiber.childrenElementsCount - fiber.alternate.childrenElementsCount;
+  const diff = fiber.cec - fiber.alt.cec;
   if (diff === 0) return;
   const parentFiber = getParentFiberWithNativeElement(fiber);
   let isRight = false;
 
-  fiber.incrementChildrenElementsCount(diff, true);
+  fiber.incCEC(diff, true);
 
   walkFiber(parentFiber.child, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === parentFiber) return stop();
@@ -828,12 +824,12 @@ function syncElementIndices(fiber: Fiber) {
       return resetIsDeepWalking();
     }
 
-    if (nextFiber.nativeElement) {
+    if (nextFiber.element) {
       resetIsDeepWalking();
     }
 
     if (isRight && !isReturn) {
-      nextFiber.elementIdx += diff;
+      nextFiber.eidx += diff;
     }
   });
 }
@@ -848,23 +844,23 @@ type CreateUpdateCallbackOptions = {
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const { rootId, fiber, forceStart = false, onStart } = options;
   const callback = () => {
-    if (fiber.effectTag === EffectTag.DELETE) return;
+    if (fiber.tag === EffectTag.D) return;
     forceStart && onStart();
-    if (fiber.isUsed) return;
+    if (fiber.used) return;
     !forceStart && onStart();
     rootStore.set(rootId); // important order!
     isUpdateHookZone.set(true);
     fiberMountStore.reset();
 
-    fiber.alternate = new Fiber().mutate(fiber);
+    fiber.alt = new Fiber().mutate(fiber);
     fiber.marker = '🔥';
-    fiber.effectTag = EffectTag.UPDATE;
-    fiber.childrenElementsCount = 0;
+    fiber.tag = EffectTag.U;
+    fiber.cec = 0;
     fiber.child = null;
 
     wipRootStore.set(fiber);
     currentFiberStore.set(fiber);
-    fiber.instance = mountInstance(fiber, fiber.instance);
+    fiber.inst = mountInstance(fiber, fiber.inst);
     nextUnitOfWorkStore.set(fiber);
   };
 

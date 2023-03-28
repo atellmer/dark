@@ -1,8 +1,8 @@
 export enum EffectTag {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-  SKIP = 'SKIP',
+  C = 'C',
+  U = 'U',
+  D = 'D',
+  S = 'S',
 }
 
 export type NativeElement = unknown;

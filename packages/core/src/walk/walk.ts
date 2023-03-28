@@ -26,8 +26,8 @@ function walkFiber<T = unknown>(
       isReturn = false;
       nextFiber = newFiber;
       visitedMap[newFiber.id] = true;
-    } else if (nextFiber.nextSibling && detectCanVisit(nextFiber.nextSibling.id)) {
-      const newFiber = nextFiber.nextSibling;
+    } else if (nextFiber.next && detectCanVisit(nextFiber.next.id)) {
+      const newFiber = nextFiber.next;
 
       isDeepWalking = true;
       isReturn = false;
@@ -36,10 +36,10 @@ function walkFiber<T = unknown>(
     } else if (
       nextFiber.parent &&
       nextFiber.parent === fiber &&
-      nextFiber.parent.nextSibling &&
-      detectCanVisit(nextFiber.parent.nextSibling.id)
+      nextFiber.parent.next &&
+      detectCanVisit(nextFiber.parent.next.id)
     ) {
-      const newFiber = nextFiber.parent.nextSibling;
+      const newFiber = nextFiber.parent.next;
 
       isDeepWalking = true;
       isReturn = false;

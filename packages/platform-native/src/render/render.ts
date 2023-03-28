@@ -58,10 +58,10 @@ function render(options: RenderOptions): NSElement {
     const currentRoot = currentRootStore.get();
     const isUpdate = Boolean(currentRoot);
     const fiber = new Fiber().mutate({
-      nativeElement: isUpdate ? currentRoot.nativeElement : new TagNativeElement(ROOT),
-      instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      alternate: currentRoot,
-      effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.CREATE,
+      element: isUpdate ? currentRoot.element : new TagNativeElement(ROOT),
+      inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
+      alt: currentRoot,
+      tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
     fiberMountStore.reset();
@@ -96,7 +96,7 @@ function render(options: RenderOptions): NSElement {
 
 function getRootNativeView() {
   const fiber = currentRootStore.get() as Fiber<TagNativeElement>;
-  const nativeView = fiber.nativeElement.getNativeView();
+  const nativeView = fiber.element.getNativeView();
 
   return nativeView;
 }

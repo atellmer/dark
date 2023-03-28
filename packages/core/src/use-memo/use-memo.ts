@@ -20,7 +20,7 @@ function wrap<T>(value: T, isDifferent: boolean) {
       slot: Fragment({ slot: value as unknown as DarkElement }),
     });
 
-    component.shouldUpdate = () => isDifferent;
+    component.su = () => isDifferent;
 
     return component;
   }

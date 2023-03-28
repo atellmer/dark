@@ -7,10 +7,10 @@ function batch(callback: () => void) {
 }
 
 function runBatch(fiber: Fiber, callback: () => void) {
-  fiber.batched && clearTimeout(fiber.batched as number);
-  fiber.batched = setTimeout(() => {
+  fiber.batch && clearTimeout(fiber.batch as number);
+  fiber.batch = setTimeout(() => {
     isBatchZone.set(false);
-    fiber.batched = null;
+    fiber.batch = null;
     callback();
   });
 }

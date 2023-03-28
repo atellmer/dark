@@ -10,9 +10,9 @@ class Component<P extends StandardComponentProps = any, R = any> {
   public token: Symbol;
   public props: P;
   public ref: Ref<R>;
-  public displayName: string;
+  public dn: string;
   public children: Array<DarkElementInstance> = [];
-  public shouldUpdate?: ShouldUpdate<P>;
+  public su?: ShouldUpdate<P>;
 
   constructor(
     type: CreateElement<P>,
@@ -26,8 +26,8 @@ class Component<P extends StandardComponentProps = any, R = any> {
     this.token = token || $$component;
     this.props = props || null;
     this.ref = ref || null;
-    this.shouldUpdate = shouldUpdate || null;
-    this.displayName = displayName || '';
+    this.su = shouldUpdate || null;
+    this.dn = displayName || '';
   }
 }
 

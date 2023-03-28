@@ -12,7 +12,7 @@ function useError(): Error | null {
   const update = useUpdate();
   const scope: ErrorScope = useMemo(() => ({ error: null }), []);
 
-  fiber.catchException = (error: Error) => {
+  fiber.catch = (error: Error) => {
     scope.error = error;
     update();
   };

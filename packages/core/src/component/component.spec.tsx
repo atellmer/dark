@@ -69,7 +69,7 @@ describe('[create-component]', () => {
     const displayName = 'MyComponent';
     const Component = component(() => null, { displayName });
 
-    expect(Component().displayName).toBe(displayName);
+    expect(Component().dn).toBe(displayName);
   });
 
   test('provides token correctly', () => {

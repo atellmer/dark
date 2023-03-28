@@ -11,7 +11,7 @@ import {
 } from '@dark-engine/core';
 import { type SyntheticEvent, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
-const flag = { [Flag.HAS_NO_MOVES]: true };
+const flag = { [Flag.HNM]: true };
 
 const createMeasurer = () => {
   let startTime;
@@ -52,18 +52,16 @@ const StaticLayout = memo(
 );
 
 let nextId = 0;
-const buildData = (count: number, prefix = ''): Array<Atom<DataItem>> => {
+const buildData = (count: number, prefix = ''): Array<DataItem> => {
   return Array(count)
     .fill(0)
-    .map(() =>
-      atom({
-        id: ++nextId,
-        name: `item: ${nextId} ${prefix}`,
-      }),
-    );
+    .map(() => ({
+      id: ++nextId,
+      name$: atom(`item: ${nextId} ${prefix}`),
+    }));
 };
 
-type DataItem = { id: number; name: string };
+type DataItem = { id: number; name$: Atom<string> };
 
 type HeaderProps = {
   onCreate: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
@@ -121,15 +119,15 @@ const Header = component<HeaderProps>(
 const MemoHeader = memo(Header, () => false);
 
 type RowProps = {
-  id: number;
-  item$: Atom<DataItem>;
+  item: DataItem;
   selected$: Atom<number>;
   onRemove: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
   onHighlight: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
 };
 
-const Row = component<RowProps>(({ id, item$, selected$, onRemove, onHighlight }) => {
-  const [{ name }, selected] = useAtom([[item$], [selected$, (p, n) => p === id || n === id]]);
+const Row = component<RowProps>(({ item, selected$, onRemove, onHighlight }) => {
+  const { id } = item;
+  const [name, selected] = useAtom([[item.name$], [selected$, (p, n) => p === id || n === id]]);
 
   return tr({
     class: selected === id ? 'selected' : undefined,
@@ -162,7 +160,7 @@ const Row = component<RowProps>(({ id, item$, selected$, onRemove, onHighlight }
 const MemoRow = memo(Row, () => false);
 
 type State = {
-  listX: Array<Atom<DataItem>>;
+  listX: Array<DataItem>;
   selected$: Atom<number>;
 };
 
@@ -226,7 +224,7 @@ const Bench = component(() => {
     measurer.start('remove');
     e.stopPropagation();
     const list = [...state.listX];
-    const idx = list.findIndex(x => x.get().id === id);
+    const idx = list.findIndex(x => x.id === id);
 
     idx !== -1 && list.splice(idx, 1);
 
@@ -239,9 +237,9 @@ const Bench = component(() => {
     e.stopPropagation();
 
     for (let i = 0; i < state.listX.length; i += 10) {
-      const item = state.listX[i].get();
+      const item = state.listX[i];
 
-      state.listX[i].set({ ...item, name: item.name + '!!!' });
+      item.name$.set(item.name$.get() + '!!!');
     }
 
     measurer.stop();
@@ -255,14 +253,11 @@ const Bench = component(() => {
 
   const rows: Array<DarkElement> = [];
 
-  for (const item$ of state.listX) {
-    const id = item$.get().id;
-
+  for (const item of state.listX) {
     rows.push(
       MemoRow({
-        key: id,
-        id,
-        item$,
+        key: item.id,
+        item,
         selected$: state.selected$,
         onRemove: handleRemove,
         onHighlight: handleHightlight,

@@ -212,11 +212,11 @@ function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<Tag
   while (nextFiber) {
     nextFiber = nextFiber.parent;
 
-    if (detectIsPortal(nextFiber.instance)) {
-      nextFiber.nativeElement = getPortalContainer(nextFiber.instance);
+    if (detectIsPortal(nextFiber.inst)) {
+      nextFiber.element = getPortalContainer(nextFiber.inst);
     }
 
-    if (nextFiber.nativeElement) return nextFiber as Fiber<TagNativeElement>;
+    if (nextFiber.element) return nextFiber as Fiber<TagNativeElement>;
   }
 
   return nextFiber as Fiber<TagNativeElement>;
@@ -224,37 +224,36 @@ function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<Tag
 
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
-  const parentElement = parentFiber.nativeElement;
+  const parentElement = parentFiber.element;
   const childNodes = parentElement.childNodes;
 
   if (isHydrateZone.get()) {
-    const nativeElement = childNodes[fiber.elementIdx] as NativeElement;
+    const nativeElement = childNodes[fiber.eidx] as NativeElement;
 
     if (
-      detectIsTextVirtualNode(fiber.instance) &&
+      detectIsTextVirtualNode(fiber.inst) &&
       nativeElement instanceof Text &&
-      fiber.instance.value.length !== nativeElement.length
+      fiber.inst.value.length !== nativeElement.length
     ) {
-      nativeElement.splitText(fiber.instance.value.length);
+      nativeElement.splitText(fiber.inst.value.length);
     }
 
-    fiber.nativeElement = nativeElement;
+    fiber.element = nativeElement;
   } else {
-    if (childNodes.length === 0 || fiber.elementIdx > childNodes.length - 1) {
-      !detectIsVoidElement((parentFiber.instance as TagVirtualNode).name) &&
-        parentElement.appendChild(fiber.nativeElement);
+    if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
+      !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) && parentElement.appendChild(fiber.element);
     } else {
-      parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[fiber.elementIdx]);
+      parentElement.insertBefore(fiber.element, parentElement.childNodes[fiber.eidx]);
     }
   }
 
-  detectIsTagVirtualNode(fiber.instance) && addAttributes(fiber.nativeElement, fiber.instance);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
-  const element = fiber.nativeElement;
-  const prevInstance = fiber.alternate.instance as VirtualNode;
-  const nextInstance = fiber.instance as VirtualNode;
+  const element = fiber.element;
+  const prevInstance = fiber.alt.inst as VirtualNode;
+  const nextInstance = fiber.inst as VirtualNode;
 
   detectIsPlainVirtualNode(nextInstance)
     ? (prevInstance as PlainVirtualNode).value !== nextInstance.value && (element.textContent = nextInstance.value)
@@ -265,17 +264,17 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
 
   if (fiber.flush) {
-    parentFiber.nativeElement.textContent && (parentFiber.nativeElement.textContent = '');
+    parentFiber.element.textContent && (parentFiber.element.textContent = '');
     return;
   }
 
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+    if (nextFiber === fiber.next || nextFiber === fiber.parent) {
       return stop();
     }
 
-    if (!isReturn && nextFiber.nativeElement) {
-      !detectIsPortal(nextFiber.instance) && parentFiber.nativeElement.removeChild(nextFiber.nativeElement);
+    if (!isReturn && nextFiber.element) {
+      !detectIsPortal(nextFiber.inst) && parentFiber.element.removeChild(nextFiber.element);
 
       return resetIsDeepWalking();
     }
@@ -287,7 +286,7 @@ function move(fiber: Fiber<NativeElement>) {
   const sourceNode = sourceNodes[0];
   const parentElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
-  const elementIdx = fiber.elementIdx;
+  const elementIdx = fiber.eidx;
   let idx = 0;
   const move = () => {
     for (let i = 1; i < sourceNodes.length; i++) {
@@ -310,12 +309,12 @@ function collectElements(fiber: Fiber<NativeElement>) {
   const store: Array<NativeElement> = [];
 
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {
+    if (nextFiber === fiber.next || nextFiber === fiber.parent) {
       return stop();
     }
 
-    if (!isReturn && nextFiber.nativeElement) {
-      !detectIsPortal(nextFiber.instance) && store.push(nextFiber.nativeElement);
+    if (!isReturn && nextFiber.element) {
+      !detectIsPortal(nextFiber.inst) && store.push(nextFiber.element);
 
       return resetIsDeepWalking();
     }
@@ -325,23 +324,23 @@ function collectElements(fiber: Fiber<NativeElement>) {
 }
 
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
-  [EffectTag.CREATE]: (fiber: Fiber<NativeElement>) => {
-    if (fiber.nativeElement === null) return;
-    trackUpdate && trackUpdate(fiber.nativeElement);
+  [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
+    if (fiber.element === null) return;
+    trackUpdate && trackUpdate(fiber.element);
     commitCreation(fiber);
   },
-  [EffectTag.UPDATE]: (fiber: Fiber<NativeElement>) => {
+  [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
     fiber.move && (move(fiber), (fiber.move = false));
-    if (fiber.nativeElement === null || detectIsComponent(fiber.instance)) return;
-    trackUpdate && trackUpdate(fiber.nativeElement);
+    if (fiber.element === null || detectIsComponent(fiber.inst)) return;
+    trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },
-  [EffectTag.DELETE]: (fiber: Fiber<NativeElement>) => commitDeletion(fiber),
-  [EffectTag.SKIP]: () => {},
+  [EffectTag.D]: (fiber: Fiber<NativeElement>) => commitDeletion(fiber),
+  [EffectTag.S]: () => {},
 };
 
 function applyCommit(fiber: Fiber<NativeElement>) {
-  applyCommitMap[fiber.effectTag](fiber);
+  applyCommitMap[fiber.tag](fiber);
 }
 
 function finishCommitWork() {

@@ -121,7 +121,7 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
   );
 });
 
-const flag = { [Flag.HAS_NO_MOVES]: true };
+const flag = { [Flag.HNM]: true };
 
 const setAnchors = (arr: Array<Point>, scope: any) => {
   arr.map((p, index) => {

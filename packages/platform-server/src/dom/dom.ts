@@ -117,34 +117,34 @@ function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<Tag
   while (nextFiber) {
     nextFiber = nextFiber.parent;
 
-    if (nextFiber.nativeElement) return nextFiber as Fiber<TagNativeElement>;
+    if (nextFiber.element) return nextFiber as Fiber<TagNativeElement>;
   }
 
   return nextFiber as Fiber<TagNativeElement>;
 }
 
 function append(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
-  parentElement.appendChild(fiber.nativeElement);
+  parentElement.appendChild(fiber.element);
 }
 
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
-  const parentElement = parentFiber.nativeElement;
-  const vNode = parentFiber.instance as TagVirtualNode;
+  const parentElement = parentFiber.element;
+  const vNode = parentFiber.inst as TagVirtualNode;
 
   !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
-  addAttributes(fiber.nativeElement, fiber.instance as VirtualNode);
+  addAttributes(fiber.element, fiber.inst as VirtualNode);
 }
 
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
-  [EffectTag.CREATE]: (fiber: Fiber<NativeElement>) => fiber.nativeElement && commitCreation(fiber),
-  [EffectTag.UPDATE]: () => {},
-  [EffectTag.DELETE]: () => {},
-  [EffectTag.SKIP]: () => {},
+  [EffectTag.C]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
+  [EffectTag.U]: () => {},
+  [EffectTag.D]: () => {},
+  [EffectTag.S]: () => {},
 };
 
 function applyCommit(fiber: Fiber<NativeElement>) {
-  applyCommitMap[fiber.effectTag](fiber);
+  applyCommitMap[fiber.tag](fiber);
 }
 
 const finishCommitWork = () => {};

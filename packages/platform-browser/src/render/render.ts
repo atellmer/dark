@@ -74,10 +74,10 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
     const currentRoot = currentRootStore.get();
     const isUpdate = Boolean(currentRoot);
     const fiber = new Fiber().mutate({
-      nativeElement: container,
-      instance: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      alternate: currentRoot,
-      effectTag: isUpdate ? EffectTag.UPDATE : EffectTag.CREATE,
+      element: container,
+      inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
+      alt: currentRoot,
+      tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
     fiberMountStore.reset();
