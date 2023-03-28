@@ -81,6 +81,7 @@ class Fiber<N = NativeElement> {
   public idx = 0;
   public elementIdx = 0;
   public batched: number | NodeJS.Timeout | null = null;
+  public flush = false;
   public catchException: (error: Error) => void;
   private static nextId = 0;
 
@@ -413,6 +414,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
       alternate.child,
       instance.children,
     );
+    const flush = nextKeys.length === 0;
     let result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
     let size = Math.max(prevKeys.length, nextKeys.length);
     let nextFiber = alternate;
@@ -444,6 +446,8 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           process.env.NODE_ENV !== 'production' && result.push([prevKey, 'remove']);
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.add(prevKeyFiber);
+          flush && (prevKeyFiber.flush = true);
+
           n++;
           idx--;
           size++;

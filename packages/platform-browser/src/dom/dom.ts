@@ -221,14 +221,6 @@ function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<Tag
   return nextFiber as Fiber<TagNativeElement>;
 }
 
-function append(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
-  parentElement.appendChild(fiber.nativeElement);
-}
-
-function insert(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
-  parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[fiber.elementIdx]);
-}
-
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
   const parentElement = parentFiber.nativeElement;
@@ -250,9 +242,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     if (childNodes.length === 0 || fiber.elementIdx > childNodes.length - 1) {
       const vNode = parentFiber.instance as TagVirtualNode;
 
-      !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
+      !detectIsVoidElement(vNode.name) && parentElement.appendChild(fiber.nativeElement);
     } else {
-      insert(fiber, parentElement);
+      parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[fiber.elementIdx]);
     }
   }
 
@@ -271,6 +263,11 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getParentFiberWithNativeElement(fiber);
+
+  if (fiber.flush) {
+    parentFiber.nativeElement.textContent && (parentFiber.nativeElement.textContent = '');
+    return;
+  }
 
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.nextSibling || nextFiber === fiber.parent) {

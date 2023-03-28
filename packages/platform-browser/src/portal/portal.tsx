@@ -21,7 +21,7 @@ type PortalProps = {
 
 const Portal = component<PortalProps>(
   ({ slot, ...rest }) => {
-    useMemo(() => (rest[$$portal].innerHTML = ''), []);
+    useMemo(() => (rest[$$portal].textContent = ''), []);
 
     return slot;
   },
@@ -38,7 +38,7 @@ function unmountPortal(fiber: Fiber<TagNativeElement>) {
   const container = getPortalContainer(fiber.instance);
 
   if (container) {
-    container.innerHTML = '';
+    container.textContent = '';
   }
 }
 
