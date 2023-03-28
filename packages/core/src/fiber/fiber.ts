@@ -15,7 +15,7 @@ import {
   nextUnitOfWorkStore,
   candidatesStore,
   deletionsStore,
-  fiberMountStore,
+  mountStore,
   currentFiberStore,
   isUpdateHookZone,
   rootStore,
@@ -134,7 +134,7 @@ class Fiber<N = NativeElement> {
 type Box = {
   fiber$$: Fiber;
   fiber$: Fiber;
-  instance$: DarkElementInstance;
+  inst$: DarkElementInstance;
 };
 
 function workLoop() {
@@ -145,14 +145,14 @@ function workLoop() {
   const box: Box = {
     fiber$$: null,
     fiber$: null,
-    instance$: null,
+    inst$: null,
   };
 
   while (nextUnitOfWork && !shouldYield) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork, box);
     nextUnitOfWorkStore.set(nextUnitOfWork);
     hasMoreWork = Boolean(nextUnitOfWork);
-    shouldYield = platform.shouldYeildToHost();
+    shouldYield = platform.shouldYeild();
   }
 
   if (!nextUnitOfWork && wipFiber) {
@@ -168,7 +168,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
   let instance = fiber.inst;
 
   while (true) {
-    isDeepWalking = fiberMountStore.deepWalking.get();
+    isDeepWalking = mountStore.deep.get();
     nextFiber.hook && (nextFiber.hook.idx = 0);
 
     if (isDeepWalking) {
@@ -178,11 +178,11 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         performChild(nextFiber, box);
 
         nextFiber = box.fiber$;
-        instance = box.instance$;
+        instance = box.inst$;
 
         box.fiber$$ = null;
         box.fiber$ = null;
-        box.instance$ = null;
+        box.inst$ = null;
 
         if (nextFiber) return nextFiber;
       } else {
@@ -191,11 +191,11 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         const nextFiber$ = box.fiber$$;
 
         nextFiber = box.fiber$;
-        instance = box.instance$;
+        instance = box.inst$;
 
         box.fiber$$ = null;
         box.fiber$ = null;
-        box.instance$ = null;
+        box.inst$ = null;
 
         if (nextFiber$) return nextFiber$;
       }
@@ -205,11 +205,11 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
       const nextFiber$ = box.fiber$$;
 
       nextFiber = box.fiber$;
-      instance = box.instance$;
+      instance = box.inst$;
 
       box.fiber$$ = null;
       box.fiber$ = null;
-      box.instance$ = null;
+      box.inst$ = null;
 
       if (nextFiber$) return nextFiber$;
     }
@@ -219,7 +219,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
 }
 
 function performChild(nextFiber: Fiber, box: Box) {
-  fiberMountStore.jumpToChild();
+  mountStore.toChild();
   let instance$ = nextFiber.inst;
   const childrenIdx = 0;
   const alternate = nextFiber.alt ? nextFiber.alt.child : null;
@@ -246,17 +246,17 @@ function performChild(nextFiber: Fiber, box: Box) {
 
   box.fiber$$ = null;
   box.fiber$ = fiber;
-  box.instance$ = instance$;
+  box.inst$ = instance$;
 }
 
 function performSibling(nextFiber: Fiber, box: Box) {
-  fiberMountStore.jumpToSibling();
+  mountStore.toSibling();
   let instance$ = nextFiber.parent.inst;
-  const childrenIdx = fiberMountStore.getIndex();
+  const childrenIdx = mountStore.getIndex();
   const hasSibling = hasChildrenProp(instance$) && instance$.children[childrenIdx];
 
   if (hasSibling) {
-    fiberMountStore.deepWalking.set(true);
+    mountStore.deep.set(true);
     const alternate = nextFiber.alt ? nextFiber.alt.next : null;
     const fiber = new Fiber(
       getHook(
@@ -281,12 +281,12 @@ function performSibling(nextFiber: Fiber, box: Box) {
 
     box.fiber$$ = fiber;
     box.fiber$ = fiber;
-    box.instance$ = instance$;
+    box.inst$ = instance$;
 
     return;
   } else {
-    fiberMountStore.jumpToParent();
-    fiberMountStore.deepWalking.set(false);
+    mountStore.toParent();
+    mountStore.deep.set(false);
     nextFiber = nextFiber.parent;
     instance$ = nextFiber.inst;
 
@@ -297,7 +297,7 @@ function performSibling(nextFiber: Fiber, box: Box) {
 
   box.fiber$$ = null;
   box.fiber$ = nextFiber;
-  box.instance$ = instance$;
+  box.inst$ = instance$;
 }
 
 function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) {
@@ -349,7 +349,7 @@ function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInsta
   }
 
   if (!fiber.element && detectIsVirtualNode(fiber.inst)) {
-    fiber.element = platform.createNativeElement(fiber.inst);
+    fiber.element = platform.createElement(fiber.inst);
     fiber.tag = EffectTag.C;
   }
 
@@ -483,7 +483,7 @@ function performMemo(fiber: Fiber) {
   )
     return;
 
-  fiberMountStore.deepWalking.set(false);
+  mountStore.deep.set(false);
   fiber.tag = EffectTag.S;
   fiber.alt = alternate;
   fiber.element = alternate.element;
@@ -742,19 +742,19 @@ function commitChanges() {
   // important order
   for (const fiber of deletions) {
     unmountFiber(fiber);
-    platform.applyCommit(fiber);
+    platform.commit(fiber);
   }
 
   isDynamic && runInsertionEffects();
   fromUpdate && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
-    fiber.tag !== EffectTag.S && platform.applyCommit(fiber);
+    fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
   }
 
   wipFiber.alt = null;
-  platform.finishCommitWork();
+  platform.finishCommit();
 
   isDynamic && runLayoutEffects();
   isDynamic && runEffects();
@@ -850,7 +850,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     !forceStart && onStart();
     rootStore.set(rootId); // important order!
     isUpdateHookZone.set(true);
-    fiberMountStore.reset();
+    mountStore.reset();
 
     fiber.alt = new Fiber().mutate(fiber);
     fiber.marker = '🔥';

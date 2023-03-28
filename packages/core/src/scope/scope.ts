@@ -5,35 +5,35 @@ let rootId: number = null;
 const stores = new Map<number, Store>();
 
 class Store {
-  public wipRoot: Fiber = null;
-  public currentRoot: Fiber = null;
-  public nextUnitOfWork: Fiber = null;
+  public root: Fiber = null; // root fiber for app
+  public wip: Fiber = null; // root work-in-progress fiber (component)
+  public unit: Fiber = null; // unit of work fiber (part of wip)
+  public cur: Fiber = null; // current mounting fiber
   public events: Map<string, WeakMap<object, Function>> = new Map();
-  public unsubscribers: Array<() => void> = [];
+  public off: Array<() => void> = [];
   public candidates: Set<Fiber> = new Set();
   public deletions: Set<Fiber> = new Set();
-  public fiberMount: FiberMountStore = {
+  public mount: MountStore = {
     level: 0,
-    navigation: {},
-    isDeepWalking: true,
+    nav: {},
+    deep: true,
   };
-  public componentFiber: Fiber = null;
   public effects: Array<() => void> = [];
-  public layoutEffects: Array<() => void> = [];
-  public insertionEffects: Array<() => void> = [];
-  public isLayoutEffectsZone = false;
-  public isInserionEffectsZone = false;
-  public isUpdateHookZone = false;
-  public isBatchZone = false;
-  public isHydrateZone = false;
+  public lEffects: Array<() => void> = [];
+  public iEffects: Array<() => void> = [];
+  public isLEFZone = false;
+  public isIEFZone = false;
+  public uZone = false;
+  public bZone = false;
+  public hZone = false;
   public isHot = false;
   public lazy: Set<number> = new Set();
 }
 
-type FiberMountStore = {
+type MountStore = {
   level: number;
-  navigation: Record<number, number>;
-  isDeepWalking: boolean;
+  nav: Record<number, number>;
+  deep: boolean;
 };
 
 const rootStore = {
@@ -51,29 +51,29 @@ const store = {
 };
 
 const wipRootStore = {
-  get: () => store.get()?.wipRoot || null,
-  set: (fiber: Fiber) => (store.get().wipRoot = fiber),
+  get: () => store.get()?.wip || null,
+  set: (fiber: Fiber) => (store.get().wip = fiber),
 };
 
 const currentRootStore = {
-  get: (id?: number) => store.get(id)?.currentRoot || null,
-  set: (fiber: Fiber) => (store.get().currentRoot = fiber),
+  get: (id?: number) => store.get(id)?.root || null,
+  set: (fiber: Fiber) => (store.get().root = fiber),
 };
 
 const nextUnitOfWorkStore = {
-  get: () => store.get()?.nextUnitOfWork || null,
-  set: (fiber: Fiber) => (store.get().nextUnitOfWork = fiber),
+  get: () => store.get()?.unit || null,
+  set: (fiber: Fiber) => (store.get().unit = fiber),
 };
 
 const currentFiberStore = {
-  get: () => store.get()?.componentFiber,
-  set: (fiber: Fiber) => (store.get().componentFiber = fiber),
+  get: () => store.get()?.cur,
+  set: (fiber: Fiber) => (store.get().cur = fiber),
 };
 
 const eventsStore = {
   get: () => store.get().events,
-  addUnsubscriber: (fn: () => void) => store.get().unsubscribers.push(fn),
-  unsubscribe: (id: number) => store.get(id).unsubscribers.forEach(fn => fn()),
+  addUnsubscriber: (fn: () => void) => store.get().off.push(fn),
+  unsubscribe: (id: number) => store.get(id).off.forEach(fn => fn()),
 };
 
 const candidatesStore = {
@@ -90,39 +90,39 @@ const deletionsStore = {
   reset: () => (store.get().deletions = new Set()),
 };
 
-const fiberMountStore = {
+const mountStore = {
   reset: () => {
-    store.get().fiberMount = {
+    store.get().mount = {
       level: 0,
-      navigation: {},
-      isDeepWalking: true,
+      nav: {},
+      deep: true,
     };
   },
   getIndex: () => {
-    const { fiberMount } = store.get();
+    const { mount } = store.get();
 
-    return fiberMount.navigation[fiberMount.level];
+    return mount.nav[mount.level];
   },
-  jumpToChild: () => {
-    const { fiberMount } = store.get();
+  toChild: () => {
+    const { mount } = store.get();
 
-    fiberMount.level = fiberMount.level + 1;
-    fiberMount.navigation[fiberMount.level] = 0;
+    mount.level = mount.level + 1;
+    mount.nav[mount.level] = 0;
   },
-  jumpToParent: () => {
-    const { fiberMount } = store.get();
+  toParent: () => {
+    const { mount } = store.get();
 
-    fiberMount.navigation[fiberMount.level] = 0;
-    fiberMount.level = fiberMount.level - 1;
+    mount.nav[mount.level] = 0;
+    mount.level = mount.level - 1;
   },
-  jumpToSibling: () => {
-    const { fiberMount } = store.get();
+  toSibling: () => {
+    const { mount } = store.get();
 
-    fiberMount.navigation[fiberMount.level] = fiberMount.navigation[fiberMount.level] + 1;
+    mount.nav[mount.level] = mount.nav[mount.level] + 1;
   },
-  deepWalking: {
-    get: () => store.get().fiberMount.isDeepWalking,
-    set: (value: boolean) => (store.get().fiberMount.isDeepWalking = value),
+  deep: {
+    get: () => store.get().mount.deep,
+    set: (value: boolean) => (store.get().mount.deep = value),
   },
 };
 
@@ -133,40 +133,40 @@ const effectsStore = {
 };
 
 const layoutEffectsStore = {
-  get: () => store.get().layoutEffects,
-  reset: () => (store.get().layoutEffects = []),
-  add: (effect: () => void) => store.get().layoutEffects.push(effect),
+  get: () => store.get().lEffects,
+  reset: () => (store.get().lEffects = []),
+  add: (effect: () => void) => store.get().lEffects.push(effect),
 };
 
 const insertionEffectsStore = {
-  get: () => store.get().insertionEffects,
-  reset: () => (store.get().insertionEffects = []),
-  add: (effect: () => void) => store.get().insertionEffects.push(effect),
+  get: () => store.get().iEffects,
+  reset: () => (store.get().iEffects = []),
+  add: (effect: () => void) => store.get().iEffects.push(effect),
 };
 
 const isLayoutEffectsZone = {
-  get: () => store.get()?.isLayoutEffectsZone || false,
-  set: (value: boolean) => (store.get().isLayoutEffectsZone = value),
+  get: () => store.get()?.isLEFZone || false,
+  set: (value: boolean) => (store.get().isLEFZone = value),
 };
 
 const isInsertionEffectsZone = {
-  get: (id?: number) => store.get(id)?.isInserionEffectsZone || false,
-  set: (value: boolean) => (store.get().isInserionEffectsZone = value),
+  get: (id?: number) => store.get(id)?.isIEFZone || false,
+  set: (value: boolean) => (store.get().isIEFZone = value),
 };
 
 const isUpdateHookZone = {
-  get: () => store.get()?.isUpdateHookZone || false,
-  set: (value: boolean) => (store.get().isUpdateHookZone = value),
+  get: () => store.get()?.uZone || false,
+  set: (value: boolean) => (store.get().uZone = value),
 };
 
 const isBatchZone = {
-  get: () => store.get()?.isBatchZone || false,
-  set: (value: boolean) => (store.get().isBatchZone = value),
+  get: () => store.get()?.bZone || false,
+  set: (value: boolean) => (store.get().bZone = value),
 };
 
 const isHydrateZone = {
-  get: () => store.get()?.isHydrateZone || false,
-  set: (value: boolean) => (store.get().isHydrateZone = value),
+  get: () => store.get()?.hZone || false,
+  set: (value: boolean) => (store.get().hZone = value),
 };
 
 const hot = {
@@ -196,7 +196,7 @@ export {
   eventsStore,
   candidatesStore,
   deletionsStore,
-  fiberMountStore,
+  mountStore,
   effectsStore,
   layoutEffectsStore,
   insertionEffectsStore,

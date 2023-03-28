@@ -28,9 +28,9 @@ function useUpdate(options?: ScheduleCallbackOptions) {
     }
 
     if (isBatchZone.get()) {
-      batch(scope.fiber, () => platform.scheduleCallback(callback, options));
+      batch(scope.fiber, () => platform.schedule(callback, options));
     } else {
-      platform.scheduleCallback(callback, options);
+      platform.schedule(callback, options);
     }
   };
 

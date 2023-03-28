@@ -3,13 +3,13 @@ import { type TaskPriority } from '../constants';
 import { type VirtualNode } from '../view';
 
 export type Platform = {
-  createNativeElement: <N>(vNode: VirtualNode) => N;
-  requestAnimationFrame: typeof requestAnimationFrame;
-  cancelAnimationFrame: typeof cancelAnimationFrame;
-  scheduleCallback: (callback: () => void, options?: ScheduleCallbackOptions) => void;
-  shouldYeildToHost: () => boolean;
-  applyCommit: (fiber: Fiber) => void;
-  finishCommitWork: () => void;
+  createElement: <N>(vNode: VirtualNode) => N;
+  raf: typeof requestAnimationFrame;
+  caf: typeof cancelAnimationFrame;
+  schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
+  shouldYeild: () => boolean;
+  commit: (fiber: Fiber) => void;
+  finishCommit: () => void;
   detectIsDynamic: () => boolean;
   detectIsPortal: (instance: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
@@ -24,42 +24,42 @@ export type ScheduleCallbackOptions = {
 };
 
 const platform: Platform = {
-  createNativeElement: () => {
-    throw new Error(msg('createNativeElement'));
+  createElement: () => {
+    throw new Error(msg());
   },
-  requestAnimationFrame: () => {
-    throw new Error(msg('requestAnimationFrame'));
+  raf: () => {
+    throw new Error(msg());
   },
-  cancelAnimationFrame: () => {
-    throw new Error(msg('cancelAnimationFrame'));
+  caf: () => {
+    throw new Error(msg());
   },
-  scheduleCallback: () => {
-    throw new Error(msg('scheduleCallback'));
+  schedule: () => {
+    throw new Error(msg());
   },
-  shouldYeildToHost: () => {
-    throw new Error(msg('shouldYeildToHost'));
+  shouldYeild: () => {
+    throw new Error(msg());
   },
-  applyCommit: () => {
-    throw new Error(msg('applyCommit'));
+  commit: () => {
+    throw new Error(msg());
   },
-  finishCommitWork: () => {
-    throw new Error(msg('finishCommitWork'));
+  finishCommit: () => {
+    throw new Error(msg());
   },
   detectIsDynamic: () => {
-    throw new Error(msg('detectIsDynamic'));
+    throw new Error(msg());
   },
   detectIsPortal: () => {
-    throw new Error(msg('detectIsPortal'));
+    throw new Error(msg());
   },
   unmountPortal: () => {
-    throw new Error(msg('unmountPortal'));
+    throw new Error(msg());
   },
   restart: () => {
-    throw new Error(msg('restart'));
+    throw new Error(msg());
   },
 };
 
-const msg = (x: string) => `${x} not installed!`;
+const msg = () => `Function not installed by renderer!`;
 
 const detectIsServer = () => !platform.detectIsDynamic();
 

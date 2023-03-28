@@ -8,7 +8,9 @@ import { detectIsAtom } from '../use-atom';
 const $$proxy = Symbol('proxy');
 
 function useReactiveState<T extends object>(value: T | (() => T), options?: ScheduleCallbackOptions) {
-  if (!value) throw new Error('[Dark]: initial value is not object or array');
+  if (process.env.NODE_ENV !== 'production') {
+    if (!value) throw new Error('[Dark]: initial value is not object or array');
+  }
   const update = useUpdate(options);
   const proxy = useMemo(() => reactive(detectIsFunction(value) ? value() : value, update, !options?.forceSync), []);
 

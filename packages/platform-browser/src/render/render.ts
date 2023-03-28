@@ -11,7 +11,7 @@ import {
   wipRootStore,
   currentRootStore,
   nextUnitOfWorkStore,
-  fiberMountStore,
+  mountStore,
   TaskPriority,
   createReplacer,
   isInsertionEffectsZone,
@@ -28,13 +28,13 @@ let isInjected = false;
 const roots = new Map<Element, number>();
 
 function inject() {
-  platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-  platform.requestAnimationFrame = requestAnimationFrame.bind(this);
-  platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
-  platform.scheduleCallback = scheduleCallback;
-  platform.shouldYeildToHost = shouldYeildToHost;
-  platform.applyCommit = applyCommit;
-  platform.finishCommitWork = finishCommitWork;
+  platform.createElement = createNativeElement as typeof platform.createElement;
+  platform.raf = requestAnimationFrame.bind(this);
+  platform.caf = cancelAnimationFrame.bind(this);
+  platform.schedule = scheduleCallback;
+  platform.shouldYeild = shouldYeildToHost;
+  platform.commit = applyCommit;
+  platform.finishCommit = finishCommitWork;
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = detectIsPortal;
   platform.unmountPortal = unmountPortal;
@@ -80,13 +80,13 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
-    fiberMountStore.reset();
+    mountStore.reset();
     wipRootStore.set(fiber);
     isHydrateZone.set(hydrate);
     nextUnitOfWorkStore.set(fiber);
   };
 
-  platform.scheduleCallback(callback, {
+  platform.schedule(callback, {
     priority: TaskPriority.NORMAL,
     forceSync: hydrate || isLayoutEffectsZone.get(),
   });

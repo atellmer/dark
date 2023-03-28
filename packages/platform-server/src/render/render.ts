@@ -10,7 +10,7 @@ import {
   wipRootStore,
   currentRootStore,
   nextUnitOfWorkStore,
-  fiberMountStore,
+  mountStore,
   createReplacer,
   unmountRoot,
 } from '@dark-engine/core';
@@ -23,13 +23,13 @@ let isInjected = false;
 let nextRootId = -1;
 
 function inject() {
-  platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-  platform.requestAnimationFrame = setTimeout.bind(this);
-  platform.cancelAnimationFrame = setTimeout.bind(this);
-  platform.scheduleCallback = scheduleCallback;
-  platform.shouldYeildToHost = shouldYeildToHost;
-  platform.applyCommit = applyCommit;
-  platform.finishCommitWork = finishCommitWork;
+  platform.createElement = createNativeElement as typeof platform.createElement;
+  platform.raf = setTimeout.bind(this);
+  platform.caf = setTimeout.bind(this);
+  platform.schedule = scheduleCallback;
+  platform.shouldYeild = shouldYeildToHost;
+  platform.commit = applyCommit;
+  platform.finishCommit = finishCommitWork;
   platform.detectIsDynamic = () => false;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
@@ -49,12 +49,12 @@ function renderToString(element: DarkElement): string {
       tag: EffectTag.C,
     });
 
-    fiberMountStore.reset();
+    mountStore.reset();
     wipRootStore.set(fiber);
     nextUnitOfWorkStore.set(fiber);
   };
 
-  platform.scheduleCallback(callback);
+  platform.schedule(callback);
 
   const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
   const content = nativeElement.renderToString(true);

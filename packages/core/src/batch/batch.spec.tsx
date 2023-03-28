@@ -13,7 +13,7 @@ jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
-  jest.spyOn(platform, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback): number => {
+  jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback): number => {
     return setTimeout(() => cb(0));
   });
 });

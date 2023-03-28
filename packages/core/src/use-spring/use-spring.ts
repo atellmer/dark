@@ -151,13 +151,9 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
         newItems[idx] = x;
 
         if (detectIsFunction(outside)) {
-          platform.requestAnimationFrame(() => {
-            outside(newItems);
-          });
+          platform.raf(() => outside(newItems));
         } else {
-          batch(() => {
-            setValues(newItems);
-          });
+          batch(() => setValues(newItems));
         }
 
         scope.data[idx].values[direction].step++;

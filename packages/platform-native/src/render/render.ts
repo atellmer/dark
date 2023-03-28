@@ -11,7 +11,7 @@ import {
   wipRootStore,
   currentRootStore,
   nextUnitOfWorkStore,
-  fiberMountStore,
+  mountStore,
   TaskPriority,
   createReplacer,
   unmountRoot,
@@ -27,13 +27,13 @@ const APP_ID = 0;
 let isInjected = false;
 
 function inject() {
-  platform.createNativeElement = createNativeElement as typeof platform.createNativeElement;
-  platform.requestAnimationFrame = requestAnimationFrame.bind(this);
-  platform.cancelAnimationFrame = cancelAnimationFrame.bind(this);
-  platform.scheduleCallback = scheduleCallback;
-  platform.shouldYeildToHost = shouldYeildToHost;
-  platform.applyCommit = applyCommit;
-  platform.finishCommitWork = finishCommitWork;
+  platform.createElement = createNativeElement as typeof platform.createElement;
+  platform.raf = requestAnimationFrame.bind(this);
+  platform.caf = cancelAnimationFrame.bind(this);
+  platform.schedule = scheduleCallback;
+  platform.shouldYeild = shouldYeildToHost;
+  platform.commit = applyCommit;
+  platform.finishCommit = finishCommitWork;
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
@@ -64,12 +64,12 @@ function render(options: RenderOptions): NSElement {
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
-    fiberMountStore.reset();
+    mountStore.reset();
     wipRootStore.set(fiber);
     nextUnitOfWorkStore.set(fiber);
   };
 
-  platform.scheduleCallback(callback, {
+  platform.schedule(callback, {
     priority: TaskPriority.NORMAL,
     forceSync: true,
     onCompleted: () => {
