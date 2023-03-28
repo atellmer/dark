@@ -18,7 +18,7 @@ function useReactiveState<T extends object>(value: T | (() => T), options?: Sche
 }
 
 function reactive<T extends object>(value: T, update: () => void, useBatch = true): T {
-  if (detectIsAtom(value)) return value;
+  if (detectIsAtom(value) || detectIsProxy(value)) return value;
   let proxy = value;
 
   if (detectIsObject(value) && !detectIsNull(value)) {
