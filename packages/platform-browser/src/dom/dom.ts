@@ -18,7 +18,6 @@ import {
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
   detectIsPlainVirtualNode,
-  detectIsComponent,
   walkFiber,
   isHydrateZone,
   applyRef as applyRef$,
@@ -83,6 +82,7 @@ function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
 }
 
 function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
+  if (!vNode.attrs) return;
   const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -116,6 +116,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
 }
 
 function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
+  if (!nextVNode.attrs) return;
   const attrNames = Object.keys(nextVNode.attrs);
   const tagElement = element as TagNativeElement;
 

@@ -11,8 +11,8 @@ class Component<P extends StandardComponentProps = any, R = any> {
   public props: P;
   public ref: Ref<R>;
   public dn: string;
-  public children: Array<DarkElementInstance> = [];
   public su?: ShouldUpdate<P>;
+  public children: Array<DarkElementInstance> = [];
 
   constructor(
     type: CreateElement<P>,
@@ -22,12 +22,12 @@ class Component<P extends StandardComponentProps = any, R = any> {
     shouldUpdate: ShouldUpdate<P>,
     displayName: string,
   ) {
-    this.type = type || null;
+    this.type = type;
     this.token = token || $$component;
-    this.props = props || null;
-    this.ref = ref || null;
-    this.su = shouldUpdate || null;
-    this.dn = displayName || '';
+    this.props = props;
+    ref && (this.ref = ref);
+    shouldUpdate && (this.su = shouldUpdate);
+    displayName && (this.dn = displayName);
   }
 }
 

@@ -60,8 +60,8 @@ function detectIsVoidElement(tagName: string) {
   return Boolean(voidTagNamesMap[tagName]);
 }
 
-function addAttributes(element: NativeElement, vNode: VirtualNode) {
-  if (!detectIsTagVirtualNode(vNode)) return;
+function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
+  if (!detectIsTagVirtualNode(vNode) || !vNode.attrs) return;
   const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -133,7 +133,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const vNode = parentFiber.inst as TagVirtualNode;
 
   !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
-  addAttributes(fiber.element, fiber.inst as VirtualNode);
+  addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {

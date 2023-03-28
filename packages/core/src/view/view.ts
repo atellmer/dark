@@ -8,7 +8,7 @@ export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;
 export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
 
-const $$virtualNode = Symbol('virtual-node');
+const $$vNode = Symbol('vNode');
 
 class VirtualNode {
   public type: NodeType = null;
@@ -19,14 +19,14 @@ class VirtualNode {
 }
 
 class TagVirtualNode extends VirtualNode {
-  public name: string = null;
-  public attrs: Record<string, any> = {};
+  public name: string;
+  public attrs: Record<string, any>;
   public children: Array<TextVirtualNode | CommentVirtualNode | VirtualNodeFactory | ComponentFactory> = [];
 
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
     this.name = name || this.name;
-    this.attrs = attrs || this.attrs;
+    Object.keys(attrs).length > 0 && (this.attrs = attrs);
     this.children = children || this.children;
   }
 }
@@ -58,12 +58,13 @@ const detectIsCommentVirtualNode = (vNode: unknown): vNode is CommentVirtualNode
 const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vNode instanceof TextVirtualNode;
 
 const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
-  detectIsFunction(factory) && factory[$$virtualNode] === true;
+  detectIsFunction(factory) && factory[$$vNode] === true;
 
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): DarkElementKey | null =>
-  !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
+  vNode.attrs && !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
 
-const getTagVirtualNodeFlag = (vNode: TagVirtualNode): Record<Flag, boolean> | null => vNode.attrs[ATTR_FLAG] || null;
+const getTagVirtualNodeFlag = (vNode: TagVirtualNode): Record<Flag, boolean> | null =>
+  (vNode.attrs && vNode.attrs[ATTR_FLAG]) || null;
 
 const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): DarkElementKey | null =>
   !detectIsEmpty(factory[ATTR_KEY]) ? factory[ATTR_KEY] : null;
@@ -84,10 +85,10 @@ function View(def: ViewDef): TagVirtualNodeFactory {
     return new TagVirtualNode(name, attrs, children);
   };
 
-  factory[$$virtualNode] = true;
-  factory[ATTR_KEY] = def.key;
-  factory[ATTR_FLAG] = def.flag;
+  factory[$$vNode] = true;
   factory[TYPE] = def.as;
+  def.key && (factory[ATTR_KEY] = def.key);
+  def.flag && (factory[ATTR_FLAG] = def.flag);
 
   return factory;
 }

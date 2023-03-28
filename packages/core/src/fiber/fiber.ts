@@ -62,30 +62,30 @@ class Fiber<N = NativeElement> {
   public eidx = 0; // native element idx
   public element: N = null; // native element
   public parent: Fiber<N> = null; // parent fiber
-  public child: Fiber<N> = null; // child fiber
-  public next: Fiber<N> = null; // next sibling fiber
-  public alt: Fiber<N> = null; // alternate fiber (previous)
-  public move = false; // flag of reordering in list
+  public child: Fiber<N>; // child fiber
+  public next: Fiber<N>; // next sibling fiber
+  public alt: Fiber<N>; // alternate fiber (previous)
+  public move: boolean; // flag of reordering in list
   public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   public inst: DarkElementInstance = null; // instance of component or virtual node
-  public hook: Hook | null = null; // hook
-  public provider: Map<Context, ContextProviderValue> = null; // provider of context
-  public efHost = false; // effect host
-  public lefHost = false; // layout effect host
-  public iefHost = false; // insertion effect host
-  public pHost = false; // portal host
-  public marker = ''; // for dev
-  public used = false; // flag if fiber already been rendered
-  public batch: number | NodeJS.Timeout | null = null; // timer for batching
-  public flush = false; // flag for optimizing removing of all elements in parent fiber
+  public hook: Hook | null; // hook
+  public provider: Map<Context, ContextProviderValue>; // provider of context
+  public efHost: boolean; // effect host
+  public lefHost: boolean; // layout effect host
+  public iefHost: boolean; // insertion effect host
+  public pHost: boolean; // portal host
+  public marker: string; // for dev
+  public used: boolean; // flag if fiber already been rendered
+  public batch: number | NodeJS.Timeout | null; // timer for batching
+  public flush: boolean; // flag for optimizing removing of all elements in parent fiber
   public catch: (error: Error) => void;
   private static nextId = 0;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
     this.id = ++Fiber.nextId;
-    this.hook = hook;
-    this.provider = provider;
     this.idx = idx;
+    hook && (this.hook = hook);
+    provider && (this.provider = provider);
   }
 
   public mutate(options: Partial<Fiber<N>>) {

@@ -19,24 +19,25 @@ function createPortal(slot: DarkElement, container: TagNativeElement) {
     }
   }
 
-  return Portal({ [$$portal]: container, slot });
+  return Portal({ container, slot });
 }
 
 type PortalProps = {
-  [$$portal]: TagNativeElement;
+  container: TagNativeElement;
   slot: DarkElement;
 };
 
 const Portal = component<PortalProps>(
-  ({ slot, ...rest }) => {
-    const element = rest[$$portal];
+  props => {
+    const element = props.container;
     const fiber = currentFiberStore.get();
 
     useMemo(() => (element.textContent = ''), []);
 
     fiber.element = element;
+    delete props.container;
 
-    return slot;
+    return props.slot;
   },
   { token: $$portal },
 );

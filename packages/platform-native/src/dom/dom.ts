@@ -59,8 +59,8 @@ function applyRef(ref: Ref<NSElement>, element: TagNativeElement) {
   applyRef$(ref, element.getNativeView());
 }
 
-function addAttributes(element: NativeElement, vNode: VirtualNode) {
-  if (!detectIsTagVirtualNode(vNode)) return;
+function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
+  if (!detectIsTagVirtualNode(vNode) || !vNode.attrs) return;
   const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -83,7 +83,8 @@ function addAttributes(element: NativeElement, vNode: VirtualNode) {
 }
 
 function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
-  const attrNames = new Set([...Object.keys(vNode.attrs), ...Object.keys(nextVNode.attrs)]);
+  if (!nextVNode.attrs) return;
+  const attrNames = Object.keys(nextVNode.attrs);
   const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
@@ -144,7 +145,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     insert(fiber, parentElement);
   }
 
-  addAttributes(fiber.element, fiber.inst as VirtualNode);
+  addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
@@ -234,11 +235,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
       fiber.move = false;
     }
 
-    if (
-      fiber.element === null ||
-      !detectIsVirtualNode(fiber.alt.inst) ||
-      !detectIsVirtualNode(fiber.inst)
-    ) {
+    if (fiber.element === null || !detectIsVirtualNode(fiber.alt.inst) || !detectIsVirtualNode(fiber.inst)) {
       return;
     }
     commitUpdate(fiber);
