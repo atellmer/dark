@@ -6,6 +6,7 @@ import { NodeType, type ViewDef } from './types';
 
 export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;
+export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
 
 const $$virtualNode = Symbol('virtual-node');
 
@@ -72,7 +73,7 @@ const getVirtualNodeFactoryFlag = (factory: VirtualNodeFactory): Record<Flag, bo
 
 const createReplacer = () => new CommentVirtualNode(REPLACER);
 
-const detectIsPlainVirtualNode = (vNode: unknown): vNode is TextVirtualNode | CommentVirtualNode =>
+const detectIsPlainVirtualNode = (vNode: unknown): vNode is PlainVirtualNode =>
   detectIsTextVirtualNode(vNode) || detectIsCommentVirtualNode(vNode);
 
 function View(def: ViewDef): TagVirtualNodeFactory {

@@ -4,6 +4,7 @@ import {
   type TagVirtualNode,
   type TextVirtualNode,
   type CommentVirtualNode,
+  type PlainVirtualNode,
   type Ref,
   ATTR_KEY,
   ATTR_REF,
@@ -256,8 +257,8 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
   const prevInstance = fiber.alternate.instance as VirtualNode;
   const nextInstance = fiber.instance as VirtualNode;
 
-  detectIsPlainVirtualNode(prevInstance) && detectIsPlainVirtualNode(nextInstance)
-    ? prevInstance.value !== nextInstance.value && (element.textContent = nextInstance.value)
+  detectIsPlainVirtualNode(nextInstance)
+    ? (prevInstance as PlainVirtualNode).value !== nextInstance.value && (element.textContent = nextInstance.value)
     : updateAttributes(element, prevInstance as TagVirtualNode, nextInstance as TagVirtualNode);
 }
 

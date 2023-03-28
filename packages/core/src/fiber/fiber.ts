@@ -447,7 +447,6 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
           prevKeyFiber.effectTag = EffectTag.DELETE;
           deletionsStore.add(prevKeyFiber);
           flush && (prevKeyFiber.flush = true);
-
           n++;
           idx--;
           size++;
