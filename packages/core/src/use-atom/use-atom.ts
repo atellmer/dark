@@ -56,9 +56,7 @@ function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
     const unsubscribes: Array<() => void> = [];
 
     for (const [atom, shouldUpdate = defaultShouldUpdate] of values) {
-      const off = atom.on((p: any, n: any) => shouldUpdate(p, n) && update());
-
-      unsubscribes.push(off);
+      unsubscribes.push(atom.on((p: any, n: any) => shouldUpdate(p, n) && update()));
     }
 
     return () => unsubscribes.forEach(x => x());

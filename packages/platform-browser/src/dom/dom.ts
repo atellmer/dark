@@ -241,9 +241,8 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     fiber.nativeElement = nativeElement;
   } else {
     if (childNodes.length === 0 || fiber.elementIdx > childNodes.length - 1) {
-      const vNode = parentFiber.instance as TagVirtualNode;
-
-      !detectIsVoidElement(vNode.name) && parentElement.appendChild(fiber.nativeElement);
+      !detectIsVoidElement((parentFiber.instance as TagVirtualNode).name) &&
+        parentElement.appendChild(fiber.nativeElement);
     } else {
       parentElement.insertBefore(fiber.nativeElement, parentElement.childNodes[fiber.elementIdx]);
     }
