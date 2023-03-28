@@ -45,8 +45,10 @@ function inject() {
 function render(element: DarkElement, container: TagNativeElement, hydrate = false) {
   !isInjected && inject();
 
-  if (!(container instanceof Element)) {
-    throw new Error(`[Dark]: render receives only Element as container!`);
+  if (process.env.NODE_ENV !== 'production') {
+    if (!(container instanceof Element)) {
+      throw new Error(`[Dark]: render receives only Element as container!`);
+    }
   }
 
   const isMounted = !detectIsUndefined(roots.get(container));

@@ -129,10 +129,10 @@ type RowProps = {
 };
 
 const Row = component<RowProps>(({ id, item$, selected$, onRemove, onHighlight }) => {
-  const [selectedId, { name }] = useAtom([[selected$, (p, n) => p === id || n === id], [item$]]);
+  const [{ name }, selected] = useAtom([[item$], [selected$, (p, n) => p === id || n === id]]);
 
   return tr({
-    class: selectedId === id ? 'selected' : undefined,
+    class: selected === id ? 'selected' : undefined,
     flag,
     slot: [
       td({ class: 'cell', slot: Text(name) }),

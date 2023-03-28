@@ -59,7 +59,7 @@ const platform: Platform = {
   },
 };
 
-const msg = (x: string) => `${x} not installed by renderer`;
+const msg = (x: string) => `${x} not installed!`;
 
 const detectIsServer = () => !platform.detectIsDynamic();
 

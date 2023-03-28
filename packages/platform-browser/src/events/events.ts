@@ -48,10 +48,7 @@ function delegateEvent(options: DelegateEventOptions) {
       let syntheticEvent: SyntheticEvent<Event> = null;
 
       if (detectIsFunction(fireEvent)) {
-        syntheticEvent = new SyntheticEvent({
-          sourceEvent: event,
-          target,
-        });
+        syntheticEvent = new SyntheticEvent({ sourceEvent: event, target });
         fireEvent(syntheticEvent);
       }
 

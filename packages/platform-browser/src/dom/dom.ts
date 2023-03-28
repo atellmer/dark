@@ -348,10 +348,7 @@ function applyCommit(fiber: Fiber<NativeElement>) {
 }
 
 function finishCommitWork() {
-  for (const move of moves) {
-    move();
-  }
-
+  moves.forEach(x => x());
   moves = [];
   isHydrateZone.set(false);
 }

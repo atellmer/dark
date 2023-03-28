@@ -5,8 +5,10 @@ import type { TagNativeElement } from '../native-element';
 const $$portal = Symbol('portal');
 
 function createPortal(slot: DarkElement, container: TagNativeElement) {
-  if (!(container instanceof Element)) {
-    throw new Error(`[Dark]: createPortal receives only Element as container!`);
+  if (process.env.NODE_ENV !== 'production') {
+    if (!(container instanceof Element)) {
+      throw new Error(`[Dark]: createPortal receives only Element as container!`);
+    }
   }
 
   return Portal({ [$$portal]: container, slot });

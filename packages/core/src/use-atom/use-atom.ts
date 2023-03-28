@@ -1,11 +1,11 @@
 import { useUpdate } from '../use-update';
 import { useEffect } from '../use-effect';
 
-type AtomSubscriber<T> = (p: T, n: T) => void;
+type AtomSub<T> = (p: T, n: T) => void;
 
 class Atom<T = unknown> {
   private value: T;
-  private subscribers: Set<AtomSubscriber<T>> = new Set();
+  private subs: Set<AtomSub<T>> = new Set();
 
   constructor(value: T = undefined) {
     this.value = value;
@@ -20,13 +20,13 @@ class Atom<T = unknown> {
     const value$ = this.value;
 
     this.value = value;
-    this.subscribers.forEach(x => x(value$, value));
+    this.subs.forEach(x => x(value$, value));
   }
 
-  public on(subscriber: AtomSubscriber<T>) {
-    this.subscribers.add(subscriber);
+  public on(sub: AtomSub<T>) {
+    this.subs.add(sub);
 
-    return () => this.subscribers.delete(subscriber);
+    return () => this.subs.delete(sub);
   }
 }
 
@@ -56,9 +56,7 @@ function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
     const unsubscribes: Array<() => void> = [];
 
     for (const [atom, shouldUpdate = defaultShouldUpdate] of values) {
-      const off = atom.on((p: any, n: any) => {
-        shouldUpdate(p, n) && update();
-      });
+      const off = atom.on((p: any, n: any) => shouldUpdate(p, n) && update());
 
       unsubscribes.push(off);
     }
