@@ -16,6 +16,38 @@ beforeEach(() => {
 });
 
 describe('[use-atom]', () => {
+  test('can subscribe on atom', () => {
+    const fn = jest.fn();
+    const count$ = atom(0);
+
+    count$.on([fn]);
+    count$.set(1);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  test('can process multiple subscribers', () => {
+    const fn1 = jest.fn();
+    const fn2 = jest.fn();
+    const count$ = atom(0);
+
+    count$.on([fn1]);
+    count$.on([fn2]);
+    count$.set(1);
+    expect(fn1).toHaveBeenCalledTimes(1);
+    expect(fn2).toHaveBeenCalledTimes(1);
+  });
+
+  test('can mutate atom value', () => {
+    const fn = jest.fn();
+    const list = [];
+    const list$ = atom(list);
+
+    list$.on([fn]);
+    list.push(1);
+    list$.set(list);
+    expect(fn).toHaveBeenCalledWith(list);
+  });
+
   test('can trigger render and update state correctly', () => {
     const content = (count: number) => dom`
       <div>${count}</div>
@@ -33,10 +65,10 @@ describe('[use-atom]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0));
 
-    count$.value = count$.value + 1;
+    count$.set(count$.get() + 1);
     expect(host.innerHTML).toBe(content(1));
 
-    count$.value = count$.value + 1;
+    count$.set(count$.get() + 1);
     expect(host.innerHTML).toBe(content(2));
   });
 
@@ -57,13 +89,13 @@ describe('[use-atom]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0));
 
-    count$.value = count$.value + 1;
+    count$.set(count$.get() + 1);
     expect(host.innerHTML).toBe(content(1));
 
-    count$.value = count$.value + 1;
+    count$.set(count$.get() + 1);
     expect(host.innerHTML).toBe(content(1));
 
-    count$.value = count$.value + 1;
+    count$.set(count$.get() + 1);
     expect(host.innerHTML).toBe(content(3));
   });
 
@@ -91,16 +123,16 @@ describe('[use-atom]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0, 100));
 
-    count1$.value = count1$.value + 1;
-    count2$.value = count2$.value + 1;
+    count1$.set(count1$.get() + 1);
+    count2$.set(count2$.get() + 1);
     expect(host.innerHTML).toBe(content(1, 101));
 
-    count1$.value = count1$.value + 1;
-    count2$.value = count2$.value + 1;
+    count1$.set(count1$.get() + 1);
+    count2$.set(count2$.get() + 1);
     expect(host.innerHTML).toBe(content(2, 102));
 
-    count1$.value = count1$.value + 1;
-    count2$.value = count2$.value + 1;
+    count1$.set(count1$.get() + 1);
+    count2$.set(count2$.get() + 1);
     expect(host.innerHTML).toBe(content(3, 103));
   });
 });

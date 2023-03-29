@@ -27,7 +27,7 @@ function useState<T = unknown>(
       const setValue = () => (store.value = newValue);
 
       if (options?.priority === TaskPriority.LOW) {
-        update(() => setValue());
+        update(setValue);
       } else {
         setValue();
         update();

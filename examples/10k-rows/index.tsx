@@ -150,70 +150,70 @@ const App = component(() => {
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    data$.value = buildData(10000);
+    data$.set(buildData(10000));
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    const data = data$.value;
+    const data = data$.get();
     data.unshift(...buildData(1000, '!!!'));
-    data$.value = data;
+    data$.set(data);
     measurer.stop();
   };
   const handleAppend = (e: E<MouseEvent>) => {
     measurer.start('append');
     e.stopPropagation();
-    const data = data$.value;
+    const data = data$.get();
     data.push(...buildData(1000, '!!!'));
-    data$.value = data;
+    data$.set(data);
     measurer.stop();
   };
   const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    const list = data$.value;
+    const list = data$.get();
     list.splice(0, 0, ...buildData(5, '***'));
     list.splice(8, 0, ...buildData(2, '***'));
-    data$.value = list;
+    data$.set(list);
     measurer.stop();
   };
   const handleSwap = (e: E<MouseEvent>) => {
-    if (data$.value.length === 0) return;
+    if (data$.get().length === 0) return;
     measurer.start('swap');
     e.stopPropagation();
-    const data = data$.value;
+    const data = data$.get();
     const temp = data[1];
     data[1] = data[data.length - 2];
     data[data.length - 2] = temp;
-    data$.value = data;
+    data$.set(data);
     measurer.stop();
   };
   const handleClear = (e: E<MouseEvent>) => {
     measurer.start('clear');
     e.stopPropagation();
-    data$.value = [];
-    selected$.value = undefined;
+    data$.set([]);
+    selected$.set(undefined);
     measurer.stop();
   };
   const handleRemove = (id: number, e: E<MouseEvent>) => {
     measurer.start('remove');
     e.stopPropagation();
-    const data = data$.value;
+    const data = data$.get();
     const idx = data.findIndex(x => x.id === id);
     idx !== -1 && data.splice(idx, 1);
-    data$.value = data;
-    selected$.value = undefined;
+    data$.set(data);
+    selected$.set(undefined);
     measurer.stop();
   };
   const handleUpdateAll = (e: E<MouseEvent>) => {
     measurer.start('update every 10th');
     e.stopPropagation();
 
-    for (let i = 0; i < data$.value.length; i += 10) {
-      const item = data$.value[i];
+    for (let i = 0; i < data$.get().length; i += 10) {
+      const item = data$.get()[i];
 
-      item.name$.value = item.name$.value + '!!!';
+      item.name$.set(item.name$.get() + '!!!');
     }
 
     measurer.stop();
@@ -221,7 +221,7 @@ const App = component(() => {
   const handleHightlight = (id: number, e: E<MouseEvent>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    selected$.value = id;
+    selected$.set(id);
     measurer.stop();
   };
 
@@ -238,7 +238,7 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        slot: data$.value.map(item => {
+        slot: data$.get().map(item => {
           return MemoRow({
             key: item.id,
             item,
