@@ -391,7 +391,7 @@ function canAddToDeletions(fiber: Fiber) {
 function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
-  const hasNoMovesFlag = flag && flag[Flag.HNM];
+  const hasNoMovesFlag = flag && flag[Flag.NM];
 
   alternate.used = true;
 

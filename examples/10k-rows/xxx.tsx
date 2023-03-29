@@ -1,7 +1,7 @@
 import { Text, component, memo, useUpdate, useCallback, Flag, type DarkElement } from '@dark-engine/core';
 import { createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
-const flag = { [Flag.HNM]: true };
+const flag = { [Flag.NM]: true };
 
 const createMeasurer = () => {
   let startTime;

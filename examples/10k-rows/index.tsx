@@ -1,7 +1,7 @@
 import { type Atom, Text, component, memo, Flag, atom, useAtom, Guard, useReactiveState } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
-const flag = { [Flag.HNM]: true };
+const flag = { [Flag.NM]: true };
 
 const createMeasurer = () => {
   let startTime;

@@ -15,5 +15,5 @@ export enum TaskPriority {
 }
 
 export enum Flag {
-  HNM = 'HNM', // has no moves
+  NM = 'NM', // no moves
 }
