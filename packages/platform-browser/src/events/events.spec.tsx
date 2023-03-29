@@ -186,4 +186,33 @@ describe('[events]', () => {
     expect(event.sourceEvent.defaultPrevented).toBe(true);
     root.unmount();
   });
+
+  test('can fire event with tuple handler', () => {
+    const mockFn = jest.fn();
+    let button: HTMLButtonElement = null;
+
+    const App = component(() => {
+      const handleClick = (arg: string) => mockFn(arg);
+
+      return <button onClick={[handleClick, 'Hello']}>click</button>;
+    });
+
+    const root = createRoot(host);
+
+    root.render(App());
+    button = host.querySelector('button');
+    click(button);
+    expect(mockFn).toHaveBeenCalledTimes(1);
+    expect(mockFn).toHaveBeenCalledWith('Hello');
+
+    click(button);
+    expect(mockFn).toHaveBeenCalledTimes(2);
+    expect(mockFn).toHaveBeenCalledWith('Hello');
+
+    root.render(App());
+    click(button);
+    expect(mockFn).toHaveBeenCalledTimes(3);
+    expect(mockFn).toHaveBeenCalledWith('Hello');
+    root.unmount();
+  });
 });

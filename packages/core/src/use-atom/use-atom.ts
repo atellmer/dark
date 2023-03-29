@@ -1,7 +1,9 @@
 import { useUpdate } from '../use-update';
 import { useEffect } from '../use-effect';
 
-type AtomSub<T> = (p: T, n: T) => void;
+type ShoudlUpdate<T> = (p: T, n: T) => boolean;
+
+type AtomSub<T> = [callback: () => void, shoudlUpdate: ShoudlUpdate<T>];
 
 class Atom<T = unknown> {
   private value: T;
@@ -20,7 +22,7 @@ class Atom<T = unknown> {
     const value$ = this.value;
 
     this.value = value;
-    this.subs.forEach(x => x(value$, value));
+    this.subs.forEach(([callabck, shouldUpdate = shouldUpdate$]) => shouldUpdate(value$, value) && callabck());
   }
 
   public on(sub: AtomSub<T>) {
@@ -32,9 +34,9 @@ class Atom<T = unknown> {
 
 const atom = <T>(value: T = undefined) => new Atom(value);
 
-const defaultShouldUpdate = () => true;
+const shouldUpdate$ = () => true;
 
-type Value<T = unknown> = [Atom<T>, ((p: T, n: T) => boolean)?];
+type Value<T = unknown> = [Atom<T>, ShoudlUpdate<T>?];
 
 function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
   values: [
@@ -53,13 +55,13 @@ function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
   const update = useUpdate({ forceSync: true });
 
   useEffect(() => {
-    const unsubscribes: Array<() => void> = [];
+    const off: Array<() => void> = [];
 
-    for (const [atom, shouldUpdate = defaultShouldUpdate] of values) {
-      unsubscribes.push(atom.on((p: any, n: any) => shouldUpdate(p, n) && update()));
+    for (const [atom, shouldUpdate] of values) {
+      off.push(atom.on([update, shouldUpdate as ShoudlUpdate<any>]));
     }
 
-    return () => unsubscribes.forEach(x => x());
+    return () => off.forEach(x => x());
   }, []);
 
   return values.map((x: Value) => x[0].get()) as [T1, T2?, T3?, T4?, T5?, T6?, T7?, T8?, T9?, T10?];
