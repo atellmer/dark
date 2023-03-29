@@ -855,6 +855,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     fiber.alt = new Fiber().mutate(fiber);
     fiber.marker = '🔥';
     fiber.tag = EffectTag.U;
+    fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
 
