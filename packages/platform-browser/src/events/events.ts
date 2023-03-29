@@ -1,4 +1,4 @@
-import { detectIsFunction, eventsStore } from '@dark-engine/core';
+import { detectIsFunction, eventsStore, detectIsArray } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 
@@ -30,38 +30,36 @@ class SyntheticEvent<E extends Event, T = TagNativeElement> {
   }
 }
 
-type DelegateEventOptions = {
-  target: Element;
-  eventName: string;
-  handler: (e: Event) => void;
-};
-
-function delegateEvent(options: DelegateEventOptions) {
-  const { target, eventName, handler } = options;
+function delegateEvent(
+  target: Element,
+  eventName: string,
+  handler: (e: Event) => void | [fn: () => void, ...args: Array<any>],
+) {
   const eventsMap = eventsStore.get();
   const handlerMap = eventsMap.get(eventName);
+  const handler$ = detectIsArray(handler) ? (e: Event) => handler[0](...handler.slice(1), e) : handler;
 
   if (!handlerMap) {
     const rootHandler = (event: Event) => {
       const fireEvent = eventsMap.get(eventName).get(event.target);
       const target = event.target as TagNativeElement;
-      let syntheticEvent: SyntheticEvent<Event> = null;
+      let synthetic: SyntheticEvent<Event> = null;
 
       if (detectIsFunction(fireEvent)) {
-        syntheticEvent = new SyntheticEvent({ sourceEvent: event, target });
-        fireEvent(syntheticEvent);
+        synthetic = new SyntheticEvent({ sourceEvent: event, target });
+        fireEvent(synthetic);
       }
 
-      if (syntheticEvent ? syntheticEvent.getPropagation() : target.parentElement) {
+      if (synthetic ? synthetic.getPropagation() : target.parentElement) {
         target.parentElement.dispatchEvent(new (event.constructor as BrowserEventConstructor)(event.type, event));
       }
     };
 
-    eventsMap.set(eventName, new WeakMap([[target, handler]]));
+    eventsMap.set(eventName, new WeakMap([[target, handler$]]));
     document.addEventListener(eventName, rootHandler, true);
     eventsStore.addUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
-    handlerMap.set(target, handler);
+    handlerMap.set(target, handler$);
   }
 }
 

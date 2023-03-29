@@ -94,14 +94,8 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
       continue;
     }
 
-    if (detectIsFunction(attrValue)) {
-      if (detectIsEvent(attrName)) {
-        delegateEvent({
-          target: tagElement,
-          handler: attrValue,
-          eventName: getEventName(attrName),
-        });
-      }
+    if (detectIsEvent(attrName)) {
+      delegateEvent(tagElement, getEventName(attrName), attrValue);
     } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
       const stop = patchProperties({
         tagName: vNode.name,
@@ -130,14 +124,8 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
     }
 
     if (!detectIsUndefined(nextAttrValue)) {
-      if (detectIsFunction(prevAttrValue)) {
-        if (detectIsEvent(attrName) && prevAttrValue !== nextAttrValue) {
-          delegateEvent({
-            target: tagElement,
-            handler: nextAttrValue,
-            eventName: getEventName(attrName),
-          });
-        }
+      if (detectIsEvent(attrName)) {
+        prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
         const stop = !patchPropsBlackListMap[attrName]
           ? patchProperties({
@@ -331,7 +319,7 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },
-  [EffectTag.D]: (fiber: Fiber<NativeElement>) => commitDeletion(fiber),
+  [EffectTag.D]: commitDeletion,
   [EffectTag.S]: () => {},
 };
 
