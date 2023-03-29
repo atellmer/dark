@@ -33,10 +33,10 @@ describe('[use-atom]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0));
 
-    count$.set(count$.get() + 1);
+    count$.value = count$.value + 1;
     expect(host.innerHTML).toBe(content(1));
 
-    count$.set(count$.get() + 1);
+    count$.value = count$.value + 1;
     expect(host.innerHTML).toBe(content(2));
   });
 
@@ -57,13 +57,13 @@ describe('[use-atom]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0));
 
-    count$.set(count$.get() + 1);
+    count$.value = count$.value + 1;
     expect(host.innerHTML).toBe(content(1));
 
-    count$.set(count$.get() + 1);
+    count$.value = count$.value + 1;
     expect(host.innerHTML).toBe(content(1));
 
-    count$.set(count$.get() + 1);
+    count$.value = count$.value + 1;
     expect(host.innerHTML).toBe(content(3));
   });
 
@@ -91,16 +91,16 @@ describe('[use-atom]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0, 100));
 
-    count1$.set(count1$.get() + 1);
-    count2$.set(count2$.get() + 1);
+    count1$.value = count1$.value + 1;
+    count2$.value = count2$.value + 1;
     expect(host.innerHTML).toBe(content(1, 101));
 
-    count1$.set(count1$.get() + 1);
-    count2$.set(count2$.get() + 1);
+    count1$.value = count1$.value + 1;
+    count2$.value = count2$.value + 1;
     expect(host.innerHTML).toBe(content(2, 102));
 
-    count1$.set(count1$.get() + 1);
-    count2$.set(count2$.get() + 1);
+    count1$.value = count1$.value + 1;
+    count2$.value = count2$.value + 1;
     expect(host.innerHTML).toBe(content(3, 103));
   });
 });

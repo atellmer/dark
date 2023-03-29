@@ -6,23 +6,21 @@ type ShoudlUpdate<T> = (p: T, n: T) => boolean;
 type AtomSub<T> = [callback: () => void, shoudlUpdate: ShoudlUpdate<T>];
 
 class Atom<T = unknown> {
-  private value: T;
+  public value: T;
   private subs: Set<AtomSub<T>> = new Set();
 
   constructor(value: T = undefined) {
-    this.value = value;
-  }
+    let value$ = value;
 
-  public get(): T {
-    return this.value;
-  }
+    Object.defineProperty(this, 'value', {
+      get: () => value$,
+      set: (value: T) => {
+        const value$$ = value$;
 
-  public set(value: T) {
-    if (Object.is(this.value, value)) return;
-    const value$ = this.value;
-
-    this.value = value;
-    this.subs.forEach(([callabck, shouldUpdate = shouldUpdate$]) => shouldUpdate(value$, value) && callabck());
+        value$ = value;
+        this.subs.forEach(([callabck, shouldUpdate = shouldUpdate$]) => shouldUpdate(value$$, value$) && callabck());
+      },
+    });
   }
 
   public on(sub: AtomSub<T>) {
@@ -64,7 +62,7 @@ function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
     return () => off.forEach(x => x());
   }, []);
 
-  return values.map((x: Value) => x[0].get()) as [T1, T2?, T3?, T4?, T5?, T6?, T7?, T8?, T9?, T10?];
+  return values.map((x: Value) => x[0].value) as [T1, T2?, T3?, T4?, T5?, T6?, T7?, T8?, T9?, T10?];
 }
 
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;

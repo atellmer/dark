@@ -1,4 +1,4 @@
-import { type Atom, Text, component, memo, Flag, atom, useAtom, Guard, useReactiveState } from '@dark-engine/core';
+import { type Atom, Text, component, memo, Flag, atom, useAtom, Guard, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag = { [Flag.NM]: true };
@@ -137,87 +137,83 @@ const Row = component<RowProps>(({ item, selected$, onRemove, onHighlight }) => 
 const MemoRow = memo(Row, () => false);
 
 type State = {
-  listX: Array<DataItem>;
+  data$: Atom<Array<DataItem>>;
   selected$: Atom<number>;
 };
 
 const App = component(() => {
-  const state = useReactiveState<State>({ selected$: atom(), listX: [] }, { forceSync: true });
-  const { selected$ } = state;
+  const state = useMemo<State>(() => ({ data$: atom([]), selected$: atom() }), []);
+  const { data$, selected$ } = state;
+
+  useAtom([[state.data$]]);
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.listX = buildData(10000);
+    data$.value = buildData(10000);
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    const list = [...buildData(1000, '!!!'), ...state.listX];
-
-    state.listX = list;
+    const data = data$.value;
+    data.unshift(...buildData(1000, '!!!'));
+    data$.value = data;
     measurer.stop();
   };
   const handleAppend = (e: E<MouseEvent>) => {
     measurer.start('append');
     e.stopPropagation();
-    const list = [...state.listX, ...buildData(1000, '!!!')];
-
-    state.listX = list;
+    const data = data$.value;
+    data.push(...buildData(1000, '!!!'));
+    data$.value = data;
     measurer.stop();
   };
   const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    const list = [...state.listX];
-
+    const list = data$.value;
     list.splice(0, 0, ...buildData(5, '***'));
     list.splice(8, 0, ...buildData(2, '***'));
-
-    state.listX = list;
+    data$.value = list;
     measurer.stop();
   };
   const handleSwap = (e: E<MouseEvent>) => {
-    if (state.listX.length === 0) return;
+    if (data$.value.length === 0) return;
     measurer.start('swap');
     e.stopPropagation();
-    const list = [...state.listX];
-    const temp = list[1];
-
-    list[1] = list[list.length - 2];
-    list[list.length - 2] = temp;
-
-    state.listX = list;
+    const data = data$.value;
+    const temp = data[1];
+    data[1] = data[data.length - 2];
+    data[data.length - 2] = temp;
+    data$.value = data;
     measurer.stop();
   };
   const handleClear = (e: E<MouseEvent>) => {
     measurer.start('clear');
     e.stopPropagation();
-    state.listX = [];
-    state.selected$.set(undefined);
+    data$.value = [];
+    selected$.value = undefined;
     measurer.stop();
   };
   const handleRemove = (id: number, e: E<MouseEvent>) => {
     measurer.start('remove');
     e.stopPropagation();
-    const list = [...state.listX];
-    const idx = list.findIndex(x => x.id === id);
-
-    idx !== -1 && list.splice(idx, 1);
-
-    state.listX = list;
-    state.selected$.set(undefined);
+    const data = data$.value;
+    const idx = data.findIndex(x => x.id === id);
+    idx !== -1 && data.splice(idx, 1);
+    data$.value = data;
+    selected$.value = undefined;
     measurer.stop();
   };
   const handleUpdateAll = (e: E<MouseEvent>) => {
     measurer.start('update every 10th');
     e.stopPropagation();
 
-    for (let i = 0; i < state.listX.length; i += 10) {
-      const item = state.listX[i];
+    for (let i = 0; i < data$.value.length; i += 10) {
+      const item = data$.value[i];
 
-      item.name$.set(item.name$.get() + '!!!');
+      item.name$.value = item.name$.value + '!!!';
     }
 
     measurer.stop();
@@ -225,7 +221,7 @@ const App = component(() => {
   const handleHightlight = (id: number, e: E<MouseEvent>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    state.selected$.set(id);
+    selected$.value = id;
     measurer.stop();
   };
 
@@ -242,7 +238,7 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        slot: state.listX.map(item => {
+        slot: data$.value.map(item => {
           return MemoRow({
             key: item.id,
             item,
