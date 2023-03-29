@@ -36,34 +36,32 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 
 <Greeting name='Taylor Swift' />
-// or
-Greeting({ name: 'Taylor Swift' })
 ```
 
 ## Demos
 
 - [1k components](https://atellmer.github.io/dark/examples/1k-components/)
 - [10k rows](https://atellmer.github.io/dark/examples/10k-rows/)
-- [Dark ⚡️ Vue benchmark](https://atellmer.github.io/dark/examples/dark-vs-vue/)
-- [Track updates](https://atellmer.github.io/dark/examples/track-updates/)
+- [Animated reorderable grid](https://atellmer.github.io/dark/examples/animated-grid/)
+- [Animated portal modal window](https://atellmer.github.io/dark/examples/modal-window/)
+- [Text patching benchmark](https://atellmer.github.io/dark/examples/dark-vs-vue/)
 - [Sierpinski triangle](https://atellmer.github.io/dark/examples/sierpinski-triangle/)
+- [Track updates](https://atellmer.github.io/dark/examples/track-updates/)
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
 - [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
-- [Animated portal modal window](https://atellmer.github.io/dark/examples/modal-window/)
-- [Animated reorderable grid](https://atellmer.github.io/dark/examples/animated-grid/)
-- [StackBlitz example #1 (vanilla js)](https://stackblitz.com/edit/js-q58h8h?file=index.html)
-- [StackBlitz example #1 (typescript)](https://stackblitz.com/edit/darkapp-ccz57rk?file=index.tsx)
-- [StackBlitz example #3 (naive styled-components with Dark)](https://stackblitz.com/edit/darkapp-ccz57rk-gtbczn?file=styled-components.ts,index.tsx)
-- [StackBlitz example #4 (drag-n-drop with Dark)](https://stackblitz.com/edit/darkapp-ccz57rk-ujdypw?file=index.tsx)
-- [StackBlitz example #5 (dark mode with Dark context)](https://stackblitz.com/edit/darkapp-ccz57rk-z41sup?file=index.tsx)
-- [StackBlitz example #6 (working with standard HTML input elements)](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
-- [StackBlitz example #7 (client-side routing with lazy-loaded routes)](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=index.tsx)
-- [StackBlitz example #8 (spring animated image slider)](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
-- [StackBlitz example #9 (spring animated FAB button)](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
-- [StackBlitz example #10 (server-side rendering)](https://stackblitz.com/edit/darkapp-ccz57rk-3j65wa?file=server%2Fapp.ts)
-- [StackBlitz example #11 (universal dark app (ssr + hydration + lazy + parameterized routing))](https://stackblitz.com/edit/darkapp-ccz57rk-n5zjg6?file=server%2Fapp.ts,client%2Fcomponents%2Fapp.tsx)
-- [StackBlitz example #12 (Hot module replacement (HMR) in dev mode)](https://stackblitz.com/edit/darkapp-ccz57rk-cnkbqk?file=app.tsx)
-- [StackBlitz example #13 (Dark ❤️ NativeScript)](https://stackblitz.com/edit/darkapp-ccz57rk-vqbndt?file=src%2Fcomponents%2Fapp.tsx)
+- [Vanilla js](https://stackblitz.com/edit/js-q58h8h?file=index.html)
+- [Typescript](https://stackblitz.com/edit/darkapp-ccz57rk?file=index.tsx)
+- [Naive styled-components with Dark](https://stackblitz.com/edit/darkapp-ccz57rk-gtbczn?file=styled-components.ts,index.tsx)
+- [Drag-n-drop](https://stackblitz.com/edit/darkapp-ccz57rk-ujdypw?file=index.tsx)
+- [Dark mode with context](https://stackblitz.com/edit/darkapp-ccz57rk-z41sup?file=index.tsx)
+- [Working with standard HTML input elements](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
+- [Client-side routing with lazy-loaded routes](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=index.tsx)
+- [Spring animated image slider](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
+- [Spring animated FAB button](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
+- [Server-side rendering](https://stackblitz.com/edit/darkapp-ccz57rk-3j65wa?file=server%2Fapp.ts)
+- [Universal dark app (ssr + hydration + lazy + parameterized routing)](https://stackblitz.com/edit/darkapp-ccz57rk-n5zjg6?file=server%2Fapp.ts,client%2Fcomponents%2Fapp.tsx)
+- [Hot module replacement (HMR) in dev mode](https://stackblitz.com/edit/darkapp-ccz57rk-cnkbqk?file=app.tsx)
+- [Dark ❤️ NativeScript](https://stackblitz.com/edit/darkapp-ccz57rk-vqbndt?file=src%2Fcomponents%2Fapp.tsx)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
@@ -189,13 +187,14 @@ import {
   Text,
   Comment,
   Fragment,
+  Suspense,
   component,
   createContext,
   memo,
   lazy,
+  atom,
   batch,
   forwardRef,
-  Suspense,
   useMemo,
   useCallback,
   useEvent,
@@ -206,6 +205,7 @@ import {
   useError,
   useRef,
   useId,
+  useAtom,
   useSpring,
   useImperativeHandle,
   useState,
