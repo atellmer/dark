@@ -5,7 +5,7 @@ import { dom } from '@test-utils';
 import { h } from '../element';
 import { Fragment } from '../fragment';
 import { component } from '../component/component';
-import { atom, useAtom } from '../use-atom';
+import { atom, useAtom } from './atom';
 
 let host: HTMLElement = null;
 

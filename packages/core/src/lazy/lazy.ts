@@ -15,8 +15,10 @@ function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<
   return forwardRef(
     component<P, R>(
       (props, ref) => {
-        if (detectIsServer()) {
-          throw new Error('[Dark]: You should render only non-lazy components on the server!');
+        if (process.env.NODE_ENV !== 'production') {
+          if (detectIsServer()) {
+            throw new Error('[Dark]: You should render only non-lazy components on the server!');
+          }
         }
         const { fallback } = useContext(SuspenseContext);
         const update = useUpdate();
@@ -54,8 +56,10 @@ const detectIsLazy = (instance: unknown) => detectIsComponent(instance) && insta
 function fetchModule(module: () => Promise<{ default: ComponentFactory }>) {
   return new Promise<ComponentFactory>(resolve => {
     module().then(module => {
-      if (!module.default) {
-        throw new Error('[Dark]: Lazy loaded component should be exported as default!');
+      if (process.env.NODE_ENV !== 'production') {
+        if (!module.default) {
+          throw new Error('[Dark]: Lazy loaded component should be exported as default!');
+        }
       }
 
       resolve(module.default);

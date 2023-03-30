@@ -4,7 +4,7 @@ import { render } from '@dark-engine/platform-browser';
 import { dom } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component/component';
-import { type Atom, atom } from '../use-atom';
+import { type Atom, atom } from '../atom';
 import { useReactiveState, detectIsProxy } from './use-reactive-state';
 
 let host: HTMLElement = null;

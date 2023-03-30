@@ -3,7 +3,7 @@ import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { batch } from '../batch';
-import { detectIsAtom } from '../use-atom';
+import { detectIsAtom } from '../atom';
 
 const $$proxy = Symbol('proxy');
 
