@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@nativescript/core@~8.4.5":
-  version "8.4.7"
-  resolved "https://registry.yarnpkg.com/@nativescript/core/-/core-8.4.7.tgz#8463950154edb33f476ad9f0f0177838b0711cbf"
-  integrity sha512-F44w6v7TajGkZpSkq+vR2/pHrsQ9ByQRy/SXU1kNE8dZA5y6owOo2Dk0vcBD7Ab8sIqyedrI+eMYFtwN7jkB7A==
+"@nativescript/core@~8.5.0":
+  version "8.5.0"
+  resolved "https://registry.yarnpkg.com/@nativescript/core/-/core-8.5.0.tgz#3304457a8aaacc541d9f2a61d0c16af73072d641"
+  integrity sha512-CB0wzDbcXuY9/hMKMjm3ywrE5OVr7KRR5YzwYfE/SdpGXaadqKxVh7/ArCOk1juesnc6BcX3O+m8REukZKOSJw==
   dependencies:
     "@nativescript/hook" "~2.0.0"
     acorn "^8.7.0"
