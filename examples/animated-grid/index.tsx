@@ -11,7 +11,7 @@ import {
   type DarkElement,
   type MutableRef,
   type Ref,
-  type ComponentFactory,
+  type Component,
   type StandardComponentProps,
 } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
@@ -50,7 +50,7 @@ const shuffle = (count: number) => {
 
 const forceBrowserReflow = () => document.body.clientHeight;
 
-type AnimatedListProps<T = unknown> = {
+type AnimatedListProps<T = any> = {
   items: Array<T>;
   getKey: (x: T) => Key;
   duration?: number;
@@ -65,7 +65,7 @@ type AnimatedListSlotOptions<T> = {
   itemRef: (idx: number, key: Key) => (ref: HTMLElement) => void;
 };
 
-const XAnimatedList = component<AnimatedListProps>(({ items: xItems, getKey, duration = 1000, slot }) => {
+const AnimatedList: AnimatedList = component<AnimatedListProps>(({ items: xItems, getKey, duration = 1000, slot }) => {
   const [items, setItems] = useState(xItems);
   const containerRef = useRef<HTMLElement>(null);
   const scope = useMemo<Scope>(
@@ -199,7 +199,7 @@ type Scope<T = unknown> = {
 
 type MergedProps<T> = AnimatedListProps<T> & StandardComponentProps;
 
-const AnimatedList = XAnimatedList as <T>(props?: MergedProps<T>, ref?: Ref) => ComponentFactory<MergedProps<T>>;
+type AnimatedList = <T>(props?: MergedProps<T>, ref?: Ref) => Component<MergedProps<T>>;
 
 // usage
 

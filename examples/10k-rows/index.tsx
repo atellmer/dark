@@ -1,7 +1,7 @@
-import { Text, component, memo, useUpdate, useMemo, Flag, type DarkElement } from '@dark-engine/core';
-import { type SyntheticEvent, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
+import { type Atom, h, Fragment, Text, component, memo, Flag, atom, useAtom, Guard, useMemo } from '@dark-engine/core';
+import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
-const flag = { [Flag.HAS_NO_MOVES]: true };
+const flag = { [Flag.NM]: true };
 
 const createMeasurer = () => {
   let startTime;
@@ -32,39 +32,26 @@ const createMeasurer = () => {
 
 const measurer = createMeasurer();
 
-type StaticLayoutProps = {
-  slot: DarkElement;
-};
-
-const StaticLayout = memo(
-  component<StaticLayoutProps>(({ slot }) => slot),
-  () => false,
-);
-
-const fn = () => {};
-
 let nextId = 0;
-const buildData = (count: number, prefix = ''): Array<ListItem> => {
+const buildData = (count: number, prefix = ''): Array<DataItem> => {
   return Array(count)
     .fill(0)
     .map(() => ({
       id: ++nextId,
-      name: `item: ${nextId} ${prefix}`,
-      selected: false,
-      update: fn,
+      name$: atom(`item: ${nextId} ${prefix}`),
     }));
 };
 
-type ListItem = { id: number; name: string; selected: boolean; update: () => void };
+type DataItem = { id: number; name$: Atom<string> };
 
 type HeaderProps = {
-  onCreate: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onPrepend: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onAppend: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onInsertDifferent: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onUpdateAll: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onSwap: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onClear: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
+  onCreate: (e: E<MouseEvent>) => void;
+  onPrepend: (e: E<MouseEvent>) => void;
+  onAppend: (e: E<MouseEvent>) => void;
+  onInsertDifferent: (e: E<MouseEvent>) => void;
+  onUpdateAll: (e: E<MouseEvent>) => void;
+  onSwap: (e: E<MouseEvent>) => void;
+  onClear: (e: E<MouseEvent>) => void;
 };
 
 const Header = component<HeaderProps>(
@@ -101,12 +88,6 @@ const Header = component<HeaderProps>(
           slot: Text('clear rows'),
           onClick: onClear,
         }),
-        button({
-          slot: Text('unmount app'),
-          onClick: () => {
-            root.unmount();
-          },
-        }),
       ],
     });
   },
@@ -115,23 +96,22 @@ const Header = component<HeaderProps>(
 const MemoHeader = memo(Header, () => false);
 
 type RowProps = {
-  item: ListItem;
-  onRemove: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onHighlight: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
+  item: DataItem;
+  selected$: Atom<number>;
+  onRemove: (id: number, e: E<MouseEvent>) => void;
+  onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ item, onRemove, onHighlight }) => {
-  const update = useUpdate({ forceSync: true });
-  const { id, selected, name } = item;
-
-  item.update = update;
+const Row = component<RowProps>(({ item, selected$, onRemove, onHighlight }) => {
+  const { id } = item;
+  const [name, selected] = useAtom([[item.name$], [selected$, (p, n) => p === id || n === id]]);
 
   return tr({
-    class: selected ? 'selected' : undefined,
+    class: selected === id ? 'selected' : undefined,
     flag,
     slot: [
       td({ class: 'cell', slot: Text(name) }),
-      StaticLayout({
+      Guard({
         slot: [
           td({ class: 'cell', slot: Text('qqq') }),
           td({ class: 'cell', slot: Text('xxx') }),
@@ -139,11 +119,11 @@ const Row = component<RowProps>(({ item, onRemove, onHighlight }) => {
             class: 'cell',
             slot: [
               button({
-                onClick: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => onRemove(id, e),
+                onClick: [onRemove, id],
                 slot: Text('remove'),
               }),
               button({
-                onClick: (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => onHighlight(id, e),
+                onClick: [onHighlight, id],
                 slot: Text('highlight'),
               }),
             ],
@@ -156,109 +136,91 @@ const Row = component<RowProps>(({ item, onRemove, onHighlight }) => {
 
 const MemoRow = memo(Row, () => false);
 
-type ListProps = {
-  items: Array<ListItem>;
-  onRemove: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
-  onHighlight: (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => void;
+type State = {
+  data$: Atom<Array<DataItem>>;
+  selected$: Atom<number>;
 };
 
-const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
-  const rows: Array<DarkElement> = [];
+const App = component(() => {
+  const state = useMemo<State>(() => ({ data$: atom([]), selected$: atom() }), []);
+  const { data$, selected$ } = state;
 
-  for (const item of items) {
-    rows.push(
-      MemoRow({
-        key: item.id,
-        item,
-        onRemove,
-        onHighlight,
-      }),
-    );
-  }
+  useAtom([[state.data$]]);
 
-  return table({
-    class: 'table',
-    slot: tbody({ slot: rows }),
-  });
-});
-
-const Bench = component(() => {
-  const state = useMemo<{ list: Array<ListItem> }>(() => ({ list: [] }), []);
-  const forceUpdate = useUpdate({ forceSync: true });
-
-  const handleCreate = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.list = buildData(10000);
-    forceUpdate();
+    data$.set(buildData(10000));
     measurer.stop();
   };
-  const handlePrepend = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    state.list.unshift(...buildData(1000, '!!!'));
-    forceUpdate();
+    const data = data$.get();
+    data.unshift(...buildData(1000, '!!!'));
+    data$.set(data);
     measurer.stop();
   };
-  const handleAppend = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleAppend = (e: E<MouseEvent>) => {
     measurer.start('append');
     e.stopPropagation();
-    state.list.push(...buildData(1000, '!!!'));
-    forceUpdate();
+    const data = data$.get();
+    data.push(...buildData(1000, '!!!'));
+    data$.set(data);
     measurer.stop();
   };
-  const handleInsertDifferent = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    state.list.splice(0, 0, ...buildData(5, '***'));
-    state.list.splice(8, 0, ...buildData(2, '***'));
-    forceUpdate();
+    const list = data$.get();
+    list.splice(0, 0, ...buildData(5, '***'));
+    list.splice(8, 0, ...buildData(2, '***'));
+    data$.set(list);
     measurer.stop();
   };
-  const handleSwap = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
-    if (state.list.length === 0) return;
+  const handleSwap = (e: E<MouseEvent>) => {
+    if (data$.get().length === 0) return;
     measurer.start('swap');
     e.stopPropagation();
-    const temp = state.list[1];
-    state.list[1] = state.list[state.list.length - 2];
-    state.list[state.list.length - 2] = temp;
-    forceUpdate();
+    const data = data$.get();
+    const temp = data[1];
+    data[1] = data[data.length - 2];
+    data[data.length - 2] = temp;
+    data$.set(data);
     measurer.stop();
   };
-  const handleClear = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleClear = (e: E<MouseEvent>) => {
     measurer.start('clear');
     e.stopPropagation();
-    state.list = [];
-    forceUpdate();
+    data$.set([]);
+    selected$.set(undefined);
     measurer.stop();
   };
-  const handleRemove = (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleRemove = (id: number, e: E<MouseEvent>) => {
     measurer.start('remove');
     e.stopPropagation();
-    const idx = state.list.findIndex(x => x.id === id);
-
-    idx !== -1 && state.list.splice(idx, 1);
-    forceUpdate();
+    const data = data$.get();
+    const idx = data.findIndex(x => x.id === id);
+    idx !== -1 && data.splice(idx, 1);
+    data$.set(data);
     measurer.stop();
   };
-  const handleUpdateAll = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleUpdateAll = (e: E<MouseEvent>) => {
     measurer.start('update every 10th');
     e.stopPropagation();
 
-    for (let i = 0; i < state.list.length; i += 10) {
-      state.list[i].name = state.list[i].name + '!!!';
-      state.list[i].update();
+    for (let i = 0; i < data$.get().length; i += 10) {
+      const item = data$.get()[i];
+
+      item.name$.set(item.name$.get() + '!!!');
     }
 
     measurer.stop();
   };
-  const handleHightlight = (id: number, e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+  const handleHightlight = (id: number, e: E<MouseEvent>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    const idx = state.list.findIndex(x => x.id === id);
-
-    state.list[idx].selected = !state.list[idx].selected;
-    state.list[idx].update();
+    selected$.set(id);
     measurer.stop();
   };
 
@@ -272,14 +234,21 @@ const Bench = component(() => {
       onSwap: handleSwap,
       onClear: handleClear,
     }),
-    List({
-      items: state.list,
-      onRemove: handleRemove,
-      onHighlight: handleHightlight,
+    table({
+      class: 'table',
+      slot: tbody({
+        slot: data$.get().map(item => {
+          return MemoRow({
+            key: item.id,
+            item,
+            selected$,
+            onRemove: handleRemove,
+            onHighlight: handleHightlight,
+          });
+        }),
+      }),
     }),
   ];
 });
 
-const root = createRoot(document.getElementById('root'));
-
-root.render(Bench());
+createRoot(document.getElementById('root')).render(App());
