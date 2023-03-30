@@ -13,6 +13,7 @@ import {
   keyBy,
   NodeType,
   detectIsTagVirtualNode,
+  getFiberWithElement,
 } from '@dark-engine/core';
 
 import { VOID_TAG_NAMES } from '../constants';
@@ -61,7 +62,7 @@ function detectIsVoidElement(tagName: string) {
 }
 
 function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
-  if (!detectIsTagVirtualNode(vNode) || !vNode.attrs) return;
+  if (!vNode.attrs) return;
   const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -111,29 +112,17 @@ const patchPropertiesSpecialCasesMap: Record<
   },
 };
 
-function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<TagNativeElement> {
-  let nextFiber = fiber;
-
-  while (nextFiber) {
-    nextFiber = nextFiber.parent;
-
-    if (nextFiber.element) return nextFiber as Fiber<TagNativeElement>;
-  }
-
-  return nextFiber as Fiber<TagNativeElement>;
-}
-
 function append(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
   parentElement.appendChild(fiber.element);
 }
 
 function commitCreation(fiber: Fiber<NativeElement>) {
-  const parentFiber = getParentFiberWithNativeElement(fiber);
+  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
   const parentElement = parentFiber.element;
   const vNode = parentFiber.inst as TagVirtualNode;
 
   !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
-  addAttributes(fiber.element, fiber.inst as TagVirtualNode);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {

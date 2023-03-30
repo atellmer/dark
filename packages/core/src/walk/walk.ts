@@ -1,4 +1,5 @@
 import { type Fiber } from '../fiber';
+import { platform } from '../platform';
 
 function walkFiber<T = unknown>(
   fiber: Fiber<T>,
@@ -55,4 +56,30 @@ function walkFiber<T = unknown>(
   }
 }
 
-export { walkFiber };
+function collectElements<T>(fiber: Fiber<T>): Array<T> {
+  const elements: Array<T> = [];
+
+  walkFiber<T>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
+    if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
+    if (!isReturn && nextFiber.element) {
+      !platform.detectIsPortal(nextFiber.inst) && elements.push(nextFiber.element);
+
+      return resetIsDeepWalking();
+    }
+  });
+
+  return elements;
+}
+
+function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
+  let nextFiber = fiber as unknown as Fiber<T2>;
+
+  while (nextFiber) {
+    if (nextFiber.element) return nextFiber;
+    nextFiber = nextFiber.parent;
+  }
+
+  return nextFiber;
+}
+
+export { walkFiber, collectElements, getFiberWithElement };

@@ -49,7 +49,7 @@ import { type NativeElement, type Hook, EffectTag } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber } from '../walk';
+import { walkFiber, getFiberWithElement } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
@@ -156,7 +156,7 @@ function workLoop() {
   }
 
   if (!nextUnitOfWork && wipFiber) {
-    commitChanges();
+    commit();
   }
 
   return hasMoreWork;
@@ -175,7 +175,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
       const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
 
       if (hasChildren) {
-        performChild(nextFiber, box);
+        mountChild(nextFiber, box);
 
         nextFiber = box.fiber$;
         instance = box.inst$;
@@ -186,7 +186,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
 
         if (nextFiber) return nextFiber;
       } else {
-        performSibling(nextFiber, box);
+        mountSibling(nextFiber, box);
 
         const nextFiber$ = box.fiber$$;
 
@@ -200,7 +200,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         if (nextFiber$) return nextFiber$;
       }
     } else {
-      performSibling(nextFiber, box);
+      mountSibling(nextFiber, box);
 
       const nextFiber$ = box.fiber$$;
 
@@ -218,7 +218,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
   }
 }
 
-function performChild(nextFiber: Fiber, box: Box) {
+function mountChild(nextFiber: Fiber, box: Box) {
   mountStore.toChild();
   let instance$ = nextFiber.inst;
   const childrenIdx = 0;
@@ -237,10 +237,10 @@ function performChild(nextFiber: Fiber, box: Box) {
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
   fiber.eidx = nextFiber.element ? 0 : nextFiber.eidx;
-  instance$ = pertformInstance(instance$, childrenIdx, fiber);
-  alternate && performAlternate(alternate, instance$);
-  performFiber(fiber, alternate, instance$);
-  alternate && detectIsMemo(fiber.inst) && performMemo(fiber);
+  instance$ = install(instance$, childrenIdx, fiber);
+  alternate && alt(alternate, instance$);
+  current(fiber, alternate, instance$);
+  alternate && detectIsMemo(fiber.inst) && memo(fiber);
 
   candidatesStore.add(fiber);
 
@@ -249,7 +249,7 @@ function performChild(nextFiber: Fiber, box: Box) {
   box.inst$ = instance$;
 }
 
-function performSibling(nextFiber: Fiber, box: Box) {
+function mountSibling(nextFiber: Fiber, box: Box) {
   mountStore.toSibling();
   let instance$ = nextFiber.parent.inst;
   const childrenIdx = mountStore.getIndex();
@@ -272,10 +272,10 @@ function performSibling(nextFiber: Fiber, box: Box) {
     fiber.parent = nextFiber.parent;
     nextFiber.next = fiber;
     fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
-    instance$ = pertformInstance(instance$, childrenIdx, fiber);
-    alternate && performAlternate(alternate, instance$);
-    performFiber(fiber, alternate, instance$);
-    alternate && detectIsMemo(fiber.inst) && performMemo(fiber);
+    instance$ = install(instance$, childrenIdx, fiber);
+    alternate && alt(alternate, instance$);
+    current(fiber, alternate, instance$);
+    alternate && detectIsMemo(fiber.inst) && memo(fiber);
 
     candidatesStore.add(fiber);
 
@@ -322,7 +322,7 @@ function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) 
   }
 }
 
-function performFiber(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+function current(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
   let isUpdate = false;
 
   fiber.parent.tag === EffectTag.C && (fiber.tag = fiber.parent.tag);
@@ -388,7 +388,7 @@ function canAddToDeletions(fiber: Fiber) {
   return true;
 }
 
-function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
+function alt(alternate: Fiber, instance: DarkElementInstance) {
   const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
   const hasNoMovesFlag = flag && flag[Flag.NM];
@@ -467,7 +467,7 @@ function performAlternate(alternate: Fiber, instance: DarkElementInstance) {
   }
 }
 
-function performMemo(fiber: Fiber) {
+function memo(fiber: Fiber) {
   if (process.env.NODE_ENV !== 'production') {
     if (hot.get()) return;
   }
@@ -513,7 +513,7 @@ function performMemo(fiber: Fiber) {
   alternate.pHost && fiber.markPHost();
 }
 
-function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fiber) {
+function install(instance: DarkElementInstance, idx: number, fiber: Fiber) {
   let instance$: DarkElementInstance = null;
 
   if (hasChildrenProp(instance)) {
@@ -521,7 +521,7 @@ function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fib
       instance.children.splice(idx, 1, ...flatten(instance.children[idx] as unknown as Array<DarkElementInstance>));
     }
 
-    instance$ = mountInstance(fiber, instance.children[idx]);
+    instance$ = mount(fiber, instance.children[idx]);
 
     if (detectIsComponent(instance$)) {
       hasEffects(fiber) && fiber.markEFHost();
@@ -534,7 +534,7 @@ function pertformInstance(instance: DarkElementInstance, idx: number, fiber: Fib
   return instance$;
 }
 
-function mountInstance(fiber: Fiber, instance: DarkElementInstance) {
+function mount(fiber: Fiber, instance: DarkElementInstance) {
   let instance$ = instance;
   const isComponent = detectIsComponent(instance$);
   const component = instance$ as Component;
@@ -728,7 +728,7 @@ function createHook(): Hook {
   return { idx: 0, values: [] };
 }
 
-function commitChanges() {
+function commit() {
   if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_ENV === 'development' && hot.set(false);
   }
@@ -795,24 +795,10 @@ function flush(wipFiber: Fiber) {
   }
 }
 
-function getParentFiberWithNativeElement(fiber: Fiber) {
-  let parentFiber = fiber;
-
-  while (parentFiber) {
-    parentFiber = parentFiber.parent;
-
-    if (parentFiber && parentFiber.element) {
-      break;
-    }
-  }
-
-  return parentFiber;
-}
-
 function syncElementIndices(fiber: Fiber) {
   const diff = fiber.cec - fiber.alt.cec;
   if (diff === 0) return;
-  const parentFiber = getParentFiberWithNativeElement(fiber);
+  const parentFiber = getFiberWithElement(fiber.parent);
   let isRight = false;
 
   fiber.incCEC(diff, true);
@@ -861,7 +847,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
 
     wipRootStore.set(fiber);
     currentFiberStore.set(fiber);
-    fiber.inst = mountInstance(fiber, fiber.inst);
+    fiber.inst = mount(fiber, fiber.inst);
     nextUnitOfWorkStore.set(fiber);
   };
 

@@ -10,7 +10,6 @@ import {
   ATTR_REF,
   ATTR_FLAG,
   EffectTag,
-  detectIsFunction,
   detectIsUndefined,
   detectIsBoolean,
   keyBy,
@@ -18,6 +17,8 @@ import {
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
   detectIsPlainVirtualNode,
+  getFiberWithElement,
+  collectElements,
   walkFiber,
   isHydrateZone,
   applyRef as applyRef$,
@@ -195,19 +196,8 @@ const patchPropertiesSpecialCasesMap: Record<
   },
 };
 
-function getParentFiberWithNativeElement(fiber: Fiber<NativeElement>): Fiber<TagNativeElement> {
-  let nextFiber = fiber as Fiber<TagNativeElement>;
-
-  while (nextFiber) {
-    nextFiber = nextFiber.parent;
-    if (nextFiber.element) return nextFiber;
-  }
-
-  return nextFiber;
-}
-
 function commitCreation(fiber: Fiber<NativeElement>) {
-  const parentFiber = getParentFiberWithNativeElement(fiber);
+  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
   const parentElement = parentFiber.element;
   const childNodes = parentElement.childNodes;
 
@@ -245,7 +235,7 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 }
 
 function commitDeletion(fiber: Fiber<NativeElement>) {
-  const parentFiber = getParentFiberWithNativeElement(fiber);
+  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
   if (fiber.flush) {
     parentFiber.element.textContent && (parentFiber.element.textContent = '');
@@ -253,10 +243,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   }
 
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.next || nextFiber === fiber.parent) {
-      return stop();
-    }
-
+    if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
     if (!isReturn && nextFiber.element) {
       !detectIsPortal(nextFiber.inst) && parentFiber.element.removeChild(nextFiber.element);
 
@@ -287,24 +274,6 @@ function move(fiber: Fiber<NativeElement>) {
   }
 
   moves.push(move);
-}
-
-function collectElements(fiber: Fiber<NativeElement>) {
-  const store: Array<NativeElement> = [];
-
-  walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.next || nextFiber === fiber.parent) {
-      return stop();
-    }
-
-    if (!isReturn && nextFiber.element) {
-      !detectIsPortal(nextFiber.inst) && store.push(nextFiber.element);
-
-      return resetIsDeepWalking();
-    }
-  });
-
-  return store;
 }
 
 const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
