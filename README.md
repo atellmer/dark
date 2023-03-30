@@ -23,7 +23,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 🧶 Based on the Fiber architecture
 - ⚡️ Сan use without build tools
 - 🦾 Strongly typed
-- 🦄 Small size (5.8X smaller than React)
+- 🦄 Small size (5.8x smaller than React)
 - 🌌 No dependencies
 - 💥 Tree-shakeable
 - 🎊 Server-side rendering
