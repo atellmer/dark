@@ -734,7 +734,7 @@ useInsertionEffect(() => {
 <a name="optimization"></a>
 ## Performance optimization
 
-Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, batched and deferred updates.
+Performance optimization in Dark can be done using different techniques, the main of which are memoization of the last render, using atoms, batched and deferred updates.
 
 ### memo
 
@@ -830,11 +830,42 @@ import { useEvent } from '@dark-engine/core';
 Similar to useCallback but has no dependencies. Ensures the return of the same function, with the closures always corresponding to the last render. In most cases, it eliminates the need to track dependencies in useCallback.
 
 ```tsx
- const handleClick = useEvent(() => setCount(count + 1));
+const handleClick = useEvent(() => setCount(count + 1));
 
- return (
-    <button onClick={handleClick}>add</button>
+return (
+  <button onClick={handleClick}>add</button>
+);
+```
+
+#### Atoms
+
+Atoms are pieces of data that can be independently subscribed to and only rendered when those pieces of data are explicitly changed. They are useful primarily for optimizing critical places in large lists, such as working with a single row in a large table based on data coming from the parent component. Atoms are convenient to use with memoizations. In this case, we can achieve the same performance as if the data were in the consumer's local state. The main idea is to split a large render into many smaller ones so that we don't have to process the calculation of the whole tree, even if it is memoized, because traversing memoized components is still a traversal, albeit a superficial one.
+
+```tsx
+import { type Atom, atom, useAtom } from '@dark-engine/core';
+```
+
+```tsx
+const ParentComponent = component(() => {
+  const count$ = useMemo<Atom<number>>(() => atom(0), []);
+
+  // ParentComponent won't render after count change cause there is no call useAtom here
+
+  return (
+    <>
+      <button onClick={() => count$.set(count$.get() + 1)}>increment atom</button>
+      <ChildComponent count$={count$} />
+    </>
   );
+});
+
+const ChildComponent = component(({ count$ }) => {
+  const [count] = useAtom([[count$, (p, n) => p !== n && n >= 5]]);
+  // renders only atom consumer
+  // update ChildComponent independently when count >= 5
+
+  return <div>{count}</div>;
+});
 ```
 
 #### batch
