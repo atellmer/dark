@@ -203,7 +203,6 @@ const App = component(() => {
     const idx = data.findIndex(x => x.id === id);
     idx !== -1 && data.splice(idx, 1);
     data$.set(data);
-    selected$.set(undefined);
     measurer.stop();
   };
   const handleUpdateAll = (e: E<MouseEvent>) => {

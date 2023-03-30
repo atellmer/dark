@@ -23,7 +23,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 🧶 Based on the Fiber architecture
 - ⚡️ Сan use without build tools
 - 🦾 Strongly typed
-- 🦄 Small size (10x smaller than React)
+- 🦄 Small size (5.8X smaller than React)
 - 🌌 No dependencies
 - 💥 Tree-shakeable
 - 🎊 Server-side rendering
@@ -51,13 +51,13 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 - [Deferred search](https://atellmer.github.io/dark/examples/deferred-search/)
 - [Vanilla js](https://stackblitz.com/edit/js-q58h8h?file=index.html)
 - [Typescript](https://stackblitz.com/edit/darkapp-ccz57rk?file=index.tsx)
+- [Spring animated image slider](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
+- [Spring animated FAB button](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
 - [Naive styled-components with Dark](https://stackblitz.com/edit/darkapp-ccz57rk-gtbczn?file=styled-components.ts,index.tsx)
 - [Drag-n-drop](https://stackblitz.com/edit/darkapp-ccz57rk-ujdypw?file=index.tsx)
 - [Dark mode with context](https://stackblitz.com/edit/darkapp-ccz57rk-z41sup?file=index.tsx)
 - [Working with standard HTML input elements](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
 - [Client-side routing with lazy-loaded routes](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=index.tsx)
-- [Spring animated image slider](https://stackblitz.com/edit/darkapp-ccz57rk-8mnd2n?file=index.tsx)
-- [Spring animated FAB button](https://stackblitz.com/edit/darkapp-ccz57rk-vhplab?file=index.tsx)
 - [Server-side rendering](https://stackblitz.com/edit/darkapp-ccz57rk-3j65wa?file=server%2Fapp.ts)
 - [Universal dark app (ssr + hydration + lazy + parameterized routing)](https://stackblitz.com/edit/darkapp-ccz57rk-n5zjg6?file=server%2Fapp.ts,client%2Fcomponents%2Fapp.tsx)
 - [Hot module replacement (HMR) in dev mode](https://stackblitz.com/edit/darkapp-ccz57rk-cnkbqk?file=app.tsx)
