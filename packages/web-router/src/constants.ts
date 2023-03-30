@@ -1,4 +1,4 @@
-export const VERSION = '0.21.1';
+export const VERSION = '0.22.0';
 export const SLASH = '/';
 export const PARAMETER = ':';
 export const WILDCARD = '**';

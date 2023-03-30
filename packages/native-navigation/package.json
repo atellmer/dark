@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/native-navigation",
-  "version": "0.21.1",
+  "version": "0.22.0",
   "description": "Dark navigation for NativeScript platform",
   "author": "AlexPlex",
   "license": "MIT",
