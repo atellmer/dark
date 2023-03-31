@@ -82,4 +82,15 @@ function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
   return nextFiber;
 }
 
-export { walkFiber, collectElements, getFiberWithElement };
+function patchFiberParent<T>(fiber: Fiber<T>) {
+  let nextFiber = fiber.child;
+
+  while (nextFiber) {
+    nextFiber.parent = fiber;
+    nextFiber = nextFiber.next;
+  }
+
+  return fiber;
+}
+
+export { walkFiber, collectElements, getFiberWithElement, patchFiberParent };

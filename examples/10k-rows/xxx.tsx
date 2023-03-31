@@ -1,7 +1,8 @@
-import { Text, component, memo, useUpdate, useCallback, Flag, type DarkElement } from '@dark-engine/core';
-import { createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
+import { Text, component, memo, useUpdate, Flag, Guard, useMemo } from '@dark-engine/core';
+import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
-const flag = { [Flag.NM]: true };
+const flag1 = { [Flag.NM]: true };
+const flag2 = { [Flag.SR]: true };
 
 const createMeasurer = () => {
   let startTime;
@@ -39,30 +40,19 @@ const buildData = (count, prefix = '') => {
     .map(() => ({
       id: ++nextId,
       name: `item: ${nextId} ${prefix}`,
-      selected: false,
     }));
 };
 
-type ListItem = { id: number; name: string; selected: boolean };
-
-type List = Array<ListItem>;
-
-type State = {
-  list: List;
-};
-
-const state: State = {
-  list: [],
-};
+type DataItem = { id: number; name: string };
 
 type HeaderProps = {
-  onCreate: () => void;
-  onPrepend: () => void;
-  onAppend: () => void;
-  onInsertDifferent: () => void;
-  onUpdateAll: () => void;
-  onSwap: () => void;
-  onClear: () => void;
+  onCreate: (e: E<MouseEvent>) => void;
+  onPrepend: (e: E<MouseEvent>) => void;
+  onAppend: (e: E<MouseEvent>) => void;
+  onInsertDifferent: (e: E<MouseEvent>) => void;
+  onUpdateAll: (e: E<MouseEvent>) => void;
+  onSwap: (e: E<MouseEvent>) => void;
+  onClear: (e: E<MouseEvent>) => void;
 };
 
 const Header = component<HeaderProps>(
@@ -99,12 +89,6 @@ const Header = component<HeaderProps>(
           slot: Text('clear rows'),
           onClick: onClear,
         }),
-        button({
-          slot: Text('unmount app'),
-          onClick: () => {
-            root.unmount();
-          },
-        }),
       ],
     });
   },
@@ -116,23 +100,24 @@ type RowProps = {
   id: number;
   selected: boolean;
   name: string;
-  onRemove: (id: number) => void;
-  onHighlight: (id: number) => void;
+  onRemove: (id: number, e: E<MouseEvent>) => void;
+  onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
 const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) => {
   return tr({
     class: selected ? 'selected' : undefined,
-    flag,
+    flag: flag1,
     slot: [
       td({ class: 'cell', slot: Text(name) }),
-      td({ class: 'cell', slot: Text('qqq') }),
-      td({ class: 'cell', slot: Text('xxx') }),
+      Guard({
+        slot: [td({ class: 'cell', slot: Text('qqq') }), td({ class: 'cell', slot: Text('xxx') })],
+      }),
       td({
         class: 'cell',
         slot: [
-          button({ onClick: () => onRemove(id), slot: Text('remove') }),
-          button({ onClick: () => onHighlight(id), slot: Text('highlight') }),
+          button({ onClick: [onRemove, id], slot: Text('remove') }),
+          button({ onClick: [onHighlight, id], slot: Text('highlight') }),
         ],
       }),
     ],
@@ -141,110 +126,96 @@ const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) 
 
 const MemoRow = memo(Row, (p, n) => p.selected !== n.selected || p.name !== n.name);
 
-type ListProps = {
-  items: List;
-  onRemove: (id: number) => void;
-  onHighlight: (id: number) => void;
+type State = {
+  data: Array<DataItem>;
+  selected: number;
 };
 
-const List = component<ListProps>(({ items, onRemove, onHighlight }) => {
-  const renderRow = useCallback(
-    (item: ListItem) =>
-      MemoRow({
-        key: item.id,
-        id: item.id,
-        selected: item.selected,
-        name: item.name,
-        onRemove,
-        onHighlight,
-      }),
-    [],
-  );
-
-  return table({
-    class: 'table',
-    slot: tbody({ slot: map(items, renderRow) }),
-  });
-});
-
-function map<T>(items: Array<T>, cb: (item: T) => DarkElement) {
-  const rendered: Array<DarkElement> = [];
-
-  for (const item of items) {
-    rendered.push(cb(item));
-  }
-
-  return rendered;
-}
-
-const MemoList = memo(List);
-
-const Bench = component(() => {
+const App = component(() => {
+  const state = useMemo<State>(() => ({ data: [], selected: undefined }), []);
   const forceUpdate = useUpdate({ forceSync: true });
-  const handleCreate = useCallback(() => {
-    state.list = buildData(10000);
-    measurer.start('create');
-    forceUpdate();
-    measurer.stop();
-  }, []);
-  const handlePrepend = useCallback(() => {
-    state.list.unshift(...buildData(1000, '!!!'));
-    state.list = [...state.list];
-    measurer.start('prepend');
-    forceUpdate();
-    measurer.stop();
-  }, []);
-  const handleAppend = useCallback(() => {
-    state.list.push(...buildData(1000, '!!!'));
-    state.list = [...state.list];
-    measurer.start('append');
-    forceUpdate();
-    measurer.stop();
-  }, []);
-  const handleInsertDifferent = useCallback(() => {
-    const [item1, item2, item3, ...rest] = state.list;
+  const { data, selected } = state;
 
-    state.list = [...buildData(5, '***'), item1, item2, item3, ...buildData(2, '***'), ...rest].filter(Boolean);
+  const handleCreate = (e: E<MouseEvent>) => {
+    measurer.start('create');
+    e.stopPropagation();
+    state.data = buildData(10000);
+    forceUpdate();
+    measurer.stop();
+  };
+  const handlePrepend = (e: E<MouseEvent>) => {
+    measurer.start('prepend');
+    e.stopPropagation();
+    const data = state.data;
+    data.unshift(...buildData(1000, '^^^'));
+    forceUpdate();
+    measurer.stop();
+  };
+  const handleAppend = (e: E<MouseEvent>) => {
+    measurer.start('append');
+    e.stopPropagation();
+    const data = state.data;
+    data.push(...buildData(1000, '^^^'));
+    forceUpdate();
+    measurer.stop();
+  };
+  const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
+    e.stopPropagation();
+    const data = state.data;
+    data.splice(0, 0, ...buildData(5, '***'));
+    data.splice(8, 0, ...buildData(2, '***'));
     forceUpdate();
     measurer.stop();
-  }, []);
-  const handleUpdateAll = useCallback(() => {
-    state.list = state.list.map((x, idx) => ({ ...x, name: (idx + 1) % 10 === 0 ? x.name + '!!!' : x.name }));
+  };
+  const handleUpdateAll = (e: E<MouseEvent>) => {
     measurer.start('update every 10th');
+    e.stopPropagation();
+    const data = state.data;
+
+    for (let i = 0; i < data.length; i += 10) {
+      data[i] = {
+        ...data[i],
+        name: data[i].name + '!!!',
+      };
+    }
     forceUpdate();
     measurer.stop();
-  }, []);
-  const handleRemove = useCallback(id => {
-    state.list = state.list.filter(x => x.id !== id);
+  };
+  const handleRemove = (id: number, e: E<MouseEvent>) => {
     measurer.start('remove');
+    e.stopPropagation();
+    const data = state.data;
+    const idx = data.findIndex(x => x.id === id);
+    idx !== -1 && data.splice(idx, 1);
     forceUpdate();
     measurer.stop();
-  }, []);
-  const handleHightlight = useCallback(id => {
-    const idx = state.list.findIndex(x => x.id === id);
-    state.list[idx].selected = !state.list[idx].selected;
-    state.list = [...state.list];
+  };
+  const handleHightlight = (id: number, e: E<MouseEvent>) => {
     measurer.start('highlight');
+    e.stopPropagation();
+    state.selected = id;
     forceUpdate();
     measurer.stop();
-  }, []);
-  const handleSwap = useCallback(() => {
-    if (state.list.length === 0) return;
-    const temp = state.list[1];
-    state.list[1] = state.list[state.list.length - 2];
-    state.list[state.list.length - 2] = temp;
-    state.list = [...state.list];
+  };
+  const handleSwap = (e: E<MouseEvent>) => {
+    const data = state.data;
+    if (data.length === 0) return;
     measurer.start('swap');
+    e.stopPropagation();
+    const temp = state.data[1];
+    data[1] = data[data.length - 2];
+    data[data.length - 2] = temp;
     forceUpdate();
     measurer.stop();
-  }, []);
-  const handleClear = useCallback(() => {
-    state.list = [];
+  };
+  const handleClear = (e: E<MouseEvent>) => {
     measurer.start('clear');
+    e.stopPropagation();
+    state.data = [];
     forceUpdate();
     measurer.stop();
-  }, []);
+  };
 
   return [
     MemoHeader({
@@ -256,14 +227,25 @@ const Bench = component(() => {
       onSwap: handleSwap,
       onClear: handleClear,
     }),
-    MemoList({
-      items: state.list,
-      onRemove: handleRemove,
-      onHighlight: handleHightlight,
+    table({
+      class: 'table',
+      slot: tbody({
+        flag: flag2,
+        slot: data.map(item => {
+          const { id, name } = item;
+
+          return MemoRow({
+            //key: id,
+            id,
+            name,
+            selected: selected === id,
+            onRemove: handleRemove,
+            onHighlight: handleHightlight,
+          });
+        }),
+      }),
     }),
   ];
 });
 
-const root = createRoot(document.getElementById('root'));
-
-root.render(Bench());
+createRoot(document.getElementById('root')).render(App());

@@ -1,4 +1,4 @@
-import { platform } from '../platform';
+import { type ScheduleCallbackOptions, platform } from '../platform';
 import {
   flatten,
   error,
@@ -10,6 +10,7 @@ import {
   detectIsFunction,
 } from '../helpers';
 import {
+  getRootId,
   wipRootStore,
   currentRootStore,
   nextUnitOfWorkStore,
@@ -49,7 +50,7 @@ import { type NativeElement, type Hook, EffectTag } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement } from '../walk';
+import { walkFiber, getFiberWithElement, patchFiberParent } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
@@ -238,7 +239,8 @@ function mountChild(nextFiber: Fiber, box: Box) {
   nextFiber.child = fiber;
   fiber.eidx = nextFiber.element ? 0 : nextFiber.eidx;
   instance$ = install(instance$, childrenIdx, fiber);
-  alternate && alt(alternate, instance$);
+  fiber.inst = instance$;
+  alternate && alt(fiber, alternate);
   current(fiber, alternate, instance$);
   alternate && detectIsMemo(fiber.inst) && memo(fiber);
 
@@ -273,7 +275,8 @@ function mountSibling(nextFiber: Fiber, box: Box) {
     nextFiber.next = fiber;
     fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
     instance$ = install(instance$, childrenIdx, fiber);
-    alternate && alt(alternate, instance$);
+    fiber.inst = instance$;
+    alternate && alt(fiber, alternate);
     current(fiber, alternate, instance$);
     alternate && detectIsMemo(fiber.inst) && memo(fiber);
 
@@ -388,10 +391,18 @@ function canAddToDeletions(fiber: Fiber) {
   return true;
 }
 
-function alt(alternate: Fiber, instance: DarkElementInstance) {
+function alt(fiber: Fiber, alternate: Fiber) {
+  const instance = fiber.inst;
   const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
-  const hasNoMovesFlag = flag && flag[Flag.NM];
+  const hasNMFlag = flag && flag[Flag.NM];
+  const hasSRFlag = flag && flag[Flag.SR];
+  let prevKeys: Array<DarkElementKey> = null;
+  let nextKeys: Array<DarkElementKey> = null;
+  let prevKeysMap: Record<DarkElementKey, boolean> = null;
+  let nextKeysMap: Record<DarkElementKey, boolean> = null;
+  let keyedFibersMap: Record<DarkElementKey, Fiber> = null;
+  let isSomethingMoved = false;
 
   alternate.used = true;
 
@@ -400,70 +411,94 @@ function alt(alternate: Fiber, instance: DarkElementInstance) {
       alternate.tag = EffectTag.D;
       deletionsStore.add(alternate);
     }
-  } else if (
-    hasChildrenProp(alternate.inst) &&
-    hasChildrenProp(instance) &&
-    alternate.cc !== 0 &&
-    (hasNoMovesFlag ? alternate.cc !== instance.children.length : true)
-  ) {
-    const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
-      alternate.child,
-      instance.children,
-    );
-    const flush = nextKeys.length === 0;
-    let result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
-    let size = Math.max(prevKeys.length, nextKeys.length);
-    let nextFiber = alternate;
-    let idx = 0;
-    let p = 0;
-    let n = 0;
+  } else if (hasChildrenProp(alternate.inst) && hasChildrenProp(instance) && alternate.cc !== 0) {
+    const hasSameCount = alternate.cc === instance.children.length;
+    const extract = () => {
+      ({ prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
+        alternate.child,
+        instance.children,
+      ));
+    };
 
-    for (let i = 0; i < size; i++) {
-      const nextKey = nextKeys[i - n] ?? null;
-      const prevKey = prevKeys[i - p] ?? null;
-      const prevKeyFiber = keyedFibersMap[prevKey] || null;
-      const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
+    if (hasNMFlag ? !hasSameCount : true) {
+      extract();
+      const flush = nextKeys.length === 0;
+      let result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
+      let size = Math.max(prevKeys.length, nextKeys.length);
+      let nextFiber = alternate;
+      let idx = 0;
+      let p = 0;
+      let n = 0;
 
-      if (nextKey !== prevKey) {
-        if (nextKey !== null && !prevKeysMap[nextKey]) {
-          if (prevKey !== null && !nextKeysMap[prevKey]) {
-            process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'replace']);
-            nextKeyFiber.tag = EffectTag.C;
+      for (let i = 0; i < size; i++) {
+        const nextKey = nextKeys[i - n] ?? null;
+        const prevKey = prevKeys[i - p] ?? null;
+        const prevKeyFiber = keyedFibersMap[prevKey] || null;
+        const nextKeyFiber = keyedFibersMap[nextKey] || createConditionalFiber(alternate, nextKey);
+
+        if (nextKey !== prevKey) {
+          if (nextKey !== null && !prevKeysMap[nextKey]) {
+            if (prevKey !== null && !nextKeysMap[prevKey]) {
+              process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'replace']);
+              nextKeyFiber.tag = EffectTag.C;
+              prevKeyFiber.tag = EffectTag.D;
+              deletionsStore.add(prevKeyFiber);
+            } else {
+              process.env.NODE_ENV !== 'production' && result.push([nextKey, 'insert']);
+              nextKeyFiber.tag = EffectTag.C;
+              p++;
+              size++;
+            }
+            nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
+          } else if (!nextKeysMap[prevKey]) {
+            process.env.NODE_ENV !== 'production' && result.push([prevKey, 'remove']);
             prevKeyFiber.tag = EffectTag.D;
             deletionsStore.add(prevKeyFiber);
-          } else {
-            process.env.NODE_ENV !== 'production' && result.push([nextKey, 'insert']);
-            nextKeyFiber.tag = EffectTag.C;
-            p++;
+            flush && (prevKeyFiber.flush = true);
+            n++;
+            idx--;
             size++;
+          } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
+            process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'move']);
+            nextKeyFiber.tag = EffectTag.U;
+            prevKeyFiber.tag = EffectTag.U;
+            nextKeyFiber.move = true;
+            isSomethingMoved = true;
+            nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
           }
-          nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
-        } else if (!nextKeysMap[prevKey]) {
-          process.env.NODE_ENV !== 'production' && result.push([prevKey, 'remove']);
-          prevKeyFiber.tag = EffectTag.D;
-          deletionsStore.add(prevKeyFiber);
-          flush && (prevKeyFiber.flush = true);
-          n++;
-          idx--;
-          size++;
-        } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-          process.env.NODE_ENV !== 'production' && result.push([[nextKey, prevKey], 'move']);
+        } else if (nextKey !== null) {
+          process.env.NODE_ENV !== 'production' && result.push([nextKey, 'stable']);
           nextKeyFiber.tag = EffectTag.U;
-          prevKeyFiber.tag = EffectTag.U;
-          nextKeyFiber.move = true;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         }
-      } else if (nextKey !== null) {
-        process.env.NODE_ENV !== 'production' && result.push([nextKey, 'stable']);
-        nextKeyFiber.tag = EffectTag.U;
-        nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
+
+        nextKeyFiber.idx = idx;
+        idx++;
       }
 
-      nextKeyFiber.idx = idx;
-      idx++;
+      result = [];
     }
 
-    result = [];
+    if (hasSRFlag && hasSameCount && !isSomethingMoved) {
+      !nextKeys && extract();
+      const rootId = getRootId();
+      const options: ScheduleCallbackOptions = { forceSync: true };
+      let skip = false;
+
+      for (let i = 0; i < nextKeys.length; i++) {
+        const candidate = keyedFibersMap[nextKeys[i]];
+        const pc = candidate.inst as Component;
+        const nc = instance.children[i] as Component;
+
+        if (pc.type === nc.type && nc.su && nc.su(pc.props, nc.props)) {
+          skip = true;
+          candidate.inst = nc;
+          platform.schedule(createUpdateCallback({ rootId, fiber: candidate }), options);
+        }
+      }
+
+      skip && (mountStore.deep.set(false), (fiber.child = alternate.child), patchFiberParent(fiber));
+    }
   }
 }
 
@@ -473,15 +508,10 @@ function memo(fiber: Fiber) {
   }
 
   const alternate = fiber.alt;
-  const prevComponent = alternate.inst as Component;
-  const nextComponent = fiber.inst as Component;
+  const pc = alternate.inst as Component;
+  const nc = fiber.inst as Component;
 
-  if (
-    fiber.move ||
-    nextComponent.type !== prevComponent.type ||
-    nextComponent.su(prevComponent.props, nextComponent.props)
-  )
-    return;
+  if (fiber.move || nc.type !== pc.type || nc.su(pc.props, nc.props)) return;
 
   mountStore.deep.set(false);
   fiber.tag = EffectTag.S;
@@ -824,16 +854,16 @@ type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
   forceStart?: boolean;
-  onStart: () => void;
+  onStart?: () => void;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const { rootId, fiber, forceStart = false, onStart } = options;
   const callback = () => {
     if (fiber.tag === EffectTag.D) return;
-    forceStart && onStart();
+    forceStart && onStart && onStart();
     if (fiber.used) return;
-    !forceStart && onStart();
+    !forceStart && onStart && onStart();
     rootStore.set(rootId); // important order!
     isUpdateHookZone.set(true);
     mountStore.reset();

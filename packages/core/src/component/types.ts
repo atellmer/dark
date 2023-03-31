@@ -9,7 +9,7 @@ export type ComponentOptions<P extends StandardComponentProps> = Readonly<{
   shouldUpdate?: ShouldUpdate<P>;
 }>;
 
-export type ShouldUpdate<P> = (props: P, nextProps: P) => boolean;
+export type ShouldUpdate<P> = (prevProps: P, nextProps: P) => boolean;
 
 export type StandardComponentProps = KeyProps & RefProps & FlagProps;
 
