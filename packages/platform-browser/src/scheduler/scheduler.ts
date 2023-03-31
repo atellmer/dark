@@ -1,6 +1,11 @@
-import { type ScheduleCallbackOptions, getTime, workLoop, TaskPriority, detectIsBusy } from '@dark-engine/core';
-
-type Callback = () => boolean;
+import {
+  type ScheduleCallbackOptions,
+  type WorkLoop,
+  getTime,
+  workLoop,
+  TaskPriority,
+  detectIsBusy,
+} from '@dark-engine/core';
 
 type QueueByPriority = {
   animations: Array<Task>;
@@ -19,7 +24,7 @@ const queueByPriority: QueueByPriority = {
 };
 const YEILD_INTERVAL = 4;
 const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
-let scheduledCallback: Callback = null;
+let scheduledCallback: WorkLoop = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
 let currentTask: Task = null;
@@ -113,7 +118,7 @@ function performWorkUntilDeadline() {
     deadline = getTime() + YEILD_INTERVAL;
 
     try {
-      const hasMoreWork = scheduledCallback();
+      const hasMoreWork = scheduledCallback(true);
 
       if (!hasMoreWork) {
         currentTask = null;
@@ -132,7 +137,7 @@ function performWorkUntilDeadline() {
   }
 }
 
-function requestCallback(callback: Callback) {
+function requestCallback(callback: WorkLoop) {
   if (process.env.NODE_ENV === 'test') {
     return requestCallbackSync(callback);
   }
@@ -145,10 +150,8 @@ function requestCallback(callback: Callback) {
   }
 }
 
-function requestCallbackSync(callback: Callback) {
-  while (callback()) {
-    //
-  }
+function requestCallbackSync(callback: WorkLoop) {
+  callback(false);
   executeTasks();
   currentTask = null;
 }

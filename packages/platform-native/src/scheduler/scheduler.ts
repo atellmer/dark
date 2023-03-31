@@ -1,13 +1,12 @@
 import {
   type ScheduleCallbackOptions,
+  type WorkLoop,
   getTime,
   workLoop,
   detectIsBusy,
   TaskPriority,
   dummyFn,
 } from '@dark-engine/core';
-
-type Callback = () => boolean;
 
 type QueueByPriority = {
   animations: Array<Task>;
@@ -114,7 +113,7 @@ function checkOverdueTasks() {
   return false;
 }
 
-function requestCallback(callback: Callback) {
+function requestCallback(callback: WorkLoop) {
   if (process.env.NODE_ENV === 'test') {
     return requestCallbackSync(callback);
   }
@@ -122,7 +121,7 @@ function requestCallback(callback: Callback) {
   const loop = () => {
     deadline = getTime() + YEILD_INTERVAL;
 
-    while (callback()) {
+    while (callback(true)) {
       if (shouldYeildToHost() && detectIsBusy()) {
         setTimeout(() => loop());
         break;
@@ -139,10 +138,8 @@ function requestCallback(callback: Callback) {
   loop();
 }
 
-function requestCallbackSync(callback: Callback) {
-  while (callback()) {
-    //
-  }
+function requestCallbackSync(callback: WorkLoop) {
+  callback(false);
   currentTask.onCompleted();
   currentTask = null;
   executeTasks();

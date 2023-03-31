@@ -36,5 +36,5 @@ export type KeyProps = {
 };
 
 export type FlagProps = {
-  flag?: Record<Flag, boolean>;
+  flag?: Partial<Record<Flag, boolean>>;
 };

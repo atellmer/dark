@@ -1,6 +1,5 @@
-import { workLoop, detectIsBusy } from '@dark-engine/core';
+import { type WorkLoop, workLoop, detectIsBusy } from '@dark-engine/core';
 
-type Callback = () => boolean;
 type Queue = Array<Task>;
 
 const queue: Queue = [];
@@ -42,10 +41,8 @@ function executeTasks() {
   }
 }
 
-function requestCallbackSync(callback: Callback) {
-  while (callback()) {
-    //
-  }
+function requestCallbackSync(callback: WorkLoop) {
+  callback(false);
   executeTasks();
   currentTask = null;
 }

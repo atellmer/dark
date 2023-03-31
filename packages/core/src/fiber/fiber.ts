@@ -138,7 +138,9 @@ type Box = {
   inst$: DarkElementInstance;
 };
 
-function workLoop() {
+export type WorkLoop = (yeild: boolean) => boolean;
+
+function workLoop(yeild: boolean) {
   const wipFiber = wipRootStore.get();
   let nextUnitOfWork = nextUnitOfWorkStore.get();
   let shouldYield = false;
@@ -153,7 +155,7 @@ function workLoop() {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork, box);
     nextUnitOfWorkStore.set(nextUnitOfWork);
     hasMoreWork = Boolean(nextUnitOfWork);
-    shouldYield = platform.shouldYeild();
+    shouldYield = yeild && platform.shouldYeild();
   }
 
   if (!nextUnitOfWork && wipFiber) {
@@ -402,7 +404,7 @@ function alt(fiber: Fiber, alternate: Fiber) {
   let prevKeysMap: Record<DarkElementKey, boolean> = null;
   let nextKeysMap: Record<DarkElementKey, boolean> = null;
   let keyedFibersMap: Record<DarkElementKey, Fiber> = null;
-  let isSomethingMoved = false;
+  let isDifferent = false;
 
   alternate.used = true;
 
@@ -414,7 +416,7 @@ function alt(fiber: Fiber, alternate: Fiber) {
   } else if (hasChildrenProp(alternate.inst) && hasChildrenProp(instance) && alternate.cc !== 0) {
     const hasSameCount = alternate.cc === instance.children.length;
     const extract = () => {
-      ({ prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
+      ({ prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap, isDifferent } = extractKeys(
         alternate.child,
         instance.children,
       ));
@@ -463,7 +465,6 @@ function alt(fiber: Fiber, alternate: Fiber) {
             nextKeyFiber.tag = EffectTag.U;
             prevKeyFiber.tag = EffectTag.U;
             nextKeyFiber.move = true;
-            isSomethingMoved = true;
             nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
           }
         } else if (nextKey !== null) {
@@ -479,7 +480,7 @@ function alt(fiber: Fiber, alternate: Fiber) {
       result = [];
     }
 
-    if (hasSRFlag && hasSameCount && !isSomethingMoved) {
+    if (hasSRFlag && hasSameCount && !isDifferent) {
       !nextKeys && extract();
       const rootId = getRootId();
       const options: ScheduleCallbackOptions = { forceSync: true };
@@ -618,6 +619,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   const nextKeysMap: Record<DarkElementKey, boolean> = {};
   const keyedFibersMap: Record<DarkElementKey, Fiber> = {};
   const usedKeysMap: Record<DarkElementKey, boolean> = {};
+  let isDifferent = false;
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
@@ -644,6 +646,10 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
 
       nextKeys.push(nextKey);
       nextKeysMap[nextKey] = true;
+
+      if (!isDifferent && nextKey !== prevKeys[prevKeys.length - 1]) {
+        isDifferent = true;
+      }
     }
 
     nextFiber = nextFiber ? nextFiber.next : null;
@@ -656,6 +662,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
     prevKeysMap,
     nextKeysMap,
     keyedFibersMap,
+    isDifferent,
   };
 }
 
