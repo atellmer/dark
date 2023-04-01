@@ -397,14 +397,9 @@ function alt(fiber: Fiber, alternate: Fiber) {
   const instance = fiber.inst;
   const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
-  const hasNMFlag = flag && flag[Flag.NM];
-  const hasSRFlag = flag && flag[Flag.SR];
-  let prevKeys: Array<DarkElementKey> = null;
-  let nextKeys: Array<DarkElementKey> = null;
-  let prevKeysMap: Record<DarkElementKey, boolean> = null;
-  let nextKeysMap: Record<DarkElementKey, boolean> = null;
-  let keyedFibersMap: Record<DarkElementKey, Fiber> = null;
-  let isDifferent = false;
+  const NM = flag?.[Flag.NM];
+  const SR = flag?.[Flag.SR];
+  let hasMoves = false;
 
   alternate.used = true;
 
@@ -415,15 +410,12 @@ function alt(fiber: Fiber, alternate: Fiber) {
     }
   } else if (hasChildrenProp(alternate.inst) && hasChildrenProp(instance) && alternate.cc !== 0) {
     const hasSameCount = alternate.cc === instance.children.length;
-    const extract = () => {
-      ({ prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap, isDifferent } = extractKeys(
+
+    if (NM ? !hasSameCount : true) {
+      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap, isDifferent } = extractKeys(
         alternate.child,
         instance.children,
-      ));
-    };
-
-    if (hasNMFlag ? !hasSameCount : true) {
-      extract();
+      );
       const flush = nextKeys.length === 0;
       let result: Array<[DarkElement | [DarkElementKey, DarkElementKey], string]> = [];
       let size = Math.max(prevKeys.length, nextKeys.length);
@@ -431,6 +423,7 @@ function alt(fiber: Fiber, alternate: Fiber) {
       let idx = 0;
       let p = 0;
       let n = 0;
+      hasMoves = isDifferent;
 
       for (let i = 0; i < size; i++) {
         const nextKey = nextKeys[i - n] ?? null;
@@ -480,25 +473,24 @@ function alt(fiber: Fiber, alternate: Fiber) {
       result = [];
     }
 
-    if (hasSRFlag && hasSameCount && !isDifferent) {
-      !nextKeys && extract();
+    if (SR && hasSameCount && !hasMoves) {
       const rootId = getRootId();
       const options: ScheduleCallbackOptions = { forceSync: true };
-      let skip = false;
+      let fiber$ = alternate.child;
+      let idx = 0;
 
-      for (let i = 0; i < nextKeys.length; i++) {
-        const candidate = keyedFibersMap[nextKeys[i]];
-        const pc = candidate.inst as Component;
-        const nc = instance.children[i] as Component;
+      while (fiber$) {
+        const pc = fiber$.inst as Component;
+        const nc = instance.children[idx] as Component;
 
         if (pc.type === nc.type && nc.su && nc.su(pc.props, nc.props)) {
-          skip = true;
-          candidate.inst = nc;
-          platform.schedule(createUpdateCallback({ rootId, fiber: candidate }), options);
+          (fiber$.inst = nc), platform.schedule(createUpdateCallback({ rootId, fiber: fiber$ }), options);
         }
+        fiber$ = fiber$.next;
+        idx++;
       }
 
-      skip && (mountStore.deep.set(false), (fiber.child = alternate.child), patchFiberParent(fiber));
+      mountStore.deep.set(false), (fiber.child = alternate.child), patchFiberParent(fiber);
     }
   }
 }
@@ -647,7 +639,7 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
       nextKeys.push(nextKey);
       nextKeysMap[nextKey] = true;
 
-      if (!isDifferent && nextKey !== prevKeys[prevKeys.length - 1]) {
+      if (nextKey !== prevKeys[prevKeys.length - 1]) {
         isDifferent = true;
       }
     }

@@ -2,7 +2,7 @@ import { Text, component, memo, useUpdate, Flag, Guard, useMemo } from '@dark-en
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag1 = { [Flag.NM]: true };
-const flag2 = { [Flag.SR]: true };
+const flag2 = { [Flag.NM]: true, [Flag.SR]: true };
 
 const createMeasurer = () => {
   let startTime;

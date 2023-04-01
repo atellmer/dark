@@ -72,22 +72,22 @@ function collectElements<T>(fiber: Fiber<T>): Array<T> {
 }
 
 function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
-  let nextFiber = fiber as unknown as Fiber<T2>;
+  let fiber$ = fiber as unknown as Fiber<T2>;
 
-  while (nextFiber) {
-    if (nextFiber.element) return nextFiber;
-    nextFiber = nextFiber.parent;
+  while (fiber$) {
+    if (fiber$.element) return fiber$;
+    fiber$ = fiber$.parent;
   }
 
-  return nextFiber;
+  return fiber$;
 }
 
 function patchFiberParent<T>(fiber: Fiber<T>) {
-  let nextFiber = fiber.child;
+  let fiber$ = fiber.child;
 
-  while (nextFiber) {
-    nextFiber.parent = fiber;
-    nextFiber = nextFiber.next;
+  while (fiber$) {
+    fiber$.parent = fiber;
+    fiber$ = fiber$.next;
   }
 
   return fiber;
