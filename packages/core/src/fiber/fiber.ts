@@ -54,6 +54,7 @@ import { walkFiber, getFiberWithElement, patchFiberParent } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
+import { detectIsSignal } from '../use-signal';
 
 class Fiber<N = NativeElement> {
   public id = 0;
@@ -580,6 +581,16 @@ function mount(fiber: Fiber, instance: DarkElementInstance) {
     }
   } else if (detectIsVirtualNodeFactory(instance$)) {
     instance$ = instance$();
+
+    if (detectIsTagVirtualNode(instance$) && instance$.attrs) {
+      const keys = Object.keys(instance$.attrs);
+
+      for (const key of keys) {
+        detectIsSignal(instance$.attrs[key]) && (instance$.attrs[key] = instance$.attrs[key].get());
+      }
+    }
+  } else if (detectIsSignal(instance$)) {
+    instance$ = Text(instance$.get() + '');
   }
 
   if (hasChildrenProp(instance$)) {

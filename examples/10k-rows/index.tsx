@@ -1,4 +1,4 @@
-import { Text, component, memo, useUpdate, Flag, Guard, useMemo } from '@dark-engine/core';
+import { Text, component, memo, useUpdate, Flag, Guard, useMemo, signal, type Signal } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag1 = { [Flag.NM]: true };
@@ -39,11 +39,11 @@ const buildData = (count, prefix = '') => {
     .fill(0)
     .map(() => ({
       id: ++nextId,
-      name: `item: ${nextId} ${prefix}`,
+      name: signal(`item: ${nextId} ${prefix}`),
     }));
 };
 
-type DataItem = { id: number; name: string };
+type DataItem = { id: number; name: Signal<string> };
 
 type HeaderProps = {
   onCreate: (e: E<MouseEvent>) => void;
@@ -99,7 +99,7 @@ const MemoHeader = memo(Header, () => false);
 type RowProps = {
   id: number;
   selected: boolean;
-  name: string;
+  name: Signal<string>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
@@ -109,10 +109,9 @@ const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) 
     class: selected ? 'selected' : undefined,
     flag: flag1,
     slot: [
-      td({ class: 'cell', slot: Text(name) }),
-      Guard({
-        slot: [td({ class: 'cell', slot: Text('qqq') }), td({ class: 'cell', slot: Text('xxx') })],
-      }),
+      td({ class: 'cell', slot: name }),
+      td({ class: 'cell', slot: Text('qqq') }),
+      td({ class: 'cell', slot: Text('xxx') }),
       td({
         class: 'cell',
         slot: [
@@ -124,7 +123,7 @@ const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) 
   });
 });
 
-const MemoRow = memo(Row, (p, n) => p.selected !== n.selected || p.name !== n.name);
+const MemoRow = memo(Row, () => false);
 
 type State = {
   data: Array<DataItem>;
@@ -174,12 +173,8 @@ const App = component(() => {
     const data = state.data;
 
     for (let i = 0; i < data.length; i += 10) {
-      data[i] = {
-        ...data[i],
-        name: data[i].name + '!!!',
-      };
+      data[i].name.set(x => x + '!!!');
     }
-    forceUpdate();
     measurer.stop();
   };
   const handleRemove = (id: number, e: E<MouseEvent>) => {
