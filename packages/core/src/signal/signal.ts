@@ -6,8 +6,8 @@ import { currentFiberStore, getRootId } from '../scope';
 type ShouldUpdate<T> = (p: T, n: T) => boolean;
 
 class Signal<T = unknown> {
-  value: T;
-  subs: Map<Fiber, ShouldUpdate<T>> = new Map();
+  private value: T;
+  private subs: Map<Fiber, ShouldUpdate<T>> = new Map();
 
   constructor(value: T) {
     this.value = value;
@@ -39,4 +39,6 @@ const signal = <T>(value?: T) => new Signal(value);
 
 const shouldUpdate$ = () => true;
 
-export { Signal, signal };
+const detectIsSignal = (value: unknown): value is Signal => value instanceof Signal;
+
+export { Signal, signal, detectIsSignal };

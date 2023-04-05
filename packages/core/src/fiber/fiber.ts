@@ -349,6 +349,7 @@ function current(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) 
   fiber.alt = alternate || null;
   fiber.element = fiber.element || (isUpdate ? alternate.element : null);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
+  alternate?.cleanup && alternate.cleanup();
 
   if (alternate && alternate.move) {
     fiber.move = alternate.move;
@@ -499,7 +500,7 @@ function memo(fiber: Fiber) {
   fiber.cc = alternate.cc;
   fiber.cec = alternate.cec;
   fiber.catch = alternate.catch;
-  fiber.cleanup = alternate.cleanup;
+  alternate?.cleanup && (fiber.cleanup = alternate.cleanup);
   fiber.child && (fiber.child.parent = fiber);
 
   const diff = fiber.eidx - alternate.eidx;

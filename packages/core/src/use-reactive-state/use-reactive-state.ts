@@ -3,7 +3,7 @@ import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { batch } from '../batch';
-import { detectIsAtom } from '../atom';
+import { detectIsSignal } from '../signal';
 
 const $$proxy = Symbol('proxy');
 
@@ -18,7 +18,7 @@ function useReactiveState<T extends object>(value: T | (() => T), options?: Sche
 }
 
 function reactive<T extends object>(value: T, update: () => void, useBatch = true): T {
-  if (detectIsAtom(value) || detectIsProxy(value)) return value;
+  if (detectIsSignal(value) || detectIsProxy(value)) return value;
   let proxy = value;
 
   if (detectIsObject(value) && !detectIsNull(value)) {

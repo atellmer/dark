@@ -32,7 +32,7 @@ export { useReactiveState } from './use-reactive-state';
 export { useId } from './use-id';
 export { useSyncExternalStore } from './use-sync-external-store';
 export { useSpring, type Animation } from './use-spring';
-export * from './use-signal';
+export * from './signal';
 export * from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
