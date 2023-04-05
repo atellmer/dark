@@ -1,71 +1,48 @@
-import { useUpdate } from '../use-update';
-import { useEffect } from '../use-effect';
+import { platform } from '../platform';
+import { detectIsFunction } from '../helpers';
+import { Fiber, createUpdateCallback } from '../fiber';
+import { currentFiberStore, getRootId } from '../scope';
 
-type ShoudlUpdate<T> = (p: T, n: T) => boolean;
-
-type AtomSub<T> = [callback: (value: T) => void, shoudlUpdate?: ShoudlUpdate<T>];
+type ShouldUpdate<T> = (p: T, n: T) => boolean;
 
 class Atom<T = unknown> {
-  private value: T;
-  private subs: Set<AtomSub<T>> = new Set();
+  private value$: T;
+  private subs: Map<Fiber, ShouldUpdate<T>> = new Map();
 
-  constructor(value: T = undefined) {
-    this.value = value;
+  constructor(value: T) {
+    this.value$ = value;
   }
 
-  public get(): T {
-    return this.value;
+  value(shouldUpdate?: ShouldUpdate<T>) {
+    const fiber = currentFiberStore.get();
+
+    this.subs.set(fiber, shouldUpdate);
+    fiber.cleanup = () => this.subs.delete(fiber);
+
+    return this.value$;
   }
 
-  public set(value: T) {
-    const value$ = this.value;
-
-    this.value = value;
-    this.subs.forEach(([callabck, shouldUpdate = shouldUpdate$]) => shouldUpdate(value$, value) && callabck(value));
+  get() {
+    return this.value$;
   }
 
-  public on(sub: AtomSub<T>) {
-    this.subs.add(sub);
+  set(value: T | ((prevValue: T) => T)) {
+    const rootId = getRootId();
+    const value$ = this.value$;
 
-    return () => this.subs.delete(sub);
+    this.value$ = detectIsFunction(value) ? value(value$) : value;
+
+    for (const [fiber, shouldUpdate = shouldUpdate$] of this.subs) {
+      if (!shouldUpdate(value$, this.value$)) continue;
+      platform.schedule(createUpdateCallback({ rootId, fiber }), { forceSync: true });
+    }
   }
 }
 
-const atom = <T>(value: T = undefined) => new Atom(value);
+const atom = <T>(value?: T) => new Atom(value);
 
 const shouldUpdate$ = () => true;
 
-type Value<T = unknown> = [Atom<T>, ShoudlUpdate<T>?];
-
-function useAtom<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
-  values: [
-    Value<T1>,
-    Value<T2>?,
-    Value<T3>?,
-    Value<T4>?,
-    Value<T5>?,
-    Value<T6>?,
-    Value<T7>?,
-    Value<T8>?,
-    Value<T9>?,
-    Value<T10>?,
-  ],
-) {
-  const update = useUpdate({ forceSync: true });
-
-  useEffect(() => {
-    const off: Array<() => void> = [];
-
-    for (const [atom, shouldUpdate] of values) {
-      off.push(atom.on([() => update(), shouldUpdate as ShoudlUpdate<any>]));
-    }
-
-    return () => off.forEach(x => x());
-  }, []);
-
-  return values.map((x: Value) => x[0].get()) as [T1, T2?, T3?, T4?, T5?, T6?, T7?, T8?, T9?, T10?];
-}
-
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
 
-export { Atom, atom, useAtom, detectIsAtom };
+export { Atom, atom, detectIsAtom };

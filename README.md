@@ -182,6 +182,7 @@ The public API is partially similar to the React API and includes 2 packages - c
 ```tsx
 import {
   type DarkElement,
+  type Atom,
   h,
   View,
   Text,
@@ -205,7 +206,6 @@ import {
   useError,
   useRef,
   useId,
-  useAtom,
   useSpring,
   useImperativeHandle,
   useState,
@@ -842,30 +842,35 @@ return (
 Atoms are pieces of data that can be independently subscribed to and only rendered when those pieces of data are explicitly changed. They are useful primarily for optimizing critical places in large lists, such as working with a single row in a large table based on data coming from the parent component. Atoms are convenient to use with memoizations. In this case, we can achieve the same performance as if the data were in the consumer's local state. The main idea is to split a large render into many smaller ones so that we don't have to process the calculation of the whole tree, even if it is memoized, because traversing memoized components is still a traversal, albeit a superficial one.
 
 ```tsx
-import { type Atom, atom, useAtom } from '@dark-engine/core';
+import { type Atom, atom } from '@dark-engine/core';
 ```
 
 ```tsx
 const ParentComponent = component(() => {
   const count$ = useMemo<Atom<number>>(() => atom(0), []);
 
-  // ParentComponent won't render after count change cause there is no call useAtom here
+  // ParentComponent won't render after count change cause there is no call atom.value() here
 
   return (
     <>
-      <button onClick={() => count$.set(count$.get() + 1)}>increment atom</button>
+      <button onClick={() => count$.set(x => x + 1)}>increment atom</button>
       <ChildComponent count$={count$} />
     </>
   );
 });
 
 const ChildComponent = component(({ count$ }) => {
-  const [count] = useAtom([[count$, (p, n) => p !== n && n >= 5]]);
   // renders only atom consumer
-  // update ChildComponent independently when count >= 5
 
-  return <div>{count}</div>;
+  return <div>{count$.value()}</div>;
 });
+```
+
+You can pass function that will control rendering necessity
+```tsx
+const count = count$.value((prev, next) => prev !== next && next >= 5);
+
+<div>{count}</div>
 ```
 
 #### batch
@@ -1312,7 +1317,7 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />); // some magic and app works!
 ```
 
-A working example of an SSR application based on the express server is in StackBlitz example #10
+A working example of an SSR application based on the express server is in examples
 
 <a name="routing"></a>
 ## Routing

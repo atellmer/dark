@@ -126,7 +126,7 @@ describe('[use-reactive-state]', () => {
     expect(error).toBeTruthy();
   });
 
-  test('skip atoms', () => {
+  test('skip signals', () => {
     type State = {
       proxy: object;
       atom: Atom;

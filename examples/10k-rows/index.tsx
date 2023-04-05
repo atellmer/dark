@@ -1,4 +1,4 @@
-import { Text, component, memo, useUpdate, Flag, Guard, useMemo, signal, type Signal } from '@dark-engine/core';
+import { type Atom, Text, component, memo, Flag, useMemo, atom } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag1 = { [Flag.NM]: true };
@@ -38,11 +38,11 @@ const buildData = (count, prefix = '') => {
     .fill(0)
     .map(() => ({
       id: ++nextId,
-      name: signal(`item: ${nextId} ${prefix}`),
+      name$: atom(`item: ${nextId} ${prefix}`),
     }));
 };
 
-type DataItem = { id: number; name: Signal<string> };
+type DataItem = { id: number; name$: Atom<string> };
 
 type HeaderProps = {
   onCreate: (e: E<MouseEvent>) => void;
@@ -96,27 +96,27 @@ const Header = component<HeaderProps>(
 const MemoHeader = memo(Header, () => false);
 
 type NameProps = {
-  name: Signal<string>;
+  name$: Atom<string>;
 };
 
-const Name = component<NameProps>(({ name }) => Text(name.get()));
+const Name = component<NameProps>(({ name$ }) => Text(name$.value()));
 
 type RowProps = {
   id: number;
-  selected: Signal<number>;
-  name: Signal<string>;
+  name$: Atom<string>;
+  selected$: Atom<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) => {
-  const className = selected.get((p, n) => p === id || n === id) === id ? 'selected' : undefined;
+const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
+  const className = selected$.value((p, n) => p === id || n === id) === id ? 'selected' : undefined;
 
   return tr({
     class: className,
     flag: flag1,
     slot: [
-      td({ class: 'cell', slot: Name({ name }) }),
+      td({ class: 'cell', slot: Name({ name$ }) }),
       td({ class: 'cell', slot: Text('qqq') }),
       td({ class: 'cell', slot: Text('xxx') }),
       td({
@@ -133,88 +133,85 @@ const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) 
 const MemoRow = memo(Row, () => false);
 
 type State = {
-  data: Array<DataItem>;
-  selected: Signal<number>;
+  data$: Atom<Array<DataItem>>;
+  selected$: Atom<number>;
 };
 
 const App = component(() => {
-  const state = useMemo<State>(() => ({ data: [], selected: signal() }), []);
-  const forceUpdate = useUpdate({ forceSync: true });
-  const { data, selected } = state;
+  const state = useMemo<State>(() => ({ data$: atom([]), selected$: atom() }), []);
+  const { data$, selected$ } = state;
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.data = buildData(10000);
-    forceUpdate();
+    state.data$.set(buildData(10000));
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    const data = state.data;
+    const data = data$.get();
     data.unshift(...buildData(1000, '^^^'));
-    forceUpdate();
+    data$.set(data);
     measurer.stop();
   };
   const handleAppend = (e: E<MouseEvent>) => {
     measurer.start('append');
     e.stopPropagation();
-    const data = state.data;
+    const data = data$.get();
     data.push(...buildData(1000, '^^^'));
-    forceUpdate();
+    data$.set(data);
     measurer.stop();
   };
   const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    const data = state.data;
+    const data = data$.get();
     data.splice(0, 0, ...buildData(5, '***'));
     data.splice(8, 0, ...buildData(2, '***'));
-    forceUpdate();
+    data$.set(data);
     measurer.stop();
   };
   const handleUpdateAll = (e: E<MouseEvent>) => {
     measurer.start('update every 10th');
     e.stopPropagation();
-    const data = state.data;
+    const data = data$.get();
 
     for (let i = 0; i < data.length; i += 10) {
-      data[i].name.set(x => x + '!!!');
+      data[i].name$.set(x => x + '!!!');
     }
     measurer.stop();
   };
   const handleRemove = (id: number, e: E<MouseEvent>) => {
     measurer.start('remove');
     e.stopPropagation();
-    const data = state.data;
+    const data = data$.get();
     const idx = data.findIndex(x => x.id === id);
     idx !== -1 && data.splice(idx, 1);
-    forceUpdate();
+    data$.set(data);
     measurer.stop();
   };
   const handleHightlight = (id: number, e: E<MouseEvent>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    state.selected.set(id);
+    selected$.set(id);
     measurer.stop();
   };
   const handleSwap = (e: E<MouseEvent>) => {
-    const data = state.data;
+    const data = data$.get();
     if (data.length === 0) return;
     measurer.start('swap');
     e.stopPropagation();
-    const temp = state.data[1];
+    const temp = data[1];
     data[1] = data[data.length - 2];
     data[data.length - 2] = temp;
-    forceUpdate();
+    data$.set(data);
     measurer.stop();
   };
   const handleClear = (e: E<MouseEvent>) => {
     measurer.start('clear');
     e.stopPropagation();
-    state.data = [];
-    forceUpdate();
+    data$.set([]);
     measurer.stop();
   };
 
@@ -231,14 +228,14 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        slot: data.map(item => {
-          const { id, name } = item;
+        slot: data$.value().map(item => {
+          const { id, name$ } = item;
 
           return MemoRow({
             key: id,
             id,
-            name,
-            selected,
+            name$,
+            selected$,
             onRemove: handleRemove,
             onHighlight: handleHightlight,
           });
