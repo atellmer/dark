@@ -1,68 +1,42 @@
-import { Fiber, EffectTag } from '../fiber';
-import { currentFiberStore } from '../scope';
-import { detectIsTextVirtualNode, detectIsTagVirtualNode, Text, TagVirtualNode } from '../view';
 import { platform } from '../platform';
+import { detectIsFunction } from '../helpers';
+import { Fiber, createUpdateCallback } from '../fiber';
+import { currentFiberStore, getRootId } from '../scope';
+
+type ShouldUpdate<T> = (p: T, n: T) => boolean;
 
 class Signal<T = unknown> {
   value: T;
-  subs: Record<string, Fiber> = {};
+  subs: Map<Fiber, ShouldUpdate<T>> = new Map();
 
   constructor(value: T) {
     this.value = value;
   }
 
-  get() {
+  get(shouldUpdate?: ShouldUpdate<T>) {
     const fiber = currentFiberStore.get();
-    const key = createKey(fiber);
 
-    this.subs[key] = fiber;
+    this.subs.set(fiber, shouldUpdate);
+    fiber.cleanup = () => this.subs.delete(fiber);
 
     return this.value;
   }
 
-  set(fn: (prevValue: T) => T) {
-    const keys = Object.keys(this.subs);
+  set(value: T | ((prevValue: T) => T)) {
+    const rootId = getRootId();
+    const value$ = this.value;
 
-    this.value = fn(this.value);
+    this.value = detectIsFunction(value) ? value(value$) : value;
 
-    for (const key of keys) {
-      const fiber = this.subs[key];
-
-      fiber.alt = new Fiber().mutate(fiber);
-      fiber.tag = EffectTag.U;
-
-      if (detectIsTextVirtualNode(fiber.inst)) {
-        fiber.inst = Text(this.value + '');
-      } else if (detectIsTagVirtualNode(fiber.inst)) {
-        const instance = new TagVirtualNode(fiber.inst.name, { ...fiber.inst.attrs }, []);
-        const keys = Object.keys(fiber.inst.attrs);
-
-        fiber.inst = instance;
-
-        for (const key of keys) {
-          instance.attrs[key] = this.value;
-        }
-      }
-
-      platform.commit(fiber);
+    for (const [fiber, shouldUpdate = shouldUpdate$] of this.subs) {
+      if (!shouldUpdate(value$, this.value)) continue;
+      platform.schedule(createUpdateCallback({ rootId, fiber }), { forceSync: true });
     }
   }
 }
 
-const signal = <T>(value: T) => new Signal(value);
+const signal = <T>(value?: T) => new Signal(value);
 
-const detectIsSignal = (value: unknown): value is Signal => value instanceof Signal;
+const shouldUpdate$ = () => true;
 
-function createKey(fiber: Fiber) {
-  let nextFiber = fiber;
-  let key = '';
-
-  while (nextFiber) {
-    key = `${nextFiber.idx}${key ? `:${key}` : ''}`;
-    nextFiber = nextFiber.parent;
-  }
-
-  return key;
-}
-
-export { Signal, signal, detectIsSignal };
+export { Signal, signal };

@@ -9,11 +9,12 @@ import { detectIsUndefined } from '../helpers';
 import { currentRootStore, eventsStore, rootStore } from '../scope';
 
 function unmountFiber(fiber: Fiber) {
-  if (!fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.pHost) return;
+  if (!fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.clHost && !fiber.pHost) return;
 
   walkFiber(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next) return stop();
-    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.efHost && !nextFiber.pHost) return resetIsDeepWalking();
+    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.efHost && !nextFiber.clHost && !nextFiber.pHost)
+      return resetIsDeepWalking();
 
     if (!isReturn && detectIsComponent(nextFiber.inst)) {
       const hasValues = nextFiber.hook.values.length > 0;
@@ -21,6 +22,7 @@ function unmountFiber(fiber: Fiber) {
       nextFiber.iefHost && hasValues && dropInsertionEffects(nextFiber.hook);
       nextFiber.lefHost && hasValues && dropLayoutEffects(nextFiber.hook);
       nextFiber.efHost && hasValues && dropEffects(nextFiber.hook);
+      nextFiber.cleanup && nextFiber.cleanup();
       nextFiber.pHost && platform.unmountPortal(nextFiber);
     }
   });

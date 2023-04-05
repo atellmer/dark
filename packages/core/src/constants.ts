@@ -16,5 +16,4 @@ export enum TaskPriority {
 
 export enum Flag {
   NM = 'NM', // no moves
-  SR = 'SR', // split render
 }

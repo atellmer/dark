@@ -2,7 +2,6 @@ import { Text, component, memo, useUpdate, Flag, Guard, useMemo, signal, type Si
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const flag1 = { [Flag.NM]: true };
-const flag2 = { [Flag.NM]: true, [Flag.SR]: true };
 
 const createMeasurer = () => {
   let startTime;
@@ -96,20 +95,28 @@ const Header = component<HeaderProps>(
 
 const MemoHeader = memo(Header, () => false);
 
+type NameProps = {
+  name: Signal<string>;
+};
+
+const Name = component<NameProps>(({ name }) => Text(name.get()));
+
 type RowProps = {
   id: number;
-  selected: boolean;
+  selected: Signal<number>;
   name: Signal<string>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
 const Row = component<RowProps>(({ id, selected, name, onRemove, onHighlight }) => {
+  const className = selected.get((p, n) => p === id || n === id) === id ? 'selected' : undefined;
+
   return tr({
-    class: selected ? 'selected' : undefined,
+    class: className,
     flag: flag1,
     slot: [
-      td({ class: 'cell', slot: name }),
+      td({ class: 'cell', slot: Name({ name }) }),
       td({ class: 'cell', slot: Text('qqq') }),
       td({ class: 'cell', slot: Text('xxx') }),
       td({
@@ -127,11 +134,11 @@ const MemoRow = memo(Row, () => false);
 
 type State = {
   data: Array<DataItem>;
-  selected: number;
+  selected: Signal<number>;
 };
 
 const App = component(() => {
-  const state = useMemo<State>(() => ({ data: [], selected: undefined }), []);
+  const state = useMemo<State>(() => ({ data: [], selected: signal() }), []);
   const forceUpdate = useUpdate({ forceSync: true });
   const { data, selected } = state;
 
@@ -189,8 +196,7 @@ const App = component(() => {
   const handleHightlight = (id: number, e: E<MouseEvent>) => {
     measurer.start('highlight');
     e.stopPropagation();
-    state.selected = id;
-    forceUpdate();
+    state.selected.set(id);
     measurer.stop();
   };
   const handleSwap = (e: E<MouseEvent>) => {
@@ -225,15 +231,14 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        flag: flag2,
         slot: data.map(item => {
           const { id, name } = item;
 
           return MemoRow({
-            //key: id,
+            key: id,
             id,
             name,
-            selected: selected === id,
+            selected,
             onRemove: handleRemove,
             onHighlight: handleHightlight,
           });

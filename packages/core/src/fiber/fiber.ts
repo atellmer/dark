@@ -1,4 +1,4 @@
-import { type ScheduleCallbackOptions, platform } from '../platform';
+import { platform } from '../platform';
 import {
   flatten,
   error,
@@ -10,7 +10,6 @@ import {
   detectIsFunction,
 } from '../helpers';
 import {
-  getRootId,
   wipRootStore,
   currentRootStore,
   nextUnitOfWorkStore,
@@ -54,7 +53,6 @@ import { walkFiber, getFiberWithElement, patchFiberParent } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
-import { detectIsSignal } from '../use-signal';
 
 class Fiber<N = NativeElement> {
   public id = 0;
@@ -75,12 +73,14 @@ class Fiber<N = NativeElement> {
   public efHost: boolean; // effect host
   public lefHost: boolean; // layout effect host
   public iefHost: boolean; // insertion effect host
+  public clHost: boolean; // cleanup host
   public pHost: boolean; // portal host
   public marker: string; // for dev
   public used: boolean; // flag if fiber already been rendered
   public batch: number | NodeJS.Timeout | null; // timer for batching
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
   public catch: (error: Error) => void;
+  public cleanup: () => void;
   private static nextId = 0;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
@@ -113,6 +113,11 @@ class Fiber<N = NativeElement> {
   public markIEFHost() {
     this.iefHost = true;
     this.parent && !this.parent.iefHost && this.parent.markIEFHost();
+  }
+
+  public markCLHost() {
+    this.clHost = true;
+    this.parent && !this.parent.clHost && this.parent.markCLHost();
   }
 
   public markPHost() {
@@ -399,8 +404,6 @@ function alt(fiber: Fiber, alternate: Fiber) {
   const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
   const NM = flag?.[Flag.NM];
-  const SR = flag?.[Flag.SR];
-  let hasMoves = false;
 
   alternate.used = true;
 
@@ -413,7 +416,7 @@ function alt(fiber: Fiber, alternate: Fiber) {
     const hasSameCount = alternate.cc === instance.children.length;
 
     if (NM ? !hasSameCount : true) {
-      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap, isDifferent } = extractKeys(
+      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(
         alternate.child,
         instance.children,
       );
@@ -424,7 +427,6 @@ function alt(fiber: Fiber, alternate: Fiber) {
       let idx = 0;
       let p = 0;
       let n = 0;
-      hasMoves = isDifferent;
 
       for (let i = 0; i < size; i++) {
         const nextKey = nextKeys[i - n] ?? null;
@@ -473,26 +475,6 @@ function alt(fiber: Fiber, alternate: Fiber) {
 
       result = [];
     }
-
-    if (SR && hasSameCount && !hasMoves) {
-      const rootId = getRootId();
-      const options: ScheduleCallbackOptions = { forceSync: true };
-      let fiber$ = alternate.child;
-      let idx = 0;
-
-      while (fiber$) {
-        const pc = fiber$.inst as Component;
-        const nc = instance.children[idx] as Component;
-
-        if (pc.type === nc.type && nc.su && nc.su(pc.props, nc.props)) {
-          (fiber$.inst = nc), platform.schedule(createUpdateCallback({ rootId, fiber: fiber$ }), options);
-        }
-        fiber$ = fiber$.next;
-        idx++;
-      }
-
-      mountStore.deep.set(false), (fiber.child = alternate.child), patchFiberParent(fiber);
-    }
   }
 }
 
@@ -517,6 +499,7 @@ function memo(fiber: Fiber) {
   fiber.cc = alternate.cc;
   fiber.cec = alternate.cec;
   fiber.catch = alternate.catch;
+  fiber.cleanup = alternate.cleanup;
   fiber.child && (fiber.child.parent = fiber);
 
   const diff = fiber.eidx - alternate.eidx;
@@ -534,6 +517,7 @@ function memo(fiber: Fiber) {
   alternate.efHost && fiber.markEFHost();
   alternate.lefHost && fiber.markLEFHost();
   alternate.iefHost && fiber.markIEFHost();
+  alternate.clHost && fiber.markCLHost();
   alternate.pHost && fiber.markPHost();
 }
 
@@ -551,6 +535,7 @@ function install(instance: DarkElementInstance, idx: number, fiber: Fiber) {
       hasEffects(fiber) && fiber.markEFHost();
       hasLayoutEffects(fiber) && fiber.markLEFHost();
       hasInsertionEffects(fiber) && fiber.markIEFHost();
+      fiber.cleanup && fiber.markCLHost();
       platform.detectIsPortal(instance$) && fiber.markPHost();
     }
   }
@@ -581,16 +566,6 @@ function mount(fiber: Fiber, instance: DarkElementInstance) {
     }
   } else if (detectIsVirtualNodeFactory(instance$)) {
     instance$ = instance$();
-
-    if (detectIsTagVirtualNode(instance$) && instance$.attrs) {
-      const keys = Object.keys(instance$.attrs);
-
-      for (const key of keys) {
-        detectIsSignal(instance$.attrs[key]) && (instance$.attrs[key] = instance$.attrs[key].get());
-      }
-    }
-  } else if (detectIsSignal(instance$)) {
-    instance$ = Text(instance$.get() + '');
   }
 
   if (hasChildrenProp(instance$)) {
@@ -622,7 +597,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   const nextKeysMap: Record<DarkElementKey, boolean> = {};
   const keyedFibersMap: Record<DarkElementKey, Fiber> = {};
   const usedKeysMap: Record<DarkElementKey, boolean> = {};
-  let isDifferent = false;
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
@@ -649,10 +623,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
 
       nextKeys.push(nextKey);
       nextKeysMap[nextKey] = true;
-
-      if (nextKey !== prevKeys[prevKeys.length - 1]) {
-        isDifferent = true;
-      }
     }
 
     nextFiber = nextFiber ? nextFiber.next : null;
@@ -665,7 +635,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
     prevKeysMap,
     nextKeysMap,
     keyedFibersMap,
-    isDifferent,
   };
 }
 
