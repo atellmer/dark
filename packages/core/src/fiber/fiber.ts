@@ -144,9 +144,9 @@ type Box = {
   inst$: DarkElementInstance;
 };
 
-export type WorkLoop = (yeild: boolean) => boolean;
+export type WorkLoop = (yield$: boolean) => boolean;
 
-function workLoop(yeild: boolean) {
+function workLoop(yield$: boolean) {
   const wipFiber = wipRootStore.get();
   let nextUnitOfWork = nextUnitOfWorkStore.get();
   let shouldYield = false;
@@ -161,7 +161,7 @@ function workLoop(yeild: boolean) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork, box);
     nextUnitOfWorkStore.set(nextUnitOfWork);
     hasMoreWork = Boolean(nextUnitOfWork);
-    shouldYield = yeild && platform.shouldYeild();
+    shouldYield = yield$ && platform.shouldYeild();
   }
 
   if (!nextUnitOfWork && wipFiber) {

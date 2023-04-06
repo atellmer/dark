@@ -33,7 +33,7 @@ const createMeasurer = () => {
 const measurer = createMeasurer();
 
 let nextId = 0;
-const buildData = (count, prefix = '') => {
+const buildData = (count, prefix = ''): Array<DataItem> => {
   return Array(count)
     .fill(0)
     .map(() => ({
