@@ -35,6 +35,11 @@ class Atom<T = unknown> {
       platform.schedule(createUpdateCallback({ rootId, fiber }), { forceSync: true });
     }
   }
+
+  reset(value?: T) {
+    this.value$ = value;
+    this.subs = new Map();
+  }
 }
 
 const atom = <T>(value?: T) => new Atom(value);
