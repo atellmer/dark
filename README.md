@@ -199,6 +199,7 @@ import {
   useMemo,
   useCallback,
   useEvent,
+  useAtom,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -846,21 +847,21 @@ import { type Atom, atom } from '@dark-engine/core';
 ```
 
 ```tsx
-const ParentComponent = component(() => {
-  const count$ = useMemo<Atom<number>>(() => atom(0), []);
+const Parent = component(() => {
+  const [count$, setCount$] = useAtom(0);
 
-  // ParentComponent won't render after count change cause there is no call atom.value() here
+  // Parent won't render after count$ change cause there is no call count$.value() here
 
   return (
     <>
-      <button onClick={() => count$.set(x => x + 1)}>increment atom</button>
-      <ChildComponent count$={count$} />
+      <Child count$={count$} />
+      <button onClick={() => setCount$(x => x + 1)}>increment</button>
     </>
   );
 });
 
-const ChildComponent = component(({ count$ }) => {
-  // renders only atom consumer
+const Child = component(({ count$ }) => {
+  // Renders only atom consumer through call count$.value()
 
   return <div>{count$.value()}</div>;
 });

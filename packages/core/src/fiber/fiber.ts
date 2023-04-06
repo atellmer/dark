@@ -49,7 +49,7 @@ import { type NativeElement, type Hook, EffectTag } from './types';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement, patchFiberParent } from '../walk';
+import { walkFiber, getFiberWithElement } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
@@ -73,7 +73,7 @@ class Fiber<N = NativeElement> {
   public efHost: boolean; // effect host
   public lefHost: boolean; // layout effect host
   public iefHost: boolean; // insertion effect host
-  public clHost: boolean; // cleanup host
+  public aHost: boolean; // atom host
   public pHost: boolean; // portal host
   public marker: string; // for dev
   public used: boolean; // flag if fiber already been rendered
@@ -115,9 +115,9 @@ class Fiber<N = NativeElement> {
     this.parent && !this.parent.iefHost && this.parent.markIEFHost();
   }
 
-  public markCLHost() {
-    this.clHost = true;
-    this.parent && !this.parent.clHost && this.parent.markCLHost();
+  public markAHost() {
+    this.aHost = true;
+    this.parent && !this.parent.aHost && this.parent.markAHost();
   }
 
   public markPHost() {
@@ -518,7 +518,7 @@ function memo(fiber: Fiber) {
   alternate.efHost && fiber.markEFHost();
   alternate.lefHost && fiber.markLEFHost();
   alternate.iefHost && fiber.markIEFHost();
-  alternate.clHost && fiber.markCLHost();
+  alternate.aHost && fiber.markAHost();
   alternate.pHost && fiber.markPHost();
 }
 
@@ -536,7 +536,7 @@ function install(instance: DarkElementInstance, idx: number, fiber: Fiber) {
       hasEffects(fiber) && fiber.markEFHost();
       hasLayoutEffects(fiber) && fiber.markLEFHost();
       hasInsertionEffects(fiber) && fiber.markIEFHost();
-      fiber.cleanup && fiber.markCLHost();
+      fiber.cleanup && fiber.markAHost();
       platform.detectIsPortal(instance$) && fiber.markPHost();
     }
   }

@@ -24,6 +24,8 @@ const getTime = () => Date.now();
 
 const dummyFn = () => {};
 
+const trueFn = () => true;
+
 function error(...args: Array<any>) {
   !detectIsUndefined(console) && console.error(...args);
 }
@@ -95,6 +97,7 @@ export {
   detectIsFalsy,
   getTime,
   dummyFn,
+  trueFn,
   error,
   flatten,
   keyBy,

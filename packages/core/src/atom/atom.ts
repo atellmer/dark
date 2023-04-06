@@ -1,7 +1,8 @@
 import { platform } from '../platform';
-import { detectIsFunction } from '../helpers';
+import { detectIsFunction, trueFn } from '../helpers';
 import { Fiber, createUpdateCallback } from '../fiber';
 import { currentFiberStore, getRootId } from '../scope';
+import { useMemo } from '../use-memo';
 
 type ShouldUpdate<T> = (p: T, n: T) => boolean;
 
@@ -13,11 +14,8 @@ class Atom<T = unknown> {
     this.value$ = value;
   }
 
-  value(shouldUpdate?: ShouldUpdate<T>) {
-    const fiber = currentFiberStore.get();
-
-    this.subs.set(fiber, shouldUpdate);
-    fiber.cleanup = () => this.subs.delete(fiber);
+  value(fn?: ShouldUpdate<T>) {
+    link(currentFiberStore.get(), this.subs, fn);
 
     return this.value$;
   }
@@ -32,7 +30,7 @@ class Atom<T = unknown> {
 
     this.value$ = detectIsFunction(value) ? value(value$) : value;
 
-    for (const [fiber, shouldUpdate = shouldUpdate$] of this.subs) {
+    for (const [fiber, shouldUpdate = trueFn] of this.subs) {
       if (!shouldUpdate(value$, this.value$)) continue;
       platform.schedule(createUpdateCallback({ rootId, fiber }), { forceSync: true });
     }
@@ -41,8 +39,16 @@ class Atom<T = unknown> {
 
 const atom = <T>(value?: T) => new Atom(value);
 
-const shouldUpdate$ = () => true;
-
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
 
-export { Atom, atom, detectIsAtom };
+function link<T>(fiber: Fiber, subs: Map<Fiber, ShouldUpdate<T>>, fn: ShouldUpdate<T>) {
+  subs.set(fiber, fn) && (fiber.cleanup = () => subs.delete(fiber));
+}
+
+function useAtom<T>(value?: T): [Atom<T>, (value: T | ((prevValue: T) => T)) => void] {
+  const atom$ = useMemo(() => atom(value), []);
+
+  return [atom$, (...args) => atom$.set(...args)];
+}
+
+export { Atom, atom, detectIsAtom, useAtom };

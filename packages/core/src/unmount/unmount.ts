@@ -9,11 +9,11 @@ import { detectIsUndefined } from '../helpers';
 import { currentRootStore, eventsStore, rootStore } from '../scope';
 
 function unmountFiber(fiber: Fiber) {
-  if (!fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.clHost && !fiber.pHost) return;
+  if (!fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.aHost && !fiber.pHost) return;
 
   walkFiber(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next) return stop();
-    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.efHost && !nextFiber.clHost && !nextFiber.pHost)
+    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.efHost && !nextFiber.aHost && !nextFiber.pHost)
       return resetIsDeepWalking();
 
     if (!isReturn && detectIsComponent(nextFiber.inst)) {
