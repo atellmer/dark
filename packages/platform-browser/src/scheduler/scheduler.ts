@@ -22,7 +22,7 @@ const queueByPriority: QueueByPriority = {
   low1: [],
   low2: [],
 };
-const YEILD_INTERVAL = 4;
+const YIELD_INTERVAL = 4;
 const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
 let scheduledCallback: WorkLoop = null;
 let deadline = 0;
@@ -115,7 +115,7 @@ function checkOverdueTasks() {
 
 function performWorkUntilDeadline() {
   if (scheduledCallback) {
-    deadline = getTime() + YEILD_INTERVAL;
+    deadline = getTime() + YIELD_INTERVAL;
 
     try {
       const hasMoreWork = scheduledCallback(true);

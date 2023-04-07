@@ -12,9 +12,10 @@ const app = express();
 app.use(compression());
 app.use(express.static(join(__dirname, '../client/static')));
 
-app.get('*', (req, res) => {
+app.get('*', async (req, res) => {
   console.log('url', req.url);
-  const page = createPage('Dark SSR', bootstrap({ url: req.url }));
+  const content = await bootstrap({ url: req.url });
+  const page = createPage('Dark SSR', content);
 
   res.send(page);
 });

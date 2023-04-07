@@ -12,7 +12,7 @@ import {
 } from '@dark-engine/core';
 
 import { dom, createReplacerString } from '@test-utils';
-import { renderToString } from './render';
+import { renderToString, renderToStringAsync } from './render';
 
 jest.useFakeTimers();
 
@@ -94,5 +94,34 @@ describe('[SSR]', () => {
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(0);
     expect(app).toBe(replacer);
+  });
+
+  test('can render to string async correctly', async () => {
+    const content = (x: number) =>
+      dom`
+        <div class="app">
+          <div>Hello World</div>
+          <div>count: ${x}</div>
+          <button class="button">increment</button>
+        </div>
+      `;
+
+    const App = component(() => {
+      const [count, setCount] = useState(0);
+
+      return (
+        <>
+          <div class='app'>
+            <div>Hello World</div>
+            <div>count: {count}</div>
+            <button class='button' onClick={() => setCount(count + 1)}>
+              increment
+            </button>
+          </div>
+        </>
+      );
+    });
+
+    expect(await renderToStringAsync(App())).toBe(content(0));
   });
 });

@@ -1,4 +1,4 @@
-import { renderToString } from '@dark-engine/platform-server';
+import { renderToStringAsync } from '@dark-engine/platform-server';
 import { type Routes } from '@dark-engine/web-router';
 
 import { App, type AppProps } from '../components/app';
@@ -51,7 +51,7 @@ const routes: Routes = [
 ];
 
 function bootstrap(props: Omit<AppProps, 'routes'> = {}) {
-  return renderToString(App({ ...props, routes }));
+  return renderToStringAsync(App({ ...props, routes }));
 }
 
 export { bootstrap };

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 export { VERSION } from './constants';
-export { renderToString } from './render';
+export { renderToString, renderToStringAsync } from './render';
 
 declare global {
   namespace JSX {

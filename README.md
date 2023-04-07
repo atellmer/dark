@@ -229,7 +229,7 @@ import {
 } from '@dark-engine/platform-browser';
 ```
 ```tsx
-import { renderToString } from '@dark-engine/platform-server';
+import { renderToString, renderToStringAsync } from '@dark-engine/platform-server';
 ```
 ```tsx
 import {

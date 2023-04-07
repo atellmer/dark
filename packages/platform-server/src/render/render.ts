@@ -37,7 +37,7 @@ function inject() {
   isInjected = true;
 }
 
-function renderToString(element: DarkElement): string {
+function createRenderCallback(element: DarkElement) {
   !isInjected && inject();
 
   const rootId = getNextRootId();
@@ -54,8 +54,12 @@ function renderToString(element: DarkElement): string {
     nextUnitOfWorkStore.set(fiber);
   };
 
-  platform.schedule(callback);
+  return { rootId, callback };
+}
 
+function renderToString(element: DarkElement): string {
+  const { rootId, callback } = createRenderCallback(element);
+  platform.schedule(callback, { forceSync: true });
   const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
   const content = nativeElement.renderToString(true);
 
@@ -64,6 +68,21 @@ function renderToString(element: DarkElement): string {
   return content;
 }
 
+function renderToStringAsync(element: DarkElement): Promise<string> {
+  return new Promise<string>(resolve => {
+    const { rootId, callback } = createRenderCallback(element);
+    const onCompleted = () => {
+      const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
+      const content = nativeElement.renderToString(true);
+
+      resolve(content);
+      unmountRoot(rootId, () => {});
+    };
+
+    platform.schedule(callback, { forceSync: false, onCompleted });
+  });
+}
+
 const getNextRootId = () => ++nextRootId;
 
-export { renderToString };
+export { renderToString, renderToStringAsync };

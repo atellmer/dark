@@ -23,7 +23,7 @@ const queueByPriority: QueueByPriority = {
   low1: [],
   low2: [],
 };
-const YEILD_INTERVAL = 4;
+const YIELD_INTERVAL = 4;
 const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
 let deadline = 0;
 let currentTask: Task = null;
@@ -119,7 +119,7 @@ function requestCallback(callback: WorkLoop) {
   }
 
   const loop = () => {
-    deadline = getTime() + YEILD_INTERVAL;
+    deadline = getTime() + YIELD_INTERVAL;
 
     while (callback(true)) {
       if (shouldYeildToHost() && detectIsBusy()) {

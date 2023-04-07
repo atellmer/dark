@@ -28,13 +28,13 @@ function unmountFiber(fiber: Fiber) {
   });
 }
 
-function unmountRoot(rootId: number, onComplete: () => void) {
+function unmountRoot(rootId: number, onCompleted: () => void) {
   if (detectIsUndefined(rootId)) return;
 
   unmountFiber(currentRootStore.get(rootId));
   eventsStore.unsubscribe(rootId);
   rootStore.remove(rootId);
-  onComplete();
+  onCompleted();
 }
 
 export { unmountFiber, unmountRoot };
