@@ -14,6 +14,7 @@ export type Platform = {
   detectIsPortal: (instance: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
   restart: () => void;
+  chunk: (fiber: Fiber) => void;
 };
 
 export type ScheduleCallbackOptions = {
@@ -55,6 +56,9 @@ const platform: Platform = {
     throw new Error(msg());
   },
   restart: () => {
+    throw new Error(msg());
+  },
+  chunk: () => {
     throw new Error(msg());
   },
 };

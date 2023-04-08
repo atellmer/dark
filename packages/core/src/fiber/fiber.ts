@@ -18,6 +18,7 @@ import {
   mountStore,
   currentFiberStore,
   isUpdateHookZone,
+  isStreamZone,
   rootStore,
   effectsStore,
   layoutEffectsStore,
@@ -53,6 +54,7 @@ import { walkFiber, getFiberWithElement } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
+import { emitter } from '../emitter';
 
 class Fiber<N = NativeElement> {
   public id = 0;
@@ -175,6 +177,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
   let isDeepWalking = true;
   let nextFiber = fiber;
   let instance = fiber.inst;
+  const isStream = isStreamZone.get();
 
   while (true) {
     isDeepWalking = mountStore.deep.get();
@@ -193,6 +196,8 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         box.fiber$ = null;
         box.inst$ = null;
 
+        isStream && emitter.emit('chunk', platform.chunk(nextFiber));
+
         if (nextFiber) return nextFiber;
       } else {
         mountSibling(nextFiber, box);
@@ -205,6 +210,8 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         box.fiber$$ = null;
         box.fiber$ = null;
         box.inst$ = null;
+
+        isStream && emitter.emit('chunk', platform.chunk(nextFiber));
 
         if (nextFiber$) return nextFiber$;
       }
@@ -219,6 +226,8 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
       box.fiber$$ = null;
       box.fiber$ = null;
       box.inst$ = null;
+
+      isStream && emitter.emit('chunk', platform.chunk(nextFiber));
 
       if (nextFiber$) return nextFiber$;
     }
@@ -313,9 +322,9 @@ function mountSibling(nextFiber: Fiber, box: Box) {
 
 function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) {
   if (!fiber.parent) return;
-  const fromUpdate = isUpdateHookZone.get();
+  const isUpdate = isUpdateHookZone.get();
   const wipFiber = wipRootStore.get();
-  const stop = fromUpdate && wipFiber.parent === fiber.parent;
+  const stop = isUpdate && wipFiber.parent === fiber.parent;
 
   if (
     detectIsPlainVirtualNode(fiber.inst) ||
@@ -324,7 +333,7 @@ function incrementChildrenElementsCount(fiber: Fiber, count = 1, force = false) 
     fiber.cec = 1;
   }
 
-  if (fromUpdate && stop && !force) return;
+  if (isUpdate && stop && !force) return;
 
   fiber.parent.cec += count;
 
@@ -747,7 +756,7 @@ function commit() {
   const isDynamic = platform.detectIsDynamic();
   const deletions = deletionsStore.get();
   const candidates = candidatesStore.get();
-  const fromUpdate = isUpdateHookZone.get();
+  const isUpdate = isUpdateHookZone.get();
 
   // important order
   for (const fiber of deletions) {
@@ -756,7 +765,7 @@ function commit() {
   }
 
   isDynamic && runInsertionEffects();
-  fromUpdate && syncElementIndices(wipFiber);
+  isUpdate && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);

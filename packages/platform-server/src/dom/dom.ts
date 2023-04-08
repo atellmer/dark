@@ -4,6 +4,7 @@ import {
   type TagVirtualNode,
   type TextVirtualNode,
   type CommentVirtualNode,
+  ROOT,
   ATTR_KEY,
   ATTR_REF,
   ATTR_FLAG,
@@ -14,6 +15,7 @@ import {
   NodeType,
   detectIsTagVirtualNode,
   getFiberWithElement,
+  detectIsPlainVirtualNode,
 } from '@dark-engine/core';
 
 import { VOID_TAG_NAMES } from '../constants';
@@ -31,6 +33,7 @@ const attrBlackListMap = {
   [ATTR_FLAG]: true,
 };
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
+let chunkIds: Record<string, boolean> = {};
 
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode) => {
@@ -136,6 +139,31 @@ function applyCommit(fiber: Fiber<NativeElement>) {
   applyCommitMap[fiber.tag](fiber);
 }
 
-const finishCommitWork = () => {};
+function chunk(fiber: Fiber<NativeElement>) {
+  let chunk = '';
+  const tagNode = fiber?.inst as TagVirtualNode;
+  const tagElement = fiber?.element as TagNativeElement;
 
-export { createNativeElement, applyCommit, finishCommitWork };
+  if (!fiber || tagNode.name === ROOT) return chunk;
+
+  if (!chunkIds[fiber.id]) {
+    if (detectIsTagVirtualNode(fiber.inst)) {
+      addAttributes(tagElement, fiber.inst);
+      chunk = tagElement.renderToChunk(true);
+    } else if (detectIsPlainVirtualNode(fiber.inst)) {
+      chunk = fiber.element.renderToChunk();
+    }
+  } else if (detectIsTagVirtualNode(fiber.inst)) {
+    chunk = tagElement.renderToChunk(false);
+  }
+
+  chunkIds[fiber.id] = true;
+
+  return chunk;
+}
+
+const finishCommitWork = () => {
+  chunkIds = {};
+};
+
+export { createNativeElement, applyCommit, finishCommitWork, chunk };

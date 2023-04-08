@@ -26,6 +26,7 @@ class Store {
   public uZone = false;
   public bZone = false;
   public hZone = false;
+  public sZone = false;
   public isHot = false;
   public lazy: Set<number> = new Set();
 }
@@ -169,6 +170,11 @@ const isHydrateZone = {
   set: (value: boolean) => (store.get().hZone = value),
 };
 
+const isStreamZone = {
+  get: () => store.get()?.sZone || false,
+  set: (value: boolean) => (store.get().sZone = value),
+};
+
 const hot = {
   get: () => store.get()?.isHot || false,
   set: (value: boolean) => (store.get().isHot = value),
@@ -205,6 +211,7 @@ export {
   isUpdateHookZone,
   isBatchZone,
   isHydrateZone,
+  isStreamZone,
   hot,
   registerLazy,
   unregisterLazy,

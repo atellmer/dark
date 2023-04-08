@@ -8,7 +8,11 @@ class NativeElement {
     this.type = type;
   }
 
-  renderToString(isRoot?: boolean) {
+  public renderToString(isRoot?: boolean) {
+    return this.type as string;
+  }
+
+  public renderToChunk(start?: boolean) {
     return this.type as string;
   }
 }
@@ -32,12 +36,15 @@ class TagNativeElement extends NativeElement {
     this.attrs[name] = detectIsString(value) ? escape(value) : value;
   }
 
-  public renderToString(isRoot: boolean): string {
-    const attrs = getAttributes(this.attrs);
+  public override renderToString(isRoot: boolean): string {
     const children = this.children.map(x => x.renderToString()).join('');
-    const value = isRoot ? children : `<${this.name}${attrs}>${children}</${this.name}>`;
+    const value = isRoot ? children : `<${this.name}${getAttributes(this.attrs)}>${children}</${this.name}>`;
 
     return value;
+  }
+
+  public override renderToChunk(start: boolean): string {
+    return start ? `<${this.name}${getAttributes(this.attrs)}>` : `</${this.name}>`;
   }
 }
 
@@ -49,7 +56,11 @@ class TextNativeElement extends NativeElement {
     this.value = escape(text);
   }
 
-  renderToString(): string {
+  public override renderToString(): string {
+    return this.value;
+  }
+
+  public override renderToChunk(): string {
     return this.value;
   }
 }
@@ -62,7 +73,11 @@ class CommentNativeElement extends NativeElement {
     this.value = `<!--${escape(text)}-->`;
   }
 
-  renderToString(): string {
+  public override renderToString(): string {
+    return this.value;
+  }
+
+  public override renderToChunk(): string {
     return this.value;
   }
 }

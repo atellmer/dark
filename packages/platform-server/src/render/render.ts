@@ -14,11 +14,14 @@ import {
   mountStore,
   createReplacer,
   unmountRoot,
+  isStreamZone,
+  emitter,
 } from '@dark-engine/core';
 
-import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
+import { createNativeElement, applyCommit, finishCommitWork, chunk } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 import { TagNativeElement } from '../native-element';
+import { CHUNK_SIZE } from '../constants';
 
 let isInjected = false;
 let nextRootId = -1;
@@ -35,15 +38,17 @@ function inject() {
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
   platform.restart = () => {};
+  platform.chunk = chunk;
   isInjected = true;
 }
 
-function createRenderCallback(element: DarkElement) {
+function createRenderCallback(element: DarkElement, stream = false) {
   !isInjected && inject();
 
   const rootId = getNextRootId();
   const callback = () => {
     rootStore.set(rootId);
+    isStreamZone.set(stream);
     const fiber = new Fiber().mutate({
       element: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
@@ -84,17 +89,27 @@ function renderToStringAsync(element: DarkElement): Promise<string> {
   });
 }
 
-function renderToStream(element: DarkElement) {
+function renderToStream(element: DarkElement): Readable {
+  let content = '';
   const stream = new Readable({ encoding: 'utf-8', read() {} });
-  const { rootId, callback } = createRenderCallback(element);
+  const { rootId, callback } = createRenderCallback(element, true);
   const onCompleted = () => {
-    const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
-    const content = nativeElement.renderToString(true);
-
-    stream.push(content);
+    if (content) {
+      stream.push(content);
+      content = '';
+    }
     stream.push(null);
     unmountRoot(rootId, () => {});
+    off();
   };
+  const off = emitter.on<string>('chunk', chunk => {
+    content += chunk;
+
+    if (content.length >= CHUNK_SIZE) {
+      stream.push(content);
+      content = '';
+    }
+  });
 
   Promise.resolve().then(() => platform.schedule(callback, { forceSync: false, onCompleted }));
 

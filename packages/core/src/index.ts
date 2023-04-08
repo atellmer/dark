@@ -36,6 +36,7 @@ export * from './walk';
 export { unmountRoot } from './unmount';
 export { batch } from './batch';
 export { hot } from './hot';
+export { emitter } from './emitter';
 export * from './view';
 export * from './constants';
 
