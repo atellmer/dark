@@ -13,7 +13,7 @@ class NativeElement {
     return this.type as string;
   }
 
-  public renderToChunk(start?: boolean) {
+  public renderToChunk(start?: boolean, close?: boolean) {
     return this.type as string;
   }
 }
@@ -49,11 +49,17 @@ class TagNativeElement extends NativeElement {
     return value;
   }
 
-  public override renderToChunk(start: boolean): string {
+  public override renderToChunk(start: boolean, close?: boolean): string {
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
 
-    return start ? `<${this.name}${attrs}>` : isVoid ? '' : `</${this.name}>`;
+    return start
+      ? close
+        ? `<${this.name}${attrs}></${this.name}>`
+        : `<${this.name}${attrs}>`
+      : isVoid
+      ? ''
+      : `</${this.name}>`;
   }
 }
 

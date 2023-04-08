@@ -150,7 +150,7 @@ function chunk(fiber: Fiber<NativeElement>) {
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
       addAttributes(tagElement, fiber.inst);
-      chunk = tagElement.renderToChunk(true);
+      chunk = tagElement.renderToChunk(true, fiber.inst.children.length === 0);
     } else if (detectIsPlainVirtualNode(fiber.inst)) {
       chunk = fiber.element.renderToChunk();
     }

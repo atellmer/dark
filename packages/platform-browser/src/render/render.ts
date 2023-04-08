@@ -39,6 +39,7 @@ function inject() {
   platform.detectIsPortal = detectIsPortal;
   platform.unmountPortal = unmountPortal;
   platform.restart = () => {};
+  platform.chunk = () => {};
   isInjected = true;
 }
 
