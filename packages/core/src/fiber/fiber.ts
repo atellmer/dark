@@ -54,7 +54,6 @@ import { walkFiber, getFiberWithElement } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Text } from '../view';
 import { Fragment, detectIsFragment } from '../fragment';
-import { emitter } from '../emitter';
 
 class Fiber<N = NativeElement> {
   public id = 0;
@@ -196,7 +195,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         box.fiber$ = null;
         box.inst$ = null;
 
-        isStream && emitter.emit('chunk', platform.chunk(nextFiber));
+        isStream && platform.chunk(nextFiber);
 
         if (nextFiber) return nextFiber;
       } else {
@@ -211,7 +210,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
         box.fiber$ = null;
         box.inst$ = null;
 
-        isStream && emitter.emit('chunk', platform.chunk(nextFiber));
+        isStream && platform.chunk(nextFiber);
 
         if (nextFiber$) return nextFiber$;
       }
@@ -227,7 +226,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
       box.fiber$ = null;
       box.inst$ = null;
 
-      isStream && emitter.emit('chunk', platform.chunk(nextFiber));
+      isStream && platform.chunk(nextFiber);
 
       if (nextFiber$) return nextFiber$;
     }

@@ -16,6 +16,7 @@ import {
   detectIsTagVirtualNode,
   getFiberWithElement,
   detectIsPlainVirtualNode,
+  emitter,
 } from '@dark-engine/core';
 
 import { VOID_TAG_NAMES } from '../constants';
@@ -144,7 +145,7 @@ function chunk(fiber: Fiber<NativeElement>) {
   const tagNode = fiber?.inst as TagVirtualNode;
   const tagElement = fiber?.element as TagNativeElement;
 
-  if (!fiber || tagNode.name === ROOT) return chunk;
+  if (!fiber || tagNode.name === ROOT) return;
 
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
@@ -158,8 +159,7 @@ function chunk(fiber: Fiber<NativeElement>) {
   }
 
   chunkIds[fiber.id] = true;
-
-  return chunk;
+  emitter.emit('chunk', chunk);
 }
 
 const finishCommit = () => {
