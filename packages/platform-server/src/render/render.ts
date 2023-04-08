@@ -94,7 +94,7 @@ type RenderToStreamOptions = {
 };
 
 function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
-  const { bootstrapScripts = [], chunkSize = 1000 } = options || {};
+  const { bootstrapScripts = [], chunkSize = 500 } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
   const { rootId, callback } = createRenderCallback(element, true);
   let content = '';
@@ -126,8 +126,6 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
   return stream;
 }
 
-const getNextRootId = () => ++nextRootId;
-
 function addScripts(scripts: Array<string>) {
   if (scripts.length === 0) return '';
   let content = '';
@@ -141,5 +139,7 @@ function addScripts(scripts: Array<string>) {
 
 const PREPEND_SCRIPTS_CHUNK = '</body>';
 const DOCTYPE = '<!DOCTYPE html>';
+
+const getNextRootId = () => ++nextRootId;
 
 export { renderToString, renderToStringAsync, renderToStream };

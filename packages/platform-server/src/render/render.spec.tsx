@@ -139,6 +139,7 @@ describe('[SSR]', () => {
             <div>count: ${x}</div>
             <button class="button">increment</button>
           </div>
+          <script src="./build.js" defer></script>
         </body>
         </html>
       `;
@@ -165,7 +166,7 @@ describe('[SSR]', () => {
     });
 
     let data = '';
-    const stream = renderToStream(App());
+    const stream = renderToStream(App(), { bootstrapScripts: ['./build.js'] });
 
     stream.on('data', chunk => {
       data += chunk;
