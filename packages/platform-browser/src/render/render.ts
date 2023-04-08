@@ -20,9 +20,9 @@ import {
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
-import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
+import { createNativeElement, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
-import { scheduleCallback, shouldYeildToHost } from '../scheduler';
+import { scheduleCallback, shouldYield } from '../scheduler';
 
 let isInjected = false;
 const roots = new Map<Element, number>();
@@ -32,9 +32,9 @@ function inject() {
   platform.raf = requestAnimationFrame.bind(this);
   platform.caf = cancelAnimationFrame.bind(this);
   platform.schedule = scheduleCallback;
-  platform.shouldYeild = shouldYeildToHost;
-  platform.commit = applyCommit;
-  platform.finishCommit = finishCommitWork;
+  platform.shouldYield = shouldYield;
+  platform.commit = commit;
+  platform.finishCommit = finishCommit;
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = detectIsPortal;
   platform.unmountPortal = unmountPortal;

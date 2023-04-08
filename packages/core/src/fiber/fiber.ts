@@ -163,7 +163,7 @@ function workLoop(yield$: boolean) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork, box);
     nextUnitOfWorkStore.set(nextUnitOfWork);
     hasMoreWork = Boolean(nextUnitOfWork);
-    shouldYield = yield$ && platform.shouldYeild();
+    shouldYield = yield$ && platform.shouldYield();
   }
 
   if (!nextUnitOfWork && wipFiber) {

@@ -48,7 +48,7 @@ class Task {
   }
 }
 
-const shouldYeildToHost = () => getTime() >= deadline;
+const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
   const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false } = options || {};
@@ -172,4 +172,4 @@ function setup() {
 
 setup();
 
-export { shouldYeildToHost, scheduleCallback };
+export { shouldYield, scheduleCallback };

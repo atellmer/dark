@@ -7,7 +7,7 @@ export type Platform = {
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
   schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
-  shouldYeild: () => boolean;
+  shouldYield: () => boolean;
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
@@ -37,7 +37,7 @@ const platform: Platform = {
   schedule: () => {
     throw new Error(msg());
   },
-  shouldYeild: () => {
+  shouldYield: () => {
     throw new Error(msg());
   },
   commit: () => {

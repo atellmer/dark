@@ -19,8 +19,8 @@ import {
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
-import { createNativeElement, applyCommit, finishCommitWork } from '../dom';
-import { scheduleCallback, shouldYeildToHost } from '../scheduler';
+import { createNativeElement, commit, finishCommit } from '../dom';
+import { scheduleCallback, shouldYield } from '../scheduler';
 import { type NSElement } from '../registry';
 
 const APP_ID = 0;
@@ -31,9 +31,9 @@ function inject() {
   platform.raf = requestAnimationFrame.bind(this);
   platform.caf = cancelAnimationFrame.bind(this);
   platform.schedule = scheduleCallback;
-  platform.shouldYeild = shouldYeildToHost;
-  platform.commit = applyCommit;
-  platform.finishCommit = finishCommitWork;
+  platform.shouldYield = shouldYield;
+  platform.commit = commit;
+  platform.finishCommit = finishCommit;
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};

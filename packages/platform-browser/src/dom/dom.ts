@@ -276,7 +276,7 @@ function move(fiber: Fiber<NativeElement>) {
   moves.push(move);
 }
 
-const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
+const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
     if (fiber.element === null || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
@@ -292,11 +292,11 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
   [EffectTag.S]: () => {},
 };
 
-function applyCommit(fiber: Fiber<NativeElement>) {
-  applyCommitMap[fiber.tag](fiber);
+function commit(fiber: Fiber<NativeElement>) {
+  commitMap[fiber.tag](fiber);
 }
 
-function finishCommitWork() {
+function finishCommit() {
   moves.forEach(x => x());
   moves = [];
   isHydrateZone.set(false);
@@ -306,4 +306,4 @@ function setTrackUpdate(fn: typeof trackUpdate) {
   trackUpdate = fn;
 }
 
-export { createNativeElement, applyCommit, finishCommitWork, setTrackUpdate };
+export { createNativeElement, commit, finishCommit, setTrackUpdate };

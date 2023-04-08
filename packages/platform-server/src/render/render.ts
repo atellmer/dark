@@ -18,8 +18,8 @@ import {
   emitter,
 } from '@dark-engine/core';
 
-import { createNativeElement, applyCommit, finishCommitWork, chunk } from '../dom';
-import { scheduleCallback, shouldYeildToHost } from '../scheduler';
+import { createNativeElement, commit, finishCommit, chunk } from '../dom';
+import { scheduleCallback, shouldYield } from '../scheduler';
 import { TagNativeElement } from '../native-element';
 
 let isInjected = false;
@@ -30,9 +30,9 @@ function inject() {
   platform.raf = setTimeout.bind(this);
   platform.caf = setTimeout.bind(this);
   platform.schedule = scheduleCallback;
-  platform.shouldYeild = shouldYeildToHost;
-  platform.commit = applyCommit;
-  platform.finishCommit = finishCommitWork;
+  platform.shouldYield = shouldYield;
+  platform.commit = commit;
+  platform.finishCommit = finishCommit;
   platform.detectIsDynamic = () => false;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};

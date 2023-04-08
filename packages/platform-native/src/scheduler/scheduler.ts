@@ -49,7 +49,7 @@ class Task {
   }
 }
 
-const shouldYeildToHost = () => getTime() >= deadline;
+const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
   const { priority = TaskPriority.NORMAL, timeoutMs = 0, forceSync = false, onCompleted = dummyFn } = options || {};
@@ -122,7 +122,7 @@ function requestCallback(callback: WorkLoop) {
     deadline = getTime() + YIELD_INTERVAL;
 
     while (callback(true)) {
-      if (shouldYeildToHost() && detectIsBusy()) {
+      if (shouldYield() && detectIsBusy()) {
         setTimeout(() => loop());
         break;
       }
@@ -145,4 +145,4 @@ function requestCallbackSync(callback: WorkLoop) {
   executeTasks();
 }
 
-export { shouldYeildToHost, scheduleCallback };
+export { shouldYield, scheduleCallback };

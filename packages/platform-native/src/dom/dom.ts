@@ -176,7 +176,7 @@ function move(fiber: Fiber<NativeElement>) {
   moves.push(move);
 }
 
-const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
+const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
     if (fiber.element === null) return;
     commitCreation(fiber);
@@ -190,13 +190,13 @@ const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> =
   [EffectTag.S]: () => {},
 };
 
-function applyCommit(fiber: Fiber<NativeElement>) {
-  applyCommitMap[fiber.tag](fiber);
+function commit(fiber: Fiber<NativeElement>) {
+  commitMap[fiber.tag](fiber);
 }
 
-function finishCommitWork() {
+function finishCommit() {
   moves.forEach(x => x());
   moves = [];
 }
 
-export { createNativeElement, applyCommit, finishCommitWork };
+export { createNativeElement, commit, finishCommit };

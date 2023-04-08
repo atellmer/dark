@@ -128,15 +128,15 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
-const applyCommitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
+const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.C]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
   [EffectTag.U]: () => {},
   [EffectTag.D]: () => {},
   [EffectTag.S]: () => {},
 };
 
-function applyCommit(fiber: Fiber<NativeElement>) {
-  applyCommitMap[fiber.tag](fiber);
+function commit(fiber: Fiber<NativeElement>) {
+  commitMap[fiber.tag](fiber);
 }
 
 function chunk(fiber: Fiber<NativeElement>) {
@@ -162,8 +162,8 @@ function chunk(fiber: Fiber<NativeElement>) {
   return chunk;
 }
 
-const finishCommitWork = () => {
+const finishCommit = () => {
   chunkIds = {};
 };
 
-export { createNativeElement, applyCommit, finishCommitWork, chunk, detectIsVoidElement };
+export { createNativeElement, commit, finishCommit, chunk, detectIsVoidElement };
