@@ -128,26 +128,39 @@ describe('[SSR]', () => {
   test('can render to stream correctly', () => {
     const content = (x: number) =>
       dom`
-        <div class="app">
-          <div>Hello World</div>
-          <div>count: ${x}</div>
-          <button class="button">increment</button>
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Hello</title>
+        </head>
+        <body>
+          <div class="app">
+            <div>Hello World</div>
+            <div>count: ${x}</div>
+            <button class="button">increment</button>
+          </div>
+        </body>
+        </html>
       `;
 
     const App = component(() => {
       const [count, setCount] = useState(0);
 
       return (
-        <>
-          <div class='app'>
-            <div>Hello World</div>
-            <div>count: {count}</div>
-            <button class='button' onClick={() => setCount(count + 1)}>
-              increment
-            </button>
-          </div>
-        </>
+        <html>
+          <head>
+            <title>Hello</title>
+          </head>
+          <body>
+            <div class='app'>
+              <div>Hello World</div>
+              <div>count: {count}</div>
+              <button class='button' onClick={() => setCount(count + 1)}>
+                increment
+              </button>
+            </div>
+          </body>
+        </html>
       );
     });
 
