@@ -12,7 +12,7 @@ import {
 } from '@dark-engine/core';
 
 import { dom, createReplacerString } from '@test-utils';
-import { renderToString, renderToStringAsync } from './render';
+import { renderToString, renderToStringAsync, renderToStream } from './render';
 
 jest.useFakeTimers();
 
@@ -123,5 +123,43 @@ describe('[SSR]', () => {
     });
 
     expect(await renderToStringAsync(App())).toBe(content(0));
+  });
+
+  test('can render to stream correctly', () => {
+    const content = (x: number) =>
+      dom`
+        <div class="app">
+          <div>Hello World</div>
+          <div>count: ${x}</div>
+          <button class="button">increment</button>
+        </div>
+      `;
+
+    const App = component(() => {
+      const [count, setCount] = useState(0);
+
+      return (
+        <>
+          <div class='app'>
+            <div>Hello World</div>
+            <div>count: {count}</div>
+            <button class='button' onClick={() => setCount(count + 1)}>
+              increment
+            </button>
+          </div>
+        </>
+      );
+    });
+
+    let data = '';
+    const stream = renderToStream(App());
+
+    stream.on('data', chunk => {
+      data += chunk;
+    });
+
+    stream.on('end', () => {
+      expect(data).toBe(content(0));
+    });
   });
 });
