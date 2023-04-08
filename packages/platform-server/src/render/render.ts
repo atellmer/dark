@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import {
   type DarkElement,
   ROOT,
@@ -83,6 +84,23 @@ function renderToStringAsync(element: DarkElement): Promise<string> {
   });
 }
 
+function renderToStream(element: DarkElement) {
+  const stream = new Readable({ encoding: 'utf-8', read() {} });
+  const { rootId, callback } = createRenderCallback(element);
+  const onCompleted = () => {
+    const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
+    const content = nativeElement.renderToString(true);
+
+    stream.push(content);
+    stream.push(null);
+    unmountRoot(rootId, () => {});
+  };
+
+  Promise.resolve().then(() => platform.schedule(callback, { forceSync: false, onCompleted }));
+
+  return stream;
+}
+
 const getNextRootId = () => ++nextRootId;
 
-export { renderToString, renderToStringAsync };
+export { renderToString, renderToStringAsync, renderToStream };
