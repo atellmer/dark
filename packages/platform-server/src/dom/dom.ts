@@ -166,4 +166,4 @@ const finishCommitWork = () => {
   chunkIds = {};
 };
 
-export { createNativeElement, applyCommit, finishCommitWork, chunk };
+export { createNativeElement, applyCommit, finishCommitWork, chunk, detectIsVoidElement };

@@ -1,4 +1,5 @@
-import { renderToStringAsync } from '@dark-engine/platform-server';
+import { h } from '@dark-engine/core';
+import { renderToStream } from '@dark-engine/platform-server';
 import { type Routes } from '@dark-engine/web-router';
 
 import { App, type AppProps } from '../components/app';
@@ -8,6 +9,7 @@ import HomeChildB from '../components/child-b';
 import HomeChildC from '../components/child-c';
 import About from '../components/about';
 import Contacts from '../components/contacts';
+import { Page } from '../components/page';
 
 const routes: Routes = [
   {
@@ -50,8 +52,22 @@ const routes: Routes = [
   },
 ];
 
-function bootstrap(props: Omit<AppProps, 'routes'> = {}) {
-  return renderToStringAsync(App({ ...props, routes }));
+type BootstrapOptions = {
+  title: string;
+  props: Omit<AppProps, 'routes'>;
+};
+
+function bootstrap(options: BootstrapOptions) {
+  const { title, props } = options;
+
+  return renderToStream(
+    <Page title={title}>
+      <App {...props} routes={routes} />
+    </Page>,
+    {
+      bootstrapScripts: ['./build.js'],
+    },
+  );
 }
 
 export { bootstrap };

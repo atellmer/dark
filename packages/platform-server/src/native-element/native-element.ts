@@ -1,4 +1,5 @@
 import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
+import { detectIsVoidElement } from '../dom';
 
 class NativeElement {
   public type: NodeType;
@@ -37,14 +38,22 @@ class TagNativeElement extends NativeElement {
   }
 
   public override renderToString(isRoot: boolean): string {
+    const isVoid = detectIsVoidElement(this.name);
+    const attrs = getAttributes(this.attrs);
+
+    if (isVoid) return `<${this.name}${attrs}>`;
+
     const children = this.children.map(x => x.renderToString()).join('');
-    const value = isRoot ? children : `<${this.name}${getAttributes(this.attrs)}>${children}</${this.name}>`;
+    const value = isRoot ? children : `<${this.name}${attrs}>${children}</${this.name}>`;
 
     return value;
   }
 
   public override renderToChunk(start: boolean): string {
-    return start ? `<${this.name}${getAttributes(this.attrs)}>` : `</${this.name}>`;
+    const isVoid = detectIsVoidElement(this.name);
+    const attrs = getAttributes(this.attrs);
+
+    return start ? `<${this.name}${attrs}>` : isVoid ? '' : `</${this.name}>`;
   }
 }
 

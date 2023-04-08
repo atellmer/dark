@@ -21,7 +21,6 @@ import {
 import { createNativeElement, applyCommit, finishCommitWork, chunk } from '../dom';
 import { scheduleCallback, shouldYeildToHost } from '../scheduler';
 import { TagNativeElement } from '../native-element';
-import { CHUNK_SIZE } from '../constants';
 
 let isInjected = false;
 let nextRootId = -1;
@@ -89,10 +88,16 @@ function renderToStringAsync(element: DarkElement): Promise<string> {
   });
 }
 
-function renderToStream(element: DarkElement): Readable {
-  let content = '';
+type RenderToStreamOptions = {
+  bootstrapScripts?: Array<string>;
+  chunkSize?: number;
+};
+
+function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
+  const { bootstrapScripts = [], chunkSize = 1000 } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
   const { rootId, callback } = createRenderCallback(element, true);
+  let content = '';
   const onCompleted = () => {
     if (content) {
       stream.push(content);
@@ -103,19 +108,38 @@ function renderToStream(element: DarkElement): Readable {
     off();
   };
   const off = emitter.on<string>('chunk', chunk => {
+    if (chunk === PREPEND_SCRIPTS_CHUNK) {
+      content += addScripts(bootstrapScripts);
+    }
+
     content += chunk;
 
-    if (content.length >= CHUNK_SIZE) {
+    if (content.length >= chunkSize) {
       stream.push(content);
       content = '';
     }
   });
 
   Promise.resolve().then(() => platform.schedule(callback, { forceSync: false, onCompleted }));
+  stream.push(DOCTYPE);
 
   return stream;
 }
 
 const getNextRootId = () => ++nextRootId;
+
+function addScripts(scripts: Array<string>) {
+  if (scripts.length === 0) return '';
+  let content = '';
+
+  scripts.forEach(script => {
+    content += `<script src="${script}" defer></script>`;
+  });
+
+  return content;
+}
+
+const PREPEND_SCRIPTS_CHUNK = '</body>';
+const DOCTYPE = '<!DOCTYPE html>';
 
 export { renderToString, renderToStringAsync, renderToStream };
