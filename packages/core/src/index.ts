@@ -3,6 +3,7 @@ export * from './component';
 export { createContext, useContext } from './context';
 export { h } from './element';
 export * from './fiber';
+export * from './workloop';
 export * from './atom';
 export { Fragment } from './fragment';
 export * from './platform';

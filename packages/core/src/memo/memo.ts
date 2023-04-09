@@ -1,13 +1,6 @@
-import {
-  type ComponentFactory,
-  type StandardComponentProps,
-  type ShouldUpdate,
-  component,
-  detectIsComponent,
-} from '../component';
+import { type ComponentFactory, type StandardComponentProps, type ShouldUpdate, component } from '../component';
 import type { SlotProps, RefProps } from '../shared';
-
-const $$memo = Symbol('memo');
+import { $$memo } from './utils';
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   const keys = Object.keys(nextProps);
@@ -20,8 +13,6 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
 
   return false;
 };
-
-const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;
 
 function memo<P, R = unknown>(
   factory: ComponentFactory<P, R>,
@@ -36,4 +27,4 @@ function memo<P, R = unknown>(
   }) as ComponentFactory<Props, R>;
 }
 
-export { $$memo, memo, detectIsMemo };
+export { memo };

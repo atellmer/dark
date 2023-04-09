@@ -1,5 +1,5 @@
 import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
-import { detectIsVoidElement } from '../dom';
+import { detectIsVoidElement } from '../utils';
 
 class NativeElement {
   public type: NodeType;

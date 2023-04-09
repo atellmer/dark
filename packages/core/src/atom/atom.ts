@@ -1,6 +1,7 @@
 import { platform } from '../platform';
 import { detectIsFunction, trueFn } from '../helpers';
-import { Fiber, createUpdateCallback } from '../fiber';
+import { Fiber } from '../fiber';
+import { createUpdateCallback } from '../workloop';
 import { currentFiberStore, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
 

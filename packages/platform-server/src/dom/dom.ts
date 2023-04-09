@@ -11,7 +11,6 @@ import {
   EffectTag,
   detectIsFunction,
   detectIsUndefined,
-  keyBy,
   NodeType,
   detectIsTagVirtualNode,
   getFiberWithElement,
@@ -19,7 +18,6 @@ import {
   emitter,
 } from '@dark-engine/core';
 
-import { VOID_TAG_NAMES } from '../constants';
 import {
   NativeElement,
   TagNativeElement,
@@ -27,13 +25,13 @@ import {
   CommentNativeElement,
   type AttributeValue,
 } from '../native-element';
+import { detectIsVoidElement } from '../utils';
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
   [ATTR_FLAG]: true,
 };
-const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
 let chunkIds: Record<string, boolean> = {};
 
 const createNativeElementMap = {
@@ -59,10 +57,6 @@ const createNativeElementMap = {
 
 function createNativeElement(vNode: VirtualNode): NativeElement {
   return createNativeElementMap[vNode.type](vNode);
-}
-
-function detectIsVoidElement(tagName: string) {
-  return Boolean(voidTagNamesMap[tagName]);
 }
 
 function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
@@ -166,4 +160,4 @@ const finishCommit = () => {
   chunkIds = {};
 };
 
-export { createNativeElement, commit, finishCommit, chunk, detectIsVoidElement };
+export { createNativeElement, commit, finishCommit, chunk };

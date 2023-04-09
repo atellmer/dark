@@ -15,7 +15,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[create-component]', () => {
+describe('[component]', () => {
   test('does not throw error', () => {
     const compile = () => {
       const Component = component(() => null);

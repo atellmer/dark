@@ -1,6 +1,6 @@
 import { platform, type ScheduleCallbackOptions } from '../platform';
 import { getRootId, currentFiberStore, isInsertionEffectsZone, isLayoutEffectsZone, isBatchZone } from '../scope';
-import { createUpdateCallback } from '../fiber';
+import { createUpdateCallback } from '../workloop';
 import { useMemo } from '../use-memo';
 import { dummyFn } from '../helpers';
 import { runBatch as batch } from '../batch';

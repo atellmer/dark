@@ -1,16 +1,7 @@
-import {
-  type Fiber,
-  type DarkElement,
-  type Component,
-  component,
-  detectIsComponent,
-  useMemo,
-  currentFiberStore,
-} from '@dark-engine/core';
+import { type DarkElement, component, useMemo, currentFiberStore } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
-
-const $$portal = Symbol('portal');
+import { $$portal } from './utils';
 
 function createPortal(slot: DarkElement, container: TagNativeElement) {
   if (process.env.NODE_ENV !== 'production') {
@@ -42,16 +33,4 @@ const Portal = component<PortalProps>(
   { token: $$portal },
 );
 
-const detectIsPortal = (instance: unknown): instance is Component =>
-  detectIsComponent(instance) && instance.token === $$portal;
-
-const getPortalContainer = (fiber: Fiber<TagNativeElement>): TagNativeElement | null =>
-  detectIsPortal(fiber.inst) ? fiber.element : null;
-
-function unmountPortal(fiber: Fiber<TagNativeElement>) {
-  const element = getPortalContainer(fiber);
-
-  element && (element.textContent = '');
-}
-
-export { createPortal, detectIsPortal, getPortalContainer, unmountPortal };
+export { createPortal };

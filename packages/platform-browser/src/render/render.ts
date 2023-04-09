@@ -21,7 +21,7 @@ import {
 
 import type { TagNativeElement } from '../native-element';
 import { createNativeElement, commit, finishCommit } from '../dom';
-import { detectIsPortal, unmountPortal } from '../portal';
+import { detectIsPortal, unmountPortal } from '../portal/utils';
 import { scheduleCallback, shouldYield } from '../scheduler';
 
 let isInjected = false;
