@@ -13,7 +13,6 @@ export type Platform = {
   detectIsDynamic: () => boolean;
   detectIsPortal: (instance: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
-  restart: () => void;
   chunk: (fiber: Fiber) => void;
 };
 
@@ -53,9 +52,6 @@ const platform: Platform = {
     throw new Error(msg());
   },
   unmountPortal: () => {
-    throw new Error(msg());
-  },
-  restart: () => {
     throw new Error(msg());
   },
   chunk: () => {

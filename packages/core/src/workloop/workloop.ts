@@ -25,7 +25,6 @@ import {
   insertionEffectsStore,
   isLayoutEffectsZone,
   isInsertionEffectsZone,
-  detectHasRegisteredLazy,
   isHydrateZone,
   hot,
 } from '../scope';
@@ -457,7 +456,8 @@ function mount(fiber: Fiber, instance: DarkElementInstance) {
     try {
       let result = component.type(component.props, component.ref);
 
-      if (detectIsLazy(component) && !detectIsLoaded(component) && (isHydrateZone.get() || detectIsServer())) {
+      if (detectIsLazy(component) && !detectIsLoaded(component) && isHydrateZone.get()) {
+        console.log('xxx');
         throw new StopWork();
       }
 
@@ -654,7 +654,6 @@ function commit() {
   if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_ENV === 'development' && hot.set(false);
   }
-  if (isHydrateZone.get() && detectHasRegisteredLazy()) return flush(null); // important order
   const wipFiber = wipRootStore.get();
   const isDynamic = platform.detectIsDynamic();
   const deletions = deletionsStore.get();
@@ -709,6 +708,7 @@ function flush(wipFiber: Fiber) {
   insertionEffectsStore.reset();
   layoutEffectsStore.reset();
   effectsStore.reset();
+  isHydrateZone.set(false);
 
   if (isUpdateHookZone.get()) {
     isUpdateHookZone.set(false);

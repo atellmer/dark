@@ -37,7 +37,6 @@ function inject() {
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
-  platform.restart = () => {};
   platform.chunk = () => {};
   isInjected = true;
 }

@@ -209,6 +209,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
       nativeElement instanceof Text &&
       fiber.inst.value.length !== nativeElement.length
     ) {
+      console.log('fiber', fiber);
+      console.log('nativeElement', nativeElement);
+      console.log('fiber.inst.value', fiber.inst.value);
       nativeElement.splitText(fiber.inst.value.length);
     }
 
@@ -299,7 +302,6 @@ function commit(fiber: Fiber<NativeElement>) {
 function finishCommit() {
   moves.forEach(x => x());
   moves = [];
-  isHydrateZone.set(false);
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {

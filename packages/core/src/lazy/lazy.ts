@@ -4,8 +4,8 @@ import { useUpdate } from '../use-update';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
-import { detectIsServer, platform } from '../platform';
-import { registerLazy, unregisterLazy, detectHasRegisteredLazy, isHydrateZone } from '../scope';
+import { detectIsServer } from '../platform';
+import { isHydrateZone } from '../scope';
 import { $$lazy, $$loaded } from './utils';
 
 const componentsMap: Map<Function, ComponentFactory> = new Map();
@@ -25,25 +25,12 @@ function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<
 
         if (detectIsUndefined(component)) {
           componentsMap.set(module, null);
-          const id = registerLazy();
-
           fetchModule(module).then(component => {
-            componentsMap.set(module, component);
-
-            console.log('loaded');
             factory[$$loaded] = true;
-
-            unregisterLazy(id);
-
-            if (isHydrateZone.get()) {
-              if (!detectHasRegisteredLazy()) {
-                platform.restart();
-              }
-            } else {
-              update();
-            }
-
+            componentsMap.set(module, component);
+            !isHydrateZone.get() && update();
             detectIsFunction(done) && done();
+            console.log('loaded');
           });
         }
 

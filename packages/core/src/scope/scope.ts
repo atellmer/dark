@@ -28,7 +28,6 @@ class Store {
   public hZone = false;
   public sZone = false;
   public isHot = false;
-  public lazy: Set<number> = new Set();
 }
 
 type MountStore = {
@@ -180,18 +179,6 @@ const hot = {
   set: (value: boolean) => (store.get().isHot = value),
 };
 
-const registerLazy = () => {
-  const { id } = currentFiberStore.get();
-
-  store.get().lazy.add(id);
-
-  return id;
-};
-
-const unregisterLazy = (id: number) => store.get().lazy.delete(id);
-
-const detectHasRegisteredLazy = () => store.get().lazy.size > 0;
-
 export {
   getRootId,
   rootStore,
@@ -213,7 +200,4 @@ export {
   isHydrateZone,
   isStreamZone,
   hot,
-  registerLazy,
-  unregisterLazy,
-  detectHasRegisteredLazy,
 };
