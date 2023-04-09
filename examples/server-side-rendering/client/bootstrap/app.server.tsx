@@ -1,15 +1,16 @@
-import { h } from '@dark-engine/core';
+import { h, lazy } from '@dark-engine/core';
 import { renderToStream } from '@dark-engine/platform-server';
 import { type Routes } from '@dark-engine/web-router';
 
 import { App, type AppProps } from '../components/app';
-import Home from '../components/home';
-import HomeChildA from '../components/child-a';
-import HomeChildB from '../components/child-b';
-import HomeChildC from '../components/child-c';
-import About from '../components/about';
-import Contacts from '../components/contacts';
 import { Page } from '../components/page';
+
+const Home = lazy(() => import('../components/home'));
+const HomeChildA = lazy(() => import('../components/child-a'));
+const HomeChildB = lazy(() => import('../components/child-b'));
+const HomeChildC = lazy(() => import('../components/child-c'));
+const About = lazy(() => import('../components/about'));
+const Contacts = lazy(() => import('../components/contacts'));
 
 const routes: Routes = [
   {

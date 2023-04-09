@@ -1,11 +1,13 @@
 import {
   type ScheduleCallbackOptions,
   type WorkLoop,
+  detectIsFunction,
   getTime,
   workLoop,
   detectIsBusy,
   TaskPriority,
   dummyFn,
+  emitter,
 } from '@dark-engine/core';
 
 type QueueByPriority = {
@@ -26,7 +28,7 @@ const queueByPriority: QueueByPriority = {
 const YIELD_INTERVAL = 4;
 const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
 let deadline = 0;
-let currentTask: Task = null;
+let onCompleted: () => void;
 
 class Task {
   public static nextTaskId = 0;
@@ -67,12 +69,13 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
 
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
-  currentTask = queue.shift();
-  const isAnimation = currentTask.priority === TaskPriority.ANIMATION;
+  const task = queue.shift();
+  const isAnimation = task.priority === TaskPriority.ANIMATION;
 
-  currentTask.callback();
+  task.callback();
+  onCompleted = task.onCompleted;
 
-  if (currentTask.forceSync || isAnimation) {
+  if (task.forceSync || isAnimation) {
     requestCallbackSync(workLoop);
   } else {
     requestCallback(workLoop);
@@ -129,8 +132,6 @@ function requestCallback(callback: WorkLoop) {
     }
 
     if (!detectIsBusy()) {
-      currentTask.onCompleted();
-      currentTask = null;
       executeTasks();
     }
   };
@@ -140,9 +141,14 @@ function requestCallback(callback: WorkLoop) {
 
 function requestCallbackSync(callback: WorkLoop) {
   callback(false);
-  currentTask.onCompleted();
-  currentTask = null;
   executeTasks();
 }
+
+emitter.on('finish', () => {
+  if (detectIsFunction(onCompleted)) {
+    onCompleted();
+    onCompleted = null;
+  }
+});
 
 export { shouldYield, scheduleCallback };

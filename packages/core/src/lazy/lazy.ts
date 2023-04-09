@@ -4,7 +4,6 @@ import { useUpdate } from '../use-update';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
-import { detectIsServer } from '../platform';
 import { isHydrateZone } from '../scope';
 import { $$lazy, $$loaded } from './utils';
 
@@ -14,11 +13,6 @@ function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<
   return forwardRef(
     component<P, R>(
       function factory(props, ref) {
-        if (process.env.NODE_ENV !== 'production') {
-          if (detectIsServer()) {
-            throw new Error('[Dark]: You should render only non-lazy components on the server!');
-          }
-        }
         const { fallback } = useContext(SuspenseContext);
         const update = useUpdate();
         const component = componentsMap.get(module);
@@ -30,7 +24,6 @@ function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<
             componentsMap.set(module, component);
             !isHydrateZone.get() && update();
             detectIsFunction(done) && done();
-            console.log('loaded');
           });
         }
 

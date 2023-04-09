@@ -51,6 +51,7 @@ import { hasInsertionEffects } from '../use-insertion-effect';
 import { walkFiber, getFiberWithElement } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
+import { emitter } from '../emitter';
 
 type Box = {
   fiber$$: Fiber;
@@ -456,7 +457,7 @@ function mount(fiber: Fiber, instance: DarkElementInstance) {
     try {
       let result = component.type(component.props, component.ref);
 
-      if (detectIsLazy(component) && !detectIsLoaded(component) && isHydrateZone.get()) {
+      if (detectIsLazy(component) && !detectIsLoaded(component) && (isHydrateZone.get() || detectIsServer())) {
         mountStore.toParent();
         nextUnitOfWorkStore.set(fiber.parent);
         throw new StopWork();
@@ -716,6 +717,8 @@ function flush(wipFiber: Fiber) {
   } else {
     currentRootStore.set(wipFiber);
   }
+
+  emitter.emit('finish');
 }
 
 function syncElementIndices(fiber: Fiber) {

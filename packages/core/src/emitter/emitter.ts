@@ -1,6 +1,6 @@
 type Subscriber<T = unknown> = (data?: T) => void;
 
-type EventName = 'chunk';
+type EventName = 'finish' | 'chunk';
 
 class EventEmitter {
   private map: Partial<Record<EventName, Set<Subscriber>>> = {};

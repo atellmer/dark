@@ -27,7 +27,6 @@ const MAX_LOW_PRIORITY_TASKS_LIMIT = 100000;
 let scheduledCallback: WorkLoop = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
-let currentTask: Task = null;
 
 class Task {
   public static nextTaskId = 0;
@@ -66,12 +65,12 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
 
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
-  currentTask = queue.shift();
-  const isAnimation = currentTask.priority === TaskPriority.ANIMATION;
+  const task = queue.shift();
+  const isAnimation = task.priority === TaskPriority.ANIMATION;
 
-  currentTask.callback();
+  task.callback();
 
-  if (currentTask.forceSync || isAnimation) {
+  if (task.forceSync || isAnimation) {
     requestCallbackSync(workLoop);
   } else {
     requestCallback(workLoop);
@@ -121,7 +120,6 @@ function performWorkUntilDeadline() {
       const hasMoreWork = scheduledCallback(true);
 
       if (!hasMoreWork) {
-        currentTask = null;
         isMessageLoopRunning = false;
         scheduledCallback = null;
         executeTasks();
@@ -153,7 +151,6 @@ function requestCallback(callback: WorkLoop) {
 function requestCallbackSync(callback: WorkLoop) {
   callback(false);
   executeTasks();
-  currentTask = null;
 }
 
 let channel: MessageChannel = null;
