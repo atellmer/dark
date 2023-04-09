@@ -4,7 +4,7 @@ import { render } from '@dark-engine/platform-browser';
 import { dom } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component';
-import { lazy } from '../lazy';
+import { type LazyModule, lazy } from '../lazy';
 import { Suspense } from './suspense';
 
 let host: HTMLElement = null;
@@ -18,10 +18,12 @@ beforeEach(() => {
 describe('[Suspense]', () => {
   test('shows fallback correctly', done => {
     const LazyComponent = lazy(
-      () => import('../lazy/lazy-component'),
+      () =>
+        new Promise<LazyModule>(resolve => {
+          resolve({ default: component(() => <div>lazy</div>) });
+        }),
       () => {
         expect(host.innerHTML).toBe(content());
-
         render(App(), host);
         expect(host.innerHTML).toBe(content());
         done();
