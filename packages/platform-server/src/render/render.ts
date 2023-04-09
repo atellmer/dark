@@ -61,18 +61,7 @@ function createRenderCallback(element: DarkElement, stream = false) {
   return { rootId, callback };
 }
 
-function renderToString(element: DarkElement): string {
-  const { rootId, callback } = createRenderCallback(element);
-  platform.schedule(callback, { forceSync: true });
-  const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
-  const content = nativeElement.renderToString(true);
-
-  unmountRoot(rootId, () => {});
-
-  return content;
-}
-
-function renderToStringAsync(element: DarkElement): Promise<string> {
+function renderToString(element: DarkElement): Promise<string> {
   return new Promise<string>(resolve => {
     const { rootId, callback } = createRenderCallback(element);
     const onCompleted = () => {
@@ -83,7 +72,7 @@ function renderToStringAsync(element: DarkElement): Promise<string> {
       unmountRoot(rootId, () => {});
     };
 
-    platform.schedule(callback, { forceSync: false, onCompleted });
+    platform.schedule(callback, { onCompleted });
   });
 }
 
@@ -119,7 +108,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     }
   });
 
-  Promise.resolve().then(() => platform.schedule(callback, { forceSync: false, onCompleted }));
+  Promise.resolve().then(() => platform.schedule(callback, { onCompleted }));
   stream.push(DOCTYPE);
 
   return stream;
@@ -141,4 +130,4 @@ const DOCTYPE = '<!DOCTYPE html>';
 
 const getNextRootId = () => ++nextRootId;
 
-export { renderToString, renderToStringAsync, renderToStream };
+export { renderToString, renderToStream };

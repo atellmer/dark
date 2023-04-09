@@ -229,7 +229,7 @@ import {
 } from '@dark-engine/platform-browser';
 ```
 ```tsx
-import { renderToString, renderToStringAsync, renderToStream } from '@dark-engine/platform-server';
+import { renderToString, renderToStream } from '@dark-engine/platform-server';
 ```
 ```tsx
 import {
@@ -1269,32 +1269,18 @@ app/
 ```tsx
 // server/app.ts
 import { renderToString } from '@dark-engine/platform-server';
-
-import { App } from '../client/app'; // your app.tsx
+import { Page, App } from '../client/app'; // your app.tsx
 
 server.use(express.static(join(__dirname, '../client/static')));
 
-server.get('/', (req, res) => {
-  const app = renderToString(App()); // render
+server.get('/', async (req, res) => {
+  const app = await renderToString(Page({ title: 'SSR test', slot: App() })); // render
   const page = `
     <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="X-UA-Compatible" content="ie=edge">
-      <meta name="description" content="My awesome SSR app">
-      <base href="/">
-      <link rel="preload" href="./build.js" as="script" />
-      <title>My awesome SSR app</title>
-    </head>
-    <body>
-      <div id="root">${app}</div>
-      <script src="./build.js" defer></script>
-    </body>
-    </html>
+    ${app}
   `;
 
+  res.statusCode = 200;
   res.send(page);
 });
 ```
@@ -1303,9 +1289,23 @@ server.get('/', (req, res) => {
 // client/app.tsx
 import { h, component } from '@dark-engine/core';
 
+const Page = component(({ title, slot }) => {
+  return (
+    <html>
+      <head>
+        <title>{title}</title>
+      </head>
+      <body>
+        <div id="root">{slot}</div>
+        <script src="./build.js" defer></script>
+      </body>
+    </html>
+  );
+})
+
 const App = component(() => <div>Hello World</div>);
 
-export { App };
+export { Page, App };
 ```
 
 ```tsx
@@ -1318,7 +1318,7 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />); // some magic and app works!
 ```
 
-A working example of an SSR application based on the express server is in examples
+A working example of an SSR application based on the express server is in examples.
 
 <a name="routing"></a>
 ## Routing

@@ -12,36 +12,38 @@ import {
 } from '@dark-engine/core';
 
 import { dom, createReplacerString } from '@test-utils';
-import { renderToString, renderToStringAsync, renderToStream } from './render';
+import { renderToString, renderToStream } from './render';
 
 jest.useFakeTimers();
 
 const replacer = createReplacerString();
 
 describe('[SSR]', () => {
-  test('can render text correctly', () => {
-    expect(renderToString(<>hello</>)).toBe('hello');
-    expect(renderToString(Text('world'))).toBe('world');
-    expect(renderToString(Text('😈'))).toBe('😈');
+  test('can render text correctly', async () => {
+    expect(await renderToString(<>hello</>)).toBe('hello');
+    expect(await renderToString(Text('world'))).toBe('world');
+    expect(await renderToString(Text('😈'))).toBe('😈');
   });
 
-  test('can render comment correctly', () => {
-    expect(renderToString(Comment('Hey baby 😍'))).toBe('<!--Hey baby 😍-->');
+  test('can render comment correctly', async () => {
+    expect(await renderToString(Comment('Hey baby 😍'))).toBe('<!--Hey baby 😍-->');
   });
 
-  test('can render nullable correctly', () => {
-    expect(renderToString(null)).toBe(replacer);
-    expect(renderToString('')).toBe(replacer);
-    expect(renderToString(0)).toBe(replacer);
-    expect(renderToString(false)).toBe(replacer);
-    expect(renderToString(undefined)).toBe(replacer);
+  test('can render nullable correctly', async () => {
+    expect(await renderToString(null)).toBe(replacer);
+    expect(await renderToString('')).toBe(replacer);
+    expect(await renderToString(0)).toBe(replacer);
+    expect(await renderToString(false)).toBe(replacer);
+    expect(await renderToString(undefined)).toBe(replacer);
   });
 
-  test('can prevent xss attacks', () => {
-    expect(renderToString(Text(`<script>alert('xss')</script>`))).toBe(`&lt;script&gt;alert('xss')&lt;/script&gt;`);
+  test('can prevent xss attacks', async () => {
+    expect(await renderToString(Text(`<script>alert('xss')</script>`))).toBe(
+      `&lt;script&gt;alert('xss')&lt;/script&gt;`,
+    );
   });
 
-  test('can render to string correctly', () => {
+  test('can render to string correctly', async () => {
     const content = (x: number) =>
       dom`
         <div class="app">
@@ -67,10 +69,10 @@ describe('[SSR]', () => {
       );
     });
 
-    expect(renderToString(App())).toBe(content(0));
+    expect(await renderToString(App())).toBe(content(0));
   });
 
-  test('can not fire effects', () => {
+  test('can not fire effects', async () => {
     const effectFn = jest.fn();
 
     const App = component(() => {
@@ -89,7 +91,7 @@ describe('[SSR]', () => {
       return null;
     });
 
-    const app = renderToString(App());
+    const app = await renderToString(App());
 
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(0);
@@ -122,7 +124,7 @@ describe('[SSR]', () => {
       );
     });
 
-    expect(await renderToStringAsync(App())).toBe(content(0));
+    expect(await renderToString(App())).toBe(content(0));
   });
 
   test('can render to stream correctly', () => {

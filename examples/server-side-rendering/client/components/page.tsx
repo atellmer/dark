@@ -210,6 +210,7 @@ const Page = component<PageProps>(({ title, slot }) => {
       </head>
       <body>
         <div id='root'>{slot}</div>
+        <script src='./build.js' defer></script>
       </body>
     </html>
   );
