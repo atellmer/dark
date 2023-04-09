@@ -1,5 +1,4 @@
 const { resolve } = require('path');
-const webpack = require('webpack');
 
 const config = {
   mode: 'production',
@@ -30,11 +29,6 @@ const config = {
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production'),
-    }),
-  ],
 };
 
 module.exports = config;

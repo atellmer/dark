@@ -209,9 +209,6 @@ function commitCreation(fiber: Fiber<NativeElement>) {
       nativeElement instanceof Text &&
       fiber.inst.value.length !== nativeElement.length
     ) {
-      console.log('fiber', fiber);
-      console.log('nativeElement', nativeElement);
-      console.log('fiber.inst.value', fiber.inst.value);
       nativeElement.splitText(fiber.inst.value.length);
     }
 

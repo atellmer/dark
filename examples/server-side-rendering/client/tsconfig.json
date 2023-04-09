@@ -1,17 +1,25 @@
 {
-  "extends": "../tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2021",
     "moduleResolution": "node",
     "module": "esnext",
-    "esModuleInterop": true,
+    "outDir": "./lib/",
     "sourceMap": true,
-    "baseUrl": ".",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "lib": [
       "ES6",
       "ES7",
+      "ES2021",
       "dom"
     ],
+    "typeRoots": ["node_modules/@types"],
+    "baseUrl": ".",
     "paths": {
       "@dark-engine/core": [
         "../../../packages/core/src/index"

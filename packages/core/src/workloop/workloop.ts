@@ -457,7 +457,8 @@ function mount(fiber: Fiber, instance: DarkElementInstance) {
       let result = component.type(component.props, component.ref);
 
       if (detectIsLazy(component) && !detectIsLoaded(component) && isHydrateZone.get()) {
-        console.log('xxx');
+        mountStore.toParent();
+        nextUnitOfWorkStore.set(fiber.parent);
         throw new StopWork();
       }
 

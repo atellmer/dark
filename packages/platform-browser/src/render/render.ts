@@ -88,7 +88,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
 
   platform.schedule(callback, {
     priority: TaskPriority.NORMAL,
-    forceSync: hydrate || isLayoutEffectsZone.get(),
+    forceSync: isLayoutEffectsZone.get(),
   });
 }
 
