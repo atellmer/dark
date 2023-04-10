@@ -34,8 +34,8 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
       throw new Error(`[Dark]: Suspense fallback not found!`);
     }
   }
-  const isEnabled = !detectIsServer() && !isHydrateZone.get();
-  const [isLoaded, setIsLoaded] = useState(!isEnabled, { forceSync: true });
+
+  const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || isHydrateZone.get(), { forceSync: true });
   const scope = useMemo(() => ({ size: 0 }), []);
   const value = useMemo<SuspenseContextValue>(
     () => ({ isLoaded, fallback, reg: () => scope.size++, unreg: () => scope.size-- }),
@@ -51,8 +51,8 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   }, []);
 
   const content = isLoaded
-    ? [Shadow({ key: CONTENT, isVisible: true, isEnabled, slot })]
-    : [Shadow({ key: CONTENT, isVisible: false, isEnabled, slot }), Fragment({ key: FALLBACK, slot: fallback })];
+    ? [Shadow({ key: CONTENT, isVisible: true, slot })]
+    : [Shadow({ key: CONTENT, isVisible: false, slot }), Fragment({ key: FALLBACK, slot: fallback })];
 
   return SuspenseContext.Provider({ value, slot: content });
 });
