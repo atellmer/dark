@@ -13,16 +13,18 @@ type ShadowProps = {
 
 const Shadow = component<ShadowProps>(
   ({ isVisible, slot }) => {
+    const isEnabled = !detectIsServer() && !isHydrateZone.get();
     const fiber = currentFiberStore.get();
 
-    if (isVisible) {
-      delete fiber.inv;
-    } else {
-      fiber.inv = true;
+    if (isEnabled) {
+      if (isVisible) {
+        delete fiber.inv;
+      } else {
+        fiber.inv = true;
+      }
     }
 
     useLayoutEffect(() => {
-      const isEnabled = !detectIsServer() && !isHydrateZone.get();
       if (!isEnabled || !isVisible) return;
       const fiber$ = getFiberWithElement(fiber);
       const fibers = collectElements(fiber, x => x);

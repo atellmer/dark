@@ -309,21 +309,20 @@ function setTrackUpdate(fn: typeof trackUpdate) {
   trackUpdate = fn;
 }
 
-const appendNativeElement = (element: NativeNode, parentElement: NativeNode) => parentElement.appendChild(element);
+const appendNativeElement = (element: NativeNode, parent: NativeNode) => parent.appendChild(element);
 
-const insertNativeElement = (element: NativeNode, sibling: NativeNode, parentElement: TagNativeElement) => {
-  parentElement.insertBefore(element, sibling);
+const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: TagNativeElement) => {
+  parent.insertBefore(element, sibling);
 };
 
-const insertNativeElementByIndex = (element: NativeNode, idx: number, parentElement: TagNativeElement) => {
-  parentElement.insertBefore(element, parentElement.childNodes[idx]);
+const insertNativeElementByIndex = (element: NativeNode, idx: number, parent: TagNativeElement) => {
+  parent.insertBefore(element, parent.childNodes[idx]);
 };
 
-const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parentElement: TagNativeElement) => {
-  parentElement.replaceChild(element, candidate);
+const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) => {
+  parent.replaceChild(element, candidate);
 };
 
-const removeNativeElement = (element: NativeNode, parentElement: TagNativeElement) =>
-  parentElement.removeChild(element);
+const removeNativeElement = (element: NativeNode, parent: TagNativeElement) => parent.removeChild(element);
 
 export { createNativeElement, commit, finishCommit, setTrackUpdate, insertNativeElementByIndex };

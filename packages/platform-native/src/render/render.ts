@@ -19,7 +19,7 @@ import {
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
-import { createNativeElement, commit, finishCommit } from '../dom';
+import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { scheduleCallback, shouldYield } from '../scheduler';
 import { type NSElement } from '../registry';
 
@@ -28,6 +28,7 @@ let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
+  platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
   platform.raf = requestAnimationFrame.bind(this);
   platform.caf = cancelAnimationFrame.bind(this);
   platform.schedule = scheduleCallback;

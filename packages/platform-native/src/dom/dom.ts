@@ -122,9 +122,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const children = parentElement.children;
 
   if (children.length === 0 || fiber.eidx > children.length - 1) {
-    parentElement.appendChild(fiber.element);
+    appendNativeElement(fiber.element, parentElement);
   } else {
-    parentElement.insertBefore(fiber.element, parentElement.children[fiber.eidx]);
+    insertNativeElement(fiber.element, parentElement.children[fiber.eidx], parentElement);
   }
 
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
@@ -147,7 +147,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
     if (!isReturn && nextFiber.element) {
-      parentFiber.element.removeChild(nextFiber.element);
+      removeNativeElement(nextFiber.element, parentFiber.element);
 
       return resetIsDeepWalking();
     }
@@ -161,16 +161,16 @@ function move(fiber: Fiber<NativeElement>) {
   const elementIdx = fiber.eidx;
   const move = () => {
     for (let i = 0; i < sourceNodes.length; i++) {
-      parentElement.insertBefore(sourceNodes[i], parentElement.children[elementIdx + i]);
-      parentElement.removeChild(parentElement.children[elementIdx + i + 1]);
+      insertNativeElement(sourceNodes[i], parentElement.children[elementIdx + i], parentElement);
+      removeNativeElement(parentElement.children[elementIdx + i + 1], parentElement);
     }
   };
 
   for (let i = 0; i < sourceNodes.length; i++) {
     const node = sourceNodes[i];
 
-    parentElement.insertBefore(new CommentNativeElement(`${elementIdx}:${i}`), node);
-    parentElement.removeChild(node);
+    insertNativeElement(new CommentNativeElement(`${elementIdx}:${i}`), node, parentElement);
+    removeNativeElement(node, parentElement);
   }
 
   moves.push(move);
@@ -199,4 +199,16 @@ function finishCommit() {
   moves = [];
 }
 
-export { createNativeElement, commit, finishCommit };
+const appendNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.appendChild(element);
+
+const insertNativeElement = (element: NativeElement, sibling: NativeElement, parent: TagNativeElement) => {
+  parent.insertBefore(element, sibling);
+};
+
+const insertNativeElementByIndex = (element: NativeElement, idx: number, parent: TagNativeElement) => {
+  parent.insertBefore(element, parent.children[idx]);
+};
+
+const removeNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.removeChild(element);
+
+export { createNativeElement, commit, finishCommit, insertNativeElementByIndex };

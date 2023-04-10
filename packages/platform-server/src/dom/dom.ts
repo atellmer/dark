@@ -110,16 +110,12 @@ const patchPropertiesSpecialCasesMap: Record<
   },
 };
 
-function append(fiber: Fiber<NativeElement>, parentElement: TagNativeElement) {
-  parentElement.appendChild(fiber.element);
-}
-
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
   const parentElement = parentFiber.element;
   const vNode = parentFiber.inst as TagVirtualNode;
 
-  !detectIsVoidElement(vNode.name) && append(fiber, parentElement);
+  !detectIsVoidElement(vNode.name) && appendNativeElement(fiber.element, parentElement);
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
@@ -159,5 +155,7 @@ function chunk(fiber: Fiber<NativeElement>) {
 const finishCommit = () => {
   chunkIds = {};
 };
+
+const appendNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.appendChild(element);
 
 export { createNativeElement, commit, finishCommit, chunk };
