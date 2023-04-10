@@ -1,7 +1,7 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { dom } from '@test-utils';
+import { dom, createReplacerString } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component';
 import { type LazyModule, lazy } from '../lazy';
@@ -31,7 +31,7 @@ describe('[Suspense]', () => {
     );
 
     const loaderContent = () => dom`
-      <div>loading...</div>
+      ${createReplacerString()}<div>loading...</div>
     `;
 
     const content = () => dom`

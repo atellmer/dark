@@ -41,6 +41,7 @@ import {
   getVirtualNodeFactoryKey,
   getTagVirtualNodeFlag,
   getVirtualNodeFactoryFlag,
+  detectIsReplacer,
   createReplacer,
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
@@ -241,6 +242,7 @@ function current(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) 
   let isUpdate = false;
 
   fiber.parent.tag === EffectTag.C && (fiber.tag = fiber.parent.tag);
+  fiber.parent.inv && !fiber.parent.element && !detectIsReplacer(instance) && (fiber.inv = true);
 
   if (fiber.tag !== EffectTag.C) {
     isUpdate =
@@ -460,6 +462,7 @@ function mount(fiber: Fiber, instance: DarkElementInstance) {
       if (detectIsLazy(component) && !detectIsLoaded(component) && (isHydrateZone.get() || detectIsServer())) {
         mountStore.toParent();
         nextUnitOfWorkStore.set(fiber.parent);
+        Fiber.setNextId(fiber.parent.id);
         throw new StopWork();
       }
 

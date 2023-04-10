@@ -20,7 +20,7 @@ import {
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
-import { createNativeElement, commit, finishCommit } from '../dom';
+import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal/utils';
 import { scheduleCallback, shouldYield } from '../scheduler';
 
@@ -29,6 +29,7 @@ const roots = new Map<Element, number>();
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
+  platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
   platform.raf = requestAnimationFrame.bind(this);
   platform.caf = cancelAnimationFrame.bind(this);
   platform.schedule = scheduleCallback;

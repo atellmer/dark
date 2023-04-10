@@ -56,13 +56,13 @@ function walkFiber<T = unknown>(
   }
 }
 
-function collectElements<T>(fiber: Fiber<T>): Array<T> {
-  const elements: Array<T> = [];
+function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>) => P): Array<P> {
+  const elements: Array<P> = [];
 
   walkFiber<T>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
     if (!isReturn && nextFiber.element) {
-      !platform.detectIsPortal(nextFiber.inst) && elements.push(nextFiber.element);
+      !platform.detectIsPortal(nextFiber.inst) && elements.push(transform(nextFiber));
 
       return resetIsDeepWalking();
     }

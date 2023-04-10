@@ -28,6 +28,7 @@ class Fiber<N = NativeElement> {
   public pHost: boolean; // portal host
   public marker: string; // for dev
   public used: boolean; // flag if fiber already been rendered
+  public inv: boolean; // flag for suspense
   public batch: number | NodeJS.Timeout | null; // timer for batching
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
   public catch: (error: Error) => void;
@@ -101,6 +102,10 @@ class Fiber<N = NativeElement> {
     } else if (this.parent) {
       this.parent.setError(error);
     }
+  }
+
+  public static setNextId(id: number) {
+    Fiber.nextId = id;
   }
 }
 

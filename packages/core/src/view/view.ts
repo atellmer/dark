@@ -77,6 +77,8 @@ const createReplacer = () => new CommentVirtualNode(REPLACER);
 const detectIsPlainVirtualNode = (vNode: unknown): vNode is PlainVirtualNode =>
   detectIsTextVirtualNode(vNode) || detectIsCommentVirtualNode(vNode);
 
+const detectIsReplacer = (vNode: unknown) => detectIsCommentVirtualNode(vNode) && vNode.value === REPLACER;
+
 function View(def: ViewDef): TagVirtualNodeFactory {
   const factory = () => {
     const { as: name, slot, _void = false, ...attrs } = def;
@@ -119,6 +121,7 @@ export {
   getVirtualNodeFactoryKey,
   getVirtualNodeFactoryFlag,
   createReplacer,
+  detectIsReplacer,
   View,
   Text,
   Comment,

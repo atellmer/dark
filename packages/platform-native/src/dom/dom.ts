@@ -155,7 +155,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 }
 
 function move(fiber: Fiber<NativeElement>) {
-  const sourceNodes = collectElements(fiber);
+  const sourceNodes = collectElements(fiber, x => x.element);
   const sourceNode = sourceNodes[0];
   const parentElement = sourceNode.parentElement;
   const elementIdx = fiber.eidx;

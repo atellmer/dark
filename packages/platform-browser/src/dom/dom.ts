@@ -32,6 +32,7 @@ import type {
   TagNativeElement,
   TextNativeElement,
   CommentNativeElement,
+  NativeNode,
   AttributeValue,
 } from '../native-element';
 
@@ -214,10 +215,13 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-      !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) && parentElement.appendChild(fiber.element);
-    } else {
-      parentElement.insertBefore(fiber.element, parentElement.childNodes[fiber.eidx]);
+    if (!fiber.inv) {
+      if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
+        !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
+          appendNativeElement(fiber.element, parentElement);
+      } else {
+        insertNativeElement(fiber.element, parentElement.childNodes[fiber.eidx], parentElement);
+      }
     }
   }
 
@@ -245,7 +249,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
     if (!isReturn && nextFiber.element) {
-      !detectIsPortal(nextFiber.inst) && parentFiber.element.removeChild(nextFiber.element);
+      !detectIsPortal(nextFiber.inst) && removeNativeElement(nextFiber.element, parentFiber.element);
 
       return resetIsDeepWalking();
     }
@@ -253,7 +257,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 }
 
 function move(fiber: Fiber<NativeElement>) {
-  const sourceNodes = collectElements(fiber);
+  const sourceNodes = collectElements(fiber, x => x.element);
   const sourceNode = sourceNodes[0];
   const parentElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
@@ -261,15 +265,15 @@ function move(fiber: Fiber<NativeElement>) {
   let idx = 0;
   const move = () => {
     for (let i = 1; i < sourceNodes.length; i++) {
-      parentElement.removeChild(parentElement.childNodes[elementIdx + 1]);
+      removeNativeElement(parentElement.childNodes[elementIdx + 1], parentElement);
     }
 
-    parentElement.replaceChild(sourceFragment, parentElement.childNodes[elementIdx]);
+    replaceNativeElement(sourceFragment, parentElement.childNodes[elementIdx], parentElement);
   };
 
   for (const node of sourceNodes) {
-    parentElement.insertBefore(document.createComment(`${elementIdx}:${idx}`), node);
-    sourceFragment.appendChild(node);
+    insertNativeElement(document.createComment(`${elementIdx}:${idx}`), node, parentElement);
+    appendNativeElement(node, sourceFragment);
     idx++;
   }
 
@@ -305,4 +309,21 @@ function setTrackUpdate(fn: typeof trackUpdate) {
   trackUpdate = fn;
 }
 
-export { createNativeElement, commit, finishCommit, setTrackUpdate };
+const appendNativeElement = (element: NativeNode, parentElement: NativeNode) => parentElement.appendChild(element);
+
+const insertNativeElement = (element: NativeNode, sibling: NativeNode, parentElement: TagNativeElement) => {
+  parentElement.insertBefore(element, sibling);
+};
+
+const insertNativeElementByIndex = (element: NativeNode, idx: number, parentElement: TagNativeElement) => {
+  parentElement.insertBefore(element, parentElement.childNodes[idx]);
+};
+
+const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parentElement: TagNativeElement) => {
+  parentElement.replaceChild(element, candidate);
+};
+
+const removeNativeElement = (element: NativeNode, parentElement: TagNativeElement) =>
+  parentElement.removeChild(element);
+
+export { createNativeElement, commit, finishCommit, setTrackUpdate, insertNativeElementByIndex };

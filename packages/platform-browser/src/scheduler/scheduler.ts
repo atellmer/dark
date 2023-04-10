@@ -82,7 +82,7 @@ function pick(queue: Array<Task>) {
 function executeTasks() {
   const isBusy = detectIsBusy();
 
-  if (!isBusy) {
+  if (!isBusy && !isMessageLoopRunning) {
     checkOverdueTasks() ||
       gc() ||
       (queueByPriority.animations.length > 0 && pick(queueByPriority.animations)) ||

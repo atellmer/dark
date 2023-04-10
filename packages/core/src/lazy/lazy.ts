@@ -1,25 +1,27 @@
 import { type ComponentFactory, component } from '../component';
 import { detectIsFunction, detectIsUndefined } from '../helpers';
-import { useUpdate } from '../use-update';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
+import { useUpdate } from '../use-update';
 import { isHydrateZone } from '../scope';
 import { $$lazy, $$loaded } from './utils';
 
 const componentsMap: Map<Function, ComponentFactory> = new Map();
 
-function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<P> }>, done?: () => void) {
+function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () => void) {
   return forwardRef(
     component<P, R>(
       function factory(props, ref) {
-        const { fallback } = useContext(SuspenseContext);
-        const update = useUpdate();
+        const { reg, unreg } = useContext(SuspenseContext);
+        const update = useUpdate({ forceSync: true });
         const component = componentsMap.get(module);
 
         if (detectIsUndefined(component)) {
+          reg();
           componentsMap.set(module, null);
           fetchModule(module).then(component => {
+            unreg();
             factory[$$loaded] = true;
             componentsMap.set(module, component);
             !isHydrateZone.get() && update();
@@ -27,14 +29,14 @@ function lazy<P, R = unknown>(module: () => Promise<{ default: ComponentFactory<
           });
         }
 
-        return component ? component(props, ref) : fallback;
+        return component ? component(props, ref) : null;
       },
       { token: $$lazy },
     ),
   );
 }
 
-function fetchModule(module: () => Promise<{ default: ComponentFactory }>) {
+function fetchModule(module: () => Promise<LazyModule>) {
   return new Promise<ComponentFactory>(resolve => {
     module().then(module => {
       if (process.env.NODE_ENV !== 'production') {
@@ -47,5 +49,9 @@ function fetchModule(module: () => Promise<{ default: ComponentFactory }>) {
     });
   });
 }
+
+export type LazyModule<P = unknown> = {
+  default: ComponentFactory<P>;
+};
 
 export { lazy, fetchModule };

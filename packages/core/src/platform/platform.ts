@@ -4,6 +4,7 @@ import { type VirtualNode } from '../view';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
+  insertElement: <N>(node: N, idx: number, parent: N) => void; // browser only for Suspense
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
   schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
@@ -25,6 +26,9 @@ export type ScheduleCallbackOptions = {
 
 const platform: Platform = {
   createElement: () => {
+    throw new Error(msg());
+  },
+  insertElement: () => {
     throw new Error(msg());
   },
   raf: () => {
