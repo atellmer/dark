@@ -16,11 +16,15 @@ type SuspenseProps = {
 } & Required<SlotProps>;
 
 type SuspenseContextValue = {
+  isLoaded: boolean;
+  fallback: DarkElement;
   reg: () => void;
   unreg: () => void;
 };
 
 const SuspenseContext = createContext<SuspenseContextValue>({
+  isLoaded: false,
+  fallback: null,
   reg: () => {},
   unreg: () => {},
 });
@@ -34,7 +38,12 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   const isEnabled = !detectIsServer() && !isHydrateZone.get();
   const [isLoaded, setIsLoaded] = useState(!isEnabled, { forceSync: true });
   const scope = useMemo(() => ({ size: 0 }), []);
-  const value = useMemo<SuspenseContextValue>(() => ({ reg: () => scope.size++, unreg: () => scope.size-- }), []);
+  const value = useMemo<SuspenseContextValue>(
+    () => ({ isLoaded, fallback, reg: () => scope.size++, unreg: () => scope.size-- }),
+    [],
+  );
+  value.isLoaded = isLoaded;
+  value.fallback = fallback;
 
   useEffect(() => {
     const off = emitter.on('finish', () => !isLoaded && scope.size === 0 && setIsLoaded(true));

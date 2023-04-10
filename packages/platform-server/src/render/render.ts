@@ -4,6 +4,7 @@ import {
   ROOT,
   Fiber,
   EffectTag,
+  TaskPriority,
   platform,
   flatten,
   TagVirtualNode,
@@ -72,7 +73,7 @@ function renderToString(element: DarkElement): Promise<string> {
       unmountRoot(rootId, () => {});
     };
 
-    platform.schedule(callback, { onCompleted });
+    platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted });
   });
 }
 
@@ -108,7 +109,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     }
   });
 
-  Promise.resolve().then(() => platform.schedule(callback, { onCompleted }));
+  Promise.resolve().then(() => platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted }));
   stream.push(DOCTYPE);
 
   return stream;

@@ -13,7 +13,7 @@ function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () =>
   return forwardRef(
     component<P, R>(
       function factory(props, ref) {
-        const { reg, unreg } = useContext(SuspenseContext);
+        const { isLoaded, fallback, reg, unreg } = useContext(SuspenseContext);
         const update = useUpdate({ forceSync: true });
         const component = componentsMap.get(module);
 
@@ -29,7 +29,7 @@ function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () =>
           });
         }
 
-        return component ? component(props, ref) : null;
+        return component ? component(props, ref) : isLoaded ? fallback : null;
       },
       { token: $$lazy },
     ),

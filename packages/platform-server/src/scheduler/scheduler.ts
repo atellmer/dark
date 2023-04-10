@@ -62,7 +62,7 @@ function pick(queue: Array<Task>) {
 function executeTasks() {
   const isBusy = detectIsBusy();
 
-  if (!isBusy) {
+  if (!isBusy && !isMessageLoopRunning) {
     pick(queue);
   }
 }
