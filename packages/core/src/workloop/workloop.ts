@@ -48,7 +48,7 @@ import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -756,11 +756,11 @@ type CreateUpdateCallbackOptions = {
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const { rootId, fiber, forceStart = false, onStart } = options;
   const callback = () => {
-    if (fiber.tag === EffectTag.D) return;
+    if (!detectIsFiberAlive(fiber)) return;
     forceStart && onStart && onStart();
     if (fiber.used) return;
     !forceStart && onStart && onStart();
-    rootStore.set(rootId); // important order!
+    rootStore.set(rootId); // !
     isUpdateHookZone.set(true);
     mountStore.reset();
 

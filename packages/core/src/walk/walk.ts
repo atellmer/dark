@@ -1,4 +1,4 @@
-import { type Fiber } from '../fiber';
+import { type Fiber, EffectTag } from '../fiber';
 import { platform } from '../platform';
 
 function walkFiber<T = unknown>(
@@ -82,4 +82,15 @@ function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
   return fiber$;
 }
 
-export { walkFiber, collectElements, getFiberWithElement };
+function detectIsFiberAlive(fiber: Fiber) {
+  let fiber$ = fiber;
+
+  while (fiber$) {
+    if (fiber$.tag === EffectTag.D) return false;
+    fiber$ = fiber$.parent;
+  }
+
+  return Boolean(fiber);
+}
+
+export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive };
