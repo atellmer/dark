@@ -4,12 +4,11 @@ import { createContext } from '../context';
 import { useMemo } from '../use-memo';
 import { useState } from '../use-state';
 import { useEffect } from '../use-effect';
-import { useLayoutEffect } from '../use-layout-effect';
 import { emitter } from '../emitter';
 import { Fragment } from '../fragment';
-import { currentFiberStore, isHydrateZone } from '../scope';
-import { collectElements, getFiberWithElement } from '../walk';
-import { platform, detectIsServer } from '../platform';
+import { isHydrateZone } from '../scope';
+import { detectIsServer } from '../platform';
+import { Shadow } from '../shadow';
 
 type SuspenseProps = {
   fallback: DarkElement;
@@ -52,44 +51,11 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   }, []);
 
   const content = isLoaded
-    ? [Content({ key: CONTENT, isLoaded: true, isEnabled, slot })]
-    : [Content({ key: CONTENT, isLoaded: false, isEnabled, slot }), Fragment({ key: FALLBACK, slot: fallback })];
+    ? [Shadow({ key: CONTENT, isVisible: true, isEnabled, slot })]
+    : [Shadow({ key: CONTENT, isVisible: false, isEnabled, slot }), Fragment({ key: FALLBACK, slot: fallback })];
 
   return SuspenseContext.Provider({ value, slot: content });
 });
-
-const $$content = Symbol('content');
-
-type ContentProps = {
-  isEnabled: boolean;
-  isLoaded: boolean;
-  slot: DarkElement;
-};
-
-const Content = component<ContentProps>(
-  ({ isEnabled, isLoaded, slot }) => {
-    const fiber = currentFiberStore.get();
-
-    if (isLoaded) {
-      delete fiber.inv;
-    } else {
-      fiber.inv = true;
-    }
-
-    useLayoutEffect(() => {
-      if (!isEnabled || !isLoaded) return;
-      const fiber$ = getFiberWithElement(fiber);
-      const fibers = collectElements(fiber, x => x);
-
-      for (const fiber of fibers) {
-        platform.insertElement(fiber.element, fiber.eidx, fiber$.element);
-      }
-    }, [isLoaded]);
-
-    return slot || null;
-  },
-  { token: $$content },
-);
 
 const CONTENT = 1;
 const FALLBACK = 2;
