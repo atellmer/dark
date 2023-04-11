@@ -7,29 +7,29 @@ import { useUpdate } from '../use-update';
 import { isHydrateZone } from '../scope';
 import { $$lazy, $$loaded } from './utils';
 
-const componentsMap: Map<Function, ComponentFactory> = new Map();
+const factoriesMap: Map<Function, ComponentFactory> = new Map();
 
 function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () => void) {
   return forwardRef(
     component<P, R>(
-      function factory(props, ref) {
+      function type(props, ref) {
         const { isLoaded, fallback, reg, unreg } = useContext(SuspenseContext);
         const update = useUpdate({ forceSync: true });
-        const component = componentsMap.get(module);
+        const factory = factoriesMap.get(module);
 
-        if (detectIsUndefined(component)) {
+        if (detectIsUndefined(factory)) {
           reg();
-          componentsMap.set(module, null);
+          factoriesMap.set(module, null);
           fetchModule(module).then(component => {
             unreg();
-            factory[$$loaded] = true;
-            componentsMap.set(module, component);
+            type[$$loaded] = true;
+            factoriesMap.set(module, component);
             !isHydrateZone.get() && update();
             detectIsFunction(done) && done();
           });
         }
 
-        return component ? component(props, ref) : isLoaded ? fallback : null;
+        return factory ? factory(props, ref) : isLoaded ? fallback : null;
       },
       { token: $$lazy },
     ),
