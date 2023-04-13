@@ -80,8 +80,12 @@ function workLoop(yield$: boolean) {
       hasMoreWork = Boolean(nextUnitOfWork);
       shouldYield = yield$ && platform.shouldYield();
     }
-  } catch (stop) {
-    !yield$ && setTimeout(() => workLoop(false));
+  } catch (err) {
+    if (err instanceof StopWork) {
+      !yield$ && setTimeout(() => workLoop(false));
+    } else {
+      throw err;
+    }
   }
 
   if (!nextUnitOfWork && wipFiber) {
