@@ -50,6 +50,46 @@ describe('[Suspense]', () => {
     expect(host.innerHTML).toBe(content1());
   });
 
+  test('can work with conditional rendering', done => {
+    type AppProps = {
+      isOpen: boolean;
+    };
+
+    const Lazy = lazy(
+      () =>
+        new Promise<LazyModule>(resolve => {
+          setTimeout(() => {
+            resolve({ default: component(() => <div>lazy</div>) });
+          }, 10);
+        }),
+      () => {
+        expect(host.innerHTML).toBe(content2());
+        render(App({ isOpen: false }), host);
+        expect(host.innerHTML).toBe(content3());
+        render(App({ isOpen: true }), host);
+        expect(host.innerHTML).toBe(content2());
+        done();
+      },
+    );
+
+    const content1 = () => dom`${replacer}<div>loading...</div>`;
+
+    const content2 = () => dom`<div>lazy</div>`;
+
+    const content3 = () => replacer;
+
+    const App = component<AppProps>(({ isOpen }) => {
+      return isOpen ? (
+        <Suspense fallback={<div>loading...</div>}>
+          <Lazy />
+        </Suspense>
+      ) : null;
+    });
+
+    render(App({ isOpen: true }), host);
+    expect(host.innerHTML).toBe(content1());
+  });
+
   test('can render and wait more than one lazy components correctly', done => {
     const Lazy1 = lazy(
       () =>

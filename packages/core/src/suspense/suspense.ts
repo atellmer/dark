@@ -3,7 +3,7 @@ import { component } from '../component';
 import { createContext } from '../context';
 import { useMemo } from '../use-memo';
 import { useState } from '../use-state';
-import { useEffect } from '../use-effect';
+import { useLayoutEffect } from '../use-layout-effect';
 import { emitter } from '../emitter';
 import { Fragment } from '../fragment';
 import { isHydrateZone } from '../scope';
@@ -44,7 +44,7 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   value.isLoaded = isLoaded;
   value.fallback = fallback;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const off = emitter.on('finish', () => !isLoaded && scope.size === 0 && setIsLoaded(true));
 
     return off;
