@@ -6,6 +6,7 @@ export const TYPE = 'type';
 export const ATTR_KEY = 'key';
 export const ATTR_REF = 'ref';
 export const ATTR_FLAG = 'flag';
+export const RESTART_TIMEOUT = 10;
 
 export enum TaskPriority {
   ANIMATION = 3,

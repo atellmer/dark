@@ -215,7 +215,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (!fiber.inv) {
+    if (!fiber.shadow) {
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
         !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
           appendNativeElement(fiber.element, parentElement);
@@ -249,7 +249,9 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
     if (!isReturn && nextFiber.element) {
-      !detectIsPortal(nextFiber.inst) && removeNativeElement(nextFiber.element, parentFiber.element);
+      !nextFiber.shadow &&
+        !detectIsPortal(nextFiber.inst) &&
+        removeNativeElement(nextFiber.element, parentFiber.element);
 
       return resetIsDeepWalking();
     }

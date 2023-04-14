@@ -18,9 +18,9 @@ const Shadow = component<ShadowProps>(
 
     if (isEnabled) {
       if (isVisible) {
-        delete fiber.inv;
+        delete fiber.shadow;
       } else {
-        fiber.inv = true;
+        fiber.shadow = true;
       }
     }
 

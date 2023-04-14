@@ -1,5 +1,5 @@
 import { platform, detectIsServer } from '../platform';
-import { INDEX_KEY, TYPE, Flag } from '../constants';
+import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag } from '../constants';
 import {
   flatten,
   error,
@@ -54,6 +54,8 @@ import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
 
+let hasError = false;
+
 type Box = {
   fiber$$: Fiber;
   fiber$: Fiber;
@@ -63,6 +65,7 @@ type Box = {
 export type WorkLoop = (yield$: boolean) => boolean;
 
 function workLoop(yield$: boolean) {
+  if (hasError) return false;
   const wipFiber = wipRootStore.get();
   let nextUnitOfWork = nextUnitOfWorkStore.get();
   let shouldYield = false;
@@ -80,16 +83,17 @@ function workLoop(yield$: boolean) {
       hasMoreWork = Boolean(nextUnitOfWork);
       shouldYield = yield$ && platform.shouldYield();
     }
+
+    if (!nextUnitOfWork && wipFiber) {
+      commit();
+    }
   } catch (err) {
     if (err instanceof StopWork) {
-      !yield$ && setTimeout(() => workLoop(false));
+      !yield$ && setTimeout(() => workLoop(false), RESTART_TIMEOUT);
     } else {
+      hasError = true;
       throw err;
     }
-  }
-
-  if (!nextUnitOfWork && wipFiber) {
-    commit();
   }
 
   return hasMoreWork;
@@ -246,7 +250,7 @@ function current(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) 
   let isUpdate = false;
 
   fiber.parent.tag === EffectTag.C && (fiber.tag = fiber.parent.tag);
-  fiber.parent.inv && !fiber.parent.element && !detectIsReplacer(instance) && (fiber.inv = true);
+  fiber.parent.shadow && !fiber.parent.element && !detectIsReplacer(instance) && (fiber.shadow = true);
 
   if (fiber.tag !== EffectTag.C) {
     isUpdate =
