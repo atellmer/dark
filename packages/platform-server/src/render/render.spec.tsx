@@ -98,35 +98,6 @@ describe('[SSR]', () => {
     expect(app).toBe(replacer);
   });
 
-  test('can render to string async correctly', async () => {
-    const content = (x: number) =>
-      dom`
-        <div class="app">
-          <div>Hello World</div>
-          <div>count: ${x}</div>
-          <button class="button">increment</button>
-        </div>
-      `;
-
-    const App = component(() => {
-      const [count, setCount] = useState(0);
-
-      return (
-        <>
-          <div class='app'>
-            <div>Hello World</div>
-            <div>count: {count}</div>
-            <button class='button' onClick={() => setCount(count + 1)}>
-              increment
-            </button>
-          </div>
-        </>
-      );
-    });
-
-    expect(await renderToString(App())).toBe(content(0));
-  });
-
   test('can render to stream correctly', () => {
     const content = (x: number) =>
       dom`

@@ -96,7 +96,7 @@ import { hydrateRoot } from '@dark-engine/platform-browser';
 
 import { App } from './app';
 
-hydrateRoot(document.getElementById('root'), <App />); // some magic and app works!
+hydrateRoot(document.getElementById('root'), <App />);
 ```
 
 ### RenderToStream
