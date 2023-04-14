@@ -99,7 +99,7 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />);
 ```
 
-### RenderToStream
+### renderToStream
 
 Dark can render to readable streams, i.e. give chunks of data as quickly as possible when starting rendering. This method works better for some Lighthouse metrics.
 
