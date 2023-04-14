@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "moduleResolution": "node",
+    "module": "esnext",
+    "outDir": "./lib/",
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "removeComments": true,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "lib": [
+      "ES6",
+      "ES7",
+      "ES2021",
+      "dom"
+    ],
+    "typeRoots": ["node_modules/@types"],
+    "baseUrl": ".",
+    "paths": {
+      "@dark-engine/core": [
+        "../../packages/core/src/index"
+      ],
+      "@dark-engine/platform-browser": [
+        "../../packages/platform-browser/src/index"
+      ],
+      "@dark-engine/web-router": [
+        "../../packages/web-router/src/index"
+      ],
+    }
+  }
+}

@@ -15,12 +15,12 @@ const Shell = component<ShellProps>(({ slot }) => {
 
   return (
     <>
+      <header>
+        <RouterLink to='/home'>Home</RouterLink>
+        <RouterLink to='/about'>About</RouterLink>
+        <RouterLink to='/contacts'>Contacts</RouterLink>
+      </header>
       <Suspense fallback={<Spinner />}>
-        <header>
-          <RouterLink to='/home'>Home</RouterLink>
-          <RouterLink to='/about'>About</RouterLink>
-          <RouterLink to='/contacts'>Contacts</RouterLink>
-        </header>
         <main key={key} class='fade'>
           {slot}
         </main>

@@ -4,8 +4,9 @@ import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
 import { useUpdate } from '../use-update';
-import { isHydrateZone } from '../scope';
+import { isHydrateZone, currentFiberStore } from '../scope';
 import { $$lazy, $$loaded } from './utils';
+import { detectIsFiberAlive } from '../walk';
 
 const factoriesMap: Map<Function, ComponentFactory> = new Map();
 
@@ -13,9 +14,11 @@ function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () =>
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
-        const { isLoaded, fallback, reg, unreg } = useContext(SuspenseContext);
-        const update = useUpdate({ forceSync: true });
+        const { isLoaded, fallback, update: update$$, reg, unreg } = useContext(SuspenseContext);
+        const update$ = useUpdate({ forceSync: true });
         const factory = factoriesMap.get(module);
+        const fiber = currentFiberStore.get();
+        const update = () => (detectIsFiberAlive(fiber) ? update$() : update$$());
 
         if (detectIsUndefined(factory)) {
           reg();

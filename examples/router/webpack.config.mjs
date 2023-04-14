@@ -1,33 +1,23 @@
-import path from 'path';
-import webpack from 'webpack';
-import { createRequire } from 'module';
+import { resolve, dirname, join } from 'path';
 
 import { alias } from '../../webpack.alias.mjs';
 
-const require = createRequire(import.meta.url);
-const __dirname = path.resolve(path.dirname(''));
+const __dirname = resolve(dirname(''));
 const config = {
-  mode: 'development',
+  mode: 'production',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
-    fallback: {
-      assert: require.resolve('assert'),
-    },
     alias,
   },
   devtool: 'source-map',
-  entry: path.resolve(__dirname, './index.tsx'),
+  entry: resolve(__dirname, './index.tsx'),
   output: {
-    path: path.resolve(__dirname, './'),
+    path: resolve(__dirname, './'),
     filename: 'build.js',
   },
-  performance: {
-    maxEntrypointSize: 307200,
-    maxAssetSize: 307200,
-  },
   devServer: {
-    static: path.join(__dirname, './'),
+    static: join(__dirname, './'),
     compress: false,
     port: 9000,
     historyApiFallback: true,
@@ -44,12 +34,6 @@ const config = {
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': JSON.stringify(process.env),
-      'process.env.NODE_ENV': JSON.stringify('development'),
-    }),
-  ],
 };
 
 export default config;

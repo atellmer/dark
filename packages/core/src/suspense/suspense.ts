@@ -1,14 +1,16 @@
 import type { DarkElement, SlotProps } from '../shared';
 import { component } from '../component';
-import { createContext } from '../context';
+import { createContext, useContext } from '../context';
 import { useMemo } from '../use-memo';
 import { useState } from '../use-state';
+import { useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { emitter } from '../emitter';
 import { Fragment } from '../fragment';
-import { isHydrateZone } from '../scope';
+import { isHydrateZone, currentFiberStore } from '../scope';
 import { detectIsServer } from '../platform';
 import { Shadow } from '../shadow';
+import { detectIsFiberAlive } from '../walk';
 
 type SuspenseProps = {
   fallback: DarkElement;
@@ -17,6 +19,7 @@ type SuspenseProps = {
 type SuspenseContextValue = {
   isLoaded: boolean;
   fallback: DarkElement;
+  update: () => void;
   reg: () => void;
   unreg: () => void;
 };
@@ -24,6 +27,7 @@ type SuspenseContextValue = {
 const SuspenseContext = createContext<SuspenseContextValue>({
   isLoaded: false,
   fallback: null,
+  update: () => {},
   reg: () => {},
   unreg: () => {},
 });
@@ -35,12 +39,18 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
     }
   }
 
+  const { update: update$$ } = useContext(SuspenseContext);
   const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || isHydrateZone.get(), { forceSync: true });
+  const update$ = useUpdate({ forceSync: true });
   const scope = useMemo(() => ({ size: 0 }), []);
+  const fiber = currentFiberStore.get();
+  const update = () => (detectIsFiberAlive(fiber) ? update$() : update$$());
   const value = useMemo<SuspenseContextValue>(
-    () => ({ isLoaded, fallback, reg: () => scope.size++, unreg: () => scope.size-- }),
+    () => ({ isLoaded, fallback, update, reg: () => scope.size++, unreg: () => scope.size-- }),
     [],
   );
+
+  value.update = update;
   value.isLoaded = isLoaded;
   value.fallback = fallback;
 
