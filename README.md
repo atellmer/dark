@@ -44,7 +44,7 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 - [10k rows](https://atellmer.github.io/dark/examples/10k-rows/)
 - [Animated reorderable grid](https://atellmer.github.io/dark/examples/animated-grid/)
 - [Animated portal modal window](https://atellmer.github.io/dark/examples/modal-window/)
-- [Text patching benchmark](https://atellmer.github.io/dark/examples/dark-vs-vue/)
+- [Text patching benchmark](https://atellmer.github.io/dark/examples/text-patching/)
 - [Sierpinski triangle](https://atellmer.github.io/dark/examples/sierpinski-triangle/)
 - [Track updates](https://atellmer.github.io/dark/examples/track-updates/)
 - [Simple todo-app](https://atellmer.github.io/dark/examples/todo-app/)
