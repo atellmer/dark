@@ -44,7 +44,7 @@ app/
 
 ### renderToString
 
-The method renders app to string async to unblock main thread of node.js
+The method renders app to string async to unblock main thread of Node.js
 
 ```tsx
 // server/app.ts
