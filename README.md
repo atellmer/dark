@@ -65,7 +65,7 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
-According to the results of this [benchmark](https://krausest.github.io/js-framework-benchmark/current.html), Dark faster than React and Angular.
+According to the results of this [benchmark](https://krausest.github.io/js-framework-benchmark/current.html), Dark faster than React (Meta) and Angular (Google).
 
 ## Usage
 Simple example with component:
