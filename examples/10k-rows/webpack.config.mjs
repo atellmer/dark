@@ -1,5 +1,4 @@
 import { resolve, dirname, join } from 'path';
-import webpack from 'webpack';
 
 import { alias } from '../../webpack.alias.mjs';
 
@@ -34,11 +33,6 @@ const config = {
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': JSON.stringify(process.env),
-    }),
-  ],
 };
 
 export default config;
