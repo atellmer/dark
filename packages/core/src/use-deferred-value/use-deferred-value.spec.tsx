@@ -9,15 +9,18 @@ import { useState } from '../use-state';
 import { useDeferredValue } from './use-deferred-value';
 
 let host: HTMLElement = null;
+let timerId = 0;
 
 jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
+  timerId = 0;
   jest.spyOn(window, 'requestIdleCallback').mockImplementation((cb): number => {
-    return setTimeout(() => {
-      cb({} as IdleDeadline);
-    });
+    timerId++;
+    setTimeout(() => cb({} as IdleDeadline));
+
+    return timerId;
   });
 });
 

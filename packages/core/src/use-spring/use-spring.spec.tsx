@@ -8,13 +8,18 @@ import { useState } from '../use-state';
 import { platform } from '../platform';
 
 let host: HTMLElement = null;
+let timerId = 0;
 
 jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
+  timerId = 0;
   jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback): number => {
-    return setTimeout(() => cb(0));
+    timerId++;
+    setTimeout(() => cb(0));
+
+    return timerId;
   });
 });
 
