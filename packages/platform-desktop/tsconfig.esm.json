@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ESNext",
+    "outDir": "./dist/esm/",
+    "skipLibCheck": true
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./**/*.spec.ts"
+  ]
+}
