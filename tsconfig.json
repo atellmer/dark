@@ -18,7 +18,9 @@
       "ES2021",
       "dom"
     ],
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
     "baseUrl": ".",
     "paths": {
       "@dark-engine/core": [
@@ -44,6 +46,12 @@
       ],
       "@dark-engine/platform-native/*": [
         "./packages/platform-native/src/*"
+      ],
+      "@dark-engine/platform-desktop": [
+        "./packages/platform-desktop/src/index"
+      ],
+      "@dark-engine/platform-desktop/*": [
+        "./packages/platform-desktop/src/*"
       ],
       "@dark-engine/web-router": [
         "./packages/web-router/src/index"

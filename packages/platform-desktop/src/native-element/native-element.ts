@@ -33,6 +33,9 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
 
     this.nativeView = create() as T;
     this.meta = meta;
+
+    (global as any).win = this.nativeView;
+    this.nativeView?.show();
   }
 
   public getNativeView(): T {

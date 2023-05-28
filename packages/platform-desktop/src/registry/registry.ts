@@ -47,4 +47,6 @@ function getElementFactory(name: string): NGElementFactory {
 
 registerElement(ROOT, () => null, { isRoot: true });
 
+registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QMainWindow').QMainWindow);
+
 export { getElementFactory, registerElement };
