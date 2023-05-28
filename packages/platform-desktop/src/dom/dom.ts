@@ -23,7 +23,7 @@ import {
 
 import { detectIsEvent, getEventName } from '../events';
 import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
-import { type NSElement } from '../registry';
+import { type NGElement } from '../registry';
 
 type PlainNativeElement = TextNativeElement | CommentNativeElement;
 
@@ -59,7 +59,7 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
   return createNativeElementMap[vNode.type](vNode);
 }
 
-function applyRef(ref: Ref<NSElement>, element: TagNativeElement) {
+function applyRef(ref: Ref<NGElement>, element: TagNativeElement) {
   applyRef$(ref, element.getNativeView());
 }
 

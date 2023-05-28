@@ -1,9 +1,9 @@
-import type { LayoutBase, View, ContentView, AddChildFromBuilder, EventData } from '@nativescript/core';
-import { NodeType, ROOT, detectIsNumber, detectIsFunction, detectIsObject } from '@dark-engine/core';
+import type { WidgetEventTypes } from '@nodegui/nodegui';
+import { NodeType, ROOT } from '@dark-engine/core';
 
 import { createSyntheticEventHandler } from '../events';
-import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
-import { ANDROID, IOS, ATTR_TEXT } from '../constants';
+import { getElementFactory, type NGElement, type NGElementMeta } from '../registry';
+import { ATTR_TEXT } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -17,13 +17,13 @@ class NativeElement {
     return this.type;
   }
 }
-class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
+class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
   public name: string = null;
   public attrs: Record<string, AttributeValue> = {};
   public children: Array<NativeElement> = [];
   private nativeView: T;
-  private meta: NSElementMeta;
-  private eventListeners: Map<string, (e: EventData) => void> = new Map();
+  private meta: NGElementMeta;
+  private eventListeners: Map<string, (e: any) => void> = new Map();
 
   constructor(name: string) {
     super(NodeType.TAG);
@@ -45,7 +45,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     return this.nativeView;
   }
 
-  public getMeta(): NSElementMeta {
+  public getMeta(): NGElementMeta {
     return this.meta;
   }
 
@@ -107,23 +107,20 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
   }
 
   public setAttribute(name: string, value: AttributeValue) {
-    this.nativeView[INITIAL_ATTR_VALUE] = this.nativeView[name];
-    this.attrs[name] = value;
-
-    if (name === ANDROID || name === IOS) {
-      if (detectIsObject(value) && this.nativeView[name]) {
-        for (const key of Object.keys(value)) {
-          this.nativeView[name][key] = value[key];
-        }
-      }
-    } else {
-      this.nativeView[name] = value;
+    if (!this.nativeView[INITIAL_ATTR_VALUE]) {
+      this.nativeView[INITIAL_ATTR_VALUE] = {};
     }
+
+    this.nativeView[INITIAL_ATTR_VALUE][name] = this.nativeView[name];
+    this.nativeView[attrToSetter(name)](value);
+    this.attrs[name] = value;
   }
 
   public removeAttribute(name: string) {
-    this.nativeView[name] = this.nativeView[INITIAL_ATTR_VALUE];
-    delete this.nativeView[INITIAL_ATTR_VALUE];
+    const initialValue = this.nativeView[INITIAL_ATTR_VALUE][name];
+
+    this.nativeView[attrToSetter(name)](initialValue);
+    delete this.nativeView[INITIAL_ATTR_VALUE][name];
     delete this.attrs[name];
   }
 
@@ -143,23 +140,19 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     return this.getAttribute(ATTR_TEXT) as string;
   }
 
-  dispatchEvent(eventName: string) {
-    this.nativeView.notify({ eventName, object: this.nativeView });
-  }
-
-  addEventListener(eventName: string, handler: Function) {
-    const syntheticHandler = createSyntheticEventHandler(handler);
+  addEventListener(eventName: WidgetEventTypes, handler: Function) {
+    const syntheticHandler = createSyntheticEventHandler(eventName, handler);
 
     this.removeEventListener(eventName);
     this.eventListeners.set(eventName, syntheticHandler);
-    this.nativeView.on(eventName, syntheticHandler);
+    this.nativeView.addEventListener(eventName, syntheticHandler);
   }
 
-  removeEventListener(eventName: string) {
+  removeEventListener(eventName: WidgetEventTypes) {
     const handler = this.eventListeners.get(eventName);
 
     this.eventListeners.delete(eventName);
-    this.nativeView.off(eventName, handler);
+    this.nativeView.removeEventListener(eventName, handler);
   }
 }
 
@@ -209,62 +202,16 @@ class CommentNativeElement extends NativeElement {
   }
 }
 
-function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
-  const meta = parentElement.getMeta();
+function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {}
 
-  if (meta.isRoot || meta.flag === NSViewFlag.NO_CHILDREN) return;
+function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {}
 
-  if (detectIsFunction(meta.add)) {
-    return meta.add(childElement, parentElement, idx);
-  }
-
-  const parentView = parentElement.getNativeView();
-  const childView = childElement.getNativeView();
-
-  if (meta.flag === NSViewFlag.LAYOUT_VIEW) {
-    const layoutView = parentView as LayoutBase;
-
-    if (detectIsNumber(idx)) {
-      layoutView.insertChild(childView, idx);
-    } else {
-      layoutView.addChild(childView);
-    }
-  } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
-    const contentView = parentView as ContentView;
-
-    contentView.content = childView;
-  } else {
-    const view = parentView as AddChildFromBuilder;
-
-    view._addChildFromBuilder(childView.constructor.name, childView);
-  }
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.substring(1);
 }
 
-function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
-  const meta = parentElement.getMeta();
-
-  if (meta.isRoot || meta.flag === NSViewFlag.NO_CHILDREN) return;
-
-  if (detectIsFunction(meta.remove)) {
-    return meta.remove(childElement, parentElement);
-  }
-
-  const parentView = parentElement.getNativeView();
-  const childView = childElement.getNativeView();
-
-  if (meta.flag == NSViewFlag.LAYOUT_VIEW) {
-    const layoutView = parentView as LayoutBase;
-
-    layoutView.removeChild(childView);
-  } else if (meta.flag === NSViewFlag.CONTENT_VIEW) {
-    const contentView = parentView as ContentView;
-
-    contentView.content = null;
-  } else {
-    const view = parentView as View;
-
-    view._removeView(childView);
-  }
+function attrToSetter(value: string) {
+  return `set${capitalize(value)}`;
 }
 
 export type AttributeValue = string | number | boolean | object;

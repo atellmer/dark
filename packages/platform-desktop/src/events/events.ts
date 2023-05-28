@@ -1,22 +1,22 @@
-import { EventData } from '@nativescript/core';
+import type { WidgetEventTypes } from '@nodegui/nodegui';
 
-import { type NSElement } from '../registry';
+import { type NGElement } from '../registry';
 
-class SyntheticEvent<E extends EventData, T = NSElement> {
+class SyntheticEvent<E, T = NGElement> {
   public type = '';
   public sourceEvent: E = null;
   public target: T = null;
 
-  constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
-    this.type = options.sourceEvent.eventName;
+  constructor(options: SyntheticEvent<E, T>) {
+    this.type = options.type;
     this.sourceEvent = options.sourceEvent;
     this.target = options.target;
   }
 }
 
-function createSyntheticEventHandler(handler: Function) {
-  const syntheticHandler = (sourceEvent: EventData) => {
-    const event = new SyntheticEvent({ sourceEvent, target: sourceEvent.object });
+function createSyntheticEventHandler(eventName: WidgetEventTypes, handler: Function) {
+  const syntheticHandler = (sourceEvent: any) => {
+    const event = new SyntheticEvent({ type: eventName, sourceEvent, target: sourceEvent.object });
 
     handler(event);
   };
@@ -31,6 +31,6 @@ const getEventName = (attrName: string) =>
     .slice(2, attrName.length)
     .split('')
     .map((x, idx) => (idx === 0 ? x.toLowerCase() : x))
-    .join('');
+    .join('') as WidgetEventTypes;
 
 export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, getEventName };
