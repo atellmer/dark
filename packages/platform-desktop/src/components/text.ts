@@ -2,10 +2,11 @@ import { type QLabel } from '@nodegui/nodegui';
 import { type TextVirtualNode, type ComponentFactory, component, forwardRef, detectIsArray } from '@dark-engine/core';
 
 import { qLabel } from '../factory';
+import { type WidgetProps } from '../shared';
 
 export type TextProps = {
   slot: string | number | Array<string | number>;
-};
+} & WidgetProps;
 
 export type TextRef = QLabel;
 

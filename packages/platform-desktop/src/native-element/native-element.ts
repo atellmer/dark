@@ -5,7 +5,7 @@ import { createSyntheticEventHandler } from '../events';
 import { getElementFactory, NGViewFlag, type NGElement, type NGElementMeta } from '../registry';
 import { ATTR_TEXT } from '../constants';
 import { createSetterName } from '../utils';
-import { type Size } from '../shared';
+import { type Size, type Position } from '../shared';
 
 class NativeElement {
   public type: NodeType;
@@ -215,12 +215,22 @@ class CommentNativeElement extends NativeElement {
   }
 }
 
+type WidgetProps = 'id' | 'size' | 'minSize' | 'maxSize' | 'position';
+
 function patchAttributes(element: TagNativeElement, name: string, value: AttributeValue) {
   const widget = element.getNativeView() as QWidget;
 
   if (!QWidget.isPrototypeOf(widget) && !(widget instanceof QWidget)) return;
 
-  const map = {
+  const map: Record<WidgetProps, () => void> = {
+    id: () => {
+      widget.setObjectName(value as string);
+    },
+    size: () => {
+      const size = value as Size;
+
+      widget.resize(size.width, size.height);
+    },
     minSize: () => {
       const size = value as Size;
 
@@ -230,6 +240,11 @@ function patchAttributes(element: TagNativeElement, name: string, value: Attribu
       const size = value as Size;
 
       widget.setMaximumSize(size.width, size.height);
+    },
+    position: () => {
+      const position = value as Position;
+
+      widget.setGeometry(position.x, position.y, widget.width(), widget.height());
     },
   };
 
