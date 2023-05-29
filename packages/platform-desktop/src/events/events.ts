@@ -1,4 +1,5 @@
 import type { WidgetEventTypes } from '@nodegui/nodegui';
+import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
 
 import { type NGElement } from '../registry';
 
@@ -15,8 +16,8 @@ class SyntheticEvent<E, T = NGElement> {
 }
 
 function createSyntheticEventHandler(eventName: WidgetEventTypes, handler: Function) {
-  const syntheticHandler = (sourceEvent: any) => {
-    const event = new SyntheticEvent({ type: eventName, sourceEvent, target: sourceEvent.object });
+  const syntheticHandler = (sourceEvent: NativeRawPointer<'QEvent'>) => {
+    const event = new SyntheticEvent({ type: eventName, sourceEvent, target: sourceEvent });
 
     handler(event);
   };

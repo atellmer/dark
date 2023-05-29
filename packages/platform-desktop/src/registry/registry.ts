@@ -1,14 +1,14 @@
-import type { QWidget, QMainWindow } from '@nodegui/nodegui';
+import { QWidget, type QMainWindow, type QLayout } from '@nodegui/nodegui';
 import { ROOT } from '@dark-engine/core';
 
 import { type TagNativeElement } from '../native-element';
+import { QFlexLayout } from '../components/view';
 
 export const enum NGViewFlag {
-  LAYOUT_VIEW = 'LAYOUT_VIEW',
   NO_CHILDREN = 'NO_CHILDREN',
 }
 
-export type NGElement = QWidget;
+export type NGElement = QWidget | QLayout;
 
 export type NGElementMeta = {
   flag?: NGViewFlag;
@@ -47,6 +47,7 @@ function getElementFactory(name: string): NGElementFactory {
 }
 
 registerElement(ROOT, () => null, { isRoot: true });
+registerElement('q:flex-layout', () => QFlexLayout);
 registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QMainWindow').QMainWindow, {
   setup(element) {
     const window = element.getNativeView() as QMainWindow;
@@ -57,7 +58,7 @@ registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidg
     const window = parentElement.getNativeView() as QMainWindow;
     const content = childElement.getNativeView();
 
-    window.setCentralWidget(content);
+    window.setCentralWidget(content as QWidget);
   },
 });
 registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);

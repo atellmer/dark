@@ -1,11 +1,12 @@
 import { type WidgetEventTypes, QWidget } from '@nodegui/nodegui';
-import { NodeType, ROOT, detectIsFunction } from '@dark-engine/core';
+import { NodeType, ROOT, detectIsFunction, detectIsNumber } from '@dark-engine/core';
 
 import { createSyntheticEventHandler } from '../events';
 import { getElementFactory, NGViewFlag, type NGElement, type NGElementMeta } from '../registry';
 import { ATTR_TEXT } from '../constants';
 import { createSetterName } from '../utils';
-import { type Size, type Position } from '../shared';
+import { type Size, type Position, type WidgetProps } from '../shared';
+import { QFlexLayout } from '../components/view';
 
 class NativeElement {
   public type: NodeType;
@@ -215,21 +216,29 @@ class CommentNativeElement extends NativeElement {
   }
 }
 
-type WidgetProps = 'id' | 'size' | 'minSize' | 'maxSize' | 'position';
-
 function patchAttributes(element: TagNativeElement, name: string, value: AttributeValue) {
   const widget = element.getNativeView() as QWidget;
 
   if (!QWidget.isPrototypeOf(widget) && !(widget instanceof QWidget)) return;
 
-  const map: Record<WidgetProps, () => void> = {
+  const map: Partial<Record<keyof WidgetProps, () => void>> = {
     id: () => {
       widget.setObjectName(value as string);
+    },
+    width: () => {
+      widget.resize(value as number, widget.height());
+    },
+    height: () => {
+      widget.resize(widget.width(), value as number);
     },
     size: () => {
       const size = value as Size;
 
-      widget.resize(size.width, size.height);
+      if (size.fixed) {
+        widget.setFixedSize(size.width, size.height);
+      } else {
+        widget.resize(size.width, size.height);
+      }
     },
     minSize: () => {
       const size = value as Size;
@@ -244,7 +253,10 @@ function patchAttributes(element: TagNativeElement, name: string, value: Attribu
     position: () => {
       const position = value as Position;
 
-      widget.setGeometry(position.x, position.y, widget.width(), widget.height());
+      widget.move(position.x, position.y);
+    },
+    style: () => {
+      widget.setInlineStyle(value as string);
     },
   };
 
@@ -259,6 +271,24 @@ function appendToNativeContainer(childElement: TagNativeElement, parentElement: 
   if (detectIsFunction(meta.add)) {
     return meta.add(childElement, parentElement, idx);
   }
+
+  const parentView = parentElement.getNativeView();
+  const childView = childElement.getNativeView();
+
+  if (parentView instanceof QFlexLayout) {
+    const layoutView = parentView as QFlexLayout;
+    const child = childView as QWidget;
+
+    if (detectIsNumber(idx)) {
+      const beforeChild = (parentElement.children[idx] as TagNativeElement).getNativeView() as QWidget;
+
+      layoutView.getFlexLayout().insertChildBefore(child, beforeChild);
+    } else {
+      layoutView.getFlexLayout().addWidget(child);
+    }
+
+    child.show();
+  }
 }
 
 function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
@@ -268,6 +298,17 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
 
   if (detectIsFunction(meta.remove)) {
     return meta.remove(childElement, parentElement);
+  }
+
+  const parentView = parentElement.getNativeView();
+  const childView = childElement.getNativeView();
+
+  if (parentView instanceof QFlexLayout) {
+    const layoutView = parentView as QFlexLayout;
+    const child = childView as QWidget;
+
+    layoutView.getFlexLayout().removeWidget(child);
+    child.close();
   }
 }
 
