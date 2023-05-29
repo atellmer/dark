@@ -1,27 +1,26 @@
-import { h, component } from '@dark-engine/core';
-import { render, Window } from '@dark-engine/platform-desktop';
+import { h, component, useState, useEffect } from '@dark-engine/core';
+import { render, Window, Text } from '@dark-engine/platform-desktop';
 
 type AppProps = {
   title: string;
 };
 
+const minSize = { width: 500, height: 500 };
+
 const App = component<AppProps>(({ title }) => {
-  return <Window windowTitle={title}></Window>;
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setInterval(() => {
+      setCount(x => x + 1);
+    }, 1000);
+  }, []);
+
+  return (
+    <Window windowTitle={title} minSize={minSize}>
+      <Text>xxx {count}</Text>
+    </Window>
+  );
 });
 
-let count = 0;
-
-render(<App title={`Dark ${count}`} />);
-
-setInterval(() => {
-  count++;
-  render(<App title={`Dark ${count}`} />);
-}, 1000);
-
-// const win = new QMainWindow();
-
-// win.setWindowTitle('Dark Hello World');
-
-// win.show();
-
-// (global as any).win = win;
+render(<App title={`Dark`} />);

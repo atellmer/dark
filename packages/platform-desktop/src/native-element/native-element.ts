@@ -1,9 +1,11 @@
-import type { WidgetEventTypes } from '@nodegui/nodegui';
-import { NodeType, ROOT } from '@dark-engine/core';
+import { type WidgetEventTypes, QWidget } from '@nodegui/nodegui';
+import { NodeType, ROOT, detectIsFunction } from '@dark-engine/core';
 
 import { createSyntheticEventHandler } from '../events';
-import { getElementFactory, type NGElement, type NGElementMeta } from '../registry';
+import { getElementFactory, NGViewFlag, type NGElement, type NGElementMeta } from '../registry';
 import { ATTR_TEXT } from '../constants';
+import { createSetterName } from '../utils';
+import { type Size } from '../shared';
 
 class NativeElement {
   public type: NodeType;
@@ -33,9 +35,7 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
 
     this.nativeView = create() as T;
     this.meta = meta;
-
-    (global as any).win = this.nativeView;
-    this.nativeView?.show();
+    detectIsFunction(this.meta.setup) && this.meta.setup(this);
   }
 
   public getNativeView(): T {
@@ -110,19 +110,29 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
   }
 
   public setAttribute(name: string, value: AttributeValue) {
+    patchAttributes(this, name, value);
+
+    const setterName = createSetterName(name);
+
+    if (!detectIsFunction(this.nativeView[setterName])) return;
+
     if (!this.nativeView[INITIAL_ATTR_VALUE]) {
       this.nativeView[INITIAL_ATTR_VALUE] = {};
     }
 
     this.nativeView[INITIAL_ATTR_VALUE][name] = this.nativeView[name];
-    this.nativeView[attrToSetter(name)](value);
+    this.nativeView[setterName](value);
     this.attrs[name] = value;
   }
 
   public removeAttribute(name: string) {
+    const setterName = createSetterName(name);
+
+    if (!detectIsFunction(this.nativeView[setterName])) return;
+
     const initialValue = this.nativeView[INITIAL_ATTR_VALUE][name];
 
-    this.nativeView[attrToSetter(name)](initialValue);
+    this.nativeView[setterName](initialValue);
     delete this.nativeView[INITIAL_ATTR_VALUE][name];
     delete this.attrs[name];
   }
@@ -205,16 +215,45 @@ class CommentNativeElement extends NativeElement {
   }
 }
 
-function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {}
+function patchAttributes(element: TagNativeElement, name: string, value: AttributeValue) {
+  const widget = element.getNativeView() as QWidget;
 
-function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {}
+  if (!QWidget.isPrototypeOf(widget) && !(widget instanceof QWidget)) return;
 
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.substring(1);
+  const map = {
+    minSize: () => {
+      const size = value as Size;
+
+      widget.setMinimumSize(size.width, size.height);
+    },
+    maxSize: () => {
+      const size = value as Size;
+
+      widget.setMaximumSize(size.width, size.height);
+    },
+  };
+
+  map[name] && map[name]();
 }
 
-function attrToSetter(value: string) {
-  return `set${capitalize(value)}`;
+function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
+  const meta = parentElement.getMeta();
+
+  if (meta.isRoot || meta.flag === NGViewFlag.NO_CHILDREN) return;
+
+  if (detectIsFunction(meta.add)) {
+    return meta.add(childElement, parentElement, idx);
+  }
+}
+
+function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
+  const meta = parentElement.getMeta();
+
+  if (meta.isRoot || meta.flag === NGViewFlag.NO_CHILDREN) return;
+
+  if (detectIsFunction(meta.remove)) {
+    return meta.remove(childElement, parentElement);
+  }
 }
 
 export type AttributeValue = string | number | boolean | object;

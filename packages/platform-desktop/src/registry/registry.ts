@@ -1,9 +1,9 @@
-import type { QWidget } from '@nodegui/nodegui';
+import type { QWidget, QMainWindow } from '@nodegui/nodegui';
 import { ROOT } from '@dark-engine/core';
 
 import { type TagNativeElement } from '../native-element';
 
-export const enum NSViewFlag {
+export const enum NGViewFlag {
   LAYOUT_VIEW = 'LAYOUT_VIEW',
   NO_CHILDREN = 'NO_CHILDREN',
 }
@@ -11,8 +11,9 @@ export const enum NSViewFlag {
 export type NGElement = QWidget;
 
 export type NGElementMeta = {
-  flag?: NSViewFlag;
+  flag?: NGViewFlag;
   isRoot?: boolean;
+  setup?: (element: TagNativeElement) => void;
   add?: (childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) => void;
   remove?: (childElement: TagNativeElement, parentElement: TagNativeElement) => void;
 };
@@ -46,7 +47,19 @@ function getElementFactory(name: string): NGElementFactory {
 }
 
 registerElement(ROOT, () => null, { isRoot: true });
+registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QMainWindow').QMainWindow, {
+  setup(element) {
+    const window = element.getNativeView() as QMainWindow;
 
-registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QMainWindow').QMainWindow);
+    window.show();
+  },
+  add(childElement, parentElement) {
+    const window = parentElement.getNativeView() as QMainWindow;
+    const content = childElement.getNativeView();
+
+    window.setCentralWidget(content);
+  },
+});
+registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
 
 export { getElementFactory, registerElement };
