@@ -10,8 +10,8 @@ import {
   ATTR_REF,
   ATTR_FLAG,
   EffectTag,
-  detectIsFunction,
   detectIsUndefined,
+  detectIsObject,
   NodeType,
   detectIsTagVirtualNode,
   detectIsPlainVirtualNode,
@@ -21,7 +21,7 @@ import {
   applyRef as applyRef$,
 } from '@dark-engine/core';
 
-import { detectIsEvent, getEventName } from '../events';
+import { type EventHandler, detectIsEvent } from '../events';
 import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
 import { type NGElement } from '../registry';
 
@@ -76,8 +76,8 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
       continue;
     }
 
-    if (detectIsFunction(attrValue)) {
-      detectIsEvent(attrName) && tagElement.addEventListener(getEventName(attrName), attrValue);
+    if (detectIsEvent(attrName)) {
+      attrValue && detectIsObject(attrValue) && addEvents(tagElement, attrValue as EventHandlersMap);
     } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
       tagElement.setAttribute(attrName, attrValue);
     }
@@ -99,20 +99,39 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
     }
 
     if (!detectIsUndefined(nextAttrValue)) {
-      if (detectIsFunction(prevAttrValue)) {
-        detectIsEvent(attrName) &&
+      if (detectIsEvent(attrName)) {
+        nextAttrValue &&
+          detectIsObject(nextAttrValue) &&
           prevAttrValue !== nextAttrValue &&
-          tagElement.addEventListener(getEventName(attrName), nextAttrValue);
+          addEvents(tagElement, nextAttrValue as EventHandlersMap);
       } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
         tagElement.setAttribute(attrName, nextAttrValue);
       }
     } else {
       if (detectIsEvent(attrName)) {
-        tagElement.removeEventListener(getEventName(attrName));
+        prevAttrValue && detectIsObject(prevAttrValue) && removeEvents(tagElement, prevAttrValue as EventHandlersMap);
       } else {
         tagElement.removeAttribute(attrName);
       }
     }
+  }
+}
+
+type EventHandlersMap = Record<string, EventHandler>;
+
+function addEvents(tagElement: TagNativeElement, value: EventHandlersMap) {
+  const keys = Object.keys(value);
+
+  for (const key of keys) {
+    tagElement.addEventListener(key, value[key]);
+  }
+}
+
+function removeEvents(tagElement: TagNativeElement, value: EventHandlersMap) {
+  const keys = Object.keys(value);
+
+  for (const key of keys) {
+    tagElement.removeEventListener(key);
   }
 }
 

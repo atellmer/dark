@@ -1,5 +1,7 @@
 import { CursorShape } from '@nodegui/nodegui';
 
+import { type EventHandler } from '../events';
+
 export type Size = {
   width: number;
   height: number;
@@ -24,4 +26,5 @@ export type WidgetProps = {
   disabled?: boolean;
   hidden?: boolean;
   cursor?: CursorShape;
+  on?: Record<string, EventHandler>;
 };

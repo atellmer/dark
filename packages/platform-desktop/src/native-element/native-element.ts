@@ -156,19 +156,19 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
     return this.getAttribute(ATTR_TEXT) as string;
   }
 
-  addEventListener(eventName: WidgetEventTypes, handler: Function) {
+  addEventListener(eventName: string, handler: Function) {
     const syntheticHandler = createSyntheticEventHandler(eventName, handler);
 
     this.removeEventListener(eventName);
     this.eventListeners.set(eventName, syntheticHandler);
-    this.nativeView.addEventListener(eventName, syntheticHandler);
+    this.nativeView.addEventListener(eventName as WidgetEventTypes, syntheticHandler);
   }
 
-  removeEventListener(eventName: WidgetEventTypes) {
+  removeEventListener(eventName: string) {
     const handler = this.eventListeners.get(eventName);
 
     this.eventListeners.delete(eventName);
-    this.nativeView.removeEventListener(eventName, handler);
+    this.nativeView.removeEventListener(eventName as WidgetEventTypes, handler);
   }
 }
 

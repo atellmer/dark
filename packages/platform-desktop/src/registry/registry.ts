@@ -63,5 +63,6 @@ registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidg
   },
 });
 registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
+registerElement('q:push-button', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QPushButton').QPushButton);
 
 export { getElementFactory, registerElement };

@@ -1,6 +1,6 @@
-import { QIcon } from '@nodegui/nodegui';
-import { h, Fragment, component, useState, useEffect } from '@dark-engine/core';
-import { render, Window, View, Text } from '@dark-engine/platform-desktop';
+import { QIcon, QPushButtonSignals, CursorShape } from '@nodegui/nodegui';
+import { h, Fragment, component, useState } from '@dark-engine/core';
+import { render, Window, View, Text, Button, useEventHandler } from '@dark-engine/platform-desktop';
 
 import nodeguiIcon from '../assets/nodegui.jpg';
 
@@ -14,24 +14,20 @@ const winIcon = new QIcon(nodeguiIcon);
 const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    setInterval(() => {
-      setCount(x => x + 1);
-    }, 1000);
-  }, []);
+  const buttonHandler = useEventHandler<QPushButtonSignals>(
+    {
+      clicked: () => setCount(x => x + 1),
+    },
+    [],
+  );
 
   return (
     <>
       <Window windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <View style={containerStyle}>
-          {(count < 5 || count > 10) && (
-            <View>
-              <Text id='welcome-text-2'>count: {count}</Text>
-            </View>
-          )}
-          <View>
-            <Text id='welcome-text-1'>count: {count}</Text>
-          </View>
+          <Text id='welcome-text-2'>count: {count}</Text>
+          <Text id='welcome-text-1'>count: {count}</Text>
+          <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
         </View>
       </Window>
     </>
@@ -55,6 +51,11 @@ const styleSheet = `
     qproperty-alignment: 'AlignCenter';
     background: 'yellow';
     padding: 8px;
+  }
+  #button {
+    background: 'green';
+    height: 80px;
+    color: '#fff';
   }
 `;
 

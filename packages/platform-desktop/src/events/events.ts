@@ -1,37 +1,26 @@
-import type { WidgetEventTypes } from '@nodegui/nodegui';
-import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
+import { type NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
+import { useMemo } from '@dark-engine/core';
 
-import { type NGElement } from '../registry';
-
-class SyntheticEvent<E, T = NGElement> {
+class SyntheticEvent<T> {
   public type = '';
-  public sourceEvent: E = null;
-  public target: T = null;
+  public data: T = null;
 
-  constructor(options: SyntheticEvent<E, T>) {
+  constructor(options: SyntheticEvent<T>) {
     this.type = options.type;
-    this.sourceEvent = options.sourceEvent;
-    this.target = options.target;
+    this.data = options.data;
   }
 }
 
-function createSyntheticEventHandler(eventName: WidgetEventTypes, handler: Function) {
-  const syntheticHandler = (sourceEvent: NativeRawPointer<'QEvent'>) => {
-    const event = new SyntheticEvent({ type: eventName, sourceEvent, target: sourceEvent });
-
-    handler(event);
-  };
-
-  return syntheticHandler;
+function createSyntheticEventHandler(eventName: string, handler: Function) {
+  return (data: NativeRawPointer<'QEvent'>) => handler(new SyntheticEvent({ type: eventName, data }));
 }
 
-const detectIsEvent = (attrName: string) => attrName.startsWith('on');
+const detectIsEvent = (attrName: string) => attrName === 'on';
 
-const getEventName = (attrName: string) =>
-  attrName
-    .slice(2, attrName.length)
-    .split('')
-    .map((x, idx) => (idx === 0 ? x.toLowerCase() : x))
-    .join('') as WidgetEventTypes;
+export type EventHandler<T = any> = (e: SyntheticEvent<T>) => void;
 
-export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, getEventName };
+function useEventHandler<T>(handlers: Partial<Record<keyof T, EventHandler>>, deps: Array<any>) {
+  return useMemo(() => handlers, deps);
+}
+
+export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, useEventHandler };
