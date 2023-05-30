@@ -111,9 +111,11 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
   }
 
   public setAttribute(name: string, value: AttributeValue) {
-    patchAttributes(this, name, value);
-
     const setterName = createSetterName(name);
+
+    detectIsFunction(this.meta.attrSetter)
+      ? this.meta.attrSetter(this, name, value)
+      : defaultAttrSetter(this, name, value);
 
     if (!detectIsFunction(this.nativeView[setterName])) return;
 
@@ -216,53 +218,6 @@ class CommentNativeElement extends NativeElement {
   }
 }
 
-function patchAttributes(element: TagNativeElement, name: string, value: AttributeValue) {
-  const widget = element.getNativeView() as QWidget;
-
-  if (!QWidget.isPrototypeOf(widget) && !(widget instanceof QWidget)) return;
-
-  const map: Partial<Record<keyof WidgetProps, () => void>> = {
-    id: () => {
-      widget.setObjectName(value as string);
-    },
-    width: () => {
-      widget.resize(value as number, widget.height());
-    },
-    height: () => {
-      widget.resize(widget.width(), value as number);
-    },
-    size: () => {
-      const size = value as Size;
-
-      if (size.fixed) {
-        widget.setFixedSize(size.width, size.height);
-      } else {
-        widget.resize(size.width, size.height);
-      }
-    },
-    minSize: () => {
-      const size = value as Size;
-
-      widget.setMinimumSize(size.width, size.height);
-    },
-    maxSize: () => {
-      const size = value as Size;
-
-      widget.setMaximumSize(size.width, size.height);
-    },
-    position: () => {
-      const position = value as Position;
-
-      widget.move(position.x, position.y);
-    },
-    style: () => {
-      widget.setInlineStyle(value as string);
-    },
-  };
-
-  map[name] && map[name]();
-}
-
 function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
   const meta = parentElement.getMeta();
 
@@ -312,8 +267,34 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
   }
 }
 
+type Setter = Partial<Record<keyof WidgetProps, (widget: QWidget, value: AttributeValue) => void>>;
+
+function createAttrSetter(setter: Setter) {
+  const map: Setter = {
+    id: (w: QWidget, x: string) => w.setObjectName(x),
+    width: (w: QWidget, x: number) => w.resize(x, w.height()),
+    height: (w: QWidget, x: number) => w.resize(w.width(), x),
+    size: (w: QWidget, x: Size) => (x.fixed ? w.setFixedSize(x.width, x.height) : w.resize(x.width, x.height)),
+    minSize: (w: QWidget, x: Size) => w.setMinimumSize(x.width, x.height),
+    maxSize: (w: QWidget, x: Size) => w.setMaximumSize(x.width, x.height),
+    position: (w: QWidget, x: Position) => w.move(x.x, x.y),
+    style: (w: QWidget, x: string) => w.setInlineStyle(x),
+    ...setter,
+  };
+
+  return (element: TagNativeElement, name: string, value: AttributeValue) => {
+    const widget = element.getNativeView() as QWidget;
+
+    if (!QWidget.isPrototypeOf(widget) && !(widget instanceof QWidget)) return;
+
+    map[name] && map[name](widget, value);
+  };
+}
+
+const defaultAttrSetter = createAttrSetter({});
+
 export type AttributeValue = string | number | boolean | object;
 
 export const INITIAL_ATTR_VALUE = '_INITIAL_ATTR_VALUE';
 
-export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement };
+export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement, createAttrSetter };
