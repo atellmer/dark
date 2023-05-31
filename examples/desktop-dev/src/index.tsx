@@ -1,4 +1,4 @@
-import { type QPushButtonSignals, QIcon, WidgetEventTypes, QPainter, QWidget, CursorShape } from '@nodegui/nodegui';
+import { type QPushButtonSignals, QIcon, WidgetEventTypes, QMouseEvent, QWidget, CursorShape } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef } from '@dark-engine/core';
 import { render, Window, View, Text, Button, useEventHandler } from '@dark-engine/platform-desktop';
 
@@ -14,9 +14,14 @@ const winIcon = new QIcon(nodeguiIcon);
 const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
   const win = useRef<QWidget>();
-  const buttonHandler = useEventHandler<QPushButtonSignals>(
+  const buttonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
     {
       clicked: () => setCount(x => x + 1),
+      [WidgetEventTypes.MouseMove]: e => {
+        const event = new QMouseEvent(e.rawPointer);
+
+        console.log('move', event.x(), event.y());
+      },
     },
     [],
   );
