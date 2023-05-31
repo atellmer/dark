@@ -1,3 +1,4 @@
+import { type QWidgetSignals, WidgetEventTypes } from '@nodegui/nodegui';
 import { type NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
 import { useMemo } from '@dark-engine/core';
 
@@ -19,7 +20,12 @@ const detectIsEvent = (attrName: string) => attrName === 'on';
 
 export type EventHandler<T = any> = (e: SyntheticEvent<T>) => void;
 
-function useEventHandler<T>(handlers: Partial<Record<keyof T, EventHandler>>, deps: Array<any>) {
+function useEventHandler<T>(
+  handlers: Partial<
+    Record<T extends QWidgetSignals ? keyof T : T extends WidgetEventTypes ? WidgetEventTypes : never, EventHandler>
+  >,
+  deps: Array<any>,
+) {
   return useMemo(() => handlers, deps);
 }
 

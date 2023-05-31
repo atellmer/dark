@@ -1,5 +1,5 @@
-import { QIcon, QPushButtonSignals, CursorShape } from '@nodegui/nodegui';
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { type QPushButtonSignals, QIcon, WidgetEventTypes, QPainter, QWidget, CursorShape } from '@nodegui/nodegui';
+import { h, Fragment, component, useState, useRef } from '@dark-engine/core';
 import { render, Window, View, Text, Button, useEventHandler } from '@dark-engine/platform-desktop';
 
 import nodeguiIcon from '../assets/nodegui.jpg';
@@ -13,7 +13,7 @@ const winIcon = new QIcon(nodeguiIcon);
 
 const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
-
+  const win = useRef<QWidget>();
   const buttonHandler = useEventHandler<QPushButtonSignals>(
     {
       clicked: () => setCount(x => x + 1),
@@ -23,7 +23,7 @@ const App = component<AppProps>(({ title }) => {
 
   return (
     <>
-      <Window windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
+      <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <View style={containerStyle}>
           <Text id='welcome-text-2'>count: {count}</Text>
           <Text id='welcome-text-1'>count: {count}</Text>
