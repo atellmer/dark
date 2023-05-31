@@ -6,4 +6,14 @@ function createSetterName(value: string) {
   return `set${capitalizeFirstLetter(value)}`;
 }
 
-export { capitalizeFirstLetter, createSetterName };
+function detectisValidURL(value: string) {
+  try {
+    const url = new URL(value);
+
+    return url.protocol.startsWith('http');
+  } catch (error) {
+    return false;
+  }
+}
+
+export { capitalizeFirstLetter, createSetterName, detectisValidURL };

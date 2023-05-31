@@ -1,6 +1,14 @@
-import { type QPushButtonSignals, QIcon, WidgetEventTypes, QMouseEvent, QWidget, CursorShape } from '@nodegui/nodegui';
-import { h, Fragment, component, useState, useRef } from '@dark-engine/core';
-import { render, Window, View, Text, Button, useEventHandler } from '@dark-engine/platform-desktop';
+import {
+  type QPushButtonSignals,
+  QIcon,
+  WidgetEventTypes,
+  QMouseEvent,
+  QWidget,
+  CursorShape,
+  AspectRatioMode,
+} from '@nodegui/nodegui';
+import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
+import { render, Window, View, Text, Button, Image, useEventHandler } from '@dark-engine/platform-desktop';
 
 import nodeguiIcon from '../assets/nodegui.jpg';
 
@@ -17,11 +25,6 @@ const App = component<AppProps>(({ title }) => {
   const buttonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
     {
       clicked: () => setCount(x => x + 1),
-      [WidgetEventTypes.MouseMove]: e => {
-        const event = new QMouseEvent(e.rawPointer);
-
-        console.log('move', event.x(), event.y());
-      },
     },
     [],
   );
@@ -30,6 +33,12 @@ const App = component<AppProps>(({ title }) => {
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <View style={containerStyle}>
+          <View style={imageLayoutStyle}>
+            <Image
+              id='image'
+              src='https://nationaltoday.com/wp-content/uploads/2020/08/international-cat-day-1200x834.jpg'
+            />
+          </View>
           <Text id='welcome-text-2'>count: {count}</Text>
           <Text id='welcome-text-1'>count: {count}</Text>
           <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
@@ -42,6 +51,12 @@ const App = component<AppProps>(({ title }) => {
 const containerStyle = `
   background: '#ccc';
   justify-content: 'center';
+`;
+
+const imageLayoutStyle = `
+  justify-content: 'center';
+  align-items: 'center';
+  background: 'blueviolet';
 `;
 
 const styleSheet = `
@@ -62,6 +77,11 @@ const styleSheet = `
     height: 80px;
     color: '#fff';
   }
+  #image {
+    width: 150px;
+    height: 150px;
+    background: 'pink';
+  }
 `;
 
-render(<App title={`Dark`} />);
+render(<App title='Dark desktop app' />);

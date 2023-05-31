@@ -8,3 +8,4 @@ export const qMainWindow = factory('q:main-window');
 export const qFlexLayout = factory('q:flex-layout');
 export const qLabel = factory('q:label');
 export const qPushButton = factory('q:push-button');
+export const qImage = factory('q:image');

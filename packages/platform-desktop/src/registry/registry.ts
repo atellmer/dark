@@ -3,6 +3,7 @@ import { ROOT } from '@dark-engine/core';
 
 import { type TagNativeElement, type AttributeValue } from '../native-element';
 import { QFlexLayout } from '../components/view';
+import { QImage } from '../components/image';
 
 export const enum NGViewFlag {
   NO_CHILDREN = 'NO_CHILDREN',
@@ -48,7 +49,6 @@ function getElementFactory(name: string): NGElementFactory {
 }
 
 registerElement(ROOT, () => null, { isRoot: true });
-registerElement('q:flex-layout', () => QFlexLayout);
 registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QMainWindow').QMainWindow, {
   setup(element) {
     const window = element.getNativeView() as QMainWindow;
@@ -62,7 +62,9 @@ registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidg
     window.setCentralWidget(content);
   },
 });
-registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
 registerElement('q:push-button', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QPushButton').QPushButton);
+registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
+registerElement('q:flex-layout', () => QFlexLayout);
+registerElement('q:image', () => QImage, { flag: NGViewFlag.NO_CHILDREN });
 
 export { getElementFactory, registerElement };

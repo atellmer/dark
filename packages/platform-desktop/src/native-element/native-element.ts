@@ -267,14 +267,20 @@ function removeFromNativeContainer(childElement: TagNativeElement, parentElement
   }
 }
 
-type Setter = Partial<Record<keyof WidgetProps, (widget: QWidget, value: AttributeValue) => void>>;
+type Setter<T = WidgetProps> = Partial<
+  Record<T extends WidgetProps ? keyof WidgetProps : string, (widget: QWidget, value: AttributeValue) => void>
+>;
 
-function createAttrSetter(setter: Setter) {
+function createAttrSetter<T>(setter: Setter<T>) {
   const map: Setter = {
     id: (w: QWidget, x: string) => w.setObjectName(x),
-    width: (w: QWidget, x: number) => w.resize(x, w.height()),
-    height: (w: QWidget, x: number) => w.resize(w.width(), x),
-    size: (w: QWidget, x: Size) => (x.fixed ? w.setFixedSize(x.width, x.height) : w.resize(x.width, x.height)),
+    size: (w: QWidget, x: Size) => {
+      if (x.fixed) {
+        w.setFixedSize(x.width, x.height);
+      } else {
+        w.resize(x.width, x.height);
+      }
+    },
     minSize: (w: QWidget, x: Size) => w.setMinimumSize(x.width, x.height),
     maxSize: (w: QWidget, x: Size) => w.setMaximumSize(x.width, x.height),
     pos: (w: QWidget, x: Position) => w.move(x.x, x.y),
