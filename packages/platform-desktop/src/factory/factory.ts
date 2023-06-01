@@ -9,3 +9,4 @@ export const qFlexLayout = factory('q:flex-layout');
 export const qLabel = factory('q:label');
 export const qPushButton = factory('q:push-button');
 export const qImage = factory('q:image');
+export const qAnimatedImage = factory('q:animated-image');
