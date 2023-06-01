@@ -21,6 +21,7 @@ const AnimatedImage = forwardRef<AnimatedImageProps, AnimatedImageRef>(
 class QAnimatedImage extends QLabel {
   constructor() {
     super();
+    this.setProperty('scaledContents', true);
   }
 
   public async setSrc(value: string) {

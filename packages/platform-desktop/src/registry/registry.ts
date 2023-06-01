@@ -66,21 +66,7 @@ registerElement('q:main-window', () => require('@nodegui/nodegui/dist/lib/QtWidg
 registerElement('q:push-button', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QPushButton').QPushButton);
 registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
 registerElement('q:flex-layout', () => QFlexLayout);
-registerElement('q:image', () => QImage, {
-  flag: NGViewFlag.NO_CHILDREN,
-  setup(element) {
-    const widget = element.getNativeView();
-
-    widget.setProperty('scaledContents', true);
-  },
-});
-registerElement('q:animated-image', () => QAnimatedImage, {
-  flag: NGViewFlag.NO_CHILDREN,
-  setup(element) {
-    const widget = element.getNativeView();
-
-    widget.setProperty('scaledContents', true);
-  },
-});
+registerElement('q:image', () => QImage, { flag: NGViewFlag.NO_CHILDREN });
+registerElement('q:animated-image', () => QAnimatedImage, { flag: NGViewFlag.NO_CHILDREN });
 
 export { getElementFactory, registerElement };
