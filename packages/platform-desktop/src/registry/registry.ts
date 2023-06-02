@@ -5,6 +5,7 @@ import { type TagNativeElement, type AttributeValue } from '../native-element';
 import { QFlexLayout } from '../components/view';
 import { QImage } from '../components/image';
 import { QAnimatedImage } from '../components/animated-image';
+import { QDarkScrollArea, QDarkPlaceholder } from '../components/scroll-area';
 
 export const enum NGViewFlag {
   NO_CHILDREN = 'NO_CHILDREN',
@@ -68,5 +69,30 @@ registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QL
 registerElement('q:flex-layout', () => QFlexLayout);
 registerElement('q:image', () => QImage, { flag: NGViewFlag.NO_CHILDREN });
 registerElement('q:animated-image', () => QAnimatedImage, { flag: NGViewFlag.NO_CHILDREN });
+registerElement('q:scroll-area', () => QDarkScrollArea, {
+  add(childElement, parentElement) {
+    const parent = parentElement.getNativeView() as QDarkScrollArea;
+    const child = childElement.getNativeView() as QWidget;
+    const widget = parent.widget();
+
+    if (widget) {
+      if (widget instanceof QDarkPlaceholder) {
+        widget.close();
+      } else {
+        console.warn(`ScrollArea can't have more than one child node`);
+        return;
+      }
+    }
+
+    parent.setWidget(child);
+  },
+  remove(childElement, parentElement) {
+    const parent = parentElement.getNativeView() as QDarkScrollArea;
+    const child = childElement.getNativeView() as QWidget;
+
+    child.close();
+    parent.setWidget(new QDarkPlaceholder());
+  },
+});
 
 export { getElementFactory, registerElement };

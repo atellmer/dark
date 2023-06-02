@@ -16,6 +16,7 @@ import {
   Button,
   Image,
   AnimatedImage,
+  ScrollArea,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -25,7 +26,7 @@ type AppProps = {
   title: string;
 };
 
-const size = { width: 600, height: 600 };
+const size = { width: 600, height: 700 };
 const winIcon = new QIcon(nodeguiIcon);
 
 const App = component<AppProps>(({ title }) => {
@@ -55,6 +56,32 @@ const App = component<AppProps>(({ title }) => {
           <Text id='welcome-text-2'>count: {count}</Text>
           <Text id='welcome-text-1'>count: {count}</Text>
           <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
+          <ScrollArea id='scroll-area'>
+            <Text>
+              {`
+              Lorem ipsum dolor ${count} sit amet consectetur adipisicing elit. Dolorem, 
+              ipsa qui, sed harum mollitia, 
+              aspernatur aliquam quod modi rerum delectus eum. Dignissimos vel reiciendis 
+              excepturi facilis perspiciatis 
+              facere vero commodi distinctio rem nam quae, consectetur ratione aperiam, 
+              fugiat sint aliquam! Pariatur vitae possimus 
+              temporibus beatae! Impedit fuga sit, reiciendis at maiores praesentium accusantium 
+              similique in esse, eveniet 
+              adipisci ipsum quis dignissimos porro atque vel nam harum aut qui, consequuntur 
+              vitae! Pariatur ipsa, sint 
+              asperiores nostrum sed porro suscipit dolore quidem non obcaecati consequatur 
+              libero natus quod atque quae 
+              repudiandae soluta maxime nobis temporibus iste nisi eum corporis et at. 
+              Laudantium amet aliquid facilis 
+              inventore ea ipsam veniam accusantium, quis molestiae obcaecati est fuga quam 
+              natus magnam hic blanditiis 
+              maxime rerum ipsa nihil sint consectetur excepturi. Similique dolores incidunt 
+              obcaecati, aliquid illo 
+              numquam nemo a! Similique illum, quas eveniet, aliquam odit vel neque laborum 
+              consequatur ipsa sunt, 
+              cum dolores odio fugit.`}
+            </Text>
+          </ScrollArea>
         </View>
       </Window>
     </>
@@ -94,6 +121,9 @@ const styleSheet = `
     width: 200px;
     height: 200px;
     background: 'pink';
+  }
+  #scroll-area {
+    flex: 1;
   }
 `;
 

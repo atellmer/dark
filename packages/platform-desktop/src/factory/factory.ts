@@ -10,3 +10,4 @@ export const qLabel = factory('q:label');
 export const qPushButton = factory('q:push-button');
 export const qImage = factory('q:image');
 export const qAnimatedImage = factory('q:animated-image');
+export const qScrollArea = factory('q:scroll-area');

@@ -11,7 +11,7 @@
     "debug": "npx webpack && npx qode --inspect ./dist/index.js"
   },
   "dependencies": {
-    "@nodegui/nodegui": "^0.58.0",
+    "@nodegui/nodegui": "0.60.0",
     "nodemon": "^2.0.21"
   },
   "devDependencies": {
