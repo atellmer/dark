@@ -20,7 +20,7 @@ const Image = forwardRef<ImageProps, ImageRef>(
   component((props, ref) => qImage({ ref, ...props }), { displayName: 'Image' }),
 ) as ComponentFactory<ImageProps, ImageRef>;
 
-class QImage extends QLabel {
+class QDarkImage extends QLabel {
   private aspectRatioMode: AspectRatioMode = AspectRatioMode.KeepAspectRatio;
   private transformationMode: TransformationMode = TransformationMode.FastTransformation;
 
@@ -85,4 +85,4 @@ function createPixmapFromBuffer(buffer: Buffer) {
   return pixmap;
 }
 
-export { Image, QImage };
+export { Image, QDarkImage };

@@ -89,7 +89,7 @@ const App = component<AppProps>(({ title }) => {
 });
 
 const containerStyle = `
-  background: '#ccc';
+  background: 'blue';
   justify-content: 'center';
 `;
 

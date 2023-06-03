@@ -1,12 +1,11 @@
 import { type WidgetEventTypes, QWidget } from '@nodegui/nodegui';
-import { NodeType, ROOT, detectIsFunction, detectIsNumber } from '@dark-engine/core';
+import { NodeType, ROOT, detectIsFunction } from '@dark-engine/core';
 
 import { createSyntheticEventHandler } from '../events';
-import { getElementFactory, NGViewFlag, type NGElement, type NGElementMeta } from '../registry';
+import { getElementFactory } from '../registry';
 import { ATTR_TEXT } from '../constants';
 import { createSetterName } from '../utils';
-import { type Size, type Position, type WidgetProps } from '../shared';
-import { QFlexLayout } from '../components/view';
+import { type QElement, type Size, type Position, type WidgetProps, detectIsContainer } from '../shared';
 
 class NativeElement {
   public type: NodeType;
@@ -20,23 +19,17 @@ class NativeElement {
     return this.type;
   }
 }
-class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
+class TagNativeElement<T extends QElement = QElement> extends NativeElement {
   public name: string = null;
   public attrs: Record<string, AttributeValue> = {};
   public children: Array<NativeElement> = [];
   private nativeView: T;
-  private meta: NGElementMeta;
   private eventListeners: Map<string, (e: any) => void> = new Map();
 
   constructor(name: string) {
     super(NodeType.TAG);
     this.name = name;
-
-    const { create, meta } = getElementFactory(name);
-
-    this.nativeView = create() as T;
-    this.meta = meta;
-    detectIsFunction(this.meta.setup) && this.meta.setup(this);
+    this.nativeView = getElementFactory(name).create() as T;
   }
 
   public getNativeView(): T {
@@ -49,22 +42,21 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
     return this.nativeView;
   }
 
-  public getMeta(): NGElementMeta {
-    return this.meta;
-  }
-
   public appendChild(element: NativeElement) {
     element.parentElement = this;
     this.children.push(element);
 
     if (element.type === NodeType.TAG) {
-      appendToNativeContainer(element as TagNativeElement, this);
+      const parent = this.nativeView;
+      const child = (element as TagNativeElement).getNativeView();
+
+      detectIsContainer(parent) && parent.appendChild(child);
     } else if (element.type === NodeType.TEXT) {
       this.updateText();
     }
   }
 
-  insertBefore(element: NativeElement, siblingElement: NativeElement) {
+  public insertBefore(element: NativeElement, siblingElement: NativeElement) {
     if (!siblingElement) {
       return this.appendChild(element);
     }
@@ -83,15 +75,17 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
     element.parentElement = this;
 
     if (element.type === NodeType.TAG) {
-      const idx = this.children.filter(node => node.type === NodeType.TAG).findIndex(node => node === element);
+      const parent = this.nativeView;
+      const child = (element as TagNativeElement).getNativeView();
+      const sibling = (siblingElement as TagNativeElement).getNativeView() as QWidget;
 
-      appendToNativeContainer(element as TagNativeElement, this, idx);
+      detectIsContainer(parent) && parent.insertBefore(child, sibling);
     } else if (element.type === NodeType.TEXT) {
       this.updateText();
     }
   }
 
-  removeChild(element: NativeElement) {
+  public removeChild(element: NativeElement) {
     const idx = this.children.findIndex(node => node === element);
 
     if (idx !== -1) {
@@ -99,7 +93,10 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
       element.parentElement = null;
 
       if (element.type === NodeType.TAG) {
-        removeFromNativeContainer(element as TagNativeElement, this);
+        const parent = this.nativeView;
+        const child = (element as TagNativeElement).getNativeView();
+
+        detectIsContainer(parent) && parent.removeChild(child);
       } else if (element.type === NodeType.TEXT) {
         this.updateText();
       }
@@ -113,9 +110,7 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
   public setAttribute(name: string, value: AttributeValue) {
     const setterName = createSetterName(name);
 
-    detectIsFunction(this.meta.attrSetter)
-      ? this.meta.attrSetter(this, name, value)
-      : defaultAttrSetter(this, name, value);
+    defaultAttrSetter(this, name, value);
 
     if (!detectIsFunction(this.nativeView[setterName])) return;
 
@@ -156,7 +151,7 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
     return this.getAttribute(ATTR_TEXT) as string;
   }
 
-  addEventListener(eventName: string, handler: Function) {
+  public addEventListener(eventName: string, handler: Function) {
     const syntheticHandler = createSyntheticEventHandler(eventName, handler);
 
     this.removeEventListener(eventName);
@@ -164,7 +159,7 @@ class TagNativeElement<T extends NGElement = NGElement> extends NativeElement {
     this.nativeView.addEventListener(eventName as WidgetEventTypes, syntheticHandler);
   }
 
-  removeEventListener(eventName: string) {
+  public removeEventListener(eventName: string) {
     const handler = this.eventListeners.get(eventName);
 
     this.eventListeners.delete(eventName);
@@ -215,55 +210,6 @@ class CommentNativeElement extends NativeElement {
 
   public getText() {
     return this._value;
-  }
-}
-
-function appendToNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement, idx?: number) {
-  const meta = parentElement.getMeta();
-
-  if (meta.isRoot || meta.flag === NGViewFlag.NO_CHILDREN) return;
-
-  if (detectIsFunction(meta.add)) {
-    return meta.add(childElement, parentElement, idx);
-  }
-
-  const parentView = parentElement.getNativeView();
-  const childView = childElement.getNativeView();
-
-  if (parentView instanceof QFlexLayout) {
-    const layoutView = parentView as QFlexLayout;
-    const child = childView as QWidget;
-
-    if (detectIsNumber(idx)) {
-      const beforeChild = (parentElement.children[idx] as TagNativeElement).getNativeView() as QWidget;
-
-      layoutView.getFlexLayout().insertChildBefore(child, beforeChild);
-    } else {
-      layoutView.getFlexLayout().addWidget(child);
-    }
-
-    child.show();
-  }
-}
-
-function removeFromNativeContainer(childElement: TagNativeElement, parentElement: TagNativeElement) {
-  const meta = parentElement.getMeta();
-
-  if (meta.isRoot || meta.flag === NGViewFlag.NO_CHILDREN) return;
-
-  if (detectIsFunction(meta.remove)) {
-    return meta.remove(childElement, parentElement);
-  }
-
-  const parentView = parentElement.getNativeView();
-  const childView = childElement.getNativeView();
-
-  if (parentView instanceof QFlexLayout) {
-    const layoutView = parentView as QFlexLayout;
-    const child = childView as QWidget;
-
-    layoutView.getFlexLayout().removeWidget(child);
-    child.close();
   }
 }
 
