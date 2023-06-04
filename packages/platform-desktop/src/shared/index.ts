@@ -40,7 +40,7 @@ export type QElement = QWidget | QLayout;
 export interface Container {
   isContainer: boolean;
   appendChild(child: QElement): void;
-  insertBefore(child: QElement, sibling: QElement): void;
+  insertBefore(child: QElement, sibling: QElement, idx: number): void;
   removeChild(child: QElement): void;
 }
 

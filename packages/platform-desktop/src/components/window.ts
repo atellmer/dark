@@ -1,4 +1,4 @@
-import { QMainWindow, QWidget, type QIcon, WindowState } from '@nodegui/nodegui';
+import { type QIcon, QMainWindow, QWidget, WindowState } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qMainWindow } from '../factory';

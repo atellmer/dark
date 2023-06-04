@@ -78,8 +78,9 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
       const parent = this.nativeView;
       const child = (element as TagNativeElement).getNativeView();
       const sibling = (siblingElement as TagNativeElement).getNativeView() as QWidget;
+      const idx = this.children.filter(node => node.type === NodeType.TAG).findIndex(node => node === element);
 
-      detectIsContainer(parent) && parent.insertBefore(child, sibling);
+      detectIsContainer(parent) && parent.insertBefore(child, sibling, idx);
     } else if (element.type === NodeType.TEXT) {
       this.updateText();
     }

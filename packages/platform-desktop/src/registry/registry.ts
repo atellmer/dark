@@ -32,9 +32,10 @@ registerElement(ROOT, () => null);
 registerElement('q:push-button', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QPushButton').QPushButton);
 registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
 registerElement('q:main-window', () => require('../components/window').QDarkMainWindow);
-registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLayout);
 registerElement('q:image', () => require('../components/image').QDarkImage);
 registerElement('q:animated-image', () => require('../components/animated-image').QAnimatedImage);
 registerElement('q:scroll-area', () => require('../components/scroll-area').QDarkScrollArea);
+registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLayout);
+registerElement('q:box-layout', () => require('../components/box-view').QDarkBoxLayout);
 
 export { getElementFactory, registerElement };
