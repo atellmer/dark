@@ -6,3 +6,4 @@ export * from './image';
 export * from './animated-image';
 export * from './scroll-area';
 export * from './box-view';
+export * from './line-edit';

@@ -37,5 +37,6 @@ registerElement('q:animated-image', () => require('../components/animated-image'
 registerElement('q:scroll-area', () => require('../components/scroll-area').QDarkScrollArea);
 registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLayout);
 registerElement('q:box-layout', () => require('../components/box-view').QDarkBoxLayout);
+registerElement('q:line-edit', () => require('../components/line-edit').QDarkLineEdit);
 
 export { getElementFactory, registerElement };

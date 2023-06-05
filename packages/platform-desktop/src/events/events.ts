@@ -4,16 +4,16 @@ import { useMemo } from '@dark-engine/core';
 
 class SyntheticEvent<T> {
   public type = '';
-  public rawPointer: T = null;
+  public value: T = null;
 
   constructor(options: SyntheticEvent<T>) {
     this.type = options.type;
-    this.rawPointer = options.rawPointer;
+    this.value = options.value;
   }
 }
 
 function createSyntheticEventHandler(eventName: string, handler: Function) {
-  return (rawPointer: NativeRawPointer<'QEvent'>) => handler(new SyntheticEvent({ type: eventName, rawPointer }));
+  return (value: NativeRawPointer<'QEvent'>) => handler(new SyntheticEvent({ type: eventName, value }));
 }
 
 const detectIsEvent = (attrName: string) => attrName === 'on';

@@ -3,9 +3,11 @@ import {
   QIcon,
   WidgetEventTypes,
   QMouseEvent,
+  QLineEditSignals,
   Direction,
   QWidget,
   CursorShape,
+  EchoMode,
   AspectRatioMode,
 } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
@@ -19,6 +21,7 @@ import {
   AnimatedImage,
   ScrollArea,
   BoxView,
+  LineEdit,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -33,10 +36,17 @@ const winIcon = new QIcon(nodeguiIcon);
 
 const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
   const win = useRef<QWidget>();
   const buttonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
     {
       clicked: () => setCount(x => x + 1),
+    },
+    [],
+  );
+  const lineEditHandler = useEventHandler<QLineEditSignals>(
+    {
+      textChanged: e => setText(e.value),
     },
     [],
   );
@@ -45,6 +55,7 @@ const App = component<AppProps>(({ title }) => {
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
+          <LineEdit on={lineEditHandler} echoMode={EchoMode.Password} clearButtonEnabled />
           <View style={imageLayoutStyle}>
             <Image
               id='image'
