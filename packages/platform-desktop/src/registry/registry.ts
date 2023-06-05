@@ -38,5 +38,6 @@ registerElement('q:scroll-area', () => require('../components/scroll-area').QDar
 registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLayout);
 registerElement('q:box-layout', () => require('../components/box-view').QDarkBoxLayout);
 registerElement('q:line-edit', () => require('../components/line-edit').QDarkLineEdit);
+registerElement('q:dialog', () => require('../components/dialog').QDarkDialog);
 
 export { getElementFactory, registerElement };

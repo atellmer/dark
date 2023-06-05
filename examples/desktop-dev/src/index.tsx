@@ -9,6 +9,7 @@ import {
   CursorShape,
   EchoMode,
   AspectRatioMode,
+  FocusReason,
 } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
@@ -19,6 +20,7 @@ import {
   Button,
   Image,
   AnimatedImage,
+  Dialog,
   ScrollArea,
   BoxView,
   LineEdit,
@@ -37,10 +39,17 @@ const winIcon = new QIcon(nodeguiIcon);
 const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
   const [text, setText] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
   const win = useRef<QWidget>();
   const buttonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
     {
       clicked: () => setCount(x => x + 1),
+    },
+    [],
+  );
+  const dialogButtonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
+    {
+      clicked: () => setIsOpen(x => !x),
     },
     [],
   );
@@ -50,12 +59,18 @@ const App = component<AppProps>(({ title }) => {
     },
     [],
   );
+  const dialogHandler = useEventHandler<WidgetEventTypes>(
+    {
+      [WidgetEventTypes.Close]: e => setIsOpen(false),
+    },
+    [],
+  );
 
   return (
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
-          <LineEdit on={lineEditHandler} echoMode={EchoMode.Password} clearButtonEnabled />
+          <LineEdit echoMode={EchoMode.Password} clearButtonEnabled on={lineEditHandler} />
           <View style={imageLayoutStyle}>
             <Image
               id='image'
@@ -69,6 +84,14 @@ const App = component<AppProps>(({ title }) => {
           <Text id='welcome-text-2'>count: {count}</Text>
           <Text id='welcome-text-1'>count: {count}</Text>
           <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
+          <Dialog open={isOpen} on={dialogHandler}>
+            <Text>hello</Text>
+            <Image
+              id='image'
+              src='https://nationaltoday.com/wp-content/uploads/2020/08/international-cat-day-1200x834.jpg'
+            />
+          </Dialog>
+          <Button text={isOpen ? 'opened' : 'closed'} on={dialogButtonHandler} />
         </BoxView>
       </Window>
     </>

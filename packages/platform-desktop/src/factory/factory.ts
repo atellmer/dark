@@ -13,3 +13,4 @@ export const qScrollArea = factory('q:scroll-area');
 export const qFlexLayout = factory('q:flex-layout');
 export const qBoxLayout = factory('q:box-layout');
 export const qLineEdit = factory('q:line-edit');
+export const qDialog = factory('q:dialog');
