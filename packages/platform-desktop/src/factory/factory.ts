@@ -14,3 +14,5 @@ export const qFlexLayout = factory('q:flex-layout');
 export const qBoxLayout = factory('q:box-layout');
 export const qLineEdit = factory('q:line-edit');
 export const qDialog = factory('q:dialog');
+export const qList = factory('q:list');
+export const qListItem = factory('q:list-item');

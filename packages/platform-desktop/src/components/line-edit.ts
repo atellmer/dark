@@ -22,10 +22,6 @@ const LineEdit = forwardRef<LineEditProps, LineEditRef>(
 ) as ComponentFactory<LineEditProps, LineEditRef>;
 
 class QDarkLineEdit extends QLineEdit {
-  constructor() {
-    super();
-  }
-
   setValue(value: string) {
     this.setText(value);
   }

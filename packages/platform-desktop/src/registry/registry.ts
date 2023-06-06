@@ -39,5 +39,7 @@ registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLa
 registerElement('q:box-layout', () => require('../components/box-view').QDarkBoxLayout);
 registerElement('q:line-edit', () => require('../components/line-edit').QDarkLineEdit);
 registerElement('q:dialog', () => require('../components/dialog').QDarkDialog);
+registerElement('q:list', () => require('../components/list').QList);
+registerElement('q:list-item', () => require('../components/list-item').QListItem);
 
 export { getElementFactory, registerElement };

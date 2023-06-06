@@ -22,6 +22,8 @@ import {
   AnimatedImage,
   Dialog,
   ScrollArea,
+  List,
+  ListItem,
   BoxView,
   LineEdit,
   useEventHandler,
@@ -59,12 +61,6 @@ const App = component<AppProps>(({ title }) => {
     },
     [],
   );
-  const dialogHandler = useEventHandler<WidgetEventTypes>(
-    {
-      [WidgetEventTypes.Close]: e => setIsOpen(false),
-    },
-    [],
-  );
 
   return (
     <>
@@ -84,14 +80,10 @@ const App = component<AppProps>(({ title }) => {
           <Text id='welcome-text-2'>count: {count}</Text>
           <Text id='welcome-text-1'>count: {count}</Text>
           <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
-          <Dialog open={isOpen} on={dialogHandler}>
-            <Text>hello</Text>
-            <Image
-              id='image'
-              src='https://nationaltoday.com/wp-content/uploads/2020/08/international-cat-day-1200x834.jpg'
-            />
-          </Dialog>
-          <Button text={isOpen ? 'opened' : 'closed'} on={dialogButtonHandler} />
+          <List>
+            <ListItem text='xxx' />
+            <ListItem text='yyy' selected />
+          </List>
         </BoxView>
       </Window>
     </>
