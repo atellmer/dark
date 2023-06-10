@@ -17,3 +17,5 @@ export const qDialog = factory('q:dialog');
 export const qList = factory('q:list');
 export const qListItem = factory('q:list-item');
 export const qProgressBar = factory('q:progress-bar');
+export const qSlider = factory('q:slider');
+export const qSpinBox = factory('q:spin-box');

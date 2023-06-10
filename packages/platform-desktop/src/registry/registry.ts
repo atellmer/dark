@@ -42,5 +42,7 @@ registerElement('q:dialog', () => require('../components/dialog').QDarkDialog);
 registerElement('q:list', () => require('../components/list').QList);
 registerElement('q:list-item', () => require('../components/list-item').QListItem);
 registerElement('q:progress-bar', () => require('../components/progress-bar').QDarkProgressBar);
+registerElement('q:slider', () => require('../components/slider').QDarkSlider);
+registerElement('q:spin-box', () => require('../components/spin-box').QDarkSpinBox);
 
 export { getElementFactory, registerElement };

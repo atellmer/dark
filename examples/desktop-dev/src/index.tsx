@@ -5,6 +5,8 @@ import {
   QMouseEvent,
   QLineEditSignals,
   Direction,
+  Orientation,
+  TickPosition,
   QWidget,
   CursorShape,
   EchoMode,
@@ -27,6 +29,8 @@ import {
   BoxView,
   LineEdit,
   ProgressBar,
+  Slider,
+  SpinBox,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -82,6 +86,8 @@ const App = component<AppProps>(({ title }) => {
           <Text id='welcome-text-1'>count: {count}</Text>
           <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
           <ProgressBar value={45} textHidden />
+          <Slider value={45} orientation={Orientation.Horizontal} tickPosition={TickPosition.TicksBothSides} />
+          <SpinBox value={10} />
         </BoxView>
       </Window>
     </>
