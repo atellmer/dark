@@ -31,6 +31,7 @@ import {
   ProgressBar,
   Slider,
   SpinBox,
+  CheckBox,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -88,6 +89,7 @@ const App = component<AppProps>(({ title }) => {
           <ProgressBar value={45} textHidden />
           <Slider value={45} orientation={Orientation.Horizontal} tickPosition={TickPosition.TicksBothSides} />
           <SpinBox value={10} />
+          <CheckBox text='xxx' checked />
         </BoxView>
       </Window>
     </>

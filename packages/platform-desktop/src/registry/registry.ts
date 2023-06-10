@@ -44,5 +44,6 @@ registerElement('q:list-item', () => require('../components/list-item').QListIte
 registerElement('q:progress-bar', () => require('../components/progress-bar').QDarkProgressBar);
 registerElement('q:slider', () => require('../components/slider').QDarkSlider);
 registerElement('q:spin-box', () => require('../components/spin-box').QDarkSpinBox);
+registerElement('q:check-box', () => require('../components/check-box').QDarkCheckBox);
 
 export { getElementFactory, registerElement };

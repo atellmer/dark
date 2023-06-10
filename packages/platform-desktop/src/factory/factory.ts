@@ -19,3 +19,4 @@ export const qListItem = factory('q:list-item');
 export const qProgressBar = factory('q:progress-bar');
 export const qSlider = factory('q:slider');
 export const qSpinBox = factory('q:spin-box');
+export const qCheckBox = factory('q:check-box');
