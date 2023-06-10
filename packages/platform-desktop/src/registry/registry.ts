@@ -41,5 +41,6 @@ registerElement('q:line-edit', () => require('../components/line-edit').QDarkLin
 registerElement('q:dialog', () => require('../components/dialog').QDarkDialog);
 registerElement('q:list', () => require('../components/list').QList);
 registerElement('q:list-item', () => require('../components/list-item').QListItem);
+registerElement('q:progress-bar', () => require('../components/progress-bar').QDarkProgressBar);
 
 export { getElementFactory, registerElement };

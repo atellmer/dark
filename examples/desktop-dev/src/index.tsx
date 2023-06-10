@@ -26,6 +26,7 @@ import {
   ListItem,
   BoxView,
   LineEdit,
+  ProgressBar,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -80,10 +81,7 @@ const App = component<AppProps>(({ title }) => {
           <Text id='welcome-text-2'>count: {count}</Text>
           <Text id='welcome-text-1'>count: {count}</Text>
           <Button id='button' text={`Click Me ${count}`} cursor={CursorShape.PointingHandCursor} on={buttonHandler} />
-          <List>
-            <ListItem text='xxx' />
-            <ListItem text='yyy' selected />
-          </List>
+          <ProgressBar value={45} textHidden />
         </BoxView>
       </Window>
     </>

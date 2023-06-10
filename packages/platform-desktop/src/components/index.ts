@@ -10,3 +10,4 @@ export * from './line-edit';
 export * from './dialog';
 export * from './list';
 export * from './list-item';
+export * from './progress-bar';

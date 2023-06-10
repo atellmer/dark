@@ -16,3 +16,4 @@ export const qLineEdit = factory('q:line-edit');
 export const qDialog = factory('q:dialog');
 export const qList = factory('q:list');
 export const qListItem = factory('q:list-item');
+export const qProgressBar = factory('q:progress-bar');
