@@ -1,4 +1,4 @@
-import { QDialog, QWidget, FlexLayout, FocusReason } from '@nodegui/nodegui';
+import { QDialog, QWidget, FlexLayout, FocusReason, type QDialogSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qDialog } from '../factory';
@@ -13,6 +13,7 @@ export type DialogProps = WithExtendedProps<
   } & WidgetProps
 >;
 export type DialogRef = QDarkDialog;
+export type DialogSignals = QDialogSignals;
 
 const Dialog = forwardRef<DialogProps, DialogRef>(
   component((props, ref) => qDialog({ ref, ...props }), { displayName: 'Dialog' }),

@@ -1,4 +1,4 @@
-import { QProgressBar, Orientation } from '@nodegui/nodegui';
+import { QProgressBar, type Orientation, type QProgressBarSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qProgressBar } from '../factory';
@@ -14,6 +14,7 @@ export type ProgressBarProps = WithStandardProps<
   } & WidgetProps
 >;
 export type ProgressBarRef = QDarkProgressBar;
+export type ProgressBarSignals = QProgressBarSignals;
 
 const ProgressBar = forwardRef<ProgressBarProps, ProgressBarRef>(
   component((props, ref) => qProgressBar({ ref, ...props }), { displayName: 'ProgressBar' }),

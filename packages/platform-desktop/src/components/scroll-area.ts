@@ -1,4 +1,4 @@
-import { QWidget, QScrollArea } from '@nodegui/nodegui';
+import { QWidget, QScrollArea, type QScrollAreaSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
@@ -10,6 +10,7 @@ export type ScrollAreaProps = WithExtendedProps<
   } & WidgetProps
 >;
 export type ScrollAreaRef = QDarkScrollArea;
+export type ScrollAreaSignals = QScrollAreaSignals;
 
 const ScrollArea = forwardRef<ScrollAreaProps, ScrollAreaRef>(
   component((props, ref) => qScrollArea({ ref, ...props }), { displayName: 'ScrollArea' }),

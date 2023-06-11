@@ -1,4 +1,4 @@
-import { QCalendarWidget, DayOfWeek } from '@nodegui/nodegui';
+import { QCalendarWidget, DayOfWeek, type QCalendarWidgetSignals } from '@nodegui/nodegui';
 import {
   HorizontalHeaderFormat,
   SelectionMode,
@@ -20,6 +20,7 @@ export type CalendarProps = WithStandardProps<
   } & WidgetProps
 >;
 export type CalendarRef = QDarkCalendar;
+export type CalendarSignals = QCalendarWidgetSignals;
 
 const Calendar = forwardRef<CalendarProps, CalendarRef>(
   component((props, ref) => qCalendar({ ref, ...props }), { displayName: 'Calendar' }),

@@ -1,4 +1,4 @@
-import { QSlider, Orientation, TickPosition } from '@nodegui/nodegui';
+import { QSlider, type Orientation, type TickPosition, type QSliderSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qSlider } from '../factory';
@@ -15,6 +15,7 @@ export type SliderProps = WithStandardProps<
   } & WidgetProps
 >;
 export type SliderRef = QDarkSlider;
+export type SliderSignals = QSliderSignals;
 
 const Slider = forwardRef<SliderProps, SliderRef>(
   component((props, ref) => qSlider({ ref, ...props }), { displayName: 'Slider' }),

@@ -37,6 +37,8 @@ import {
   Slider,
   SpinBox,
   CheckBox,
+  ComboBox,
+  type ComboBoxItem,
   Calendar,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
@@ -49,6 +51,7 @@ type AppProps = {
 
 const size = { width: 600, height: 700 };
 const winIcon = new QIcon(nodeguiIcon);
+const items: Array<ComboBoxItem> = [{ text: 'apple' }, { text: 'banana' }, { text: 'watermelon' }];
 
 const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
@@ -96,6 +99,7 @@ const App = component<AppProps>(({ title }) => {
           <Slider value={45} orientation={Orientation.Horizontal} tickPosition={TickPosition.TicksBothSides} />
           <SpinBox value={10} />
           <CheckBox text='xxx' checked />
+          <ComboBox currentIndex={2} items={items} />
         </BoxView>
       </Window>
     </>

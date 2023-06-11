@@ -1,4 +1,4 @@
-import { QPushButton, type QIcon, type QSize } from '@nodegui/nodegui';
+import { QPushButton, type QIcon, type QSize, type QPushButtonSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qPushButton } from '../factory';
@@ -12,8 +12,8 @@ export type ButtonProps = WithStandardProps<
     flat?: boolean;
   } & WidgetProps
 >;
-
 export type ButtonRef = QDarkPushButton;
+export type ButtonSignals = QPushButtonSignals;
 
 const Button = forwardRef<ButtonProps, ButtonRef>(
   component((props, ref) => qPushButton({ ref, ...props }), { displayName: 'Button' }),

@@ -1,4 +1,4 @@
-import { type QIcon, QMainWindow, QWidget, WindowState } from '@nodegui/nodegui';
+import { QMainWindow, QWidget, WindowState, type QIcon, type QMainWindowSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qMainWindow } from '../factory';
@@ -13,6 +13,7 @@ export type WindowProps = WithExtendedProps<
   } & WidgetProps
 >;
 export type WindowRef = QDarkMainWindow;
+export type MainWindowSignals = QMainWindowSignals;
 
 const Window = forwardRef<WindowProps, WindowRef>(
   component((props, ref) => qMainWindow({ ref, ...props }), { displayName: 'Window' }),

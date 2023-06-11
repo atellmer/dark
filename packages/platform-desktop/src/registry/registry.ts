@@ -43,8 +43,9 @@ registerElement('q:list', () => require('../components/list').QDarkList);
 registerElement('q:list-item', () => require('../components/list-item').QDarkListItem);
 registerElement('q:progress-bar', () => require('../components/progress-bar').QDarkProgressBar);
 registerElement('q:slider', () => require('../components/slider').QDarkSlider);
+registerElement('q:calendar', () => require('../components/calendar').QDarkCalendar);
 registerElement('q:spin-box', () => require('../components/spin-box').QDarkSpinBox);
 registerElement('q:check-box', () => require('../components/check-box').QDarkCheckBox);
-registerElement('q:calendar', () => require('../components/calendar').QDarkCalendar);
+registerElement('q:combo-box', () => require('../components/combo-box').QDarkComboBox);
 
 export { getElementFactory, registerElement };

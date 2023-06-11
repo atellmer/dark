@@ -1,4 +1,4 @@
-import { QLineEdit, EchoMode } from '@nodegui/nodegui';
+import { QLineEdit, EchoMode, type QLineEditSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import { qLineEdit } from '../factory';
@@ -16,6 +16,7 @@ export type LineEditProps = WithStandardProps<
   } & WidgetProps
 >;
 export type LineEditRef = QDarkLineEdit;
+export type LineEditSignals = QLineEditSignals;
 
 const LineEdit = forwardRef<LineEditProps, LineEditRef>(
   component((props, ref) => qLineEdit({ ref, ...props }), { displayName: 'LineEdit' }),
