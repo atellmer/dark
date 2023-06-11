@@ -14,3 +14,4 @@ export * from './progress-bar';
 export * from './slider';
 export * from './spin-box';
 export * from './check-box';
+export * from './calendar';

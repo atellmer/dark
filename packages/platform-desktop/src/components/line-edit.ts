@@ -15,7 +15,7 @@ export type LineEditProps = WithStandardProps<
     clearButtonEnabled?: boolean;
   } & WidgetProps
 >;
-export type LineEditRef = QLineEdit;
+export type LineEditRef = QDarkLineEdit;
 
 const LineEdit = forwardRef<LineEditProps, LineEditRef>(
   component((props, ref) => qLineEdit({ ref, ...props }), { displayName: 'LineEdit' }),

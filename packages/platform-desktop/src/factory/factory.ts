@@ -5,7 +5,7 @@ type TagProps = Omit<ViewDef, 'as' | 'isVoid'>;
 export const factory = (as: string) => (props?: TagProps) => View({ as, ...(props || {}) });
 
 export const qMainWindow = factory('q:main-window');
-export const qLabel = factory('q:label');
+export const qText = factory('q:text');
 export const qPushButton = factory('q:push-button');
 export const qImage = factory('q:image');
 export const qAnimatedImage = factory('q:animated-image');
@@ -20,3 +20,4 @@ export const qProgressBar = factory('q:progress-bar');
 export const qSlider = factory('q:slider');
 export const qSpinBox = factory('q:spin-box');
 export const qCheckBox = factory('q:check-box');
+export const qCalendar = factory('q:calendar');

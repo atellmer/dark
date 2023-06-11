@@ -14,7 +14,7 @@ export type ImageProps = WithStandardProps<
     transformationMode?: TransformationMode;
   } & WidgetProps
 >;
-export type ImageRef = QLabel;
+export type ImageRef = QDarkImage;
 
 const Image = forwardRef<ImageProps, ImageRef>(
   component((props, ref) => qImage({ ref, ...props }), { displayName: 'Image' }),

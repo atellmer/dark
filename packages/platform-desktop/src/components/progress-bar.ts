@@ -13,7 +13,7 @@ export type ProgressBarProps = WithStandardProps<
     textHidden?: boolean;
   } & WidgetProps
 >;
-export type ProgressBarRef = QProgressBar;
+export type ProgressBarRef = QDarkProgressBar;
 
 const ProgressBar = forwardRef<ProgressBarProps, ProgressBarRef>(
   component((props, ref) => qProgressBar({ ref, ...props }), { displayName: 'ProgressBar' }),

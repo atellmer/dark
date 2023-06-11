@@ -12,7 +12,7 @@ export type DialogProps = WithExtendedProps<
     enableSizeGrip?: boolean;
   } & WidgetProps
 >;
-export type DialogRef = QDialog;
+export type DialogRef = QDarkDialog;
 
 const Dialog = forwardRef<DialogProps, DialogRef>(
   component((props, ref) => qDialog({ ref, ...props }), { displayName: 'Dialog' }),

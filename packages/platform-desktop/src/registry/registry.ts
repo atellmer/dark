@@ -29,21 +29,22 @@ function getElementFactory(name: string): QElementFactory {
 }
 
 registerElement(ROOT, () => null);
-registerElement('q:push-button', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QPushButton').QPushButton);
-registerElement('q:label', () => require('@nodegui/nodegui/dist/lib/QtWidgets/QLabel').QLabel);
+registerElement('q:text', () => require('../components/text').QDarkText);
+registerElement('q:push-button', () => require('../components/button').QDarkPushButton);
 registerElement('q:main-window', () => require('../components/window').QDarkMainWindow);
 registerElement('q:image', () => require('../components/image').QDarkImage);
-registerElement('q:animated-image', () => require('../components/animated-image').QAnimatedImage);
+registerElement('q:animated-image', () => require('../components/animated-image').QDarkAnimatedImage);
 registerElement('q:scroll-area', () => require('../components/scroll-area').QDarkScrollArea);
 registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLayout);
 registerElement('q:box-layout', () => require('../components/box-view').QDarkBoxLayout);
 registerElement('q:line-edit', () => require('../components/line-edit').QDarkLineEdit);
 registerElement('q:dialog', () => require('../components/dialog').QDarkDialog);
-registerElement('q:list', () => require('../components/list').QList);
-registerElement('q:list-item', () => require('../components/list-item').QListItem);
+registerElement('q:list', () => require('../components/list').QDarkList);
+registerElement('q:list-item', () => require('../components/list-item').QDarkListItem);
 registerElement('q:progress-bar', () => require('../components/progress-bar').QDarkProgressBar);
 registerElement('q:slider', () => require('../components/slider').QDarkSlider);
 registerElement('q:spin-box', () => require('../components/spin-box').QDarkSpinBox);
 registerElement('q:check-box', () => require('../components/check-box').QDarkCheckBox);
+registerElement('q:calendar', () => require('../components/calendar').QDarkCalendar);
 
 export { getElementFactory, registerElement };

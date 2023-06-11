@@ -13,6 +13,11 @@ import {
   AspectRatioMode,
   FocusReason,
 } from '@nodegui/nodegui';
+import {
+  HorizontalHeaderFormat,
+  SelectionMode,
+  VerticalHeaderFormat,
+} from '@nodegui/nodegui/dist/lib/QtWidgets/QCalendarWidget';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
   render,
@@ -32,6 +37,7 @@ import {
   Slider,
   SpinBox,
   CheckBox,
+  Calendar,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 

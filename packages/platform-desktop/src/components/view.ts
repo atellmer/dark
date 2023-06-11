@@ -5,7 +5,7 @@ import { qFlexLayout } from '../factory';
 import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
 
 export type ViewProps = WithExtendedProps<{} & WidgetProps>;
-export type ViewRef = QWidget;
+export type ViewRef = QDarkFlexLayout;
 
 const View = forwardRef<ViewProps, ViewRef>(
   component((props, ref) => qFlexLayout({ ref, ...props }), { displayName: 'View' }),

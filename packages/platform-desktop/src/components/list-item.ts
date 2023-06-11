@@ -20,6 +20,6 @@ const ListItem = forwardRef<ListItemProps, ListItemRef>(
   component((props, ref) => qListItem({ ref, ...props }), { displayName: 'ListItem' }),
 ) as ComponentFactory<ListItemProps, ListItemRef>;
 
-class QListItem extends QListWidgetItem {}
+class QDarkListItem extends QListWidgetItem {}
 
-export { ListItem, QListItem };
+export { ListItem, QDarkListItem };

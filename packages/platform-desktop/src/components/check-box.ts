@@ -10,7 +10,7 @@ export type CheckBoxProps = WithStandardProps<
     text?: string;
   } & WidgetProps
 >;
-export type CheckBoxRef = QCheckBox;
+export type CheckBoxRef = QDarkCheckBox;
 
 const CheckBox = forwardRef<CheckBoxProps, CheckBoxRef>(
   component((props, ref) => qCheckBox({ ref, ...props }), { displayName: 'CheckBox' }),

@@ -12,13 +12,13 @@ export type AnimatedImageProps = WithStandardProps<
     buffer?: Buffer;
   } & WidgetProps
 >;
-export type AnimatedImageRef = QLabel;
+export type AnimatedImageRef = QDarkAnimatedImage;
 
 const AnimatedImage = forwardRef<AnimatedImageProps, AnimatedImageRef>(
   component((props, ref) => qAnimatedImage({ ref, ...props }), { displayName: 'AnimatedImage' }),
 ) as ComponentFactory<AnimatedImageProps, AnimatedImageRef>;
 
-class QAnimatedImage extends QLabel {
+class QDarkAnimatedImage extends QLabel {
   constructor() {
     super();
     this.setProperty('scaledContents', true);
@@ -63,4 +63,4 @@ function createMovieFromBuffer(buffer: Buffer) {
   return movie;
 }
 
-export { AnimatedImage, QAnimatedImage };
+export { AnimatedImage, QDarkAnimatedImage };

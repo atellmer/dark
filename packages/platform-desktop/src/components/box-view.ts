@@ -9,7 +9,7 @@ export type BoxViewProps = WithExtendedProps<
     direction?: Direction;
   } & WidgetProps
 >;
-export type BoxViewRef = QWidget;
+export type BoxViewRef = QDarkBoxLayout;
 
 const BoxView = forwardRef<BoxViewProps, BoxViewRef>(
   component((props, ref) => qBoxLayout({ ref, ...props }), { displayName: 'BoxView' }),

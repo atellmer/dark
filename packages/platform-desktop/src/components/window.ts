@@ -12,7 +12,7 @@ export type WindowProps = WithExtendedProps<
     windowState?: WindowState;
   } & WidgetProps
 >;
-export type WindowRef = QMainWindow;
+export type WindowRef = QDarkMainWindow;
 
 const Window = forwardRef<WindowProps, WindowRef>(
   component((props, ref) => qMainWindow({ ref, ...props }), { displayName: 'Window' }),

@@ -9,7 +9,7 @@ export type ScrollAreaProps = WithExtendedProps<
     resizable?: boolean;
   } & WidgetProps
 >;
-export type ScrollAreaRef = QScrollArea;
+export type ScrollAreaRef = QDarkScrollArea;
 
 const ScrollArea = forwardRef<ScrollAreaProps, ScrollAreaRef>(
   component((props, ref) => qScrollArea({ ref, ...props }), { displayName: 'ScrollArea' }),

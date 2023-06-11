@@ -9,7 +9,7 @@ export type SpinBoxProps = WithStandardProps<
     value: number;
   } & WidgetProps
 >;
-export type SpinBoxRef = QSpinBox;
+export type SpinBoxRef = QDarkSpinBox;
 
 const SpinBox = forwardRef<SpinBoxProps, SpinBoxRef>(
   component((props, ref) => qSpinBox({ ref, ...props }), { displayName: 'SpinBox' }),

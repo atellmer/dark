@@ -14,7 +14,7 @@ export type SliderProps = WithStandardProps<
     tickPosition?: TickPosition;
   } & WidgetProps
 >;
-export type SliderRef = QSlider;
+export type SliderRef = QDarkSlider;
 
 const Slider = forwardRef<SliderProps, SliderRef>(
   component((props, ref) => qSlider({ ref, ...props }), { displayName: 'Slider' }),
