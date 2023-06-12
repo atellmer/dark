@@ -48,5 +48,6 @@ registerElement('q:spin-box', () => require('../components/spin-box').QDarkSpinB
 registerElement('q:check-box', () => require('../components/check-box').QDarkCheckBox);
 registerElement('q:combo-box', () => require('../components/combo-box').QDarkComboBox);
 registerElement('q:plain-text-edit', () => require('../components/plain-text-edit').QDarkPlainTextEdit);
+registerElement('q:dial', () => require('../components/dial').QDarkDial);
 
 export { getElementFactory, registerElement };

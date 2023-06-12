@@ -43,6 +43,7 @@ import {
   CheckBox,
   ComboBox,
   Calendar,
+  Dial,
   PlainTextEdit,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
@@ -79,7 +80,7 @@ const App = component<AppProps>(({ title }) => {
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
-          <LineEdit text={'xxx'} on={lineEditHandler} />
+          <LineEdit on={lineEditHandler} />
           <PlainTextEdit />
           <View style={imageLayoutStyle}>
             <Image
@@ -99,6 +100,7 @@ const App = component<AppProps>(({ title }) => {
           <SpinBox value={10} />
           <CheckBox text='xxx' checked />
           <ComboBox currentIndex={2} items={items} />
+          <Dial value={100} maximum={200} minimum={0} notchTarget={30} />
         </BoxView>
       </Window>
     </>
@@ -106,7 +108,7 @@ const App = component<AppProps>(({ title }) => {
 });
 
 const containerStyle = `
-  background: 'blue';
+  background: 'white';
   justify-content: 'center';
 `;
 
