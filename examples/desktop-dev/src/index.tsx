@@ -45,6 +45,7 @@ import {
   Calendar,
   Dial,
   PlainTextEdit,
+  ColorDialog,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -80,6 +81,7 @@ const App = component<AppProps>(({ title }) => {
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
+          <ColorDialog open />
           <LineEdit on={lineEditHandler} />
           <PlainTextEdit />
           <View style={imageLayoutStyle}>
@@ -147,3 +149,30 @@ const styleSheet = `
 `;
 
 render(<App title='Dark desktop app' />);
+
+// import { QMainWindow, QMenuBar, QMenu, QAction }from "@nodegui/nodegui";
+
+// const win = new QMainWindow();
+// const menuBar = new QMenuBar();
+// win.setMenuBar(menuBar);
+
+// const fileMenu = new QMenu();
+// fileMenu.setTitle("File");
+
+// const newAction = new QAction();
+// newAction.setText("New");
+// newAction.addEventListener("triggered", () => {
+//   console.log("New clicked");
+// });
+
+// const openAction = new QAction();
+// openAction.setText("Open");
+// openAction.addEventListener("triggered", () => {
+//   console.log("Open clicked");
+// });
+
+// fileMenu.addAction(newAction);
+// fileMenu.addAction(openAction);
+
+// menuBar.addMenu(fileMenu);
+// win.show();

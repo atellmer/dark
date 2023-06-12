@@ -24,3 +24,4 @@ export const qCheckBox = factory('q:check-box');
 export const qComboBox = factory('q:combo-box');
 export const qPlainTextEdit = factory('q:plain-text-edit');
 export const qDial = factory('q:dial');
+export const qColorDialog = factory('q:color-dialog');

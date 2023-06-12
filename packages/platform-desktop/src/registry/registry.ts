@@ -49,5 +49,6 @@ registerElement('q:check-box', () => require('../components/check-box').QDarkChe
 registerElement('q:combo-box', () => require('../components/combo-box').QDarkComboBox);
 registerElement('q:plain-text-edit', () => require('../components/plain-text-edit').QDarkPlainTextEdit);
 registerElement('q:dial', () => require('../components/dial').QDarkDial);
+registerElement('q:color-dialog', () => require('../components/color-dialog').QDarkColorDialog);
 
 export { getElementFactory, registerElement };
