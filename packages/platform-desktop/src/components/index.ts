@@ -16,3 +16,4 @@ export * from './spin-box';
 export * from './check-box';
 export * from './calendar';
 export * from './combo-box';
+export * from './plain-text-edit';

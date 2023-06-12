@@ -47,5 +47,6 @@ registerElement('q:calendar', () => require('../components/calendar').QDarkCalen
 registerElement('q:spin-box', () => require('../components/spin-box').QDarkSpinBox);
 registerElement('q:check-box', () => require('../components/check-box').QDarkCheckBox);
 registerElement('q:combo-box', () => require('../components/combo-box').QDarkComboBox);
+registerElement('q:plain-text-edit', () => require('../components/plain-text-edit').QDarkPlainTextEdit);
 
 export { getElementFactory, registerElement };

@@ -20,6 +20,10 @@ import {
 } from '@nodegui/nodegui/dist/lib/QtWidgets/QCalendarWidget';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
+  type ComboBoxItem,
+  type ButtonSignals,
+  type LineEditSignals,
+  type PlainTextEditSignals,
   render,
   Window,
   View,
@@ -38,8 +42,8 @@ import {
   SpinBox,
   CheckBox,
   ComboBox,
-  type ComboBoxItem,
   Calendar,
+  PlainTextEdit,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -58,19 +62,13 @@ const App = component<AppProps>(({ title }) => {
   const [text, setText] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const win = useRef<QWidget>();
-  const buttonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
+  const buttonHandler = useEventHandler<ButtonSignals>(
     {
       clicked: () => setCount(x => x + 1),
     },
     [],
   );
-  const dialogButtonHandler = useEventHandler<QPushButtonSignals | WidgetEventTypes>(
-    {
-      clicked: () => setIsOpen(x => !x),
-    },
-    [],
-  );
-  const lineEditHandler = useEventHandler<QLineEditSignals>(
+  const lineEditHandler = useEventHandler<PlainTextEditSignals>(
     {
       textChanged: e => setText(e.value),
     },
@@ -81,7 +79,8 @@ const App = component<AppProps>(({ title }) => {
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
-          <LineEdit echoMode={EchoMode.Password} clearButtonEnabled on={lineEditHandler} />
+          <LineEdit text={'xxx'} on={lineEditHandler} />
+          <PlainTextEdit />
           <View style={imageLayoutStyle}>
             <Image
               id='image'

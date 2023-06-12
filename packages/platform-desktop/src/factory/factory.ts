@@ -22,3 +22,4 @@ export const qCalendar = factory('q:calendar');
 export const qSpinBox = factory('q:spin-box');
 export const qCheckBox = factory('q:check-box');
 export const qComboBox = factory('q:combo-box');
+export const qPlainTextEdit = factory('q:plain-text-edit');

@@ -6,7 +6,7 @@ import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type LineEditProps = WithStandardProps<
   {
-    value?: string;
+    text?: string;
     placeholder?: string;
     inputMask?: string;
     readOnly?: boolean;
@@ -23,10 +23,6 @@ const LineEdit = forwardRef<LineEditProps, LineEditRef>(
 ) as ComponentFactory<LineEditProps, LineEditRef>;
 
 class QDarkLineEdit extends QLineEdit {
-  setValue(value: string) {
-    this.setText(value);
-  }
-
   setPlaceholder(value: string) {
     this.setPlaceholderText(value);
   }
