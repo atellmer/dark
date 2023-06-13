@@ -46,6 +46,7 @@ import {
   Dial,
   PlainTextEdit,
   ColorDialog,
+  ErrorMessage,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -81,7 +82,7 @@ const App = component<AppProps>(({ title }) => {
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
-          <ColorDialog open />
+          <ColorDialog open={false} />
           <LineEdit on={lineEditHandler} />
           <PlainTextEdit />
           <View style={imageLayoutStyle}>
