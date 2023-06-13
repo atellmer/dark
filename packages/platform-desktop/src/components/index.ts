@@ -20,3 +20,4 @@ export * from './plain-text-edit';
 export * from './dial';
 export * from './color-dialog';
 export * from './error-message';
+export * from './file-dialog';

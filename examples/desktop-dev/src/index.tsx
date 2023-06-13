@@ -24,6 +24,7 @@ import {
   type ButtonSignals,
   type LineEditSignals,
   type PlainTextEditSignals,
+  type FileDialogSignals,
   render,
   Window,
   View,
@@ -47,6 +48,7 @@ import {
   PlainTextEdit,
   ColorDialog,
   ErrorMessage,
+  FileDialog,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -77,6 +79,14 @@ const App = component<AppProps>(({ title }) => {
     },
     [],
   );
+  const fileEvents = useEventHandler<FileDialogSignals>(
+    {
+      fileSelected: file => {
+        console.log('file', file);
+      },
+    },
+    [],
+  );
 
   return (
     <>
@@ -104,6 +114,7 @@ const App = component<AppProps>(({ title }) => {
           <CheckBox text='xxx' checked />
           <ComboBox currentIndex={2} items={items} />
           <Dial value={100} maximum={200} minimum={0} notchTarget={30} />
+          <FileDialog open={false} on={fileEvents} />
         </BoxView>
       </Window>
     </>

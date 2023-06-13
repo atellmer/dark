@@ -51,5 +51,6 @@ registerElement('q:plain-text-edit', () => require('../components/plain-text-edi
 registerElement('q:dial', () => require('../components/dial').QDarkDial);
 registerElement('q:color-dialog', () => require('../components/color-dialog').QDarkColorDialog);
 registerElement('q:error-message', () => require('../components/error-message').QDarkErrorMessage);
+registerElement('q:file-dialog', () => require('../components/file-dialog').QDarkFileDialog);
 
 export { getElementFactory, registerElement };

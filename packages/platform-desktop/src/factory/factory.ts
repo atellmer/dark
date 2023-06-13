@@ -26,3 +26,4 @@ export const qPlainTextEdit = factory('q:plain-text-edit');
 export const qDial = factory('q:dial');
 export const qColorDialog = factory('q:color-dialog');
 export const qErrorMessage = factory('q:error-message');
+export const qFileDialog = factory('q:file-dialog');
