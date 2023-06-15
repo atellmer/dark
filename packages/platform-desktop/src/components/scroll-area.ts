@@ -3,6 +3,7 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 
 import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
 import { qScrollArea } from '../factory';
+import { throwUnsupported } from '../utils';
 
 export type ScrollAreaProps = WithExtendedProps<
   {
@@ -48,13 +49,11 @@ class QDarkScrollArea extends QScrollArea implements Container {
     this.setWidget(new QDarkPlaceholder());
   }
 
-  insertBefore() {}
-}
-
-class QDarkPlaceholder extends QWidget {
-  constructor() {
-    super();
+  insertBefore() {
+    throwUnsupported(this);
   }
 }
+
+class QDarkPlaceholder extends QWidget {}
 
 export { ScrollArea, QDarkScrollArea };

@@ -21,3 +21,6 @@ export * from './dial';
 export * from './color-dialog';
 export * from './error-message';
 export * from './file-dialog';
+export * from './action';
+export * from './menu-bar';
+export * from './menu';

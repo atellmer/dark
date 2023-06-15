@@ -27,3 +27,6 @@ export const qDial = factory('q:dial');
 export const qColorDialog = factory('q:color-dialog');
 export const qErrorMessage = factory('q:error-message');
 export const qFileDialog = factory('q:file-dialog');
+export const qAction = factory('q:action');
+export const qMenuBar = factory('q:menu-bar');
+export const qMenu = factory('q:menu');

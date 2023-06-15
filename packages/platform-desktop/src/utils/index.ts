@@ -16,4 +16,8 @@ function detectisValidURL(value: string) {
   }
 }
 
-export { capitalizeFirstLetter, createSetterName, detectisValidURL };
+function throwUnsupported(value: object) {
+  throw new Error(`Unsupported action in ${value.constructor.name}`);
+}
+
+export { capitalizeFirstLetter, createSetterName, detectisValidURL, throwUnsupported };

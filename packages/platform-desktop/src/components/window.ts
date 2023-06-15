@@ -3,6 +3,8 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 
 import { qMainWindow } from '../factory';
 import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
+import { QDarkMenuBar } from './menu-bar';
+import { throwUnsupported } from '../utils';
 
 export type WindowProps = WithExtendedProps<
   {
@@ -25,15 +27,24 @@ class QDarkMainWindow extends QMainWindow implements Container {
   constructor() {
     super();
     this.show();
+    (global as any).window = this;
   }
 
   appendChild(child: QWidget) {
-    this.setCentralWidget(child);
+    if (child instanceof QDarkMenuBar) {
+      this.setMenuBar(child);
+    } else {
+      this.setCentralWidget(child);
+    }
   }
 
-  insertBefore() {}
+  insertBefore() {
+    throwUnsupported(this);
+  }
 
-  removeChild() {}
+  removeChild(child: QWidget) {
+    child.close();
+  }
 }
 
 export { Window, QDarkMainWindow };

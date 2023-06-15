@@ -13,11 +13,6 @@ import {
   AspectRatioMode,
   FocusReason,
 } from '@nodegui/nodegui';
-import {
-  HorizontalHeaderFormat,
-  SelectionMode,
-  VerticalHeaderFormat,
-} from '@nodegui/nodegui/dist/lib/QtWidgets/QCalendarWidget';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
   type ComboBoxItem,
@@ -49,6 +44,9 @@ import {
   ColorDialog,
   ErrorMessage,
   FileDialog,
+  Action,
+  MenuBar,
+  Menu,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -91,6 +89,18 @@ const App = component<AppProps>(({ title }) => {
   return (
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
+        <MenuBar>
+          <Menu title='File'>
+            <Action text='Open' />
+            <Action text='Create' />
+            <Action text='Save' />
+          </Menu>
+          <Menu title='Edit'>
+            <Action text='Cut' />
+            <Action text='Copy' />
+            <Action text='Paste' />
+          </Menu>
+        </MenuBar>
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
           <ColorDialog open={false} />
           <LineEdit on={lineEditHandler} />
@@ -160,31 +170,25 @@ const styleSheet = `
   }
 `;
 
-render(<App title='Dark desktop app' />);
+//render(<App title='Dark desktop app' />);
 
-// import { QMainWindow, QMenuBar, QMenu, QAction }from "@nodegui/nodegui";
+import { QMainWindow, QMenuBar, QMenu, QAction } from '@nodegui/nodegui';
 
-// const win = new QMainWindow();
-// const menuBar = new QMenuBar();
-// win.setMenuBar(menuBar);
+const win = new QMainWindow();
+const menuBar = new QMenuBar();
+win.setMenuBar(menuBar);
 
-// const fileMenu = new QMenu();
-// fileMenu.setTitle("File");
+const fileMenu = new QMenu();
+fileMenu.setTitle('File');
 
-// const newAction = new QAction();
-// newAction.setText("New");
-// newAction.addEventListener("triggered", () => {
-//   console.log("New clicked");
-// });
+const newAction = new QAction();
+newAction.setText('New');
 
-// const openAction = new QAction();
-// openAction.setText("Open");
-// openAction.addEventListener("triggered", () => {
-//   console.log("Open clicked");
-// });
+const openAction = new QAction();
+openAction.setText('Open');
+fileMenu.addAction(newAction);
+fileMenu.addAction(openAction);
 
-// fileMenu.addAction(newAction);
-// fileMenu.addAction(openAction);
-
-// menuBar.addMenu(fileMenu);
-// win.show();
+menuBar.addMenu(fileMenu);
+win.show();
+(global as any).win = win;

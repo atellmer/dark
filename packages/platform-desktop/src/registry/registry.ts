@@ -52,5 +52,8 @@ registerElement('q:dial', () => require('../components/dial').QDarkDial);
 registerElement('q:color-dialog', () => require('../components/color-dialog').QDarkColorDialog);
 registerElement('q:error-message', () => require('../components/error-message').QDarkErrorMessage);
 registerElement('q:file-dialog', () => require('../components/file-dialog').QDarkFileDialog);
+registerElement('q:action', () => require('../components/action').QDarkAction);
+registerElement('q:menu-bar', () => require('../components/menu-bar').QDarkMenuBar);
+registerElement('q:menu', () => require('../components/menu').QDarkMenu);
 
 export { getElementFactory, registerElement };
