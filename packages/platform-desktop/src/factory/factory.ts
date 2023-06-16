@@ -31,3 +31,4 @@ export const qAction = factory('q:action');
 export const qMenuBar = factory('q:menu-bar');
 export const qMenu = factory('q:menu');
 export const qFontDialog = factory('q:font-dialog');
+export const qInputDialog = factory('q:input-dialog');

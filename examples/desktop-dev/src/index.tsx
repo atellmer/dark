@@ -48,6 +48,7 @@ import {
   MenuBar,
   Menu,
   FontDialog,
+  InputDialog,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -127,6 +128,7 @@ const App = component<AppProps>(({ title }) => {
           <Dial value={100} maximum={200} minimum={0} notchTarget={30} />
           <FileDialog open={false} on={fileEvents} />
           <FontDialog open={false} />
+          <InputDialog open={false} />
         </BoxView>
       </Window>
     </>
