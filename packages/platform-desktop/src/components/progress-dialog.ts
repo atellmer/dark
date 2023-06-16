@@ -35,7 +35,7 @@ class QDarkProgressDialog extends QProgressDialog {
   }
 
   setProgressRange(value: ProgressRange) {
-    this.setRange(value.maximum, value.minimum);
+    this.setRange(value.minimum, value.maximum);
   }
 }
 
