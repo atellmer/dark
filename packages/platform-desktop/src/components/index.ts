@@ -24,3 +24,4 @@ export * from './file-dialog';
 export * from './action';
 export * from './menu-bar';
 export * from './menu';
+export * from './font-dialog';

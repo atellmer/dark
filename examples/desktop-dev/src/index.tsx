@@ -47,6 +47,7 @@ import {
   Action,
   MenuBar,
   Menu,
+  FontDialog,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -89,7 +90,7 @@ const App = component<AppProps>(({ title }) => {
   return (
     <>
       <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
-        <MenuBar>
+        {/* <MenuBar>
           <Menu title='File'>
             <Action text='Open' />
             <Action text='Create' />
@@ -100,7 +101,7 @@ const App = component<AppProps>(({ title }) => {
             <Action text='Copy' />
             <Action text='Paste' />
           </Menu>
-        </MenuBar>
+        </MenuBar> */}
         <BoxView direction={Direction.TopToBottom} style={containerStyle}>
           <ColorDialog open={false} />
           <LineEdit on={lineEditHandler} />
@@ -125,6 +126,7 @@ const App = component<AppProps>(({ title }) => {
           <ComboBox currentIndex={2} items={items} />
           <Dial value={100} maximum={200} minimum={0} notchTarget={30} />
           <FileDialog open={false} on={fileEvents} />
+          <FontDialog open={false} />
         </BoxView>
       </Window>
     </>
@@ -170,25 +172,4 @@ const styleSheet = `
   }
 `;
 
-//render(<App title='Dark desktop app' />);
-
-import { QMainWindow, QMenuBar, QMenu, QAction } from '@nodegui/nodegui';
-
-const win = new QMainWindow();
-const menuBar = new QMenuBar();
-win.setMenuBar(menuBar);
-
-const fileMenu = new QMenu();
-fileMenu.setTitle('File');
-
-const newAction = new QAction();
-newAction.setText('New');
-
-const openAction = new QAction();
-openAction.setText('Open');
-fileMenu.addAction(newAction);
-fileMenu.addAction(openAction);
-
-menuBar.addMenu(fileMenu);
-win.show();
-(global as any).win = win;
+render(<App title='Dark desktop app' />);

@@ -55,5 +55,6 @@ registerElement('q:file-dialog', () => require('../components/file-dialog').QDar
 registerElement('q:action', () => require('../components/action').QDarkAction);
 registerElement('q:menu-bar', () => require('../components/menu-bar').QDarkMenuBar);
 registerElement('q:menu', () => require('../components/menu').QDarkMenu);
+registerElement('q:font-dialog', () => require('../components/font-dialog').QDarkFontDialog);
 
 export { getElementFactory, registerElement };
