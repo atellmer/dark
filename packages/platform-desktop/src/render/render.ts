@@ -59,6 +59,6 @@ function render(element: DarkElement) {
   platform.schedule(callback, { priority: TaskPriority.NORMAL, forceSync: true });
 }
 
-(global as any)._DARK_ = Fiber;
+globalThis._DARK_ = Fiber;
 
 export { render };

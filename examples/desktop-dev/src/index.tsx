@@ -177,3 +177,35 @@ const styleSheet = `
 `;
 
 render(<App title='Dark desktop app' />);
+
+// import { QMainWindow, QWidget, QLabel, QGridLayout } from '@nodegui/nodegui';
+
+// const win = new QMainWindow();
+// const centralWidget = new QWidget();
+// const layout = new QGridLayout();
+
+// const label1 = new QLabel();
+// label1.setText('Label 1');
+// label1.setInlineStyle(`background-color: red;`);
+// layout.addWidget(label1, 0, 0);
+
+// const label2 = new QLabel();
+// label2.setText('Label 2');
+// label2.setInlineStyle(`background-color: yellow;`);
+// layout.addWidget(label2, 0, 1);
+
+// const label3 = new QLabel();
+// label3.setText('Label 3');
+// label3.setInlineStyle(`background-color: green;`);
+// layout.addWidget(label3, 1, 0, undefined, 2);
+
+// const label4 = new QLabel();
+// label4.setText('Label 4');
+// label4.setInlineStyle(`background-color: blue;`);
+// layout.addWidget(label4, 2, 1);
+
+// centralWidget.setLayout(layout);
+// win.setCentralWidget(centralWidget);
+// win.show();
+
+// globalThis.win = win;

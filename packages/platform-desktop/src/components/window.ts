@@ -27,7 +27,6 @@ class QDarkMainWindow extends QMainWindow implements Container {
   constructor() {
     super();
     this.show();
-    (global as any).window = this;
   }
 
   appendChild(child: QWidget) {
