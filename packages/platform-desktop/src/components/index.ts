@@ -26,3 +26,4 @@ export * from './menu-bar';
 export * from './menu';
 export * from './font-dialog';
 export * from './input-dialog';
+export * from './progress-dialog';

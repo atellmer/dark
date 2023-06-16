@@ -57,5 +57,6 @@ registerElement('q:menu-bar', () => require('../components/menu-bar').QDarkMenuB
 registerElement('q:menu', () => require('../components/menu').QDarkMenu);
 registerElement('q:font-dialog', () => require('../components/font-dialog').QDarkFontDialog);
 registerElement('q:input-dialog', () => require('../components/input-dialog').QDarkInputDialog);
+registerElement('q:progress-dialog', () => require('../components/progress-dialog').QDarkProgressDialog);
 
 export { getElementFactory, registerElement };

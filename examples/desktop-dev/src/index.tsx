@@ -49,6 +49,7 @@ import {
   Menu,
   FontDialog,
   InputDialog,
+  ProgressDialog,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -129,6 +130,7 @@ const App = component<AppProps>(({ title }) => {
           <FileDialog open={false} on={fileEvents} />
           <FontDialog open={false} />
           <InputDialog open={false} />
+          <ProgressDialog open={false} value={40} />
         </BoxView>
       </Window>
     </>
