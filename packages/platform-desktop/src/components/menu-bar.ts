@@ -1,8 +1,8 @@
 import { QWidget, QMenuBar, type QMenuBarSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithExtendedProps, Container } from '../shared';
 import { qMenuBar } from '../factory';
-import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
 import { QDarkMenu } from './menu';
 import { throwUnsupported } from '../utils';
 
@@ -22,6 +22,7 @@ class QDarkMenuBar extends QMenuBar implements Container {
       this.addMenu(child);
     } else {
       console.warn('MenuBar supports only Menu as its children');
+      throwUnsupported(this);
     }
   }
 

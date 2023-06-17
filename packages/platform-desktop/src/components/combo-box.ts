@@ -1,8 +1,8 @@
 import { QComboBox, type QIcon, type QVariant, type QComboBoxSignals, type QSize } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qComboBox } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type ComboBoxProps = WithStandardProps<
   {

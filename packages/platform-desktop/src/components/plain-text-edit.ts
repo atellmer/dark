@@ -14,8 +14,8 @@ import {
   useLayoutEffect,
 } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qPlainTextEdit } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type PlainTextEditProps = WithStandardProps<
   {

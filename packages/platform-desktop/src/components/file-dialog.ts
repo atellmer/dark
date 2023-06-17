@@ -1,8 +1,8 @@
 import { QFileDialog, type QFileDialogSignals, type FileMode, type AcceptMode } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qFileDialog } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type FileDialogProps = WithStandardProps<
   {

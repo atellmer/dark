@@ -30,13 +30,13 @@ function getElementFactory(name: string): QElementFactory {
 
 registerElement(ROOT, () => null);
 registerElement('q:text', () => require('../components/text').QDarkText);
-registerElement('q:push-button', () => require('../components/button').QDarkPushButton);
+registerElement('q:push-button', () => require('../components/push-button').QDarkPushButton);
 registerElement('q:main-window', () => require('../components/window').QDarkMainWindow);
 registerElement('q:image', () => require('../components/image').QDarkImage);
 registerElement('q:animated-image', () => require('../components/animated-image').QDarkAnimatedImage);
 registerElement('q:scroll-area', () => require('../components/scroll-area').QDarkScrollArea);
-registerElement('q:flex-layout', () => require('../components/view').QDarkFlexLayout);
-registerElement('q:box-layout', () => require('../components/box-view').QDarkBoxLayout);
+registerElement('q:flex-layout', () => require('../components/flex-layout').QDarkFlexLayout);
+registerElement('q:box-layout', () => require('../components/box-layout').QDarkBoxLayout);
 registerElement('q:line-edit', () => require('../components/line-edit').QDarkLineEdit);
 registerElement('q:dialog', () => require('../components/dialog').QDarkDialog);
 registerElement('q:list', () => require('../components/list').QDarkList);
@@ -58,5 +58,7 @@ registerElement('q:menu', () => require('../components/menu').QDarkMenu);
 registerElement('q:font-dialog', () => require('../components/font-dialog').QDarkFontDialog);
 registerElement('q:input-dialog', () => require('../components/input-dialog').QDarkInputDialog);
 registerElement('q:progress-dialog', () => require('../components/progress-dialog').QDarkProgressDialog);
+registerElement('q:grid-layout', () => require('../components/grid-layout').QDarkGridLayout);
+registerElement('q:grid-item', () => require('../components/grid-item').QDarkGridItem);
 
 export { getElementFactory, registerElement };

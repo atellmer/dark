@@ -1,8 +1,8 @@
 import { QLineEdit, EchoMode, type QLineEditSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qLineEdit } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type LineEditProps = WithStandardProps<
   {

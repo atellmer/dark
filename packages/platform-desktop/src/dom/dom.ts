@@ -23,16 +23,18 @@ import {
 
 import { type EventHandler, detectIsEvent } from '../events';
 import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
-import { type NGElement } from '../registry';
+import { type QElement } from '../shared';
 
 type PlainNativeElement = TextNativeElement | CommentNativeElement;
+type Callback = () => void;
 
 const attrBlackListMap = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
   [ATTR_FLAG]: true,
 };
-let moves: Array<() => void> = [];
+let moves: Array<Callback> = [];
+let callbacks: Array<Callback> = [];
 
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
@@ -59,7 +61,7 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
   return createNativeElementMap[vNode.type](vNode);
 }
 
-function applyRef(ref: Ref<NGElement>, element: TagNativeElement) {
+function applyRef(ref: Ref<QElement>, element: TagNativeElement) {
   applyRef$(ref, element.getNativeView());
 }
 
@@ -214,8 +216,14 @@ function commit(fiber: Fiber<NativeElement>) {
 }
 
 function finishCommit() {
+  callbacks.forEach(x => x());
   moves.forEach(x => x());
+  callbacks = [];
   moves = [];
+}
+
+function runAtTheEndOfCommit(cb: Callback) {
+  callbacks.push(cb);
 }
 
 const appendNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.appendChild(element);
@@ -230,4 +238,4 @@ const insertNativeElementByIndex = (element: NativeElement, idx: number, parent:
 
 const removeNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.removeChild(element);
 
-export { createNativeElement, commit, finishCommit, insertNativeElementByIndex };
+export { createNativeElement, commit, finishCommit, runAtTheEndOfCommit, insertNativeElementByIndex };

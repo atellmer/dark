@@ -1,7 +1,7 @@
 import { QWidget, QScrollArea, type QScrollAreaSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
+import type { WidgetProps, WithExtendedProps, Container } from '../shared';
 import { qScrollArea } from '../factory';
 import { throwUnsupported } from '../utils';
 
@@ -37,20 +37,20 @@ class QDarkScrollArea extends QScrollArea implements Container {
         widget.close();
       } else {
         console.warn(`ScrollArea can't have more than one child node`);
-        return;
+        throwUnsupported(this);
       }
     }
 
     this.setWidget(child);
   }
 
+  insertBefore() {
+    throwUnsupported(this);
+  }
+
   removeChild(child: QWidget) {
     child.close();
     this.setWidget(new QDarkPlaceholder());
-  }
-
-  insertBefore() {
-    throwUnsupported(this);
   }
 }
 

@@ -33,3 +33,5 @@ export const qMenu = factory('q:menu');
 export const qFontDialog = factory('q:font-dialog');
 export const qInputDialog = factory('q:input-dialog');
 export const qProgressDialog = factory('q:progress-dialog');
+export const qGridLayout = factory('q:grid-layout');
+export const qGridItem = factory('q:grid-item');

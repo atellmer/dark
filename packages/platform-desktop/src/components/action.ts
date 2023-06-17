@@ -1,8 +1,8 @@
 import { QAction, type QActionSignals, type QIcon, type QKeySequence, type ShortcutContext } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qAction } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type ActionProps = WithStandardProps<
   {

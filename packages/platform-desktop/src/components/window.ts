@@ -1,8 +1,8 @@
 import { QMainWindow, QWidget, WindowState, type QIcon, type QMainWindowSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithExtendedProps, Container } from '../shared';
 import { qMainWindow } from '../factory';
-import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
 import { QDarkMenuBar } from './menu-bar';
 import { throwUnsupported } from '../utils';
 

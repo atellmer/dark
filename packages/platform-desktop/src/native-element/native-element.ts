@@ -1,11 +1,11 @@
 import { type WidgetEventTypes, QWidget } from '@nodegui/nodegui';
 import { NodeType, ROOT, detectIsFunction } from '@dark-engine/core';
 
+import { type QElement, type Size, type Position, type WidgetProps, detectIsContainer } from '../shared';
 import { createSyntheticEventHandler } from '../events';
 import { getElementFactory } from '../registry';
 import { ATTR_TEXT } from '../constants';
 import { createSetterName } from '../utils';
-import { type QElement, type Size, type Position, type WidgetProps, detectIsContainer } from '../shared';
 
 class NativeElement {
   public type: NodeType;

@@ -1,8 +1,8 @@
 import { QWidget, QMenu, type QMenuSignals, type QIcon } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithExtendedProps, Container } from '../shared';
 import { qMenu } from '../factory';
-import { type WidgetProps, type WithExtendedProps, type Container } from '../shared';
 import { QDarkAction } from './action';
 import { throwUnsupported } from '../utils';
 
@@ -27,6 +27,7 @@ class QDarkMenu extends QMenu implements Container {
       this.addAction(child);
     } else {
       console.warn('Menu supports only Action as its children!');
+      throwUnsupported(this);
     }
   }
 

@@ -1,8 +1,8 @@
 import { QSpinBox, type QSpinBoxSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSpinBox } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type SpinBoxProps = WithStandardProps<
   {

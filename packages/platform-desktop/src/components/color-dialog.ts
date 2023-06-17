@@ -1,8 +1,8 @@
 import { QColorDialog, QColor, type QColorDialogSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qColorDialog } from '../factory';
-import { type WidgetProps, type WithStandardProps } from '../shared';
 
 export type ColorDialogProps = WithStandardProps<
   {

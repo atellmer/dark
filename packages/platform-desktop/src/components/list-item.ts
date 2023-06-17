@@ -1,7 +1,7 @@
 import { QListWidgetItem, QIcon, CheckState, ItemFlag } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import { type WidgetProps, type WithStandardProps } from '../shared';
+import type { WidgetProps, WithStandardProps } from '../shared';
 import { qListItem } from '../factory';
 
 export type ListItemProps = WithStandardProps<
