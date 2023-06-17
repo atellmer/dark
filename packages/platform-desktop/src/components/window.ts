@@ -33,6 +33,11 @@ class QDarkMainWindow extends QMainWindow implements Container {
     if (child instanceof QDarkMenuBar) {
       this.setMenuBar(child);
     } else {
+      if (this.takeCentralWidget()) {
+        console.warn(`Window already has a child node`);
+        throwUnsupported(this);
+      }
+
       this.setCentralWidget(child);
     }
   }
