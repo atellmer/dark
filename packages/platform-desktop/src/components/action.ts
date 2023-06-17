@@ -22,7 +22,7 @@ const Action = forwardRef<ActionProps, ActionRef>(
 ) as ComponentFactory<ActionProps, ActionRef>;
 
 class QDarkAction extends QAction {
-  setDisabled(value: boolean) {
+  public setDisabled(value: boolean) {
     this.setEnabled(!value);
   }
 }

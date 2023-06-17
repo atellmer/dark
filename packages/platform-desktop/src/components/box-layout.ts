@@ -17,33 +17,36 @@ const BoxLayout = forwardRef<BoxLayoutProps, BoxLayoutRef>(
 ) as ComponentFactory<BoxLayoutProps, BoxLayoutRef>;
 
 class QDarkBoxLayout extends QWidget implements Container {
-  isContainer = true;
-  boxLayout = new QBoxLayout(Direction.LeftToRight);
+  private boxLayout = new QBoxLayout(Direction.LeftToRight);
 
   constructor() {
     super();
     this.setLayout(this.boxLayout);
   }
 
-  getBoxLayout() {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public getBoxLayout() {
     return this.boxLayout;
   }
 
-  setDirection(direction: Direction) {
+  public setDirection(direction: Direction) {
     this.boxLayout.setDirection(direction);
   }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.boxLayout.addWidget(child);
   }
 
-  insertBefore(child: QWidget, _: QWidget, idx: number) {
+  public insertBefore(child: QWidget, _: QWidget, idx: number) {
     if (detectIsDialog(child)) return;
     this.boxLayout.insertWidget(idx, child);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.boxLayout.removeWidget(child);
     child.close();

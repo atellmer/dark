@@ -13,8 +13,7 @@ const FlexLayout = forwardRef<FlexLayoutProps, FlexLayoutRef>(
 ) as ComponentFactory<FlexLayoutProps, FlexLayoutRef>;
 
 class QDarkFlexLayout extends QWidget implements Container {
-  isContainer = true;
-  flexLayout = new QFlexLayout();
+  private flexLayout = new QFlexLayout();
 
   constructor() {
     super();
@@ -22,21 +21,25 @@ class QDarkFlexLayout extends QWidget implements Container {
     this.setLayout(this.flexLayout);
   }
 
-  getFlexLayout() {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public getFlexLayout() {
     return this.flexLayout;
   }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.flexLayout.addWidget(child);
   }
 
-  insertBefore(child: QWidget, sibling: QWidget) {
+  public insertBefore(child: QWidget, sibling: QWidget) {
     if (detectIsDialog(child)) return;
     this.flexLayout.insertChildBefore(child, sibling);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.flexLayout.removeWidget(child);
     child.close();

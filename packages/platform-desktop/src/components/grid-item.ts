@@ -19,7 +19,6 @@ const GridItem = forwardRef<GridItemProps, GridItemRef>(
 ) as ComponentFactory<GridItemProps, GridItemRef>;
 
 class QDarkGridItem extends QWidget implements Container {
-  public isContainer = true;
   private child: QWidget = null;
   private row: number = undefined;
   private col: number = undefined;
@@ -27,51 +26,55 @@ class QDarkGridItem extends QWidget implements Container {
   private colSpan: number = undefined;
   private alignment: AlignmentFlag = undefined;
 
-  getChild() {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public getChild() {
     return this.child;
   }
 
-  setRow(value: number) {
+  public setRow(value: number) {
     this.row = value;
   }
 
-  getRow(): number | undefined {
+  public getRow(): number | undefined {
     return this.row;
   }
 
-  setCol(value: number) {
+  public setCol(value: number) {
     this.col = value;
   }
 
-  getCol(): number | undefined {
+  public getCol(): number | undefined {
     return this.col;
   }
 
-  setRowSpan(value: number) {
+  public setRowSpan(value: number) {
     this.rowSpan = value;
   }
 
-  getRowSpan(): number | undefined {
+  public getRowSpan(): number | undefined {
     return this.rowSpan;
   }
 
-  setColSpan(value: number) {
+  public setColSpan(value: number) {
     this.colSpan = value;
   }
 
-  getColSpan(): number | undefined {
+  public getColSpan(): number | undefined {
     return this.colSpan;
   }
 
-  setAlignment(value: AlignmentFlag) {
+  public setAlignment(value: AlignmentFlag) {
     this.alignment = value;
   }
 
-  getAlignment(): AlignmentFlag | undefined {
+  public getAlignment(): AlignmentFlag | undefined {
     return this.alignment;
   }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     if (this.child) {
       console.warn(`GridItem can't have more than one child node`);
       throwUnsupported(this);
@@ -79,11 +82,11 @@ class QDarkGridItem extends QWidget implements Container {
     this.child = child;
   }
 
-  insertBefore() {
+  public insertBefore() {
     throwUnsupported(this);
   }
 
-  removeChild() {
+  public removeChild() {
     this.child = null;
   }
 }

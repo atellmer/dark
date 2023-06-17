@@ -15,9 +15,11 @@ const MenuBar = forwardRef<MenuBarProps, MenuBarRef>(
 ) as ComponentFactory<MenuBarProps, MenuBarRef>;
 
 class QDarkMenuBar extends QMenuBar implements Container {
-  isContainer = true;
+  public detectIsContainer() {
+    return true;
+  }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     if (child instanceof QDarkMenu) {
       this.addMenu(child);
     } else {
@@ -26,11 +28,11 @@ class QDarkMenuBar extends QMenuBar implements Container {
     }
   }
 
-  insertBefore() {
+  public insertBefore() {
     throwUnsupported(this);
   }
 
-  removeChild() {
+  public removeChild() {
     throwUnsupported(this);
   }
 }

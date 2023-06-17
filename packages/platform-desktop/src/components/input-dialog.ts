@@ -38,7 +38,7 @@ const InputDialog = forwardRef<InputDialogProps, InputDialogRef>(
 ) as ComponentFactory<InputDialogProps, InputDialogRef>;
 
 class QDarkInputDialog extends QInputDialog {
-  setOpen(value: boolean) {
+  public setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 }

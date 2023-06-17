@@ -18,18 +18,20 @@ const ScrollArea = forwardRef<ScrollAreaProps, ScrollAreaRef>(
 ) as ComponentFactory<ScrollAreaProps, ScrollAreaRef>;
 
 class QDarkScrollArea extends QScrollArea implements Container {
-  isContainer = true;
-
   constructor() {
     super();
     this.setResizable(true);
   }
 
-  setResizable(value: boolean) {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public setResizable(value: boolean) {
     this.setWidgetResizable(value);
   }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     const widget = this.widget();
 
     if (widget) {
@@ -44,11 +46,11 @@ class QDarkScrollArea extends QScrollArea implements Container {
     this.setWidget(child);
   }
 
-  insertBefore() {
+  public insertBefore() {
     throwUnsupported(this);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     child.close();
     this.setWidget(new QDarkPlaceholder());
   }

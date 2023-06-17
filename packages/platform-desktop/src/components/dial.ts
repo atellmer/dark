@@ -28,7 +28,7 @@ class QDarkDial extends QDial {
     this.setNotchesVisible(true);
   }
 
-  setNotchesHidden(value: boolean) {
+  public setNotchesHidden(value: boolean) {
     this.setNotchesVisible(!value);
   }
 }

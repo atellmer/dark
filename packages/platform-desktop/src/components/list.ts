@@ -14,15 +14,17 @@ const List = forwardRef<ListProps, ListRef>(
 ) as ComponentFactory<ListProps, ListRef>;
 
 class QDarkList extends QListWidget implements Container {
-  isContainer = true;
+  public detectIsContainer() {
+    return true;
+  }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     const item = child as unknown as QDarkListItem;
 
     this.addItem(item);
   }
 
-  insertBefore(child: QWidget, sibling: QWidget) {
+  public insertBefore(child: QWidget, sibling: QWidget) {
     const childItem = child as unknown as QDarkListItem;
     const siblingItem = sibling as unknown as QDarkListItem;
     const row = this.row(siblingItem);
@@ -30,7 +32,7 @@ class QDarkList extends QListWidget implements Container {
     this.insertItem(row, childItem);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     const item = child as unknown as QDarkListItem;
     const row = this.row(item);
 

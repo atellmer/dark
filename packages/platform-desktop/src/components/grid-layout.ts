@@ -25,43 +25,46 @@ const GridLayout = forwardRef<GridLayoutProps, GridLayoutRef>(
 ) as ComponentFactory<GridLayoutProps, GridLayoutRef>;
 
 class QDarkGridLayout extends QWidget implements Container {
-  isContainer = true;
-  gridLayout = new QGridLayout();
+  private gridLayout = new QGridLayout();
 
   constructor() {
     super();
     this.setLayout(this.gridLayout);
   }
 
-  getGridLayout() {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public getGridLayout() {
     return this.gridLayout;
   }
 
-  setHorizontalSpacing(value: number) {
+  public setHorizontalSpacing(value: number) {
     this.gridLayout.setHorizontalSpacing(value);
   }
 
-  setVerticalSpacing(value: number) {
+  public setVerticalSpacing(value: number) {
     this.gridLayout.setVerticalSpacing(value);
   }
 
-  setColumnStretch(value: Array<ValueVariant>) {
+  public setColumnStretch(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setColumnStretch(...args));
   }
 
-  setRowStretch(value: Array<ValueVariant>) {
+  public setRowStretch(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setRowStretch(...args));
   }
 
-  setRowMinimumHeight(value: Array<ValueVariant>) {
+  public setRowMinimumHeight(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setRowMinimumHeight(...args));
   }
 
-  setColumnMinimumWidth(value: Array<ValueVariant>) {
+  public setColumnMinimumWidth(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setColumnMinimumWidth(...args));
   }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     if (!detectIsGridItem(child)) return;
     runAtTheEndOfCommit(() => {
       this.gridLayout.addWidget(
@@ -75,11 +78,11 @@ class QDarkGridLayout extends QWidget implements Container {
     });
   }
 
-  insertBefore() {
+  public insertBefore() {
     throwUnsupported(this);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     if (!detectIsGridItem(child)) return;
     this.gridLayout.removeWidget(child);
     child.close();

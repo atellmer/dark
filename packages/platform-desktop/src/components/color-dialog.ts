@@ -18,7 +18,7 @@ const ColorDialog = forwardRef<ColorDialogProps, ColorDialogRef>(
 ) as ComponentFactory<ColorDialogProps, ColorDialogRef>;
 
 class QDarkColorDialog extends QColorDialog {
-  setOpen(value: boolean) {
+  public setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 }

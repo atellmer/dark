@@ -22,7 +22,7 @@ const FileDialog = forwardRef<FileDialogProps, FileDialogRef>(
 ) as ComponentFactory<FileDialogProps, FileDialogRef>;
 
 class QDarkFileDialog extends QFileDialog {
-  setOpen(value: boolean) {
+  public setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 }

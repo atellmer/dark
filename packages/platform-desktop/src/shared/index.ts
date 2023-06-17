@@ -38,14 +38,14 @@ export type WidgetProps = {
 export type QElement = QWidget | QLayout;
 
 export interface Container {
-  isContainer: boolean;
+  detectIsContainer: () => boolean;
   appendChild(child: QElement): void;
   insertBefore(child: QElement, sibling: QElement, idx: number): void;
   removeChild(child: QElement): void;
 }
 
 function detectIsContainer(element: unknown): element is Container {
-  return element && detectIsObject(element) && (element as Container).isContainer === true;
+  return element && detectIsObject(element) && (element as Container).detectIsContainer();
 }
 
 export { detectIsContainer };

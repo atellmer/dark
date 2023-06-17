@@ -22,31 +22,28 @@ const Window = forwardRef<WindowProps, WindowRef>(
 ) as ComponentFactory<WindowProps, WindowRef>;
 
 class QDarkMainWindow extends QMainWindow implements Container {
-  isContainer = true;
-
   constructor() {
     super();
     this.show();
   }
 
-  appendChild(child: QWidget) {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public appendChild(child: QWidget) {
     if (child instanceof QDarkMenuBar) {
       this.setMenuBar(child);
     } else {
-      if (this.takeCentralWidget()) {
-        console.warn(`Window already has a child node`);
-        throwUnsupported(this);
-      }
-
       this.setCentralWidget(child);
     }
   }
 
-  insertBefore() {
+  public insertBefore() {
     throwUnsupported(this);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     child.close();
   }
 }

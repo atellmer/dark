@@ -33,11 +33,11 @@ class QDarkCalendar extends QCalendarWidget {
     this.setNavigationBarVisible(true);
   }
 
-  setGridHidden(value: boolean) {
+  public setGridHidden(value: boolean) {
     this.setGridVisible(!value);
   }
 
-  setNavigationBarHidden(value: boolean) {
+  public setNavigationBarHidden(value: boolean) {
     this.setNavigationBarVisible(!value);
   }
 }

@@ -58,11 +58,11 @@ const PlainTextEdit = forwardRef<PlainTextEditProps, PlainTextEditRef>(
 ) as ComponentFactory<PlainTextEditProps, PlainTextEditRef>;
 
 class QDarkPlainTextEdit extends QPlainTextEdit {
-  setText(value: string) {
+  public setText(value: string) {
     this.setPlainText(value);
   }
 
-  setPlaceholder(value: string) {
+  public setPlaceholder(value: string) {
     this.setPlaceholderText(value);
   }
 }

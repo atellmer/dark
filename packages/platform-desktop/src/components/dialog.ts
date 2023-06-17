@@ -20,8 +20,7 @@ const Dialog = forwardRef<DialogProps, DialogRef>(
 ) as ComponentFactory<DialogProps, DialogRef>;
 
 class QDarkDialog extends QDialog implements Container {
-  isContainer = true;
-  flexLayout = new FlexLayout();
+  private flexLayout = new FlexLayout();
 
   constructor() {
     super();
@@ -29,23 +28,27 @@ class QDarkDialog extends QDialog implements Container {
     this.setLayout(this.flexLayout);
   }
 
-  setOpen(value: boolean) {
+  public detectIsContainer() {
+    return true;
+  }
+
+  public setOpen(value: boolean) {
     value ? this.open() : this.close();
   }
 
-  getFlexLayout() {
+  public getFlexLayout() {
     return this.flexLayout;
   }
 
-  appendChild(child: QWidget) {
+  public appendChild(child: QWidget) {
     this.flexLayout.addWidget(child);
   }
 
-  insertBefore(child: QWidget, sibling: QWidget) {
+  public insertBefore(child: QWidget, sibling: QWidget) {
     this.flexLayout.insertChildBefore(child, sibling);
   }
 
-  removeChild(child: QWidget) {
+  public removeChild(child: QWidget) {
     this.flexLayout.removeWidget(child);
     child.close();
   }
