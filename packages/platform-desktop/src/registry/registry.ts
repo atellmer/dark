@@ -60,5 +60,7 @@ registerElement('q:input-dialog', () => require('../components/input-dialog').QD
 registerElement('q:progress-dialog', () => require('../components/progress-dialog').QDarkProgressDialog);
 registerElement('q:grid-layout', () => require('../components/grid-layout').QDarkGridLayout);
 registerElement('q:grid-item', () => require('../components/grid-item').QDarkGridItem);
+registerElement('q:tab', () => require('../components/tab').QDarkTab);
+registerElement('q:tab-item', () => require('../components/tab-item').QDarkTabItem);
 
 export { getElementFactory, registerElement };

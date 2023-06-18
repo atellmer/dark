@@ -35,3 +35,5 @@ export const qInputDialog = factory('q:input-dialog');
 export const qProgressDialog = factory('q:progress-dialog');
 export const qGridLayout = factory('q:grid-layout');
 export const qGridItem = factory('q:grid-item');
+export const qTab = factory('q:tab');
+export const qTabItem = factory('q:tab-item');

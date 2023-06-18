@@ -1,6 +1,5 @@
 import { CursorShape, type QWidget, type QLayout } from '@nodegui/nodegui';
 import type { DarkElement, KeyProps, SlotProps, RefProps, FlagProps } from '@dark-engine/core';
-import { detectIsObject } from '@dark-engine/core';
 
 import { type EventHandler } from '../events';
 
@@ -43,9 +42,3 @@ export interface Container {
   insertBefore(child: QElement, sibling: QElement, idx: number): void;
   removeChild(child: QElement): void;
 }
-
-function detectIsContainer(element: unknown): element is Container {
-  return element && detectIsObject(element) && (element as Container).detectIsContainer();
-}
-
-export { detectIsContainer };

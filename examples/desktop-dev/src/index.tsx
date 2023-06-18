@@ -13,6 +13,7 @@ import {
   AspectRatioMode,
   FocusReason,
   AlignmentFlag,
+  TabPosition,
 } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
@@ -53,6 +54,8 @@ import {
   FontDialog,
   InputDialog,
   ProgressDialog,
+  Tab,
+  TabItem,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -139,7 +142,7 @@ const App = component<AppProps>(({ title }) => {
           <FontDialog open={false} />
           <InputDialog open={false} />
           <ProgressDialog open={false} value={40} /> */}
-          <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
+          {/* <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
             <GridItem row={0} col={0}>
               <Text style={`background-color: red;`}>Label 1</Text>
             </GridItem>
@@ -152,7 +155,18 @@ const App = component<AppProps>(({ title }) => {
             <GridItem row={1} col={1}>
               <Text style={`background-color: blue;`}>Label 4</Text>
             </GridItem>
-          </GridLayout>
+          </GridLayout> */}
+          <Tab currentIndex={0} tabPosition={TabPosition.West} tabsClosable>
+            <TabItem text='Tab 1'>
+              <Text style={`background-color: red;`}>Content 1</Text>
+            </TabItem>
+            <TabItem text='Tab 2'>
+              <Text style={`background-color: yellow;`}>Content 2</Text>
+            </TabItem>
+            <TabItem text='Tab 3'>
+              <Text style={`background-color: green;`}>Content 3</Text>
+            </TabItem>
+          </Tab>
         </BoxLayout>
       </Window>
     </>

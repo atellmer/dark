@@ -29,3 +29,5 @@ export * from './input-dialog';
 export * from './progress-dialog';
 export * from './grid-layout';
 export * from './grid-item';
+export * from './tab';
+export * from './tab-item';

@@ -1,3 +1,6 @@
+import { detectIsObject, detectIsFunction } from '@dark-engine/core';
+import { type Container } from '../shared';
+
 function capitalizeFirstLetter(value: string) {
   return value.charAt(0).toUpperCase() + value.substring(1);
 }
@@ -20,4 +23,13 @@ function throwUnsupported(value: object) {
   throw new Error(`Unsupported action in ${value.constructor.name}`);
 }
 
-export { capitalizeFirstLetter, createSetterName, detectisValidURL, throwUnsupported };
+function detectIsContainer(element: unknown): element is Container {
+  return (
+    element &&
+    detectIsObject(element) &&
+    detectIsFunction((element as Container).detectIsContainer) &&
+    (element as Container).detectIsContainer()
+  );
+}
+
+export { capitalizeFirstLetter, createSetterName, detectisValidURL, throwUnsupported, detectIsContainer };
