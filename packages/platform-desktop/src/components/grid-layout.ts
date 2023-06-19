@@ -18,6 +18,7 @@ export type GridLayoutProps = WithExtendedProps<
   } & WidgetProps
 >;
 export type GridLayoutRef = QDarkGridLayout;
+
 type ValueVariant = number | undefined;
 
 const GridLayout = forwardRef<GridLayoutProps, GridLayoutRef>(

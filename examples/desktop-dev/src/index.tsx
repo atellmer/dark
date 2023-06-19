@@ -14,6 +14,9 @@ import {
   FocusReason,
   AlignmentFlag,
   TabPosition,
+  ItemFlag,
+  QBrush,
+  QColor,
 } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
@@ -56,6 +59,8 @@ import {
   ProgressDialog,
   Tab,
   TabItem,
+  Table,
+  TableItem,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -156,7 +161,7 @@ const App = component<AppProps>(({ title }) => {
               <Text style={`background-color: blue;`}>Label 4</Text>
             </GridItem>
           </GridLayout> */}
-          <Tab currentIndex={0} tabPosition={TabPosition.West} tabsClosable>
+          {/* <Tab currentIndex={0} tabPosition={TabPosition.West} tabsClosable>
             <TabItem text='Tab 1'>
               <Text style={`background-color: red;`}>Content 1</Text>
             </TabItem>
@@ -166,7 +171,13 @@ const App = component<AppProps>(({ title }) => {
             <TabItem text='Tab 3'>
               <Text style={`background-color: green;`}>Content 3</Text>
             </TabItem>
-          </Tab>
+          </Tab> */}
+          <Table columnCount={2} rowCount={2}>
+            <TableItem row={0} col={0} text='0, 0' />
+            <TableItem row={0} col={1} text='0, 1' />
+            <TableItem row={1} col={0} text='1, 0' />
+            <TableItem row={1} col={1} text='1, 1' />
+          </Table>
         </BoxLayout>
       </Window>
     </>

@@ -31,3 +31,5 @@ export * from './grid-layout';
 export * from './grid-item';
 export * from './tab';
 export * from './tab-item';
+export * from './table';
+export * from './table-item';

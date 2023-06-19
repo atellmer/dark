@@ -37,3 +37,5 @@ export const qGridLayout = factory('q:grid-layout');
 export const qGridItem = factory('q:grid-item');
 export const qTab = factory('q:tab');
 export const qTabItem = factory('q:tab-item');
+export const qTable = factory('q:table');
+export const qTableItem = factory('q:table-item');

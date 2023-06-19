@@ -62,5 +62,7 @@ registerElement('q:grid-layout', () => require('../components/grid-layout').QDar
 registerElement('q:grid-item', () => require('../components/grid-item').QDarkGridItem);
 registerElement('q:tab', () => require('../components/tab').QDarkTab);
 registerElement('q:tab-item', () => require('../components/tab-item').QDarkTabItem);
+registerElement('q:table', () => require('../components/table').QDarkTable);
+registerElement('q:table-item', () => require('../components/table-item').QDarkTableItem);
 
 export { getElementFactory, registerElement };

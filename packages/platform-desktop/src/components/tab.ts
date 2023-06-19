@@ -14,7 +14,7 @@ export type TabProps = WithExtendedProps<
   } & WidgetProps
 >;
 export type TabRef = QDarkTab;
-export type TabWidgetSignals = QTabWidgetSignals;
+export type TabSignals = QTabWidgetSignals;
 
 const Tab = forwardRef<TabProps, TabRef>(
   component((props, ref) => qTab({ ref, ...props }), { displayName: 'Tab' }),
