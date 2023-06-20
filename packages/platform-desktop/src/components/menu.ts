@@ -44,4 +44,8 @@ class QDarkMenu extends QMenu implements Container {
   }
 }
 
-export { Menu, QDarkMenu };
+function detectIsMenu(value: unknown): value is QDarkMenu {
+  return value instanceof QDarkMenu;
+}
+
+export { Menu, QDarkMenu, detectIsMenu };

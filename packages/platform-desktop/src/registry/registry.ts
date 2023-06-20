@@ -64,5 +64,6 @@ registerElement('q:tab', () => require('../components/tab').QDarkTab);
 registerElement('q:tab-item', () => require('../components/tab-item').QDarkTabItem);
 registerElement('q:table', () => require('../components/table').QDarkTable);
 registerElement('q:table-item', () => require('../components/table-item').QDarkTableItem);
+registerElement('q:system-tray-icon', () => require('../components/system-tray-icon').QDarkSystemTrayIcon);
 
 export { getElementFactory, registerElement };

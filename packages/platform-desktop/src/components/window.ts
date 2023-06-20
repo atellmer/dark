@@ -3,7 +3,8 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 
 import type { WidgetProps, WithExtendedProps, Container } from '../shared';
 import { qMainWindow } from '../factory';
-import { QDarkMenuBar } from './menu-bar';
+import { detectIsMenuBar } from './menu-bar';
+import { detectIsSystemTrayIcon } from './system-tray-icon';
 import { throwUnsupported } from '../utils';
 
 export type WindowProps = WithExtendedProps<
@@ -32,7 +33,8 @@ class QDarkMainWindow extends QMainWindow implements Container {
   }
 
   public appendChild(child: QWidget) {
-    if (child instanceof QDarkMenuBar) {
+    if (detectIsSystemTrayIcon(child)) return;
+    if (detectIsMenuBar(child)) {
       this.setMenuBar(child);
     } else {
       this.setCentralWidget(child);

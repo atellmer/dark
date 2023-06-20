@@ -61,6 +61,7 @@ import {
   TabItem,
   Table,
   TableItem,
+  SystemTrayIcon,
   useEventHandler,
 } from '@dark-engine/platform-desktop';
 
@@ -115,6 +116,13 @@ const App = component<AppProps>(({ title }) => {
             <Action text='Paste' />
           </Menu>
         </MenuBar> */}
+        {/* <SystemTrayIcon icon={winIcon} visible>
+          <Menu title='File'>
+            <Action text='Open' />
+            <Action text='Create' />
+            <Action text='Save' />
+          </Menu>
+        </SystemTrayIcon> */}
         <BoxLayout direction={Direction.TopToBottom} style={containerStyle}>
           {/* <ColorDialog open={false} />
           <LineEdit on={lineEditHandler} />

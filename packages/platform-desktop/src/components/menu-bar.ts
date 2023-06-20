@@ -37,4 +37,8 @@ class QDarkMenuBar extends QMenuBar implements Container {
   }
 }
 
-export { MenuBar, QDarkMenuBar };
+function detectIsMenuBar(value: unknown): value is QDarkMenuBar {
+  return value instanceof QDarkMenuBar;
+}
+
+export { MenuBar, QDarkMenuBar, detectIsMenuBar };

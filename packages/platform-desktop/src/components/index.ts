@@ -33,3 +33,4 @@ export * from './tab';
 export * from './tab-item';
 export * from './table';
 export * from './table-item';
+export * from './system-tray-icon';
