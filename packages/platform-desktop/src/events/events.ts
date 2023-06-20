@@ -20,7 +20,7 @@ const detectIsEvent = (attrName: string) => attrName === 'on';
 
 export type EventHandler<T = any> = (e: SyntheticEvent<T>) => void;
 
-function useEventHandler<T>(
+function useEventSystem<T>(
   handlers: Partial<
     Record<T extends QWidgetSignals ? keyof T : T extends WidgetEventTypes ? WidgetEventTypes : never, EventHandler>
   >,
@@ -29,4 +29,4 @@ function useEventHandler<T>(
   return useMemo(() => handlers, deps);
 }
 
-export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, useEventHandler };
+export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, useEventSystem };

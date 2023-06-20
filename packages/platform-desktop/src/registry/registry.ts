@@ -66,5 +66,10 @@ registerElement('q:table', () => require('../components/table').QDarkTable);
 registerElement('q:table-item', () => require('../components/table-item').QDarkTableItem);
 registerElement('q:system-tray-icon', () => require('../components/system-tray-icon').QDarkSystemTrayIcon);
 registerElement('q:radio-button', () => require('../components/radio-button').QDarkRadioButton);
+registerElement('q:text-browser', () => require('../components/text-browser').QDarkTextBrowser);
+registerElement('q:date-edit', () => require('../components/date-edit').QDarkDateEdit);
+registerElement('q:time-edit', () => require('../components/time-edit').QDarkTimeEdit);
+registerElement('q:date-time-edit', () => require('../components/date-time-edit').QDarkDateTimeEdit);
+registerElement('q:double-spin-box', () => require('../components/double-spin-box').QDarkDoubleSpinBox);
 
 export { getElementFactory, registerElement };

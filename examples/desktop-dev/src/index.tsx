@@ -17,6 +17,9 @@ import {
   ItemFlag,
   QBrush,
   QColor,
+  QUrl,
+  QDate,
+  QTime,
 } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef, useEffect } from '@dark-engine/core';
 import {
@@ -27,6 +30,7 @@ import {
   type FileDialogSignals,
   render,
   Window,
+  WindowRef,
   FlexLayout,
   BoxLayout,
   GridLayout,
@@ -62,8 +66,14 @@ import {
   Table,
   TableItem,
   SystemTrayIcon,
-  useEventHandler,
-  RadioButton
+  DateEdit,
+  TimeEdit,
+  DateTimeEdit,
+  DoubleSpinBox,
+  RadioButton,
+  useEventSystem,
+  useStyle,
+  useShortcut,
 } from '@dark-engine/platform-desktop';
 
 import nodeguiIcon from '../assets/nodegui.jpg';
@@ -80,20 +90,20 @@ const App = component<AppProps>(({ title }) => {
   const [count, setCount] = useState(0);
   const [text, setText] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const win = useRef<QWidget>();
-  const buttonHandler = useEventHandler<PushButtonSignals>(
+  const windowRef = useRef<WindowRef>();
+  const buttonEvents = useEventSystem<PushButtonSignals>(
     {
       clicked: () => setCount(x => x + 1),
     },
     [],
   );
-  const lineEditHandler = useEventHandler<PlainTextEditSignals>(
+  const lineEditEvents = useEventSystem<PlainTextEditSignals>(
     {
       textChanged: e => setText(e.value),
     },
     [],
   );
-  const fileEvents = useEventHandler<FileDialogSignals>(
+  const fileEvents = useEventSystem<FileDialogSignals>(
     {
       fileSelected: file => {
         console.log('file', file);
@@ -101,10 +111,47 @@ const App = component<AppProps>(({ title }) => {
     },
     [],
   );
+  const style = useStyle(styled => ({
+    root: styled`
+      #welcome-text-1 {
+        font-size: 24px;
+        background: 'red';
+        padding: 8px;
+      }
+      #welcome-text-2 {
+        font-size: 24px;
+        background: 'yellow';
+        padding: 8px;
+      }
+      #button {
+        background: 'green';
+        height: 80px;
+        color: '#fff';
+      }
+      #image {
+        width: 200px;
+        height: 200px;
+        background: 'pink';
+      }
+      #scroll-area {
+        flex: 1;
+      }
+    `,
+    container: styled`
+      background: 'pink';
+      justify-content: 'center';
+    `,
+  }));
+
+  useShortcut({
+    ref: windowRef,
+    keySequence: 'Ctrl+Shift+Q',
+    callback: () => console.log('Ctrl+Shift+Q pressed!'),
+  });
 
   return (
     <>
-      <Window ref={win} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={styleSheet}>
+      <Window ref={windowRef} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={style.root}>
         {/* <MenuBar>
           <Menu title='File'>
             <Action text='Open' />
@@ -124,11 +171,11 @@ const App = component<AppProps>(({ title }) => {
             <Action text='Save' />
           </Menu>
         </SystemTrayIcon> */}
-        <BoxLayout direction={Direction.TopToBottom} style={containerStyle}>
+        <BoxLayout direction={Direction.TopToBottom} style={style.container}>
           {/* <ColorDialog open={false} />
-          <LineEdit on={lineEditHandler} />
+          <LineEdit on={lineEditEvents} />
           <PlainTextEdit />
-          <FlexLayout style={imageLayoutStyle}>
+          <FlexLayout>
             <Image
               id='image'
               src='https://nationaltoday.com/wp-content/uploads/2020/08/international-cat-day-1200x834.jpg'
@@ -144,7 +191,7 @@ const App = component<AppProps>(({ title }) => {
             id='button'
             text={`Click Me ${count}`}
             cursor={CursorShape.PointingHandCursor}
-            on={buttonHandler}
+            on={buttonEvents}
           />
           <ProgressBar value={45} textHidden />
           <Slider value={45} orientation={Orientation.Horizontal} tickPosition={TickPosition.TicksBothSides} />
@@ -187,53 +234,36 @@ const App = component<AppProps>(({ title }) => {
             <TableItem row={1} col={0} text='1, 0' />
             <TableItem row={1} col={1} text='1, 1' />
           </Table> */}
-          <RadioButton text='Option 1' />
+          {/* <RadioButton text='Option 1' />
           <RadioButton text='Option 2' />
           <RadioButton text='Option 3' />
-          <RadioButton text='Option 4' />
+          <RadioButton text='Option 4' /> */}
+          {/* <DateEdit date={new QDate(2024, 1, 1)} displayFormat='dd.MM.yyyy' /> */}
+          {/* <TimeEdit time={new QTime(12, 30, 12)} displayFormat='hh:mm:ss' /> */}
+          {/* <DateTimeEdit date={new QDate(2024, 1, 1)} time={new QTime(12, 30, 12)} /> */}
+          <PushButton
+            id='button'
+            text={`Click Me ${count}`}
+            cursor={CursorShape.PointingHandCursor}
+            on={buttonEvents}
+          />
+          <DoubleSpinBox value={12.34} prefix='PREFIX ' suffix=' SUFFIX' singleStep={0.01} />
         </BoxLayout>
       </Window>
     </>
   );
 });
 
-const containerStyle = `
-  background: 'white';
-  justify-content: 'center';
-`;
-
-const imageLayoutStyle = `
-  flex-direction: 'row';
-  justify-content: 'center';
-  background: 'blueviolet';
-`;
-
-const styleSheet = `
-  #welcome-text-1 {
-    font-size: 24px;
-    qproperty-alignment: 'AlignCenter';
-    background: 'red';
-    padding: 8px;
-  }
-  #welcome-text-2 {
-    font-size: 24px;
-    qproperty-alignment: 'AlignCenter';
-    background: 'yellow';
-    padding: 8px;
-  }
-  #button {
-    background: 'green';
-    height: 80px;
-    color: '#fff';
-  }
-  #image {
-    width: 200px;
-    height: 200px;
-    background: 'pink';
-  }
-  #scroll-area {
-    flex: 1;
-  }
-`;
-
 render(<App title='Dark desktop app' />);
+
+// const { QMainWindow, QShortcut, QKeySequence } = require("@nodegui/nodegui");
+
+// const win = new QMainWindow();
+// const shortcut = new QShortcut(win);
+// shortcut.setKey(new QKeySequence("Ctrl+Q"));
+
+// shortcut.addEventListener("activated", () => {
+//   console.log("Shortcut activated!");
+// });
+
+// win.show();

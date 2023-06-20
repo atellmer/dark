@@ -7,6 +7,11 @@ import { qSpinBox } from '../factory';
 export type SpinBoxProps = WithStandardProps<
   {
     value: number;
+    maximum?: number;
+    minimum?: number;
+    prefix?: string;
+    suffix?: string;
+    singleStep?: number;
   } & WidgetProps
 >;
 export type SpinBoxRef = QDarkSpinBox;
