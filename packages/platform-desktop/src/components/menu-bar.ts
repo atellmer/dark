@@ -1,12 +1,12 @@
 import { QWidget, QMenuBar, type QMenuBarSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMenuBar } from '../factory';
 import { QDarkMenu } from './menu';
 import { throwUnsupported } from '../utils';
 
-export type MenuBarProps = WithExtendedProps<{} & WidgetProps>;
+export type MenuBarProps = WithSlotProps<{} & WidgetProps>;
 export type MenuBarRef = QDarkMenuBar;
 export type MenuBarSignals = QMenuBarSignals;
 

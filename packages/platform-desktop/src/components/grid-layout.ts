@@ -1,13 +1,13 @@
 import { QWidget, QGridLayout } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef, detectIsArray, detectIsNumber } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qGridLayout } from '../factory';
 import { detectIsGridItem } from './grid-item';
 import { throwUnsupported } from '../utils';
 import { runAtTheEndOfCommit } from '../dom';
 
-export type GridLayoutProps = WithExtendedProps<
+export type GridLayoutProps = WithSlotProps<
   {
     horizontalSpacing?: number;
     verticalSpacing?: number;

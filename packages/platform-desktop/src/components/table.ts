@@ -1,13 +1,13 @@
 import { QWidget, QTableWidget, type QTableWidgetSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qTable } from '../factory';
 import { detectIsTableItem } from './table-item';
 import { runAtTheEndOfCommit } from '../dom';
 import { throwUnsupported } from '../utils';
 
-export type TableProps = WithExtendedProps<
+export type TableProps = WithSlotProps<
   {
     columnCount: number;
     rowCount: number;

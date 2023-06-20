@@ -1,11 +1,11 @@
 import { QWidget, QListWidget, type QListWidgetSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { QDarkListItem } from './list-item';
 import { qList } from '../factory';
 
-export type ListProps = WithExtendedProps<{} & WidgetProps>;
+export type ListProps = WithSlotProps<{} & WidgetProps>;
 export type ListRef = QDarkList;
 export type ListSignals = QListWidgetSignals;
 

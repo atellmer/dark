@@ -1,10 +1,10 @@
 import { QLabel } from '@nodegui/nodegui';
 import { type TextVirtualNode, type ComponentFactory, component, forwardRef, detectIsArray } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps } from '../shared';
+import type { WidgetProps, WithSlotProps } from '../shared';
 import { qText } from '../factory';
 
-export type TextProps = WithExtendedProps<{} & WidgetProps, string | number | Array<string | number>>;
+export type TextProps = WithSlotProps<{} & WidgetProps, string | number | Array<string | number>>;
 export type TextRef = QDarkText;
 
 const Text = forwardRef<TextProps, TextRef>(

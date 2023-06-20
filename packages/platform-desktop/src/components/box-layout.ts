@@ -1,11 +1,11 @@
 import { QWidget, QBoxLayout, Direction } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qBoxLayout } from '../factory';
 import { detectIsDialog } from './dialog';
 
-export type BoxLayoutProps = WithExtendedProps<
+export type BoxLayoutProps = WithSlotProps<
   {
     direction?: Direction;
   } & WidgetProps

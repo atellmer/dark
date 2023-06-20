@@ -71,5 +71,6 @@ registerElement('q:date-edit', () => require('../components/date-edit').QDarkDat
 registerElement('q:time-edit', () => require('../components/time-edit').QDarkTimeEdit);
 registerElement('q:date-time-edit', () => require('../components/date-time-edit').QDarkDateTimeEdit);
 registerElement('q:double-spin-box', () => require('../components/double-spin-box').QDarkDoubleSpinBox);
+registerElement('q:svg', () => require('../components/svg').QDarkSvg);
 
 export { getElementFactory, registerElement };

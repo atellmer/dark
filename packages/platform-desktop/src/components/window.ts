@@ -1,13 +1,13 @@
 import { QMainWindow, QWidget, WindowState, type QIcon, type QMainWindowSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMainWindow } from '../factory';
 import { detectIsMenuBar } from './menu-bar';
 import { detectIsSystemTrayIcon } from './system-tray-icon';
 import { throwUnsupported } from '../utils';
 
-export type WindowProps = WithExtendedProps<
+export type WindowProps = WithSlotProps<
   {
     windowTitle: string;
     windowOpacity?: number;

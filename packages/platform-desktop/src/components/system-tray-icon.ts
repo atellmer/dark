@@ -1,12 +1,12 @@
 import { QWidget, QSystemTrayIcon, type QSystemTrayIconSignals, type QIcon } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qSystemTrayIcon } from '../factory';
 import { throwUnsupported } from '../utils';
 import { detectIsMenu } from './menu';
 
-export type SystemTrayIconProps = WithExtendedProps<
+export type SystemTrayIconProps = WithSlotProps<
   {
     visible: boolean;
     icon: QIcon;

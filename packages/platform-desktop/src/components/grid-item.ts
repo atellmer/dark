@@ -1,11 +1,11 @@
 import { QWidget, type AlignmentFlag } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WithExtendedProps, Container } from '../shared';
+import type { WithSlotProps, Container } from '../shared';
 import { qGridItem } from '../factory';
 import { throwUnsupported } from '../utils';
 
-export type GridItemProps = WithExtendedProps<{
+export type GridItemProps = WithSlotProps<{
   row: number;
   col: number;
   rowSpan?: number;

@@ -1,11 +1,11 @@
 import { QWidget, FlexLayout as QFlexLayout } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithPartialSlotProps, Container } from '../shared';
 import { qFlexLayout } from '../factory';
 import { detectIsDialog } from './dialog';
 
-export type FlexLayoutProps = WithExtendedProps<{} & WidgetProps>;
+export type FlexLayoutProps = WithPartialSlotProps<{} & WidgetProps>;
 export type FlexLayoutRef = QDarkFlexLayout;
 
 const FlexLayout = forwardRef<FlexLayoutProps, FlexLayoutRef>(

@@ -1,10 +1,10 @@
 import { QDialog, QWidget, FlexLayout, FocusReason, type QDialogSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qDialog } from '../factory';
 
-export type DialogProps = WithExtendedProps<
+export type DialogProps = WithSlotProps<
   {
     open: boolean;
     modal?: boolean;

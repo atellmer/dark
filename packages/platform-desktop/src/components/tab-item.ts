@@ -1,11 +1,11 @@
 import { type QTabWidget, QIcon } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WithExtendedProps } from '../shared';
+import type { WithSlotProps } from '../shared';
 import { qTabItem } from '../factory';
 import { QDarkFlexLayout } from './flex-layout';
 
-export type TabItemProps = WithExtendedProps<{
+export type TabItemProps = WithSlotProps<{
   text: string;
   icon?: QIcon;
 }>;

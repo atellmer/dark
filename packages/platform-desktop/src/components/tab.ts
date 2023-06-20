@@ -1,12 +1,12 @@
 import { QTabWidget, type QTabWidgetSignals, type TabPosition } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
-import type { WidgetProps, WithExtendedProps, Container } from '../shared';
+import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qTab } from '../factory';
 import { QDarkTabItem, detectIsTabItem } from './tab-item';
 import { runAtTheEndOfCommit } from '../dom';
 
-export type TabProps = WithExtendedProps<
+export type TabProps = WithSlotProps<
   {
     currentIndex: number;
     tabPosition?: TabPosition;

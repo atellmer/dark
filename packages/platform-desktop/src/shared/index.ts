@@ -5,7 +5,10 @@ import { type EventHandler } from '../events';
 
 export type WithStandardProps<T> = T & KeyProps & RefProps & FlagProps;
 
-export type WithExtendedProps<T, S = DarkElement> = T & WithStandardProps<T> & SlotProps<S>;
+export type WithSlotProps<T, S = DarkElement> = WithStandardProps<T> & SlotProps<S>;
+
+export type WithPartialSlotProps<T, S = DarkElement> = WithStandardProps<T> &
+  Partial<Pick<WithSlotProps<T, S>, 'slot'>>;
 
 export type Size = {
   width: number;
