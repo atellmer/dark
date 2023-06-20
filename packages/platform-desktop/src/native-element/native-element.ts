@@ -228,6 +228,8 @@ function createAttrSetter<T>(setter: Setter<T>) {
         w.resize(x.width, x.height);
       }
     },
+    width: (w: QWidget, x: number) => w.setFixedWidth(x),
+    height: (w: QWidget, x: number) => w.setFixedHeight(x),
     minSize: (w: QWidget, x: Size) => w.setMinimumSize(x.width, x.height),
     maxSize: (w: QWidget, x: Size) => w.setMaximumSize(x.width, x.height),
     pos: (w: QWidget, x: Position) => w.move(x.x, x.y),
