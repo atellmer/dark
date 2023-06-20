@@ -63,6 +63,7 @@ import {
   TableItem,
   SystemTrayIcon,
   useEventHandler,
+  RadioButton
 } from '@dark-engine/platform-desktop';
 
 import nodeguiIcon from '../assets/nodegui.jpg';
@@ -180,12 +181,16 @@ const App = component<AppProps>(({ title }) => {
               <Text style={`background-color: green;`}>Content 3</Text>
             </TabItem>
           </Tab> */}
-          <Table columnCount={2} rowCount={2}>
+          {/* <Table columnCount={2} rowCount={2}>
             <TableItem row={0} col={0} text='0, 0' />
             <TableItem row={0} col={1} text='0, 1' />
             <TableItem row={1} col={0} text='1, 0' />
             <TableItem row={1} col={1} text='1, 1' />
-          </Table>
+          </Table> */}
+          <RadioButton text='Option 1' />
+          <RadioButton text='Option 2' />
+          <RadioButton text='Option 3' />
+          <RadioButton text='Option 4' />
         </BoxLayout>
       </Window>
     </>

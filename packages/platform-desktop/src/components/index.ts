@@ -34,3 +34,4 @@ export * from './tab-item';
 export * from './table';
 export * from './table-item';
 export * from './system-tray-icon';
+export * from './radio-button';

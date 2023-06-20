@@ -40,3 +40,4 @@ export const qTabItem = factory('q:tab-item');
 export const qTable = factory('q:table');
 export const qTableItem = factory('q:table-item');
 export const qSystemTrayIcon = factory('q:system-tray-icon');
+export const qRadioButton = factory('q:radio-button');

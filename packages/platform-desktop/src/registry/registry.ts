@@ -65,5 +65,6 @@ registerElement('q:tab-item', () => require('../components/tab-item').QDarkTabIt
 registerElement('q:table', () => require('../components/table').QDarkTable);
 registerElement('q:table-item', () => require('../components/table-item').QDarkTableItem);
 registerElement('q:system-tray-icon', () => require('../components/system-tray-icon').QDarkSystemTrayIcon);
+registerElement('q:radio-button', () => require('../components/radio-button').QDarkRadioButton);
 
 export { getElementFactory, registerElement };
