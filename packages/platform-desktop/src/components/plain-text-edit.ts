@@ -38,7 +38,7 @@ const PlainTextEdit = forwardRef<PlainTextEditProps, PlainTextEditRef>(
       const { onTextChanged } = props;
       const rootRef = useRef<QDarkPlainTextEdit>(null);
 
-      useImperativeHandle(ref, () => ({ node: rootRef.current }), []);
+      useImperativeHandle(ref, () => ({ node: rootRef.current }));
 
       useLayoutEffect(() => {
         const { current } = rootRef;

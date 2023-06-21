@@ -1,12 +1,12 @@
 import { detectIsObject, detectIsFunction } from '@dark-engine/core';
 import { type Container } from '../shared';
 
-function capitalizeFirstLetter(value: string) {
-  return value.charAt(0).toUpperCase() + value.substring(1);
+function capitalize<T extends string>(value: T): Capitalize<T> {
+  return (value.charAt(0).toUpperCase() + value.substring(1)) as Capitalize<T>;
 }
 
-function createSetterName(value: string) {
-  return `set${capitalizeFirstLetter(value)}`;
+function createSetterName<T extends string>(value: T): `set${Capitalize<T>}` {
+  return `set${capitalize(value)}`;
 }
 
 function detectisValidURL(value: string) {
@@ -24,12 +24,11 @@ function throwUnsupported(value: object) {
 }
 
 function detectIsContainer(element: unknown): element is Container {
+  const container = element as Container;
+
   return (
-    element &&
-    detectIsObject(element) &&
-    detectIsFunction((element as Container).detectIsContainer) &&
-    (element as Container).detectIsContainer()
+    element && detectIsObject(element) && detectIsFunction(container.detectIsContainer) && container.detectIsContainer()
   );
 }
 
-export { capitalizeFirstLetter, createSetterName, detectisValidURL, throwUnsupported, detectIsContainer };
+export { capitalize, createSetterName, detectisValidURL, throwUnsupported, detectIsContainer };
