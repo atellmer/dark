@@ -43,3 +43,5 @@ export * from './double-spin-box';
 export * from './svg';
 export * from './drop-shadow-effect';
 export * from './blur-effect';
+export * from './tree';
+export * from './tree-item';

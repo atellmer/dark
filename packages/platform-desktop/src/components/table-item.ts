@@ -23,10 +23,6 @@ class QDarkTableItem extends QTableWidgetItem {
   private tableRow: number = undefined;
   private tableCol: number = undefined;
 
-  public detectIsContainer() {
-    return true;
-  }
-
   public setRow(value: number) {
     this.tableRow = value;
   }

@@ -72,5 +72,7 @@ registerElement('q:time-edit', () => require('../components/time-edit').QDarkTim
 registerElement('q:date-time-edit', () => require('../components/date-time-edit').QDarkDateTimeEdit);
 registerElement('q:double-spin-box', () => require('../components/double-spin-box').QDarkDoubleSpinBox);
 registerElement('q:svg', () => require('../components/svg').QDarkSvg);
+registerElement('q:tree', () => require('../components/tree').QDarkTree);
+registerElement('q:tree-item', () => require('../components/tree-item').QDarkTreeItem);
 
 export { getElementFactory, registerElement };

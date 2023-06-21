@@ -76,6 +76,8 @@ import {
   Svg,
   DropShadowEffect,
   BlurEffect,
+  Tree,
+  TreeItem,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -268,6 +270,14 @@ const App = component<AppProps>(({ title }) => {
           {/* <DateEdit date={new QDate(2024, 1, 1)} displayFormat='dd.MM.yyyy' /> */}
           {/* <TimeEdit time={new QTime(12, 30, 12)} displayFormat='hh:mm:ss' /> */}
           {/* <DateTimeEdit date={new QDate(2024, 1, 1)} time={new QTime(12, 30, 12)} /> */}
+          {/* <Tree headerLabels={['Column 1', 'Column 2', '3']}>
+            <TreeItem value={['Item 1', 'Value 1']} />
+            <TreeItem value={['Item 2', 'Value 2']}>
+              <TreeItem value={['Item 2:1', 'Value 2:1']} />
+              <TreeItem value={['Item 2:2', 'Value 2:2']} />
+            </TreeItem>
+            <TreeItem value={['Item 3', 'Value 3']} />
+          </Tree> */}
           <DropShadowEffect blurRadius={20}>
             <PushButton
               id='button'

@@ -47,3 +47,5 @@ export const qTimeEdit = factory('q:time-edit');
 export const qDateTimeEdit = factory('q:date-time-edit');
 export const qDoubleSpinBox = factory('q:double-spin-box');
 export const qSvg = factory('q:svg');
+export const qTree = factory('q:tree');
+export const qTreeItem = factory('q:tree-item');
