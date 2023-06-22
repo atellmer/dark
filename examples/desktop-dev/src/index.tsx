@@ -79,6 +79,7 @@ import {
   Tree,
   TreeItem,
   Stack,
+  GroupBox,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -298,11 +299,11 @@ const App = component<AppProps>(({ title }) => {
               on={iconEvents}
             />
           </BlurEffect> */}
-          <Stack currentIndex={1}>
-            <Text>1</Text>
-            <Text>2</Text>
-            <Text>3</Text>
-          </Stack>
+          <GroupBox title='Controls'>
+            <RadioButton text='Option 2' />
+            <RadioButton text='Option 3' />
+            <RadioButton text='Option 4' />
+          </GroupBox>
         </BoxLayout>
       </Window>
     </>

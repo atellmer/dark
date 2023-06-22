@@ -1,4 +1,4 @@
-import { QWidget, QStackedWidget } from '@nodegui/nodegui';
+import { QWidget, QStackedWidget, type QStackedWidgetSignals } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
@@ -12,6 +12,7 @@ export type StackProps = WithSlotProps<
   } & WidgetProps
 >;
 export type StackRef = QDarkStack;
+export type StackSignals = QStackedWidgetSignals;
 
 const Stack = forwardRef<StackProps, StackRef>(
   component((props, ref) => qStack({ ref, ...props }), { displayName: 'Stack' }),

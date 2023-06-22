@@ -46,3 +46,4 @@ export * from './blur-effect';
 export * from './tree';
 export * from './tree-item';
 export * from './stack';
+export * from './group-box';
