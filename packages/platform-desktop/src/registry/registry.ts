@@ -74,5 +74,6 @@ registerElement('q:double-spin-box', () => require('../components/double-spin-bo
 registerElement('q:svg', () => require('../components/svg').QDarkSvg);
 registerElement('q:tree', () => require('../components/tree').QDarkTree);
 registerElement('q:tree-item', () => require('../components/tree-item').QDarkTreeItem);
+registerElement('q:stack', () => require('../components/stack').QDarkStack);
 
 export { getElementFactory, registerElement };

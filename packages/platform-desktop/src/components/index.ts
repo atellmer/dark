@@ -45,3 +45,4 @@ export * from './drop-shadow-effect';
 export * from './blur-effect';
 export * from './tree';
 export * from './tree-item';
+export * from './stack';

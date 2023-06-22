@@ -49,3 +49,4 @@ export const qDoubleSpinBox = factory('q:double-spin-box');
 export const qSvg = factory('q:svg');
 export const qTree = factory('q:tree');
 export const qTreeItem = factory('q:tree-item');
+export const qStack = factory('q:stack');

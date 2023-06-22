@@ -78,6 +78,7 @@ import {
   BlurEffect,
   Tree,
   TreeItem,
+  Stack,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -278,7 +279,7 @@ const App = component<AppProps>(({ title }) => {
             </TreeItem>
             <TreeItem value={['Item 3', 'Value 3']} />
           </Tree> */}
-          <DropShadowEffect blurRadius={20}>
+          {/* <DropShadowEffect blurRadius={20}>
             <PushButton
               id='button'
               text={`Click Me ${count}`}
@@ -296,7 +297,12 @@ const App = component<AppProps>(({ title }) => {
               `}
               on={iconEvents}
             />
-          </BlurEffect>
+          </BlurEffect> */}
+          <Stack currentIndex={1}>
+            <Text>1</Text>
+            <Text>2</Text>
+            <Text>3</Text>
+          </Stack>
         </BoxLayout>
       </Window>
     </>
