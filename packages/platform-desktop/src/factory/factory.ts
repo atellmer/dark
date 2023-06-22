@@ -51,3 +51,4 @@ export const qTree = factory('q:tree');
 export const qTreeItem = factory('q:tree-item');
 export const qStack = factory('q:stack');
 export const qGroupBox = factory('q:group-box');
+export const qMessageDialog = factory('q:message-dialog');

@@ -47,3 +47,4 @@ export * from './tree';
 export * from './tree-item';
 export * from './stack';
 export * from './group-box';
+export * from './message-dialog';

@@ -76,5 +76,6 @@ registerElement('q:tree', () => require('../components/tree').QDarkTree);
 registerElement('q:tree-item', () => require('../components/tree-item').QDarkTreeItem);
 registerElement('q:stack', () => require('../components/stack').QDarkStack);
 registerElement('q:group-box', () => require('../components/group-box').QDarkGroupBox);
+registerElement('q:message-dialog', () => require('../components/message-dialog').QDarkMessageDialog);
 
 export { getElementFactory, registerElement };

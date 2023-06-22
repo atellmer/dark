@@ -80,6 +80,7 @@ import {
   TreeItem,
   Stack,
   GroupBox,
+  MessageDialog,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -233,6 +234,11 @@ const App = component<AppProps>(({ title }) => {
           <FileDialog open={false} on={fileEvents} />
           <FontDialog open={false} />
           <InputDialog open={false} />
+          <MessageDialog
+            open={false}
+            informativeText='Hello World'
+            text='Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quidem aliquam placeat beatae consequatur, deleniti similique sit iure! Quae quaerat mollitia, necessitatibus corporis repellat impedit dolor! At quisquam, asperiores quam eligendi ipsum non earum sint? Libero in ut quaerat minima rerum pariatur soluta incidunt architecto, at dicta nisi laboriosam aliquid cupiditate.'
+          />
           <ProgressDialog open={false} value={40} /> */}
           {/* <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
             <GridItem row={0} col={0}>
