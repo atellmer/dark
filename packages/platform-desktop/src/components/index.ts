@@ -50,3 +50,4 @@ export * from './group-box';
 export * from './message-dialog';
 export * from './status-bar';
 export * from './tool-button';
+export * from './splitter';

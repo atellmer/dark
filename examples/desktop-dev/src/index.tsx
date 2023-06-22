@@ -83,6 +83,7 @@ import {
   MessageDialog,
   StatusBar,
   ToolButton,
+  Splitter,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -310,7 +311,7 @@ const App = component<AppProps>(({ title }) => {
               on={iconEvents}
             />
           </BlurEffect> */}
-          <GroupBox title='Controls'>
+          {/* <GroupBox title='Controls'>
             <RadioButton text='Option 2' />
             <RadioButton text='Option 3' />
             <RadioButton text='Option 4' />
@@ -321,7 +322,14 @@ const App = component<AppProps>(({ title }) => {
               <Action text='Create' />
               <Action text='Save' />
             </Menu>
-          </ToolButton>
+          </ToolButton> */}
+          <BoxLayout>
+            <Splitter>
+              <Text style={`background-color: red;`}>Content 1</Text>
+              <Text style={`background-color: yellow;`}>Content 2</Text>
+              <Text style={`background-color: green;`}>Content 3</Text>
+            </Splitter>
+          </BoxLayout>
         </BoxLayout>
       </Window>
     </>

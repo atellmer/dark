@@ -79,5 +79,6 @@ registerElement('q:group-box', () => require('../components/group-box').QDarkGro
 registerElement('q:message-dialog', () => require('../components/message-dialog').QDarkMessageDialog);
 registerElement('q:status-bar', () => require('../components/status-bar').QDarkStatusBar);
 registerElement('q:tool-button', () => require('../components/tool-button').QDarkToolButton);
+registerElement('q:splitter', () => require('../components/splitter').QDarkSplitter);
 
 export { getElementFactory, registerElement };

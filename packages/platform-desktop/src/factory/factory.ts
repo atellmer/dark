@@ -54,3 +54,4 @@ export const qGroupBox = factory('q:group-box');
 export const qMessageDialog = factory('q:message-dialog');
 export const qStatusBar = factory('q:status-bar');
 export const qToolButton = factory('q:tool-button');
+export const qSplitter = factory('q:splitter');
