@@ -17,10 +17,10 @@ import {
   ItemFlag,
   QBrush,
   QColor,
-  QUrl,
   QDate,
   QTime,
   QPainter,
+  ToolButtonPopupMode,
 } from '@nodegui/nodegui';
 import { h, Fragment, component, useState, useRef, useEffect, useLayoutEffect } from '@dark-engine/core';
 import {
@@ -82,6 +82,7 @@ import {
   GroupBox,
   MessageDialog,
   StatusBar,
+  ToolButton,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -314,6 +315,13 @@ const App = component<AppProps>(({ title }) => {
             <RadioButton text='Option 3' />
             <RadioButton text='Option 4' />
           </GroupBox>
+          <ToolButton text='Click me' popupMode={ToolButtonPopupMode.MenuButtonPopup}>
+            <Menu title='File'>
+              <Action text='Open' />
+              <Action text='Create' />
+              <Action text='Save' />
+            </Menu>
+          </ToolButton>
         </BoxLayout>
       </Window>
     </>

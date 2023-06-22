@@ -78,5 +78,6 @@ registerElement('q:stack', () => require('../components/stack').QDarkStack);
 registerElement('q:group-box', () => require('../components/group-box').QDarkGroupBox);
 registerElement('q:message-dialog', () => require('../components/message-dialog').QDarkMessageDialog);
 registerElement('q:status-bar', () => require('../components/status-bar').QDarkStatusBar);
+registerElement('q:tool-button', () => require('../components/tool-button').QDarkToolButton);
 
 export { getElementFactory, registerElement };
