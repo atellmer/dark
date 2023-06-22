@@ -81,6 +81,7 @@ import {
   Stack,
   GroupBox,
   MessageDialog,
+  StatusBar,
   useEventSystem,
   useStyle,
   useShortcut,
@@ -184,6 +185,9 @@ const App = component<AppProps>(({ title }) => {
   return (
     <>
       <Window ref={windowRef} windowTitle={title} windowIcon={winIcon} size={size} styleSheet={style.root}>
+        <StatusBar>
+          <Text>Loaded 80%</Text>
+        </StatusBar>
         {/* <MenuBar>
           <Menu title='File'>
             <Action text='Open' />

@@ -1,4 +1,11 @@
-import { type QWidget, QGroupBox, QBoxLayout, Direction } from '@nodegui/nodegui';
+import {
+  type QWidget,
+  type QGroupBoxSignals,
+  type AlignmentFlag,
+  QGroupBox,
+  QBoxLayout,
+  Direction,
+} from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
@@ -10,9 +17,11 @@ export type GroupBoxProps = WithSlotProps<
     title?: string;
     flat?: boolean;
     direction?: Direction;
+    alignment?: AlignmentFlag;
   } & WidgetProps
 >;
 export type GroupBoxRef = QDarkGroupBox;
+export type GroupBoxSignals = QGroupBoxSignals;
 
 const GroupBox = forwardRef<GroupBoxProps, GroupBoxRef>(
   component((props, ref) => qGroupBox({ ref, ...props }), { displayName: 'GroupBox' }),

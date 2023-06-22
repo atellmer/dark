@@ -4,6 +4,7 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMainWindow } from '../factory';
 import { detectIsMenuBar } from './menu-bar';
+import { detectIsStatusBar } from './status-bar';
 import { detectIsSystemTrayIcon } from './system-tray-icon';
 import { throwUnsupported } from '../utils';
 
@@ -36,6 +37,8 @@ class QDarkMainWindow extends QMainWindow implements Container {
     if (detectIsSystemTrayIcon(child)) return;
     if (detectIsMenuBar(child)) {
       this.setMenuBar(child);
+    } else if (detectIsStatusBar(child)) {
+      this.setStatusBar(child);
     } else {
       this.setCentralWidget(child);
     }
