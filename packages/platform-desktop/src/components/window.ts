@@ -13,6 +13,7 @@ export type WindowProps = WithSlotProps<
     windowTitle: string;
     windowOpacity?: number;
     windowIcon?: QIcon;
+    windowRole?: string;
     windowState?: WindowState;
   } & WidgetProps
 >;

@@ -20,7 +20,7 @@ function detectisValidURL(value: string) {
 }
 
 function throwUnsupported(value: object) {
-  throw new Error(`Unsupported action in ${value.constructor.name}`);
+  console.warn(`Unsupported action in ${value.constructor.name}`);
 }
 
 function detectIsContainer(element: unknown): element is Container {

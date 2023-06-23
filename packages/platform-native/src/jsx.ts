@@ -979,43 +979,9 @@ export type ListViewAttributes = ViewAttributes & {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      frame: FrameAttributes;
-      page: PageAttributes;
-      'content-view': ContentViewAttributes;
-      'scroll-view': ScrollViewAttributes;
-      'root-layout': RootLayoutAttributes;
-      'absolute-layout': AbsoluteLayoutAttributes;
-      'stack-layout': StackLayoutAttributes;
-      'dock-layout': DockLayoutAttributes;
-      'flexbox-layout': FlexboxLayoutAttributes;
-      'grid-layout': GridLayoutAttributes;
-      'wrap-layout': WrapLayoutAttributes;
-      label: LabelAttributes;
-      button: ButtonAttributes;
-      'html-view': HtmlViewAttributes;
-      'web-view': WebViewAttributes;
-      'action-bar': ActionBarAttributes;
-      'action-item': ActionItemAttributes;
-      'navigation-button': NavigationButtonAttributes;
-      'activity-indicator': ActivityIndicatorAttributes;
-      'formatted-string': FormattedStringAttributes;
-      span: SpanAttributes;
-      image: ImageAttributes;
-      'list-picker': ListPickerAttributes;
-      placeholder: PlaceholderAttributes;
-      progress: ProgressAttributes;
-      'search-bar': SearchBarAttributes;
-      'segmented-bar': SegmentedBarAttributes;
-      'segmented-bar-item': SegmentedBarItemAttributes;
-      slider: SliderAttributes;
-      switch: SwitchAttributes;
-      'text-field': TextFieldAttributes;
-      'text-view': TextViewAttributes;
-      'date-picker': DatePickerAttributes;
-      'time-picker': TimePickerAttributes;
-      'tab-view': TabViewAttributes;
-      'tab-view-item': TabViewItemAttributes;
+      [elementName: string]: any;
     }
   }
 }

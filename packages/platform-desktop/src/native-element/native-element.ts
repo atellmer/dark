@@ -1,7 +1,7 @@
 import { type WidgetEventTypes, QWidget } from '@nodegui/nodegui';
 import { NodeType, ROOT, detectIsFunction } from '@dark-engine/core';
 
-import type { QElement, Size, Position, WidgetProps } from '../shared';
+import type { QElement, WidgetProps } from '../shared';
 import { createSetterName, detectIsContainer } from '../utils';
 import { createSyntheticEventHandler } from '../events';
 import { getElementFactory } from '../registry';
@@ -220,20 +220,12 @@ type Setter<T = WidgetProps> = Partial<
 
 function createAttrSetter<T>(setter: Setter<T>) {
   const map: Setter = {
-    id: (w: QWidget, x: string) => w.setObjectName(x),
-    size: (w: QWidget, x: Size) => {
-      if (x.fixed) {
-        w.setFixedSize(x.width, x.height);
-      } else {
-        w.resize(x.width, x.height);
-      }
-    },
-    width: (w: QWidget, x: number) => w.setFixedWidth(x),
-    height: (w: QWidget, x: number) => w.setFixedHeight(x),
-    minSize: (w: QWidget, x: Size) => w.setMinimumSize(x.width, x.height),
-    maxSize: (w: QWidget, x: Size) => w.setMaximumSize(x.width, x.height),
-    pos: (w: QWidget, x: Position) => w.move(x.x, x.y),
-    style: (w: QWidget, x: string) => w.setInlineStyle(x),
+    id: (w: QWidget, n: string) => w.setObjectName(n),
+    posX: (w: QWidget, n: number) => w.move(n, w.y()),
+    posY: (w: QWidget, n: number) => w.move(w.x(), n),
+    width: (w: QWidget, n: number) => w.resize(n, w.height()),
+    height: (w: QWidget, n: number) => w.resize(w.width(), n),
+    style: (w: QWidget, n: string) => w.setInlineStyle(n),
     ...setter,
   };
 

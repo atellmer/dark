@@ -27,8 +27,9 @@
     "angular",
     "rendering",
     "app",
-    "android",
-    "ios"
+    "windows",
+    "linux",
+    "macos"
   ],
   "dependencies": {
     "@types/node-fetch": "^2.6.4",

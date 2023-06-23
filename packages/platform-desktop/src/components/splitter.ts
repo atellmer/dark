@@ -44,6 +44,7 @@ class QDarkSplitter extends QSplitter implements Container {
   public appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.addWidget(child);
+    this.setCollapsible(this.indexOf(child), false);
   }
 
   public insertBefore() {

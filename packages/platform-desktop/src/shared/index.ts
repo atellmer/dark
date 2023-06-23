@@ -10,25 +10,18 @@ export type WithSlotProps<T, S = DarkElement> = WithStandardProps<T> & SlotProps
 export type WithPartialSlotProps<T, S = DarkElement> = WithStandardProps<T> &
   Partial<Pick<WithSlotProps<T, S>, 'slot'>>;
 
-export type Size = {
-  width: number;
-  height: number;
-  fixed?: boolean;
-};
-
-export type Position = {
-  x: number;
-  y: number;
-};
-
 export type WidgetProps = {
   id?: string;
+  posX?: number;
+  posY?: number;
   width?: number;
   height?: number;
-  size?: Size;
-  minSize?: Size;
-  maxSize?: Size;
-  pos?: Position;
+  fixedWidth?: number;
+  fixedHeight?: number;
+  minimumHeight?: number;
+  minimumWidth?: number;
+  maximumHeight?: number;
+  maximumWidth?: number;
   styleSheet?: string;
   style?: string;
   disabled?: boolean;

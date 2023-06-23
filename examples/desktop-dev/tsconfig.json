@@ -1,17 +1,15 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "incremental": true,
-    "target": "es2016",
-    "module": "commonjs",
-    "allowJs": true,
-    "checkJs": false,
-    "outDir": "./dist",
-    "sourceMap": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "strict": true,
     "alwaysStrict": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {}
   },
-  "include": ["**/*"]
+  "include": [
+    "**/*"
+  ]
 }
