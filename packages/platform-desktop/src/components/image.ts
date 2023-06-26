@@ -6,6 +6,8 @@ import type { WidgetProps, WithStandardProps } from '../shared';
 import { qImage } from '../factory';
 import { detectisValidURL } from '../utils';
 
+// <Image src='https://placehold.co/600x400' />
+
 export type ImageProps = WithStandardProps<
   {
     src?: string;

@@ -12,6 +12,12 @@ import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qGroupBox } from '../factory';
 import { detectIsDialog } from './dialog';
 
+// <GroupBox title='Controls'>
+//   <RadioButton text='Option 1' />
+//   <RadioButton text='Option 2' />
+//   <RadioButton text='Option 3' />
+// </GroupBox>
+
 export type GroupBoxProps = WithSlotProps<
   {
     title?: string;

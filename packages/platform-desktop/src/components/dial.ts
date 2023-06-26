@@ -1,14 +1,22 @@
-import { QDial, type QDialSignals } from '@nodegui/nodegui';
+import { type QDialSignals, QDial } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qDial } from '../factory';
 
+// const dialEvents = useEventSystem<DialSignals>(
+//   {
+//     valueChanged: (e: SyntheticEvent<number>) => console.log(e.value)
+//   },
+//   [],
+// );
+// <Dial value={50} maximum={100} minimum={0} on={dialEvents} />
+
 export type DialProps = WithStandardProps<
   {
     value: number;
-    maximum?: number;
-    minimum?: number;
+    maximum: number;
+    minimum: number;
     notchesHidden?: boolean;
     notchTarget?: number;
     wrapping?: boolean;

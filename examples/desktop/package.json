@@ -10,6 +10,8 @@
     "dev": "npx webpack --env NODE_ENV=development"
   },
   "dependencies": {
+    "@dark-engine/core": "0.25.0",
+    "@dark-engine/platform-desktop": "0.25.0",
     "@nodegui/nodegui": "0.61.0",
     "nodemon": "^2.0.21"
   },

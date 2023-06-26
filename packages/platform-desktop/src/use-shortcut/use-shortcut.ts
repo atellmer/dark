@@ -1,12 +1,18 @@
 import {
-  QShortcut,
-  QKeySequence,
-  WidgetEventTypes,
   type QWidget,
   type QShortcutSignals,
   type ShortcutContext,
+  QShortcut,
+  QKeySequence,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { useEffect, type MutableRef } from '@dark-engine/core';
+
+// useShortcut({
+//   ref: windowRef,
+//   keySequence: 'Ctrl+Shift+Q',
+//   callback: () => console.log('Ctrl+Shift+Q pressed!'),
+// });
 
 type UseShortcutOptions = {
   ref: MutableRef<QWidget>;

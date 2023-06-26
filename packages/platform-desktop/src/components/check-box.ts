@@ -1,8 +1,16 @@
-import { QCheckBox, type QCheckBoxSignals } from '@nodegui/nodegui';
+import { type QCheckBoxSignals, QCheckBox } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qCheckBox } from '../factory';
+
+// const checkboxEvents = useEventSystem<CheckBoxSignals>(
+//   {
+//     toggled: (e: SyntheticEvent<boolean>) => console.log(e.value),
+//   },
+//   [],
+// );
+// <CheckBox text='Label' checked={checked} on={checkboxEvents} />
 
 export type CheckBoxProps = WithStandardProps<
   {

@@ -1,8 +1,10 @@
-import { QErrorMessage, type QErrorMessageSignals } from '@nodegui/nodegui';
+import { type QErrorMessageSignals, QErrorMessage } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qErrorMessage } from '../factory';
+
+// <ErrorMessage open={open} message='Oh no!' />
 
 export type ErrorMessageProps = WithStandardProps<
   {

@@ -1,4 +1,4 @@
-import { QGraphicsBlurEffect, type QWidget } from '@nodegui/nodegui';
+import { type QWidget, QGraphicsBlurEffect } from '@nodegui/nodegui';
 import { BlurHint } from '@nodegui/nodegui/dist/lib/QtWidgets/QGraphicsBlurEffect';
 import {
   type ComponentFactory,
@@ -13,6 +13,10 @@ import {
 } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps } from '../shared';
+
+// <BlurEffect blurRadius={10}>
+//   <Image src='https://placehold.co/600x400' />
+// </BlurEffect>
 
 export type BlurEffectProps = WithSlotProps<
   {

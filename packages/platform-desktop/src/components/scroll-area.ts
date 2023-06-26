@@ -1,9 +1,13 @@
-import { QWidget, QScrollArea, type QScrollAreaSignals, type ScrollBarPolicy } from '@nodegui/nodegui';
+import { type QScrollAreaSignals, type ScrollBarPolicy, QWidget, QScrollArea } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qScrollArea } from '../factory';
 import { throwUnsupported } from '../utils';
+
+// <ScrollArea>
+//   <Text>long content...</Text>
+// </ScrollArea>
 
 export type ScrollAreaProps = WithSlotProps<
   {

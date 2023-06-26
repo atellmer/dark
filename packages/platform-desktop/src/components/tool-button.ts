@@ -15,6 +15,14 @@ import { qToolButton } from '../factory';
 import { throwUnsupported } from '../utils';
 import { detectIsMenu } from './menu';
 
+// <ToolButton text='Click me' popupMode={ToolButtonPopupMode.MenuButtonPopup}>
+//   <Menu title='File'>
+//     <Action text='Open' />
+//     <Action text='Create' />
+//     <Action text='Save' />
+//   </Menu>
+// </ToolButton>
+
 export type ToolButtonProps = WithPartialSlotProps<
   {
     text?: string;

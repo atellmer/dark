@@ -1,8 +1,10 @@
-import { QTextBrowser, type QTextBrowserSignals } from '@nodegui/nodegui';
+import { type QTextBrowserSignals, QTextBrowser } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qTextBrowser } from '../factory';
+
+// <TextBrowser html='<p>Content</p>' />
 
 export type TextBrowserProps = WithStandardProps<
   {

@@ -1,8 +1,16 @@
-import { QFileDialog, type QFileDialogSignals, type FileMode, type AcceptMode } from '@nodegui/nodegui';
+import { type QFileDialogSignals, type FileMode, type AcceptMode, QFileDialog } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qFileDialog } from '../factory';
+
+// const fileDialogEvents = useEventSystem<FileDialogSignals>(
+//   {
+//     fileSelected: (e: SyntheticEvent<string>) => console.log(e.value),
+//   },
+//   [],
+// );
+// <FileDialog open={open} on={fileDialogEvents} />
 
 export type FileDialogProps = WithStandardProps<
   {

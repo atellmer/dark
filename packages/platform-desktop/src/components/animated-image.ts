@@ -6,6 +6,8 @@ import type { WidgetProps, WithStandardProps } from '../shared';
 import { qAnimatedImage } from '../factory';
 import { detectisValidURL } from '../utils';
 
+// <AnimatedImage src='https://media.giphy.com/media/fdHg7T902uzLy/giphy.gif' />
+
 export type AnimatedImageProps = WithStandardProps<
   {
     src?: string;

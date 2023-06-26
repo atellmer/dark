@@ -15,9 +15,9 @@ import {
 
 import nodeguiIcon from '../assets/nodegui.jpg';
 
-type AppProps = {};
-
 const winIcon = new QIcon(nodeguiIcon);
+
+type AppProps = {};
 
 const App = component<AppProps>(() => {
   const [percent, setPercent] = useState(0);
@@ -34,12 +34,17 @@ const App = component<AppProps>(() => {
       }
     `,
   }));
-
-  const buttonEvents = useEventSystem<PushButtonSignals>(
+  const buttonIncreaseEvents = useEventSystem<PushButtonSignals>(
     {
       clicked: () => percent < 100 && setPercent(x => x + 5),
     },
-    [],
+    [percent],
+  );
+  const buttonDecreaseEvents = useEventSystem<PushButtonSignals>(
+    {
+      clicked: () => percent > 0 && setPercent(x => x - 5),
+    },
+    [percent],
   );
 
   return (
@@ -48,14 +53,17 @@ const App = component<AppProps>(() => {
         <StatusBar>
           <Text>Loaded {percent}%</Text>
         </StatusBar>
-        <BoxLayout direction={Direction.TopToBottom}>
+        <BoxLayout direction={Direction.TopToBottom} stretch={[1, 0, 0]}>
           <Splitter>
             <Text id='text-1'>Content 1</Text>
             <Text id='text-2'>Content 2</Text>
             <Text id='text-3'>Content 3</Text>
           </Splitter>
           <ProgressBar value={percent} textHidden />
-          <PushButton text='increase' on={buttonEvents} />
+          <BoxLayout direction={Direction.LeftToRight}>
+            <PushButton text='increase' on={buttonIncreaseEvents} />
+            <PushButton text='decrease' on={buttonDecreaseEvents} />
+          </BoxLayout>
         </BoxLayout>
       </Window>
     </>

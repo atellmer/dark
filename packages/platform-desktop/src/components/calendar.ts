@@ -1,4 +1,4 @@
-import { QCalendarWidget, DayOfWeek, type QCalendarWidgetSignals } from '@nodegui/nodegui';
+import { type QCalendarWidgetSignals, QCalendarWidget, DayOfWeek } from '@nodegui/nodegui';
 import {
   HorizontalHeaderFormat,
   SelectionMode,
@@ -8,6 +8,14 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qCalendar } from '../factory';
+
+// const calendarEvents = useEventSystem<CalendarSignals>(
+//   {
+//     clicked: (e: SyntheticEvent<QDate>) => console.log(e.value),
+//   },
+//   [],
+// );
+// <Calendar on={calendarEvents} />
 
 export type CalendarProps = WithStandardProps<
   {

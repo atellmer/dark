@@ -1,15 +1,16 @@
-import { QDialog, QWidget, FlexLayout, FocusReason, type QDialogSignals } from '@nodegui/nodegui';
+import { type QDialogSignals, QDialog, QWidget, FlexLayout } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qDialog } from '../factory';
 
+// <Dialog open={open}>
+//   <Text>content...</Text>
+// </Dialog>
+
 export type DialogProps = WithSlotProps<
   {
     open: boolean;
-    modal?: boolean;
-    focus?: FocusReason;
-    enableSizeGrip?: boolean;
   } & WidgetProps
 >;
 export type DialogRef = QDarkDialog;
@@ -24,6 +25,8 @@ class QDarkDialog extends QDialog implements Container {
 
   constructor() {
     super();
+    this.setMinimumWidth(10);
+    this.setMinimumHeight(10);
     this.flexLayout.setFlexNode(this.getFlexNode());
     this.setLayout(this.flexLayout);
   }
@@ -41,10 +44,12 @@ class QDarkDialog extends QDialog implements Container {
   }
 
   public appendChild(child: QWidget) {
+    if (detectIsDialog(child)) return;
     this.flexLayout.addWidget(child);
   }
 
   public insertBefore(child: QWidget, sibling: QWidget) {
+    if (detectIsDialog(child)) return;
     this.flexLayout.insertChildBefore(child, sibling);
   }
 

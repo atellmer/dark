@@ -7,6 +7,21 @@ import { detectIsGridItem } from './grid-item';
 import { throwUnsupported } from '../utils';
 import { runAtTheEndOfCommit } from '../dom';
 
+// <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
+//   <GridItem row={0} col={0}>
+//     <Text style={`background-color: red;`}>Label 1</Text>
+//   </GridItem>
+//   <GridItem row={0} col={1}>
+//     <Text style={`background-color: yellow;`}>Label 2</Text>
+//   </GridItem>
+//   <GridItem row={1} col={0}>
+//     <Text style={`background-color: green;`}>Label 3</Text>
+//   </GridItem>
+//   <GridItem row={1} col={1}>
+//     <Text style={`background-color: blue;`}>Label 4</Text>
+//   </GridItem>
+// </GridLayout>
+
 export type GridLayoutProps = WithSlotProps<
   {
     horizontalSpacing?: number;

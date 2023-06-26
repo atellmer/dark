@@ -4,6 +4,11 @@ import { type TextVirtualNode, type ComponentFactory, component, forwardRef, det
 import type { WidgetProps, WithSlotProps } from '../shared';
 import { qText } from '../factory';
 
+// <Text>Hello world</Text>
+// <Text>
+//   {`<h1>Hello world</h1><p>Rich text</p>`}
+// </Text>
+
 export type TextProps = WithSlotProps<{} & WidgetProps, string | number | Array<string | number>>;
 export type TextRef = QDarkText;
 

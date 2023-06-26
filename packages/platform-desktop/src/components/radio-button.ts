@@ -1,8 +1,14 @@
-import { QRadioButton, type QRadioButtonSignals } from '@nodegui/nodegui';
+import { type QRadioButtonSignals, QRadioButton } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qRadioButton } from '../factory';
+
+// <GroupBox title='Controls'>
+//   <RadioButton text='Option 1' />
+//   <RadioButton text='Option 2' />
+//   <RadioButton text='Option 3' />
+// </GroupBox>
 
 export type RadioButtonProps = WithStandardProps<
   {

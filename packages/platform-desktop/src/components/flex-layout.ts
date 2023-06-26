@@ -5,6 +5,12 @@ import type { WidgetProps, WithPartialSlotProps, Container } from '../shared';
 import { qFlexLayout } from '../factory';
 import { detectIsDialog } from './dialog';
 
+// <FlexLayout style={`justify-content: 'center';`}>
+//   <Text>Content 1</Text>
+//   <Text>Content 2</Text>
+//   <Text>Content 3</Text>
+// </FlexLayout>
+
 export type FlexLayoutProps = WithPartialSlotProps<{} & WidgetProps>;
 export type FlexLayoutRef = QDarkFlexLayout;
 

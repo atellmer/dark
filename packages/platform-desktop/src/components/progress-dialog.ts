@@ -1,8 +1,10 @@
-import { QProgressDialog, type QProgressDialogSignals } from '@nodegui/nodegui';
+import { type QProgressDialogSignals, QProgressDialog } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qProgressDialog } from '../factory';
+
+// <ProgressDialog open={open} value={value} />
 
 export type ProgressDialogProps = WithStandardProps<
   {

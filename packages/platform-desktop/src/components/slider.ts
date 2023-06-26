@@ -1,8 +1,16 @@
-import { QSlider, type Orientation, type TickPosition, type QSliderSignals } from '@nodegui/nodegui';
+import { type Orientation, type TickPosition, type QSliderSignals, QSlider } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSlider } from '../factory';
+
+// const sliderEvents = useEventSystem<SliderSignals>(
+//   {
+//     valueChanged: (e: SyntheticEvent<number>) => console.log(e.value)
+//   },
+//   [],
+// );
+// <Slider value={value} orientation={Orientation.Horizontal} on={sliderEvents} />
 
 export type SliderProps = WithStandardProps<
   {

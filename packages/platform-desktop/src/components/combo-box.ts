@@ -1,8 +1,17 @@
-import { QComboBox, type QIcon, type QVariant, type QComboBoxSignals, type QSize } from '@nodegui/nodegui';
+import { type QIcon, type QVariant, type QComboBoxSignals, type QSize, QComboBox } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qComboBox } from '../factory';
+
+// const items: Array<ComboBoxItem> = [{ text: 'Item 1', text: 'Item 2', text: 'Item 3' }];
+// const comboBoxEvents = useEventSystem<ComboBoxSignals>(
+//   {
+//     currentIndexChanged: (e: SyntheticEvent<number>) => console.log(e.value),
+//   },
+//   [],
+// );
+// <ComboBox currentIndex={currentIndex} items={items} on={comboBoxEvents} />
 
 export type ComboBoxProps = WithStandardProps<
   {

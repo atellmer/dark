@@ -1,4 +1,4 @@
-import { QMainWindow, QWidget, WindowState, type QIcon, type QMainWindowSignals } from '@nodegui/nodegui';
+import { type QIcon, type QMainWindowSignals, QMainWindow, QWidget, WindowState } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
@@ -7,6 +7,13 @@ import { detectIsMenuBar } from './menu-bar';
 import { detectIsStatusBar } from './status-bar';
 import { detectIsSystemTrayIcon } from './system-tray-icon';
 import { throwUnsupported } from '../utils';
+
+// <Window windowTitle='App' windowIcon={winIcon} width={400} height={400} styleSheet={style.root}>
+//   <BoxLayout direction={Direction.TopToBottom}>
+//     <Text>Content 1</Text>
+//     <Text>Content 2</Text>
+//   </BoxLayout>
+// </Window>
 
 export type WindowProps = WithSlotProps<
   {

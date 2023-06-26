@@ -5,6 +5,21 @@ import type { WithSlotProps, Container } from '../shared';
 import { qGridItem } from '../factory';
 import { throwUnsupported } from '../utils';
 
+// <GridLayout>
+//   <GridItem row={0} col={0}>
+//     <Text style={`background-color: red;`}>Label 1</Text>
+//   </GridItem>
+//   <GridItem row={0} col={1}>
+//     <Text style={`background-color: yellow;`}>Label 2</Text>
+//   </GridItem>
+//   <GridItem row={1} col={0}>
+//     <Text style={`background-color: green;`}>Label 3</Text>
+//   </GridItem>
+//   <GridItem row={1} col={1}>
+//     <Text style={`background-color: blue;`}>Label 4</Text>
+//   </GridItem>
+// </GridLayout>
+
 export type GridItemProps = WithSlotProps<{
   row: number;
   col: number;
@@ -20,11 +35,11 @@ const GridItem = forwardRef<GridItemProps, GridItemRef>(
 
 class QDarkGridItem extends QWidget implements Container {
   private child: QWidget = null;
-  private row: number = undefined;
-  private col: number = undefined;
-  private rowSpan: number = undefined;
-  private colSpan: number = undefined;
-  private alignment: AlignmentFlag = undefined;
+  private row: number;
+  private col: number;
+  private rowSpan: number;
+  private colSpan: number;
+  private alignment: AlignmentFlag;
 
   public detectIsContainer() {
     return true;

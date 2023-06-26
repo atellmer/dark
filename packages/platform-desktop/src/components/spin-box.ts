@@ -1,8 +1,16 @@
-import { QSpinBox, type QSpinBoxSignals } from '@nodegui/nodegui';
+import { type QSpinBoxSignals, QSpinBox } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSpinBox } from '../factory';
+
+// const spinBoxEvents = useEventSystem<SpinBoxSignals>(
+//   {
+//     valueChanged: (value: number) => {},
+//   },
+//   [],
+// );
+// <SpinBox value={10} singleStep={2} on={spinBoxEvents} />
 
 export type SpinBoxProps = WithStandardProps<
   {

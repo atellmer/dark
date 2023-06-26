@@ -1,10 +1,16 @@
-import { QWidget, QMenu, type QMenuSignals, type QIcon } from '@nodegui/nodegui';
+import { type QMenuSignals, type QIcon, QWidget, QMenu } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMenu } from '../factory';
 import { QDarkAction } from './action';
 import { throwUnsupported } from '../utils';
+
+// <Menu title='File'>
+//   <Action text='Open' />
+//   <Action text='Create' />
+//   <Action text='Save' />
+// </Menu>
 
 export type MenuProps = WithSlotProps<
   {

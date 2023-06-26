@@ -1,10 +1,16 @@
-import { QWidget, QStackedWidget, type QStackedWidgetSignals } from '@nodegui/nodegui';
+import { type QStackedWidgetSignals, QWidget, QStackedWidget } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qStack } from '../factory';
 import { detectIsDialog } from './dialog';
 import { throwUnsupported } from '../utils';
+
+// <Stack currentIndex={0}>
+//   <Text>Slide 1</Text>
+//   <Text>Slide 2</Text>
+//   <Text>Slide 3</Text>
+// </Stack>
 
 export type StackProps = WithSlotProps<
   {

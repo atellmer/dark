@@ -1,8 +1,16 @@
-import { QDoubleSpinBox, type QDoubleSpinBoxSignals } from '@nodegui/nodegui';
+import { type QDoubleSpinBoxSignals, QDoubleSpinBox } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qDoubleSpinBox } from '../factory';
+
+// const spinBoxEvents = useEventSystem<DoubleSpinBoxSignals>(
+//   {
+//     valueChanged: (e: SyntheticEvent<number>) => console.log(e.value)
+//   },
+//   [],
+// );
+// <DoubleSpinBox value={10.5} singleStep={0.5} on={spinBoxEvents} />
 
 export type DoubleSpinBoxProps = WithStandardProps<
   {

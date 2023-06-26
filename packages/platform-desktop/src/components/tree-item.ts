@@ -1,9 +1,18 @@
-import { QWidget, QTreeWidgetItem, type QIcon } from '@nodegui/nodegui';
+import { type QIcon, QWidget, QTreeWidgetItem } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WithPartialSlotProps, Container } from '../shared';
 import { qTreeItem } from '../factory';
 import { throwUnsupported } from '../utils';
+
+// <Tree headerLabels={['Column 1', 'Column 2', '3']}>
+//   <TreeItem value={['Item 1', 'Value 1']} />
+//   <TreeItem value={['Item 2', 'Value 2']}>
+//     <TreeItem value={['Item 2:1', 'Value 2:1']} />
+//     <TreeItem value={['Item 2:2', 'Value 2:2']} />
+//   </TreeItem>
+//   <TreeItem value={['Item 3', 'Value 3']} />
+// </Tree>
 
 export type TreeItemProps = WithPartialSlotProps<{
   value: Array<string>;

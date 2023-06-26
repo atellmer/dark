@@ -1,8 +1,8 @@
 import {
-  QPlainTextEdit,
   type QPlainTextEditSignals,
   type QTextOptionWrapMode,
   type LineWrapMode,
+  QPlainTextEdit,
 } from '@nodegui/nodegui';
 import {
   type ComponentFactory,
@@ -16,6 +16,8 @@ import {
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qPlainTextEdit } from '../factory';
+
+// <LineEdit onTextChanged={(value: string) => console.log(value)} />
 
 export type PlainTextEditProps = WithStandardProps<
   {

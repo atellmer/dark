@@ -4,10 +4,19 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qBoxLayout } from '../factory';
 import { detectIsDialog } from './dialog';
+import { runAtTheEndOfCommit } from '../dom';
+
+// <BoxLayout direction={Direction.LeftToRight}>
+//   <Text>Content 1</Text>
+//   <Text>Content 2</Text>
+//   <Text>Content 3</Text>
+// </BoxLayout>
 
 export type BoxLayoutProps = WithSlotProps<
   {
-    direction?: Direction;
+    direction: Direction;
+    spacing?: number;
+    stretch?: Array<number>;
   } & WidgetProps
 >;
 export type BoxLayoutRef = QDarkBoxLayout;
@@ -32,8 +41,16 @@ class QDarkBoxLayout extends QWidget implements Container {
     return this.boxLayout;
   }
 
-  public setDirection(direction: Direction) {
-    this.boxLayout.setDirection(direction);
+  public setDirection(value: Direction) {
+    this.boxLayout.setDirection(value);
+  }
+
+  public setSpacing(value: number) {
+    runAtTheEndOfCommit(() => this.boxLayout.setSpacing(value));
+  }
+
+  public setStretch(value: Array<number>) {
+    runAtTheEndOfCommit(() => value.forEach((x, idx) => this.boxLayout.setStretch(idx, x)));
   }
 
   public appendChild(child: QWidget) {

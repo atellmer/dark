@@ -1,9 +1,15 @@
-import { QStatusBar, type QWidget, type QStatusBarSignals } from '@nodegui/nodegui';
+import { type QWidget, type QStatusBarSignals, QStatusBar } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qStatusBar } from '../factory';
 import { detectIsDialog } from './dialog';
+
+// <Window windowTitle='App'>
+//   <StatusBar>
+//     <Text>Some status</Text>
+//   </StatusBar>
+// </Window>
 
 export type StatusBarProps = WithSlotProps<
   {

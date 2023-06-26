@@ -13,6 +13,10 @@ import {
 
 import type { WidgetProps, WithSlotProps } from '../shared';
 
+// <DropShadowEffect blurRadius={10} xOffset={2} yOffset={2}>
+//   <Image src='https://placehold.co/600x400' />
+// </DropShadowEffect>
+
 export type DropShadowEffectProps = WithSlotProps<
   {
     blurRadius: number;

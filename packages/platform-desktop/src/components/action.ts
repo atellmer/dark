@@ -1,8 +1,20 @@
-import { QAction, type QActionSignals, type QIcon, type QKeySequence, type ShortcutContext } from '@nodegui/nodegui';
+import { type QActionSignals, type QIcon, type QKeySequence, type ShortcutContext, QAction } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qAction } from '../factory';
+
+// const actionEvents = useEventSystem<ActionSignals>(
+//   {
+//     triggered: () => {},
+//   },
+//   [],
+// );
+// <Menu title='File'>
+//   <Action text='Open' on={actionEvents} />
+//   <Action text='Create' on={actionEvents} />
+//   <Action text='Save' on={actionEvents} />
+// </Menu>
 
 export type ActionProps = WithStandardProps<
   {

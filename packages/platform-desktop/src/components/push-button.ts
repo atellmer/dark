@@ -1,8 +1,16 @@
-import { QPushButton, type QIcon, type QSize, type QPushButtonSignals } from '@nodegui/nodegui';
+import { type QIcon, type QSize, type QPushButtonSignals, QPushButton } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qPushButton } from '../factory';
+
+// const buttonEvents = useEventSystem<PushButtonSignals>(
+//   {
+//     clicked: () => {},
+//   },
+//   [],
+// );
+// <PushButton text='click me' on={buttonEvents} />
 
 export type PushButtonProps = WithStandardProps<
   {

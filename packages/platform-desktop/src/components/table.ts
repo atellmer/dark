@@ -1,4 +1,4 @@
-import { QWidget, QTableWidget, type QTableWidgetSignals } from '@nodegui/nodegui';
+import { type QTableWidgetSignals, QWidget, QTableWidget } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
@@ -6,6 +6,13 @@ import { qTable } from '../factory';
 import { detectIsTableItem } from './table-item';
 import { runAtTheEndOfCommit } from '../dom';
 import { throwUnsupported } from '../utils';
+
+// <Table columnCount={2} rowCount={2}>
+//   <TableItem row={0} col={0} text='0, 0' />
+//   <TableItem row={0} col={1} text='0, 1' />
+//   <TableItem row={1} col={0} text='1, 0' />
+//   <TableItem row={1} col={1} text='1, 1' />
+// </Table>
 
 export type TableProps = WithSlotProps<
   {

@@ -1,8 +1,10 @@
-import { QMessageBox, QPushButton, ButtonRole, type QMessageBoxSignals } from '@nodegui/nodegui';
+import { type QMessageBoxSignals, QMessageBox, QPushButton, ButtonRole } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qMessageDialog } from '../factory';
+
+// <MessageDialog open={open} text='Some message...' />
 
 export type MessageDialogProps = WithStandardProps<
   {

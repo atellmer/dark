@@ -5,6 +5,18 @@ import type { WithSlotProps } from '../shared';
 import { qTabItem } from '../factory';
 import { QDarkFlexLayout } from './flex-layout';
 
+// <Tab currentIndex={0}>
+//   <TabItem text='Tab 1'>
+//     <Text>Content 1</Text>
+//   </TabItem>
+//   <TabItem text='Tab 2'>
+//     <Text>Content 2</Text>
+//   </TabItem>
+//   <TabItem text='Tab 3'>
+//     <Text>Content 3</Text>
+//   </TabItem>
+// </Tab>
+
 export type TabItemProps = WithSlotProps<{
   text: string;
   icon?: QIcon;

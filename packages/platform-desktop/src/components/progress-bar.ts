@@ -1,8 +1,10 @@
-import { QProgressBar, type Orientation, type QProgressBarSignals } from '@nodegui/nodegui';
+import { type Orientation, type QProgressBarSignals, QProgressBar } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qProgressBar } from '../factory';
+
+// <ProgressBar value={45} textHidden />
 
 export type ProgressBarProps = WithStandardProps<
   {

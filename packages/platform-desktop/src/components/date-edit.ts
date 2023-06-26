@@ -1,8 +1,18 @@
-import { QDateEdit, type QDate, type QDateTimeEditSignals } from '@nodegui/nodegui';
+import { type QDate, type QDateTimeEditSignals, QDateEdit } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qDateEdit } from '../factory';
+
+// const date = new QDate(2032, 7, 1);
+// const dateEditEvents = useEventSystem<DateEditSignals>(
+//   {
+//     dateChanged: (e: SyntheticEvent<QDate) => console.log(e.value),
+//   },
+//   [],
+// );
+// <DateEdit date={date} displayFormat='dd.MM.yyyy' on={dateEditEvents} />
+// https://doc.qt.io/qt-6/qdate.html
 
 export type DateEditProps = WithStandardProps<
   {

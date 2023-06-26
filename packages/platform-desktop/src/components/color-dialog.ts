@@ -1,8 +1,16 @@
-import { QColorDialog, QColor, type QColorDialogSignals } from '@nodegui/nodegui';
+import { type QColorDialogSignals, QColorDialog, QColor } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qColorDialog } from '../factory';
+
+// const colorDialogEvents = useEventSystem<ColorDialogSignals>(
+//   {
+//     colorSelected: (e: SyntheticEvent<QColor>) => console.log(e.value),
+//   },
+//   [],
+// );
+// <ColorDialog open={open} on={colorDialogEvents} />
 
 export type ColorDialogProps = WithStandardProps<
   {

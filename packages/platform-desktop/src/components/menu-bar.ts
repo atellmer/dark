@@ -1,10 +1,25 @@
-import { QWidget, QMenuBar, type QMenuBarSignals } from '@nodegui/nodegui';
+import { type QMenuBarSignals, QWidget, QMenuBar } from '@nodegui/nodegui';
 import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMenuBar } from '../factory';
 import { QDarkMenu } from './menu';
 import { throwUnsupported } from '../utils';
+
+// <Window windowTitle='App'>
+//   <MenuBar>
+//     <Menu title='File'>
+//       <Action text='Open' />
+//       <Action text='Create' />
+//       <Action text='Save' />
+//     </Menu>
+//     <Menu title='Edit'>
+//       <Action text='Cut' />
+//       <Action text='Copy' />
+//       <Action text='Paste' />
+//     </Menu>
+//   </MenuBar>
+// </Window>
 
 export type MenuBarProps = WithSlotProps<{} & WidgetProps>;
 export type MenuBarRef = QDarkMenuBar;
