@@ -4,13 +4,13 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qCheckBox } from '../factory';
 
-// const checkboxEvents = useEventSystem<CheckBoxSignals>(
+// const checkBoxEvents = useEventSystem<CheckBoxSignals>(
 //   {
 //     toggled: (e: SyntheticEvent<boolean>) => console.log(e.value),
 //   },
 //   [],
 // );
-// <CheckBox text='Label' checked={checked} on={checkboxEvents} />
+// <CheckBox text='Label' checked={checked} on={checkBoxEvents} />
 
 export type CheckBoxProps = WithStandardProps<
   {
