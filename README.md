@@ -7,6 +7,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="NPM Downloads" src="https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="bundle size core" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/core?label=size%20[core]&style=flat&colorA=000063&colorB=673ab7">
+<img alt="bundle size browser" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/platform-browser?label=size%20[platform-browser]&style=flat&colorA=000063&colorB=673ab7">
 </div>
 
 <div align="center"> 
@@ -128,7 +129,7 @@ CDN:
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
 ```
 
-## Installation for Node.js (Universal apps or static sites generators)
+## Installation for Node.js (Universal apps)
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
@@ -138,7 +139,7 @@ yarn:
 yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
 
-## Installation for mobile platforms developing (Android and iOS native apps)
+## Installation for mobile (Android and iOS)
 npm:
 ```
 npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
@@ -148,7 +149,7 @@ yarn:
 yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
 ```
 
-## Installation for desktop platforms developing (Windows, Linux, macOS native apps)
+## Installation for desktop (Windows, Linux, macOS)
 npm:
 ```
 npm install @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
