@@ -34,18 +34,12 @@ const App = component<AppProps>(() => {
       }
     `,
   }));
-  const buttonIncreaseEvents = useEventSystem<PushButtonSignals>(
-    {
-      clicked: () => percent < 100 && setPercent(x => x + 5),
-    },
-    [percent],
-  );
-  const buttonDecreaseEvents = useEventSystem<PushButtonSignals>(
-    {
-      clicked: () => percent > 0 && setPercent(x => x - 5),
-    },
-    [percent],
-  );
+  const buttonIncreaseEvents = useEventSystem<PushButtonSignals>({
+    clicked: () => percent < 100 && setPercent(x => x + 5),
+  });
+  const buttonDecreaseEvents = useEventSystem<PushButtonSignals>({
+    clicked: () => percent > 0 && setPercent(x => x - 5),
+  });
 
   return (
     <>

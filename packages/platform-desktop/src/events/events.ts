@@ -21,12 +21,24 @@ const detectIsEvent = (attrName: string) => attrName === 'on';
 export type EventHandler<T = any> = (e: SyntheticEvent<T>) => void;
 
 function useEventSystem<T>(
-  handlers: Partial<
+  map: Partial<
     Record<T extends QWidgetSignals ? keyof T : T extends WidgetEventTypes ? WidgetEventTypes : never, EventHandler>
   >,
-  deps: Array<any>,
 ) {
-  return useMemo(() => handlers, deps);
+  const scope = useMemo(() => ({ map }), []);
+  const map$ = useMemo(() => {
+    const state: typeof map = {};
+
+    for (const key of Object.keys(scope.map)) {
+      state[key] = (...args: Array<any>) => scope.map[key](...args);
+    }
+
+    return state;
+  }, []);
+
+  scope.map = map;
+
+  return map$;
 }
 
 export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, useEventSystem };
