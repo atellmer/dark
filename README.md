@@ -366,7 +366,7 @@ import {
 } from '@dark-engine/platform-desktop';
 ```
 
-## A little more about the core concepts...
+## A little about the core concepts...
 
 <a name="elements"></a>
 ## Elements
