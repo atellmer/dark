@@ -19,22 +19,6 @@ yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
 ```
 
 ## Usage
-
-```tsx
-import { h, component, useState } from '@dark-engine/core';
-
-const App = component(() => {
-  const [count, setCount] = useState(0);
-
-   return (
-    <flexbox-layout justifyContent='center' alignItems='center'>
-      <button backgroundColor='purple' padding={16} onTap={() => setCount(count + 1)}>Fired {count} times</button>
-    </flexbox-layout>
-  );
-});
-```
-
-Dark provides wrappers for all nativescript primitives as components. So you can write code above like this:
 ```tsx
 import { h, component, useState } from '@dark-engine/core';
 import { FlexboxLayout, Button } from '@dark-engine/platform-native';
@@ -44,12 +28,16 @@ const App = component(() => {
 
   return (
     <FlexboxLayout justifyContent='center' alignItems='center'>
-      <Button backgroundColor='purple' padding={16} onTap={() => setCount(count + 1)}>Fired {count} times</Button>
+      <Button
+        backgroundColor='purple'
+        padding={16}
+        onTap={() => setCount(count + 1)}>
+        Fired {count} times
+      </Button>
     </FlexboxLayout>
   );
 });
 ```
-
 Also you can write any code without JSX:
 ```tsx
 import { component, useState } from '@dark-engine/core';
@@ -232,64 +220,25 @@ npm i @nstudio/nativescript-carousel
 ```
 Further, to register a new element, you need to use the `registerElement` function:
 ```tsx
-import { registerElement } from '@dark-engine/platform-native';
-
-registerElement('carousel', () => require('@nstudio/nativescript-carousel').Carousel);
-registerElement('carousel-item', () => require('@nstudio/nativescript-carousel').CarouselItem);
-```
-
-Warning: you must include the element using lowercase to name the element. If the element name consists of more than one word, then you must separate them with hyphens.
-
-To avoid typescript JSX errors you should add new items to JSX:
-
-```tsx
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'carousel': CarouselProps; //<-- describe carousel props here
-      'carousel-item': CarouselItemProps; //<-- describe carousel-item props here
-    }
-  }
-}
-```
-
-After all this, a new plugin can be used like this:
-
-```tsx
-return (
-  <carousel height='100%' width='100%'>
-    <carousel-item id='slide1' backgroundColor='red'>
-      <label text='Slide 1' />
-    </carousel-item>
-    <carousel-item id='slide2' backgroundColor='blue'>
-      <label text='Slide 2' />
-    </carousel-item>
-    <carousel-item id='slide3' backgroundColor='green'>
-      <label text='Slide 3' />
-    </carousel-item>
-  </carousel>
-)
-```
-
-If you prefer to write nativescript components in PascalCase you need to wrap it with component:
-
-```tsx
 import { component } from '@dark-engine/core';
-import { factory } from '@dark-engine/platform-native';
+import { registerElement, factory } from '@dark-engine/platform-native';
+
+registerElement('ns:carousel', () => require('@nstudio/nativescript-carousel').Carousel);
+registerElement('ns:carousel-item', () => require('@nstudio/nativescript-carousel').CarouselItem);
 
 type CarouselProps = {};
 type CarouselItemProps = {};
 
-const carousel = factory('carousel');
-const carouselItem = factory('carousel-item');
-
+const carousel = factory('ns:carousel');
 const Carousel = component<CarouselProps>(props => carousel(props));
+
+const carouselItem = factory('ns:carousel-item');
 const CarouselItem = component<CarouselItemProps>(props => carouselItem(props));
 
 export { Carousel, CarouselItem };
 ```
 
-Somewhere in your awesome code:
+After all this, a new plugin can be used like this::
 
 ```tsx
 import { Label } from '@dark-engine/platform-native';
@@ -323,9 +272,9 @@ const [isOpen, setIsOpen] = useState(false);
 
 return (
   <Modal isOpen={isOpen} animated onRequestClose={() => setIsOpen(false)}>
-    <stack-layout padding={32}>
-      <label>Hello from Modal</label>
-    </stack-layout>
+    <StackLayout padding={32}>
+      <Label>Hello from Modal</Label>
+    </StackLayout>
   </Modal>
 );
 ```

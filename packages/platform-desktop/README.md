@@ -1,6 +1,6 @@
 # @dark-engine/platform-desktop 🌖
 
-Dark renderer to desktop platforms like Windows, Linux, macOS via Nodegui and QT
+Dark renderer to desktop platforms like Windows, Linux, macOS via Nodegui and Qt
 
 [More about Dark](https://github.com/atellmer/dark)
 

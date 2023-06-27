@@ -1,14 +1,12 @@
 <div align="center">
 <h1>Dark</h1>
 
-The lightweight and powerful UI rendering engine without dependencies and written in TypeScript 💫 <br> (Browser, Node.js, Android, iOS)
+The lightweight and powerful UI rendering engine without dependencies and written in TypeScript 💫 <br> (Browser, Node.js, Android, iOS, Windows, Linux, macOS)
 
 <img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="NPM Downloads" src="https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="bundle size core" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/core?label=size%20[core]&style=flat&colorA=000063&colorB=673ab7">
-<img alt="bundle size browser" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/platform-browser?label=size%20[platform-browser]&style=flat&colorA=000063&colorB=673ab7">
-<img alt="bundle size router" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/web-router?label=size%20[router]&style=flat&colorA=000063&colorB=673ab7">
 </div>
 
 <div align="center"> 
@@ -31,6 +29,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - ☄️ Hot module replacement
 - 🏄‍♂️ Out of box isomorphic routing
 - 🚢 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
+- 🚢 Rendering to desktop platforms (Windows, Linux, macOS) via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>
 
 ```tsx
 const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
@@ -129,7 +128,7 @@ CDN:
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
 ```
 
-## Installation for Node.js (Universal apps)
+## Installation for Node.js (Universal apps or static sites generators)
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
@@ -139,7 +138,7 @@ yarn:
 yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
 
-## Installation for mobile platforms (Android and iOS native apps)
+## Installation for mobile platforms developing (Android and iOS native apps)
 npm:
 ```
 npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
@@ -147,6 +146,16 @@ npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
 yarn:
 ```
 yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
+```
+
+## Installation for desktop platforms developing (Windows, Linux, macOS native apps)
+npm:
+```
+npm install @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
+```
+yarn:
+```
+yarn add @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
 ```
 
 ## Table of contents
@@ -175,10 +184,11 @@ yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
 - [Routing](#routing)
 - [Others](#others)
 - [Rendering to native platforms](#native-platforms)
+- [Rendering to desktop platforms](#desktop-platforms)
 
 <a name="overview"></a>
 ## API overview
-The public API is partially similar to the React API and includes 2 packages - core and browser support.
+The public API is partially similar to the React API and includes several packages that you should install depending on the required platform. The main package is the `core` of the system.
 
 ```tsx
 import {
@@ -298,6 +308,70 @@ import {
   TransitionName,
   useNavigation,
 } from '@dark-engine/native-navigation';
+```
+```tsx
+import {
+  type SyntheticEvent,
+  render,
+  registerElement,
+  factory,
+  useEventSystem,
+  useStyle,
+  useShortcut,
+  Window,
+  Text,
+  FlexLayout,
+  BoxLayout,
+  GridLayout,
+  GridItem,
+  BlurEffect,
+  DropShadowEffect,
+  Svg,
+  Action,
+  Menu,
+  MenuBar,
+  Image,
+  AnimatedImage,
+  CheckBox,
+  LineEdit,
+  PlainTextEdit,
+  DateEdit,
+  TimeEdit,
+  DateTimeEdit,
+  SpinBox,
+  DoubleSpinBox,
+  PushButton,
+  TooButton,
+  RadioButton,
+  ComboBox,
+  Slider,
+  ScrollArea,
+  ProgressBar,
+  GroupBox,
+  List,
+  ListItem,
+  Tree,
+  TreeItem,
+  Table,
+  TableItem,
+  Tab,
+  TabItem,
+  Stack,
+  Splitter,
+  SystemTrayIcon,
+  Dial,
+  Dialog,
+  ColorDialog,
+  FileDialog,
+  FontDialog,
+  InputDialog,
+  ProgressDialog,
+  MessageDialog,
+  Calendar,
+  ErrorMessage,
+  StatusBar,
+  TextBrowser,
+} from '@dark-engine/platform-desktop';
 ```
 
 ## A little more about the core concepts...
@@ -1416,7 +1490,13 @@ const App = component(() => {
 
 ## Rendering to native platforms (Android, iOS)
 
-Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports JavaScript execution. Thanks to this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to NativeScript, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native`. You can learn more about it [here](https://github.com/atellmer/dark/tree/master/packages/platform-native).
+Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports JavaScript execution. Thanks to this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to `NativeScript`, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native`. You can learn more about it [here](https://github.com/atellmer/dark/tree/master/packages/platform-native).
+
+<a name="desktop-platforms"></a>
+
+## Rendering to desktop platforms (Windows, Linux, macOS)
+
+If you want to develop native apps for popular desktop operating systems, then you can do that too. With top notch `NodeGui` and `Qt` support, you can render to operating system widgets. Also, since `NodeGui` includes a fork of `Node.js` called `Qode`, any packages for modern Node.js can be used when writing desktop applications. Read more about the `@dark-engine/platform-desktop` package [here](https://github.com/atellmer/dark/tree/master/packages/platform-desktop).
 
 Thanks everyone! 🤛
 

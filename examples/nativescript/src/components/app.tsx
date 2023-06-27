@@ -7,6 +7,10 @@ import {
   NavigationButton,
   ActionItem,
   TouchableOpacity,
+  StackLayout,
+  FlexboxLayout,
+  Label,
+  Button,
 } from '@dark-engine/platform-native';
 import {
   type RenderActionBarOptions,
@@ -37,7 +41,7 @@ const List = component(() => {
   const { navigateTo, match } = useAnimatedNavigation();
 
   return (
-    <stack-layout backgroundColor='#512da8' height='100%'>
+    <StackLayout backgroundColor='#512da8' height='100%'>
       <ListView
         height='100%'
         items={items}
@@ -46,13 +50,13 @@ const List = component(() => {
         }}>
         {({ item, idx }) => {
           return (
-            <stack-layout backgroundColor={idx % 2 ? '#f48fb1' : '#fff59d'}>
-              <label color='black'>item #{item}</label>
-            </stack-layout>
+            <StackLayout backgroundColor={idx % 2 ? '#f48fb1' : '#fff59d'}>
+              <Label color='black'>item #{item}</Label>
+            </StackLayout>
           );
         }}
       </ListView>
-    </stack-layout>
+    </StackLayout>
   );
 });
 
@@ -61,19 +65,19 @@ const Profile = component(() => {
   const id = Number(params.get('id'));
 
   return (
-    <stack-layout backgroundColor='#1976d2' height='100%'>
-      <label>Profile: {pathname}</label>
-      <label>id: {id}</label>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/List`)}>
+    <StackLayout backgroundColor='#1976d2' height='100%'>
+      <Label>Profile: {pathname}</Label>
+      <Label>id: {id}</Label>
+      <Button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/List`)}>
         go to List
-      </button>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Dashboard`)}>
+      </Button>
+      <Button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Dashboard`)}>
         go to Dashboard
-      </button>
-      <button backgroundColor='#d81b60' onTap={() => goBack()}>
+      </Button>
+      <Button backgroundColor='#d81b60' onTap={() => goBack()}>
         back
-      </button>
-    </stack-layout>
+      </Button>
+    </StackLayout>
   );
 });
 
@@ -81,30 +85,30 @@ const Dashboard = component(() => {
   const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
-    <stack-layout backgroundColor='#388e3c' height='100%'>
-      <label>Dashboard: {pathname}</label>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Profile`)}>
+    <StackLayout backgroundColor='#388e3c' height='100%'>
+      <Label>Dashboard: {pathname}</Label>
+      <Button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/Profile`)}>
         go to Profile
-      </button>
-      <button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/List`)}>
+      </Button>
+      <Button backgroundColor='#d81b60' onTap={() => navigateTo(`${match.pathname}/List`)}>
         go to List
-      </button>
-      <button backgroundColor='#d81b60' onTap={() => goBack()}>
+      </Button>
+      <Button backgroundColor='#d81b60' onTap={() => goBack()}>
         back
-      </button>
-    </stack-layout>
+      </Button>
+    </StackLayout>
   );
 });
 
 const Home = component(() => {
   return (
-    <stack-layout backgroundColor='#26c6da' height='100%'>
+    <StackLayout backgroundColor='#26c6da' height='100%'>
       <StackNavigator.Root>
         <StackNavigator.Screen name='List' component={List} />
         <StackNavigator.Screen name='Profile' component={Profile} initialParams={{ id: -1 }} />
         <StackNavigator.Screen name='Dashboard' component={Dashboard} />
       </StackNavigator.Root>
-    </stack-layout>
+    </StackLayout>
   );
 });
 
@@ -112,18 +116,18 @@ const Contacts = component(() => {
   const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
-    <stack-layout backgroundColor='#66bb6a' height='100%'>
-      <label>Contacts: {pathname}</label>
-      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
+    <StackLayout backgroundColor='#66bb6a' height='100%'>
+      <Label>Contacts: {pathname}</Label>
+      <Button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
         go to Home
-      </button>
-      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings`)}>
+      </Button>
+      <Button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings`)}>
         go to Settings
-      </button>
-      <button backgroundColor='purple' onTap={() => goBack()}>
+      </Button>
+      <Button backgroundColor='purple' onTap={() => goBack()}>
         back
-      </button>
-    </stack-layout>
+      </Button>
+    </StackLayout>
   );
 });
 
@@ -131,21 +135,21 @@ const Settings = component(() => {
   const { navigateTo, goBack, match, pathname } = useAnimatedNavigation();
 
   return (
-    <stack-layout backgroundColor='#ec407a' height='100%'>
-      <label>Settings: {pathname}</label>
-      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
+    <StackLayout backgroundColor='#ec407a' height='100%'>
+      <Label>Settings: {pathname}</Label>
+      <Button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Home`)}>
         go to Home
-      </button>
-      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Contacts`)}>
+      </Button>
+      <Button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Contacts`)}>
         go to Contacts
-      </button>
-      <button backgroundColor='purple' onTap={() => goBack()}>
+      </Button>
+      <Button backgroundColor='purple' onTap={() => goBack()}>
         back
-      </button>
-      <button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings/Modal`)}>
+      </Button>
+      <Button backgroundColor='purple' onTap={() => navigateTo(`${match.pathname}/Settings/Modal`)}>
         go to Setting/Modal
-      </button>
-    </stack-layout>
+      </Button>
+    </StackLayout>
   );
 });
 
@@ -155,12 +159,12 @@ const ModalNavigator = component(() => {
 
   return (
     <Modal isOpen={isModalOpen} animated>
-      <stack-layout padding={32}>
-        <label>Hello from ModalNavigator</label>
-        <button backgroundColor='purple' onTap={goBack}>
+      <StackLayout padding={32}>
+        <Label>Hello from ModalNavigator</Label>
+        <Button backgroundColor='purple' onTap={goBack}>
           close
-        </button>
-      </stack-layout>
+        </Button>
+      </StackLayout>
     </Modal>
   );
 });
@@ -180,10 +184,10 @@ const App = component(() => {
         <NavigationButton visibility='collapse' />
         <ActionItem ios={{ position: 'left' } as any}>
           <TouchableOpacity onPress={goBack}>
-            <flexbox-layout color='#fff' marginLeft={-12}>
-              <label text='&#xe875;' class='lnr' fontSize={20}></label>
-              <label fontSize={16}>back</label>
-            </flexbox-layout>
+            <FlexboxLayout color='#fff' marginLeft={-12}>
+              <Label text='&#xe875;' class='lnr' fontSize={20}></Label>
+              <Label fontSize={16}>back</Label>
+            </FlexboxLayout>
           </TouchableOpacity>
         </ActionItem>
       </ActionBar>
@@ -192,15 +196,15 @@ const App = component(() => {
 
   const renderTab = (name: string) => {
     const iconsMap = {
-      Home: () => <label class='lnr' text='&#xe800;' />,
-      Contacts: () => <label class='lnr' text='&#xe830;' />,
-      Settings: () => <label class='lnr' text='&#xe810;' />,
+      Home: () => <Label class='lnr' text='&#xe800;' />,
+      Contacts: () => <Label class='lnr' text='&#xe830;' />,
+      Settings: () => <Label class='lnr' text='&#xe810;' />,
     };
 
     return (
       <>
         {iconsMap[name]()}
-        <label>{name}</label>
+        <Label>{name}</Label>
       </>
     );
   };
@@ -209,14 +213,14 @@ const App = component(() => {
     <NavigationContainer
       defaultPathname='/Home/List'
       renderActionBar={isAndroid ? renderAndroidActionBar : renderIOSActionBar}>
-      <stack-layout>
+      <StackLayout>
         <TabNavigator.Root bottomNavigationOptions={{ compensate: isAndroid ? 0 : 64 }}>
           <TabNavigator.Screen name='Home' component={Home} renderTab={renderTab} />
           <TabNavigator.Screen name='Contacts' component={Contacts} renderTab={renderTab} />
           <TabNavigator.Screen name='Settings' component={Settings} renderTab={renderTab} />
         </TabNavigator.Root>
         <ModalNavigator />
-      </stack-layout>
+      </StackLayout>
     </NavigationContainer>
   );
 });

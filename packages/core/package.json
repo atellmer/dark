@@ -1,7 +1,7 @@
 {
   "name": "@dark-engine/core",
   "version": "0.24.1",
-  "description": "The lightweight and powerful UI rendering engine without dependencies and written in TypeScript (Browser, Node.js, Android, iOS)",
+  "description": "The lightweight and powerful UI rendering engine without dependencies and written in TypeScript (Browser, Node.js, Android, iOS, Windows, Linux, macOS)",
   "author": "AlexPlex",
   "license": "MIT",
   "main": "./dist/cjs/index.js",
