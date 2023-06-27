@@ -30,7 +30,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - ☄️ Hot module replacement
 - 🏄‍♂️ Out of box isomorphic routing
 - 🚢 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
-- 🚢 Rendering to desktop platforms (Windows, Linux, macOS) via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>
+- ☀️ Rendering to desktop platforms (Windows, Linux, macOS) via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>
 
 ```tsx
 const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
