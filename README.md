@@ -307,7 +307,7 @@ import {
   render,
   registerElement,
   factory,
-  useEventSystem,
+  useEvents,
   useStyle,
   useShortcut,
   Window,

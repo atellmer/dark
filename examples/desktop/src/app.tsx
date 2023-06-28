@@ -10,7 +10,7 @@ import {
   ProgressBar,
   PushButton,
   useStyle,
-  useEventSystem,
+  useEvents,
 } from '@dark-engine/platform-desktop';
 
 import nodeguiIcon from '../assets/nodegui.jpg';
@@ -34,10 +34,10 @@ const App = component<AppProps>(() => {
       }
     `,
   }));
-  const buttonIncreaseEvents = useEventSystem<PushButtonSignals>({
+  const buttonIncreaseEvents = useEvents<PushButtonSignals>({
     clicked: () => percent < 100 && setPercent(x => x + 5),
   });
-  const buttonDecreaseEvents = useEventSystem<PushButtonSignals>({
+  const buttonDecreaseEvents = useEvents<PushButtonSignals>({
     clicked: () => percent > 0 && setPercent(x => x - 5),
   });
 
