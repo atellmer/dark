@@ -51,3 +51,4 @@ export * from './message-dialog';
 export * from './status-bar';
 export * from './tool-button';
 export * from './splitter';
+export * from './lcd-number';

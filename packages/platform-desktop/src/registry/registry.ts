@@ -80,5 +80,6 @@ registerElement('q:message-dialog', () => require('../components/message-dialog'
 registerElement('q:status-bar', () => require('../components/status-bar').QDarkStatusBar);
 registerElement('q:tool-button', () => require('../components/tool-button').QDarkToolButton);
 registerElement('q:splitter', () => require('../components/splitter').QDarkSplitter);
+registerElement('q:lcd-number', () => require('../components/lcd-number').QDarkLCDNumber);
 
 export { getElementFactory, registerElement };

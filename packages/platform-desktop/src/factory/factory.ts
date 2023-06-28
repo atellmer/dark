@@ -55,3 +55,4 @@ export const qMessageDialog = factory('q:message-dialog');
 export const qStatusBar = factory('q:status-bar');
 export const qToolButton = factory('q:tool-button');
 export const qSplitter = factory('q:splitter');
+export const qLCDNumber = factory('q:lcd-number');

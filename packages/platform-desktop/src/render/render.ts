@@ -56,7 +56,7 @@ function render(element: DarkElement) {
     nextUnitOfWorkStore.set(fiber);
   };
 
-  platform.schedule(callback, { priority: TaskPriority.NORMAL, forceSync: true });
+  platform.schedule(callback, { priority: TaskPriority.NORMAL });
 }
 
 globalThis._DARK_ = Fiber;

@@ -333,7 +333,7 @@ import {
   SpinBox,
   DoubleSpinBox,
   PushButton,
-  TooButton,
+  ToolButton,
   RadioButton,
   ComboBox,
   Slider,
@@ -363,6 +363,7 @@ import {
   ErrorMessage,
   StatusBar,
   TextBrowser,
+  LCDNumber,
 } from '@dark-engine/platform-desktop';
 ```
 
