@@ -170,26 +170,25 @@ FlexLayout is a kind of layout system based on the flexbox behavior of the web, 
 ```tsx
 const style = useStyle(styled => ({
   root: styled`
+    QLabel {
+      font-size: 20px;
+      qproperty-alignment: 'AlignCenter';
+    }
     #box {
       flex-direction: 'column';
     }
     #text-1 {
       flex: 1;
-      font-size: 20px;
       background-color: red;
-      qproperty-alignment: 'AlignCenter';
+      color: white;
     }
     #text-2 {
       flex: 1;
-      font-size: 20px;
       background-color: yellow;
-      qproperty-alignment: 'AlignCenter';
     }
     #text-3 {
       flex: 2;
-      font-size: 20px;
       background-color: green;
-      qproperty-alignment: 'AlignCenter';
     }
   `,
 }));
