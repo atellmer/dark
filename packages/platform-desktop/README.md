@@ -175,15 +175,21 @@ const style = useStyle(styled => ({
     }
     #text-1 {
       flex: 1;
-      background-color: 'pink';
+      font-size: 20px;
+      background-color: red;
+      qproperty-alignment: 'AlignCenter';
     }
     #text-2 {
       flex: 1;
-      background-color: 'yellow';
+      font-size: 20px;
+      background-color: yellow;
+      qproperty-alignment: 'AlignCenter';
     }
     #text-3 {
       flex: 2;
-      background-color: 'green';
+      font-size: 20px;
+      background-color: green;
+      qproperty-alignment: 'AlignCenter';
     }
   `,
 }));
@@ -208,15 +214,13 @@ This is a built-in layout in Qt that lays out its child elements either horizont
 
 ```tsx
 return (
-  <>
-    <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
-     <BoxLayout direction={Direction.LeftToRight}>
-        <Text id='text-1'>Content 1</Text>
-        <Text id='text-2'>Content 2</Text>
-        <Text id='text-3'>Content 3</Text>
-      </BoxLayout>
-    </Window>
-  </>
+  <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+    <BoxLayout direction={Direction.LeftToRight}>
+      <Text id='text-1'>Content 1</Text>
+      <Text id='text-2'>Content 2</Text>
+      <Text id='text-3'>Content 3</Text>
+    </BoxLayout>
+  </Window>
 );
 ```
 
@@ -230,24 +234,22 @@ This layout implements a layout system similar to grid on the web, where each ch
 
 ```tsx
 return (
-  <>
-    <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
-      <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
-        <GridItem row={0} col={0}>
-          <Text id='text-1'>Label 1</Text>
-        </GridItem>
-        <GridItem row={0} col={1}>
-          <Text id='text-2'>Label 2</Text>
-        </GridItem>
-        <GridItem row={1} col={0}>
-          <Text id='text-3'>Label 3</Text>
-        </GridItem>
-        <GridItem row={1} col={1}>
-          <Text id='text-4'>Label 4</Text>
-        </GridItem>
-      </GridLayout>
-    </Window>
-  </>
+  <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+    <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
+      <GridItem row={0} col={0}>
+        <Text id='text-1'>Label 1</Text>
+      </GridItem>
+      <GridItem row={0} col={1}>
+        <Text id='text-2'>Label 2</Text>
+      </GridItem>
+      <GridItem row={1} col={0}>
+        <Text id='text-3'>Label 3</Text>
+      </GridItem>
+      <GridItem row={1} col={1}>
+        <Text id='text-4'>Label 4</Text>
+      </GridItem>
+    </GridLayout>
+  </Window>
 );
 ```
 
