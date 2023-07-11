@@ -8,6 +8,10 @@ NativeScript is a free and open-source framework for building native mobile apps
 <br>
 [More about NativeScript](https://nativescript.org/)
 
+<div align="center"> 
+  <img src="./assets/cover.jpg">
+</div>
+
 ## Installation
 npm:
 ```

@@ -363,11 +363,9 @@ import { useEvents } from '@dark-engine/platform-desktop';
 ```
 
 ```tsx
-const lineEditEvents = useEvents<LineEditSignals>(
-  {
-    textChanged: (e: SyntheticEvent<string>) => console.log(e.value),
-  },
-);
+const lineEditEvents = useEvents<LineEditSignals>({
+  textChanged: (e: SyntheticEvent<string>) => console.log(e.value),
+});
 const buttonEvents = useEvents<PushButtonSignals>({
   clicked: () => console.log('clicked'),
 });

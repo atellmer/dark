@@ -15,6 +15,7 @@ yarn:
 yarn add @dark-engine/core @dark-engine/platform-browser
 ```
 
+CDN:
 ```html
 <script src="https://unpkg.com/@dark-engine/core/dist/umd/dark-core.production.min.js"></script>
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
