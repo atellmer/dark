@@ -9,10 +9,6 @@ module.exports = env => {
     target: 'node',
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
-      alias: {
-        '@dark-engine/core': resolve(__dirname, '../../packages/core/src'),
-        '@dark-engine/platform-desktop': resolve(__dirname, '../../packages/platform-desktop/src'),
-      },
     },
     output: {
       path: resolve(__dirname, 'dist'),

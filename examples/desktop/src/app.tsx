@@ -24,7 +24,7 @@ const App = component<AppProps>(() => {
   const style = useStyle(styled => ({
     root: styled`
       #text-1 {
-        background-color: 'pink';
+        background-color: 'red';
       }
       #text-2 {
         background-color: 'yellow';
