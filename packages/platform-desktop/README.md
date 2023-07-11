@@ -173,6 +173,7 @@ const style = useStyle(styled => ({
     QLabel {
       font-size: 20px;
       qproperty-alignment: 'AlignCenter';
+      color: white;
     }
     #box {
       flex-direction: 'column';
@@ -180,11 +181,11 @@ const style = useStyle(styled => ({
     #text-1 {
       flex: 1;
       background-color: red;
-      color: white;
     }
     #text-2 {
       flex: 1;
       background-color: yellow;
+      color: black;
     }
     #text-3 {
       flex: 2;
