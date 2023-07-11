@@ -114,40 +114,30 @@ const App = component(() => {
 createRoot(document.getElementById('root')).render(App());
 ```
 
-## Installation for browser (Single-page apps)
+## Installation
+Browser (Single-page apps)
 ```
 npm install @dark-engine/core @dark-engine/platform-browser
 ```
-```
-yarn add @dark-engine/core @dark-engine/platform-browser
-```
+or via CDN
 ```html
 <script src="https://unpkg.com/@dark-engine/core/dist/umd/dark-core.production.min.js"></script>
 <script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
 ```
 
-## Installation for Node.js (Universal apps)
+Node.js (Universal apps)
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
-```
-yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
-```
 
-## Installation for mobile (Android and iOS apps)
+Mobile (Android and iOS apps)
 ```
 npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
 ```
-```
-yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
-```
 
-## Installation for desktop (Windows, Linux, macOS apps)
+Desktop (Windows, Linux, macOS apps)
 ```
 npm install @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
-```
-```
-yarn add @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
 ```
 
 ## Table of contents
