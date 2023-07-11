@@ -165,7 +165,7 @@ import {
 
 ### FlexLayout
 
-FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source Yoga Layout project (similar to React Native). Styling properties happens through changing the values in the associated css.
+FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated css.
 
 ```tsx
 const style = useStyle(styled => ({
@@ -189,7 +189,7 @@ const style = useStyle(styled => ({
 }));
 
 return (
-  <Window windowTitle='title' width={400} height={400} styleSheet={style.root}>
+  <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
     <FlexLayout id='box'>
       <Text id='text-1'>Content 1</Text>
       <Text id='text-2'>Content 2</Text>
@@ -199,7 +199,7 @@ return (
 );
 ```
 <div align="center"> 
-  <img src="./assets/desktop/flex.jpg">
+  <img src="./assets/flex.jpg">
 </div>
 
 # LICENSE
