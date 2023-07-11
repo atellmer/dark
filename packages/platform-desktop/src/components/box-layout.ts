@@ -1,5 +1,5 @@
 import { QWidget, QBoxLayout, Direction } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, component, forwardRef, detectIsNumber, detectIsArray } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qBoxLayout } from '../factory';
@@ -17,6 +17,7 @@ export type BoxLayoutProps = WithSlotProps<
     direction: Direction;
     spacing?: number;
     stretch?: Array<number>;
+    margin?: number | [number, number, number, number];
   } & WidgetProps
 >;
 export type BoxLayoutRef = QDarkBoxLayout;
@@ -47,6 +48,16 @@ class QDarkBoxLayout extends QWidget implements Container {
 
   public setSpacing(value: number) {
     runAtTheEndOfCommit(() => this.boxLayout.setSpacing(value));
+  }
+
+  public setMargin(value: number | [number, number, number, number]) {
+    if (detectIsNumber(value)) {
+      runAtTheEndOfCommit(() => this.boxLayout.setContentsMargins(value, value, value, value));
+    } else if (detectIsArray(value)) {
+      const [left, top, right, bottom] = value;
+
+      runAtTheEndOfCommit(() => this.boxLayout.setContentsMargins(left, top, right, bottom));
+    }
   }
 
   public setStretch(value: Array<number>) {

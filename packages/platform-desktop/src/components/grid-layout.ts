@@ -26,6 +26,7 @@ export type GridLayoutProps = WithSlotProps<
   {
     horizontalSpacing?: number;
     verticalSpacing?: number;
+    margin?: number | [number, number, number, number];
     columnStretch?: Array<ValueVariant>;
     rowStretch?: Array<ValueVariant>;
     rowMinimumHeight?: Array<ValueVariant>;
@@ -62,6 +63,16 @@ class QDarkGridLayout extends QWidget implements Container {
 
   public setVerticalSpacing(value: number) {
     this.gridLayout.setVerticalSpacing(value);
+  }
+
+  public setMargin(value: number | [number, number, number, number]) {
+    if (detectIsNumber(value)) {
+      runAtTheEndOfCommit(() => this.gridLayout.setContentsMargins(value, value, value, value));
+    } else if (detectIsArray(value)) {
+      const [left, top, right, bottom] = value;
+
+      runAtTheEndOfCommit(() => this.gridLayout.setContentsMargins(left, top, right, bottom));
+    }
   }
 
   public setColumnStretch(value: Array<ValueVariant>) {

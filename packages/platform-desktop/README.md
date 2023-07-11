@@ -171,7 +171,7 @@ FlexLayout is a kind of layout system based on the flexbox behavior of the web, 
 const style = useStyle(styled => ({
   root: styled`
     #box {
-      justify-content: 'center';
+      flex-direction: 'column';
     }
     #text-1 {
       flex: 1;
@@ -200,6 +200,59 @@ return (
 ```
 <div align="center"> 
   <img src="./assets/flex.jpg">
+</div>
+
+### BoxLayout
+
+This is a built-in layout in Qt that lays out its child elements either horizontally or vertically. You can also control the placement direction using the Direction property.
+
+```tsx
+return (
+  <>
+    <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+     <BoxLayout direction={Direction.LeftToRight}>
+        <Text id='text-1'>Content 1</Text>
+        <Text id='text-2'>Content 2</Text>
+        <Text id='text-3'>Content 3</Text>
+      </BoxLayout>
+    </Window>
+  </>
+);
+```
+
+<div align="center"> 
+  <img src="./assets/box.jpg">
+</div>
+
+### GridLayout
+
+This layout implements a layout system similar to grid on the web, where each child is inside its own row and column.
+
+```tsx
+return (
+  <>
+    <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+      <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
+        <GridItem row={0} col={0}>
+          <Text id='text-1'>Label 1</Text>
+        </GridItem>
+        <GridItem row={0} col={1}>
+          <Text id='text-2'>Label 2</Text>
+        </GridItem>
+        <GridItem row={1} col={0}>
+          <Text id='text-3'>Label 3</Text>
+        </GridItem>
+        <GridItem row={1} col={1}>
+          <Text id='text-4'>Label 4</Text>
+        </GridItem>
+      </GridLayout>
+    </Window>
+  </>
+);
+```
+
+<div align="center"> 
+  <img src="./assets/grid.jpg">
 </div>
 
 # LICENSE
