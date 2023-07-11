@@ -1,5 +1,5 @@
 import type { DarkElement, SlotProps } from '../shared';
-import { detectIsUndefined, detectIsArray, detectIsDepsDifferent } from '../helpers';
+import { detectIsUndefined, detectIsArray, detectAreDepsDifferent } from '../helpers';
 import { detectIsComponent, component } from '../component';
 import { detectIsVirtualNodeFactory } from '../view';
 import { currentFiberStore } from '../scope';
@@ -51,7 +51,7 @@ function useMemo<T>(getValue: () => T, deps: Array<any>): T {
   }
 
   const hookValue = values[idx];
-  const isDifferent = detectIsDepsDifferent(deps, hookValue.deps as Array<any>);
+  const isDifferent = detectAreDepsDifferent(deps, hookValue.deps as Array<any>);
   const getValue$ = isDifferent ? getValue : () => hookValue.value;
 
   hookValue.deps = deps;

@@ -1,4 +1,4 @@
-import { detectIsUndefined, detectIsFunction, detectIsDepsDifferent } from '../helpers';
+import { detectIsUndefined, detectIsFunction, detectAreDepsDifferent } from '../helpers';
 import { currentFiberStore, effectsStore } from '../scope';
 import type { Fiber, Hook, HookValue } from '../fiber';
 import type { Effect, DropEffect } from './types';
@@ -28,7 +28,7 @@ function createEffect(token: Symbol, store: typeof effectsStore) {
       runEffect();
     } else {
       const { deps: prevDeps, value: cleanup } = values[idx];
-      const isDepsDifferent = deps ? detectIsDepsDifferent(deps, prevDeps) : true;
+      const isDepsDifferent = deps ? detectAreDepsDifferent(deps, prevDeps) : true;
 
       if (isDepsDifferent) {
         detectIsFunction(cleanup) && cleanup();
