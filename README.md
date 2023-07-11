@@ -121,7 +121,7 @@ Browser (Single-page apps)
 npm install @dark-engine/core @dark-engine/platform-browser
 ```
 
-Node.js (Universal apps, server-side or static sites)
+Node.js (Universal apps, classic or static sites)
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
