@@ -1,6 +1,6 @@
 # @dark-engine/platform-desktop 🌖
 
-Dark renderer to desktop platforms like Windows, Linux, macOS via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>
+Dark renderer to desktop platforms like Windows, Linux, macOS via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>.
 
 Qt is a cross-platform framework for developing applications and embedded systems. It provides developers with tools and libraries to build applications for various platforms such as Windows, macOS, Linux, Android, and iOS using the same code. Qt contains a comprehensive set of highly intuitive and modular C++ library classes and is loaded with APIs to simplify application development. It allows you to create easily readable, easily maintainable and reusable code with high runtime performance and small size.
 
@@ -356,7 +356,7 @@ return (
 
 ## Events
 
-Dark and NodeGui allows you to listen to various events that might originate from the underlying Qt widgets. These events can either be a simple button click or a text change on a lineedit or even something like window being hidden and shown. To start listening for events, you must use the `useEvents` hook and the `on` property on the element.
+Dark and NodeGui allows you to listen to various events that might originate from the underlying Qt widgets. These events can either be a simple PushButton click or a text change on a LineEdit or even something like window being hidden and shown. To start listening for events, you must use the `useEvents` hook and the `on` property on the element.
 
 ```tsx
 import { useEvents } from '@dark-engine/platform-desktop';
@@ -402,9 +402,9 @@ const Awesome = forwardRef<AwesomeProps, AwesomeRef>(
 );
 class QDarkAwesome extends QAwesome {} // here you can change something if you want 
 
-registerElement('q:awesome', () => QDarkAwesome);
+registerElement('q:awesome', () => QDarkAwesome); // registers in the system
 
-export { Awesome }; // it's working dark component <Awesome />
+export { Awesome }; // it's working <Awesome /> dark component
 ```
 
 ## Packaging
