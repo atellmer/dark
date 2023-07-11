@@ -24,13 +24,13 @@ const App = component<AppProps>(() => {
   const style = useStyle(styled => ({
     root: styled`
       #text-1 {
-        background-color: 'red';
+        background-color: red;
       }
       #text-2 {
-        background-color: 'yellow';
+        background-color: yellow;
       }
       #text-3 {
-        background-color: 'green';
+        background-color: green;
       }
     `,
   }));
