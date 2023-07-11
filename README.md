@@ -62,6 +62,7 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 - [Universal dark app (ssr + hydration + lazy + parameterized routing)](https://stackblitz.com/edit/darkapp-ccz57rk-n5zjg6?file=server%2Fapp.ts,client%2Fcomponents%2Fapp.tsx)
 - [Hot module replacement (HMR) in dev mode](https://stackblitz.com/edit/darkapp-ccz57rk-cnkbqk?file=app.tsx)
 - [Dark ❤️ NativeScript](https://stackblitz.com/edit/darkapp-ccz57rk-vqbndt?file=src%2Fcomponents%2Fapp.tsx)
+- [Dark 😍 NodeGui](https://github.com/atellmer/dark/tree/master/examples/desktop)
 
 ## Motivation
 This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
