@@ -76,7 +76,7 @@ const App = component(() => {
 
 ## Environment Setup
 
-Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/desktop" target="_blank">here</a>
+Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/desktop" target="_blank">here</a>.
 
 ## API
 
@@ -220,42 +220,14 @@ return (
 );
 ```
 
-### Selectors
-
-```css
-* {
-  color: blue;
-}
-
-QPushButton {
-  padding: 10px;
-}
-
-#okButton {
-  margin: 10px;
-}
-
-#okButton:hover {
-  color: red;
-}
-
-#mainView > QPushButton {
-  margin: 10px;
-}
-```
-
-### Supported CSS properties
-
-Since we are not running inside a web browser, there are few differences in the properties you could use in NodeGui vs in web.<br>
-The complete list is detailed here: [https://doc.qt.io/qt-6.2/stylesheet-reference.html](https://doc.qt.io/qt-6.2/stylesheet-reference.html)<br>
-Apart from the properties listed in the link, NodeGui also supports layout properties related to Flex. You can use all flex properties such as `align-items`, `justify-content`, `flex`, etc on all components.
+More about styling in NodeGUI [here](https://docs.nodegui.org/docs/guides/styling).
 ## Layout system
 
 NodeGui uses a layout system to automatically arrange child widgets within a widget to ensure that they make good use of the available space.
 
 ### FlexLayout
 
-FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated css.
+FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated CSS.
 
 ```tsx
 import { FlexLayout } from '@dark-engine/platform-desktop';
@@ -355,12 +327,10 @@ return (
 
 ## Conditional rendering
 
-Not all elements that contain child elements support conditional rendering. For example, a GridLayout can only add items, not remove or insert them. So in some cases, if you need to show or hide some element, you can use the `hidden` property on it. Note that the hidden element will continue to take up space in the layout.
+Not all elements that contain child elements support conditional rendering. For example, a GridLayout can only add items or remove them, not insert or reorder. So in some cases, if you need to show or hide some element, you can use the `hidden` property on it. Note that the hidden element will continue to take up space in the layout.
 
 ```tsx
-<GridItem row={0} col={0}>
-  <Text hidden={hidden}>1</Text>
-</GridItem>
+<Text hidden={hidden}>Some text</Text>
 ```
 
 ## Scrolling
@@ -369,20 +339,18 @@ Not all elements that contain child elements support conditional rendering. For 
 import { ScrollArea } from '@dark-engine/platform-desktop';
 ```
 
-ScrollArea allows you to display a large content (image, list, plain text) in an area of predefined size. A scroll area is used to display the contents of a child widget within a frame. If the widget exceeds the size of the frame, the view can provide scroll bars so that the entire area of the child widget can be viewed.
+ScrollArea allows you to display a large content (images, lists, plain text) in an area of predefined size. A scroll area is used to display the contents of a child widget within a frame. If the widget exceeds the size of the frame, the view can provide scroll bars so that the entire area of the child widget can be viewed.
 
 ```tsx
 return (
-  <Window>
-    <ScrollArea>
-      <Text>
-        {`
-          <p style="color: blue">Some long text with formatting.</p>
-          <p>You can use <b>HTML</b> <i>too</i></p>
-        `}
-      </Text>
-    </ScrollArea>
-  </Window>
+  <ScrollArea>
+    <Text>
+      {`
+        <p style="color: blue">Some long text with formatting.</p>
+        <p>You can use <b>HTML</b> <i>too</i></p>
+      `}
+    </Text>
+  </ScrollArea>
 )
 ```
 
@@ -442,7 +410,7 @@ export { Awesome }; // it's working dark component <Awesome />
 ## Packaging
 
 In order to distribute your finished app, you can use `@nodegui/packer` <br>
-More about it [here](https://docs.nodegui.org/docs/guides/packaging/)
+More about it [here](https://docs.nodegui.org/docs/guides/packaging/).
 
 # LICENSE
 

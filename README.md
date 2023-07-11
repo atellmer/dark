@@ -119,13 +119,8 @@ Browser (Single-page apps)
 ```
 npm install @dark-engine/core @dark-engine/platform-browser
 ```
-or via CDN
-```html
-<script src="https://unpkg.com/@dark-engine/core/dist/umd/dark-core.production.min.js"></script>
-<script src="https://unpkg.com/@dark-engine/platform-browser/dist/umd/dark-platform-browser.production.min.js"></script>
-```
 
-Node.js (Universal apps)
+Node.js (Universal apps, server-side or static sites)
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```

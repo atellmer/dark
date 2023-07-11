@@ -63,7 +63,7 @@ const App = component(() => {
 
 ## Environment Setup
 
-Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/nativescript" target="_blank">here</a>
+Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/nativescript" target="_blank">here</a>.
 
 ## API
 
@@ -115,7 +115,7 @@ import {
 
 ## Mounting to native platform
 
-To mount you app you need to use `run` function
+To mount you app you need to use `run` function:
 
 ```tsx
 import { run } from '@dark-engine/platform-native';
@@ -140,11 +140,12 @@ import {
   WrapLayout,
 } from '@dark-engine/platform-native';
 ```
-To learn more about how they work, you can visit the <a href="https://docs.nativescript.org/ui-and-styling.html" target="_blank">NativeScript documentation</a>
+
+To learn more about how they work, you can visit the <a href="https://docs.nativescript.org/ui-and-styling.html" target="_blank">NativeScript documentation</a>.
 
 ## Conditional rendering
 
-You can use conditional rendering, but be aware that NativeScript is sensitive to frequent insertions and removals from the element tree. Therefore, whenever possible, an alternative approach should be used - the hidden and visible attributes, more about which can be found in the <a href="https://docs.nativescript.org/best-practices/if-things.html#from-various-frontend-framework-flavors" target="_blank">NativeScript documentation</a>
+You can use conditional rendering, but be aware that NativeScript is sensitive to frequent insertions and removals from the element tree. Therefore, whenever possible, an alternative approach should be used - the hidden and visible attributes, more about which can be found in the <a href="https://docs.nativescript.org/best-practices/if-things.html#from-various-frontend-framework-flavors" target="_blank">NativeScript documentation</a>.
 
 ```tsx
 // variant 1
@@ -261,7 +262,7 @@ return (
 
 ## Modals
 
-To insert content in modal window you need to use a special component `Modal`.
+To insert content in modal window you need to use a special component `Modal`:
 
 ```tsx
 import { Modal } from '@dark-engine/platform-native';
@@ -320,7 +321,7 @@ const App = component(() => {
 });
 ```
 
-Full documentation about this package you can find [here](https://github.com/atellmer/dark/tree/master/packages/native-navigation)
+Full documentation about this package you can find [here](https://github.com/atellmer/dark/tree/master/packages/native-navigation).
 
 # LICENSE
 
