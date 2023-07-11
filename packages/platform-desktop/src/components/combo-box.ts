@@ -5,11 +5,10 @@ import type { WidgetProps, WithStandardProps } from '../shared';
 import { qComboBox } from '../factory';
 
 // const items: Array<ComboBoxItem> = [{ text: 'Item 1', text: 'Item 2', text: 'Item 3' }];
-// const comboBoxEvents = useEventSystem<ComboBoxSignals>(
+// const comboBoxEvents = useEvents<ComboBoxSignals>(
 //   {
 //     currentIndexChanged: (e: SyntheticEvent<number>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <ComboBox currentIndex={currentIndex} items={items} on={comboBoxEvents} />
 

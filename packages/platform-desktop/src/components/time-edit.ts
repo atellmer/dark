@@ -5,11 +5,10 @@ import type { WidgetProps, WithStandardProps } from '../shared';
 import { qTimeEdit } from '../factory';
 
 // const time = new QTime(12, 10, 10);
-// const timeEditEvents = useEventSystem<TimeEditSignals>(
+// const timeEditEvents = useEvents<TimeEditSignals>(
 //   {
 //     timeChanged: (time: QTime) => {},
 //   },
-//   [],
 // );
 // <DateEdit time={time} displayFormat='hh:mm:ss' on={timeEditEvents} />
 // https://doc.qt.io/qt-6/qtime.html

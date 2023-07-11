@@ -17,7 +17,7 @@ import { throwUnsupported } from '../utils';
 
 export type WindowProps = WithSlotProps<
   {
-    windowTitle: string;
+    windowTitle?: string;
     windowOpacity?: number;
     windowIcon?: QIcon;
     windowRole?: string;

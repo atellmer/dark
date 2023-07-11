@@ -9,11 +9,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qCalendar } from '../factory';
 
-// const calendarEvents = useEventSystem<CalendarSignals>(
+// const calendarEvents = useEvents<CalendarSignals>(
 //   {
 //     clicked: (e: SyntheticEvent<QDate>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <Calendar on={calendarEvents} />
 

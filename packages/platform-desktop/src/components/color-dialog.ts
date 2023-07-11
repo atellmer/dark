@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qColorDialog } from '../factory';
 
-// const colorDialogEvents = useEventSystem<ColorDialogSignals>(
+// const colorDialogEvents = useEvents<ColorDialogSignals>(
 //   {
 //     colorSelected: (e: SyntheticEvent<QColor>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <ColorDialog open={open} on={colorDialogEvents} />
 

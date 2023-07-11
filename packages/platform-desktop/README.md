@@ -12,6 +12,10 @@ NodeGui is an open source framework for building cross-platform native desktop a
 <br>
 [More about NodeGui](https://docs.nodegui.org/)
 
+<div align="center"> 
+  <img src="./assets/cover.jpg">
+</div>
+
 ## Installation
 npm:
 ```
@@ -142,7 +146,7 @@ import {
 } from '@dark-engine/platform-desktop';
 ```
 
-## Mounting to native platform
+## Mounting to desktop platform
 
 ```tsx
 import { render } from '@dark-engine/platform-desktop';
@@ -152,20 +156,16 @@ import App from './app';
 render(App());
 ```
 
-## Layout system
+## Styling
+
+To give your components a personality, you'll need styles. For this, there is a special `useStyle` hook in which you can write CSS similar to web. 
 
 ```tsx
-import {
-  FlexLayout,
-  BoxLayout,
-  GridLayout,
-  GridItem,
-} from '@dark-engine/platform-desktop';
+import { useStyle } from '@dark-engine/platform-desktop';
 ```
+### Global styles
 
-### FlexLayout
-
-FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated css.
+In the case of a global stylesheet, you can define all your style properties in a stylesheet string and then tell the root view or window to set it as a stylesheet for itself and its child components. The only difference from the web is that you can set a stylesheet on a component at any level in the entire tree of components, and the stylesheet will affect the component and its children. In the example, in order to reference a component in a stylesheet, we will assign it an id using the `id` prop. Think of it as similar to an `id` in the case of the web (but in reality, it calls the setObjectName method in nodegui). Now, using the id, you could reference the component in the stylesheet and set style properties on them. The global stylesheet really becomes powerful when you use things like pseudo-selectors (hover, checked, etc.). It also helps implement cascaded styles that allow you to style a group of components at once.
 
 ```tsx
 const style = useStyle(styled => ({
@@ -175,6 +175,95 @@ const style = useStyle(styled => ({
       qproperty-alignment: 'AlignCenter';
       color: white;
     }
+    #text-1 {
+      background-color: red;
+    }
+    #text-2 {
+      background-color: green;
+    }
+  `,
+}));
+
+return (
+  <Window styleSheet={style.root}>
+    <FlexLayout>
+      <Text id='text-1'>Hello</Text>
+      <Text id='text-2'>Dark</Text>
+    </FlexLayout>
+  </Window>
+);
+```
+
+Note we are using QLabel here instead of Text. This is because <Text /> component internally renders a QLabel.
+
+### Inline styles
+
+In most cases it would be easier to style the components inline. Dark supports inline styling using `style` prop. Inline styles will only affect the component to which the style is applied to and is often easier to understand and manage. All properties you use in the global stylesheet are available in inline styles as well.
+
+```tsx
+const style = useStyle(styled => ({
+  text1: styled`
+    background-color: red;
+  `,
+  text2: styled`
+    background-color: green;
+  `,
+}));
+
+return (
+  <Window>
+    <FlexLayout>
+      <Text style={style.text1}>Hello</Text>
+      <Text style={style.text2}>Dark</Text>
+    </FlexLayout>
+  </Window>
+);
+```
+
+### Selectors
+
+```css
+* {
+  color: blue;
+}
+
+QPushButton {
+  padding: 10px;
+}
+
+#okButton {
+  margin: 10px;
+}
+
+#okButton:hover {
+  color: red;
+}
+
+#mainView > QPushButton {
+  margin: 10px;
+}
+```
+
+### Supported CSS properties
+
+Since we are not running inside a web browser, there are few differences in the properties you could use in NodeGui vs in web.<br>
+The complete list is detailed here: [https://doc.qt.io/qt-6.2/stylesheet-reference.html](https://doc.qt.io/qt-6.2/stylesheet-reference.html)<br>
+Apart from the properties listed in the link, NodeGui also supports layout properties related to Flex. You can use all flex properties such as `align-items`, `justify-content`, `flex`, etc on all components.
+## Layout system
+
+NodeGui uses a layout system to automatically arrange child widgets within a widget to ensure that they make good use of the available space.
+
+### FlexLayout
+
+FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated css.
+
+```tsx
+import { FlexLayout } from '@dark-engine/platform-desktop';
+```
+
+```tsx
+const style = useStyle(styled => ({
+  root: styled`
     #box {
       flex-direction: 'column';
     }
@@ -185,7 +274,6 @@ const style = useStyle(styled => ({
     #text-2 {
       flex: 1;
       background-color: yellow;
-      color: black;
     }
     #text-3 {
       flex: 2;
@@ -195,7 +283,7 @@ const style = useStyle(styled => ({
 }));
 
 return (
-  <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+  <Window styleSheet={style.root}>
     <FlexLayout id='box'>
       <Text id='text-1'>Content 1</Text>
       <Text id='text-2'>Content 2</Text>
@@ -210,11 +298,15 @@ return (
 
 ### BoxLayout
 
-This is a built-in layout in Qt that lays out its child elements either horizontally or vertically. You can also control the placement direction using the Direction property.
+This is a built-in layout in Qt that lays out its child elements either horizontally or vertically. You can also control the placement direction using the `Direction` property.
+
+```tsx
+import { BoxLayout } from '@dark-engine/platform-desktop';
+```
 
 ```tsx
 return (
-  <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+  <Window styleSheet={style.root}>
     <BoxLayout direction={Direction.LeftToRight}>
       <Text id='text-1'>Content 1</Text>
       <Text id='text-2'>Content 2</Text>
@@ -233,8 +325,12 @@ return (
 This layout implements a layout system similar to grid on the web, where each child is inside its own row and column.
 
 ```tsx
+import { GridLayout, GridItem } from '@dark-engine/platform-desktop';
+```
+
+```tsx
 return (
-  <Window windowTitle='Dark' width={400} height={400} styleSheet={style.root}>
+  <Window styleSheet={style.root}>
     <GridLayout columnStretch={[1, 2]} rowStretch={[1, 2]}>
       <GridItem row={0} col={0}>
         <Text id='text-1'>Label 1</Text>
@@ -256,6 +352,97 @@ return (
 <div align="center"> 
   <img src="./assets/grid.jpg">
 </div>
+
+## Conditional rendering
+
+Not all elements that contain child elements support conditional rendering. For example, a GridLayout can only add items, not remove or insert them. So in some cases, if you need to show or hide some element, you can use the `hidden` property on it. Note that the hidden element will continue to take up space in the layout.
+
+```tsx
+<GridItem row={0} col={0}>
+  <Text hidden={hidden}>1</Text>
+</GridItem>
+```
+
+## Scrolling
+
+```tsx
+import { ScrollArea } from '@dark-engine/platform-desktop';
+```
+
+ScrollArea allows you to display a large content (image, list, plain text) in an area of predefined size. A scroll area is used to display the contents of a child widget within a frame. If the widget exceeds the size of the frame, the view can provide scroll bars so that the entire area of the child widget can be viewed.
+
+```tsx
+return (
+  <Window>
+    <ScrollArea>
+      <Text>
+        {`
+          <p style="color: blue">Some long text with formatting.</p>
+          <p>You can use <b>HTML</b> <i>too</i></p>
+        `}
+      </Text>
+    </ScrollArea>
+  </Window>
+)
+```
+
+## Events
+
+Dark and NodeGui allows you to listen to various events that might originate from the underlying Qt widgets. These events can either be a simple button click or a text change on a lineedit or even something like window being hidden and shown. To start listening for events, you must use the `useEvents` hook and the `on` property on the element.
+
+```tsx
+import { useEvents } from '@dark-engine/platform-desktop';
+```
+
+```tsx
+const lineEditEvents = useEvents<LineEditSignals>(
+  {
+    textChanged: (e: SyntheticEvent<string>) => console.log(e.value),
+  },
+);
+const buttonEvents = useEvents<PushButtonSignals>({
+  clicked: () => console.log('clicked'),
+});
+
+return (
+  <FlexLayout>
+    <LineEdit on={lineEditEvents} />
+    <PushButton text='click me' on={buttonEvents} />
+  </FlexLayout>
+)
+```
+
+## External npm packages
+
+Since NodeGui contains a fork of Node.js called Qode, you can use any packages for modern Node.js to develop desktop applications. For example, a package for making network requests like `node-fetch` or whatever.
+
+## Connecting 3rd party plugins
+
+If you want to include a third party plugin for NodeGui that you want to use in your application but that doesn't know anything about Dark, you can do it like this:
+
+```tsx
+import { QAwesome } from 'some-awesome-nodegui-plugin';
+import { forwardRef, component } from '@dark-engine/core';
+import { factory, registerElement } from '@dark-engine/platform-desktop';
+
+export type AwesomeProps = {};
+export type AwesomeRef = QDarkAwesome;
+
+const qAwesome = factory('q:awesome'); // creates tag
+const Awesome = forwardRef<AwesomeProps, AwesomeRef>(
+  component((props, ref) => qAwesome({ ref, ...props }), { displayName: 'Awesome' }),
+);
+class QDarkAwesome extends QAwesome {} // here you can change something if you want 
+
+registerElement('q:awesome', () => QDarkAwesome);
+
+export { Awesome }; // it's working dark component <Awesome />
+```
+
+## Packaging
+
+In order to distribute your finished app, you can use `@nodegui/packer` <br>
+More about it [here](https://docs.nodegui.org/docs/guides/packaging/)
 
 # LICENSE
 

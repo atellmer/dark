@@ -1,7 +1,7 @@
 import { QLabel } from '@nodegui/nodegui';
 import { type TextVirtualNode, type ComponentFactory, component, forwardRef, detectIsArray } from '@dark-engine/core';
 
-import type { WidgetProps, WithSlotProps } from '../shared';
+import type { WidgetProps, WithPartialSlotProps } from '../shared';
 import { qText } from '../factory';
 
 // <Text>Hello world</Text>
@@ -9,7 +9,7 @@ import { qText } from '../factory';
 //   {`<h1>Hello world</h1><p>Rich text</p>`}
 // </Text>
 
-export type TextProps = WithSlotProps<{} & WidgetProps, string | number | Array<string | number>>;
+export type TextProps = WithPartialSlotProps<{} & WidgetProps, string | number | Array<string | number>>;
 export type TextRef = QDarkText;
 
 const Text = forwardRef<TextProps, TextRef>(

@@ -10,11 +10,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qInputDialog } from '../factory';
 
-// const inputDialogEvents = useEventSystem<InputDialogSignals>(
+// const inputDialogEvents = useEvents<InputDialogSignals>(
 //   {
 //     textValueChanged: (e: SyntheticEvent<string>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <InputDialog open={open} inputMode={InputMode.TextInput} on={inputDialogEvents} />
 

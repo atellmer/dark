@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSlider } from '../factory';
 
-// const sliderEvents = useEventSystem<SliderSignals>(
+// const sliderEvents = useEvents<SliderSignals>(
 //   {
 //     valueChanged: (e: SyntheticEvent<number>) => console.log(e.value)
 //   },
-//   [],
 // );
 // <Slider value={value} orientation={Orientation.Horizontal} on={sliderEvents} />
 

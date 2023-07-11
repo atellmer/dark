@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSpinBox } from '../factory';
 
-// const spinBoxEvents = useEventSystem<SpinBoxSignals>(
+// const spinBoxEvents = useEvents<SpinBoxSignals>(
 //   {
 //     valueChanged: (value: number) => {},
 //   },
-//   [],
 // );
 // <SpinBox value={10} singleStep={2} on={spinBoxEvents} />
 

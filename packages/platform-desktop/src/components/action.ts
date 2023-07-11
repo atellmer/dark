@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qAction } from '../factory';
 
-// const actionEvents = useEventSystem<ActionSignals>(
+// const actionEvents = useEvents<ActionSignals>(
 //   {
 //     triggered: () => {},
 //   },
-//   [],
 // );
 // <Menu title='File'>
 //   <Action text='Open' on={actionEvents} />

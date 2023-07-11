@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qPushButton } from '../factory';
 
-// const buttonEvents = useEventSystem<PushButtonSignals>(
+// const buttonEvents = useEvents<PushButtonSignals>(
 //   {
 //     clicked: () => {},
 //   },
-//   [],
 // );
 // <PushButton text='click me' on={buttonEvents} />
 

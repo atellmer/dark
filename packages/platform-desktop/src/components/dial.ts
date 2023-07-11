@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qDial } from '../factory';
 
-// const dialEvents = useEventSystem<DialSignals>(
+// const dialEvents = useEvents<DialSignals>(
 //   {
 //     valueChanged: (e: SyntheticEvent<number>) => console.log(e.value)
 //   },
-//   [],
 // );
 // <Dial value={50} maximum={100} minimum={0} on={dialEvents} />
 

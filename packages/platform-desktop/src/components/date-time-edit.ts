@@ -6,13 +6,12 @@ import { qDateTimeEdit } from '../factory';
 
 // const date = new QDate(2032, 7, 1);
 // const time = new QTime(12, 10, 10);
-// const dateTimeEditEvents = useEventSystem<DateEditSignals>(
+// const dateTimeEditEvents = useEvents<DateEditSignals>(
 //   {
 //     dateTimeChanged: (e: SyntheticEvent<QDateTime>) => console.log(e.value),
 //     dateChanged: (e: SyntheticEvent<QDate>) => console.log(e.value),
 //     timeChanged: (e: SyntheticEvent<QTime>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <DateEdit date={date} time={time} displayFormat='dd.MM.yyyy hh:mm:ss' on={dateTimeEditEvents} />
 // https://doc.qt.io/qt-6/qdate.html

@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qFileDialog } from '../factory';
 
-// const fileDialogEvents = useEventSystem<FileDialogSignals>(
+// const fileDialogEvents = useEvents<FileDialogSignals>(
 //   {
 //     fileSelected: (e: SyntheticEvent<string>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <FileDialog open={open} on={fileDialogEvents} />
 

@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qLineEdit } from '../factory';
 
-// const lineEditEvents = useEventSystem<DoubleSpinBoxSignals>(
+// const lineEditEvents = useEvents<LineEditSignals>(
 //   {
 //     textChanged: (e: SyntheticEvent<string>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <LineEdit on={lineEditEvents} />
 

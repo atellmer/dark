@@ -4,11 +4,10 @@ import { type ComponentFactory, component, forwardRef } from '@dark-engine/core'
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qFontDialog } from '../factory';
 
-// const fontDialogEvents = useEventSystem<FontDialogSignals>(
+// const fontDialogEvents = useEvents<FontDialogSignals>(
 //   {
 //     fontSelected: (e: SyntheticEvent<QFont>) => console.log(e.value),
 //   },
-//   [],
 // );
 // <FontDialog open={open} on={fontDialogEvents} />
 
