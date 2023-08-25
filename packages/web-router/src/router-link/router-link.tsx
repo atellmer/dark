@@ -18,7 +18,7 @@ const RouterLink = component<RoutreLinkProps>(
   ({ to, activeClassName = 'router-link-active', className: sourceClassName, slot, onClick, ...rest }) => {
     const history = useHistory();
     const { pathname, hash } = useLocation();
-    const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash]);
+    const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash, to]);
     const className = useMemo(
       () => cm(sourceClassName, isActive ? activeClassName : ''),
       [sourceClassName, activeClassName, isActive],

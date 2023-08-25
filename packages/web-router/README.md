@@ -72,6 +72,21 @@ const App = component(() => {
   );
 });
 ```
+
+## <base href>
+
+You must add the <base href> element to the application's index.html for pushState routing to work.
+
+```html
+<base href="/">
+```
+
+Also you must pass the baseUrl to Router if it is different from '/'.
+
+```tsx
+<Router routes={routes} baseUrl={YOUR_BASE_URL}>{slot => slot}</Router>
+```
+
 ## Route order
 
 The order of routes is important because the Router uses a first-match wins strategy when matching routes, so more specific routes should be placed above less specific routes. List routes with a static path first, followed by an empty path route, which matches the default route. The wildcard route comes last because it matches every URL and the Router selects it only if no other routes match first.
@@ -260,20 +275,6 @@ const routes: Routes = [
 ];
 ```
 
-## <base href>
-
-You must add a <base href> element to the application's index.html for pushState routing to work.
-
-```html
-<base href="/">
-```
-
-Also you must add baseUrl to Router if it is different from /
-
-```tsx
-<Router routes={routes} baseUrl={YOUR_BASE_URL}>{slot => slot}</Router>
-```
-
 ## Server-Side Rendering (SSR)
 
 If you are rendering the application on the server, then you must pass the request url to the router to emulate routing when rendering to a string.
@@ -307,9 +308,7 @@ const App = component<AppProps>(({ url, routes }) => {
   const ref = useRef<RouterRef>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      ref.current.navigateTo('/about');
-    });
+    ref.current.navigateTo('/about');
   }, []);
 
   return (

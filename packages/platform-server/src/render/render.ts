@@ -17,6 +17,7 @@ import {
   unmountRoot,
   isStreamZone,
   emitter,
+  nextTick,
 } from '@dark-engine/core';
 
 import { createNativeElement, commit, finishCommit, chunk } from '../dom';
@@ -109,7 +110,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     }
   });
 
-  queueMicrotask(() => platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted }));
+  nextTick(() => platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted }));
   stream.push(DOCTYPE);
 
   return stream;

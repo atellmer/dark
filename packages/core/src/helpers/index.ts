@@ -84,6 +84,10 @@ function detectAreDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>):
   return false;
 }
 
+function nextTick(callback: () => void) {
+  Promise.resolve().then(callback);
+}
+
 export {
   detectIsFunction,
   detectIsUndefined,
@@ -102,4 +106,5 @@ export {
   flatten,
   keyBy,
   detectAreDepsDifferent,
+  nextTick,
 };

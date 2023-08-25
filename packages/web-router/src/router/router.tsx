@@ -9,6 +9,7 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
+  nextTick,
 } from '@dark-engine/core';
 
 import { SLASH, PROTOCOL_MARK } from '../constants';
@@ -87,7 +88,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
       }, [pathname, search, hash]);
 
       useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
-        navigateTo: (pathname: string) => history.push(pathname),
+        navigateTo: (pathname: string) => nextTick(() => history.push(pathname)),
         location,
       }));
 
