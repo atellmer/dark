@@ -98,7 +98,9 @@ describe('[SSR]', () => {
     expect(app).toBe(replacer);
   });
 
-  test('can render to stream correctly', () => {
+  test('can render to stream correctly', done => {
+    jest.useRealTimers();
+
     const content = (x: number) =>
       dom`
         <!DOCTYPE html>
@@ -147,6 +149,7 @@ describe('[SSR]', () => {
 
     stream.on('end', () => {
       expect(data).toBe(content(0));
+      done();
     });
   });
 });

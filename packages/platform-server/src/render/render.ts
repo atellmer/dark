@@ -109,7 +109,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     }
   });
 
-  Promise.resolve().then(() => platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted }));
+  queueMicrotask(() => platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted }));
   stream.push(DOCTYPE);
 
   return stream;

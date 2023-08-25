@@ -705,8 +705,6 @@ function commit() {
       }
     });
 
-  //console.log('wipFiber', wipFiber);
-
   flush(wipFiber);
 }
 
