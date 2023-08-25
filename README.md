@@ -1301,7 +1301,7 @@ const App = component(() => {
 <a name="ssr"></a>
 ## Server-Side Rendering (SSR)
 
-A regular Dark application runs in the browser, rendering pages in the DOM in response to user actions. You can also render on the server by creating static application pages that are later loaded on the client. This means that the app typically renders faster, allowing users to preview the layout of the app before it becomes fully interactive.
+A normal Dark application runs in the browser, rendering pages in the DOM in response to user actions. You can also render on the server by creating static application pages that are later loaded on the client. This means that the app typically renders faster, allowing users to preview the layout of the app before it becomes fully interactive.
 The basic principle: on the server, the component code is rendered into a string, which the server returns in response to a request in the form of a file to which the assembled build of the front-end code is connected. The user receives a rendered page with content instantly, while Dark performs a hydration procedure, i.e. reuses DOM nodes already created on the server, hangs event handlers, and also performs all relying effects.
 
 ```
