@@ -409,13 +409,13 @@ function memo(fiber: Fiber) {
   fiber.alt = alternate;
   fiber.element = alternate.element;
   fiber.child = alternate.child;
+  fiber.child.parent = fiber;
   fiber.hook = alternate.hook;
-  fiber.provider = alternate.provider;
   fiber.cc = alternate.cc;
   fiber.cec = alternate.cec;
-  fiber.catch = alternate.catch;
+  alternate?.provider && (fiber.provider = alternate.provider);
+  alternate?.catch && (fiber.catch = alternate.catch);
   alternate?.cleanup && (fiber.cleanup = alternate.cleanup);
-  fiber.child && (fiber.child.parent = fiber);
 
   const diff = fiber.eidx - alternate.eidx;
   const deep = diff !== 0;
@@ -704,6 +704,8 @@ function commit() {
         unmountFiber(fiber);
       }
     });
+
+  //console.log('wipFiber', wipFiber);
 
   flush(wipFiber);
 }
