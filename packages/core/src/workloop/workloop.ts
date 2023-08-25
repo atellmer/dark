@@ -672,10 +672,15 @@ function commit() {
   const deletions = deletionsStore.get();
   const candidates = candidatesStore.get();
   const isUpdate = isUpdateHookZone.get();
+  const queue: Array<Fiber> = [];
 
   // important order
   for (const fiber of deletions) {
-    unmountFiber(fiber);
+    if (fiber.aHost && !fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.pHost) {
+      queue.push(fiber);
+    } else {
+      unmountFiber(fiber);
+    }
     platform.commit(fiber);
   }
 
@@ -692,6 +697,13 @@ function commit() {
 
   isDynamic && runLayoutEffects();
   isDynamic && runEffects();
+
+  queue.length > 0 &&
+    setTimeout(() => {
+      for (const fiber of queue) {
+        unmountFiber(fiber);
+      }
+    });
 
   flush(wipFiber);
 }

@@ -274,15 +274,20 @@ Also you must add baseUrl to Router if it is different from /
 <Router routes={routes} baseUrl={YOUR_BASE_URL}>{slot => slot}</Router>
 ```
 
-## SSR
+## Server-Side Rendering (SSR)
 
 If you are rendering the application on the server, then you must pass the request url to the router to emulate routing when rendering to a string.
 
 ```tsx
-app.get('*', (req, res) => {
+server.get('*', async (req, res) => {
   const { url } = req;
-  const page = createPage(App({ url }));
+  const app = await renderToString(Page({ title: 'My App', slot: App({ url }) })); // render
+  const page = `
+    <!DOCTYPE html>
+    ${app}
+  `;
 
+  res.statusCode = 200;
   res.send(page);
 });
 ```

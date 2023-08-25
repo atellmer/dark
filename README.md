@@ -159,7 +159,7 @@ npm install @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
 - [Factory](#factory)
 - [Styles](#styles)
 - [Portals](#portals)
-- [SSR (Server-Side Rendering)](#ssr)
+- [Server-Side Rendering (SSR)](#ssr)
 - [Routing](#routing)
 - [Others](#others)
 - [Rendering to native platforms](#native-platforms)
@@ -730,16 +730,15 @@ const App = component(() => {
   useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/albums')
       .then(x => x.json())
-      .then(x => setAlbums(x.splice(0, 10)));
+      .then(x => x.slice(0, 10))
+      .then(x => setAlbums(x));
   }, []);
 
   if (albums.length === 0) return <div>loading...</div>;
 
   return (
     <ul>
-      {albums.map(x => (
-        <li key={x.id}>{x.title}</li>
-      ))}
+      {albums.map(x => <li key={x.id}>{x.title}</li>)}
     </ul>
   );
 });
@@ -799,10 +798,10 @@ import { memo } from '@dark-engine/core';
 ```
 
 ```tsx
-const StaticComponent = memo(component(() => {
-  console.log('StaticComponent render!');
+const MemoComponent = memo(component(() => {
+  console.log('MemoComponent render!');
 
-  return <div>I'm static</div>;
+  return <div>I'm memo</div>;
 }));
 
 const App = component(() => {
@@ -817,7 +816,7 @@ const App = component(() => {
   return (
     <>
       <div>app</div>
-      <StaticComponent />
+      <MemoComponent />
     </>
   );
 });
@@ -828,7 +827,7 @@ root.render(<App />);
 ```
 ```
 App render!
-StaticComponent render!
+MemoComponent render!
 App render!
 App render!
 App render!
@@ -898,7 +897,7 @@ return (
 Atoms are pieces of data that can be independently subscribed to and only rendered when those pieces of data are explicitly changed. They are useful primarily for optimizing critical places in large lists, such as working with a single row in a large table based on data coming from the parent component. Atoms are convenient to use with memoizations. In this case, we can achieve the same performance as if the data were in the consumer's local state. The main idea is to split a large render into many smaller ones so that we don't have to process the calculation of the whole tree, even if it is memoized, because traversing memoized components is still a traversal, albeit a superficial one.
 
 ```tsx
-import { type Atom, atom } from '@dark-engine/core';
+import { type Atom, atom, useAtom } from '@dark-engine/core';
 ```
 
 ```tsx
@@ -1013,32 +1012,32 @@ import { forwardRef, useImperativeHandle } from '@dark-engine/core';
 They are needed to create an object inside the reference to the component in order to access the component from outside:
 
 ```tsx
-type DogRef = {
-  growl: () => void;
+type ChildRef = {
+  hello: () => void;
 };
 
-const Dog = forwardRef<{}, DogRef>(
+const Child = forwardRef<{}, ChildRef>(
   component((_, ref) => {
     useImperativeHandle(
       ref,
       () => ({
-        growl: () => console.log('rrrr!'),
+        hello: () => console.log('hello!'),
       }),
       [],
     );
 
-    return <div>I'm dog</div>;
+    return <div>I'm child</div>;
   }),
 );
 
 const App = component(() => {
-  const dogRef = useRef<DogRef>(null);
+  const childRef = useRef<ChildRef>(null);
 
   useEffect(() => {
-    dogRef.current.growl();
+    childRef.current.hello();
   }, []);
 
-  return <Dog ref={dogRef} />;
+  return <Child ref={childRef} />;
 });
 ```
 <a name="errors"></a>
@@ -1300,9 +1299,9 @@ const App = component(() => {
 ```
 
 <a name="ssr"></a>
-## SSR (Server-Side Rendering)
+## Server-Side Rendering (SSR)
 
-A normal Dark application runs in the browser, rendering pages in the DOM in response to user actions. You can also render on the server by creating static application pages that are later loaded on the client. This means that the app typically renders faster, allowing users to preview the layout of the app before it becomes fully interactive.
+A regular Dark application runs in the browser, rendering pages in the DOM in response to user actions. You can also render on the server by creating static application pages that are later loaded on the client. This means that the app typically renders faster, allowing users to preview the layout of the app before it becomes fully interactive.
 The basic principle: on the server, the component code is rendered into a string, which the server returns in response to a request in the form of a file to which the assembled build of the front-end code is connected. The user receives a rendered page with content instantly, while Dark performs a hydration procedure, i.e. reuses DOM nodes already created on the server, hangs event handlers, and also performs all relying effects.
 
 ```
@@ -1327,7 +1326,7 @@ import { Page, App } from '../client/app'; // your app.tsx
 server.use(express.static(join(__dirname, '../client/static')));
 
 server.get('/', async (req, res) => {
-  const app = await renderToString(Page({ title: 'SSR test', slot: App() })); // render
+  const app = await renderToString(Page({ title: 'My App', slot: App() })); // render
   const page = `
     <!DOCTYPE html>
     ${app}
@@ -1387,7 +1386,7 @@ import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 const routes: Routes = [
   {
     path: 'home',
-    component: Home, // <-- component
+    component: Home,
   },
   {
     path: 'about',
@@ -1470,7 +1469,7 @@ const App = component(() => {
 
 ## Rendering to native platforms (Android, iOS)
 
-Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports JavaScript execution. Thanks to this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to NativeScript, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native`. You can learn more about it [here](https://github.com/atellmer/dark/tree/master/packages/platform-native).
+Due to the convenient design of the architecture, the Dark core does not depend on the rendering platform, the main thing is that the environment supports JavaScript execution. With this feature, you can write custom renders for any platform. One such platform is mobile operating systems. Thanks to NativeScript, we can render our components natively on Android or iOS using the native APIs of those systems inside JavaScript. Dark provides a renderer called `@dark-engine/platform-native`. You can learn more about it [here](https://github.com/atellmer/dark/tree/master/packages/platform-native).
 
 <a name="desktop-platforms"></a>
 
