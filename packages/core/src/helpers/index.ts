@@ -18,7 +18,7 @@ const detectIsNull = (o: any): o is null => o === null;
 
 const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
-const detectIsFalsy = (o: any) => detectIsNull(o) || detectIsUndefined(o) || o === false;
+const detectIsFalsy = (o: any) => detectIsEmpty(o) || o === false;
 
 const getTime = () => Date.now();
 
@@ -31,37 +31,27 @@ function error(...args: Array<any>) {
 }
 
 function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
-  const list = [];
-  const levelMap = { 0: { idx: 0, source } };
-  let level = 0;
+  if (source.length === 0) return [];
+  const list: Array<T> = [];
+  const stack = [source[0]];
+  let idx = 0;
 
-  do {
-    const { source, idx } = levelMap[level];
-    const item = source[idx];
+  while (stack.length > 0) {
+    const x = stack.pop();
 
-    if (idx >= source.length) {
-      level--;
-      if (!levelMap[level]) {
-        levelMap[level] = {
-          idx: 0,
-          source: [],
-        };
+    if (detectIsArray(x)) {
+      for (let i = x.length - 1; i >= 0; i--) {
+        stack.push(x[i]);
       }
-      levelMap[level].idx++;
-      continue;
-    }
-
-    if (detectIsArray(item)) {
-      level++;
-      levelMap[level] = {
-        idx: 0,
-        source: item,
-      };
     } else {
-      list.push(item);
-      levelMap[level].idx++;
+      list.push(x);
+
+      if (stack.length === 0 && idx < source.length - 1) {
+        idx++;
+        stack.push(source[idx]);
+      }
     }
-  } while (level > 0 || levelMap[level].idx < levelMap[level].source.length);
+  }
 
   return list;
 }

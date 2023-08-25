@@ -2,7 +2,7 @@ import { detectIsFunction } from '../helpers';
 import { wipRootStore, isUpdateHookZone } from '../scope';
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode } from '../view';
 import type { Context, ContextProviderValue } from '../context';
-import type { DarkElementInstance } from '../shared';
+import type { DarkElementInstance, DarkElementKey } from '../shared';
 import { type NativeElement, type Hook, EffectTag } from './types';
 
 class Fiber<N = NativeElement> {
@@ -26,7 +26,7 @@ class Fiber<N = NativeElement> {
   public iefHost: boolean; // insertion effect host
   public aHost: boolean; // atom host
   public pHost: boolean; // portal host
-  public marker: string; // for dev
+  public marker: DarkElementKey; // for dev
   public used: boolean; // flag if fiber already been rendered
   public shadow: boolean; // flag for shadow rendering
   public batch: number | NodeJS.Timeout | null; // timer for batching

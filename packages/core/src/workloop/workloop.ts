@@ -299,7 +299,7 @@ function createConditionalFiber(alternate: Fiber, marker?: DarkElementKey) {
     tag: EffectTag.C,
     inst: createReplacer(),
     parent: alternate,
-    marker: marker + '',
+    marker,
   });
 }
 
