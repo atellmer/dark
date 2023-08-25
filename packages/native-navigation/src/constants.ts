@@ -1,4 +1,4 @@
-export const VERSION = '0.25.0';
+export const VERSION = '0.25.1';
 export const SLASH = '/';
 
 export enum TransitionName {
