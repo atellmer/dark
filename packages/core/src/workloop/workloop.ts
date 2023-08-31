@@ -17,6 +17,7 @@ import {
   deletionsStore,
   mountStore,
   currentFiberStore,
+  cancelsStore,
   isUpdateHookZone,
   isStreamZone,
   rootStore,
@@ -82,6 +83,16 @@ function workLoop(yield$: boolean) {
       nextUnitOfWorkStore.set(nextUnitOfWork);
       hasMoreWork = Boolean(nextUnitOfWork);
       shouldYield = yield$ && platform.shouldYield();
+
+      if (platform.hasPrimaryTask()) {
+        platform.cancelTask();
+        wipFiber.child = wipFiber.alt.child;
+        wipFiber.alt = null;
+        cancelsStore.apply();
+        flush(null, true);
+
+        return false;
+      }
     }
 
     if (!nextUnitOfWork && wipFiber) {
@@ -726,13 +737,17 @@ function runEffects() {
   effects.length > 0 && setTimeout(() => effects.forEach(fn => fn()));
 }
 
-function flush(wipFiber: Fiber) {
+function flush(wipFiber: Fiber, transition = false) {
   wipRootStore.set(null); // important order
+  nextUnitOfWorkStore.set(null);
+  currentFiberStore.set(null);
+  mountStore.reset();
   candidatesStore.reset();
   deletionsStore.reset();
   insertionEffectsStore.reset();
   layoutEffectsStore.reset();
   effectsStore.reset();
+  cancelsStore.reset();
   isHydrateZone.set(false);
 
   if (isUpdateHookZone.get()) {
@@ -741,7 +756,7 @@ function flush(wipFiber: Fiber) {
     currentRootStore.set(wipFiber);
   }
 
-  emitter.emit('finish');
+  !transition && emitter.emit('finish');
 }
 
 function syncElementIndices(fiber: Fiber) {

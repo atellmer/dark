@@ -9,6 +9,8 @@ export type Platform = {
   caf: typeof cancelAnimationFrame;
   schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYield: () => boolean;
+  hasPrimaryTask: () => boolean;
+  cancelTask: () => void;
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
@@ -40,6 +42,12 @@ const platform: Platform = {
     throw new Error(msg());
   },
   shouldYield: () => {
+    throw new Error(msg());
+  },
+  hasPrimaryTask: () => {
+    throw new Error(msg());
+  },
+  cancelTask: () => {
     throw new Error(msg());
   },
   commit: () => {

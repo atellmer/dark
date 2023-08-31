@@ -3,7 +3,7 @@ import { detectIsFunction } from '../helpers';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
-import { TaskPriority } from '../constants';
+import { isTransitionZone, cancelsStore } from '../scope';
 
 type Value<T> = T | ((prevValue: T) => T);
 
@@ -12,7 +12,7 @@ function useState<T = unknown>(
   options?: ScheduleCallbackOptions,
 ): [T, (value: Value<T>) => void] {
   const update = useUpdate(options);
-  const store = useMemo(
+  const scope = useMemo(
     () => ({
       value: detectIsFunction(initialValue) ? initialValue() : initialValue,
     }),
@@ -20,22 +20,20 @@ function useState<T = unknown>(
   );
 
   const setState = useCallback((sourceValue: Value<T>) => {
-    const prevValue = store.value;
+    const prevValue = scope.value;
     const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
+    const isTransition = isTransitionZone.get();
+    const setValue = () => (scope.value = newValue);
+    const resetValue = () => (scope.value = prevValue);
 
     if (!Object.is(prevValue, newValue)) {
-      const setValue = () => (store.value = newValue);
-
-      if (options?.priority === TaskPriority.LOW) {
-        update(setValue);
-      } else {
-        setValue();
-        update();
-      }
+      isTransition && cancelsStore.add(resetValue);
+      setValue();
+      update(setValue);
     }
   }, []);
 
-  return [store.value, setState];
+  return [scope.value, setState];
 }
 
 export { useState };

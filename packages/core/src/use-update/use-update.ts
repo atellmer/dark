@@ -9,7 +9,6 @@ import {
 } from '../scope';
 import { createUpdateCallback } from '../workloop';
 import { useMemo } from '../use-memo';
-import { dummyFn } from '../helpers';
 import { runBatch as batch } from '../batch';
 import { TaskPriority } from '../constants';
 
@@ -21,22 +20,19 @@ function useUpdate(options: ScheduleCallbackOptions = createOptions()) {
 
   const update = (onStart?: () => void) => {
     if (isInsertionEffectsZone.get()) return;
-    const callback = createUpdateCallback({
-      rootId,
-      fiber: scope.fiber,
-      onStart: onStart || dummyFn,
-    });
+    const fiber = scope.fiber;
+    const isAnimation = options.priority === TaskPriority.ANIMATION;
+    const isTransition = isTransitionZone.get();
+    const callback = createUpdateCallback({ rootId, fiber, onStart });
 
-    isLayoutEffectsZone.get() && (options.forceSync = true);
-    isTransitionZone.get() && (options.priority = TaskPriority.LOW);
+    options.forceSync = isAnimation || isLayoutEffectsZone.get();
+    isTransition && (options.priority = TaskPriority.LOW);
 
     if (isBatchZone.get()) {
       batch(scope.fiber, () => platform.schedule(callback, options));
     } else {
       platform.schedule(callback, options);
     }
-
-    isTransitionZone.set(false);
   };
 
   return update;

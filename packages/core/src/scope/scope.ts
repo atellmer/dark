@@ -21,6 +21,7 @@ class Store {
   public effects: Array<() => void> = [];
   public lEffects: Array<() => void> = [];
   public iEffects: Array<() => void> = [];
+  public cancels: Array<() => void> = [];
   public isLEFZone = false;
   public isIEFZone = false;
   public uZone = false;
@@ -145,6 +146,19 @@ const insertionEffectsStore = {
   add: (effect: () => void) => store.get().iEffects.push(effect),
 };
 
+const cancelsStore = {
+  get: () => store.get().cancels,
+  reset: () => (store.get().cancels = []),
+  add: (cancel: () => void) => store.get().cancels.push(cancel),
+  apply: () => {
+    const items = store.get().cancels;
+
+    for (let i = items.length - 1; i >= 0; i--) {
+      items[i]();
+    }
+  },
+};
+
 const isLayoutEffectsZone = {
   get: () => store.get()?.isLEFZone || false,
   set: (value: boolean) => (store.get().isLEFZone = value),
@@ -199,6 +213,7 @@ export {
   effectsStore,
   layoutEffectsStore,
   insertionEffectsStore,
+  cancelsStore,
   isLayoutEffectsZone,
   isInsertionEffectsZone,
   isUpdateHookZone,

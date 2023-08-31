@@ -22,7 +22,7 @@ import {
 import type { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal/utils';
-import { scheduleCallback, shouldYield } from '../scheduler';
+import { scheduleCallback, shouldYield, hasPrimaryTask, cancelTask } from '../scheduler';
 
 let isInjected = false;
 const roots = new Map<Element, number>();
@@ -34,6 +34,8 @@ function inject() {
   platform.caf = cancelAnimationFrame.bind(this);
   platform.schedule = scheduleCallback;
   platform.shouldYield = shouldYield;
+  platform.hasPrimaryTask = hasPrimaryTask;
+  platform.cancelTask = cancelTask;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = () => true;

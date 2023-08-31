@@ -35,6 +35,8 @@ function inject() {
   platform.shouldYield = shouldYield;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
+  platform.hasPrimaryTask = () => false;
+  platform.cancelTask = () => {};
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};

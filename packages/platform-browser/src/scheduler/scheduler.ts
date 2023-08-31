@@ -7,14 +7,14 @@ import {
   detectIsBusy,
 } from '@dark-engine/core';
 
-type QueueByPriority = {
+type QueueMap = {
   animations: Array<Task>;
   hight: Array<Task>;
   normal: Array<Task>;
   low: Array<Task>;
 };
 
-const queueByPriority: QueueByPriority = {
+const queueMap: QueueMap = {
   animations: [],
   hight: [],
   normal: [],
@@ -24,6 +24,7 @@ const YIELD_INTERVAL = 4;
 let scheduledCallback: WorkLoop = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
+let currentTask: Task = null;
 
 class Task {
   public static nextTaskId = 0;
@@ -48,10 +49,10 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
   const { priority = TaskPriority.NORMAL, forceSync = false } = options || {};
   const task = new Task({ time: getTime(), priority, forceSync, callback });
   const map: Record<TaskPriority, () => void> = {
-    [TaskPriority.ANIMATION]: () => queueByPriority.animations.push(task),
-    [TaskPriority.HIGH]: () => queueByPriority.hight.push(task),
-    [TaskPriority.NORMAL]: () => queueByPriority.normal.push(task),
-    [TaskPriority.LOW]: () => queueByPriority.low.push(task),
+    [TaskPriority.ANIMATION]: () => queueMap.animations.push(task),
+    [TaskPriority.HIGH]: () => queueMap.hight.push(task),
+    [TaskPriority.NORMAL]: () => queueMap.normal.push(task),
+    [TaskPriority.LOW]: () => queueMap.low.push(task),
   };
 
   map[task.priority]();
@@ -60,16 +61,9 @@ function scheduleCallback(callback: () => void, options?: ScheduleCallbackOption
 
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
-  const task = queue.shift();
-  const isAnimation = task.priority === TaskPriority.ANIMATION;
-
-  task.callback();
-
-  if (task.forceSync || isAnimation) {
-    requestCallbackSync(workLoop);
-  } else {
-    requestCallback(workLoop);
-  }
+  currentTask = queue.shift();
+  currentTask.callback();
+  currentTask.forceSync ? requestCallbackSync(workLoop) : requestCallback(workLoop);
 
   return true;
 }
@@ -78,30 +72,22 @@ function executeTasks() {
   const isBusy = detectIsBusy();
 
   if (!isBusy && !isMessageLoopRunning) {
-    (queueByPriority.animations.length > 0 && pick(queueByPriority.animations)) ||
-      (queueByPriority.hight.length > 0 && pick(queueByPriority.hight)) ||
-      (queueByPriority.normal.length > 0 && pick(queueByPriority.normal)) ||
-      (queueByPriority.low.length > 0 && pick(queueByPriority.low));
+    pick(queueMap.animations) || pick(queueMap.hight) || pick(queueMap.normal) || pick(queueMap.low);
   }
 }
 
 function performWorkUntilDeadline() {
   if (scheduledCallback) {
     deadline = getTime() + YIELD_INTERVAL;
+    const hasMoreWork = scheduledCallback(true);
 
-    try {
-      const hasMoreWork = scheduledCallback(true);
-
-      if (!hasMoreWork) {
-        isMessageLoopRunning = false;
-        scheduledCallback = null;
-        executeTasks();
-      } else {
-        port.postMessage(null);
-      }
-    } catch (error) {
+    if (!hasMoreWork) {
+      isMessageLoopRunning = false;
+      scheduledCallback = null;
+      currentTask = null;
+      executeTasks();
+    } else {
       port.postMessage(null);
-      throw error;
     }
   } else {
     isMessageLoopRunning = false;
@@ -123,7 +109,19 @@ function requestCallback(callback: WorkLoop) {
 
 function requestCallbackSync(callback: WorkLoop) {
   callback(false);
+  currentTask = null;
   executeTasks();
+}
+
+function hasPrimaryTask() {
+  return (
+    currentTask.priority === TaskPriority.LOW &&
+    (queueMap.animations.length > 0 || queueMap.hight.length > 0 || queueMap.normal.length > 0)
+  );
+}
+
+function cancelTask() {
+  queueMap.low.unshift(currentTask);
 }
 
 let channel: MessageChannel = null;
@@ -142,4 +140,4 @@ function setup() {
 
 setup();
 
-export { shouldYield, scheduleCallback };
+export { shouldYield, scheduleCallback, hasPrimaryTask, cancelTask };
