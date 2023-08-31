@@ -1,11 +1,19 @@
 import { platform, type ScheduleCallbackOptions } from '../platform';
-import { getRootId, currentFiberStore, isInsertionEffectsZone, isLayoutEffectsZone, isBatchZone } from '../scope';
+import {
+  getRootId,
+  currentFiberStore,
+  isInsertionEffectsZone,
+  isLayoutEffectsZone,
+  isBatchZone,
+  isTransitionZone,
+} from '../scope';
 import { createUpdateCallback } from '../workloop';
 import { useMemo } from '../use-memo';
 import { dummyFn } from '../helpers';
 import { runBatch as batch } from '../batch';
+import { TaskPriority } from '../constants';
 
-function useUpdate(options?: ScheduleCallbackOptions) {
+function useUpdate(options: ScheduleCallbackOptions = createOptions()) {
   const rootId = getRootId();
   const scope = useMemo(() => ({ fiber: null }), []);
 
@@ -16,25 +24,24 @@ function useUpdate(options?: ScheduleCallbackOptions) {
     const callback = createUpdateCallback({
       rootId,
       fiber: scope.fiber,
-      forceStart: Boolean(options?.timeoutMs),
       onStart: onStart || dummyFn,
     });
 
-    if (isLayoutEffectsZone.get()) {
-      options = {
-        ...(options || {}),
-        forceSync: true,
-      };
-    }
+    isLayoutEffectsZone.get() && (options.forceSync = true);
+    isTransitionZone.get() && (options.priority = TaskPriority.LOW);
 
     if (isBatchZone.get()) {
       batch(scope.fiber, () => platform.schedule(callback, options));
     } else {
       platform.schedule(callback, options);
     }
+
+    isTransitionZone.set(false);
   };
 
   return update;
 }
+
+const createOptions = () => ({ priority: TaskPriority.NORMAL });
 
 export { useUpdate };

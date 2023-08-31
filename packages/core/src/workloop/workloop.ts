@@ -772,17 +772,15 @@ function syncElementIndices(fiber: Fiber) {
 type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
-  forceStart?: boolean;
   onStart?: () => void;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, fiber, forceStart = false, onStart } = options;
+  const { rootId, fiber, onStart } = options;
   const callback = () => {
     if (!detectIsFiberAlive(fiber)) return;
-    forceStart && onStart && onStart();
     if (fiber.used) return;
-    !forceStart && onStart && onStart();
+    onStart && onStart();
     rootStore.set(rootId); // !
     isUpdateHookZone.set(true);
     mountStore.reset();

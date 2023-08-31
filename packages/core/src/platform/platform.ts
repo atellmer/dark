@@ -19,7 +19,6 @@ export type Platform = {
 
 export type ScheduleCallbackOptions = {
   priority?: TaskPriority;
-  timeoutMs?: number;
   forceSync?: boolean;
   onCompleted?: () => void;
 };

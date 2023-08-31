@@ -38,6 +38,7 @@ export { unmountRoot } from './unmount';
 export { batch } from './batch';
 export { hot } from './hot';
 export { emitter } from './emitter';
+export { startTransition } from './start-transition';
 export * from './view';
 export * from './constants';
 

@@ -27,6 +27,7 @@ class Store {
   public bZone = false;
   public hZone = false;
   public sZone = false;
+  public tZone = false;
   public isHot = false;
 }
 
@@ -174,6 +175,11 @@ const isStreamZone = {
   set: (value: boolean) => (store.get().sZone = value),
 };
 
+const isTransitionZone = {
+  get: () => store.get()?.tZone || false,
+  set: (value: boolean) => (store.get().tZone = value),
+};
+
 const hot = {
   get: () => store.get()?.isHot || false,
   set: (value: boolean) => (store.get().isHot = value),
@@ -199,5 +205,6 @@ export {
   isBatchZone,
   isHydrateZone,
   isStreamZone,
+  isTransitionZone,
   hot,
 };
