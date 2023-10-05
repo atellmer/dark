@@ -1,23 +1,17 @@
 import { useState } from '../use-state';
-import { useMemo } from '../use-memo';
-import { TaskPriority } from '../constants';
+import { startTransition } from '../start-transition';
+import { useEffect } from '../use-effect';
 
-type UseDeferredValueOprions = {
-  timeoutMs: number;
+type UseDeferredValueOptions = {
+  timeoutMs?: number;
 };
 
-function useDeferredValue<T>(value: T, options?: UseDeferredValueOprions): T {
-  const { timeoutMs } = options || {};
-  const [deferredValue, setDeferredValue] = useState(value, {
-    priority: TaskPriority.LOW,
-    timeoutMs,
-  });
-  const scope = useMemo(() => ({ value }), []);
+function useDeferredValue<T>(value: T, options?: UseDeferredValueOptions): T {
+  const [deferredValue, setDeferredValue] = useState(value);
 
-  if (scope.value !== value && value !== deferredValue) {
-    scope.value = value;
-    setDeferredValue(value);
-  }
+  useEffect(() => {
+    startTransition(() => setDeferredValue(value));
+  }, [value]);
 
   return deferredValue;
 }

@@ -9,8 +9,6 @@ export const ATTR_FLAG = 'flag';
 export const RESTART_TIMEOUT = 10;
 
 export enum TaskPriority {
-  ANIMATION = 3,
-  HIGH = 2,
   NORMAL = 1,
   LOW = 0,
 }

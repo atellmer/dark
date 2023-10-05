@@ -78,7 +78,7 @@ type DraggableProps = {
 
 const Draggable = component<DraggableProps>(
   ({ isDragging, draggableID, activeDraggableID, setIsDragging, setActiveDraggableID, slot }) => {
-    const [coord, setCoord] = useState({ x: 0, y: 0 }, { priority: TaskPriority.ANIMATION });
+    const [coord, setCoord] = useState({ x: 0, y: 0 }, { priority: TaskPriority.HIGH, forceSync: true });
     const [rect, setRect] = useState<DOMRect | null>(null);
     const rootRef = useRef<HTMLElement | null>(null);
     const isActive = isDragging && draggableID === activeDraggableID;

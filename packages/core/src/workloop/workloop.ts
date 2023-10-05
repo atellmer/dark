@@ -83,16 +83,7 @@ function workLoop(yield$: boolean) {
       nextUnitOfWorkStore.set(nextUnitOfWork);
       hasMoreWork = Boolean(nextUnitOfWork);
       shouldYield = yield$ && platform.shouldYield();
-
-      if (platform.hasPrimaryTask()) {
-        platform.cancelTask();
-        wipFiber.child = wipFiber.alt.child;
-        wipFiber.alt = null;
-        cancelsStore.apply();
-        flush(null, true);
-
-        return false;
-      }
+      if (platform.hasPrimaryTask()) return stopLowPriorityWork();
     }
 
     if (!nextUnitOfWork && wipFiber) {
@@ -108,6 +99,18 @@ function workLoop(yield$: boolean) {
   }
 
   return hasMoreWork;
+}
+
+function stopLowPriorityWork(): false {
+  const fiber = wipRootStore.get();
+
+  platform.cancelTask();
+  fiber.child = fiber.alt.child;
+  fiber.alt = null;
+  cancelsStore.apply();
+  flush(null, true);
+
+  return false;
 }
 
 function performUnitOfWork(fiber: Fiber, box: Box) {

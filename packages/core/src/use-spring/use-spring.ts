@@ -31,7 +31,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
     return scope;
   }, []);
   const [values, setValues] = useState(() => getInitialValues(getAnimations(createDefaultOptions())), {
-    priority: TaskPriority.ANIMATION,
+    forceSync: true,
   });
 
   useEffect(() => {
