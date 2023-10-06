@@ -9,7 +9,6 @@ import {
   useEffect,
   useCallback,
   Fragment,
-  TaskPriority,
   DarkElement,
   useDeferredValue,
 } from '@dark-engine/core';
@@ -30,7 +29,7 @@ type DotProps = {
 };
 
 const Dot = component<DotProps>(props => {
-  const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
+  const [hover, setHover] = useState(false);
   const s = props.size * 1.3;
   const style = useStyle(styled => ({
     dot: styled`
@@ -86,6 +85,14 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }
 
   s /= 2;
 
+  const slowDown = true;
+  if (slowDown) {
+    const e = performance.now() + 0.8;
+    while (performance.now() < e) {
+      // Artificially long execution time.
+    }
+  }
+
   return (
     <>
       <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s}>
@@ -111,7 +118,6 @@ type AppProps = {
 };
 
 const App = component<AppProps>(props => {
-  const [isEnabled, setIsEnable] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const defferedSeconds = useDeferredValue(seconds);
   const elapsed = props.elapsed;
@@ -135,16 +141,9 @@ const App = component<AppProps>(props => {
 
   return (
     <div style='padding: 16px'>
-      <label>
-        <input type='checkbox' onInput={() => setIsEnable(x => !x)} />
-        Enable deferred updates
-      </label>
-      <p>
-        If deferred updates enabled timer won't render on slow devices <br /> (You can enable CPU throttling here)
-      </p>
       <div style={style.container}>
         <MemoSierpinskiTriangle x={0} y={0} s={1000}>
-          {isEnabled ? defferedSeconds : seconds}
+          {defferedSeconds}
         </MemoSierpinskiTriangle>
       </div>
     </div>

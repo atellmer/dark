@@ -23,11 +23,15 @@ function useState<T = unknown>(
     const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
     const setValue = () => (scope.value = newValue);
     const resetValue = () => (scope.value = prevValue);
+    const isTransition = isTransitionZone.get();
+    const onStart = () => {
+      setValue();
+      isTransition && cancelsStore.add(resetValue);
+    };
 
     if (!Object.is(prevValue, newValue)) {
-      isTransitionZone.get() && cancelsStore.add(resetValue);
       setValue();
-      update({ onStart: setValue });
+      update({ onStart });
     }
   }, []);
 

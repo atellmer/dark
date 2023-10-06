@@ -111,6 +111,8 @@ function stopLowPriorityWork(): false {
   cancelsStore.apply();
   flush(null, true);
 
+  //console.log('--stop--');
+
   return false;
 }
 
