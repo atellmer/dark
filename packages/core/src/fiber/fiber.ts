@@ -16,6 +16,7 @@ class Fiber<N = NativeElement> {
   public child: Fiber<N>; // child fiber
   public next: Fiber<N>; // next sibling fiber
   public alt: Fiber<N>; // alternate fiber (previous)
+  public copy: Fiber<N>;
   public move: boolean; // flag of reordering in list
   public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   public inst: DarkElementInstance = null; // instance of component or virtual node
@@ -42,11 +43,13 @@ class Fiber<N = NativeElement> {
     provider && (this.provider = provider);
   }
 
-  public mutate(options: Partial<Fiber<N>>) {
-    const keys = Object.keys(options);
+  public mutate(fiber: Partial<Fiber<N>>, excludeMap: Partial<Record<keyof Fiber, boolean>> = {}) {
+    const keys = Object.keys(fiber);
 
     for (const key of keys) {
-      this[key] = options[key];
+      if (!excludeMap[key]) {
+        this[key] = fiber[key];
+      }
     }
 
     return this;

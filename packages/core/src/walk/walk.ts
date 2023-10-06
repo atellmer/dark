@@ -1,4 +1,4 @@
-import { type Fiber, EffectTag } from '../fiber';
+import { Fiber, EffectTag } from '../fiber';
 import { platform } from '../platform';
 
 function walkFiber<T = unknown>(
@@ -29,18 +29,6 @@ function walkFiber<T = unknown>(
       visitedMap[newFiber.id] = true;
     } else if (nextFiber.next && detectCanVisit(nextFiber.next.id)) {
       const newFiber = nextFiber.next;
-
-      isDeepWalking = true;
-      isReturn = false;
-      nextFiber = newFiber;
-      visitedMap[newFiber.id] = true;
-    } else if (
-      nextFiber.parent &&
-      nextFiber.parent === fiber &&
-      nextFiber.parent.next &&
-      detectCanVisit(nextFiber.parent.next.id)
-    ) {
-      const newFiber = nextFiber.parent.next;
 
       isDeepWalking = true;
       isReturn = false;
@@ -93,4 +81,53 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
-export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive };
+function copyFiber<T = unknown>(fiber: Fiber<T>) {
+  const rootCopyFiber = new Fiber().mutate(fiber, copyExcludeMap);
+  let nextFiber = fiber;
+  let copyFiber = rootCopyFiber;
+  let isDeepWalking = true;
+  const visitedMap: Record<number, boolean> = {};
+  const detectCanVisit = (id: number) => !visitedMap[id];
+
+  rootCopyFiber.child = null;
+  rootCopyFiber.copy = null;
+
+  while (nextFiber) {
+    if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child.id)) {
+      const newFiber = nextFiber.child;
+
+      copyFiber.child = new Fiber().mutate(newFiber, copyExcludeMap);
+      copyFiber.child.parent = copyFiber;
+      copyFiber.child.child = null;
+      copyFiber.child.next = null;
+      copyFiber = copyFiber.child;
+
+      nextFiber = newFiber;
+      visitedMap[newFiber.id] = true;
+    } else if (nextFiber.next && detectCanVisit(nextFiber.next.id)) {
+      const newFiber = nextFiber.next;
+
+      copyFiber.next = new Fiber().mutate(newFiber, copyExcludeMap);
+      copyFiber.next.parent = copyFiber.parent;
+      copyFiber.next.child = null;
+      copyFiber.next.next = null;
+      copyFiber = copyFiber.next;
+
+      isDeepWalking = true;
+      nextFiber = newFiber;
+      visitedMap[newFiber.id] = true;
+    } else if (nextFiber.parent && nextFiber.parent !== fiber) {
+      isDeepWalking = false;
+      nextFiber = nextFiber.parent;
+      copyFiber = copyFiber.parent;
+    } else {
+      nextFiber = null;
+    }
+  }
+
+  return rootCopyFiber;
+}
+
+const copyExcludeMap: Partial<Record<keyof Fiber, boolean>> = { alt: true };
+
+export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, copyFiber };

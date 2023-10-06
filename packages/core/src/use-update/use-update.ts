@@ -26,10 +26,11 @@ function useUpdate({ forceSync }: UseUpdateOptions = {}) {
   const update = ({ onStart }: UpdateOptions = {}) => {
     if (isInsertionEffectsZone.get()) return;
     const fiber = scope.fiber;
-    const callback = createUpdateCallback({ rootId, fiber, onStart });
+    const priority = isTransitionZone.get() ? TaskPriority.LOW : TaskPriority.NORMAL;
+    const callback = createUpdateCallback({ rootId, fiber, priority, onStart });
     const callbackOptions: ScheduleCallbackOptions = {
-      priority: isTransitionZone.get() ? TaskPriority.LOW : TaskPriority.NORMAL,
       forceSync: isLayoutEffectsZone.get() || forceSync,
+      priority,
     };
 
     if (isBatchZone.get()) {

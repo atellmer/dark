@@ -1,5 +1,5 @@
 import { platform, detectIsServer } from '../platform';
-import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag } from '../constants';
+import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag, TaskPriority } from '../constants';
 import {
   flatten,
   error,
@@ -50,7 +50,7 @@ import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, copyFiber } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -105,8 +105,9 @@ function stopLowPriorityWork(): false {
   const fiber = wipRootStore.get();
 
   platform.cancelTask();
-  fiber.child = fiber.alt.child;
+  fiber.child = fiber.copy.child;
   fiber.alt = null;
+  fiber.copy = null;
   cancelsStore.apply();
   flush(null, true);
 
@@ -412,26 +413,25 @@ function memo(fiber: Fiber) {
     if (hot.get()) return;
   }
 
-  const alternate = fiber.alt;
-  const pc = alternate.inst as Component;
+  const alt = fiber.alt;
+  const pc = alt.inst as Component;
   const nc = fiber.inst as Component;
 
   if (fiber.move || nc.type !== pc.type || nc.su(pc.props, nc.props)) return;
 
   mountStore.deep.set(false);
   fiber.tag = EffectTag.S;
-  fiber.alt = alternate;
-  fiber.element = alternate.element;
-  fiber.child = alternate.child;
+  fiber.element = alt.element;
+  fiber.child = alt.child; // same links
   fiber.child.parent = fiber;
-  fiber.hook = alternate.hook;
-  fiber.cc = alternate.cc;
-  fiber.cec = alternate.cec;
-  alternate?.provider && (fiber.provider = alternate.provider);
-  alternate?.catch && (fiber.catch = alternate.catch);
-  alternate?.cleanup && (fiber.cleanup = alternate.cleanup);
+  fiber.hook = alt.hook;
+  fiber.cc = alt.cc;
+  fiber.cec = alt.cec;
+  alt?.provider && (fiber.provider = alt.provider);
+  alt?.catch && (fiber.catch = alt.catch);
+  alt?.cleanup && (fiber.cleanup = alt.cleanup);
 
-  const diff = fiber.eidx - alternate.eidx;
+  const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;
 
   if (deep) {
@@ -442,12 +442,12 @@ function memo(fiber: Fiber) {
     });
   }
 
-  fiber.incCEC(alternate.cec);
-  alternate.efHost && fiber.markEFHost();
-  alternate.lefHost && fiber.markLEFHost();
-  alternate.iefHost && fiber.markIEFHost();
-  alternate.aHost && fiber.markAHost();
-  alternate.pHost && fiber.markPHost();
+  fiber.incCEC(alt.cec);
+  alt.efHost && fiber.markEFHost();
+  alt.lefHost && fiber.markLEFHost();
+  alt.iefHost && fiber.markIEFHost();
+  alt.aHost && fiber.markAHost();
+  alt.pHost && fiber.markPHost();
 }
 
 function install(instance: DarkElementInstance, idx: number, fiber: Fiber) {
@@ -704,9 +704,11 @@ function commit() {
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
+    fiber.copy = null;
   }
 
   wipFiber.alt = null;
+  wipFiber.copy = null;
   platform.finishCommit();
 
   isDynamic && runLayoutEffects();
@@ -790,20 +792,21 @@ function syncElementIndices(fiber: Fiber) {
 type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
+  priority: TaskPriority;
   onStart?: () => void;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, fiber, onStart } = options;
+  const { rootId, fiber, priority, onStart } = options;
   const callback = () => {
-    if (!detectIsFiberAlive(fiber)) return;
-    if (fiber.used) return;
+    if (!detectIsFiberAlive(fiber) || fiber.used) return;
     onStart && onStart();
     rootStore.set(rootId); // !
     isUpdateHookZone.set(true);
     mountStore.reset();
 
     fiber.alt = new Fiber().mutate(fiber);
+    fiber.copy = priority === TaskPriority.LOW ? copyFiber(fiber) : null;
     fiber.marker = '🔥';
     fiber.tag = EffectTag.U;
     fiber.cc = 0;

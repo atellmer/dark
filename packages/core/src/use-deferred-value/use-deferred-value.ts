@@ -1,6 +1,6 @@
 import { useState } from '../use-state';
 import { startTransition } from '../start-transition';
-import { useEffect } from '../use-effect';
+import { useMemo } from '../use-memo';
 
 type UseDeferredValueOptions = {
   timeoutMs?: number;
@@ -8,10 +8,12 @@ type UseDeferredValueOptions = {
 
 function useDeferredValue<T>(value: T, options?: UseDeferredValueOptions): T {
   const [deferredValue, setDeferredValue] = useState(value);
+  const scope = useMemo(() => ({ value }), []);
 
-  useEffect(() => {
+  if (scope.value !== value) {
+    scope.value = value;
     startTransition(() => setDeferredValue(value));
-  }, [value]);
+  }
 
   return deferredValue;
 }
