@@ -11,11 +11,12 @@ import {
   Fragment,
   DarkElement,
   useDeferredValue,
+  startTransition,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
 
-startFPSMonitor();
-startMemMonitor();
+// startFPSMonitor();
+// startMemMonitor();
 
 const domElement = document.getElementById('root');
 
@@ -119,13 +120,16 @@ type AppProps = {
 
 const App = component<AppProps>(props => {
   const [seconds, setSeconds] = useState(0);
-  const defferedSeconds = useDeferredValue(seconds);
   const elapsed = props.elapsed;
   const t = (elapsed / 1000) % 10;
   const scale = 1 + (t > 5 ? 10 - t : t) / 10;
 
   useEffect(() => {
-    setInterval(() => setSeconds(seconds => (seconds % 10) + 1), 1000);
+    setInterval(() => {
+      startTransition(() => {
+        setSeconds(seconds => (seconds % 10) + 1);
+      });
+    }, 1000);
   }, []);
 
   const style = useStyle(styled => ({
@@ -143,7 +147,7 @@ const App = component<AppProps>(props => {
     <div style='padding: 16px'>
       <div style={style.container}>
         <MemoSierpinskiTriangle x={0} y={0} s={1000}>
-          {defferedSeconds}
+          {seconds}
         </MemoSierpinskiTriangle>
       </div>
     </div>

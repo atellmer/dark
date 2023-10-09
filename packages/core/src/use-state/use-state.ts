@@ -17,22 +17,23 @@ function useState<T = unknown>(
     }),
     [],
   );
-
   const setState = useCallback((sourceValue: Value<T>) => {
-    const prevValue = scope.value;
-    const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
-    const setValue = () => (scope.value = newValue);
-    const resetValue = () => (scope.value = prevValue);
     const isTransition = isTransitionZone.get();
-    const onStart = () => {
-      setValue();
-      isTransition && cancelsStore.add(resetValue);
+    const shouldUpdate = () => {
+      const prevValue = scope.value;
+      const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
+      const shouldUpdate = !Object.is(prevValue, newValue);
+      const resetValue = () => (scope.value = prevValue);
+
+      if (shouldUpdate) {
+        scope.value = newValue;
+        isTransition && cancelsStore.add(resetValue);
+      }
+
+      return shouldUpdate;
     };
 
-    if (!Object.is(prevValue, newValue)) {
-      setValue();
-      update({ onStart });
-    }
+    update(shouldUpdate);
   }, []);
 
   return [scope.value, setState];

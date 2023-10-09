@@ -13,9 +13,6 @@ import { runBatch as batch } from '../batch';
 import { TaskPriority } from '../constants';
 
 export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'forceSync'>;
-export type UpdateOptions = {
-  onStart?: () => void;
-};
 
 function useUpdate({ forceSync }: UseUpdateOptions = {}) {
   const rootId = getRootId();
@@ -23,11 +20,11 @@ function useUpdate({ forceSync }: UseUpdateOptions = {}) {
 
   scope.fiber = currentFiberStore.get();
 
-  const update = ({ onStart }: UpdateOptions = {}) => {
+  const update = (shouldUpdate?: () => boolean) => {
     if (isInsertionEffectsZone.get()) return;
     const fiber = scope.fiber;
     const priority = isTransitionZone.get() ? TaskPriority.LOW : TaskPriority.NORMAL;
-    const callback = createUpdateCallback({ rootId, fiber, priority, onStart });
+    const callback = createUpdateCallback({ rootId, fiber, priority, shouldUpdate });
     const callbackOptions: ScheduleCallbackOptions = {
       forceSync: isLayoutEffectsZone.get() || forceSync,
       priority,

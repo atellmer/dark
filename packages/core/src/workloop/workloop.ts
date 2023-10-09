@@ -8,6 +8,7 @@ import {
   detectIsArray,
   detectIsString,
   detectIsNumber,
+  trueFn,
 } from '../helpers';
 import {
   wipRootStore,
@@ -105,13 +106,15 @@ function stopLowPriorityWork(): false {
   const fiber = wipRootStore.get();
 
   platform.cancelTask();
+  // console.log('fiber.child', fiber.child);
+  // console.log('fiber.copy.child', copyFiber(fiber.copy.child));
+  // console.log('--stop--');
+
   fiber.child = fiber.copy.child;
   fiber.alt = null;
   fiber.copy = null;
   cancelsStore.apply();
   flush(null, true);
-
-  //console.log('--stop--');
 
   return false;
 }
@@ -795,15 +798,14 @@ type CreateUpdateCallbackOptions = {
   rootId: number;
   fiber: Fiber;
   priority: TaskPriority;
-  onStart?: () => void;
+  shouldUpdate?: () => boolean;
 };
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, fiber, priority, onStart } = options;
+  const { rootId, fiber, priority, shouldUpdate = trueFn } = options;
   const callback = () => {
-    if (!detectIsFiberAlive(fiber) || fiber.used) return;
-    onStart && onStart();
     rootStore.set(rootId); // !
+    if (!detectIsFiberAlive(fiber) || fiber.used || !shouldUpdate()) return;
     isUpdateHookZone.set(true);
     mountStore.reset();
 
