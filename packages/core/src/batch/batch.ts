@@ -1,18 +1,10 @@
-import { type Fiber } from '../fiber';
-import { isBatchZone } from '../scope';
+import { isBatchZone, batchStore } from '../scope';
 
 function batch(callback: () => void) {
   isBatchZone.set(true);
   callback();
+  isBatchZone.set(false);
+  batchStore.apply();
 }
 
-function runBatch(fiber: Fiber, callback: () => void) {
-  fiber.batch && clearTimeout(fiber.batch as number);
-  fiber.batch = setTimeout(() => {
-    isBatchZone.set(false);
-    fiber.batch = null;
-    callback();
-  });
-}
-
-export { batch, runBatch };
+export { batch };

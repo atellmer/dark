@@ -4,29 +4,26 @@ import { render } from '@dark-engine/platform-browser';
 import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useUpdate } from '../use-update';
+import { useState } from '../use-state';
 import { batch } from './batch';
-import { platform } from '../platform';
 
 let host: HTMLElement = null;
-let timerId = 0;
 
-jest.useFakeTimers();
+beforeAll(() => {
+  jest.useFakeTimers();
+});
 
 beforeEach(() => {
   host = document.createElement('div');
-  timerId = 0;
-  jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback): number => {
-    timerId++;
-    setTimeout(() => cb(0));
+});
 
-    return timerId;
-  });
+afterAll(() => {
+  jest.useRealTimers();
 });
 
 describe('[batch]', () => {
   test('component renders many times after several updates without batch', () => {
-    const mockFn = jest.fn();
-
+    const spy = jest.fn();
     const App = component(() => {
       const update = useUpdate();
 
@@ -36,19 +33,18 @@ describe('[batch]', () => {
         update();
       }, []);
 
-      mockFn();
+      spy();
 
       return null;
     });
 
     render(App(), host);
     jest.runAllTimers();
-    expect(mockFn).toHaveBeenCalledTimes(4);
+    expect(spy).toHaveBeenCalledTimes(4);
   });
 
-  test('component renders 1 time per batch', () => {
-    const mockFn = jest.fn();
-
+  test('component renders one time after batch', () => {
+    const spy = jest.fn();
     const App = component(() => {
       const update = useUpdate();
 
@@ -60,13 +56,45 @@ describe('[batch]', () => {
         });
       }, []);
 
-      mockFn();
+      spy();
 
       return null;
     });
 
     render(App(), host);
     jest.runAllTimers();
-    expect(mockFn).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  test('batch changes an internal state correctly', () => {
+    let x$ = 0;
+    let y$ = 0;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [x, setX] = useState(0);
+      const [y, setY] = useState(0);
+
+      x$ = x;
+      y$ = y;
+
+      useEffect(() => {
+        batch(() => {
+          setX(1);
+          setY(2);
+          setX(x => x + 1);
+          setY(x => x + 1);
+        });
+      }, []);
+
+      spy();
+
+      return null;
+    });
+
+    render(App(), host);
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(x$).toBe(2);
+    expect(y$).toBe(3);
   });
 });

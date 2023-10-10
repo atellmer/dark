@@ -1,7 +1,9 @@
 import { platform, type ScheduleCallbackOptions } from '../platform';
+import { type Fiber } from '../fiber';
 import {
   getRootId,
   currentFiberStore,
+  batchStore,
   isInsertionEffectsZone,
   isLayoutEffectsZone,
   isBatchZone,
@@ -9,29 +11,34 @@ import {
 } from '../scope';
 import { createUpdateCallback } from '../workloop';
 import { useMemo } from '../use-memo';
-import { runBatch as batch } from '../batch';
 import { TaskPriority } from '../constants';
+import { trueFn } from '../helpers';
 
 export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'forceSync'>;
 
-function useUpdate({ forceSync }: UseUpdateOptions = {}) {
+type UseUpdateScope = {
+  fiber: Fiber;
+};
+
+function useUpdate({ forceSync: forceSync$ }: UseUpdateOptions = {}) {
   const rootId = getRootId();
-  const scope = useMemo(() => ({ fiber: null }), []);
+  const scope = useMemo<UseUpdateScope>(() => ({ fiber: null }), []);
 
   scope.fiber = currentFiberStore.get();
 
-  const update = (shouldUpdate?: () => boolean) => {
+  const update = (shouldUpdate$?: () => boolean) => {
     if (isInsertionEffectsZone.get()) return;
     const fiber = scope.fiber;
+    const isBatch = isBatchZone.get();
     const priority = isTransitionZone.get() ? TaskPriority.LOW : TaskPriority.NORMAL;
+    const shouldUpdate = isBatch ? trueFn : shouldUpdate$;
+    const forceSync = isLayoutEffectsZone.get() || forceSync$;
     const callback = createUpdateCallback({ rootId, fiber, priority, shouldUpdate });
-    const callbackOptions: ScheduleCallbackOptions = {
-      forceSync: isLayoutEffectsZone.get() || forceSync,
-      priority,
-    };
+    const callbackOptions: ScheduleCallbackOptions = { forceSync, priority };
 
-    if (isBatchZone.get()) {
-      batch(scope.fiber, () => platform.schedule(callback, callbackOptions));
+    if (isBatch) {
+      shouldUpdate$ && batchStore.add(shouldUpdate$);
+      batchStore.setUpdate(() => platform.schedule(callback, callbackOptions));
     } else {
       platform.schedule(callback, callbackOptions);
     }

@@ -22,6 +22,10 @@ class Store {
   public lEffects: Array<() => void> = [];
   public iEffects: Array<() => void> = [];
   public cancels: Array<() => void> = [];
+  public batch: BatchStore = {
+    queue: [],
+    update: null,
+  };
   public isLEFZone = false;
   public isIEFZone = false;
   public uZone = false;
@@ -31,6 +35,11 @@ class Store {
   public tZone = false;
   public isHot = false;
 }
+
+type BatchStore = {
+  queue: Array<() => void>;
+  update: () => void;
+};
 
 type MountStore = {
   level: number;
@@ -159,6 +168,19 @@ const cancelsStore = {
   },
 };
 
+const batchStore = {
+  add: (x: () => void) => store.get().batch.queue.push(x),
+  setUpdate: (x: () => void) => (store.get().batch.update = x),
+  apply: () => {
+    const batch = store.get().batch;
+
+    batch.queue.forEach(x => x());
+    batch.update && batch.update();
+    batch.queue = [];
+    batch.update = null;
+  },
+};
+
 const isLayoutEffectsZone = {
   get: () => store.get()?.isLEFZone || false,
   set: (value: boolean) => (store.get().isLEFZone = value),
@@ -214,6 +236,7 @@ export {
   layoutEffectsStore,
   insertionEffectsStore,
   cancelsStore,
+  batchStore,
   isLayoutEffectsZone,
   isInsertionEffectsZone,
   isUpdateHookZone,

@@ -30,7 +30,6 @@ class Fiber<N = NativeElement> {
   public marker: DarkElementKey; // for dev
   public used: boolean; // flag if fiber already been rendered
   public shadow: boolean; // flag for shadow rendering
-  public batch: number | NodeJS.Timeout | null; // timer for batching
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
   public catch: (error: Error) => void;
   public cleanup: () => void;
