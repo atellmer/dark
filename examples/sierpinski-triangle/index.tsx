@@ -129,7 +129,7 @@ const App = component<AppProps>(props => {
       startTransition(() => {
         setSeconds(seconds => (seconds % 10) + 1);
       });
-    }, 1000);
+    }, 5000);
   }, []);
 
   const style = useStyle(styled => ({

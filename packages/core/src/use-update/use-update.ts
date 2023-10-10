@@ -6,21 +6,22 @@ import { useMemo } from '../use-memo';
 import { TaskPriority } from '../constants';
 import { trueFn } from '../helpers';
 
-export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'forceSync'>;
+export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'priority' | 'forceSync'>;
 
 type UseUpdateScope = {
   fiber: Fiber;
 };
 
-function useUpdate({ forceSync: forceSync$ }: UseUpdateOptions = {}) {
+function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceSync: forceSync$ }: UseUpdateOptions = {}) {
   const rootId = getRootId();
   const scope = useMemo<UseUpdateScope>(() => ({ fiber: null }), []);
+  const fiber = scope$$().getCursorFiber();
   const update = (shouldUpdate$?: () => boolean) => {
     const scope$ = scope$$();
     if (scope$.getIsIEffZone()) return;
     const fiber = scope.fiber;
     const isBatch = scope$.getIsBatchZone();
-    const priority = scope$.getIsTransitionZone() ? TaskPriority.LOW : TaskPriority.NORMAL;
+    const priority = scope$.getIsTransitionZone() ? TaskPriority.LOW : priority$;
     const shouldUpdate = isBatch ? trueFn : shouldUpdate$;
     const forceSync = scope$.getIsLEffZone() || forceSync$;
     const callback = createUpdateCallback({ rootId, fiber, priority, shouldUpdate });
@@ -34,7 +35,7 @@ function useUpdate({ forceSync: forceSync$ }: UseUpdateOptions = {}) {
     }
   };
 
-  scope.fiber = scope$$().getCursorFiber();
+  scope.fiber = fiber;
 
   return update;
 }

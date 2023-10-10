@@ -28,6 +28,30 @@ class Scope {
   private isTransitionZone = false;
   private isHot = false;
 
+  public copy() {
+    const scope = new Scope();
+
+    scope.root = this.root;
+    scope.wip = this.wip;
+    scope.unit = this.unit;
+    scope.cursor = this.cursor;
+    scope.mountLevel = this.mountLevel;
+    scope.mountNav = this.mountNav;
+    scope.mountDeep = this.mountDeep;
+    scope.events = this.events;
+    scope.unsubscribers = [...this.unsubscribers];
+    scope.candidates = new Set([...this.candidates]);
+    scope.deletions = new Set([...this.deletions]);
+    scope.aEffects = [...this.aEffects];
+    scope.lEffects = [...this.lEffects];
+    scope.iEffects = [...this.iEffects];
+    scope.islEffZone = this.islEffZone;
+    scope.isIEffZone = this.isIEffZone;
+    scope.isUpdateZone = this.isUpdateZone;
+
+    return scope;
+  }
+
   public getRoot() {
     return this.root;
   }
@@ -274,6 +298,10 @@ const setRootId = (id: number) => {
 
 const removeScope = (id: number) => scopes.delete(id);
 
+const replaceScope = (scope: Scope, id: number = rootId) => {
+  scopes.set(id, scope);
+};
+
 const scope$$ = (id: number = rootId) => scopes.get(id);
 
-export { type Scope, getRootId, setRootId, removeScope, scope$$ };
+export { type Scope, getRootId, setRootId, removeScope, replaceScope, scope$$ };

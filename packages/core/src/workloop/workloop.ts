@@ -8,9 +8,10 @@ import {
   detectIsArray,
   detectIsString,
   detectIsNumber,
+  detectIsFunction,
   trueFn,
 } from '../helpers';
-import { type Scope, setRootId, scope$$ } from '../scope';
+import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
 import { type Hook, Fiber, EffectTag } from '../fiber';
 import type { DarkElementKey, DarkElement, DarkElementInstance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, getComponentFlag } from '../component';
@@ -88,12 +89,13 @@ function workLoop(yield$: boolean) {
 
 function stopLowPriorityWork(): false {
   const scope$ = scope$$();
+  const copy = scope$.copy();
   const fiber = scope$.getWorkInProgress();
+  const child = fiber.child || null;
 
-  platform.cancelTask();
-  // console.log('fiber.child', fiber.child);
-  // console.log('fiber.copy.child', copyFiber(fiber.copy.child));
-  // console.log('--stop--');
+  platform.cancelTask(null);
+
+  console.log('--stop--');
 
   fiber.child = fiber.copy.child;
   fiber.alt = null;
@@ -753,10 +755,10 @@ function flush(wipFiber: Fiber, transition = false) {
   scope$.resetMount();
   scope$.resetCandidates();
   scope$.resetDeletions();
+  scope$.resetCancels();
   scope$.resetIEffects();
   scope$.resetLEffects();
   scope$.resetAEffects();
-  scope$.resetCancels();
   scope$.setIsHydrateZone(false);
   scope$.setIsUpdateZone(false);
   !isUpdateZone && scope$.setRoot(wipFiber);
@@ -797,10 +799,11 @@ type CreateUpdateCallbackOptions = {
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const { rootId, fiber, priority, shouldUpdate = trueFn } = options;
-  const callback = () => {
+  const callback = (restore?: () => void) => {
     setRootId(rootId); // !
     const scope$ = scope$$();
     if (!detectIsFiberAlive(fiber) || fiber.used || !shouldUpdate()) return;
+    if (detectIsFunction(restore)) return restore();
     scope$.setIsUpdateZone(true);
     scope$.resetMount();
 

@@ -10,6 +10,7 @@ startMemMonitor();
 const Demo = component(() => {
   const [numPoints, setNumPoints] = useState(1000, {
     priority: TaskPriority.HIGH,
+    //forceSync: true,
   });
 
   const updateCount = e => {

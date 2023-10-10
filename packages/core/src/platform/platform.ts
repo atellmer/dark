@@ -10,7 +10,7 @@ export type Platform = {
   schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYield: () => boolean;
   hasPrimaryTask: () => boolean;
-  cancelTask: () => void;
+  cancelTask: (restore: () => void) => void;
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;

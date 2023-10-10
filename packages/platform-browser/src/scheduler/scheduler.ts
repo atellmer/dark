@@ -1,6 +1,7 @@
 import {
   type ScheduleCallbackOptions,
   type WorkLoop,
+  type Callback,
   getTime,
   workLoop,
   TaskPriority,
@@ -8,11 +9,13 @@ import {
 } from '@dark-engine/core';
 
 type QueueMap = {
+  high: Array<Task>;
   normal: Array<Task>;
   low: Array<Task>;
 };
 
 const queueMap: QueueMap = {
+  high: [],
   normal: [],
   low: [],
 };
@@ -30,7 +33,8 @@ class Task {
   public createdAt: number;
   public priority: TaskPriority;
   public forceSync: boolean;
-  public callback: () => void;
+  public callback: (restore?: Callback) => void;
+  public restore?: Callback;
 
   constructor(options: TaskConstructorOptions) {
     const { priority, forceSync, callback } = options;
@@ -39,39 +43,48 @@ class Task {
     this.id = ++Task.nextTaskId;
     this.priority = priority;
     this.forceSync = forceSync;
-    this.callback = callback;
     this.createdAt = time;
+    this.callback = callback;
   }
 }
 
 const shouldYield = () => getTime() >= deadline;
 
-function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
+function scheduleCallback(callback: Callback, options?: ScheduleCallbackOptions) {
   const { priority = TaskPriority.NORMAL, forceSync = false } = options || {};
   const task = new Task({ priority, forceSync, callback });
-  const map: Record<TaskPriority, () => void> = {
-    [TaskPriority.NORMAL]: () => queueMap.normal.push(task),
-    [TaskPriority.LOW]: () => queueMap.low.push(task),
-  };
 
-  map[task.priority]();
-  executeTasks();
+  put(task);
+  execute();
+}
+
+const tasksMap: Record<TaskPriority, Array<Task>> = {
+  [TaskPriority.HIGH]: queueMap.high,
+  [TaskPriority.NORMAL]: queueMap.normal,
+  [TaskPriority.LOW]: queueMap.low,
+};
+
+function put(task: Task) {
+  const queue = tasksMap[task.priority];
+
+  queue.push(task);
 }
 
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
   currentTask = queue.shift();
-  currentTask.callback();
+  currentTask.callback(currentTask.restore);
+  currentTask.restore && (currentTask.restore = null);
   currentTask.forceSync ? requestCallbackSync(workLoop) : requestCallback(workLoop);
 
   return true;
 }
 
-function executeTasks() {
+function execute() {
   const isBusy = detectIsBusy();
 
   if (!isBusy && !isMessageLoopRunning) {
-    pick(queueMap.normal) || pick(queueMap.low);
+    pick(queueMap.high) || pick(queueMap.normal) || pick(queueMap.low);
   }
 }
 
@@ -84,7 +97,7 @@ function performWorkUntilDeadline() {
       isMessageLoopRunning = false;
       scheduledCallback = null;
       currentTask = null;
-      executeTasks();
+      execute();
     } else {
       port.postMessage(null);
     }
@@ -109,14 +122,15 @@ function requestCallback(callback: WorkLoop) {
 function requestCallbackSync(callback: WorkLoop) {
   callback(false);
   currentTask = null;
-  executeTasks();
+  execute();
 }
 
 function hasPrimaryTask() {
-  return currentTask.priority === TaskPriority.LOW && queueMap.normal.length > 0;
+  return currentTask.priority === TaskPriority.LOW && (queueMap.high.length > 0 || queueMap.normal.length > 0);
 }
 
-function cancelTask() {
+function cancelTask(restore: Callback) {
+  currentTask.restore = restore;
   queueMap.low.unshift(currentTask);
 }
 

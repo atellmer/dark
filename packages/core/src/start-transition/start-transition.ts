@@ -1,9 +1,11 @@
 import { scope$$ } from '../scope';
 
 function startTransition(callback: () => void) {
-  scope$$().setIsTransitionZone(true);
+  const scope$ = scope$$();
+
+  scope$.setIsTransitionZone(true);
   callback();
-  scope$$().setIsTransitionZone(false);
+  scope$.setIsTransitionZone(false);
 }
 
 export { startTransition };
