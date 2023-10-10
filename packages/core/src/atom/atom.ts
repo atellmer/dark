@@ -2,7 +2,7 @@ import { platform } from '../platform';
 import { detectIsFunction, trueFn } from '../helpers';
 import { Fiber } from '../fiber';
 import { createUpdateCallback } from '../workloop';
-import { currentFiberStore, getRootId } from '../scope';
+import { scope$$, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
 
 type ShouldUpdate<T> = (p: T, n: T) => boolean;
@@ -16,7 +16,7 @@ class Atom<T = unknown> {
   }
 
   value(fn?: ShouldUpdate<T>) {
-    link(currentFiberStore.get(), this.subs, fn);
+    link(scope$$().getCursorFiber(), this.subs, fn);
 
     return this.value$;
   }

@@ -1,4 +1,4 @@
-import { detectIsFunction, eventsStore, detectIsArray } from '@dark-engine/core';
+import { detectIsFunction, scope$$, detectIsArray } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 
@@ -35,11 +35,12 @@ function delegateEvent(
   eventName: string,
   handler: (e: Event) => void | [fn: () => void, ...args: Array<any>],
 ) {
-  const eventsMap = eventsStore.get();
-  const handlerMap = eventsMap.get(eventName);
+  const scope$ = scope$$();
+  const eventsMap = scope$.getEvents();
+  const handlersMap = eventsMap.get(eventName);
   const handler$ = detectIsArray(handler) ? (e: Event) => handler[0](...handler.slice(1), e) : handler;
 
-  if (!handlerMap) {
+  if (!handlersMap) {
     const rootHandler = (event: Event) => {
       const fireEvent = eventsMap.get(eventName).get(event.target);
       const target = event.target as TagNativeElement;
@@ -57,9 +58,9 @@ function delegateEvent(
 
     eventsMap.set(eventName, new WeakMap([[target, handler$]]));
     document.addEventListener(eventName, rootHandler, true);
-    eventsStore.addUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
+    scope$.addEventUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
-    handlerMap.set(target, handler$);
+    handlersMap.set(target, handler$);
   }
 }
 

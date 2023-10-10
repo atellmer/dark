@@ -1,5 +1,5 @@
 import { detectIsFunction } from '../helpers';
-import { wipRootStore, isUpdateHookZone } from '../scope';
+import { scope$$ } from '../scope';
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode } from '../view';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementInstance, DarkElementKey } from '../shared';
@@ -81,15 +81,16 @@ class Fiber<N = NativeElement> {
 
   public incCEC(count = 1, force = false) {
     if (!this.parent) return;
-    const isUpdate = isUpdateHookZone.get();
-    const wipFiber = wipRootStore.get();
-    const stop = isUpdate && wipFiber.parent === this.parent;
+    const scope$ = scope$$();
+    const isUpdateZone = scope$.getIsUpdateZone();
+    const wipFiber = scope$.getWorkInProgress();
+    const stop = isUpdateZone && wipFiber.parent === this.parent;
 
     if (detectIsPlainVirtualNode(this.inst) || (detectIsTagVirtualNode(this.inst) && this.inst.children.length === 0)) {
       this.cec = 1;
     }
 
-    if (isUpdate && stop && !force) return;
+    if (isUpdateZone && stop && !force) return;
 
     this.parent.cec += count;
 

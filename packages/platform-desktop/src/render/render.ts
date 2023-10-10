@@ -6,13 +6,10 @@ import {
   platform,
   flatten,
   TagVirtualNode,
-  rootStore,
-  wipRootStore,
-  currentRootStore,
-  nextUnitOfWorkStore,
-  mountStore,
   TaskPriority,
   createReplacer,
+  setRootId,
+  scope$$,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
@@ -43,19 +40,20 @@ function render(element: DarkElement) {
   !isInjected && inject();
 
   const callback = () => {
-    rootStore.set(0);
-    const currentRoot = currentRootStore.get();
-    const isUpdate = Boolean(currentRoot);
+    setRootId(0);
+    const scope$ = scope$$();
+    const root = scope$.getRoot();
+    const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
-      element: isUpdate ? currentRoot.element : new TagNativeElement(ROOT),
+      element: isUpdate ? root.element : new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      alt: currentRoot,
+      alt: root,
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
-    mountStore.reset();
-    wipRootStore.set(fiber);
-    nextUnitOfWorkStore.set(fiber);
+    scope$.resetMount();
+    scope$.setWorkInProgress(fiber);
+    scope$.setNextUnitOfWork(fiber);
   };
 
   platform.schedule(callback, { priority: TaskPriority.NORMAL });

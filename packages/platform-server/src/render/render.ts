@@ -8,14 +8,10 @@ import {
   platform,
   flatten,
   TagVirtualNode,
-  rootStore,
-  wipRootStore,
-  currentRootStore,
-  nextUnitOfWorkStore,
-  mountStore,
   createReplacer,
   unmountRoot,
-  isStreamZone,
+  setRootId,
+  scope$$,
   emitter,
   nextTick,
 } from '@dark-engine/core';
@@ -49,17 +45,17 @@ function createRenderCallback(element: DarkElement, stream = false) {
 
   const rootId = getNextRootId();
   const callback = () => {
-    rootStore.set(rootId);
-    isStreamZone.set(stream);
+    setRootId(rootId);
+    const scope$ = scope$$();
     const fiber = new Fiber().mutate({
       element: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       tag: EffectTag.C,
     });
-
-    mountStore.reset();
-    wipRootStore.set(fiber);
-    nextUnitOfWorkStore.set(fiber);
+    scope$.setIsStreamZone(stream);
+    scope$.resetMount();
+    scope$.setWorkInProgress(fiber);
+    scope$.setNextUnitOfWork(fiber);
   };
 
   return { rootId, callback };
@@ -69,7 +65,7 @@ function renderToString(element: DarkElement): Promise<string> {
   return new Promise<string>(resolve => {
     const { rootId, callback } = createRenderCallback(element);
     const onCompleted = () => {
-      const { element: nativeElement } = currentRootStore.get() as Fiber<TagNativeElement>;
+      const { element: nativeElement } = scope$$().getRoot() as Fiber<TagNativeElement>;
       const content = nativeElement.renderToString(true);
 
       resolve(content);

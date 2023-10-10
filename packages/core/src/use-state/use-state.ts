@@ -2,7 +2,7 @@ import { detectIsFunction } from '../helpers';
 import { type UseUpdateOptions, useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
-import { isTransitionZone, cancelsStore } from '../scope';
+import { scope$$ } from '../scope';
 
 type Value<T> = T | ((prevValue: T) => T);
 
@@ -18,7 +18,8 @@ function useState<T = unknown>(
     [],
   );
   const setState = useCallback((sourceValue: Value<T>) => {
-    const isTransition = isTransitionZone.get();
+    const scope$ = scope$$();
+    const isTransition = scope$.getIsTransitionZone();
     const shouldUpdate = () => {
       const prevValue = scope.value;
       const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
@@ -27,7 +28,7 @@ function useState<T = unknown>(
 
       if (shouldUpdate) {
         scope.value = newValue;
-        isTransition && cancelsStore.add(resetValue);
+        isTransition && scope$.addCancel(resetValue);
       }
 
       return shouldUpdate;

@@ -1,10 +1,12 @@
-import { isBatchZone, batchStore } from '../scope';
+import { scope$$ } from '../scope';
 
 function batch(callback: () => void) {
-  isBatchZone.set(true);
+  const scope$ = scope$$();
+
+  scope$.setIsBatchZone(true);
   callback();
-  isBatchZone.set(false);
-  batchStore.apply();
+  scope$.setIsBatchZone(false);
+  scope$.applyBatch();
 }
 
 export { batch };

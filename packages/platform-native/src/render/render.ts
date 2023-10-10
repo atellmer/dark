@@ -7,15 +7,12 @@ import {
   platform,
   flatten,
   TagVirtualNode,
-  rootStore,
-  wipRootStore,
-  currentRootStore,
-  nextUnitOfWorkStore,
-  mountStore,
   TaskPriority,
   createReplacer,
   unmountRoot,
   detectIsFunction,
+  setRootId,
+  scope$$,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
@@ -57,19 +54,20 @@ function render(options: RenderOptions): NSElement {
   !isInjected && inject();
 
   const callback = () => {
-    rootStore.set(rootId);
-    const currentRoot = currentRootStore.get();
-    const isUpdate = Boolean(currentRoot);
+    setRootId(rootId);
+    const scope$ = scope$$();
+    const root = scope$.getRoot();
+    const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
-      element: isUpdate ? currentRoot.element : new TagNativeElement(ROOT),
+      element: isUpdate ? root.element : new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      alt: currentRoot,
+      alt: root,
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
-    mountStore.reset();
-    wipRootStore.set(fiber);
-    nextUnitOfWorkStore.set(fiber);
+    scope$.resetMount();
+    scope$.setWorkInProgress(fiber);
+    scope$.setNextUnitOfWork(fiber);
   };
 
   platform.schedule(callback, {
@@ -86,7 +84,7 @@ function render(options: RenderOptions): NSElement {
         onCompleted(nativeView);
       }
 
-      rootStore.set(APP_ID);
+      setRootId(APP_ID);
     },
   });
 
@@ -98,7 +96,7 @@ function render(options: RenderOptions): NSElement {
 }
 
 function getRootNativeView() {
-  const fiber = currentRootStore.get() as Fiber<TagNativeElement>;
+  const fiber = scope$$().getRoot() as Fiber<TagNativeElement>;
   const nativeView = fiber.element.getNativeView();
 
   return nativeView;

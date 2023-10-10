@@ -6,7 +6,7 @@ import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
 import { walkFiber } from '../walk';
 import { detectIsUndefined } from '../helpers';
-import { currentRootStore, eventsStore, rootStore } from '../scope';
+import { removeScope, scope$$ } from '../scope';
 
 function unmountFiber(fiber: Fiber) {
   if (!fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.aHost && !fiber.pHost) return;
@@ -30,10 +30,11 @@ function unmountFiber(fiber: Fiber) {
 
 function unmountRoot(rootId: number, onCompleted: () => void) {
   if (detectIsUndefined(rootId)) return;
+  const scope$ = scope$$(rootId);
 
-  unmountFiber(currentRootStore.get(rootId));
-  eventsStore.unsubscribe(rootId);
-  rootStore.remove(rootId);
+  unmountFiber(scope$.getRoot());
+  scope$.unsubscribeEvents();
+  removeScope(rootId);
   onCompleted();
 }
 

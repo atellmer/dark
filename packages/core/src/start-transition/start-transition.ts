@@ -1,9 +1,9 @@
-import { isTransitionZone } from '../scope';
+import { scope$$ } from '../scope';
 
 function startTransition(callback: () => void) {
-  isTransitionZone.set(true);
+  scope$$().setIsTransitionZone(true);
   callback();
-  isTransitionZone.set(false);
+  scope$$().setIsTransitionZone(false);
 }
 
 export { startTransition };

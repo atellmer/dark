@@ -38,3 +38,5 @@ export type KeyProps = {
 export type FlagProps = {
   flag?: Partial<Record<Flag, boolean>>;
 };
+
+export type Callback = () => void;

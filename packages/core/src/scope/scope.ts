@@ -1,248 +1,279 @@
 import type { Fiber } from '../fiber';
+import type { Callback } from '../shared';
 
-let rootId: number = null;
+class Scope {
+  private root: Fiber = null;
+  private wip: Fiber = null;
+  private unit: Fiber = null;
+  private cursor: Fiber = null;
+  private mountLevel = 0;
+  private mountNav: Record<number, number> = {};
+  private mountDeep = true;
+  private events: Map<string, WeakMap<object, Function>> = new Map();
+  private unsubscribers: Array<Callback> = [];
+  private candidates: Set<Fiber> = new Set();
+  private deletions: Set<Fiber> = new Set();
+  private batchQueue: Array<Callback> = [];
+  private batchUpdate: Callback = null;
+  private aEffects: Array<Callback> = [];
+  private lEffects: Array<Callback> = [];
+  private iEffects: Array<Callback> = [];
+  private cancels: Array<Callback> = [];
+  private islEffZone = false;
+  private isIEffZone = false;
+  private isUpdateZone = false;
+  private isBatchZone = false;
+  private isHydrateZone = false;
+  private isStreamZone = false;
+  private isTransitionZone = false;
+  private isHot = false;
 
-const stores = new Map<number, Store>();
+  public getRoot() {
+    return this.root;
+  }
 
-class Store {
-  public root: Fiber = null; // root fiber for app
-  public wip: Fiber = null; // root work-in-progress fiber (component)
-  public unit: Fiber = null; // unit of work fiber (part of wip)
-  public cur: Fiber = null; // current mounting fiber
-  public events: Map<string, WeakMap<object, Function>> = new Map();
-  public off: Array<() => void> = [];
-  public candidates: Set<Fiber> = new Set();
-  public deletions: Set<Fiber> = new Set();
-  public mount: MountStore = {
-    level: 0,
-    nav: {},
-    deep: true,
-  };
-  public effects: Array<() => void> = [];
-  public lEffects: Array<() => void> = [];
-  public iEffects: Array<() => void> = [];
-  public cancels: Array<() => void> = [];
-  public batch: BatchStore = {
-    queue: [],
-    update: null,
-  };
-  public isLEFZone = false;
-  public isIEFZone = false;
-  public uZone = false;
-  public bZone = false;
-  public hZone = false;
-  public sZone = false;
-  public tZone = false;
-  public isHot = false;
+  public setRoot(fiber: Fiber) {
+    this.root = fiber;
+  }
+
+  public getWorkInProgress() {
+    return this.wip;
+  }
+
+  public setWorkInProgress(fiber: Fiber) {
+    this.wip = fiber;
+  }
+
+  public getNextUnitOfWork() {
+    return this.unit;
+  }
+
+  public setNextUnitOfWork(fiber: Fiber) {
+    this.unit = fiber;
+  }
+
+  public getCursorFiber() {
+    return this.cursor;
+  }
+
+  public setCursorFiber(fiber: Fiber) {
+    this.cursor = fiber;
+  }
+
+  public navToChild() {
+    this.mountLevel = this.mountLevel + 1;
+    this.mountNav[this.mountLevel] = 0;
+  }
+
+  public navToSibling() {
+    this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] + 1;
+  }
+
+  public navToParent() {
+    this.mountNav[this.mountLevel] = 0;
+    this.mountLevel = this.mountLevel - 1;
+  }
+
+  public getMountIndex() {
+    return this.mountNav[this.mountLevel];
+  }
+
+  public getMountDeep() {
+    return this.mountDeep;
+  }
+
+  public setMountDeep(value: boolean) {
+    this.mountDeep = value;
+  }
+
+  public resetMount() {
+    this.mountLevel = 0;
+    this.mountNav = {};
+    this.mountDeep = true;
+  }
+
+  public getEvents() {
+    return this.events;
+  }
+
+  public addEventUnsubscriber(fn: Callback) {
+    this.unsubscribers.push(fn);
+  }
+
+  public unsubscribeEvents() {
+    this.unsubscribers.forEach(x => x());
+  }
+
+  public getCandidates() {
+    return this.candidates;
+  }
+
+  public addCandidate(fiber: Fiber) {
+    this.candidates.add(fiber);
+  }
+
+  public resetCandidates() {
+    this.candidates = new Set();
+  }
+
+  public getDeletions() {
+    return this.deletions;
+  }
+
+  public addDeletion(fiber: Fiber) {
+    this.deletions.add(fiber);
+  }
+
+  public hasDeletion(fiber: Fiber) {
+    return this.deletions.has(fiber);
+  }
+
+  public resetDeletions() {
+    this.deletions = new Set();
+  }
+
+  public addBatch(fn: Callback) {
+    this.batchQueue.push(fn);
+  }
+
+  public setBatchUpdate(fn: Callback) {
+    this.batchUpdate = fn;
+  }
+
+  public applyBatch() {
+    this.batchQueue.forEach(x => x());
+    this.batchUpdate && this.batchUpdate();
+    this.batchQueue = [];
+    this.batchUpdate = null;
+  }
+
+  public getAEffecs() {
+    return this.aEffects;
+  }
+
+  public addAEffect(fn: Callback) {
+    this.aEffects.push(fn);
+  }
+
+  public resetAEffects() {
+    this.aEffects = [];
+  }
+
+  public getLEffecs() {
+    return this.lEffects;
+  }
+
+  public addLEffect(fn: Callback) {
+    this.lEffects.push(fn);
+  }
+
+  public resetLEffects() {
+    this.lEffects = [];
+  }
+
+  public getIEffecs() {
+    return this.iEffects;
+  }
+
+  public addIEffect(fn: Callback) {
+    this.iEffects.push(fn);
+  }
+
+  public resetIEffects() {
+    this.iEffects = [];
+  }
+
+  public addCancel(fn: Callback) {
+    this.cancels.push(fn);
+  }
+
+  public applyCancels() {
+    for (let i = this.cancels.length - 1; i >= 0; i--) {
+      this.cancels[i]();
+    }
+  }
+
+  public resetCancels() {
+    this.cancels = [];
+  }
+
+  public getIsLEffZone() {
+    return this.islEffZone;
+  }
+
+  public setIsLEffZone(value: boolean) {
+    this.islEffZone = value;
+  }
+
+  public getIsIEffZone() {
+    return this.isIEffZone;
+  }
+
+  public setIsIEffZone(value: boolean) {
+    this.isIEffZone = value;
+  }
+
+  public getIsUpdateZone() {
+    return this.isUpdateZone;
+  }
+
+  public setIsUpdateZone(value: boolean) {
+    this.isUpdateZone = value;
+  }
+
+  public getIsBatchZone() {
+    return this.isBatchZone;
+  }
+
+  public setIsBatchZone(value: boolean) {
+    this.isBatchZone = value;
+  }
+
+  public getIsHydrateZone() {
+    return this.isHydrateZone;
+  }
+
+  public setIsHydrateZone(value: boolean) {
+    this.isHydrateZone = value;
+  }
+
+  public getIsStreamZone() {
+    return this.isStreamZone;
+  }
+
+  public setIsStreamZone(value: boolean) {
+    this.isStreamZone = value;
+  }
+
+  public getIsTransitionZone() {
+    return this.isTransitionZone;
+  }
+
+  public setIsTransitionZone(value: boolean) {
+    this.isTransitionZone = value;
+  }
+
+  public getIsHot() {
+    return this.isHot;
+  }
+
+  public setIsHot(value: boolean) {
+    this.isHot = value;
+  }
 }
 
-type BatchStore = {
-  queue: Array<() => void>;
-  update: () => void;
-};
-
-type MountStore = {
-  level: number;
-  nav: Record<number, number>;
-  deep: boolean;
-};
-
-const rootStore = {
-  set: (id: number) => {
-    rootId = id;
-    !stores.get(rootId) && stores.set(rootId, new Store());
-  },
-  remove: (id: number) => stores.delete(id),
-};
+let rootId: number = null;
+const scopes = new Map<number, Scope>();
 
 const getRootId = () => rootId;
 
-const store = {
-  get: (id: number = rootId) => stores.get(id),
+const setRootId = (id: number) => {
+  rootId = id;
+  !scopes.has(rootId) && scopes.set(rootId, new Scope());
 };
 
-const wipRootStore = {
-  get: () => store.get()?.wip || null,
-  set: (fiber: Fiber) => (store.get().wip = fiber),
-};
+const removeScope = (id: number) => scopes.delete(id);
 
-const currentRootStore = {
-  get: (id?: number) => store.get(id)?.root || null,
-  set: (fiber: Fiber) => (store.get().root = fiber),
-};
+const scope$$ = (id: number = rootId) => scopes.get(id);
 
-const nextUnitOfWorkStore = {
-  get: () => store.get()?.unit || null,
-  set: (fiber: Fiber) => (store.get().unit = fiber),
-};
-
-const currentFiberStore = {
-  get: () => store.get()?.cur,
-  set: (fiber: Fiber) => (store.get().cur = fiber),
-};
-
-const eventsStore = {
-  get: () => store.get().events,
-  addUnsubscriber: (fn: () => void) => store.get().off.push(fn),
-  unsubscribe: (id: number) => store.get(id).off.forEach(fn => fn()),
-};
-
-const candidatesStore = {
-  get: () => store.get().candidates,
-  add: (fiber: Fiber) => store.get().candidates.add(fiber),
-  reset: () => (store.get().candidates = new Set()),
-};
-
-const deletionsStore = {
-  get: () => store.get().deletions,
-  add: (fiber: Fiber) => store.get().deletions.add(fiber),
-  has: (fiber: Fiber) => store.get().deletions.has(fiber),
-  set: (deletions: Set<Fiber>) => (store.get().deletions = deletions),
-  reset: () => (store.get().deletions = new Set()),
-};
-
-const mountStore = {
-  reset: () => {
-    store.get().mount = {
-      level: 0,
-      nav: {},
-      deep: true,
-    };
-  },
-  getIndex: () => {
-    const { mount } = store.get();
-
-    return mount.nav[mount.level];
-  },
-  toChild: () => {
-    const { mount } = store.get();
-
-    mount.level = mount.level + 1;
-    mount.nav[mount.level] = 0;
-  },
-  toParent: () => {
-    const { mount } = store.get();
-
-    mount.nav[mount.level] = 0;
-    mount.level = mount.level - 1;
-  },
-  toSibling: () => {
-    const { mount } = store.get();
-
-    mount.nav[mount.level] = mount.nav[mount.level] + 1;
-  },
-  deep: {
-    get: () => store.get().mount.deep,
-    set: (value: boolean) => (store.get().mount.deep = value),
-  },
-};
-
-const effectsStore = {
-  get: () => store.get().effects,
-  reset: () => (store.get().effects = []),
-  add: (effect: () => void) => store.get().effects.push(effect),
-};
-
-const layoutEffectsStore = {
-  get: () => store.get().lEffects,
-  reset: () => (store.get().lEffects = []),
-  add: (effect: () => void) => store.get().lEffects.push(effect),
-};
-
-const insertionEffectsStore = {
-  get: () => store.get().iEffects,
-  reset: () => (store.get().iEffects = []),
-  add: (effect: () => void) => store.get().iEffects.push(effect),
-};
-
-const cancelsStore = {
-  get: () => store.get().cancels,
-  reset: () => (store.get().cancels = []),
-  add: (cancel: () => void) => store.get().cancels.push(cancel),
-  apply: () => {
-    const items = store.get().cancels;
-
-    for (let i = items.length - 1; i >= 0; i--) {
-      items[i]();
-    }
-  },
-};
-
-const batchStore = {
-  add: (x: () => void) => store.get().batch.queue.push(x),
-  setUpdate: (x: () => void) => (store.get().batch.update = x),
-  apply: () => {
-    const batch = store.get().batch;
-
-    batch.queue.forEach(x => x());
-    batch.update && batch.update();
-    batch.queue = [];
-    batch.update = null;
-  },
-};
-
-const isLayoutEffectsZone = {
-  get: () => store.get()?.isLEFZone || false,
-  set: (value: boolean) => (store.get().isLEFZone = value),
-};
-
-const isInsertionEffectsZone = {
-  get: (id?: number) => store.get(id)?.isIEFZone || false,
-  set: (value: boolean) => (store.get().isIEFZone = value),
-};
-
-const isUpdateHookZone = {
-  get: () => store.get()?.uZone || false,
-  set: (value: boolean) => (store.get().uZone = value),
-};
-
-const isBatchZone = {
-  get: () => store.get()?.bZone || false,
-  set: (value: boolean) => (store.get().bZone = value),
-};
-
-const isHydrateZone = {
-  get: () => store.get()?.hZone || false,
-  set: (value: boolean) => (store.get().hZone = value),
-};
-
-const isStreamZone = {
-  get: () => store.get()?.sZone || false,
-  set: (value: boolean) => (store.get().sZone = value),
-};
-
-const isTransitionZone = {
-  get: () => store.get()?.tZone || false,
-  set: (value: boolean) => (store.get().tZone = value),
-};
-
-const hot = {
-  get: () => store.get()?.isHot || false,
-  set: (value: boolean) => (store.get().isHot = value),
-};
-
-export {
-  getRootId,
-  rootStore,
-  wipRootStore,
-  currentRootStore,
-  nextUnitOfWorkStore,
-  currentFiberStore,
-  eventsStore,
-  candidatesStore,
-  deletionsStore,
-  mountStore,
-  effectsStore,
-  layoutEffectsStore,
-  insertionEffectsStore,
-  cancelsStore,
-  batchStore,
-  isLayoutEffectsZone,
-  isInsertionEffectsZone,
-  isUpdateHookZone,
-  isBatchZone,
-  isHydrateZone,
-  isStreamZone,
-  isTransitionZone,
-  hot,
-};
+export { type Scope, getRootId, setRootId, removeScope, scope$$ };

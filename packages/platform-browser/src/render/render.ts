@@ -7,16 +7,10 @@ import {
   flatten,
   detectIsUndefined,
   TagVirtualNode,
-  rootStore,
-  wipRootStore,
-  currentRootStore,
-  nextUnitOfWorkStore,
-  mountStore,
   TaskPriority,
   createReplacer,
-  isInsertionEffectsZone,
-  isLayoutEffectsZone,
-  isHydrateZone,
+  setRootId,
+  scope$$,
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
@@ -59,39 +53,38 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
 
   if (!isMounted) {
     rootId = roots.size;
-
     roots.set(container, rootId);
-
-    if (!hydrate) {
-      container.innerHTML = '';
-    }
+    !hydrate && (container.innerHTML = '');
   } else {
     rootId = roots.get(container);
   }
 
+  const scope$ = scope$$(rootId);
+
   // insertion effect can't schedule renders
-  if (isInsertionEffectsZone.get(rootId)) return;
+  if (scope$?.getIsIEffZone()) return;
 
   const callback = () => {
-    rootStore.set(rootId); // important order!
-    const currentRoot = currentRootStore.get();
-    const isUpdate = Boolean(currentRoot);
+    setRootId(rootId); // !
+    const scope$ = scope$$();
+    const root = scope$.getRoot();
+    const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
       element: container,
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      alt: currentRoot,
+      alt: root,
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 
-    mountStore.reset();
-    wipRootStore.set(fiber);
-    isHydrateZone.set(hydrate);
-    nextUnitOfWorkStore.set(fiber);
+    scope$.resetMount();
+    scope$.setWorkInProgress(fiber);
+    scope$.setIsHydrateZone(hydrate);
+    scope$.setNextUnitOfWork(fiber);
   };
 
   platform.schedule(callback, {
     priority: TaskPriority.NORMAL,
-    forceSync: isLayoutEffectsZone.get(),
+    forceSync: scope$?.getIsLEffZone(),
   });
 }
 

@@ -1,7 +1,7 @@
 import type { DarkElement } from '../shared';
 import { component } from '../component';
 import { useLayoutEffect } from '../use-layout-effect';
-import { currentFiberStore, isHydrateZone } from '../scope';
+import { scope$$ } from '../scope';
 import { collectElements, getFiberWithElement } from '../walk';
 import { platform, detectIsServer } from '../platform';
 import { $$shadow } from './utils';
@@ -13,8 +13,8 @@ type ShadowProps = {
 
 const Shadow = component<ShadowProps>(
   ({ isVisible, slot }) => {
-    const isEnabled = !detectIsServer() && !isHydrateZone.get();
-    const fiber = currentFiberStore.get();
+    const isEnabled = !detectIsServer() && !scope$$().getIsHydrateZone();
+    const fiber = scope$$().getCursorFiber();
 
     if (isEnabled) {
       if (isVisible) {

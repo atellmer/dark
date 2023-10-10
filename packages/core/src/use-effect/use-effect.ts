@@ -1,27 +1,31 @@
 import { detectIsUndefined, detectIsFunction, detectAreDepsDifferent } from '../helpers';
-import { currentFiberStore, effectsStore } from '../scope';
+import { scope$$ } from '../scope';
 import type { Fiber, Hook, HookValue } from '../fiber';
-import type { Effect, DropEffect } from './types';
+import { type Effect, type DropEffect, EffectType } from './types';
 
 const $$useEffect = Symbol('use-effect');
+const { useEffect, hasEffects, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
 
-const { useEffect, hasEffects, dropEffects } = createEffect($$useEffect, effectsStore);
-
-function createEffect(token: Symbol, store: typeof effectsStore) {
+function createEffect(token: Symbol, type: EffectType) {
   function useEffect(effect: Effect, deps?: Array<any>) {
-    const fiber = currentFiberStore.get();
+    const fiber = scope$$().getCursorFiber();
     const hook = fiber.hook as Hook<HookValue<DropEffect>>;
     const { idx, values } = hook;
     const runEffect = () => {
+      const scope$ = scope$$();
+      const map: Record<EffectType, (fn: () => void) => void> = {
+        [EffectType.ASYNC]: (fn: () => void) => scope$.addAEffect(fn),
+        [EffectType.LAYOUT]: (fn: () => void) => scope$.addLEffect(fn),
+        [EffectType.INSERTION]: (fn: () => void) => scope$.addIEffect(fn),
+      };
+      const add = map[type];
+
       values[idx] = {
         deps,
         token,
         value: undefined,
       };
-
-      store.add(() => {
-        values[idx].value = effect();
-      });
+      add(() => (values[idx].value = effect()));
     };
 
     if (detectIsUndefined(values[idx])) {
