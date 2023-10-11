@@ -10,6 +10,9 @@ const config = {
     extensions: ['.js', '.ts', '.tsx'],
     alias,
   },
+  externals: {
+    'node:worker_threads': 'commonjs2 node:worker_threads',
+  },
   devtool: 'source-map',
   entry: resolve(__dirname, './index.tsx'),
   output: {

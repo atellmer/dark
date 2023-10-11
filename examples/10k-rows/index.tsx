@@ -140,6 +140,7 @@ type State = {
 const App = component(() => {
   const state = useMemo<State>(() => ({ data$: atom([]), selected$: atom() }), []);
   const { data$, selected$ } = state;
+  const items = data$.value();
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
@@ -228,7 +229,8 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        slot: data$.value().map(item => {
+        key: items.length > 0 ? 1 : 2,
+        slot: items.map(item => {
           const { id, name$ } = item;
 
           return MemoRow({

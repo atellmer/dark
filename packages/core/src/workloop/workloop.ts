@@ -1,4 +1,4 @@
-import { platform, detectIsServer } from '../platform';
+import { type RestoreOptions, platform, detectIsServer } from '../platform';
 import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag, TaskPriority } from '../constants';
 import {
   flatten,
@@ -33,7 +33,7 @@ import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, copyFiber } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, copyFiber, getFiberByRoute } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -95,11 +95,14 @@ function stopLowPriorityWork(): false {
 
   child.parent = null;
 
-  platform.cancelTask(() => {
+  platform.cancelTask((options: RestoreOptions) => {
+    const { fiber: wipFiber, setValue, resetValue } = options;
     const scope$ = scope$$();
     const root = scope$.getRoot();
-    const wipFiber = root.child;
 
+    console.log('----restore----');
+
+    wipFiber.marker = '✌️';
     wipFiber.alt = null;
     wipFiber.copy = null;
     wipFiber.alt = new Fiber().mutate(wipFiber);
@@ -107,16 +110,16 @@ function stopLowPriorityWork(): false {
     wipFiber.child = child || null;
     child && (child.parent = wipFiber);
 
-    //copy['clone'] = scope$$();
     copy.setRoot(root);
     copy.setWorkInProgress(wipFiber);
+    detectIsFunction(setValue) && setValue();
+    detectIsFunction(resetValue) && copy.addCancel(resetValue);
 
     replaceScope(copy);
-    console.log('--restore--');
-    console.log('copy', copy);
+    //console.log('copy', copy);
   });
 
-  console.log('--stop--');
+  console.log('----stop----');
 
   wipFiber.child = wipFiber.copy.child;
   wipFiber.alt = null;
@@ -348,8 +351,6 @@ function alt(fiber: Fiber, alternate: Fiber) {
   const areSameTypes = detectAreSameInstanceTypes(alternate.inst, instance);
   const flag = getElementFlag(instance);
   const NM = flag?.[Flag.NM];
-
-  alternate.used = true;
 
   if (!areSameTypes) {
     if (canAddToDeletions(alternate)) {
@@ -722,7 +723,7 @@ function commit() {
   isUpdateZone && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
-    fiber.tag !== EffectTag.S && !fiber.used && platform.commit(fiber);
+    fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
     fiber.copy = null;
   }
@@ -746,9 +747,9 @@ function commit() {
 
 function flush(wipFiber: Fiber, transition = false) {
   const scope$ = scope$$();
-  const isUpdateZone = scope$.getIsUpdateZone();
 
-  scope$.setWorkInProgress(null); // !
+  !scope$.getIsUpdateZone() && scope$.setRoot(wipFiber); // !
+  scope$.setWorkInProgress(null);
   scope$.setNextUnitOfWork(null);
   scope$.setCursorFiber(null);
   scope$.resetMount();
@@ -760,13 +761,6 @@ function flush(wipFiber: Fiber, transition = false) {
   scope$.resetAsyncEffects();
   scope$.setIsHydrateZone(false);
   scope$.setIsUpdateZone(false);
-  !isUpdateZone && scope$.setRoot(wipFiber);
-
-  // if (scope$['clone']) {
-  //   replaceScope(scope$['clone']);
-  //   scope$['clone'] = null;
-  // }
-
   !transition && emitter.emit('finish');
 }
 
@@ -795,24 +789,34 @@ function syncElementIndices(fiber: Fiber) {
   });
 }
 
-type CreateUpdateCallbackOptions = {
+export type CreateUpdateCallbackOptions = {
   rootId: number;
-  fiber: Fiber;
+  scope: {
+    fiber?: Fiber;
+    route?: Array<number>;
+  };
+  isTransition?: boolean;
   priority?: TaskPriority;
-  shouldUpdate?: () => boolean;
+  isBatch?: boolean;
+  createChanger?: () => UpdateChanger;
 };
 
+export type UpdateChanger = {
+  shouldUpdate: () => boolean;
+} & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
+
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, fiber, priority, shouldUpdate = trueFn } = options;
-  const callback = (restore?: () => void) => {
+  const { rootId, scope, priority, isTransition, isBatch, createChanger = createChanger$ } = options;
+  const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
+    const { shouldUpdate, setValue, resetValue } = createChanger();
     const scope$ = scope$$();
-    if (!detectIsFiberAlive(fiber)) return;
-    if (detectIsFunction(restore)) {
-      shouldUpdate();
-      return restore();
-    }
-    if (fiber.used || !shouldUpdate()) return;
+    const fiber = isTransition ? getFiberByRoute(scope.route, scope$.getRoot()) : scope.fiber;
+
+    if ((!isBatch && !shouldUpdate()) || !detectIsFiberAlive(fiber)) return;
+    if (detectIsFunction(restore)) return restore({ fiber, setValue, resetValue });
+    !isBatch && detectIsFunction(setValue) && setValue();
+    isTransition && detectIsFunction(resetValue) && scope$.addCancel(resetValue);
     scope$.setIsUpdateZone(true);
     scope$.resetMount();
 
@@ -832,6 +836,12 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
 
   return callback;
 }
+
+const createChanger$ = (): UpdateChanger => ({
+  shouldUpdate: trueFn,
+  setValue: null,
+  resetValue: null,
+});
 
 const detectIsBusy = () => Boolean(scope$$()?.getWorkInProgress());
 

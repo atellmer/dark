@@ -10,13 +10,19 @@ export type Platform = {
   schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
   shouldYield: () => boolean;
   hasPrimaryTask: () => boolean;
-  cancelTask: (restore: () => void) => void;
+  cancelTask: (restore: (options: RestoreOptions) => void) => void;
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
   detectIsPortal: (instance: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
   chunk: (fiber: Fiber) => void;
+};
+
+export type RestoreOptions = {
+  fiber: Fiber;
+  setValue?: () => void;
+  resetValue?: () => void;
 };
 
 export type ScheduleCallbackOptions = {

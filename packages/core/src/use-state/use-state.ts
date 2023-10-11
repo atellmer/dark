@@ -1,8 +1,7 @@
 import { detectIsFunction } from '../helpers';
-import { type UseUpdateOptions, useUpdate } from '../use-update';
+import { type UseUpdateOptions, type UpdateOptions, useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { useCallback } from '../use-callback';
-import { scope$$ } from '../scope';
 
 type Value<T> = T | ((prevValue: T) => T);
 
@@ -18,23 +17,17 @@ function useState<T = unknown>(
     [],
   );
   const setState = useCallback((sourceValue: Value<T>) => {
-    const scope$ = scope$$();
-    const isTransition = scope$.getIsTransitionZone();
-    const shouldUpdate = () => {
+    const create = (): UpdateOptions => {
       const prevValue = scope.value;
       const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
-      const shouldUpdate = !Object.is(prevValue, newValue);
+      const shouldUpdate = () => !Object.is(prevValue, newValue);
+      const setValue = () => (scope.value = newValue);
       const resetValue = () => (scope.value = prevValue);
 
-      if (shouldUpdate) {
-        scope.value = newValue;
-        isTransition && scope$.addCancel(resetValue);
-      }
-
-      return shouldUpdate;
+      return { shouldUpdate, setValue, resetValue };
     };
 
-    update(shouldUpdate);
+    update(create);
   }, []);
 
   return [scope.value, setState];

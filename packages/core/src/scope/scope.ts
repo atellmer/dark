@@ -41,7 +41,7 @@ class Scope {
     scope.mountNav = this.mountNav;
     scope.mountDeep = this.mountDeep;
     scope.events = this.events;
-    scope.unsubs = new Set([...this.unsubs]);
+    scope.unsubs = this.unsubs;
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);

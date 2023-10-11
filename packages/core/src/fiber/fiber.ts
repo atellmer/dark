@@ -28,7 +28,6 @@ class Fiber<N = NativeElement> {
   public aHost: boolean; // atom host
   public pHost: boolean; // portal host
   public marker: DarkElementKey; // for dev
-  public used: boolean; // flag if fiber already been rendered
   public shadow: boolean; // flag for shadow rendering
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
   public catch: (error: Error) => void;

@@ -1,35 +1,37 @@
-import { platform, type ScheduleCallbackOptions } from '../platform';
-import { type Fiber } from '../fiber';
+import { type ScheduleCallbackOptions, platform } from '../platform';
 import { getRootId, scope$$ } from '../scope';
-import { createUpdateCallback } from '../workloop';
-import { useMemo } from '../use-memo';
+import { type UpdateChanger, createUpdateCallback } from '../workloop';
 import { TaskPriority } from '../constants';
-import { trueFn } from '../helpers';
+import { getFiberRoute } from '../walk';
+import { useMemo } from '../use-memo';
+import { detectIsFunction } from '../helpers';
 
 export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'priority' | 'forceAsync'>;
-
-type UseUpdateScope = {
-  fiber: Fiber;
-};
+export type UpdateOptions = UpdateChanger;
 
 function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forceAsync$ }: UseUpdateOptions = {}) {
   const rootId = getRootId();
-  const scope = useMemo<UseUpdateScope>(() => ({ fiber: null }), []);
   const fiber = scope$$().getCursorFiber();
-  const update = (shouldUpdate$?: () => boolean) => {
+  const scope = useMemo(() => ({ fiber: null, route: [] }), []);
+  const update = (createChanger?: () => UpdateChanger) => {
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
-    const fiber = scope.fiber;
     const isBatch = scope$.getIsBatchZone();
     const isTransition = scope$.getIsTransitionZone();
     const priority = isTransition ? TaskPriority.LOW : priority$;
     const forceAsync = isTransition || forceAsync$;
-    const shouldUpdate = isBatch ? trueFn : shouldUpdate$;
-    const callback = createUpdateCallback({ rootId, fiber, priority, shouldUpdate });
+    const callback = createUpdateCallback({
+      rootId,
+      scope,
+      priority,
+      isTransition,
+      isBatch,
+      createChanger,
+    });
     const callbackOptions: ScheduleCallbackOptions = { forceAsync, priority };
 
     if (isBatch) {
-      shouldUpdate$ && scope$.addBatch(shouldUpdate$);
+      detectIsFunction(createChanger) && scope$.addBatch(() => createChanger().setValue());
       scope$.setBatchUpdate(() => platform.schedule(callback, callbackOptions));
     } else {
       platform.schedule(callback, callbackOptions);
@@ -37,6 +39,7 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
   };
 
   scope.fiber = fiber;
+  scope.route = getFiberRoute(fiber);
 
   return update;
 }

@@ -81,6 +81,8 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
+const copyExcludeMap: Partial<Record<keyof Fiber, boolean>> = { alt: true, copy: true };
+
 function copyFiber<T = unknown>(fiber: Fiber<T>) {
   const rootCopyFiber = new Fiber().mutate(fiber, copyExcludeMap);
   let nextFiber = fiber;
@@ -128,6 +130,55 @@ function copyFiber<T = unknown>(fiber: Fiber<T>) {
   return rootCopyFiber;
 }
 
-const copyExcludeMap: Partial<Record<keyof Fiber, boolean>> = { alt: true, copy: true };
+function getFiberRoute(fiber: Fiber) {
+  const route = [fiber.idx];
+  let nextFiber = fiber;
 
-export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, copyFiber };
+  while (nextFiber) {
+    nextFiber = nextFiber.parent;
+
+    if (!nextFiber.parent) {
+      break;
+    }
+
+    if (nextFiber) {
+      route.unshift(nextFiber.idx);
+    }
+  }
+
+  return route;
+}
+
+function getFiberByRoute(route: Array<number>, rootFiber: Fiber) {
+  let nextFiber = rootFiber;
+
+  for (const part of route) {
+    nextFiber = getFiberByIdx(nextFiber, part);
+    if (!nextFiber) return null;
+  }
+
+  return nextFiber;
+}
+
+function getFiberByIdx(fiber: Fiber, idx: number) {
+  let nextFiber = fiber;
+
+  if (!nextFiber) return null;
+  if (idx === 0) return nextFiber.child || null;
+
+  while (true) {
+    if (!nextFiber.next) return null;
+    nextFiber = nextFiber.next;
+    if (nextFiber.idx === idx) return nextFiber;
+  }
+}
+
+export {
+  walkFiber,
+  collectElements,
+  getFiberWithElement,
+  detectIsFiberAlive,
+  copyFiber,
+  getFiberRoute,
+  getFiberByRoute,
+};

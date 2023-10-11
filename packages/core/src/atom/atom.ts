@@ -33,7 +33,7 @@ class Atom<T = unknown> {
 
     for (const [fiber, shouldUpdate = trueFn] of this.subs) {
       if (!shouldUpdate(value$, this.value$)) continue;
-      platform.schedule(createUpdateCallback({ rootId, fiber }), { forceSync: true });
+      platform.schedule(createUpdateCallback({ rootId, scope: { fiber } }));
     }
   }
 
