@@ -11,6 +11,7 @@ import {
   Fragment,
   DarkElement,
   useDeferredValue,
+  TaskPriority,
   startTransition,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
@@ -20,7 +21,7 @@ import { render, useStyle } from '@dark-engine/platform-browser';
 
 const domElement = document.getElementById('root');
 
-const targetSize = 25;
+const targetSize = 250;
 
 type DotProps = {
   size: number;
@@ -30,7 +31,7 @@ type DotProps = {
 };
 
 const Dot = component<DotProps>(props => {
-  const [hover, setHover] = useState(false);
+  const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
   const s = props.size * 1.3;
   const style = useStyle(styled => ({
     dot: styled`
@@ -88,7 +89,7 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }
 
   const slowDown = true;
   if (slowDown) {
-    const e = performance.now() + 0.8;
+    const e = performance.now() + 50;
     while (performance.now() < e) {
       // Artificially long execution time.
     }
@@ -129,7 +130,7 @@ const App = component<AppProps>(props => {
       startTransition(() => {
         setSeconds(seconds => (seconds % 10) + 1);
       });
-    }, 5000);
+    }, 1000);
   }, []);
 
   const style = useStyle(styled => ({

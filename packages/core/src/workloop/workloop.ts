@@ -100,7 +100,7 @@ function stopLowPriorityWork(): false {
     const scope$ = scope$$();
     const root = scope$.getRoot();
 
-    console.log('----restore----');
+    //console.log('----restore----');
 
     wipFiber.marker = '✌️';
     wipFiber.alt = null;
@@ -116,14 +116,14 @@ function stopLowPriorityWork(): false {
     detectIsFunction(resetValue) && copy.addCancel(resetValue);
 
     replaceScope(copy);
-    //console.log('copy', copy);
   });
 
-  console.log('----stop----');
+  //console.log('----stop----');
 
   wipFiber.child = wipFiber.copy.child;
   wipFiber.alt = null;
   wipFiber.copy = null;
+  wipFiber.child?.hook && (wipFiber.child.hook.idx = 0);
   scope$.applyCancels();
   flush(null, true);
 
@@ -743,6 +743,7 @@ function commit() {
     });
 
   flush(wipFiber);
+  // console.log('wipFiber', wipFiber);
 }
 
 function flush(wipFiber: Fiber, transition = false) {

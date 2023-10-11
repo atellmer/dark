@@ -166,6 +166,8 @@ function getFiberByIdx(fiber: Fiber, idx: number) {
   if (!nextFiber) return null;
   if (idx === 0) return nextFiber.child || null;
 
+  nextFiber = nextFiber.child;
+
   while (true) {
     if (!nextFiber.next) return null;
     nextFiber = nextFiber.next;
