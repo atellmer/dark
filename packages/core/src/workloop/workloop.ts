@@ -90,28 +90,37 @@ function workLoop(yield$: boolean) {
 function stopLowPriorityWork(): false {
   const scope$ = scope$$();
   const copy = scope$.copy();
-  const fiber = scope$.getWorkInProgress();
-  const child = fiber.child || null;
+  const wipFiber = scope$.getWorkInProgress();
+  const child = wipFiber.child;
 
-  // platform.cancelTask(() => {
-  //   fiber.child = child;
-  //   fiber.alt = null;
-  //   fiber.copy = null;
-  //   fiber.alt = new Fiber().mutate(fiber);
-  //   fiber.copy = copyFiber(fiber);
+  child.parent = null;
 
-  //   copy['clone'] = scope$$();
+  platform.cancelTask(() => {
+    const scope$ = scope$$();
+    const root = scope$.getRoot();
+    const wipFiber = root.child;
 
-  //   replaceScope(copy);
-  // });
+    wipFiber.alt = null;
+    wipFiber.copy = null;
+    wipFiber.alt = new Fiber().mutate(wipFiber);
+    wipFiber.copy = copyFiber(wipFiber);
+    wipFiber.child = child || null;
+    child && (child.parent = wipFiber);
 
-  platform.cancelTask(null);
+    //copy['clone'] = scope$$();
+    copy.setRoot(root);
+    copy.setWorkInProgress(wipFiber);
 
-  //console.log('--stop--');
+    replaceScope(copy);
+    console.log('--restore--');
+    console.log('copy', copy);
+  });
 
-  fiber.child = fiber.copy.child;
-  fiber.alt = null;
-  fiber.copy = null;
+  console.log('--stop--');
+
+  wipFiber.child = wipFiber.copy.child;
+  wipFiber.alt = null;
+  wipFiber.copy = null;
   scope$.applyCancels();
   flush(null, true);
 
@@ -692,11 +701,11 @@ function commit() {
   if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_ENV === 'development' && scope$.setIsHot(false);
   }
+
   const wipFiber = scope$.getWorkInProgress();
   const deletions = scope$.getDeletions();
   const candidates = scope$.getCandidates();
   const isUpdateZone = scope$.getIsUpdateZone();
-  const isDynamic = platform.detectIsDynamic();
   const queue: Array<Fiber> = [];
 
   // important order
@@ -709,7 +718,7 @@ function commit() {
     platform.commit(fiber);
   }
 
-  isDynamic && runInsertionEffects();
+  scope$.runInsertionEffects();
   isUpdateZone && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
@@ -722,8 +731,8 @@ function commit() {
   wipFiber.copy = null;
   platform.finishCommit();
 
-  isDynamic && runLayoutEffects();
-  isDynamic && runEffects();
+  scope$.runLayoutEffects();
+  scope$.runAsyncEffects();
 
   queue.length > 0 &&
     setTimeout(() => {
@@ -733,28 +742,6 @@ function commit() {
     });
 
   flush(wipFiber);
-}
-
-function runInsertionEffects() {
-  const scope$ = scope$$();
-
-  scope$.setIsIEffZone(true);
-  scope$.getIEffecs().forEach(fn => fn());
-  scope$.setIsIEffZone(false);
-}
-
-function runLayoutEffects() {
-  const scope$ = scope$$();
-
-  scope$.setIsLEffZone(true);
-  scope$.getLEffecs().forEach(fn => fn());
-  scope$.setIsLEffZone(false);
-}
-
-function runEffects() {
-  const effects = scope$$().getAEffecs();
-
-  effects.length > 0 && setTimeout(() => effects.forEach(fn => fn()));
 }
 
 function flush(wipFiber: Fiber, transition = false) {
@@ -768,9 +755,9 @@ function flush(wipFiber: Fiber, transition = false) {
   scope$.resetCandidates();
   scope$.resetDeletions();
   scope$.resetCancels();
-  scope$.resetIEffects();
-  scope$.resetLEffects();
-  scope$.resetAEffects();
+  scope$.resetInsertionEffects();
+  scope$.resetLayoutEffects();
+  scope$.resetAsyncEffects();
   scope$.setIsHydrateZone(false);
   scope$.setIsUpdateZone(false);
   !isUpdateZone && scope$.setRoot(wipFiber);
@@ -821,7 +808,10 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     setRootId(rootId); // !
     const scope$ = scope$$();
     if (!detectIsFiberAlive(fiber)) return;
-    if (detectIsFunction(restore)) return restore();
+    if (detectIsFunction(restore)) {
+      shouldUpdate();
+      return restore();
+    }
     if (fiber.used || !shouldUpdate()) return;
     scope$.setIsUpdateZone(true);
     scope$.resetMount();

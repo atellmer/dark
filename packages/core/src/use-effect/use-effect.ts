@@ -14,9 +14,9 @@ function createEffect(token: Symbol, type: EffectType) {
     const runEffect = () => {
       const scope$ = scope$$();
       const map: Record<EffectType, (fn: () => void) => void> = {
-        [EffectType.ASYNC]: (fn: () => void) => scope$.addAEffect(fn),
-        [EffectType.LAYOUT]: (fn: () => void) => scope$.addLEffect(fn),
-        [EffectType.INSERTION]: (fn: () => void) => scope$.addIEffect(fn),
+        [EffectType.ASYNC]: (fn: () => void) => scope$.addAsyncEffect(fn),
+        [EffectType.LAYOUT]: (fn: () => void) => scope$.addLayoutEffect(fn),
+        [EffectType.INSERTION]: (fn: () => void) => scope$.addInsertionEffect(fn),
       };
       const add = map[type];
 

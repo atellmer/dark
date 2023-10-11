@@ -18,7 +18,7 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
   const fiber = scope$$().getCursorFiber();
   const update = (shouldUpdate$?: () => boolean) => {
     const scope$ = scope$$();
-    if (scope$.getIsIEffZone()) return;
+    if (scope$.getIsInsertionEffectsZone()) return;
     const fiber = scope.fiber;
     const isBatch = scope$.getIsBatchZone();
     const isTransition = scope$.getIsTransitionZone();

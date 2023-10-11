@@ -62,7 +62,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
   const scope$ = scope$$(rootId);
 
   // insertion effect can't schedule renders
-  if (scope$?.getIsIEffZone()) return;
+  if (scope$?.getIsInsertionEffectsZone()) return;
 
   const callback = () => {
     setRootId(rootId); // !

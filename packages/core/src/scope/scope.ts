@@ -1,5 +1,6 @@
 import type { Fiber } from '../fiber';
 import type { Callback } from '../shared';
+import { platform } from '../platform';
 
 class Scope {
   private root: Fiber = null;
@@ -10,23 +11,24 @@ class Scope {
   private mountNav: Record<number, number> = {};
   private mountDeep = true;
   private events: Map<string, WeakMap<object, Function>> = new Map();
-  private unsubscribers: Array<Callback> = [];
+  private unsubscribers: Set<Callback> = new Set();
   private candidates: Set<Fiber> = new Set();
   private deletions: Set<Fiber> = new Set();
+  private cancelsStack: Array<Callback> = [];
   private batchQueue: Array<Callback> = [];
   private batchUpdate: Callback = null;
-  private aEffects: Array<Callback> = [];
-  private lEffects: Array<Callback> = [];
-  private iEffects: Array<Callback> = [];
-  private cancels: Array<Callback> = [];
-  private islEffZone = false;
-  private isIEffZone = false;
+  private asyncEffects: Set<Callback> = new Set();
+  private layoutEffects: Set<Callback> = new Set();
+  private insertionEffects: Set<Callback> = new Set();
+  private isLayoutEffectsZone = false;
+  private isInsertionEffectsZone = false;
   private isUpdateZone = false;
   private isBatchZone = false;
   private isHydrateZone = false;
   private isStreamZone = false;
   private isTransitionZone = false;
   private isHot = false;
+  private isDynamicPlatform = platform.detectIsDynamic();
 
   public copy() {
     const scope = new Scope();
@@ -39,14 +41,14 @@ class Scope {
     scope.mountNav = this.mountNav;
     scope.mountDeep = this.mountDeep;
     scope.events = this.events;
-    scope.unsubscribers = [...this.unsubscribers];
+    scope.unsubscribers = new Set([...this.unsubscribers]);
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
-    scope.aEffects = [...this.aEffects];
-    scope.lEffects = [...this.lEffects];
-    scope.iEffects = [...this.iEffects];
-    scope.islEffZone = this.islEffZone;
-    scope.isIEffZone = this.isIEffZone;
+    scope.asyncEffects = new Set([...this.asyncEffects]);
+    scope.layoutEffects = new Set([...this.layoutEffects]);
+    scope.insertionEffects = new Set([...this.insertionEffects]);
+    scope.isLayoutEffectsZone = this.isLayoutEffectsZone;
+    scope.isInsertionEffectsZone = this.isInsertionEffectsZone;
     scope.isUpdateZone = this.isUpdateZone;
 
     return scope;
@@ -121,11 +123,12 @@ class Scope {
   }
 
   public addEventUnsubscriber(fn: Callback) {
-    this.unsubscribers.push(fn);
+    this.unsubscribers.add(fn);
   }
 
   public unsubscribeEvents() {
     this.unsubscribers.forEach(x => x());
+    this.unsubscribers = new Set();
   }
 
   public getCandidates() {
@@ -171,70 +174,78 @@ class Scope {
     this.batchUpdate = null;
   }
 
-  public getAEffecs() {
-    return this.aEffects;
+  public addAsyncEffect(fn: Callback) {
+    this.asyncEffects.add(fn);
   }
 
-  public addAEffect(fn: Callback) {
-    this.aEffects.push(fn);
+  public resetAsyncEffects() {
+    this.asyncEffects = new Set();
   }
 
-  public resetAEffects() {
-    this.aEffects = [];
+  public runAsyncEffects() {
+    if (!this.isDynamicPlatform) return;
+    const effects = this.asyncEffects;
+    effects.size > 0 && setTimeout(() => effects.forEach(fn => fn()));
   }
 
-  public getLEffecs() {
-    return this.lEffects;
+  public addLayoutEffect(fn: Callback) {
+    this.layoutEffects.add(fn);
   }
 
-  public addLEffect(fn: Callback) {
-    this.lEffects.push(fn);
+  public resetLayoutEffects() {
+    this.layoutEffects = new Set();
   }
 
-  public resetLEffects() {
-    this.lEffects = [];
+  public runLayoutEffects() {
+    if (!this.isDynamicPlatform) return;
+    this.setIsLayoutEffectsZone(true);
+    this.layoutEffects.forEach(fn => fn());
+    this.setIsLayoutEffectsZone(false);
   }
 
-  public getIEffecs() {
-    return this.iEffects;
+  public addInsertionEffect(fn: Callback) {
+    this.insertionEffects.add(fn);
   }
 
-  public addIEffect(fn: Callback) {
-    this.iEffects.push(fn);
+  public resetInsertionEffects() {
+    this.insertionEffects = new Set();
   }
 
-  public resetIEffects() {
-    this.iEffects = [];
+  public runInsertionEffects() {
+    if (!this.isDynamicPlatform) return;
+    this.setIsInsertionEffectsZone(true);
+    this.insertionEffects.forEach(fn => fn());
+    this.setIsInsertionEffectsZone(false);
   }
 
   public addCancel(fn: Callback) {
-    this.cancels.push(fn);
+    this.cancelsStack.push(fn);
   }
 
   public applyCancels() {
-    for (let i = this.cancels.length - 1; i >= 0; i--) {
-      this.cancels[i]();
+    for (let i = this.cancelsStack.length - 1; i >= 0; i--) {
+      this.cancelsStack[i]();
     }
   }
 
   public resetCancels() {
-    this.cancels = [];
+    this.cancelsStack = [];
   }
 
-  public getIsLEffZone() {
-    return this.islEffZone;
+  public getIsLayoutEffectsZone() {
+    return this.isLayoutEffectsZone;
   }
 
-  public setIsLEffZone(value: boolean) {
-    this.islEffZone = value;
+  public setIsLayoutEffectsZone(value: boolean) {
+    this.isLayoutEffectsZone = value;
   }
 
-  public getIsIEffZone() {
-    return this.isIEffZone;
+  public getIsInsertionEffectsZone() {
+    return this.isInsertionEffectsZone;
   }
 
-  public setIsIEffZone(value: boolean) {
-    this.isIEffZone = value;
+  public setIsInsertionEffectsZone(value: boolean) {
+    this.isInsertionEffectsZone = value;
   }
 
   public getIsUpdateZone() {
