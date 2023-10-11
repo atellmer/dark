@@ -11,11 +11,11 @@ class Scope {
   private mountNav: Record<number, number> = {};
   private mountDeep = true;
   private events: Map<string, WeakMap<object, Function>> = new Map();
-  private unsubscribers: Set<Callback> = new Set();
+  private unsubs: Set<Callback> = new Set();
   private candidates: Set<Fiber> = new Set();
   private deletions: Set<Fiber> = new Set();
-  private cancelsStack: Array<Callback> = [];
-  private batchQueue: Array<Callback> = [];
+  private cancels: Array<Callback> = [];
+  private batches: Set<Callback> = new Set();
   private batchUpdate: Callback = null;
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
@@ -28,7 +28,7 @@ class Scope {
   private isStreamZone = false;
   private isTransitionZone = false;
   private isHot = false;
-  private isDynamicPlatform = platform.detectIsDynamic();
+  private isDynamic = platform.detectIsDynamic();
 
   public copy() {
     const scope = new Scope();
@@ -41,7 +41,7 @@ class Scope {
     scope.mountNav = this.mountNav;
     scope.mountDeep = this.mountDeep;
     scope.events = this.events;
-    scope.unsubscribers = new Set([...this.unsubscribers]);
+    scope.unsubs = new Set([...this.unsubs]);
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);
@@ -123,12 +123,12 @@ class Scope {
   }
 
   public addEventUnsubscriber(fn: Callback) {
-    this.unsubscribers.add(fn);
+    this.unsubs.add(fn);
   }
 
   public unsubscribeEvents() {
-    this.unsubscribers.forEach(x => x());
-    this.unsubscribers = new Set();
+    this.unsubs.forEach(x => x());
+    this.unsubs = new Set();
   }
 
   public getCandidates() {
@@ -160,7 +160,7 @@ class Scope {
   }
 
   public addBatch(fn: Callback) {
-    this.batchQueue.push(fn);
+    this.batches.add(fn);
   }
 
   public setBatchUpdate(fn: Callback) {
@@ -168,9 +168,9 @@ class Scope {
   }
 
   public applyBatch() {
-    this.batchQueue.forEach(x => x());
+    this.batches.forEach(x => x());
     this.batchUpdate && this.batchUpdate();
-    this.batchQueue = [];
+    this.batches = new Set();
     this.batchUpdate = null;
   }
 
@@ -183,7 +183,7 @@ class Scope {
   }
 
   public runAsyncEffects() {
-    if (!this.isDynamicPlatform) return;
+    if (!this.isDynamic) return;
     const effects = this.asyncEffects;
     effects.size > 0 && setTimeout(() => effects.forEach(fn => fn()));
   }
@@ -197,7 +197,7 @@ class Scope {
   }
 
   public runLayoutEffects() {
-    if (!this.isDynamicPlatform) return;
+    if (!this.isDynamic) return;
     this.setIsLayoutEffectsZone(true);
     this.layoutEffects.forEach(fn => fn());
     this.setIsLayoutEffectsZone(false);
@@ -212,24 +212,24 @@ class Scope {
   }
 
   public runInsertionEffects() {
-    if (!this.isDynamicPlatform) return;
+    if (!this.isDynamic) return;
     this.setIsInsertionEffectsZone(true);
     this.insertionEffects.forEach(fn => fn());
     this.setIsInsertionEffectsZone(false);
   }
 
   public addCancel(fn: Callback) {
-    this.cancelsStack.push(fn);
+    this.cancels.push(fn);
   }
 
   public applyCancels() {
-    for (let i = this.cancelsStack.length - 1; i >= 0; i--) {
-      this.cancelsStack[i]();
+    for (let i = this.cancels.length - 1; i >= 0; i--) {
+      this.cancels[i]();
     }
   }
 
   public resetCancels() {
-    this.cancelsStack = [];
+    this.cancels = [];
   }
 
   public getIsLayoutEffectsZone() {

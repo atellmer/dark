@@ -708,7 +708,7 @@ function commit() {
   const isUpdateZone = scope$.getIsUpdateZone();
   const queue: Array<Fiber> = [];
 
-  // important order
+  // !
   for (const fiber of deletions) {
     if (fiber.aHost && !fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.pHost) {
       queue.push(fiber);
