@@ -4,7 +4,7 @@ import { type VirtualNode } from '../view';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
-  insertElement: <N>(node: N, idx: number, parent: N) => void; // browser only for Suspense
+  insertElement: <N>(node: N, idx: number, parent: N) => void;
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
   schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
@@ -25,52 +25,26 @@ export type ScheduleCallbackOptions = {
   onCompleted?: () => void;
 };
 
-const platform: Platform = {
-  createElement: () => {
-    throw new Error(msg());
-  },
-  insertElement: () => {
-    throw new Error(msg());
-  },
-  raf: () => {
-    throw new Error(msg());
-  },
-  caf: () => {
-    throw new Error(msg());
-  },
-  schedule: () => {
-    throw new Error(msg());
-  },
-  shouldYield: () => {
-    throw new Error(msg());
-  },
-  hasPrimaryTask: () => {
-    throw new Error(msg());
-  },
-  cancelTask: () => {
-    throw new Error(msg());
-  },
-  commit: () => {
-    throw new Error(msg());
-  },
-  finishCommit: () => {
-    throw new Error(msg());
-  },
-  detectIsDynamic: () => {
-    throw new Error(msg());
-  },
-  detectIsPortal: () => {
-    throw new Error(msg());
-  },
-  unmountPortal: () => {
-    throw new Error(msg());
-  },
-  chunk: () => {
-    throw new Error(msg());
-  },
+const defaultRealisation = () => {
+  throw new Error('Function not installed by renderer!');
 };
 
-const msg = () => `Function not installed by renderer!`;
+const platform: Platform = {
+  createElement: defaultRealisation,
+  insertElement: defaultRealisation,
+  raf: defaultRealisation,
+  caf: defaultRealisation,
+  schedule: defaultRealisation,
+  shouldYield: defaultRealisation,
+  hasPrimaryTask: defaultRealisation,
+  cancelTask: defaultRealisation,
+  commit: defaultRealisation,
+  finishCommit: defaultRealisation,
+  detectIsDynamic: defaultRealisation,
+  detectIsPortal: defaultRealisation,
+  unmountPortal: defaultRealisation,
+  chunk: defaultRealisation,
+};
 
 const detectIsServer = () => !platform.detectIsDynamic();
 
