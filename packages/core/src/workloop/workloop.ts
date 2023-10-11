@@ -93,9 +93,21 @@ function stopLowPriorityWork(): false {
   const fiber = scope$.getWorkInProgress();
   const child = fiber.child || null;
 
+  // platform.cancelTask(() => {
+  //   fiber.child = child;
+  //   fiber.alt = null;
+  //   fiber.copy = null;
+  //   fiber.alt = new Fiber().mutate(fiber);
+  //   fiber.copy = copyFiber(fiber);
+
+  //   copy['clone'] = scope$$();
+
+  //   replaceScope(copy);
+  // });
+
   platform.cancelTask(null);
 
-  console.log('--stop--');
+  //console.log('--stop--');
 
   fiber.child = fiber.copy.child;
   fiber.alt = null;
@@ -701,7 +713,7 @@ function commit() {
   isUpdateZone && syncElementIndices(wipFiber);
 
   for (const fiber of candidates) {
-    fiber.tag !== EffectTag.S && platform.commit(fiber);
+    fiber.tag !== EffectTag.S && !fiber.used && platform.commit(fiber);
     fiber.alt = null;
     fiber.copy = null;
   }
@@ -762,6 +774,12 @@ function flush(wipFiber: Fiber, transition = false) {
   scope$.setIsHydrateZone(false);
   scope$.setIsUpdateZone(false);
   !isUpdateZone && scope$.setRoot(wipFiber);
+
+  // if (scope$['clone']) {
+  //   replaceScope(scope$['clone']);
+  //   scope$['clone'] = null;
+  // }
+
   !transition && emitter.emit('finish');
 }
 
@@ -802,8 +820,9 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const callback = (restore?: () => void) => {
     setRootId(rootId); // !
     const scope$ = scope$$();
-    if (!detectIsFiberAlive(fiber) || fiber.used || !shouldUpdate()) return;
+    if (!detectIsFiberAlive(fiber)) return;
     if (detectIsFunction(restore)) return restore();
+    if (fiber.used || !shouldUpdate()) return;
     scope$.setIsUpdateZone(true);
     scope$.resetMount();
 

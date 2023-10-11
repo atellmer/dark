@@ -128,6 +128,6 @@ function copyFiber<T = unknown>(fiber: Fiber<T>) {
   return rootCopyFiber;
 }
 
-const copyExcludeMap: Partial<Record<keyof Fiber, boolean>> = { alt: true };
+const copyExcludeMap: Partial<Record<keyof Fiber, boolean>> = { alt: true, copy: true };
 
 export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, copyFiber };

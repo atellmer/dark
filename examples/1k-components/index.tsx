@@ -8,10 +8,7 @@ startFPSMonitor();
 startMemMonitor();
 
 const Demo = component(() => {
-  const [numPoints, setNumPoints] = useState(1000, {
-    priority: TaskPriority.HIGH,
-    //forceSync: true,
-  });
+  const [numPoints, setNumPoints] = useState(1000, { priority: TaskPriority.HIGH });
 
   const updateCount = e => {
     setNumPoints(Number(e.target.value));
@@ -55,7 +52,7 @@ type VizDemoProps = {
 };
 
 const VizDemo = component<VizDemoProps>(({ count }) => {
-  const update = useUpdate();
+  const update = useUpdate({ forceAsync: true });
   const scope = useMemo(
     () => ({
       layout: 0,

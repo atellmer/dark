@@ -1,5 +1,3 @@
-import { requestIdleCallback } from '@shopify/jest-dom-mocks';
-
 import { REPLACER } from '@dark-engine/core/constants';
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
@@ -11,8 +9,6 @@ const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boo
 
   return markup;
 };
-
-const waitNextIdle = () => requestIdleCallback.runIdleCallbacks();
 
 const waitNextTick = () => Promise.resolve();
 
@@ -37,4 +33,6 @@ const click = (element: Element) => fireEvent(element, 'click');
 
 const setInputValue = (element: HTMLInputElement, value: string) => fireEvent(element, 'input', value);
 
-export { dom, waitNextIdle, waitNextTick, createReplacerString, createTestHostNode, fireEvent, click, setInputValue };
+const sleep = (ms = 10) => new Promise(resolve => setTimeout(resolve, ms));
+
+export { dom, waitNextTick, createReplacerString, createTestHostNode, fireEvent, click, setInputValue, sleep };

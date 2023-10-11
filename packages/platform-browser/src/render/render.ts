@@ -82,10 +82,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
     scope$.setNextUnitOfWork(fiber);
   };
 
-  platform.schedule(callback, {
-    priority: TaskPriority.NORMAL,
-    forceSync: scope$?.getIsLEffZone(),
-  });
+  platform.schedule(callback, { priority: TaskPriority.NORMAL });
 }
 
 export { render, roots };

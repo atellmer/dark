@@ -16,6 +16,9 @@ const config = env => ({
       commonjs: '@dark-engine/core',
       amd: '@dark-engine/core',
     },
+    'node:worker_threads': {
+      commonjs2: 'node:worker_threads',
+    },
   },
   resolve: {
     modules: ['node_modules'],

@@ -143,6 +143,8 @@ const App = component<AppProps>(props => {
     `,
   }));
 
+  //console.log('seconds', seconds);
+
   return (
     <div style='padding: 16px'>
       <div style={style.container}>

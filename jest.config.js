@@ -23,6 +23,7 @@ module.exports = {
     '^@dark-engine/platform-browser(.*)$': '<rootDir>/packages/platform-browser/src$1',
     '^@dark-engine/platform-server(.*)$': '<rootDir>/packages/platform-server/src$1',
     '^@dark-engine/platform-native(.*)$': '<rootDir>/packages/platform-native/src$1',
+    '^@dark-engine/platform-desktop(.*)$': '<rootDir>/packages/platform-desktop/src$1',
     '^@dark-engine/web-router(.*)$': '<rootDir>/packages/web-router/src$1',
     '^@dark-engine/native-navigation(.*)$': '<rootDir>/packages/native-navigation/src$1',
     '^@test-utils$': '<rootDir>/test/utils',
