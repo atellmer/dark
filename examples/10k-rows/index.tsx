@@ -145,7 +145,7 @@ const App = component(() => {
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.data$.set(buildData(10000));
+    state.data$.set(buildData(10));
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {

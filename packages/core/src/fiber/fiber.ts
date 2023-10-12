@@ -16,7 +16,7 @@ class Fiber<N = NativeElement> {
   public child: Fiber<N>; // child fiber
   public next: Fiber<N>; // next sibling fiber
   public alt: Fiber<N>; // alternate fiber (previous)
-  public copy: Fiber<N>;
+  public reserve: Fiber<N>;
   public move: boolean; // flag of reordering in list
   public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   public inst: DarkElementInstance = null; // instance of component or virtual node

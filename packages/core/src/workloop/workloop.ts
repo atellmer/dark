@@ -33,7 +33,7 @@ import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, copyFiber } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -85,49 +85,6 @@ function workLoop(yield$: boolean) {
   }
 
   return hasMoreWork;
-}
-
-function stopLowPriorityWork(): false {
-  const scope$ = scope$$();
-  const copy = scope$.copy();
-  const wipFiber = scope$.getWorkInProgress();
-  const child = wipFiber.child;
-
-  child.parent = null;
-
-  platform.cancelTask((options: RestoreOptions) => {
-    const { fiber: wipFiber, setValue, resetValue } = options;
-    const scope$ = scope$$();
-    const root = scope$.getRoot();
-
-    //console.log('----restore----');
-
-    wipFiber.marker = '✌️';
-    wipFiber.alt = null;
-    wipFiber.copy = null;
-    wipFiber.alt = new Fiber().mutate(wipFiber);
-    wipFiber.copy = copyFiber(wipFiber);
-    wipFiber.child = child || null;
-    child && (child.parent = wipFiber);
-
-    copy.setRoot(root);
-    copy.setWorkInProgress(wipFiber);
-    detectIsFunction(setValue) && setValue();
-    detectIsFunction(resetValue) && copy.addCancel(resetValue);
-
-    replaceScope(copy);
-  });
-
-  //console.log('----stop----');
-
-  wipFiber.child = wipFiber.copy.child;
-  wipFiber.alt = null;
-  wipFiber.copy = null;
-  wipFiber.child?.hook && (wipFiber.child.hook.idx = 0);
-  scope$.applyCancels();
-  flush(null, true);
-
-  return false;
 }
 
 function performUnitOfWork(fiber: Fiber, box: Box) {
@@ -277,28 +234,28 @@ function mountSibling(nextFiber: Fiber, box: Box) {
   box.inst$ = instance$;
 }
 
-function current(fiber: Fiber, alternate: Fiber, instance: DarkElementInstance) {
+function current(fiber: Fiber, alt: Fiber, inst: DarkElementInstance) {
   let isUpdate = false;
 
   fiber.parent.tag === EffectTag.C && (fiber.tag = fiber.parent.tag);
-  fiber.parent.shadow && !fiber.parent.element && !detectIsReplacer(instance) && (fiber.shadow = true);
+  fiber.parent.shadow && !fiber.parent.element && !detectIsReplacer(inst) && (fiber.shadow = true);
 
   if (fiber.tag !== EffectTag.C) {
     isUpdate =
-      alternate &&
-      detectAreSameInstanceTypes(alternate.inst, instance) &&
-      (alternate ? getElementKey(alternate.inst) : null) === getElementKey(instance);
+      alt &&
+      detectAreSameInstanceTypes(alt.inst, inst) &&
+      (alt ? getElementKey(alt.inst) : null) === getElementKey(inst);
   }
 
-  fiber.inst = instance;
-  fiber.alt = alternate || null;
-  fiber.element = fiber.element || (isUpdate ? alternate.element : null);
+  fiber.inst = inst;
+  fiber.alt = alt || null;
+  fiber.element = fiber.element || (isUpdate ? alt.element : null);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
-  alternate?.cleanup && alternate.cleanup();
+  alt?.cleanup && alt.cleanup();
 
-  if (alternate && alternate.move) {
-    fiber.move = alternate.move;
-    alternate.move = false;
+  if (alt && alt.move) {
+    fiber.move = alt.move;
+    alt.move = false;
   }
 
   if (hasChildrenProp(fiber.inst)) {
@@ -373,6 +330,11 @@ function alt(fiber: Fiber, alternate: Fiber) {
       let p = 0;
       let n = 0;
 
+      if (nextKeys.length === 9) {
+        console.log('fiber', fiber);
+        console.log('alternate', alternate);
+      }
+
       for (let i = 0; i < size; i++) {
         const nextKey = nextKeys[i - n] ?? null;
         const prevKey = prevKeys[i - p] ?? null;
@@ -410,7 +372,7 @@ function alt(fiber: Fiber, alternate: Fiber) {
           }
         } else if (nextKey !== null) {
           process.env.NODE_ENV !== 'production' && result.push([nextKey, 'stable']);
-          nextKeyFiber.tag = EffectTag.U;
+          //nextKeyFiber.tag = EffectTag.U;
           nextFiber = insertToFiber(i, nextFiber, nextKeyFiber);
         }
 
@@ -725,11 +687,11 @@ function commit() {
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
-    fiber.copy = null;
+    fiber.reserve = null;
   }
 
   wipFiber.alt = null;
-  wipFiber.copy = null;
+  wipFiber.reserve = null;
   platform.finishCommit();
 
   scope$.runLayoutEffects();
@@ -743,7 +705,7 @@ function commit() {
     });
 
   flush(wipFiber);
-  // console.log('wipFiber', wipFiber);
+  //console.log('wipFiber', wipFiber);
 }
 
 function flush(wipFiber: Fiber, transition = false) {
@@ -790,6 +752,51 @@ function syncElementIndices(fiber: Fiber) {
   });
 }
 
+function stopLowPriorityWork(): false {
+  const scope$ = scope$$();
+  const copy = scope$.copy();
+  const wipFiber = scope$.getWorkInProgress();
+  const child = wipFiber.child;
+
+  child.parent = null;
+  copy.setRoot(null);
+  copy.setWorkInProgress(null);
+
+  platform.cancelTask((options: RestoreOptions) => {
+    const { fiber: wipFiber, setValue, resetValue } = options;
+    const scope$ = scope$$();
+    const root = scope$.getRoot();
+
+    console.log('----restore----');
+
+    wipFiber.marker = '✌️';
+    wipFiber.alt = null;
+    wipFiber.reserve = null;
+    wipFiber.alt = new Fiber().mutate(wipFiber);
+    wipFiber.reserve = wipFiber.child;
+    wipFiber.child = child || null;
+    child && (child.parent = wipFiber);
+
+    copy.setRoot(root);
+    copy.setWorkInProgress(wipFiber);
+    detectIsFunction(setValue) && setValue();
+    detectIsFunction(resetValue) && copy.addCancel(resetValue);
+
+    replaceScope(copy);
+  });
+
+  //console.log('----stop----');
+
+  wipFiber.child = wipFiber.reserve;
+  wipFiber.alt = null;
+  wipFiber.reserve = null;
+  wipFiber.child?.hook && (wipFiber.child.hook.idx = 0);
+  scope$.applyCancels();
+  flush(null, true);
+
+  return false;
+}
+
 export type CreateUpdateCallbackOptions = {
   rootId: number;
   isTransition?: boolean;
@@ -820,7 +827,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
 
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.copy = priority === TaskPriority.LOW ? copyFiber(fiber) : null;
+    fiber.reserve = fiber.child;
     fiber.marker = '🔥';
     fiber.tag = EffectTag.U;
     fiber.cc = 0;

@@ -16,12 +16,12 @@ import {
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
 
-// startFPSMonitor();
-// startMemMonitor();
+startFPSMonitor();
+startMemMonitor();
 
 const domElement = document.getElementById('root');
 
-const targetSize = 25;
+const targetSize = 250;
 
 type DotProps = {
   size: number;
@@ -89,7 +89,7 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }
 
   const slowDown = true;
   if (slowDown) {
-    const e = performance.now() + 0.8;
+    const e = performance.now() + 50;
     while (performance.now() < e) {
       // Artificially long execution time.
     }
@@ -130,7 +130,7 @@ const App = component<AppProps>(props => {
       startTransition(() => {
         setSeconds(seconds => (seconds % 10) + 1);
       });
-    }, 1000);
+    }, 5000);
   }, []);
 
   const style = useStyle(styled => ({

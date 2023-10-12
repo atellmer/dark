@@ -4,7 +4,7 @@ import { alias } from '../../webpack.alias.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = {
-  mode: 'production',
+  mode: 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
