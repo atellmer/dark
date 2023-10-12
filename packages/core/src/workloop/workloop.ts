@@ -1,5 +1,5 @@
 import { type RestoreOptions, platform, detectIsServer } from '../platform';
-import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag, TaskPriority } from '../constants';
+import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag } from '../constants';
 import {
   flatten,
   error,
@@ -768,7 +768,6 @@ function stopLowPriorityWork(): false {
 export type CreateUpdateCallbackOptions = {
   rootId: number;
   isTransition?: boolean;
-  priority?: TaskPriority;
   getFiber: () => Fiber;
   createChanger?: () => UpdateChanger;
 };
@@ -778,7 +777,7 @@ export type UpdateChanger = {
 } & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, getFiber, priority, isTransition, createChanger = createChanger$ } = options;
+  const { rootId, getFiber, isTransition, createChanger = createChanger$ } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
     const { shouldUpdate, setValue, resetValue } = createChanger();

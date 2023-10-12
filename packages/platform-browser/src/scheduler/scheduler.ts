@@ -61,16 +61,18 @@ class Task {
   public createdAt: number;
   public priority: TaskPriority;
   public forceAsync: boolean;
+  public isTransition: boolean;
   public callback: (restore?: (options: RestoreOptions) => void) => void;
   public restore?: (options: RestoreOptions) => void;
 
   constructor(options: TaskConstructorOptions) {
-    const { priority, forceAsync, callback } = options;
+    const { priority, forceAsync, isTransition, callback } = options;
     const time = getTime();
 
     this.id = ++Task.nextTaskId;
     this.priority = priority;
     this.forceAsync = forceAsync;
+    this.isTransition = isTransition;
     this.createdAt = time;
     this.callback = callback;
   }
@@ -79,8 +81,8 @@ class Task {
 const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: Callback, options?: ScheduleCallbackOptions) {
-  const { priority = TaskPriority.NORMAL, forceAsync = false } = options || {};
-  const task = new Task({ priority, forceAsync, callback });
+  const { priority = TaskPriority.NORMAL, forceAsync = false, isTransition = false } = options || {};
+  const task = new Task({ priority, forceAsync, isTransition, callback });
 
   put(task);
   execute();
@@ -150,7 +152,7 @@ function requestCallback(callback: WorkLoop) {
 }
 
 function hasPrimaryTask() {
-  return currentTask.priority === TaskPriority.LOW && (queueMap.high.length > 0 || queueMap.normal.length > 0);
+  return currentTask.isTransition && (queueMap.high.length > 0 || queueMap.normal.length > 0);
 }
 
 function cancelTask(restore: (options: RestoreOptions) => void) {

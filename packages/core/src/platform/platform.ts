@@ -28,6 +28,7 @@ export type RestoreOptions = {
 export type ScheduleCallbackOptions = {
   priority?: TaskPriority;
   forceAsync?: boolean;
+  isTransition?: boolean;
   onCompleted?: () => void;
 };
 

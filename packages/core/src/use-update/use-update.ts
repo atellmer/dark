@@ -14,17 +14,16 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
     const isTransition = scope$.getIsTransitionZone();
-    const priority = isTransition ? TaskPriority.LOW : priority$;
+    const priority = isTransition ? TaskPriority.LOW : priority$; // !
     const forceAsync = isTransition || forceAsync$;
     const getFiber = () => scope.fiber;
     const callback = createUpdateCallback({
       rootId,
-      priority,
       isTransition,
       getFiber,
       createChanger,
     });
-    const callbackOptions: ScheduleCallbackOptions = { forceAsync, priority };
+    const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition };
 
     platform.schedule(callback, callbackOptions);
   };

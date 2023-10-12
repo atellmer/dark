@@ -2,7 +2,7 @@ import { detectIsFunction } from '../helpers';
 import { scope$$ } from '../scope';
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode } from '../view';
 import type { Context, ContextProviderValue } from '../context';
-import type { DarkElementInstance, DarkElementKey } from '../shared';
+import type { DarkElementInstance } from '../shared';
 import { type NativeElement, type Hook, EffectTag } from './types';
 
 class Fiber<N = NativeElement> {
@@ -27,7 +27,7 @@ class Fiber<N = NativeElement> {
   public iefHost: boolean; // insertion effect host
   public aHost: boolean; // atom host
   public pHost: boolean; // portal host
-  public marker: DarkElementKey; // for dev
+  public marker: string; // for dev
   public shadow: boolean; // flag for shadow rendering
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
   public catch: (error: Error) => void;
