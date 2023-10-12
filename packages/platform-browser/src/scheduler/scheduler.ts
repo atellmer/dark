@@ -3,6 +3,7 @@ import {
   type ScheduleCallbackOptions,
   type WorkLoop,
   type Callback,
+  type RestoreOptions,
   getTime,
   workLoop,
   TaskPriority,
@@ -60,8 +61,8 @@ class Task {
   public createdAt: number;
   public priority: TaskPriority;
   public forceAsync: boolean;
-  public callback: (restore?: Callback) => void;
-  public restore?: Callback;
+  public callback: (restore?: (options: RestoreOptions) => void) => void;
+  public restore?: (options: RestoreOptions) => void;
 
   constructor(options: TaskConstructorOptions) {
     const { priority, forceAsync, callback } = options;
@@ -152,7 +153,7 @@ function hasPrimaryTask() {
   return currentTask.priority === TaskPriority.LOW && (queueMap.high.length > 0 || queueMap.normal.length > 0);
 }
 
-function cancelTask(restore: Callback) {
+function cancelTask(restore: (options: RestoreOptions) => void) {
   currentTask.restore = restore;
   queueMap.low.unshift(currentTask);
 }

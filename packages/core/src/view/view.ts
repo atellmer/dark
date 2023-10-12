@@ -89,7 +89,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
 
   factory[$$vNode] = true;
   factory[TYPE] = def.as;
-  def.key && (factory[ATTR_KEY] = def.key);
+  !detectIsEmpty(def.key) && (factory[ATTR_KEY] = def.key);
   def.flag && (factory[ATTR_FLAG] = def.flag);
 
   return factory;

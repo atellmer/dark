@@ -40,8 +40,8 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   }
 
   const { update: update$$ } = useContext(SuspenseContext);
-  const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || scope$$().getIsHydrateZone(), { forceSync: true });
-  const update$ = useUpdate({ forceSync: true });
+  const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || scope$$().getIsHydrateZone());
+  const update$ = useUpdate();
   const scope = useMemo(() => ({ size: 0 }), []);
   const fiber = scope$$().getCursorFiber();
   const update = () => (detectIsFiberAlive(fiber) ? update$() : update$$());

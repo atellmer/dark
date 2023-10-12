@@ -15,7 +15,7 @@ function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () =>
     component<P, R>(
       function type(props, ref) {
         const { isLoaded, fallback, update: update$$, reg, unreg } = useContext(SuspenseContext);
-        const update$ = useUpdate({ forceSync: true });
+        const update$ = useUpdate();
         const factory = factoriesMap.get(module);
         const fiber = scope$$().getCursorFiber();
         const update = () => (detectIsFiberAlive(fiber) ? update$() : update$$());

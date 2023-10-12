@@ -1,6 +1,22 @@
 import type { Fiber } from '../fiber';
-import type { Callback } from '../shared';
+import type { Callback, DarkElementKey } from '../shared';
 import { platform } from '../platform';
+
+type Key = DarkElementKey;
+type NextKey = DarkElementKey;
+type PrevKey = DarkElementKey;
+
+type Actions = Map<
+  number,
+  {
+    map: Record<Key, Fiber>;
+    replace: Record<NextKey, [NextKey, PrevKey]>;
+    insert: Record<NextKey, [NextKey]>;
+    remove: Record<PrevKey, [PrevKey]>;
+    move: Record<NextKey, [NextKey, PrevKey]>;
+    stable: Record<NextKey, [NextKey]>;
+  }
+>;
 
 class Scope {
   private root: Fiber = null;
@@ -12,6 +28,7 @@ class Scope {
   private mountDeep = true;
   private events: Map<string, WeakMap<object, Function>> = new Map();
   private unsubs: Set<Callback> = new Set();
+  private actions: Actions = new Map();
   private candidates: Set<Fiber> = new Set();
   private deletions: Set<Fiber> = new Set();
   private cancels: Array<Callback> = [];
@@ -28,6 +45,49 @@ class Scope {
   private isHot = false;
   private isDynamic = platform.detectIsDynamic();
 
+  public resetActions() {
+    this.actions = new Map();
+  }
+
+  public getActionsById(id: number) {
+    return this.actions.get(id);
+  }
+
+  public addActionMap(id: number, map: Record<Key, Fiber>) {
+    this.actions.set(id, {
+      map,
+      replace: {},
+      insert: {},
+      remove: {},
+      move: {},
+      stable: {},
+    });
+  }
+
+  public removeActionMap(id: number) {
+    this.actions.delete(id);
+  }
+
+  public addReplaceAction(id: number, nextKey: NextKey, prevKey: PrevKey) {
+    this.actions.get(id).replace[nextKey] = [nextKey, prevKey];
+  }
+
+  public addInsertAction(id: number, nextKey: NextKey) {
+    this.actions.get(id).insert[nextKey] = [nextKey];
+  }
+
+  public addRemoveAction(id: number, prevKey: PrevKey) {
+    this.actions.get(id).remove[prevKey] = [prevKey];
+  }
+
+  public addMoveAction(id: number, nextKey: NextKey, prevKey: PrevKey) {
+    this.actions.get(id).move[nextKey] = [nextKey, prevKey];
+  }
+
+  public addStableAction(id: number, nextKey: NextKey) {
+    this.actions.get(id).stable[nextKey] = [nextKey];
+  }
+
   public copy() {
     const scope = new Scope();
 
@@ -40,6 +100,7 @@ class Scope {
     scope.mountDeep = this.mountDeep;
     scope.events = this.events;
     scope.unsubs = this.unsubs;
+    scope.actions = new Map([...this.actions]);
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);
@@ -146,6 +207,13 @@ class Scope {
   }
 
   public addDeletion(fiber: Fiber) {
+    let nextFiber = fiber;
+
+    while (nextFiber) {
+      if (this.hasDeletion(nextFiber)) return;
+      nextFiber = nextFiber.parent;
+    }
+
     this.deletions.add(fiber);
   }
 
