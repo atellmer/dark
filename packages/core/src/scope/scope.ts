@@ -21,8 +21,8 @@ type Actions = Map<
 class Scope {
   private root: Fiber = null;
   private wip: Fiber = null;
-  private unit: Fiber = null;
   private cursor: Fiber = null;
+  private unit: Fiber = null;
   private mountLevel = 0;
   private mountNav: Record<number, number> = {};
   private mountDeep = true;
@@ -91,12 +91,12 @@ class Scope {
   public copy() {
     const scope = new Scope();
 
-    scope.root = this.root;
-    scope.wip = this.wip;
+    scope.root = null;
+    scope.wip = null;
+    scope.cursor = null;
     scope.unit = this.unit;
-    scope.cursor = this.cursor;
     scope.mountLevel = this.mountLevel;
-    scope.mountNav = this.mountNav;
+    scope.mountNav = { ...this.mountNav };
     scope.mountDeep = this.mountDeep;
     scope.events = this.events;
     scope.unsubs = this.unsubs;

@@ -41,13 +41,11 @@ class Fiber<N = NativeElement> {
     provider && (this.provider = provider);
   }
 
-  public mutate(fiber: Partial<Fiber<N>>, excludeMap: Partial<Record<keyof Fiber, boolean>> = {}) {
+  public mutate(fiber: Partial<Fiber<N>>) {
     const keys = Object.keys(fiber);
 
     for (const key of keys) {
-      if (!excludeMap[key]) {
-        this[key] = fiber[key];
-      }
+      this[key] = fiber[key];
     }
 
     return this;

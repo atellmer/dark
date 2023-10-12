@@ -1,11 +1,10 @@
 import { resolve, dirname, join } from 'path';
-import webpack from 'webpack';
 
 import { alias } from '../../webpack.alias.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = {
-  mode: 'production',
+  mode: 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -37,11 +36,6 @@ const config = {
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': JSON.stringify('development'),
-    }),
-  ],
 };
 
 export default config;

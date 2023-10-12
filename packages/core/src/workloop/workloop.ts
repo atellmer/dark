@@ -69,7 +69,7 @@ function workLoop(yield$: boolean) {
       scope$.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = yield$ && platform.shouldYield();
-      if (platform.hasPrimaryTask()) return stopLowPriorityWork();
+      if (platform.hasPrimaryTask()) return stopTransitionWork();
     }
 
     if (!unit && wipFiber) {
@@ -654,7 +654,6 @@ function commit() {
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
-    fiber.reserve = null;
   }
 
   wipFiber.alt = null;
@@ -720,45 +719,40 @@ function syncElementIndices(fiber: Fiber) {
   });
 }
 
-function stopLowPriorityWork(): false {
+function stopTransitionWork(): false {
   const scope$ = scope$$();
-  const copy = scope$.copy();
+  const scope$$$ = scope$.copy();
   const wipFiber = scope$.getWorkInProgress();
-  const child = wipFiber.child;
+  const child = wipFiber.child || null;
 
-  child.parent = null;
-  copy.setRoot(null);
-  copy.setWorkInProgress(null);
+  child && (child.parent = null);
 
   platform.cancelTask((options: RestoreOptions) => {
     const { fiber: wipFiber, setValue, resetValue } = options;
     const scope$ = scope$$();
-    const root = scope$.getRoot();
+
+    detectIsFunction(setValue) && setValue();
+    detectIsFunction(resetValue) && scope$$$.addCancel(resetValue);
 
     // console.log('----restore----');
-
-    wipFiber.marker = '✌️';
     wipFiber.alt = null;
     wipFiber.reserve = null;
     wipFiber.alt = new Fiber().mutate(wipFiber);
     wipFiber.reserve = wipFiber.child;
-    wipFiber.child = child || null;
+    wipFiber.marker = '✌️';
+    wipFiber.tag = EffectTag.U;
+    wipFiber.child = child;
     child && (child.parent = wipFiber);
 
-    copy.setRoot(root);
-    copy.setWorkInProgress(wipFiber);
-    detectIsFunction(setValue) && setValue();
-    detectIsFunction(resetValue) && copy.addCancel(resetValue);
-
-    replaceScope(copy);
+    scope$$$.setRoot(scope$.getRoot());
+    scope$$$.setWorkInProgress(wipFiber);
+    replaceScope(scope$$$);
   });
 
   //console.log('----stop----');
-
   wipFiber.child = wipFiber.reserve;
   wipFiber.alt = null;
   wipFiber.reserve = null;
-  wipFiber.child?.hook && (wipFiber.child.hook.idx = 0);
   scope$.applyCancels();
   flush(null, true);
 
@@ -793,6 +787,8 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     detectIsFunction(setValue) && setValue();
     detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
 
+    fiber.alt = null;
+    fiber.reserve = null;
     fiber.alt = new Fiber().mutate(fiber);
     fiber.reserve = fiber.child;
     fiber.marker = '🔥';
