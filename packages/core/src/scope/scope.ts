@@ -15,8 +15,6 @@ class Scope {
   private candidates: Set<Fiber> = new Set();
   private deletions: Set<Fiber> = new Set();
   private cancels: Array<Callback> = [];
-  private batches: Set<Callback> = new Set();
-  private batchUpdate: Callback = null;
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
   private insertionEffects: Set<Callback> = new Set();
@@ -157,21 +155,6 @@ class Scope {
 
   public resetDeletions() {
     this.deletions = new Set();
-  }
-
-  public addBatch(fn: Callback) {
-    this.batches.add(fn);
-  }
-
-  public setBatchUpdate(fn: Callback) {
-    this.batchUpdate = fn;
-  }
-
-  public applyBatch() {
-    this.batches.forEach(x => x());
-    this.batchUpdate && this.batchUpdate();
-    this.batches = new Set();
-    this.batchUpdate = null;
   }
 
   public addAsyncEffect(fn: Callback) {

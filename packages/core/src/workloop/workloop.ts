@@ -33,7 +33,7 @@ import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import { hasEffects } from '../use-effect';
 import { hasLayoutEffects } from '../use-layout-effect';
 import { hasInsertionEffects } from '../use-insertion-effect';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, copyFiber, getFiberByRoute } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, copyFiber } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -792,13 +792,9 @@ function syncElementIndices(fiber: Fiber) {
 
 export type CreateUpdateCallbackOptions = {
   rootId: number;
-  scope: {
-    fiber?: Fiber;
-    route?: Array<number>;
-  };
   isTransition?: boolean;
   priority?: TaskPriority;
-  isBatch?: boolean;
+  getFiber: () => Fiber;
   createChanger?: () => UpdateChanger;
 };
 
@@ -807,19 +803,21 @@ export type UpdateChanger = {
 } & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, scope, priority, isTransition, isBatch, createChanger = createChanger$ } = options;
+  const { rootId, getFiber, priority, isTransition, createChanger = createChanger$ } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
     const { shouldUpdate, setValue, resetValue } = createChanger();
     const scope$ = scope$$();
-    const fiber = isTransition ? getFiberByRoute(scope.route, scope$.getRoot()) : scope.fiber;
+    const fiber = getFiber();
+    const fromRestore = detectIsFunction(restore);
 
-    if ((!isBatch && !shouldUpdate()) || !detectIsFiberAlive(fiber)) return;
-    if (detectIsFunction(restore)) return restore({ fiber, setValue, resetValue });
-    !isBatch && detectIsFunction(setValue) && setValue();
-    isTransition && detectIsFunction(resetValue) && scope$.addCancel(resetValue);
-    scope$.setIsUpdateZone(true);
-    scope$.resetMount();
+    if (!shouldUpdate() || !detectIsFiberAlive(fiber) || fromRestore) {
+      fromRestore && restore({ fiber, setValue, resetValue });
+      return;
+    }
+
+    detectIsFunction(setValue) && setValue();
+    detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
 
     fiber.alt = new Fiber().mutate(fiber);
     fiber.copy = priority === TaskPriority.LOW ? copyFiber(fiber) : null;
@@ -829,6 +827,8 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     fiber.cec = 0;
     fiber.child = null;
 
+    scope$.setIsUpdateZone(true);
+    scope$.resetMount();
     scope$.setWorkInProgress(fiber);
     scope$.setCursorFiber(fiber);
     fiber.inst = mount(fiber, fiber.inst);

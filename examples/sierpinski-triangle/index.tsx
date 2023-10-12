@@ -21,7 +21,7 @@ import { render, useStyle } from '@dark-engine/platform-browser';
 
 const domElement = document.getElementById('root');
 
-const targetSize = 250;
+const targetSize = 25;
 
 type DotProps = {
   size: number;
@@ -89,7 +89,7 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }
 
   const slowDown = true;
   if (slowDown) {
-    const e = performance.now() + 50;
+    const e = performance.now() + 0.8;
     while (performance.now() < e) {
       // Artificially long execution time.
     }

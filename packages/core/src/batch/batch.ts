@@ -6,7 +6,6 @@ function batch(callback: () => void) {
   scope$.setIsBatchZone(true);
   callback();
   scope$.setIsBatchZone(false);
-  scope$.applyBatch();
 }
 
 export { batch };
