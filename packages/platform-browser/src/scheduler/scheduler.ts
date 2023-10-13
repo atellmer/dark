@@ -53,29 +53,27 @@ if (!IS_TEST_ENV) {
   setupPorts();
 }
 
-type TaskConstructorOptions = Omit<Task, 'id' | 'createdAt'>;
+type TaskConstructorOptions = Omit<Task, 'id'>;
 
 class Task {
   public static nextTaskId = 0;
   public id: number;
-  public createdAt: number;
   public priority: TaskPriority;
   public forceAsync: boolean;
   public isTransition: boolean;
   public callback: (restore?: (options: RestoreOptions) => void) => void;
   public restore?: (options: RestoreOptions) => void;
   public sign?: () => string;
+  public canceled?: boolean;
 
   constructor(options: TaskConstructorOptions) {
     const { priority, forceAsync, isTransition, sign, callback } = options;
-    const time = getTime();
 
     this.id = ++Task.nextTaskId;
     this.priority = priority;
     this.forceAsync = forceAsync;
     this.isTransition = isTransition;
     this.sign = sign;
-    this.createdAt = time;
     this.callback = callback;
   }
 }
@@ -108,7 +106,7 @@ function pick(queue: Array<Task>) {
 
   if (currentTask.isTransition) {
     const sign = currentTask.sign();
-    const hasSign = queue.some(x => x.isTransition && x.sign() === sign);
+    const hasSign = detectHasSameSign(sign, queue);
 
     if (hasSign) {
       currentTask = null;
@@ -164,11 +162,28 @@ function requestCallback(callback: WorkLoop) {
   execute();
 }
 
+function detectHasSameSign(sign: string, queue: Array<Task>) {
+  return queue.some(x => x.isTransition && x.sign() === sign);
+}
+
 function hasPrimaryTask() {
-  return currentTask.isTransition && (queueMap.high.length > 0 || queueMap.normal.length > 0);
+  if (currentTask.isTransition) {
+    const hasPrimary = queueMap.high.length > 0 || queueMap.normal.length > 0;
+    if (hasPrimary) return true;
+    const sign = currentTask.sign();
+    const hasSign = detectHasSameSign(sign, queueMap.low);
+
+    if (hasSign) {
+      currentTask.canceled = true;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function cancelTask(restore: (options: RestoreOptions) => void) {
+  if (currentTask.canceled) return;
   currentTask.restore = restore;
   queueMap.low.unshift(currentTask);
 }

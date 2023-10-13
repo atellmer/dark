@@ -1,4 +1,4 @@
-import { h, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
+import { h, component, memo, useState, useMemo, useDeferredValue } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 function generateProducts() {
@@ -21,29 +21,29 @@ function filterProducts(filterTerm) {
 }
 
 type ProductListProps = {
-  products: Array<string>;
+  name: string;
 };
 
-const ProductList = component<ProductListProps>(({ products }) => {
-  const deferredProducts = useDeferredValue(products);
-  const items = useMemo(() => {
-    return deferredProducts.map(product => <li key={product}>{product}</li>);
-  }, [deferredProducts]);
+const ProductList = memo(
+  component<ProductListProps>(({ name }) => {
+    const products = filterProducts(name);
+    const items = products.map(product => <li key={product}>{product}</li>);
 
-  return <ul>{items}</ul>;
-});
+    return <ul>{items}</ul>;
+  }),
+  (p, n) => p.name !== n.name,
+);
 
 const App = component(() => {
   const [name, setName] = useState('');
   const deferredName = useDeferredValue(name);
-  const filteredProducts = useMemo(() => filterProducts(deferredName), [deferredName]);
 
   const handleInput = e => setName(e.target.value);
 
   return (
     <div>
-      <input value={name} placeholder='type 4444 quickly...' autoFocus onInput={handleInput} />
-      <ProductList products={filteredProducts} />
+      <input value={name} placeholder='type...' onInput={handleInput} />
+      <ProductList name={deferredName} />
     </div>
   );
 });

@@ -51,7 +51,7 @@ function delegateEvent(
         fireEvent(synthetic);
       }
 
-      if (synthetic ? synthetic.getPropagation() : target.parentElement) {
+      if (target.parentElement && synthetic && synthetic.getPropagation()) {
         target.parentElement.dispatchEvent(new (event.constructor as BrowserEventConstructor)(event.type, event));
       }
     };
