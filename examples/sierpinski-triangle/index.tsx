@@ -1,5 +1,3 @@
-import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
-
 import {
   h,
   Text,
@@ -16,12 +14,9 @@ import {
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
 
-startFPSMonitor();
-startMemMonitor();
-
 const domElement = document.getElementById('root');
 
-const targetSize = 250;
+const targetSize = 25;
 
 type DotProps = {
   size: number;
@@ -36,7 +31,6 @@ const Dot = component<DotProps>(props => {
   const style = useStyle(styled => ({
     dot: styled`
       position: absolute;
-      background-color: #61dafb;
       text-align: center;
       cursor: pointer;
       width: ${s}px;
@@ -93,7 +87,7 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, first,
 
   const slowDown = true;
   if (slowDown) {
-    const e = performance.now() + 50;
+    const e = performance.now() + 0.8;
     while (performance.now() < e) {
       // Artificially long execution time.
     }
@@ -134,7 +128,7 @@ const App = component<AppProps>(props => {
       startTransition(() => {
         setSeconds(seconds => (seconds % 10) + 1);
       });
-    }, 5000);
+    }, 1000);
   }, []);
 
   const style = useStyle(styled => ({

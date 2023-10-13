@@ -11,11 +11,11 @@ class Fiber<N = NativeElement> {
   public cec = 0; // child native elements count
   public idx = 0; // idx of fiber in the parent fiber
   public eidx = 0; // native element idx
-  public element: N = null; // native element
+  public element: N; // native element
   public parent: Fiber<N> = null; // parent fiber
   public child: Fiber<N>; // child fiber
   public next: Fiber<N>; // next sibling fiber
-  public alt: Fiber<N>; // alternate fiber (previous)
+  public alt: Fiber<N> = null; // alternate fiber (previous)
   public move: boolean; // flag of reordering in list
   public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   public inst: DarkElementInstance = null; // instance of component or virtual node

@@ -181,9 +181,6 @@ function mountChild(nextFiber: Fiber, box: Box) {
 }
 
 function mountSibling(nextFiber: Fiber, box: Box) {
-  if (nextFiber && detectIsMemo(nextFiber.inst) && nextFiber.inst?.['props']?.['id'] === 2) {
-    console.log('unit', nextFiber);
-  }
   box.scope$.navToSibling();
   let inst$ = nextFiber.parent.inst;
   const idx = box.scope$.getMountIndex();
@@ -221,10 +218,6 @@ function mountSibling(nextFiber: Fiber, box: Box) {
     box.scope$.setMountDeep(false);
     nextFiber = nextFiber.parent;
     inst$ = nextFiber.inst;
-
-    if (hasChildrenProp(nextFiber.inst)) {
-      nextFiber.inst.children = [];
-    }
   }
 
   box.fiber$$ = null;
@@ -276,13 +269,10 @@ function performCurrent(fiber: Fiber, alt: Fiber, inst: DarkElementInstance) {
 
   fiber.inst = inst;
   fiber.alt = alt || null;
-  fiber.element = fiber.element || (isUpdate ? alt.element : null);
+  isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
   alt?.cleanup && alt.cleanup();
-
-  if (hasChildrenProp(fiber.inst)) {
-    fiber.cc = fiber.inst.children.length;
-  }
+  hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
 
   if (!fiber.element && detectIsVirtualNode(fiber.inst)) {
     fiber.element = platform.createElement(fiber.inst);
@@ -369,15 +359,15 @@ function performMemo(fiber: Fiber) {
 
   scope$.setMountDeep(false);
   fiber.tag = EffectTag.S;
-  fiber.element = alt.element;
   fiber.child = alt.child; // same links
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
   fiber.cc = alt.cc;
   fiber.cec = alt.cec;
-  alt?.provider && (fiber.provider = alt.provider);
-  alt?.catch && (fiber.catch = alt.catch);
-  alt?.cleanup && (fiber.cleanup = alt.cleanup);
+  alt.element && (fiber.element = alt.element);
+  alt.provider && (fiber.provider = alt.provider);
+  alt.catch && (fiber.catch = alt.catch);
+  alt.cleanup && (fiber.cleanup = alt.cleanup);
 
   const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;
@@ -657,6 +647,7 @@ function commit() {
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
+    hasChildrenProp(fiber.inst) && (fiber.inst.children = []);
   }
 
   wipFiber.alt = null;
@@ -737,7 +728,6 @@ function stopTransitionWork(): false {
     detectIsFunction(resetValue) && scope$$$.addCancel(resetValue);
 
     // console.log('----restore----');
-    wipFiber.alt = null;
     wipFiber.alt = new Fiber().mutate(wipFiber);
     wipFiber.marker = '✌️';
     wipFiber.tag = EffectTag.U;
@@ -786,7 +776,6 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     detectIsFunction(setValue) && setValue();
     detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
 
-    fiber.alt = null;
     fiber.alt = new Fiber().mutate(fiber);
     fiber.marker = '🔥';
     fiber.tag = EffectTag.U;

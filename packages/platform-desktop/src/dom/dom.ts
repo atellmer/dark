@@ -199,12 +199,12 @@ function move(fiber: Fiber<NativeElement>) {
 
 const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
-    if (fiber.element === null) return;
+    if (!fiber.element) return;
     commitCreation(fiber);
   },
   [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
     fiber.move && (move(fiber), (fiber.move = false));
-    if (fiber.element === null) return;
+    if (!fiber.element) return;
     commitUpdate(fiber);
   },
   [EffectTag.D]: commitDeletion,

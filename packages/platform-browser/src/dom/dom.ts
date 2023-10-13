@@ -284,13 +284,13 @@ function move(fiber: Fiber<NativeElement>) {
 
 const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
   [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
-    if (fiber.element === null || detectIsPortal(fiber.inst)) return;
+    if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitCreation(fiber);
   },
   [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
     fiber.move && (move(fiber), (fiber.move = false));
-    if (fiber.element === null || detectIsPortal(fiber.inst)) return;
+    if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },
