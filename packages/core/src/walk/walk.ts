@@ -73,4 +73,16 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
-export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive };
+function createFiberSign(fiber: Fiber) {
+  let nextFiber = fiber;
+  let sign = fiber.idx + '';
+
+  while (nextFiber) {
+    nextFiber = nextFiber.parent;
+    nextFiber && (sign = `${nextFiber.idx}.${sign}`);
+  }
+
+  return sign;
+}
+
+export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign };

@@ -5,6 +5,7 @@ import { TaskPriority } from '../constants';
 import { useMemo } from '../use-memo';
 import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
+import { createFiberSign } from '../walk';
 
 export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'priority' | 'forceAsync'>;
 export type UpdateOptions = UpdateChanger;
@@ -26,7 +27,8 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
       getFiber,
       createChanger,
     });
-    const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition };
+    const sign = () => createFiberSign(getFiber());
+    const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition, sign };
 
     if (isBatch) {
       addBatch(

@@ -64,15 +64,17 @@ class Task {
   public isTransition: boolean;
   public callback: (restore?: (options: RestoreOptions) => void) => void;
   public restore?: (options: RestoreOptions) => void;
+  public sign?: () => string;
 
   constructor(options: TaskConstructorOptions) {
-    const { priority, forceAsync, isTransition, callback } = options;
+    const { priority, forceAsync, isTransition, sign, callback } = options;
     const time = getTime();
 
     this.id = ++Task.nextTaskId;
     this.priority = priority;
     this.forceAsync = forceAsync;
     this.isTransition = isTransition;
+    this.sign = sign;
     this.createdAt = time;
     this.callback = callback;
   }
@@ -81,8 +83,8 @@ class Task {
 const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: Callback, options?: ScheduleCallbackOptions) {
-  const { priority = TaskPriority.NORMAL, forceAsync = false, isTransition = false } = options || {};
-  const task = new Task({ priority, forceAsync, isTransition, callback });
+  const { priority = TaskPriority.NORMAL, forceAsync = false, isTransition = false, sign } = options || {};
+  const task = new Task({ priority, forceAsync, isTransition, sign, callback });
 
   put(task);
   execute();
@@ -103,6 +105,17 @@ function put(task: Task) {
 function pick(queue: Array<Task>) {
   if (!queue.length) return false;
   currentTask = queue.shift();
+
+  if (currentTask.isTransition) {
+    const sign = currentTask.sign();
+    const hasSign = queue.some(x => x.isTransition && x.sign() === sign);
+
+    if (hasSign) {
+      currentTask = null;
+      return pick(queue);
+    }
+  }
+
   currentTask.callback(currentTask.restore);
   currentTask.restore && (currentTask.restore = null);
   currentTask.forceAsync ? requestCallbackAsync(workLoop) : requestCallback(workLoop);

@@ -723,6 +723,7 @@ function stopTransitionWork(): false {
     const { fiber: wipFiber, setValue, resetValue } = options;
     const scope$ = scope$$();
 
+    console.log('---restore---');
     detectIsFunction(setValue) && setValue();
     detectIsFunction(resetValue) && scope$$$.addCancel(resetValue);
 
