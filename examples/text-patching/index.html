@@ -73,7 +73,7 @@
     <div id="vue"></div>
     <div id="dark"></div>
     <script>
-      const { View, Text, component, useEffect, useReactiveState } = DarkCore;
+      const { View, Text, component, useEffect, useReactiveState, batch } = DarkCore;
       const { createRoot, ul, li } = DarkPlatformBrowser;
 
       const token = () => Math.random().toString(36).substring(2, 10);
@@ -114,7 +114,9 @@
             const go = () => {
               state.list.forEach(item => {
                 setTimeout(() => {
-                  item.name = token();
+                  batch(() => {
+                    item.name = token();
+                  });
                 }, 10);
               });
               setTimeout(go, 10);

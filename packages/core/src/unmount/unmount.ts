@@ -18,7 +18,7 @@ function unmountFiber(fiber: Fiber) {
 
     if (!isReturn && detectIsComponent(nextFiber.inst)) {
       const hasValues = nextFiber.hook.values.length > 0;
-      // important order
+      // !
       nextFiber.iefHost && hasValues && dropInsertionEffects(nextFiber.hook);
       nextFiber.lefHost && hasValues && dropLayoutEffects(nextFiber.hook);
       nextFiber.efHost && hasValues && dropEffects(nextFiber.hook);

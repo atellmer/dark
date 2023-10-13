@@ -4,7 +4,6 @@ import { useState } from '../use-state';
 import { useMemo } from '../use-memo';
 import { useEvent } from '../use-event';
 import { platform } from '../platform';
-import { TaskPriority } from '../constants';
 import { batch } from '../batch';
 
 type UseSpringOptions = {
@@ -30,9 +29,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
 
     return scope;
   }, []);
-  const [values, setValues] = useState(() => getInitialValues(getAnimations(createDefaultOptions())), {
-    forceSync: true,
-  });
+  const [values, setValues] = useState(() => getInitialValues(getAnimations(createDefaultOptions())));
 
   useEffect(() => {
     const animations = getAnimations({ state, playingIdx: scope.playingIdx });
