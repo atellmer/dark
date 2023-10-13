@@ -21,7 +21,7 @@ class Fiber<N = NativeElement> {
   public hook: Hook | null; // hook
   public provider: Map<Context, ContextProviderValue>; // provider of context
   public move: boolean; // flag of reordering in list
-  public efHost: boolean; // effect host
+  public aefHost: boolean; // effect host
   public lefHost: boolean; // layout effect host
   public iefHost: boolean; // insertion effect host
   public aHost: boolean; // atom host
@@ -54,19 +54,19 @@ class Fiber<N = NativeElement> {
     return this;
   }
 
-  public markEFHost() {
-    this.efHost = true;
-    this.parent && !this.parent.efHost && this.parent.markEFHost();
+  public markAsyncEffectHost() {
+    this.aefHost = true;
+    this.parent && !this.parent.aefHost && this.parent.markAsyncEffectHost();
   }
 
-  public markLEFHost() {
+  public markLayoutEffectHost() {
     this.lefHost = true;
-    this.parent && !this.parent.lefHost && this.parent.markLEFHost();
+    this.parent && !this.parent.lefHost && this.parent.markLayoutEffectHost();
   }
 
-  public markIEFHost() {
+  public markInsertionEffectHost() {
     this.iefHost = true;
-    this.parent && !this.parent.iefHost && this.parent.markIEFHost();
+    this.parent && !this.parent.iefHost && this.parent.markInsertionEffectHost();
   }
 
   public markAHost() {

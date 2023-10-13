@@ -5,6 +5,7 @@ import { detectIsVirtualNodeFactory } from '../view';
 import { scope$$ } from '../scope';
 import { Fragment } from '../fragment';
 import { $$memo } from '../memo';
+import { type Hook, type HookValue } from '../fiber';
 
 type MemoProps = Required<SlotProps>;
 
@@ -29,13 +30,13 @@ function wrap<T>(value: T, isDifferent: boolean) {
 }
 
 function processValue<T>(getValue: () => T, isDifferent = false) {
-  return wrap(getValue(), isDifferent);
+  return wrap(getValue(), isDifferent) as T;
 }
 
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
   const fiber = scope$$().getCursorFiber();
   const { hook } = fiber;
-  const { idx, values } = hook;
+  const { idx, values } = hook as Hook<HookValue<T>>;
 
   if (detectIsUndefined(values[idx])) {
     const value = processValue(getValue);
@@ -50,7 +51,7 @@ function useMemo<T>(getValue: () => T, deps: Array<any>): T {
     return value as T;
   }
 
-  const hookValue = values[idx];
+  const hookValue = values[idx] as HookValue;
   const isDifferent = detectAreDepsDifferent(deps, hookValue.deps as Array<any>);
   const getValue$ = isDifferent ? getValue : () => hookValue.value;
 

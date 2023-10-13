@@ -30,9 +30,6 @@ import {
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
-import { hasEffects } from '../use-effect';
-import { hasLayoutEffects } from '../use-layout-effect';
-import { hasInsertionEffects } from '../use-insertion-effect';
 import { walkFiber, getFiberWithElement, detectIsFiberAlive } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
@@ -381,9 +378,9 @@ function performMemo(fiber: Fiber) {
   }
 
   fiber.incCEC(alt.cec);
-  alt.efHost && fiber.markEFHost();
-  alt.lefHost && fiber.markLEFHost();
-  alt.iefHost && fiber.markIEFHost();
+  alt.aefHost && fiber.markAsyncEffectHost();
+  alt.lefHost && fiber.markLayoutEffectHost();
+  alt.iefHost && fiber.markInsertionEffectHost();
   alt.aHost && fiber.markAHost();
   alt.pHost && fiber.markPHost();
 }
@@ -399,9 +396,6 @@ function install(instance: DarkElementInstance, idx: number, fiber: Fiber) {
     instance$ = mount(fiber, instance.children[idx]);
 
     if (detectIsComponent(instance$)) {
-      hasEffects(fiber) && fiber.markEFHost();
-      hasLayoutEffects(fiber) && fiber.markLEFHost();
-      hasInsertionEffects(fiber) && fiber.markIEFHost();
       fiber.cleanup && fiber.markAHost();
       platform.detectIsPortal(instance$) && fiber.markPHost();
     }
@@ -632,7 +626,7 @@ function commit() {
 
   // !
   for (const fiber of deletions) {
-    if (fiber.aHost && !fiber.iefHost && !fiber.lefHost && !fiber.efHost && !fiber.pHost) {
+    if (fiber.aHost && !fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.pHost) {
       queue.push(fiber);
     } else {
       unmountFiber(fiber);

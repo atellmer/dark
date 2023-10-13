@@ -8,7 +8,6 @@ export enum EffectTag {
 export type NativeElement = unknown;
 
 export type HookValue<T = any> = {
-  token?: Symbol;
   deps: Array<any>;
   value: T;
 };

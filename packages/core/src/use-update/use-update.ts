@@ -13,6 +13,8 @@ export type UpdateOptions = UpdateChanger;
 function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forceAsync$ }: UseUpdateOptions = {}) {
   const rootId = getRootId();
   const scope = useMemo(() => ({ fiber: null }), []);
+  const fiber = scope$$().getCursorFiber();
+  const idx = fiber.hook.idx;
   const update = (createChanger?: () => UpdateChanger) => {
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
@@ -27,7 +29,7 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
       getFiber,
       createChanger,
     });
-    const sign = () => createFiberSign(getFiber());
+    const sign = () => createFiberSign(getFiber(), idx);
     const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition, sign };
 
     if (isBatch) {
@@ -41,7 +43,7 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     }
   };
 
-  scope.fiber = scope$$().getCursorFiber();
+  scope.fiber = fiber;
 
   return update;
 }

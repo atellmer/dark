@@ -1,66 +1,53 @@
-import { detectIsUndefined, detectIsFunction, detectAreDepsDifferent } from '../helpers';
+import { detectIsFunction } from '../helpers';
 import { scope$$ } from '../scope';
-import type { Fiber, Hook, HookValue } from '../fiber';
+import { useMemo } from '../use-memo';
+import { type Hook, type HookValue } from '../fiber';
 import { type Effect, type DropEffect, EffectType } from './types';
 
 const $$useEffect = Symbol('use-effect');
-const { useEffect, hasEffects, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
+const { useEffect, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
+
+type UseEffectValue = {
+  token: Symbol;
+  cleanup: DropEffect;
+};
 
 function createEffect(token: Symbol, type: EffectType) {
-  function useEffect(effect: Effect, deps?: Array<any>) {
-    const fiber = scope$$().getCursorFiber();
-    const hook = fiber.hook as Hook<HookValue<DropEffect>>;
-    const { idx, values } = hook;
-    const runEffect = () => {
-      const scope$ = scope$$();
-      const map: Record<EffectType, (fn: () => void) => void> = {
-        [EffectType.ASYNC]: (fn: () => void) => scope$.addAsyncEffect(fn),
-        [EffectType.LAYOUT]: (fn: () => void) => scope$.addLayoutEffect(fn),
-        [EffectType.INSERTION]: (fn: () => void) => scope$.addInsertionEffect(fn),
-      };
-      const add = map[type];
+  function useEffect(effect: Effect, deps: Array<any> = [{}]) {
+    const scope$ = scope$$();
+    const fiber = scope$.getCursorFiber();
+    const scope = useMemo<UseEffectValue>(() => ({ token, cleanup: undefined }), []);
+    const isInsertionEffect = type === EffectType.INSERTION;
+    const isLayoutEffect = type === EffectType.LAYOUT;
+    const isAsyncEffect = type === EffectType.ASYNC;
 
-      values[idx] = {
-        deps,
-        token,
-        value: undefined,
-      };
-      add(() => (values[idx].value = effect()));
-    };
+    isInsertionEffect && fiber.markInsertionEffectHost();
+    isLayoutEffect && fiber.markLayoutEffectHost();
+    isAsyncEffect && fiber.markAsyncEffectHost();
 
-    if (detectIsUndefined(values[idx])) {
-      runEffect();
-    } else {
-      const { deps: prevDeps, value: cleanup } = values[idx];
-      const isDepsDifferent = deps ? detectAreDepsDifferent(deps, prevDeps) : true;
+    useMemo(() => {
+      const runEffect = () => (scope.cleanup = effect());
 
-      if (isDepsDifferent) {
-        detectIsFunction(cleanup) && cleanup();
-        runEffect();
-      }
-    }
+      isInsertionEffect && scope$.addInsertionEffect(runEffect);
+      isLayoutEffect && scope$.addLayoutEffect(runEffect);
+      isAsyncEffect && scope$.addAsyncEffect(runEffect);
 
-    hook.idx++;
+      detectIsFunction(scope.cleanup) && scope.cleanup();
+
+      return null;
+    }, deps);
   }
 
-  function hasEffects(fiber: Fiber) {
-    const { values } = fiber.hook as Hook<HookValue>;
-    const hasEffect = values.some(x => x.token === token);
-
-    return hasEffect;
-  }
-
-  function dropEffects(hook: Hook<HookValue<DropEffect>>) {
-    for (const value of hook.values) {
-      value.token === token && value.value && value.value();
+  function dropEffects(hook: Hook<HookValue<UseEffectValue>>) {
+    for (const { value: effect } of hook.values) {
+      effect && effect.token === token && detectIsFunction(effect.cleanup) && effect.cleanup();
     }
   }
 
   return {
     useEffect,
-    hasEffects,
     dropEffects,
   };
 }
 
-export { useEffect, hasEffects, dropEffects, createEffect };
+export { useEffect, dropEffects, createEffect };
