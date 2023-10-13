@@ -67,12 +67,12 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
   const callback = () => {
     setRootId(rootId); // !
     const scope$ = scope$$();
-    const root = scope$.getRoot();
-    const isUpdate = Boolean(root);
+    const rootFiber = scope$.getRoot();
+    const isUpdate = Boolean(rootFiber);
     const fiber = new Fiber().mutate({
       element: container,
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      alt: root,
+      alt: rootFiber,
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
 

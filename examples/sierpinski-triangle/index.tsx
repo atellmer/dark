@@ -57,9 +57,11 @@ const Dot = component<DotProps>(props => {
     setHover(false);
   }, []);
 
+  const text = Number(Text.from(props.slot));
+
   return (
     <div style={style.dot} onMouseEnter={enter} onMouseLeave={leave}>
-      {hover ? `* ${Text.from(props.slot)} *` : Text.from(props.slot)}
+      {hover ? `* ${text} *` : text}
     </div>
   );
 });
@@ -73,10 +75,12 @@ type SierpinskiTriangleProps = {
   s: number;
   x: number;
   y: number;
+  id?: number;
+  first?: boolean;
   slot: DarkElement;
 };
 
-const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }) => {
+const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, first, slot }) => {
   if (s <= targetSize) {
     return (
       <MemoDot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
@@ -97,13 +101,13 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }
 
   return (
     <>
-      <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s}>
+      <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s} id={first ? 1 : undefined}>
         {slot}
       </MemoSierpinskiTriangle>
-      <MemoSierpinskiTriangle x={x - s} y={y + s / 2} s={s}>
+      <MemoSierpinskiTriangle x={x - s} y={y + s / 2} s={s} id={first ? 2 : undefined}>
         {slot}
       </MemoSierpinskiTriangle>
-      <MemoSierpinskiTriangle x={x + s} y={y + s / 2} s={s}>
+      <MemoSierpinskiTriangle x={x + s} y={y + s / 2} s={s} id={first ? 3 : undefined}>
         {slot}
       </MemoSierpinskiTriangle>
     </>
@@ -144,12 +148,10 @@ const App = component<AppProps>(props => {
     `,
   }));
 
-  //console.log('seconds', seconds);
-
   return (
     <div style='padding: 16px'>
       <div style={style.container}>
-        <MemoSierpinskiTriangle x={0} y={0} s={1000}>
+        <MemoSierpinskiTriangle x={0} y={0} s={1000} first>
           {seconds}
         </MemoSierpinskiTriangle>
       </div>

@@ -181,6 +181,9 @@ function mountChild(nextFiber: Fiber, box: Box) {
 }
 
 function mountSibling(nextFiber: Fiber, box: Box) {
+  if (nextFiber && detectIsMemo(nextFiber.inst) && nextFiber.inst?.['props']?.['id'] === 2) {
+    console.log('unit', nextFiber);
+  }
   box.scope$.navToSibling();
   let inst$ = nextFiber.parent.inst;
   const idx = box.scope$.getMountIndex();
@@ -657,7 +660,6 @@ function commit() {
   }
 
   wipFiber.alt = null;
-  wipFiber.reserve = null;
   platform.finishCommit();
 
   scope$.runLayoutEffects();
@@ -723,7 +725,7 @@ function stopTransitionWork(): false {
   const scope$ = scope$$();
   const scope$$$ = scope$.copy();
   const wipFiber = scope$.getWorkInProgress();
-  const child = wipFiber.child || null;
+  const child = wipFiber.child;
 
   child && (child.parent = null);
 
@@ -736,9 +738,7 @@ function stopTransitionWork(): false {
 
     // console.log('----restore----');
     wipFiber.alt = null;
-    wipFiber.reserve = null;
     wipFiber.alt = new Fiber().mutate(wipFiber);
-    wipFiber.reserve = wipFiber.child;
     wipFiber.marker = '✌️';
     wipFiber.tag = EffectTag.U;
     wipFiber.child = child;
@@ -750,9 +750,8 @@ function stopTransitionWork(): false {
   });
 
   //console.log('----stop----');
-  wipFiber.child = wipFiber.reserve;
+  wipFiber.child = wipFiber.alt.child;
   wipFiber.alt = null;
-  wipFiber.reserve = null;
   scope$.applyCancels();
   flush(null, true);
 
@@ -788,9 +787,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
 
     fiber.alt = null;
-    fiber.reserve = null;
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.reserve = fiber.child;
     fiber.marker = '🔥';
     fiber.tag = EffectTag.U;
     fiber.cc = 0;

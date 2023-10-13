@@ -98,8 +98,8 @@ class Scope {
     scope.mountLevel = this.mountLevel;
     scope.mountNav = { ...this.mountNav };
     scope.mountDeep = this.mountDeep;
-    scope.events = this.events;
-    scope.unsubs = this.unsubs;
+    scope.events = new Map([...this.events]);
+    scope.unsubs = new Set([...this.unsubs]);
     scope.actions = new Map([...this.actions]);
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
@@ -109,6 +109,7 @@ class Scope {
     scope.isLayoutEffectsZone = this.isLayoutEffectsZone;
     scope.isInsertionEffectsZone = this.isInsertionEffectsZone;
     scope.isUpdateZone = this.isUpdateZone;
+    scope.isTransitionZone = this.isTransitionZone;
 
     return scope;
   }
@@ -155,7 +156,7 @@ class Scope {
   }
 
   public navToParent() {
-    this.mountNav[this.mountLevel] = 0;
+    delete this.mountNav[this.mountLevel];
     this.mountLevel = this.mountLevel - 1;
   }
 
