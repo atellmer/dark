@@ -2,7 +2,7 @@ import { detectIsFunction } from '../helpers';
 import { scope$$ } from '../scope';
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode } from '../view';
 import type { Context, ContextProviderValue } from '../context';
-import type { DarkElementInstance } from '../shared';
+import type { DarkElementInstance, Callback } from '../shared';
 import { type NativeElement, type Hook, EffectTag } from './types';
 
 class Fiber<N = NativeElement> {
@@ -16,11 +16,11 @@ class Fiber<N = NativeElement> {
   public child: Fiber<N>; // child fiber
   public next: Fiber<N>; // next sibling fiber
   public alt: Fiber<N> = null; // alternate fiber (previous)
-  public move: boolean; // flag of reordering in list
   public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   public inst: DarkElementInstance = null; // instance of component or virtual node
   public hook: Hook | null; // hook
   public provider: Map<Context, ContextProviderValue>; // provider of context
+  public move: boolean; // flag of reordering in list
   public efHost: boolean; // effect host
   public lefHost: boolean; // layout effect host
   public iefHost: boolean; // insertion effect host
@@ -29,8 +29,12 @@ class Fiber<N = NativeElement> {
   public marker: string; // for dev
   public shadow: boolean; // flag for shadow rendering
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
+  public batch: {
+    timer: number | NodeJS.Timeout;
+    changes: Array<Callback>;
+  };
   public catch: (error: Error) => void;
-  public cleanup: () => void;
+  public cleanup: Callback;
   private static nextId = 0;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {

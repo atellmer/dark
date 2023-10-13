@@ -3,6 +3,8 @@ import { getRootId, scope$$ } from '../scope';
 import { type UpdateChanger, createUpdateCallback } from '../workloop';
 import { TaskPriority } from '../constants';
 import { useMemo } from '../use-memo';
+import { addBatch } from '../batch';
+import { detectIsFunction } from '../helpers';
 
 export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'priority' | 'forceAsync'>;
 export type UpdateOptions = UpdateChanger;
@@ -14,6 +16,7 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
     const isTransition = scope$.getIsTransitionZone();
+    const isBatch = scope$.getIsBatchZone();
     const priority = isTransition ? TaskPriority.LOW : priority$; // !
     const forceAsync = isTransition || forceAsync$;
     const getFiber = () => scope.fiber;
@@ -25,7 +28,15 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     });
     const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition };
 
-    platform.schedule(callback, callbackOptions);
+    if (isBatch) {
+      addBatch(
+        getFiber(),
+        () => platform.schedule(callback, callbackOptions),
+        () => detectIsFunction(createChanger) && createChanger().setValue(),
+      );
+    } else {
+      platform.schedule(callback, callbackOptions);
+    }
   };
 
   scope.fiber = scope$$().getCursorFiber();
