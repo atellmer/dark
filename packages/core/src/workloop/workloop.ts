@@ -664,10 +664,9 @@ function commit() {
     });
 
   flush(wipFiber);
-  // console.log('wipFiber', wipFiber);
 }
 
-function flush(wipFiber: Fiber, transition = false) {
+function flush(wipFiber: Fiber, cancel = false) {
   const scope$ = scope$$();
 
   !scope$.getIsUpdateZone() && scope$.setRoot(wipFiber); // !
@@ -684,7 +683,7 @@ function flush(wipFiber: Fiber, transition = false) {
   scope$.setIsHydrateZone(false);
   scope$.setIsUpdateZone(false);
   scope$.resetActions();
-  !transition && emitter.emit('finish');
+  !cancel && emitter.emit('finish');
 }
 
 function syncElementIndices(fiber: Fiber) {
@@ -720,14 +719,13 @@ function stopTransitionWork(): false {
 
   child && (child.parent = null);
 
-  platform.cancelTask((options: RestoreOptions) => {
+  const restoreTask = (options: RestoreOptions) => {
     const { fiber: wipFiber, setValue, resetValue } = options;
     const scope$ = scope$$();
 
     detectIsFunction(setValue) && setValue();
     detectIsFunction(resetValue) && scope$$$.addCancel(resetValue);
 
-    // console.log('----restore----');
     wipFiber.alt = new Fiber().mutate(wipFiber);
     wipFiber.marker = '✌️';
     wipFiber.tag = EffectTag.U;
@@ -737,13 +735,13 @@ function stopTransitionWork(): false {
     scope$$$.setRoot(scope$.getRoot());
     scope$$$.setWorkInProgress(wipFiber);
     replaceScope(scope$$$);
-  });
+  };
 
-  //console.log('----stop----');
   wipFiber.child = wipFiber.alt.child;
   wipFiber.alt = null;
   scope$.applyCancels();
   flush(null, true);
+  platform.cancelTask(restoreTask);
 
   return false;
 }

@@ -23,9 +23,9 @@ class Scope {
   private wip: Fiber = null;
   private cursor: Fiber = null;
   private unit: Fiber = null;
+  private mountDeep = true;
   private mountLevel = 0;
   private mountNav: Record<number, number> = {};
-  private mountDeep = true;
   private events: Map<string, WeakMap<object, Function>> = new Map();
   private unsubs: Set<Callback> = new Set();
   private actions: Actions = new Map();
@@ -95,9 +95,9 @@ class Scope {
     scope.wip = null;
     scope.cursor = null;
     scope.unit = this.unit;
+    scope.mountDeep = this.mountDeep;
     scope.mountLevel = this.mountLevel;
     scope.mountNav = { ...this.mountNav };
-    scope.mountDeep = this.mountDeep;
     scope.events = new Map([...this.events]);
     scope.unsubs = new Set([...this.unsubs]);
     scope.actions = new Map([...this.actions]);
@@ -106,10 +106,7 @@ class Scope {
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.insertionEffects = new Set([...this.insertionEffects]);
-    scope.isLayoutEffectsZone = this.isLayoutEffectsZone;
-    scope.isInsertionEffectsZone = this.isInsertionEffectsZone;
     scope.isUpdateZone = this.isUpdateZone;
-    scope.isTransitionZone = this.isTransitionZone;
 
     return scope;
   }
@@ -361,9 +358,7 @@ const setRootId = (id: number) => {
 
 const removeScope = (id: number) => scopes.delete(id);
 
-const replaceScope = (scope: Scope, id: number = rootId) => {
-  scopes.set(id, scope);
-};
+const replaceScope = (scope: Scope, id: number = rootId) => scopes.set(id, scope);
 
 const scope$$ = (id: number = rootId) => scopes.get(id);
 

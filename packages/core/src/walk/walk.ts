@@ -1,4 +1,4 @@
-import { Fiber, EffectTag } from '../fiber';
+import { type Fiber, EffectTag } from '../fiber';
 import { platform } from '../platform';
 
 function walkFiber<T = unknown>(
@@ -9,31 +9,23 @@ function walkFiber<T = unknown>(
   let isDeepWalking = true;
   let isReturn = false;
   let isStopped = false;
-  const visitedMap: Record<number, boolean> = {};
-  const detectCanVisit = (id: number) => !visitedMap[id];
+  const visits: Record<number, boolean> = {};
+  const detectCanVisit = (id: number) => !visits[id];
   const resetIsDeepWalking = () => (isDeepWalking = false);
   const stop = () => (isStopped = true);
 
   while (nextFiber) {
     onLoop(nextFiber, isReturn, resetIsDeepWalking, stop);
-
-    if (isStopped) {
-      break;
-    }
-
+    if (isStopped) break;
     if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child.id)) {
-      const newFiber = nextFiber.child;
-
       isReturn = false;
-      nextFiber = newFiber;
-      visitedMap[newFiber.id] = true;
+      nextFiber = nextFiber.child; // !
+      visits[nextFiber.id] = true;
     } else if (nextFiber.next && detectCanVisit(nextFiber.next.id)) {
-      const newFiber = nextFiber.next;
-
       isDeepWalking = true;
       isReturn = false;
-      nextFiber = newFiber;
-      visitedMap[newFiber.id] = true;
+      nextFiber = nextFiber.next; // !
+      visits[nextFiber.id] = true;
     } else if (nextFiber.parent && nextFiber.parent !== fiber) {
       isDeepWalking = false;
       isReturn = true;
