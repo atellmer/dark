@@ -1,4 +1,4 @@
-import { type MessagePort as NodeMessagePort, MessageChannel as NodeMessageChannel } from 'node:worker_threads';
+import { type MessagePort as NodeMessagePort, type MessageChannel as NodeMessageChannel } from 'node:worker_threads';
 import {
   type ScheduleCallbackOptions,
   type WorkLoop,
@@ -21,7 +21,6 @@ const queueMap: QueueMap = {
   normal: [],
   low: [],
 };
-const IS_TEST_ENV = process.env.NODE_ENV === 'test';
 const YIELD_INTERVAL = 4;
 let scheduledCallback: WorkLoop = null;
 let deadline = 0;
@@ -31,17 +30,18 @@ let channel: MessageChannel | NodeMessageChannel = null;
 let port: MessagePort | NodeMessagePort = null;
 
 function setupPorts() {
-  if (IS_TEST_ENV) {
+  if (process.env.NODE_ENV === 'test') {
     const worker = require('node:worker_threads');
 
     channel = new worker.MessageChannel() as NodeMessageChannel;
     port = channel.port2;
     channel.port1.on('message', performWorkUntilDeadline);
-  } else {
-    channel = new MessageChannel() as MessageChannel;
-    port = channel.port2;
-    channel.port1.onmessage = performWorkUntilDeadline;
+    return;
   }
+
+  channel = new MessageChannel() as MessageChannel;
+  port = channel.port2;
+  channel.port1.onmessage = performWorkUntilDeadline;
 }
 
 function unrefPorts() {
@@ -49,7 +49,7 @@ function unrefPorts() {
   (channel as NodeMessageChannel).port2.unref();
 }
 
-if (!IS_TEST_ENV) {
+if (process.env.NODE_ENV !== 'test') {
   setupPorts();
 }
 
