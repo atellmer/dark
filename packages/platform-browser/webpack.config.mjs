@@ -18,6 +18,7 @@ const config = env => ({
     },
     'node:worker_threads': {
       commonjs2: 'node:worker_threads',
+      commonjs: 'node:worker_threads',
     },
   },
   resolve: {
