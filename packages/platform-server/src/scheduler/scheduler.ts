@@ -22,14 +22,14 @@ class Task {
   public static nextTaskId = 0;
   public id: number;
   public time: number;
-  public forceSync: boolean;
+  public forceAsync: boolean;
   public callback: () => void;
   public onCompleted: () => void;
 
   constructor(options: Omit<Task, 'id'>) {
     this.id = ++Task.nextTaskId;
     this.time = options.time;
-    this.forceSync = options.forceSync;
+    this.forceAsync = options.forceAsync;
     this.callback = options.callback;
     this.onCompleted = options.onCompleted;
   }
@@ -38,8 +38,8 @@ class Task {
 const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
-  const { forceSync = false, onCompleted = () => {} } = options || {};
-  const task = new Task({ time: getTime(), forceSync, callback, onCompleted });
+  const { forceAsync = false, onCompleted = () => {} } = options || {};
+  const task = new Task({ time: getTime(), forceAsync, callback, onCompleted });
 
   queue.push(task);
   executeTasks();
@@ -51,12 +51,7 @@ function pick(queue: Array<Task>) {
 
   task.callback();
   onCompleted = task.onCompleted;
-
-  if (task.forceSync) {
-    requestCallbackSync(workLoop);
-  } else {
-    requestCallback(workLoop);
-  }
+  task.forceAsync ? requestCallbackAsync(workLoop) : requestCallback(workLoop);
 }
 
 function executeTasks() {
@@ -90,9 +85,9 @@ function performWorkUntilDeadline() {
   }
 }
 
-function requestCallback(callback: WorkLoop) {
+function requestCallbackAsync(callback: WorkLoop) {
   if (process.env.NODE_ENV === 'test') {
-    return requestCallbackSync(callback);
+    return requestCallback(callback);
   }
 
   scheduledCallback = callback;
@@ -103,7 +98,7 @@ function requestCallback(callback: WorkLoop) {
   }
 }
 
-function requestCallbackSync(callback: WorkLoop) {
+function requestCallback(callback: WorkLoop) {
   callback(false);
   executeTasks();
 }

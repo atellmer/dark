@@ -51,7 +51,7 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
       const frameRef = useRef<Frame>(null);
       const pageRef = useRef<Page>(null);
       const [pathname, setPathname] = useState(normalizePathname(defaultPathname));
-      const [transition, setTransition] = useState<Transition>(null, { forceSync: true });
+      const [transition, setTransition] = useState<Transition>(null);
       const scope = useMemo<Scope>(
         () => ({ history: null, inTransition: false, transitions: { forward: [], backward: [] } }),
         [],
