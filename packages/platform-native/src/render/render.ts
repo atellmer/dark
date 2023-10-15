@@ -72,7 +72,6 @@ function render(options: RenderOptions): NSElement {
 
   platform.schedule(callback, {
     priority: TaskPriority.NORMAL,
-    forceSync: true,
     onCompleted: () => {
       if (detectIsFunction(onCompleted)) {
         const nativeView = getRootNativeView();

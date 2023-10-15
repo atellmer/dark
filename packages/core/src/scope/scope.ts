@@ -1,20 +1,16 @@
 import type { Fiber } from '../fiber';
-import type { Callback, DarkElementKey } from '../shared';
+import type { Callback, DarkElementKey as Key } from '../shared';
 import { platform } from '../platform';
 
-type Key = DarkElementKey;
-type NextKey = DarkElementKey;
-type PrevKey = DarkElementKey;
-
-type Actions = Map<
+type Actions = Record<
   number,
   {
     map: Record<Key, Fiber>;
-    replace: Record<NextKey, [NextKey, PrevKey]>;
-    insert: Record<NextKey, [NextKey]>;
-    remove: Record<PrevKey, [PrevKey]>;
-    move: Record<NextKey, [NextKey, PrevKey]>;
-    stable: Record<NextKey, [NextKey]>;
+    replace: Record<Key, true>;
+    insert: Record<Key, true>;
+    remove: Record<Key, true>;
+    move: Record<Key, true>;
+    stable: Record<Key, true>;
   }
 >;
 
@@ -28,7 +24,7 @@ class Scope {
   private mountNav: Record<number, number> = {};
   private events: Map<string, WeakMap<object, Function>> = new Map();
   private unsubs: Set<Callback> = new Set();
-  private actions: Actions = new Map();
+  private actions: Actions = {};
   private candidates: Set<Fiber> = new Set();
   private deletions: Set<Fiber> = new Set();
   private cancels: Array<Callback> = [];
@@ -46,46 +42,46 @@ class Scope {
   private isDynamic = platform.detectIsDynamic();
 
   public resetActions() {
-    this.actions = new Map();
+    this.actions = {};
   }
 
   public getActionsById(id: number) {
-    return this.actions.get(id);
+    return this.actions[id];
   }
 
   public addActionMap(id: number, map: Record<Key, Fiber>) {
-    this.actions.set(id, {
+    this.actions[id] = {
       map,
       replace: {},
       insert: {},
       remove: {},
       move: {},
       stable: {},
-    });
+    };
   }
 
   public removeActionMap(id: number) {
-    this.actions.delete(id);
+    delete this.actions[id];
   }
 
-  public addReplaceAction(id: number, nextKey: NextKey, prevKey: PrevKey) {
-    this.actions.get(id).replace[nextKey] = [nextKey, prevKey];
+  public addReplaceAction(id: number, nextKey: Key) {
+    this.actions[id].replace[nextKey] = true;
   }
 
-  public addInsertAction(id: number, nextKey: NextKey) {
-    this.actions.get(id).insert[nextKey] = [nextKey];
+  public addInsertAction(id: number, nextKey: Key) {
+    this.actions[id].insert[nextKey] = true;
   }
 
-  public addRemoveAction(id: number, prevKey: PrevKey) {
-    this.actions.get(id).remove[prevKey] = [prevKey];
+  public addRemoveAction(id: number, prevKey: Key) {
+    this.actions[id].remove[prevKey] = true;
   }
 
-  public addMoveAction(id: number, nextKey: NextKey, prevKey: PrevKey) {
-    this.actions.get(id).move[nextKey] = [nextKey, prevKey];
+  public addMoveAction(id: number, nextKey: Key) {
+    this.actions[id].move[nextKey] = true;
   }
 
-  public addStableAction(id: number, nextKey: NextKey) {
-    this.actions.get(id).stable[nextKey] = [nextKey];
+  public addStableAction(id: number, nextKey: Key) {
+    this.actions[id].stable[nextKey] = true;
   }
 
   public copy() {
@@ -98,9 +94,9 @@ class Scope {
     scope.mountDeep = this.mountDeep;
     scope.mountLevel = this.mountLevel;
     scope.mountNav = { ...this.mountNav };
-    scope.events = new Map([...this.events]);
-    scope.unsubs = new Set([...this.unsubs]);
-    scope.actions = new Map([...this.actions]);
+    scope.events = this.events;
+    scope.unsubs = this.unsubs;
+    scope.actions = { ...this.actions };
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);
@@ -204,19 +200,19 @@ class Scope {
     return this.deletions;
   }
 
-  public addDeletion(fiber: Fiber) {
+  public hasDeletion(fiber: Fiber) {
     let nextFiber = fiber;
 
     while (nextFiber) {
-      if (this.hasDeletion(nextFiber)) return;
+      if (this.deletions.has(nextFiber)) return true;
       nextFiber = nextFiber.parent;
     }
 
-    this.deletions.add(fiber);
+    return false;
   }
 
-  public hasDeletion(fiber: Fiber) {
-    return this.deletions.has(fiber);
+  public addDeletion(fiber: Fiber) {
+    !this.hasDeletion(fiber) && this.deletions.add(fiber);
   }
 
   public resetDeletions() {
