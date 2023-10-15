@@ -52,11 +52,11 @@ class Scope {
   public addActionMap(id: number, map: Record<Key, Fiber>) {
     this.actions[id] = {
       map,
-      replace: {},
-      insert: {},
-      remove: {},
-      move: {},
-      stable: {},
+      replace: null,
+      insert: null,
+      remove: null,
+      move: null,
+      stable: null,
     };
   }
 
@@ -65,22 +65,27 @@ class Scope {
   }
 
   public addReplaceAction(id: number, nextKey: Key) {
+    !this.actions[id].replace && (this.actions[id].replace = {});
     this.actions[id].replace[nextKey] = true;
   }
 
   public addInsertAction(id: number, nextKey: Key) {
+    !this.actions[id].insert && (this.actions[id].insert = {});
     this.actions[id].insert[nextKey] = true;
   }
 
   public addRemoveAction(id: number, prevKey: Key) {
+    !this.actions[id].remove && (this.actions[id].remove = {});
     this.actions[id].remove[prevKey] = true;
   }
 
   public addMoveAction(id: number, nextKey: Key) {
+    !this.actions[id].move && (this.actions[id].move = {});
     this.actions[id].move[nextKey] = true;
   }
 
   public addStableAction(id: number, nextKey: Key) {
+    !this.actions[id].stable && (this.actions[id].stable = {});
     this.actions[id].stable[nextKey] = true;
   }
 

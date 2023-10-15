@@ -1,5 +1,5 @@
 import { type RestoreOptions, platform, detectIsServer } from '../platform';
-import { INDEX_KEY, TYPE, RESTART_TIMEOUT, Flag } from '../constants';
+import { INDEX_KEY, RESTART_TIMEOUT, Flag } from '../constants';
 import {
   flatten,
   error,
@@ -14,28 +14,26 @@ import {
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
 import { type Hook, Fiber, EffectTag } from '../fiber';
 import type { DarkElementKey as Key, DarkElementInstance } from '../shared';
-import { type Component, detectIsComponent, getComponentKey, getComponentFlag } from '../component';
+import { type Component, detectIsComponent } from '../component';
 import {
-  type TagVirtualNode,
   Text,
   detectIsVirtualNode,
-  detectIsTagVirtualNode,
   detectIsVirtualNodeFactory,
-  getTagVirtualNodeKey,
-  getVirtualNodeFactoryKey,
-  getTagVirtualNodeFlag,
-  getVirtualNodeFactoryFlag,
+  getElementKey,
+  getElementFlag,
+  getInstanceType,
+  hasChildrenProp,
   detectIsReplacer,
   createReplacer,
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptimizeRemoves, tryOptimizeMoves } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
 
-let hasError = false;
+let hasRenderError = false;
 
 type Box = {
   fiber$$: Fiber;
@@ -47,7 +45,7 @@ type Box = {
 export type WorkLoop = (yield$: boolean) => boolean;
 
 function workLoop(yield$: boolean) {
-  if (hasError) return false;
+  if (hasRenderError) return false;
   const scope$ = scope$$();
   const wipFiber = scope$.getWorkInProgress();
   let unit = scope$.getNextUnitOfWork();
@@ -76,7 +74,7 @@ function workLoop(yield$: boolean) {
     if (err instanceof StopWork) {
       !yield$ && setTimeout(() => workLoop(false), RESTART_TIMEOUT);
     } else {
-      hasError = true;
+      hasRenderError = true;
       throw err;
     }
   }
@@ -157,6 +155,7 @@ function mountChild(nextFiber: Fiber, box: Box) {
   const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
 
   box.scope$.setCursorFiber(fiber);
+  box.scope$.addCandidate(fiber);
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
   fiber.eidx = nextFiber.element ? 0 : nextFiber.eidx;
@@ -165,7 +164,6 @@ function mountChild(nextFiber: Fiber, box: Box) {
   alt && performAlternate(fiber, alt);
   connect(fiber, alt);
   alt && detectIsMemo(fiber.inst) && performMemo(fiber);
-  box.scope$.addCandidate(fiber);
   box.fiber$$ = null;
   box.fiber$ = fiber;
   box.inst$ = inst$;
@@ -184,6 +182,7 @@ function mountSibling(nextFiber: Fiber, box: Box) {
     const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
 
     box.scope$.setCursorFiber(fiber);
+    box.scope$.addCandidate(fiber);
     fiber.parent = nextFiber.parent;
     nextFiber.next = fiber;
     fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
@@ -192,7 +191,6 @@ function mountSibling(nextFiber: Fiber, box: Box) {
     alt && performAlternate(fiber, alt);
     connect(fiber, alt);
     alt && detectIsMemo(fiber.inst) && performMemo(fiber);
-    box.scope$.addCandidate(fiber);
     box.fiber$$ = fiber;
     box.fiber$ = fiber;
     box.inst$ = fiber.inst;
@@ -215,8 +213,8 @@ function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolea
     const actions = scope$.getActionsById(parentId);
 
     if (actions) {
-      const isMove = Boolean(actions.move[key]);
-      const isStable = Boolean(actions.stable[key]);
+      const isMove = actions.move && Boolean(actions.move[key]);
+      const isStable = actions.stable && Boolean(actions.stable[key]);
 
       if (isMove || isStable) {
         const alt = actions.map[key];
@@ -258,6 +256,8 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
       let size = Math.max(prevKeys.length, nextKeys.length);
       let p = 0;
       let n = 0;
+      let hasMoves = false;
+      let hasRemoves = false;
 
       scope$.addActionMap(id, keyedFibersMap);
 
@@ -280,15 +280,20 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
             scope$.addRemoveAction(id, prevKey);
             scope$.addDeletion(prevKeyFiber);
             flush && (prevKeyFiber.flush = true);
+            hasRemoves = true;
             n++;
             size++;
           } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
             scope$.addMoveAction(id, nextKey);
+            hasMoves = true;
           }
         } else if (nextKey !== null) {
           scope$.addStableAction(id, nextKey);
         }
       }
+
+      hasMoves && tryOptimizeMoves(fiber, alt, scope$);
+      hasRemoves && tryOptimizeRemoves(fiber, alt, scope$);
     }
   }
 }
@@ -459,48 +464,8 @@ function createIndexKey(idx: number) {
   return `${INDEX_KEY}:${idx}`;
 }
 
-function getElementKey(instance: DarkElementInstance): Key | null {
-  const key = detectIsComponent(instance)
-    ? getComponentKey(instance)
-    : detectIsVirtualNodeFactory(instance)
-    ? getVirtualNodeFactoryKey(instance)
-    : detectIsTagVirtualNode(instance)
-    ? getTagVirtualNodeKey(instance)
-    : null;
-
-  return key;
-}
-
-function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | null {
-  const flag = detectIsComponent(instance)
-    ? getComponentFlag(instance)
-    : detectIsVirtualNodeFactory(instance)
-    ? getVirtualNodeFactoryFlag(instance)
-    : detectIsTagVirtualNode(instance)
-    ? getTagVirtualNodeFlag(instance)
-    : null;
-
-  return flag;
-}
-
 function supportConditional(instance: DarkElementInstance) {
   return detectIsFalsy(instance) ? createReplacer() : instance;
-}
-
-function getInstanceType(instance: DarkElementInstance): string | Function {
-  return detectIsVirtualNodeFactory(instance)
-    ? instance[TYPE]
-    : detectIsTagVirtualNode(instance)
-    ? instance.name
-    : detectIsVirtualNode(instance)
-    ? instance.type
-    : detectIsComponent(instance)
-    ? instance.type
-    : null;
-}
-
-function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | Component {
-  return detectIsTagVirtualNode(element) || detectIsComponent(element);
 }
 
 function detectAreSameComponentTypesWithSameKeys(

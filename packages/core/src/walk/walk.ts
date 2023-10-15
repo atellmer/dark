@@ -1,5 +1,9 @@
 import { type Fiber, EffectTag } from '../fiber';
 import { platform } from '../platform';
+import { getElementKey, hasChildrenProp } from '../view';
+import { type Scope } from '../scope';
+import { type Component } from '../component';
+import { detectIsMemo } from '../memo/utils';
 
 function walkFiber<T = unknown>(
   fiber: Fiber<T>,
@@ -85,4 +89,122 @@ function createFiberSign(fiber: Fiber, hook?: number) {
   return sign;
 }
 
-export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign };
+function detectIsStableMemoChildren(fiber: Fiber, scope$: Scope) {
+  if (!hasChildrenProp(fiber.inst)) return;
+  const actions = scope$.getActionsById(fiber.id);
+
+  for (let i = 0; i < fiber.inst.children.length; i++) {
+    const inst = fiber.inst.children[i];
+    const key = getElementKey(inst);
+    if (key === null) return false;
+    const alt = actions.map[key];
+    if (!alt) return false;
+    const pc = alt.inst as Component;
+    const nc = inst as Component;
+    const isStable = detectIsMemo(nc) && detectIsMemo(pc) && nc.type === pc.type && !nc.su(pc.props, nc.props);
+
+    if (!isStable) return false;
+  }
+
+  return true;
+}
+
+function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
+  const actions = scope$.getActionsById(fiber.id);
+  const keys = Object.keys(actions.remove);
+  const canOptimize =
+    alt.cc > 1 && keys.length < alt.cc / 2 && actions.remove && !actions.move && !actions.replace && !actions.insert;
+  if (!canOptimize) return;
+  const isStable = detectIsStableMemoChildren(fiber, scope$);
+  if (!isStable) return;
+
+  for (const key of keys) {
+    const fibers: Array<Fiber> = [];
+    const removed = actions.map[key];
+    const { idx, cec } = removed;
+    let fiber$ = alt.child;
+
+    while (fiber$) {
+      fibers.push(fiber$);
+      fiber$.tag = EffectTag.S;
+      if (idx < fiber$.idx) {
+        fiber$.idx = fiber$.idx - 1;
+        fiber$.eidx = fiber$.eidx - cec;
+      }
+      fiber$ = fiber$.next;
+    }
+
+    if (idx === 0) {
+      alt.child = fibers[1];
+    } else if (fibers[idx + 1]) {
+      fibers[idx - 1].next = fibers[idx + 1];
+    } else {
+      delete fibers[idx - 1].next;
+    }
+
+    removed.tag = EffectTag.D;
+  }
+
+  fiber.child = alt.child;
+  fiber.child.parent = fiber;
+  scope$.setMountDeep(false);
+}
+
+// if (moves.length > 0) {
+//   const [nextKey, prevKey] = moves[0];
+//   const fiberOne = keyedFibersMap[nextKey];
+//   const fiberTwo = keyedFibersMap[prevKey];
+//   const fibers = [];
+//   let nextFiber = alt.child;
+
+//   while (nextFiber) {
+//     fibers.push(nextFiber);
+//     nextFiber.tag = EffectTag.S;
+//     nextFiber = nextFiber.next;
+//   }
+
+//   const idx1 = fiberOne.idx;
+//   const idx2 = fiberTwo.idx;
+//   const eidx1 = fiberOne.eidx;
+//   const eidx2 = fiberTwo.eidx;
+
+//   if (idx1 === 0) {
+//     alt.child = fiberTwo;
+//   } else {
+//     fibers[idx1 - 1].next = fiberTwo;
+//   }
+
+//   fiberTwo.next = fibers[idx1 + 1];
+
+//   fibers[idx2 - 1].next = fiberOne;
+//   fiberOne.next = fibers[idx2 + 1];
+
+//   fiberOne.idx = idx2;
+//   fiberTwo.idx = idx1;
+//   fiberOne.eidx = eidx2;
+//   fiberTwo.eidx = eidx1;
+//   fiberOne.move = true;
+//   fiberTwo.move = true;
+//   fiberOne.tag = EffectTag.U;
+//   fiberTwo.tag = EffectTag.U;
+
+//   scope$.addCandidate(fiberOne);
+//   scope$.addCandidate(fiberTwo);
+
+//   //console.log('---moves---', alt.child);
+//   fiber.child = alt.child;
+//   fiber.child.parent = fiber;
+//   scope$.setMountDeep(false);
+// }
+
+function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {}
+
+export {
+  walkFiber,
+  collectElements,
+  getFiberWithElement,
+  detectIsFiberAlive,
+  createFiberSign,
+  tryOptimizeRemoves,
+  tryOptimizeMoves,
+};

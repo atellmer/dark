@@ -2,7 +2,6 @@ export const VERSION = '0.25.1';
 export const ROOT = 'dark:root';
 export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';
-export const TYPE = 'type';
 export const ATTR_KEY = 'key';
 export const ATTR_REF = 'ref';
 export const ATTR_FLAG = 'flag';
