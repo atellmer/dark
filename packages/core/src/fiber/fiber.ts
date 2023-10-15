@@ -24,8 +24,8 @@ class Fiber<N = NativeElement> {
   public aefHost: boolean; // effect host
   public lefHost: boolean; // layout effect host
   public iefHost: boolean; // insertion effect host
-  public aHost: boolean; // atom host
-  public pHost: boolean; // portal host
+  public atomHost: boolean; // atom host
+  public portalHost: boolean; // portal host
   public marker: string; // for dev
   public shadow: boolean; // flag for shadow rendering
   public flush: boolean; // flag for optimizing removing of all elements in parent fiber
@@ -69,14 +69,14 @@ class Fiber<N = NativeElement> {
     this.parent && !this.parent.iefHost && this.parent.markInsertionEffectHost();
   }
 
-  public markAHost() {
-    this.aHost = true;
-    this.parent && !this.parent.aHost && this.parent.markAHost();
+  public markAtomHost() {
+    this.atomHost = true;
+    this.parent && !this.parent.atomHost && this.parent.markAtomHost();
   }
 
-  public markPHost() {
-    this.pHost = true;
-    this.parent && !this.parent.pHost && this.parent.markPHost();
+  public markPortalHost() {
+    this.portalHost = true;
+    this.parent && !this.parent.portalHost && this.parent.markPortalHost();
   }
 
   public incCEC(count = 1, force = false) {

@@ -13,7 +13,7 @@ import {
 } from '../helpers';
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
 import { type Hook, Fiber, EffectTag } from '../fiber';
-import type { DarkElementKey, DarkElementInstance } from '../shared';
+import type { DarkElementKey as Key, DarkElementInstance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, getComponentFlag } from '../component';
 import {
   type TagVirtualNode,
@@ -307,7 +307,7 @@ function connect(fiber: Fiber, alt: Fiber) {
   fiber.alt = alt || null;
   isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
-  alt?.cleanup && alt.cleanup();
+  alt?.cleanup?.();
   hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
   fiber.element && fiber.incCEC();
@@ -353,8 +353,8 @@ function performMemo(fiber: Fiber) {
   alt.aefHost && fiber.markAsyncEffectHost();
   alt.lefHost && fiber.markLayoutEffectHost();
   alt.iefHost && fiber.markInsertionEffectHost();
-  alt.aHost && fiber.markAHost();
-  alt.pHost && fiber.markPHost();
+  alt.atomHost && fiber.markAtomHost();
+  alt.portalHost && fiber.markPortalHost();
 }
 
 function mount(fiber: Fiber) {
@@ -375,13 +375,15 @@ function mount(fiber: Fiber) {
         throw new StopWork();
       }
 
-      if (detectIsArray(result) && !detectIsFragment(component)) {
-        result = Fragment({ slot: result });
+      if (detectIsArray(result)) {
+        !detectIsFragment(component) && (result = Fragment({ slot: result }));
       } else if (detectIsString(result) || detectIsNumber(result)) {
         result = Text(result);
       }
 
-      component.children = (detectIsArray(result) ? flatten(result) : [result]) as Array<DarkElementInstance>;
+      component.children = result as Array<DarkElementInstance>;
+      fiber.cleanup && fiber.markAtomHost();
+      platform.detectIsPortal(inst) && fiber.markPortalHost();
     } catch (err) {
       if (err instanceof StopWork) {
         throw err;
@@ -396,25 +398,8 @@ function mount(fiber: Fiber) {
   }
 
   if (hasChildrenProp(inst)) {
-    inst.children = isComponent
-      ? inst.children
-      : detectIsArray(inst.children)
-      ? flatten(inst.children)
-      : [inst.children];
-
-    for (let i = 0; i < inst.children.length; i++) {
-      if (inst.children[i]) continue;
-      inst.children[i] = supportConditional(inst.children[i]);
-    }
-
-    if (isComponent && component.children.length === 0) {
-      component.children.push(createReplacer());
-    }
-  }
-
-  if (detectIsComponent(inst)) {
-    fiber.cleanup && fiber.markAHost();
-    platform.detectIsPortal(inst) && fiber.markPHost();
+    inst.children = flatten(inst.children, x => x || supportConditional(x));
+    isComponent && component.children.length === 0 && component.children.push(createReplacer());
   }
 
   return inst;
@@ -423,12 +408,12 @@ function mount(fiber: Fiber) {
 function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   let nextFiber = alternate;
   let idx = 0;
-  const prevKeys: Array<DarkElementKey> = [];
-  const nextKeys: Array<DarkElementKey> = [];
-  const prevKeysMap: Record<DarkElementKey, boolean> = {};
-  const nextKeysMap: Record<DarkElementKey, boolean> = {};
-  const keyedFibersMap: Record<DarkElementKey, Fiber> = {};
-  const usedKeysMap: Record<DarkElementKey, boolean> = {};
+  const prevKeys: Array<Key> = [];
+  const nextKeys: Array<Key> = [];
+  const prevKeysMap: Record<Key, boolean> = {};
+  const nextKeysMap: Record<Key, boolean> = {};
+  const keyedFibersMap: Record<Key, Fiber> = {};
+  const usedKeysMap: Record<Key, boolean> = {};
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
@@ -474,7 +459,7 @@ function createIndexKey(idx: number) {
   return `${INDEX_KEY}:${idx}`;
 }
 
-function getElementKey(instance: DarkElementInstance): DarkElementKey | null {
+function getElementKey(instance: DarkElementInstance): Key | null {
   const key = detectIsComponent(instance)
     ? getComponentKey(instance)
     : detectIsVirtualNodeFactory(instance)
@@ -584,7 +569,7 @@ function commit() {
 
   // !
   for (const fiber of deletions) {
-    const withNextTick = fiber.aHost && !fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.pHost;
+    const withNextTick = fiber.atomHost && !fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.portalHost;
 
     withNextTick ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = EffectTag.D;
@@ -601,8 +586,7 @@ function commit() {
   }
 
   wipFiber.alt = null;
-  platform.finishCommit();
-
+  platform.finishCommit(); // !
   scope$.runLayoutEffects();
   scope$.runAsyncEffects();
   unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));

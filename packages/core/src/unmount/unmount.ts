@@ -9,11 +9,11 @@ import { detectIsUndefined } from '../helpers';
 import { removeScope, scope$$ } from '../scope';
 
 function unmountFiber(fiber: Fiber) {
-  if (!fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.aHost && !fiber.pHost) return;
+  if (!fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.atomHost && !fiber.portalHost) return;
 
   walkFiber(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === fiber.next) return stop();
-    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.aefHost && !nextFiber.aHost && !nextFiber.pHost)
+    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.aefHost && !nextFiber.atomHost && !nextFiber.portalHost)
       return resetIsDeepWalking();
 
     if (!isReturn && detectIsComponent(nextFiber.inst)) {
@@ -23,7 +23,7 @@ function unmountFiber(fiber: Fiber) {
       nextFiber.lefHost && hasValues && dropLayoutEffects(nextFiber.hook);
       nextFiber.aefHost && hasValues && dropEffects(nextFiber.hook);
       nextFiber.cleanup && nextFiber.cleanup();
-      nextFiber.pHost && platform.unmountPortal(nextFiber);
+      nextFiber.portalHost && platform.unmountPortal(nextFiber);
     }
   });
 }

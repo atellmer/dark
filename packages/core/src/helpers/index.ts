@@ -26,12 +26,16 @@ const dummyFn = () => {};
 
 const trueFn = () => true;
 
-function error(...args: Array<any>) {
-  !detectIsUndefined(console) && console.error(...args);
-}
+const sameFn = <T = any>(x: T) => x;
 
-function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
-  if (source.length === 0) return [];
+const error = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
+
+function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => any = sameFn): Array<T> {
+  if (detectIsArray(source)) {
+    if (source.length === 0) return [];
+  } else {
+    return [transform(source)];
+  }
   const list: Array<T> = [];
   const stack = [source[0]];
   let idx = 0;
@@ -44,7 +48,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>): Array<T> {
         stack.push(x[i]);
       }
     } else {
-      list.push(x);
+      list.push(transform(x));
 
       if (stack.length === 0 && idx < source.length - 1) {
         idx++;
