@@ -310,7 +310,7 @@ function connect(fiber: Fiber, alt: Fiber) {
   alt?.cleanup?.();
   hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
-  fiber.element && fiber.incCEC();
+  fiber.element && fiber.incChildElementCount();
 }
 
 function performMemo(fiber: Fiber) {
@@ -324,10 +324,10 @@ function performMemo(fiber: Fiber) {
   const pc = alt.inst as Component;
   const nc = fiber.inst as Component;
 
-  if (fiber.move || nc.type !== pc.type || nc.su(pc.props, nc.props)) return;
+  if (nc.type !== pc.type || nc.su(pc.props, nc.props)) return;
 
   scope$.setMountDeep(false);
-  fiber.tag = EffectTag.S;
+  !fiber.move && (fiber.tag = EffectTag.S);
   fiber.child = alt.child; // same links
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
@@ -349,7 +349,7 @@ function performMemo(fiber: Fiber) {
     });
   }
 
-  fiber.incCEC(alt.cec);
+  fiber.incChildElementCount(alt.cec);
   alt.aefHost && fiber.markAsyncEffectHost();
   alt.lefHost && fiber.markLayoutEffectHost();
   alt.iefHost && fiber.markInsertionEffectHost();
@@ -619,7 +619,7 @@ function syncElementIndices(fiber: Fiber) {
   const parentFiber = getFiberWithElement(fiber.parent);
   let isRight = false;
 
-  fiber.incCEC(diff, true);
+  fiber.incChildElementCount(diff, true);
 
   walkFiber(parentFiber.child, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
     if (nextFiber === parentFiber) return stop();

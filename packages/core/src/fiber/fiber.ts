@@ -79,7 +79,7 @@ class Fiber<N = NativeElement> {
     this.parent && !this.parent.portalHost && this.parent.markPortalHost();
   }
 
-  public incCEC(count = 1, force = false) {
+  public incChildElementCount(count = 1, force = false) {
     if (!this.parent) return;
     const scope$ = scope$$();
     const isUpdateZone = scope$.getIsUpdateZone();
@@ -95,7 +95,7 @@ class Fiber<N = NativeElement> {
     this.parent.cec += count;
 
     if (!this.parent.element) {
-      this.parent.incCEC(count);
+      this.parent.incChildElementCount(count);
     }
   }
 

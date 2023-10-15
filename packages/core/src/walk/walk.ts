@@ -74,12 +74,12 @@ function detectIsFiberAlive(fiber: Fiber) {
 }
 
 function createFiberSign(fiber: Fiber, hook?: number) {
-  let nextFiber = fiber;
+  let fiber$ = fiber;
   let sign = fiber.idx + (hook ? `:${hook}` : '');
 
-  while (nextFiber) {
-    nextFiber = nextFiber.parent;
-    nextFiber && (sign = `${nextFiber.idx}.${sign}`);
+  while (fiber$) {
+    fiber$ = fiber$.parent;
+    fiber$ && (sign = `${fiber$.idx}.${sign}`);
   }
 
   return sign;

@@ -289,7 +289,7 @@ const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
     commitCreation(fiber);
   },
   [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
-    fiber.move && (move(fiber), (fiber.move = false));
+    fiber.move && (move(fiber), delete fiber.move);
     if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
