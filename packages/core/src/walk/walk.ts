@@ -5,7 +5,7 @@ import { type Scope } from '../scope';
 import { type Component } from '../component';
 import { detectIsMemo } from '../memo/utils';
 import { type DarkElementInstance as Inst } from '../shared';
-import { keyBy, createIndexKey } from '../helpers';
+import { createIndexKey } from '../helpers';
 
 function walkFiber<T = unknown>(
   fiber: Fiber<T>,
@@ -136,39 +136,37 @@ function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
       fiber$ = fiber$.next;
     }
 
+    const left = fibers[idx - 1];
+    const right = fibers[idx + 1];
+
     if (idx === 0) {
       alt.child = fibers[1];
-    } else if (fibers[idx + 1]) {
-      fibers[idx - 1].next = fibers[idx + 1];
+    } else if (right) {
+      left.next = right;
     } else {
-      delete fibers[idx - 1].next;
+      delete left.next;
     }
 
     fiber.tag = EffectTag.D;
   }
 
-  stopNesting(fiber, alt, scope$);
+  stopMounting(fiber, alt, scope$);
 }
 
 function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
-  const mKeys = Object.keys(actions.move);
   const canOptimize = actions.move && !actions.remove && !actions.replace && !actions.insert;
   if (!canOptimize) return;
   const isStable = detectIsStableMemoTree(fiber, scope$);
   if (!isStable) return;
   const inst = fiber.inst as Component | TagVirtualNode;
-  const keys = inst.children.map((x: Inst, idx: number) => {
-    const key = getElementKey(x);
-    return key !== null ? key : createIndexKey(idx);
-  });
-  const keyMap = keyBy(mKeys, x => x);
   const parentEidx = fiber.eidx;
 
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const prevKey = keys[i - 1];
-    const nextKey = keys[i + 1];
+  for (let i = 0; i < inst.children.length; i++) {
+    const children = inst.children;
+    const key = getKey(children[i], i);
+    const prevKey = getKey(children[i - 1], i);
+    const nextKey = getKey(children[i + 1], i);
     const fiber = actions.map[key];
     const left = actions.map[prevKey];
     const right = actions.map[nextKey];
@@ -179,7 +177,7 @@ function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
     left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = parentEidx);
     right && (fiber.next = right);
 
-    if (keyMap[key]) {
+    if (actions.move[key]) {
       fiber.tag = EffectTag.U;
       fiber.move = true;
       fiber.alt = new Fiber().mutate(fiber);
@@ -189,10 +187,15 @@ function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
     }
   }
 
-  stopNesting(fiber, alt, scope$);
+  stopMounting(fiber, alt, scope$);
 }
 
-function stopNesting(fiber: Fiber, alt: Fiber, scope$: Scope) {
+function getKey(inst: Inst, idx: number) {
+  const key = getElementKey(inst);
+  return key !== null ? key : createIndexKey(idx);
+}
+
+function stopMounting(fiber: Fiber, alt: Fiber, scope$: Scope) {
   fiber.child = alt.child;
   fiber.child.parent = fiber;
   scope$.setMountDeep(false);
