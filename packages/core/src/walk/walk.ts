@@ -113,41 +113,13 @@ function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
 
 function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
-  const keys = Object.keys(actions.remove);
-  const canOptimize =
-    alt.cc > 1 && keys.length < alt.cc / 2 && actions.remove && !actions.move && !actions.replace && !actions.insert;
-  if (!canOptimize) return;
-  const isStable = detectIsStableMemoTree(fiber, scope$);
-  if (!isStable) return;
+  const canOptimize = actions.remove && !actions.move && !actions.replace && !actions.insert;
+  if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
+  const inst = fiber.inst as Component | TagVirtualNode;
+  const startEidx = fiber.eidx;
 
-  for (const key of keys) {
-    const fibers: Array<Fiber> = [];
-    const fiber = actions.map[key];
-    const { idx, cec } = fiber;
-    let fiber$ = alt.child;
-
-    while (fiber$) {
-      fibers.push(fiber$);
-      fiber$.tag = EffectTag.S;
-      if (idx < fiber$.idx) {
-        fiber$.idx = fiber$.idx - 1;
-        fiber$.eidx = fiber$.eidx - cec;
-      }
-      fiber$ = fiber$.next;
-    }
-
-    const left = fibers[idx - 1];
-    const right = fibers[idx + 1];
-
-    if (idx === 0) {
-      alt.child = fibers[1];
-    } else if (right) {
-      left.next = right;
-    } else {
-      delete left.next;
-    }
-
-    fiber.tag = EffectTag.D;
+  for (let i = 0; i < inst.children.length; i++) {
+    buildChildTree(inst.children, alt, actions.map, i, startEidx);
   }
 
   stopMounting(fiber, alt, scope$);
@@ -156,26 +128,16 @@ function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
 function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
   const canOptimize = actions.move && !actions.remove && !actions.replace && !actions.insert;
-  if (!canOptimize) return;
-  const isStable = detectIsStableMemoTree(fiber, scope$);
-  if (!isStable) return;
+  if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
   const inst = fiber.inst as Component | TagVirtualNode;
-  const parentEidx = fiber.eidx;
+  const startEidx = fiber.eidx;
 
   for (let i = 0; i < inst.children.length; i++) {
     const children = inst.children;
     const key = getKey(children[i], i);
-    const prevKey = getKey(children[i - 1], i);
-    const nextKey = getKey(children[i + 1], i);
     const fiber = actions.map[key];
-    const left = actions.map[prevKey];
-    const right = actions.map[nextKey];
 
-    i === 0 && (alt.child = fiber);
-    fiber.tag = EffectTag.S;
-    fiber.idx = i;
-    left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = parentEidx);
-    right && (fiber.next = right);
+    buildChildTree(children, alt, actions.map, i, startEidx);
 
     if (actions.move[key]) {
       fiber.tag = EffectTag.U;
@@ -188,6 +150,21 @@ function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
   }
 
   stopMounting(fiber, alt, scope$);
+}
+
+function buildChildTree(children: Array<Inst>, alt: Fiber, map: Record<string, Fiber>, idx: number, startEidx: number) {
+  const key = getKey(children[idx], idx);
+  const prevKey = getKey(children[idx - 1], idx);
+  const nextKey = getKey(children[idx + 1], idx);
+  const fiber = map[key];
+  const left = map[prevKey];
+  const right = map[nextKey];
+
+  idx === 0 && (alt.child = fiber);
+  fiber.tag = EffectTag.S;
+  fiber.idx = idx;
+  left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = startEidx);
+  right && (fiber.next = right);
 }
 
 function getKey(inst: Inst, idx: number) {
