@@ -1,5 +1,5 @@
 import { type RestoreOptions, platform, detectIsServer } from '../platform';
-import { INDEX_KEY, RESTART_TIMEOUT, Flag } from '../constants';
+import { RESTART_TIMEOUT, Flag } from '../constants';
 import {
   flatten,
   error,
@@ -9,6 +9,7 @@ import {
   detectIsString,
   detectIsNumber,
   detectIsFunction,
+  createIndexKey,
   trueFn,
 } from '../helpers';
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
@@ -39,6 +40,7 @@ type Box = {
   fiber$$: Fiber;
   fiber$: Fiber;
   inst$: DarkElementInstance;
+  wipFiber: Fiber;
   scope$: Scope;
 };
 
@@ -55,6 +57,7 @@ function workLoop(yield$: boolean) {
     fiber$$: null,
     fiber$: null,
     inst$: null,
+    wipFiber,
     scope$,
   };
 
@@ -142,7 +145,7 @@ function performUnitOfWork(fiber: Fiber, box: Box) {
       if (nextFiber$) return nextFiber$;
     }
 
-    if (nextFiber.parent === null) return null;
+    if (nextFiber === box.wipFiber || !nextFiber.parent) return null;
   }
 }
 
@@ -173,7 +176,7 @@ function mountSibling(nextFiber: Fiber, box: Box) {
   box.scope$.navToSibling();
   const inst$ = nextFiber.parent.inst;
   const idx = box.scope$.getMountIndex();
-  const inst = hasChildrenProp(inst$) ? inst$.children[idx] : null;
+  const inst = hasChildrenProp(inst$) && inst$.children ? inst$.children[idx] : null;
   const hasSibling = Boolean(inst);
 
   if (hasSibling) {
@@ -460,10 +463,6 @@ function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
   };
 }
 
-function createIndexKey(idx: number) {
-  return `${INDEX_KEY}:${idx}`;
-}
-
 function supportConditional(instance: DarkElementInstance) {
   return detectIsFalsy(instance) ? createReplacer() : instance;
 }
@@ -547,7 +546,7 @@ function commit() {
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);
     fiber.alt = null;
-    hasChildrenProp(fiber.inst) && (fiber.inst.children = []);
+    hasChildrenProp(fiber.inst) && (fiber.inst.children = null);
   }
 
   wipFiber.alt = null;

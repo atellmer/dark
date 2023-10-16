@@ -85,9 +85,7 @@ function scheduleCallback(callback: Callback, options?: ScheduleCallbackOptions)
   const task = new Task({ priority, forceAsync, isTransition, sign, callback });
 
   put(task);
-  console.time('1');
   execute();
-  console.timeEnd('1');
 }
 
 const tasksMap: Record<TaskPriority, Array<Task>> = {

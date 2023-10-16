@@ -1,4 +1,5 @@
 import type { NestedArray } from '../shared';
+import { INDEX_KEY } from '../constants';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
 
@@ -78,9 +79,9 @@ function detectAreDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>):
   return false;
 }
 
-function nextTick(callback: () => void) {
-  Promise.resolve().then(callback);
-}
+const nextTick = (callback: () => void) => Promise.resolve().then(callback);
+
+const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
 export {
   detectIsFunction,
@@ -101,4 +102,5 @@ export {
   keyBy,
   detectAreDepsDifferent,
   nextTick,
+  createIndexKey,
 };

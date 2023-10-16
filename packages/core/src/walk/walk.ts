@@ -1,9 +1,11 @@
-import { type Fiber, EffectTag } from '../fiber';
+import { Fiber, EffectTag } from '../fiber';
 import { platform } from '../platform';
-import { getElementKey, hasChildrenProp } from '../view';
+import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
 import { type Scope } from '../scope';
 import { type Component } from '../component';
 import { detectIsMemo } from '../memo/utils';
+import { type DarkElementInstance as Inst } from '../shared';
+import { keyBy, createIndexKey } from '../helpers';
 
 function walkFiber<T = unknown>(
   fiber: Fiber<T>,
@@ -89,7 +91,7 @@ function createFiberSign(fiber: Fiber, hook?: number) {
   return sign;
 }
 
-function detectIsStableMemoChildren(fiber: Fiber, scope$: Scope) {
+function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   if (!hasChildrenProp(fiber.inst)) return;
   const actions = scope$.getActionsById(fiber.id);
 
@@ -115,13 +117,13 @@ function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const canOptimize =
     alt.cc > 1 && keys.length < alt.cc / 2 && actions.remove && !actions.move && !actions.replace && !actions.insert;
   if (!canOptimize) return;
-  const isStable = detectIsStableMemoChildren(fiber, scope$);
+  const isStable = detectIsStableMemoTree(fiber, scope$);
   if (!isStable) return;
 
   for (const key of keys) {
     const fibers: Array<Fiber> = [];
-    const removed = actions.map[key];
-    const { idx, cec } = removed;
+    const fiber = actions.map[key];
+    const { idx, cec } = fiber;
     let fiber$ = alt.child;
 
     while (fiber$) {
@@ -142,62 +144,59 @@ function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
       delete fibers[idx - 1].next;
     }
 
-    removed.tag = EffectTag.D;
+    fiber.tag = EffectTag.D;
   }
 
+  stopNesting(fiber, alt, scope$);
+}
+
+function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
+  const actions = scope$.getActionsById(fiber.id);
+  const mKeys = Object.keys(actions.move);
+  const canOptimize = actions.move && !actions.remove && !actions.replace && !actions.insert;
+  if (!canOptimize) return;
+  const isStable = detectIsStableMemoTree(fiber, scope$);
+  if (!isStable) return;
+  const inst = fiber.inst as Component | TagVirtualNode;
+  const keys = inst.children.map((x: Inst, idx: number) => {
+    const key = getElementKey(x);
+    return key !== null ? key : createIndexKey(idx);
+  });
+  const keyMap = keyBy(mKeys, x => x);
+  const parentEidx = fiber.eidx;
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const prevKey = keys[i - 1];
+    const nextKey = keys[i + 1];
+    const fiber = actions.map[key];
+    const left = actions.map[prevKey];
+    const right = actions.map[nextKey];
+
+    i === 0 && (alt.child = fiber);
+    fiber.tag = EffectTag.S;
+    fiber.idx = i;
+    left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = parentEidx);
+    right && (fiber.next = right);
+
+    if (keyMap[key]) {
+      fiber.tag = EffectTag.U;
+      fiber.move = true;
+      fiber.alt = new Fiber().mutate(fiber);
+      scope$.addCandidate(fiber);
+    } else {
+      fiber.tag = EffectTag.S;
+    }
+  }
+
+  stopNesting(fiber, alt, scope$);
+}
+
+function stopNesting(fiber: Fiber, alt: Fiber, scope$: Scope) {
   fiber.child = alt.child;
   fiber.child.parent = fiber;
   scope$.setMountDeep(false);
 }
-
-// if (moves.length > 0) {
-//   const [nextKey, prevKey] = moves[0];
-//   const fiberOne = keyedFibersMap[nextKey];
-//   const fiberTwo = keyedFibersMap[prevKey];
-//   const fibers = [];
-//   let nextFiber = alt.child;
-
-//   while (nextFiber) {
-//     fibers.push(nextFiber);
-//     nextFiber.tag = EffectTag.S;
-//     nextFiber = nextFiber.next;
-//   }
-
-//   const idx1 = fiberOne.idx;
-//   const idx2 = fiberTwo.idx;
-//   const eidx1 = fiberOne.eidx;
-//   const eidx2 = fiberTwo.eidx;
-
-//   if (idx1 === 0) {
-//     alt.child = fiberTwo;
-//   } else {
-//     fibers[idx1 - 1].next = fiberTwo;
-//   }
-
-//   fiberTwo.next = fibers[idx1 + 1];
-
-//   fibers[idx2 - 1].next = fiberOne;
-//   fiberOne.next = fibers[idx2 + 1];
-
-//   fiberOne.idx = idx2;
-//   fiberTwo.idx = idx1;
-//   fiberOne.eidx = eidx2;
-//   fiberTwo.eidx = eidx1;
-//   fiberOne.move = true;
-//   fiberTwo.move = true;
-//   fiberOne.tag = EffectTag.U;
-//   fiberTwo.tag = EffectTag.U;
-
-//   scope$.addCandidate(fiberOne);
-//   scope$.addCandidate(fiberTwo);
-
-//   //console.log('---moves---', alt.child);
-//   fiber.child = alt.child;
-//   fiber.child.parent = fiber;
-//   scope$.setMountDeep(false);
-// }
-
-function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {}
 
 export {
   walkFiber,
