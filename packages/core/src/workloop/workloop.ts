@@ -29,7 +29,7 @@ import {
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptimizeRemoves, tryOptimizeMoves } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptimizeMemoTree } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -295,8 +295,7 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
         }
       }
 
-      hasMoves && tryOptimizeMoves(fiber, alt, scope$);
-      hasRemoves && tryOptimizeRemoves(fiber, alt, scope$);
+      (hasMoves || hasRemoves) && tryOptimizeMemoTree(fiber, alt, scope$);
     }
   }
 }

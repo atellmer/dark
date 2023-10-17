@@ -111,23 +111,9 @@ function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   return true;
 }
 
-function tryOptimizeRemoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
+function tryOptimizeMemoTree(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
-  const canOptimize = actions.remove && !actions.move && !actions.replace && !actions.insert;
-  if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
-  const inst = fiber.inst as Component | TagVirtualNode;
-  const startEidx = fiber.eidx;
-
-  for (let i = 0; i < inst.children.length; i++) {
-    buildChildTree(inst.children, alt, actions.map, i, startEidx);
-  }
-
-  stopMounting(fiber, alt, scope$);
-}
-
-function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
-  const actions = scope$.getActionsById(fiber.id);
-  const canOptimize = actions.move && !actions.remove && !actions.replace && !actions.insert;
+  const canOptimize = (actions.move || actions.remove) && !actions.replace && !actions.insert;
   if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
   const inst = fiber.inst as Component | TagVirtualNode;
   const startEidx = fiber.eidx;
@@ -139,7 +125,7 @@ function tryOptimizeMoves(fiber: Fiber, alt: Fiber, scope$: Scope) {
 
     buildChildTree(children, alt, actions.map, i, startEidx);
 
-    if (actions.move[key]) {
+    if (actions.move && actions.move[key]) {
       fiber.tag = EffectTag.U;
       fiber.move = true;
       fiber.alt = new Fiber().mutate(fiber);
@@ -159,12 +145,15 @@ function buildChildTree(children: Array<Inst>, alt: Fiber, map: Record<string, F
   const fiber = map[key];
   const left = map[prevKey];
   const right = map[nextKey];
+  const isFirst = idx === 0;
+  const isLast = idx === children.length - 1;
 
-  idx === 0 && (alt.child = fiber);
+  isFirst && (alt.child = fiber);
   fiber.tag = EffectTag.S;
   fiber.idx = idx;
   left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
+  isLast && delete fiber.next;
 }
 
 function getKey(inst: Inst, idx: number) {
@@ -178,12 +167,4 @@ function stopMounting(fiber: Fiber, alt: Fiber, scope$: Scope) {
   scope$.setMountDeep(false);
 }
 
-export {
-  walkFiber,
-  collectElements,
-  getFiberWithElement,
-  detectIsFiberAlive,
-  createFiberSign,
-  tryOptimizeRemoves,
-  tryOptimizeMoves,
-};
+export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign, tryOptimizeMemoTree };
