@@ -16,7 +16,7 @@ import {
   detectIsPlainVirtualNode,
   getFiberWithElement,
   collectElements,
-  walkFiber,
+  walk,
   applyRef as applyRef$,
 } from '@dark-engine/core';
 
@@ -159,12 +159,10 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  walkFiber<NativeElement>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
-    if (!isReturn && nextFiber.element) {
-      removeNativeElement(nextFiber.element, parentFiber.element);
-
-      return resetIsDeepWalking();
+  walk<NativeElement>(fiber, (fiber, skipDeep) => {
+    if (fiber.element) {
+      removeNativeElement(fiber.element, parentFiber.element);
+      return skipDeep();
     }
   });
 }

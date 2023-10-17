@@ -21,6 +21,7 @@ function walkFiber<T = unknown>(
   const stop = () => (isStopped = true);
 
   while (nextFiber) {
+    //console.log('nextFiber', nextFiber);
     onLoop(nextFiber, isReturn, resetIsDeepWalking, stop);
     if (isStopped) break;
     if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child.id)) {
@@ -39,6 +40,21 @@ function walkFiber<T = unknown>(
     } else {
       nextFiber = null;
     }
+  }
+}
+
+function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, resetIsDeepWalking: () => void) => void) {
+  const stack: Array<Fiber<T>> = [fiber];
+  let deep = true;
+  const skipDeep = () => (deep = false);
+
+  while (stack.length !== 0) {
+    const unit = stack.pop();
+
+    onWalk(unit, skipDeep);
+    unit !== fiber && unit.next && stack.push(unit.next);
+    deep && unit.child && stack.push(unit.child);
+    deep = true;
   }
 }
 
@@ -178,7 +194,7 @@ function buildChildTree(
   left ? (fiber.eidx = left.eidx + (left.element ? 1 : left.cec)) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
   isLast && delete fiber.next;
-  fiber.incChildElementCount(fiber.element ? 1 : fiber.cec);
+  notifyParents(fiber);
 }
 
 function getKey(inst: Inst, idx: number) {
@@ -186,12 +202,23 @@ function getKey(inst: Inst, idx: number) {
   return key !== null ? key : createIndexKey(idx);
 }
 
+function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
+  fiber.incChildElementCount(alt.element ? 1 : alt.cec);
+  alt.aefHost && fiber.markAsyncEffectHost();
+  alt.lefHost && fiber.markLayoutEffectHost();
+  alt.iefHost && fiber.markInsertionEffectHost();
+  alt.atomHost && fiber.markAtomHost();
+  alt.portalHost && fiber.markPortalHost();
+}
+
 export {
   walkFiber,
+  walk,
   collectElements,
   getFiberWithElement,
   detectIsFiberAlive,
   createFiberSign,
   tryOptStaticSlot,
   tryOptMemoSlot,
+  notifyParents,
 };

@@ -29,7 +29,14 @@ import {
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptStaticSlot, tryOptMemoSlot } from '../walk';
+import {
+  walkFiber,
+  getFiberWithElement,
+  detectIsFiberAlive,
+  notifyParents,
+  tryOptStaticSlot,
+  tryOptMemoSlot,
+} from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -352,12 +359,7 @@ function performMemo(fiber: Fiber) {
     });
   }
 
-  fiber.incChildElementCount(alt.cec);
-  alt.aefHost && fiber.markAsyncEffectHost();
-  alt.lefHost && fiber.markLayoutEffectHost();
-  alt.iefHost && fiber.markInsertionEffectHost();
-  alt.atomHost && fiber.markAtomHost();
-  alt.portalHost && fiber.markPortalHost();
+  notifyParents(fiber, alt);
 }
 
 function mount(fiber: Fiber) {
@@ -529,7 +531,6 @@ function commit() {
   // !
   for (const fiber of deletions) {
     const withNextTick = fiber.atomHost && !fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.portalHost;
-
     withNextTick ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = EffectTag.D;
     platform.commit(fiber);

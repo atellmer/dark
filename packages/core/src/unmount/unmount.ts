@@ -4,27 +4,25 @@ import { detectIsComponent } from '../component';
 import { dropEffects } from '../use-effect';
 import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
-import { walkFiber } from '../walk';
+import { walk } from '../walk';
 import { detectIsUndefined } from '../helpers';
 import { removeScope, scope$$ } from '../scope';
 
+const canUnmountFiber = (fiber: Fiber) =>
+  fiber.iefHost || fiber.lefHost || fiber.aefHost || fiber.atomHost || fiber.portalHost;
+
 function unmountFiber(fiber: Fiber) {
-  if (!fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.atomHost && !fiber.portalHost) return;
-
-  walkFiber(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.next) return stop();
-    if (!nextFiber.iefHost && !nextFiber.lefHost && !nextFiber.aefHost && !nextFiber.atomHost && !nextFiber.portalHost)
-      return resetIsDeepWalking();
-
-    if (!isReturn && detectIsComponent(nextFiber.inst)) {
-      const hasValues = nextFiber.hook.values.length > 0;
-      // !
-      nextFiber.iefHost && hasValues && dropInsertionEffects(nextFiber.hook);
-      nextFiber.lefHost && hasValues && dropLayoutEffects(nextFiber.hook);
-      nextFiber.aefHost && hasValues && dropEffects(nextFiber.hook);
-      nextFiber.cleanup && nextFiber.cleanup();
-      nextFiber.portalHost && platform.unmountPortal(nextFiber);
-    }
+  if (!canUnmountFiber(fiber)) return;
+  walk(fiber, (fiber, skipDeep) => {
+    if (!canUnmountFiber(fiber)) return skipDeep();
+    if (!detectIsComponent(fiber.inst)) return;
+    const hasValues = fiber.hook.values.length > 0;
+    // !
+    fiber.iefHost && hasValues && dropInsertionEffects(fiber.hook);
+    fiber.lefHost && hasValues && dropLayoutEffects(fiber.hook);
+    fiber.aefHost && hasValues && dropEffects(fiber.hook);
+    fiber.cleanup && fiber.cleanup();
+    fiber.portalHost && platform.unmountPortal(fiber);
   });
 }
 

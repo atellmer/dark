@@ -47,6 +47,8 @@ const Layout = {
 
 const LAYOUT_ORDER = [Layout.PHYLLOTAXIS, Layout.SPIRAL, Layout.PHYLLOTAXIS, Layout.GRID, Layout.WAVE];
 
+const flagProps = { [Flag.SKIP_SCAN_OPT]: true };
+
 type VizDemoProps = {
   count: number;
 };
@@ -113,13 +115,11 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
   };
 
   return (
-    <svg class='demo' flag={flag}>
-      <g flag={flag}>{map(scope.points, renderPoint)}</g>
+    <svg class='demo'>
+      <g {...flagProps}>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });
-
-const flag = { [Flag.NM]: true };
 
 const setAnchors = (arr: Array<Point>, scope: any) => {
   arr.map((p, index) => {
@@ -153,7 +153,6 @@ const renderPoint = (point: Point, idx: number) => {
     as: 'rect',
     class: 'point',
     key: idx,
-    flag,
     transform: `translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`,
     fill: point.color,
   });
