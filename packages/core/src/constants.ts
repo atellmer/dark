@@ -14,17 +14,20 @@ export enum TaskPriority {
 
 export enum Flag {
   SKIP_SCAN_OPT = 'skipScanOpt$',
-  MEMO_TREE_OPT = 'memoTreeOpt$',
+  MEMO_SLOT_OPT = 'memoSlotOpt$',
+  STATIC_SLOT_OPT = 'staticSlotOpt$',
 }
 
 export const FLAGS = {
   skipScanOpt$: true,
-  memoTreeOpt$: true,
+  memoSlotOpt$: true,
+  staticSlotOpt$: true,
 };
 
 export const ATTR_BLACK_LIST = {
   [ATTR_KEY]: true,
   [ATTR_REF]: true,
   [Flag.SKIP_SCAN_OPT]: true,
-  [Flag.MEMO_TREE_OPT]: true,
+  [Flag.MEMO_SLOT_OPT]: true,
+  [Flag.STATIC_SLOT_OPT]: true,
 };

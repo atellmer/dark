@@ -29,7 +29,7 @@ import {
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptMemoTree } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptStaticSlot, tryOptMemoSlot } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -290,7 +290,8 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
         }
       }
 
-      hasElementFlag(inst, Flag.MEMO_TREE_OPT) && tryOptMemoTree(fiber, scope$);
+      hasElementFlag(inst, Flag.STATIC_SLOT_OPT) && tryOptStaticSlot(fiber, alt, scope$);
+      hasElementFlag(inst, Flag.MEMO_SLOT_OPT) && tryOptMemoSlot(fiber, alt, scope$);
     }
   }
 }
@@ -407,8 +408,8 @@ function mount(fiber: Fiber) {
   return inst;
 }
 
-function extractKeys(alternate: Fiber, children: Array<DarkElementInstance>) {
-  let nextFiber = alternate;
+function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
+  let nextFiber = alt;
   let idx = 0;
   const prevKeys: Array<Key> = [];
   const nextKeys: Array<Key> = [];

@@ -111,56 +111,74 @@ function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   return true;
 }
 
-function tryOptMemoTree(fiber: Fiber, scope$: Scope) {
+function tryOptStaticSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
+  const actions = scope$.getActionsById(fiber.id);
+  const inst = fiber.inst as Component | TagVirtualNode;
+
+  alt.element && (fiber.element = alt.element); //!
+
+  for (let i = 0; i < inst.children.length; i++) {
+    buildChildTree(inst.children, fiber, actions.map, i, fiber.eidx);
+  }
+
+  fiber.cc = inst.children.length;
+  scope$.setMountDeep(false);
+}
+
+function tryOptMemoSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
   const canOptimize = (actions.move || actions.remove) && !actions.replace && !actions.insert;
   if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
   const inst = fiber.inst as Component | TagVirtualNode;
-  const startEidx = fiber.eidx;
+
+  alt.element && (fiber.element = alt.element); //!
 
   for (let i = 0; i < inst.children.length; i++) {
     const children = inst.children;
     const key = getKey(children[i], i);
     const fiber$ = actions.map[key];
 
-    buildChildTree(children, fiber, actions.map, i, startEidx);
+    buildChildTree(children, fiber, actions.map, i, fiber.eidx);
 
     if (actions.move && actions.move[key]) {
+      fiber.alt = new Fiber().mutate(fiber);
       fiber$.tag = EffectTag.U;
       fiber$.move = true;
-      fiber$.alt = new Fiber().mutate(fiber$);
       scope$.addCandidate(fiber$);
-    } else {
-      fiber$.tag = EffectTag.S;
     }
   }
 
+  fiber.cc = inst.children.length;
   scope$.setMountDeep(false);
 }
 
 function buildChildTree(
   children: Array<Inst>,
   parent: Fiber,
-  map: Record<string, Fiber>,
+  altMap: Record<string, Fiber>,
   idx: number,
   startEidx: number,
 ) {
+  const prevIdx = idx - 1;
+  const nextIdx = idx + 1;
   const key = getKey(children[idx], idx);
-  const prevKey = getKey(children[idx - 1], idx);
-  const nextKey = getKey(children[idx + 1], idx);
-  const fiber = map[key];
-  const left = map[prevKey];
-  const right = map[nextKey];
+  const prevKey = getKey(children[prevIdx], prevIdx);
+  const nextKey = getKey(children[nextIdx], nextIdx);
+  const fiber = altMap[key];
+  const left = altMap[prevKey];
+  const right = altMap[nextKey];
   const isFirst = idx === 0;
   const isLast = idx === children.length - 1;
 
   isFirst && (parent.child = fiber);
+  fiber.alt = null;
   fiber.parent = parent;
   fiber.tag = EffectTag.S;
   fiber.idx = idx;
   left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
   isLast && delete fiber.next;
+  fiber.incChildElementCount(fiber.element ? 1 : fiber.cec);
 }
 
 function getKey(inst: Inst, idx: number) {
@@ -168,4 +186,12 @@ function getKey(inst: Inst, idx: number) {
   return key !== null ? key : createIndexKey(idx);
 }
 
-export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign, tryOptMemoTree };
+export {
+  walkFiber,
+  collectElements,
+  getFiberWithElement,
+  detectIsFiberAlive,
+  createFiberSign,
+  tryOptStaticSlot,
+  tryOptMemoSlot,
+};

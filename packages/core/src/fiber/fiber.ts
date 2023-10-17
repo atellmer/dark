@@ -86,7 +86,10 @@ class Fiber<N = NativeElement> {
     const wipFiber = scope$.getWorkInProgress();
     const stop = isUpdateZone && wipFiber.parent === this.parent;
 
-    if (detectIsPlainVirtualNode(this.inst) || (detectIsTagVirtualNode(this.inst) && this.inst.children.length === 0)) {
+    if (
+      detectIsPlainVirtualNode(this.inst) ||
+      (detectIsTagVirtualNode(this.inst) && this.inst.children?.length === 0)
+    ) {
       this.cec = 1;
     }
 

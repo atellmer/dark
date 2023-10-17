@@ -112,7 +112,7 @@ const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }
 
   return tr({
     class: className,
-    [Flag.SKIP_SCAN_OPT]: true,
+    [Flag.STATIC_SLOT_OPT]: true,
     slot: [
       td({ class: 'cell', slot: Name({ name$ }) }),
       td({ class: 'cell', slot: Text('qqq') }),
@@ -228,7 +228,7 @@ const App = component(() => {
       class: 'table',
       slot: tbody({
         key: items.length > 0 ? 1 : 2,
-        [Flag.MEMO_TREE_OPT]: true,
+        [Flag.MEMO_SLOT_OPT]: true,
         slot: items.map(item => {
           const { id, name$ } = item;
 
