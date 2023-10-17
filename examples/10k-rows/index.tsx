@@ -1,4 +1,4 @@
-import { type Atom, Text, Flag, component, memo, useMemo, atom, useEffect } from '@dark-engine/core';
+import { type Atom, Text, Flag, component, memo, useMemo, atom } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
 
 const createMeasurer = () => {
@@ -109,11 +109,6 @@ type RowProps = {
 
 const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
   const className = selected$.value((p, n) => p === id || n === id) === id ? 'selected' : undefined;
-
-  useEffect(() => {
-    console.log('mount', id);
-    return () => console.log('unmount', id);
-  }, []);
 
   return tr({
     class: className,

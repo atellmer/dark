@@ -43,14 +43,6 @@ import { emitter } from '../emitter';
 
 let hasRenderError = false;
 
-type Box = {
-  fiber$$: Fiber;
-  fiber$: Fiber;
-  inst$: DarkElementInstance;
-  wipFiber: Fiber;
-  scope$: Scope;
-};
-
 export type WorkLoop = (yield$: boolean) => boolean;
 
 function workLoop(yield$: boolean) {
@@ -60,17 +52,10 @@ function workLoop(yield$: boolean) {
   let unit = scope$.getNextUnitOfWork();
   let shouldYield = false;
   let hasMoreWork = Boolean(unit);
-  const box: Box = {
-    fiber$$: null,
-    fiber$: null,
-    inst$: null,
-    wipFiber,
-    scope$,
-  };
 
   try {
     while (unit && !shouldYield) {
-      unit = performUnitOfWork(unit, box);
+      unit = performUnitOfWork(unit, scope$);
       scope$.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = yield$ && platform.shouldYield();
@@ -92,80 +77,49 @@ function workLoop(yield$: boolean) {
   return hasMoreWork;
 }
 
-function performUnitOfWork(fiber: Fiber, box: Box) {
-  let isDeepWalking = true;
-  let nextFiber = fiber;
-  let instance = fiber.inst;
-  const isStream = box.scope$.getIsStreamZone();
+function performUnitOfWork(fiber: Fiber, scope$: Scope): Fiber | null {
+  const wipFiber = scope$.getWorkInProgress();
+  const hasChildren = hasChildrenProp(fiber.inst) && fiber.inst.children.length > 0;
+  const isDeepWalking = scope$.getMountDeep();
+  const isStream = scope$.getIsStreamZone();
 
-  while (true) {
-    isDeepWalking = box.scope$.getMountDeep();
-    nextFiber.hook && (nextFiber.hook.idx = 0);
+  fiber.hook && (fiber.hook.idx = 0);
 
-    if (isDeepWalking) {
-      const hasChildren = hasChildrenProp(instance) && instance.children.length > 0;
+  if (isDeepWalking && hasChildren) {
+    const child = mountChild(fiber, scope$);
 
-      if (hasChildren) {
-        mountChild(nextFiber, box);
+    isStream && platform.chunk(child);
 
-        nextFiber = box.fiber$;
-        instance = box.inst$;
+    return child;
+  } else {
+    while (fiber.parent && fiber !== wipFiber) {
+      const next = mountSibling(fiber, scope$);
 
-        box.fiber$$ = null;
-        box.fiber$ = null;
-        box.inst$ = null;
+      isStream && platform.chunk(fiber);
 
-        isStream && platform.chunk(nextFiber);
-
-        if (nextFiber) return nextFiber;
-      } else {
-        mountSibling(nextFiber, box);
-
-        const nextFiber$ = box.fiber$$;
-
-        nextFiber = box.fiber$;
-        instance = box.inst$;
-
-        box.fiber$$ = null;
-        box.fiber$ = null;
-        box.inst$ = null;
-
-        isStream && platform.chunk(nextFiber);
-
-        if (nextFiber$) return nextFiber$;
+      if (next) {
+        isStream && platform.chunk(next);
+        return next;
       }
-    } else {
-      mountSibling(nextFiber, box);
-      box.scope$.removeActionMap(nextFiber.id);
 
-      const nextFiber$ = box.fiber$$;
-
-      nextFiber = box.fiber$;
-      instance = box.inst$;
-
-      box.fiber$$ = null;
-      box.fiber$ = null;
-      box.inst$ = null;
-
-      isStream && platform.chunk(nextFiber);
-
-      if (nextFiber$) return nextFiber$;
+      scope$.removeActionMap(fiber.id);
+      fiber = fiber.parent;
     }
-
-    if (nextFiber === box.wipFiber || !nextFiber.parent) return null;
   }
+
+  return null;
 }
 
-function mountChild(nextFiber: Fiber, box: Box) {
-  box.scope$.navToChild();
+function mountChild(nextFiber: Fiber, scope$: Scope) {
+  scope$.navToChild();
   const inst$ = nextFiber.inst;
   const idx = 0;
   const inst = hasChildrenProp(inst$) ? inst$.children[idx] : null;
   const alt = getAlternate(nextFiber, inst, true);
   const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
 
-  box.scope$.setCursorFiber(fiber);
-  box.scope$.addCandidate(fiber);
+  scope$.setCursorFiber(fiber);
+  scope$.addCandidate(fiber);
   fiber.parent = nextFiber;
   nextFiber.child = fiber;
   fiber.eidx = nextFiber.element ? 0 : nextFiber.eidx;
@@ -174,44 +128,40 @@ function mountChild(nextFiber: Fiber, box: Box) {
   alt && performAlternate(fiber, alt);
   connect(fiber, alt);
   alt && detectIsMemo(fiber.inst) && performMemo(fiber);
-  box.fiber$$ = null;
-  box.fiber$ = fiber;
-  box.inst$ = inst$;
+
+  return fiber;
 }
 
-function mountSibling(nextFiber: Fiber, box: Box) {
-  box.scope$.navToSibling();
+function mountSibling(nextFiber: Fiber, scope$: Scope) {
+  scope$.navToSibling();
   const inst$ = nextFiber.parent.inst;
-  const idx = box.scope$.getMountIndex();
+  const idx = scope$.getMountIndex();
   const inst = hasChildrenProp(inst$) && inst$.children ? inst$.children[idx] : null;
   const hasSibling = Boolean(inst);
 
-  if (hasSibling) {
-    box.scope$.setMountDeep(true);
-    const alt = getAlternate(nextFiber, inst, false);
-    const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
+  if (!hasSibling) {
+    scope$.navToParent();
+    scope$.setMountDeep(false);
 
-    box.scope$.setCursorFiber(fiber);
-    box.scope$.addCandidate(fiber);
-    fiber.parent = nextFiber.parent;
-    nextFiber.next = fiber;
-    fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
-    fiber.inst = inst;
-    fiber.inst = mount(fiber);
-    alt && performAlternate(fiber, alt);
-    connect(fiber, alt);
-    alt && detectIsMemo(fiber.inst) && performMemo(fiber);
-    box.fiber$$ = fiber;
-    box.fiber$ = fiber;
-    box.inst$ = fiber.inst;
-  } else {
-    box.scope$.navToParent();
-    box.scope$.setMountDeep(false);
-    nextFiber = nextFiber.parent;
-    box.fiber$$ = null;
-    box.fiber$ = nextFiber;
-    box.inst$ = nextFiber.inst;
+    return null;
   }
+
+  scope$.setMountDeep(true);
+  const alt = getAlternate(nextFiber, inst, false);
+  const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
+
+  scope$.setCursorFiber(fiber);
+  scope$.addCandidate(fiber);
+  fiber.parent = nextFiber.parent;
+  nextFiber.next = fiber;
+  fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
+  fiber.inst = inst;
+  fiber.inst = mount(fiber);
+  alt && performAlternate(fiber, alt);
+  connect(fiber, alt);
+  alt && detectIsMemo(fiber.inst) && performMemo(fiber);
+
+  return fiber;
 }
 
 function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolean) {
@@ -550,6 +500,7 @@ function commit() {
   scope$.runAsyncEffects();
   unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));
   flush(wipFiber);
+  //console.log('wipFiber', wipFiber);
 }
 
 function flush(wipFiber: Fiber, cancel = false) {
