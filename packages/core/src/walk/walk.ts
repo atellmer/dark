@@ -7,66 +7,31 @@ import { detectIsMemo } from '../memo/utils';
 import { type DarkElementInstance as Inst } from '../shared';
 import { createIndexKey } from '../helpers';
 
-function walkFiber<T = unknown>(
-  fiber: Fiber<T>,
-  onLoop: (nextFiber: Fiber<T>, isReturn: boolean, resetIsDeepWalking: () => void, stop: () => void) => void,
-) {
-  let nextFiber = fiber;
-  let isDeepWalking = true;
-  let isReturn = false;
-  let isStopped = false;
-  const visits: Record<number, boolean> = {};
-  const detectCanVisit = (id: number) => !visits[id];
-  const resetIsDeepWalking = () => (isDeepWalking = false);
-  const stop = () => (isStopped = true);
-
-  while (nextFiber) {
-    //console.log('nextFiber', nextFiber);
-    onLoop(nextFiber, isReturn, resetIsDeepWalking, stop);
-    if (isStopped) break;
-    if (nextFiber.child && isDeepWalking && detectCanVisit(nextFiber.child.id)) {
-      isReturn = false;
-      nextFiber = nextFiber.child; // !
-      visits[nextFiber.id] = true;
-    } else if (nextFiber.next && detectCanVisit(nextFiber.next.id)) {
-      isDeepWalking = true;
-      isReturn = false;
-      nextFiber = nextFiber.next; // !
-      visits[nextFiber.id] = true;
-    } else if (nextFiber.parent && nextFiber.parent !== fiber) {
-      isDeepWalking = false;
-      isReturn = true;
-      nextFiber = nextFiber.parent;
-    } else {
-      nextFiber = null;
-    }
-  }
-}
-
-function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, resetIsDeepWalking: () => void) => void) {
+function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
+  let shouldDeep = true;
+  let shouldStop = false;
+  const skip = () => (shouldDeep = false);
+  const stop = () => (shouldStop = true);
   const stack: Array<Fiber<T>> = [fiber];
-  let deep = true;
-  const skipDeep = () => (deep = false);
 
   while (stack.length !== 0) {
     const unit = stack.pop();
 
-    onWalk(unit, skipDeep);
+    onWalk(unit, skip, stop);
+    if (shouldStop) break;
     unit !== fiber && unit.next && stack.push(unit.next);
-    deep && unit.child && stack.push(unit.child);
-    deep = true;
+    shouldDeep && unit.child && stack.push(unit.child);
+    shouldDeep = true;
   }
 }
 
 function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>) => P): Array<P> {
   const elements: Array<P> = [];
 
-  walkFiber<T>(fiber, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
-    if (!isReturn && nextFiber.element) {
-      !platform.detectIsPortal(nextFiber.inst) && elements.push(transform(nextFiber));
-
-      return resetIsDeepWalking();
+  walk<T>(fiber, (fiber, skip) => {
+    if (fiber.element) {
+      !platform.detectIsPortal(fiber.inst) && elements.push(transform(fiber));
+      return skip();
     }
   });
 
@@ -212,7 +177,6 @@ function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
 }
 
 export {
-  walkFiber,
   walk,
   collectElements,
   getFiberWithElement,

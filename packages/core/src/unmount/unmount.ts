@@ -13,14 +13,16 @@ const canUnmountFiber = (fiber: Fiber) =>
 
 function unmountFiber(fiber: Fiber) {
   if (!canUnmountFiber(fiber)) return;
-  walk(fiber, (fiber, skipDeep) => {
-    if (!canUnmountFiber(fiber)) return skipDeep();
+  walk(fiber, (fiber, skip) => {
+    if (!canUnmountFiber(fiber)) return skip();
     if (!detectIsComponent(fiber.inst)) return;
-    const hasValues = fiber.hook.values.length > 0;
-    // !
-    fiber.iefHost && hasValues && dropInsertionEffects(fiber.hook);
-    fiber.lefHost && hasValues && dropLayoutEffects(fiber.hook);
-    fiber.aefHost && hasValues && dropEffects(fiber.hook);
+
+    if (fiber.hook.values.length > 0) {
+      fiber.iefHost && dropInsertionEffects(fiber.hook);
+      fiber.lefHost && dropLayoutEffects(fiber.hook);
+      fiber.aefHost && dropEffects(fiber.hook);
+    }
+
     fiber.cleanup && fiber.cleanup();
     fiber.portalHost && platform.unmountPortal(fiber);
   });

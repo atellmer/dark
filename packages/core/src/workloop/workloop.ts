@@ -30,7 +30,7 @@ import {
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import {
-  walkFiber,
+  walk,
   getFiberWithElement,
   detectIsFiberAlive,
   notifyParents,
@@ -352,10 +352,9 @@ function performMemo(fiber: Fiber) {
   const deep = diff !== 0;
 
   if (deep) {
-    walkFiber(fiber.child, (nextFiber, _, __, stop) => {
-      if (nextFiber === fiber.next || nextFiber === fiber.parent) return stop();
-      nextFiber.eidx += diff;
-      if (nextFiber.parent !== fiber && nextFiber.element) return stop();
+    walk(fiber.child, (fiber$, _, stop) => {
+      fiber$.eidx += diff;
+      if (fiber$.parent !== fiber && fiber$.element) return stop();
     });
   }
 
@@ -581,20 +580,14 @@ function syncElementIndices(fiber: Fiber) {
 
   fiber.incChildElementCount(diff, true);
 
-  walkFiber(parentFiber.child, (nextFiber, isReturn, resetIsDeepWalking, stop) => {
-    if (nextFiber === parentFiber) return stop();
-    if (nextFiber === fiber) {
+  walk(parentFiber.child, (fiber$, skip) => {
+    if (fiber$ === fiber) {
       isRight = true;
-      return resetIsDeepWalking();
+      return skip();
     }
 
-    if (nextFiber.element) {
-      resetIsDeepWalking();
-    }
-
-    if (isRight && !isReturn) {
-      nextFiber.eidx += diff;
-    }
+    fiber$.element && skip();
+    isRight && (fiber$.eidx += diff);
   });
 }
 

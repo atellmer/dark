@@ -138,10 +138,10 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  walk<NativeElement>(fiber, (fiber, skipDeep) => {
+  walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
       removeNativeElement(fiber.element, parentFiber.element);
-      return skipDeep();
+      return skip();
     }
   });
 }

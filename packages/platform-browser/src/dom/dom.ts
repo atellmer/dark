@@ -240,10 +240,10 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
     return;
   }
 
-  walk<NativeElement>(fiber, (fiber, skipDeep) => {
+  walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
       !fiber.shadow && !detectIsPortal(fiber.inst) && removeNativeElement(fiber.element, parentFiber.element);
-      return skipDeep();
+      return skip();
     }
   });
 }
