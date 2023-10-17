@@ -8,13 +8,13 @@ import { walk } from '../walk';
 import { detectIsUndefined } from '../helpers';
 import { removeScope, scope$$ } from '../scope';
 
-const canUnmountFiber = (fiber: Fiber) =>
+const shouldUnmountFiber = (fiber: Fiber) =>
   fiber.iefHost || fiber.lefHost || fiber.aefHost || fiber.atomHost || fiber.portalHost;
 
 function unmountFiber(fiber: Fiber) {
-  if (!canUnmountFiber(fiber)) return;
+  if (!shouldUnmountFiber(fiber)) return;
   walk(fiber, (fiber, skip) => {
-    if (!canUnmountFiber(fiber)) return skip();
+    if (!shouldUnmountFiber(fiber)) return skip();
     if (!detectIsComponent(fiber.inst)) return;
 
     if (fiber.hook.values.length > 0) {
