@@ -1,4 +1,4 @@
-import { REPLACER, ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
+import { REPLACER, ATTR_KEY, FLAGS } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
 import type { DarkElementKey as Key, DarkElement, DarkElementInstance } from '../shared';
 import {
@@ -6,7 +6,7 @@ import {
   type ComponentFactory,
   detectIsComponent,
   getComponentKey,
-  getComponentFlag,
+  hasComponentFlag,
 } from '../component';
 import { NodeType, type ViewDef } from './types';
 
@@ -70,14 +70,12 @@ const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFac
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): Key | null =>
   vNode.attrs && !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
 
-const getTagVirtualNodeFlag = (vNode: TagVirtualNode): Record<Flag, boolean> | null =>
-  (vNode.attrs && vNode.attrs[ATTR_FLAG]) || null;
+const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs && vNode.attrs[flag]);
 
 const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): Key | null =>
   !detectIsEmpty(factory[ATTR_KEY]) ? factory[ATTR_KEY] : null;
 
-const getVirtualNodeFactoryFlag = (factory: VirtualNodeFactory): Record<Flag, boolean> | null =>
-  factory[ATTR_FLAG] || null;
+const hasVirtualNodeFactoryFlag = (factory: VirtualNodeFactory, flag: string) => Boolean(factory[flag]);
 
 const createReplacer = () => new CommentVirtualNode(REPLACER);
 
@@ -98,16 +96,14 @@ function getElementKey(instance: DarkElementInstance): Key | null {
   return key;
 }
 
-function getElementFlag(instance: DarkElementInstance): Record<Flag, boolean> | null {
-  const flag = detectIsComponent(instance)
-    ? getComponentFlag(instance)
-    : detectIsVirtualNodeFactory(instance)
-    ? getVirtualNodeFactoryFlag(instance)
-    : detectIsTagVirtualNode(instance)
-    ? getTagVirtualNodeFlag(instance)
-    : null;
-
-  return flag;
+function hasElementFlag(inst: DarkElementInstance, flag: string) {
+  return detectIsComponent(inst)
+    ? hasComponentFlag(inst, flag)
+    : detectIsVirtualNodeFactory(inst)
+    ? hasVirtualNodeFactoryFlag(inst, flag)
+    : detectIsTagVirtualNode(inst)
+    ? hasTagVirtualNodeFlag(inst, flag)
+    : false;
 }
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
@@ -137,7 +133,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
   factory[$$vNode] = true;
   factory[TYPE] = def.as;
   !detectIsEmpty(def.key) && (factory[ATTR_KEY] = def.key);
-  def.flag && (factory[ATTR_FLAG] = def.flag);
+  FLAGS[def.flag] && (factory[def.flag] = true);
 
   return factory;
 }
@@ -166,7 +162,7 @@ export {
   createReplacer,
   detectIsReplacer,
   getElementKey,
-  getElementFlag,
+  hasElementFlag,
   getInstanceType,
   hasChildrenProp,
   View,

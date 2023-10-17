@@ -6,9 +6,8 @@ import {
   type CommentVirtualNode,
   type PlainVirtualNode,
   type Ref,
-  ATTR_KEY,
   ATTR_REF,
-  ATTR_FLAG,
+  ATTR_BLACK_LIST,
   EffectTag,
   detectIsUndefined,
   detectIsBoolean,
@@ -36,11 +35,6 @@ import type {
   AttributeValue,
 } from '../native-element';
 
-const attrBlackListMap = {
-  [ATTR_KEY]: true,
-  [ATTR_REF]: true,
-  [ATTR_FLAG]: true,
-};
 const patchPropsBlackListMap = {
   transform: true,
   fill: true,
@@ -98,7 +92,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
 
     if (detectIsEvent(attrName)) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
-    } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
+    } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       const stop = patchProperties({
         tagName: vNode.name,
         element: tagElement,
@@ -128,7 +122,7 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
     if (!detectIsUndefined(nextAttrValue)) {
       if (detectIsEvent(attrName)) {
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
-      } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
+      } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
         const stop = !patchPropsBlackListMap[attrName]
           ? patchProperties({
               tagName: nextVNode.name,

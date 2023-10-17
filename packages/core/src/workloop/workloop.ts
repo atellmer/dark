@@ -21,7 +21,7 @@ import {
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
   getElementKey,
-  getElementFlag,
+  hasElementFlag,
   getInstanceType,
   hasChildrenProp,
   detectIsReplacer,
@@ -29,7 +29,7 @@ import {
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
-import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptimizeMemoTree } from '../walk';
+import { walkFiber, getFiberWithElement, detectIsFiberAlive, tryOptMemoTree } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { emitter } from '../emitter';
@@ -250,8 +250,7 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
     scope$.addDeletion(alt);
   } else if (hasChildrenProp(alt.inst) && hasChildrenProp(inst) && alt.cc !== 0) {
     const hasSameCount = alt.cc === inst.children.length;
-    const flag = getElementFlag(inst);
-    const check = flag?.[Flag.NM] ? !hasSameCount : true;
+    const check = hasElementFlag(inst, Flag.SKIP_SCAN_OPT) ? !hasSameCount : true;
 
     if (check) {
       const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, inst.children);
@@ -259,8 +258,6 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
       let size = Math.max(prevKeys.length, nextKeys.length);
       let p = 0;
       let n = 0;
-      let hasMoves = false;
-      let hasRemoves = false;
 
       scope$.addActionMap(id, keyedFibersMap);
 
@@ -283,19 +280,17 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
             scope$.addRemoveAction(id, prevKey);
             scope$.addDeletion(prevKeyFiber);
             flush && (prevKeyFiber.flush = true);
-            hasRemoves = true;
             n++;
             size++;
           } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
             scope$.addMoveAction(id, nextKey);
-            hasMoves = true;
           }
         } else if (nextKey !== null) {
           scope$.addStableAction(id, nextKey);
         }
       }
 
-      (hasMoves || hasRemoves) && tryOptimizeMemoTree(fiber, scope$);
+      hasElementFlag(inst, Flag.MEMO_TREE_OPT) && tryOptMemoTree(fiber, scope$);
     }
   }
 }

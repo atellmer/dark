@@ -5,9 +5,8 @@ import {
   type TextVirtualNode,
   type CommentVirtualNode,
   ROOT,
-  ATTR_KEY,
   ATTR_REF,
-  ATTR_FLAG,
+  ATTR_BLACK_LIST,
   EffectTag,
   detectIsFunction,
   detectIsUndefined,
@@ -27,11 +26,6 @@ import {
 } from '../native-element';
 import { detectIsVoidElement } from '../utils';
 
-const attrBlackListMap = {
-  [ATTR_KEY]: true,
-  [ATTR_REF]: true,
-  [ATTR_FLAG]: true,
-};
 let chunkIds: Record<string, boolean> = {};
 
 const createNativeElementMap = {
@@ -69,7 +63,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
 
     if (attrName === ATTR_REF || detectIsFunction(attrValue)) {
       continue;
-    } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
+    } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       const stop = patchProperties({
         element: tagElement,
         attrValue,

@@ -1,7 +1,5 @@
-import { type Atom, Text, component, memo, Flag, useMemo, atom } from '@dark-engine/core';
+import { type Atom, Text, Flag, component, memo, useMemo, atom } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
-
-const flag1 = { [Flag.NM]: true };
 
 const createMeasurer = () => {
   let startTime;
@@ -114,7 +112,7 @@ const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }
 
   return tr({
     class: className,
-    flag: flag1,
+    [Flag.SKIP_SCAN_OPT]: true,
     slot: [
       td({ class: 'cell', slot: Name({ name$ }) }),
       td({ class: 'cell', slot: Text('qqq') }),
@@ -230,6 +228,7 @@ const App = component(() => {
       class: 'table',
       slot: tbody({
         key: items.length > 0 ? 1 : 2,
+        [Flag.MEMO_TREE_OPT]: true,
         slot: items.map(item => {
           const { id, name$ } = item;
 

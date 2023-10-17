@@ -6,9 +6,8 @@ import {
   type CommentVirtualNode,
   type PlainVirtualNode,
   type Ref,
-  ATTR_KEY,
   ATTR_REF,
-  ATTR_FLAG,
+  ATTR_BLACK_LIST,
   EffectTag,
   detectIsFunction,
   detectIsUndefined,
@@ -27,11 +26,6 @@ import { type NSElement } from '../registry';
 
 type PlainNativeElement = TextNativeElement | CommentNativeElement;
 
-const attrBlackListMap = {
-  [ATTR_KEY]: true,
-  [ATTR_REF]: true,
-  [ATTR_FLAG]: true,
-};
 let moves: Array<() => void> = [];
 
 const createNativeElementMap = {
@@ -78,7 +72,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
 
     if (detectIsFunction(attrValue)) {
       detectIsEvent(attrName) && tagElement.addEventListener(getEventName(attrName), attrValue);
-    } else if (!detectIsUndefined(attrValue) && !attrBlackListMap[attrName]) {
+    } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       tagElement.setAttribute(attrName, attrValue);
     }
   }
@@ -103,7 +97,7 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
         detectIsEvent(attrName) &&
           prevAttrValue !== nextAttrValue &&
           tagElement.addEventListener(getEventName(attrName), nextAttrValue);
-      } else if (!attrBlackListMap[attrName] && prevAttrValue !== nextAttrValue) {
+      } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
         tagElement.setAttribute(attrName, nextAttrValue);
       }
     } else {

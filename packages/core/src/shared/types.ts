@@ -1,7 +1,7 @@
 import type { ComponentFactory, Component } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
 import { type Ref } from '../ref';
-import { type Flag } from '../constants';
+import { FLAGS } from '../constants';
 
 export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | string | number>;
 
@@ -35,8 +35,6 @@ export type KeyProps = {
   key?: DarkElementKey;
 };
 
-export type FlagProps = {
-  flag?: Partial<Record<Flag, boolean>>;
-};
+export type FlagProps = Partial<Record<keyof typeof FLAGS, boolean>>;
 
 export type Callback = () => void;

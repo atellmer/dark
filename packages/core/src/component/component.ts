@@ -1,5 +1,5 @@
 import type { DarkElementKey, DarkElementInstance } from '../shared';
-import { ATTR_KEY, ATTR_FLAG, Flag } from '../constants';
+import { ATTR_KEY } from '../constants';
 import { error, detectIsEmpty } from '../helpers';
 import type { Ref } from '../ref';
 import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
@@ -54,6 +54,6 @@ const detectIsComponent = (instance: unknown): instance is Component => instance
 const getComponentKey = (instance: Component): DarkElementKey =>
   !detectIsEmpty(instance.props[ATTR_KEY]) ? instance.props[ATTR_KEY] : null;
 
-const getComponentFlag = (instance: Component): Record<Flag, boolean> | null => instance.props[ATTR_FLAG] || null;
+const hasComponentFlag = (instance: Component, flag: string) => Boolean(instance.props[flag]);
 
-export { Component, component, detectIsComponent, getComponentKey, getComponentFlag };
+export { Component, component, detectIsComponent, getComponentKey, hasComponentFlag };

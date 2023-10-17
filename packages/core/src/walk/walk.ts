@@ -111,7 +111,7 @@ function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   return true;
 }
 
-function tryOptimizeMemoTree(fiber: Fiber, scope$: Scope) {
+function tryOptMemoTree(fiber: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
   const canOptimize = (actions.move || actions.remove) && !actions.replace && !actions.insert;
   if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
@@ -168,4 +168,4 @@ function getKey(inst: Inst, idx: number) {
   return key !== null ? key : createIndexKey(idx);
 }
 
-export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign, tryOptimizeMemoTree };
+export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign, tryOptMemoTree };
