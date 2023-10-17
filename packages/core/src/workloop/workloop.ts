@@ -59,11 +59,11 @@ function workLoop(yield$: boolean) {
       scope$.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = yield$ && platform.shouldYield();
-      if (platform.hasPrimaryTask()) return stopTransitionWork();
+      if (platform.hasPrimaryTask()) return stopTransitionWork(scope$);
     }
 
     if (!unit && wipFiber) {
-      commit();
+      commit(scope$);
     }
   } catch (err) {
     if (err instanceof StopWork) {
@@ -115,7 +115,7 @@ function mountChild(parent: Fiber, scope$: Scope) {
   const inst$ = parent.inst;
   const idx = 0;
   const inst = hasChildrenProp(inst$) ? inst$.children[idx] : null;
-  const alt = getAlternate(parent, inst, true);
+  const alt = getAlternate(parent, inst, true, scope$);
   const fiber = createFiber(alt, inst, idx);
 
   fiber.parent = parent;
@@ -142,7 +142,7 @@ function mountSibling(left: Fiber, scope$: Scope) {
   }
 
   scope$.setMountDeep(true);
-  const alt = getAlternate(left, inst, false);
+  const alt = getAlternate(left, inst, false, scope$);
   const fiber = createFiber(alt, inst, idx);
 
   fiber.parent = left.parent;
@@ -160,10 +160,10 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   scope$.setCursorFiber(fiber);
   scope$.addCandidate(fiber);
   fiber.inst = inst;
-  fiber.inst = mount(fiber);
-  alt && performAlternate(fiber, alt);
+  fiber.inst = mount(fiber, scope$);
+  alt && performAlternate(fiber, alt, scope$);
   setup(fiber, alt);
-  alt && detectIsMemo(fiber.inst) && performMemo(fiber);
+  alt && detectIsMemo(fiber.inst) && performMemo(fiber, scope$);
 }
 
 function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
@@ -174,11 +174,10 @@ function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
   return fiber;
 }
 
-function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolean) {
+function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolean, scope$: Scope) {
   const key = getElementKey(inst);
 
   if (key !== null) {
-    const scope$ = scope$$();
     const parentId = fromChild ? fiber.id : fiber.parent.id;
     const actions = scope$.getActionsById(parentId);
 
@@ -203,8 +202,7 @@ function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolea
   return alt;
 }
 
-function performAlternate(fiber: Fiber, alt: Fiber) {
-  const scope$ = scope$$();
+function performAlternate(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const { id, inst } = fiber;
   const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
 
@@ -282,9 +280,7 @@ function setup(fiber: Fiber, alt: Fiber) {
   fiber.element && fiber.incChildElementCount();
 }
 
-function performMemo(fiber: Fiber) {
-  const scope$ = scope$$();
-
+function performMemo(fiber: Fiber, scope$: Scope) {
   if (process.env.NODE_ENV !== 'production') {
     if (scope$.getIsHot()) return;
   }
@@ -320,7 +316,7 @@ function performMemo(fiber: Fiber) {
   notifyParents(fiber, alt);
 }
 
-function mount(fiber: Fiber) {
+function mount(fiber: Fiber, scope$: Scope) {
   let inst = fiber.inst;
   const isComponent = detectIsComponent(inst);
   const component = inst as Component;
@@ -329,9 +325,7 @@ function mount(fiber: Fiber) {
     try {
       let result = component.type(component.props, component.ref);
 
-      if (detectIsLazy(component) && !detectIsLoaded(component) && (scope$$().getIsHydrateZone() || detectIsServer())) {
-        const scope$ = scope$$();
-
+      if (detectIsLazy(component) && !detectIsLoaded(component) && (scope$.getIsHydrateZone() || detectIsServer())) {
         scope$.navToParent();
         scope$.setNextUnitOfWork(fiber.parent);
         Fiber.setNextId(fiber.parent.id);
@@ -473,9 +467,7 @@ function createHook(): Hook {
   return { idx: 0, values: [] };
 }
 
-function commit() {
-  const scope$ = scope$$();
-
+function commit(scope$: Scope) {
   if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_ENV === 'development' && scope$.setIsHot(false);
   }
@@ -508,13 +500,10 @@ function commit() {
   scope$.runLayoutEffects();
   scope$.runAsyncEffects();
   unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));
-  flush(wipFiber);
-  //console.log('wipFiber', wipFiber);
+  flush(wipFiber, scope$);
 }
 
-function flush(wipFiber: Fiber, cancel = false) {
-  const scope$ = scope$$();
-
+function flush(wipFiber: Fiber, scope$: Scope, cancel = false) {
   !scope$.getIsUpdateZone() && scope$.setRoot(wipFiber); // !
   scope$.setWorkInProgress(null);
   scope$.setNextUnitOfWork(null);
@@ -551,8 +540,7 @@ function syncElementIndices(fiber: Fiber) {
   });
 }
 
-function stopTransitionWork(): false {
-  const scope$ = scope$$();
+function stopTransitionWork(scope$: Scope): false {
   const scope$$$ = scope$.copy();
   const wipFiber = scope$.getWorkInProgress();
   const child = wipFiber.child;
@@ -580,7 +568,7 @@ function stopTransitionWork(): false {
   wipFiber.child = wipFiber.alt.child;
   wipFiber.alt = null;
   scope$.applyCancels();
-  flush(null, true);
+  flush(null, scope$, true);
   platform.cancelTask(restoreTask);
 
   return false;
@@ -625,7 +613,7 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     scope$.resetMount();
     scope$.setWorkInProgress(fiber);
     scope$.setCursorFiber(fiber);
-    fiber.inst = mount(fiber);
+    fiber.inst = mount(fiber, scope$);
     scope$.setNextUnitOfWork(fiber);
   };
 
