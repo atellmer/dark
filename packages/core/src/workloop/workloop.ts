@@ -110,31 +110,26 @@ function performUnitOfWork(fiber: Fiber, scope$: Scope): Fiber | null {
   return null;
 }
 
-function mountChild(nextFiber: Fiber, scope$: Scope) {
+function mountChild(parent: Fiber, scope$: Scope) {
   scope$.navToChild();
-  const inst$ = nextFiber.inst;
+  const inst$ = parent.inst;
   const idx = 0;
   const inst = hasChildrenProp(inst$) ? inst$.children[idx] : null;
-  const alt = getAlternate(nextFiber, inst, true);
-  const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
+  const alt = getAlternate(parent, inst, true);
+  const fiber = createFiber(alt, inst, idx);
 
-  scope$.setCursorFiber(fiber);
-  scope$.addCandidate(fiber);
-  fiber.parent = nextFiber;
-  nextFiber.child = fiber;
-  fiber.eidx = nextFiber.element ? 0 : nextFiber.eidx;
-  fiber.inst = inst;
-  fiber.inst = mount(fiber);
-  alt && performAlternate(fiber, alt);
-  connect(fiber, alt);
-  alt && detectIsMemo(fiber.inst) && performMemo(fiber);
+  fiber.parent = parent;
+  parent.child = fiber;
+  fiber.eidx = parent.element ? 0 : parent.eidx;
+
+  share(fiber, inst, scope$);
 
   return fiber;
 }
 
-function mountSibling(nextFiber: Fiber, scope$: Scope) {
+function mountSibling(left: Fiber, scope$: Scope) {
   scope$.navToSibling();
-  const inst$ = nextFiber.parent.inst;
+  const inst$ = left.parent.inst;
   const idx = scope$.getMountIndex();
   const inst = hasChildrenProp(inst$) && inst$.children ? inst$.children[idx] : null;
   const hasSibling = Boolean(inst);
@@ -147,19 +142,34 @@ function mountSibling(nextFiber: Fiber, scope$: Scope) {
   }
 
   scope$.setMountDeep(true);
-  const alt = getAlternate(nextFiber, inst, false);
-  const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
+  const alt = getAlternate(left, inst, false);
+  const fiber = createFiber(alt, inst, idx);
+
+  fiber.parent = left.parent;
+  left.next = fiber;
+  fiber.eidx = left.eidx + (left.element ? 1 : left.cec);
+
+  share(fiber, inst, scope$);
+
+  return fiber;
+}
+
+function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
+  const { alt } = fiber;
 
   scope$.setCursorFiber(fiber);
   scope$.addCandidate(fiber);
-  fiber.parent = nextFiber.parent;
-  nextFiber.next = fiber;
-  fiber.eidx = nextFiber.eidx + (nextFiber.element ? 1 : nextFiber.cec);
   fiber.inst = inst;
   fiber.inst = mount(fiber);
   alt && performAlternate(fiber, alt);
-  connect(fiber, alt);
+  setup(fiber, alt);
   alt && detectIsMemo(fiber.inst) && performMemo(fiber);
+}
+
+function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
+  const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
+
+  fiber.alt = alt || null;
 
   return fiber;
 }
@@ -253,7 +263,7 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
   }
 }
 
-function connect(fiber: Fiber, alt: Fiber) {
+function setup(fiber: Fiber, alt: Fiber) {
   const inst = fiber.inst;
   let isUpdate = false;
 
@@ -264,7 +274,6 @@ function connect(fiber: Fiber, alt: Fiber) {
     fiber.tag !== EffectTag.C &&
     detectAreSameInstanceTypes(alt.inst, inst) &&
     getElementKey(alt.inst) === getElementKey(inst);
-  fiber.alt = alt || null;
   isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
   alt?.cleanup?.();
