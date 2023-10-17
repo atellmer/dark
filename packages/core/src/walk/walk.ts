@@ -175,7 +175,7 @@ function buildChildTree(
   fiber.parent = parent;
   fiber.tag = EffectTag.S;
   fiber.idx = idx;
-  left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = startEidx);
+  left ? (fiber.eidx = left.eidx + (left.element ? 1 : left.cec)) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
   isLast && delete fiber.next;
   fiber.incChildElementCount(fiber.element ? 1 : fiber.cec);

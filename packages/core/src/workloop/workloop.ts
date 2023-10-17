@@ -331,7 +331,7 @@ function performMemo(fiber: Fiber) {
 
   scope$.setMountDeep(false);
   !fiber.move && (fiber.tag = EffectTag.S);
-  fiber.child = alt.child; // same links
+  fiber.child = alt.child;
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
   fiber.cc = alt.cc;
