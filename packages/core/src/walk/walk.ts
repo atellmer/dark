@@ -111,7 +111,7 @@ function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   return true;
 }
 
-function tryOptimizeMemoTree(fiber: Fiber, alt: Fiber, scope$: Scope) {
+function tryOptimizeMemoTree(fiber: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
   const canOptimize = (actions.move || actions.remove) && !actions.replace && !actions.insert;
   if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
@@ -121,24 +121,30 @@ function tryOptimizeMemoTree(fiber: Fiber, alt: Fiber, scope$: Scope) {
   for (let i = 0; i < inst.children.length; i++) {
     const children = inst.children;
     const key = getKey(children[i], i);
-    const fiber = actions.map[key];
+    const fiber$ = actions.map[key];
 
-    buildChildTree(children, alt, actions.map, i, startEidx);
+    buildChildTree(children, fiber, actions.map, i, startEidx);
 
     if (actions.move && actions.move[key]) {
-      fiber.tag = EffectTag.U;
-      fiber.move = true;
-      fiber.alt = new Fiber().mutate(fiber);
-      scope$.addCandidate(fiber);
+      fiber$.tag = EffectTag.U;
+      fiber$.move = true;
+      fiber$.alt = new Fiber().mutate(fiber$);
+      scope$.addCandidate(fiber$);
     } else {
-      fiber.tag = EffectTag.S;
+      fiber$.tag = EffectTag.S;
     }
   }
 
-  stopMounting(fiber, alt, scope$);
+  scope$.setMountDeep(false);
 }
 
-function buildChildTree(children: Array<Inst>, alt: Fiber, map: Record<string, Fiber>, idx: number, startEidx: number) {
+function buildChildTree(
+  children: Array<Inst>,
+  parent: Fiber,
+  map: Record<string, Fiber>,
+  idx: number,
+  startEidx: number,
+) {
   const key = getKey(children[idx], idx);
   const prevKey = getKey(children[idx - 1], idx);
   const nextKey = getKey(children[idx + 1], idx);
@@ -148,7 +154,8 @@ function buildChildTree(children: Array<Inst>, alt: Fiber, map: Record<string, F
   const isFirst = idx === 0;
   const isLast = idx === children.length - 1;
 
-  isFirst && (alt.child = fiber);
+  isFirst && (parent.child = fiber);
+  fiber.parent = parent;
   fiber.tag = EffectTag.S;
   fiber.idx = idx;
   left ? (fiber.eidx = left.eidx + left.cec) : (fiber.eidx = startEidx);
@@ -159,12 +166,6 @@ function buildChildTree(children: Array<Inst>, alt: Fiber, map: Record<string, F
 function getKey(inst: Inst, idx: number) {
   const key = getElementKey(inst);
   return key !== null ? key : createIndexKey(idx);
-}
-
-function stopMounting(fiber: Fiber, alt: Fiber, scope$: Scope) {
-  fiber.child = alt.child;
-  fiber.child.parent = fiber;
-  scope$.setMountDeep(false);
 }
 
 export { walkFiber, collectElements, getFiberWithElement, detectIsFiberAlive, createFiberSign, tryOptimizeMemoTree };

@@ -295,7 +295,7 @@ function performAlternate(fiber: Fiber, alt: Fiber) {
         }
       }
 
-      (hasMoves || hasRemoves) && tryOptimizeMemoTree(fiber, alt, scope$);
+      (hasMoves || hasRemoves) && tryOptimizeMemoTree(fiber, scope$);
     }
   }
 }
