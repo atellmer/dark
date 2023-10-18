@@ -1,6 +1,7 @@
 import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
 import type { Component, ComponentFactory } from '../component';
 import type { RefProps } from '../shared';
+import { useMemo } from '../use-memo';
 import type { MutableRef, Ref } from './types';
 
 function forwardRef<P, R>(component: ComponentFactory<P, R>): ComponentFactory<P & RefProps<R>, R> {
@@ -34,4 +35,10 @@ function applyRef<T>(ref: Ref<T>, current: T) {
   }
 }
 
-export { forwardRef, detectIsMutableRef, applyRef };
+function useRef<T>(initialValue: T = null): MutableRef<T> {
+  const ref = useMemo(() => ({ current: initialValue }), []) as MutableRef<T>;
+
+  return ref;
+}
+
+export { forwardRef, detectIsMutableRef, applyRef, useRef };

@@ -3,8 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
 import { component } from '../component';
-import { useRef } from '../use-ref';
-import { forwardRef, MutableRef } from '../ref';
+import { type MutableRef, forwardRef, useRef } from '../ref';
 import { useLayoutEffect } from '../use-layout-effect';
 import { useImperativeHandle } from './use-imperative-handle';
 

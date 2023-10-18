@@ -26,7 +26,6 @@ export { useEvent } from './use-event';
 export { useImperativeHandle } from './use-imperative-handle';
 export { useMemo } from './use-memo';
 export { useReducer } from './use-reducer';
-export { useRef } from './use-ref';
 export { useUpdate } from './use-update';
 export { useState } from './use-state';
 export { useReactiveState } from './use-reactive-state';
