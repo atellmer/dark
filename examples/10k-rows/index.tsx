@@ -143,14 +143,14 @@ const App = component(() => {
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.data$.set(buildData(10));
+    state.data$.set(buildData(10000));
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
     const data = data$.get();
-    data.unshift(...buildData(5, '^^^'));
+    data.unshift(...buildData(1000, '^^^'));
     data$.set(data);
     measurer.stop();
   };
@@ -158,7 +158,7 @@ const App = component(() => {
     measurer.start('append');
     e.stopPropagation();
     const data = data$.get();
-    data.push(...buildData(5, '^^^'));
+    data.push(...buildData(1000, '^^^'));
     data$.set(data);
     measurer.stop();
   };

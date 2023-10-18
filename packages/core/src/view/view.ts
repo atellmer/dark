@@ -1,5 +1,5 @@
 import { REPLACER, ATTR_KEY } from '../constants';
-import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
+import { detectIsArray, detectIsFunction } from '../helpers';
 import type { DarkElementKey as Key, DarkElement, DarkElementInstance } from '../shared';
 import {
   type Component,
@@ -71,15 +71,11 @@ function View(def: ViewDef): TagVirtualNodeFactory {
   return factory;
 }
 
-function Text(source: string | number): TextVirtualNode {
-  return new TextVirtualNode(source + '');
-}
+const Text = (source: string | number) => new TextVirtualNode(source + '');
 
 Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
 
-function Comment(text: string): CommentVirtualNode {
-  return new CommentVirtualNode(text);
-}
+const Comment = (text: string) => new CommentVirtualNode(text);
 
 const detectIsVirtualNode = (vNode: unknown): vNode is VirtualNode => vNode instanceof VirtualNode;
 
@@ -93,32 +89,29 @@ const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFac
   detectIsFunction(factory) && factory[$$vNode] === true;
 
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): Key | null =>
-  vNode.attrs && !detectIsEmpty(vNode.attrs[ATTR_KEY]) ? vNode.attrs[ATTR_KEY] : null;
+  vNode.attrs ? vNode.attrs[ATTR_KEY] ?? null : null;
 
 const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs && vNode.attrs[flag]);
 
-const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): Key | null =>
-  !detectIsEmpty(factory[ATTR_KEY]) ? factory[ATTR_KEY] : null;
+const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): Key | null => factory[ATTR_KEY] ?? null;
 
 const hasVirtualNodeFactoryFlag = (factory: VirtualNodeFactory, flag: string) => Boolean(factory[flag]);
-
-const createReplacer = () => new CommentVirtualNode(REPLACER);
 
 const detectIsPlainVirtualNode = (vNode: unknown): vNode is PlainVirtualNode =>
   detectIsTextVirtualNode(vNode) || detectIsCommentVirtualNode(vNode);
 
+const createReplacer = () => new CommentVirtualNode(REPLACER);
+
 const detectIsReplacer = (vNode: unknown) => detectIsCommentVirtualNode(vNode) && vNode.value === REPLACER;
 
-function getElementKey(instance: DarkElementInstance): Key | null {
-  const key = detectIsComponent(instance)
-    ? getComponentKey(instance)
-    : detectIsVirtualNodeFactory(instance)
-    ? getVirtualNodeFactoryKey(instance)
-    : detectIsTagVirtualNode(instance)
-    ? getTagVirtualNodeKey(instance)
+function getElementKey(inst: DarkElementInstance): Key | null {
+  return detectIsComponent(inst)
+    ? getComponentKey(inst)
+    : detectIsVirtualNodeFactory(inst)
+    ? getVirtualNodeFactoryKey(inst)
+    : detectIsTagVirtualNode(inst)
+    ? getTagVirtualNodeKey(inst)
     : null;
-
-  return key;
 }
 
 function hasElementFlag(inst: DarkElementInstance, flag: string) {
@@ -131,20 +124,20 @@ function hasElementFlag(inst: DarkElementInstance, flag: string) {
     : false;
 }
 
-function getInstanceType(instance: DarkElementInstance): string | Function {
-  return detectIsVirtualNodeFactory(instance)
-    ? instance[ATTR_TYPE]
-    : detectIsTagVirtualNode(instance)
-    ? instance.name
-    : detectIsVirtualNode(instance)
-    ? instance.type
-    : detectIsComponent(instance)
-    ? instance.type
+function getInstanceType(inst: DarkElementInstance): string | Function {
+  return detectIsComponent(inst)
+    ? inst.type
+    : detectIsVirtualNodeFactory(inst)
+    ? inst[ATTR_TYPE]
+    : detectIsTagVirtualNode(inst)
+    ? inst.name
+    : detectIsVirtualNode(inst)
+    ? inst.type
     : null;
 }
 
-function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNode | Component {
-  return detectIsTagVirtualNode(element) || detectIsComponent(element);
+function hasChildrenProp(inst: DarkElementInstance): inst is TagVirtualNode | Component {
+  return detectIsTagVirtualNode(inst) || detectIsComponent(inst);
 }
 
 export {
