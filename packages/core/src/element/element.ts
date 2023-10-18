@@ -2,28 +2,31 @@ import { detectIsNumber, detectIsString, detectIsFunction } from '../helpers';
 import { View, Text, type TagVirtualNodeFactory } from '../view';
 import { type ComponentFactory } from '../component';
 
-function getChildren(children: Array<any>) {
-  children = children.map(x => (detectIsString(x) || detectIsNumber(x) ? Text(x.toString()) : x));
+function transformChildren(slot: Array<any>) {
+  for (let i = 0; i < slot.length; i++) {
+    const element = slot[i];
 
-  return children ? (Array.isArray(children) ? [...children] : [children]) : [];
+    if (detectIsString(element) || detectIsNumber(element)) {
+      slot[i] = Text(element);
+    }
+  }
+
+  return slot;
 }
 
 function createElement(
   tag: string | Function,
-  props: any,
-  ...children: Array<any>
+  props: object,
+  ...slot: Array<any>
 ): ComponentFactory | TagVirtualNodeFactory | null {
   if (detectIsString(tag)) {
-    return View({
-      ...props,
-      as: tag,
-      slot: getChildren(children),
-    });
+    slot = transformChildren(slot);
+
+    return View({ ...props, as: tag, slot });
   }
 
   if (detectIsFunction(tag)) {
-    let slot = getChildren(children);
-
+    slot = transformChildren(slot);
     slot = slot.length === 1 ? slot[0] : slot;
 
     return tag({ ...props, slot });
