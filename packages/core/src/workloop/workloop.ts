@@ -79,13 +79,13 @@ function workLoop(yield$: boolean) {
 
 function performUnitOfWork(fiber: Fiber, scope$: Scope): Fiber | null {
   const wipFiber = scope$.getWorkInProgress();
-  const hasChildren = hasChildrenProp(fiber.inst) && fiber.inst.children.length > 0;
   const isDeepWalking = scope$.getMountDeep();
   const isStream = scope$.getIsStreamZone();
+  const hasChildren = isDeepWalking && hasChildrenProp(fiber.inst) && fiber.inst.children.length > 0;
 
   fiber.hook && (fiber.hook.idx = 0);
 
-  if (isDeepWalking && hasChildren) {
+  if (hasChildren) {
     const child = mountChild(fiber, scope$);
 
     isStream && platform.chunk(child);

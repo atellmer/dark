@@ -4,7 +4,7 @@ import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
 import { type Scope } from '../scope';
 import { type Component } from '../component';
 import { detectIsMemo } from '../memo/utils';
-import { type DarkElementInstance as Inst } from '../shared';
+import { type DarkElementInstance as Inst, type DarkElementKey as Key } from '../shared';
 import { createIndexKey } from '../helpers';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
@@ -75,9 +75,10 @@ function createFiberSign(fiber: Fiber, hook?: number) {
 function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   if (!hasChildrenProp(fiber.inst)) return;
   const actions = scope$.getActionsById(fiber.id);
+  const children = fiber.inst.children;
 
-  for (let i = 0; i < fiber.inst.children.length; i++) {
-    const inst = fiber.inst.children[i];
+  for (let i = 0; i < children.length; i++) {
+    const inst = children[i];
     const key = getElementKey(inst);
     if (key === null) return false;
     const alt = actions.map[key];
@@ -99,7 +100,7 @@ function tryOptStaticSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
   alt.element && (fiber.element = alt.element); //!
 
   for (let i = 0; i < inst.children.length; i++) {
-    buildChildTree(inst.children, fiber, actions.map, i, fiber.eidx);
+    buildChildNode(inst.children, fiber, actions.map, i, fiber.eidx);
   }
 
   fiber.cc = inst.children.length;
@@ -108,32 +109,54 @@ function tryOptStaticSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
 
 function tryOptMemoSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const actions = scope$.getActionsById(fiber.id);
-  const canOptimize = (actions.move || actions.remove) && !actions.replace && !actions.insert;
+  const hasMove = Boolean(actions.move);
+  const hasRemove = Boolean(actions.remove);
+  const hasInsert = Boolean(actions.insert);
+  const hasReplace = Boolean(actions.insert);
+  const canOptimize = ((hasMove && !hasRemove) || (hasRemove && !hasMove)) && !hasInsert && !hasReplace;
+
   if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
+
+  hasMove && tryOptMov(fiber, alt, scope$);
+  hasRemove && tryOptRem(fiber, alt, scope$);
+}
+
+function tryOptMov(fiber: Fiber, alt: Fiber, scope$: Scope) {
+  const actions = scope$.getActionsById(fiber.id);
+
+  buildChildNodes(fiber, alt, scope$, (fiber, key) => {
+    if (!actions.move[key]) return;
+    fiber.alt = new Fiber().mutate(fiber);
+    fiber.tag = EffectTag.U;
+    fiber.move = true;
+    scope$.addCandidate(fiber);
+  });
+}
+
+function tryOptRem(fiber: Fiber, alt: Fiber, scope$: Scope) {
+  buildChildNodes(fiber, alt, scope$);
+}
+
+function buildChildNodes(fiber: Fiber, alt: Fiber, scope$: Scope, onNode?: (fiber: Fiber, key: Key) => void) {
+  const actions = scope$.getActionsById(fiber.id);
   const inst = fiber.inst as Component | TagVirtualNode;
+  const children = inst.children;
 
   alt.element && (fiber.element = alt.element); //!
 
-  for (let i = 0; i < inst.children.length; i++) {
-    const children = inst.children;
+  for (let i = 0; i < children.length; i++) {
     const key = getKey(children[i], i);
     const fiber$ = actions.map[key];
 
-    buildChildTree(children, fiber, actions.map, i, fiber.eidx);
-
-    if (actions.move && actions.move[key]) {
-      fiber.alt = new Fiber().mutate(fiber);
-      fiber$.tag = EffectTag.U;
-      fiber$.move = true;
-      scope$.addCandidate(fiber$);
-    }
+    buildChildNode(children, fiber, actions.map, i, fiber.eidx);
+    onNode && onNode(fiber$, key);
   }
 
-  fiber.cc = inst.children.length;
+  fiber.cc = children.length;
   scope$.setMountDeep(false);
 }
 
-function buildChildTree(
+function buildChildNode(
   children: Array<Inst>,
   parent: Fiber,
   altMap: Record<string, Fiber>,

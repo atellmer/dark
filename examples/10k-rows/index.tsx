@@ -150,7 +150,7 @@ const App = component(() => {
     measurer.start('prepend');
     e.stopPropagation();
     const data = data$.get();
-    data.unshift(...buildData(1000, '^^^'));
+    data.unshift(...buildData(5, '^^^'));
     data$.set(data);
     measurer.stop();
   };
@@ -158,7 +158,7 @@ const App = component(() => {
     measurer.start('append');
     e.stopPropagation();
     const data = data$.get();
-    data.push(...buildData(1000, '^^^'));
+    data.push(...buildData(5, '^^^'));
     data$.set(data);
     measurer.stop();
   };
