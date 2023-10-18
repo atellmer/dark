@@ -1,4 +1,4 @@
-import { REPLACER, ATTR_KEY, FLAGS } from '../constants';
+import { REPLACER, ATTR_KEY } from '../constants';
 import { detectIsArray, detectIsEmpty, detectIsFunction } from '../helpers';
 import type { DarkElementKey as Key, DarkElement, DarkElementInstance } from '../shared';
 import {
@@ -15,7 +15,7 @@ export type TagVirtualNodeFactory = () => TagVirtualNode;
 export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
 
 const $$vNode = Symbol('vNode');
-const TYPE = 'type';
+const ATTR_TYPE = 'type';
 
 class VirtualNode {
   public type: NodeType = null;
@@ -33,8 +33,8 @@ class TagVirtualNode extends VirtualNode {
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
     this.name = name || this.name;
-    Object.keys(attrs).length > 0 && (this.attrs = attrs);
-    this.children = children || this.children;
+    attrs && (this.attrs = attrs);
+    children && (this.children = children);
   }
 }
 
@@ -54,6 +54,31 @@ class CommentVirtualNode extends VirtualNode {
     super(NodeType.COMMENT);
     this.value = text;
   }
+}
+
+function View(def: ViewDef): TagVirtualNodeFactory {
+  const factory = () => {
+    const { as: name, slot, _void = false, ...attrs } = def;
+    const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
+
+    return new TagVirtualNode(name, attrs, children);
+  };
+
+  factory[$$vNode] = true;
+  factory[ATTR_TYPE] = def.as;
+  factory[ATTR_KEY] = def.key;
+
+  return factory;
+}
+
+function Text(source: string | number): TextVirtualNode {
+  return new TextVirtualNode(source + '');
+}
+
+Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
+
+function Comment(text: string): CommentVirtualNode {
+  return new CommentVirtualNode(text);
 }
 
 const detectIsVirtualNode = (vNode: unknown): vNode is VirtualNode => vNode instanceof VirtualNode;
@@ -108,7 +133,7 @@ function hasElementFlag(inst: DarkElementInstance, flag: string) {
 
 function getInstanceType(instance: DarkElementInstance): string | Function {
   return detectIsVirtualNodeFactory(instance)
-    ? instance[TYPE]
+    ? instance[ATTR_TYPE]
     : detectIsTagVirtualNode(instance)
     ? instance.name
     : detectIsVirtualNode(instance)
@@ -122,37 +147,14 @@ function hasChildrenProp(element: DarkElementInstance): element is TagVirtualNod
   return detectIsTagVirtualNode(element) || detectIsComponent(element);
 }
 
-function View(def: ViewDef): TagVirtualNodeFactory {
-  const factory = () => {
-    const { as: name, slot, _void = false, ...attrs } = def;
-    const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
-
-    return new TagVirtualNode(name, attrs, children);
-  };
-
-  factory[$$vNode] = true;
-  factory[TYPE] = def.as;
-  !detectIsEmpty(def.key) && (factory[ATTR_KEY] = def.key);
-  FLAGS[def.flag] && (factory[def.flag] = true);
-
-  return factory;
-}
-
-function Text(source: string | number): TextVirtualNode {
-  return new TextVirtualNode(source + '');
-}
-
-Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
-
-function Comment(text: string): CommentVirtualNode {
-  return new CommentVirtualNode(text);
-}
-
 export {
   VirtualNode,
   TagVirtualNode,
   TextVirtualNode,
   CommentVirtualNode,
+  View,
+  Text,
+  Comment,
   detectIsVirtualNode,
   detectIsTagVirtualNode,
   detectIsCommentVirtualNode,
@@ -165,7 +167,4 @@ export {
   hasElementFlag,
   getInstanceType,
   hasChildrenProp,
-  View,
-  Text,
-  Comment,
 };
