@@ -5,13 +5,7 @@ import { useEffect } from '../use-effect';
 function useSyncExternalStore<T>(subscribe: Subscribe<Subscriber>, getSnapshot: () => T) {
   const [state, setState] = useState(getSnapshot());
 
-  useEffect(() => {
-    const unsubscribe = subscribe(() => {
-      setState(getSnapshot());
-    });
-
-    return () => unsubscribe();
-  }, [getSnapshot]);
+  useEffect(() => subscribe(() => setState(getSnapshot())), [getSnapshot]);
 
   return state;
 }

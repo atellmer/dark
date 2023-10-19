@@ -3,7 +3,6 @@ import { detectIsUndefined, detectIsArray, detectAreDepsDifferent } from '../hel
 import { detectIsComponent, component } from '../component';
 import { detectIsVirtualNodeFactory } from '../view';
 import { scope$$ } from '../scope';
-import { Fragment } from '../fragment';
 import { $$memo } from '../memo';
 import { type Hook, type HookValue } from '../fiber';
 
@@ -17,11 +16,9 @@ function check<T>(value: T) {
 
 function wrap<T>(value: T, isDifferent: boolean) {
   if (detectIsArray(value) ? check(value[0]) : check(value)) {
-    const component = Memo({
-      slot: Fragment({ slot: value as unknown as DarkElement }),
-    });
+    const component = Memo({ slot: value as unknown as DarkElement });
 
-    component.su = () => isDifferent;
+    component.shouldUpdate = () => isDifferent;
 
     return component;
   }

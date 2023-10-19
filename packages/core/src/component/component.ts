@@ -16,10 +16,10 @@ const $$inject = Symbol('inject');
 class Component<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
   public props: P;
-  public dn?: string;
   public ref?: Ref<R>;
   public token?: Symbol;
-  public su?: ShouldUpdate<P>;
+  public displayName?: string;
+  public shouldUpdate?: ShouldUpdate<P>;
   public children: Array<DarkElementInstance> = [];
 
   constructor(
@@ -34,8 +34,8 @@ class Component<P extends StandardComponentProps = any, R = any> {
     this.props = props;
     ref && (this.ref = ref);
     token && (this.token = token);
-    shouldUpdate && (this.su = shouldUpdate);
-    displayName && (this.dn = displayName);
+    shouldUpdate && (this.shouldUpdate = shouldUpdate);
+    displayName && (this.displayName = displayName);
   }
 }
 

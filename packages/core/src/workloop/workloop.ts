@@ -22,7 +22,7 @@ import {
   detectIsVirtualNodeFactory,
   getElementKey,
   hasElementFlag,
-  getInstanceType,
+  getElementType,
   hasChildrenProp,
   detectIsReplacer,
   createReplacer,
@@ -296,7 +296,7 @@ function shouldUpdate(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   const pc = alt.inst as Component;
   const nc = inst as Component;
 
-  if (nc.type !== pc.type || nc.su(pc.props, nc.props)) return true;
+  if (nc.type !== pc.type || nc.shouldUpdate(pc.props, nc.props)) return true;
 
   scope$.setMountDeep(false);
   fiber.tag = EffectTag.S;
@@ -450,7 +450,7 @@ function detectAreSameInstanceTypes(
   if (process.env.NODE_ENV !== 'production') {
     if (process.env.NODE_ENV === 'development' && scope$$().getIsHot()) {
       if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
-        return prevInst.dn === nextInst.dn;
+        return prevInst.displayName === nextInst.displayName;
       }
     }
   }
@@ -462,7 +462,7 @@ function detectAreSameInstanceTypes(
     return pc.type === nc.type;
   }
 
-  return getInstanceType(prevInst) === getInstanceType(nextInst);
+  return getElementType(prevInst) === getElementType(nextInst);
 }
 
 function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElementInstance): Hook | null {

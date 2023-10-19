@@ -74,27 +74,36 @@ describe('[use-memo]', () => {
       render(App(props), host);
     };
 
-    const Item = component<{ slot: DarkElement }>(({ slot }) => <div>Item: {slot}</div>);
+    const spy = jest.fn();
+
+    const Item = component<{ slot: DarkElement }>(({ slot }) => {
+      spy();
+
+      return <div>Item: {slot}</div>;
+    });
+
     const App = component<{ x: number }>(({ x }) => {
-      const value = useMemo(
-        () => (
+      const value = useMemo(() => {
+        return (
           <div>
             <Item>{x}</Item>
           </div>
-        ),
-        [x],
-      );
+        );
+      }, [x]);
 
       return value;
     });
 
     render$({ x: 1 });
     expect(host.innerHTML).toBe(content(1));
+    expect(spy).toHaveBeenCalledTimes(1);
 
     render$({ x: 1 });
     expect(host.innerHTML).toBe(content(1));
+    expect(spy).toHaveBeenCalledTimes(1);
 
     render$({ x: 2 });
     expect(host.innerHTML).toBe(content(2));
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });

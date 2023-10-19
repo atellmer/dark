@@ -124,7 +124,7 @@ function hasElementFlag(inst: DarkElementInstance, flag: string) {
     : false;
 }
 
-function getInstanceType(inst: DarkElementInstance): string | Function {
+function getElementType(inst: DarkElementInstance): string | Function {
   return detectIsComponent(inst)
     ? inst.type
     : detectIsVirtualNodeFactory(inst)
@@ -158,6 +158,6 @@ export {
   detectIsReplacer,
   getElementKey,
   hasElementFlag,
-  getInstanceType,
+  getElementType,
   hasChildrenProp,
 };
