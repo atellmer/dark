@@ -1,6 +1,6 @@
+import { type Hook } from '../fiber';
 import { platform } from '../platform';
 import { detectIsFunction, trueFn } from '../helpers';
-import { Fiber } from '../fiber';
 import { createUpdateCallback } from '../workloop';
 import { scope$$, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
@@ -9,14 +9,17 @@ type ShouldUpdate<T> = (p: T, n: T) => boolean;
 
 class Atom<T = unknown> {
   private value$: T;
-  private subs: Map<Fiber, ShouldUpdate<T>> = new Map();
+  private subs: Map<Hook, ShouldUpdate<T>> = new Map();
 
   constructor(value: T) {
     this.value$ = value;
   }
 
   value(fn?: ShouldUpdate<T>) {
-    link(scope$$().getCursorFiber(), this.subs, fn);
+    const fiber = scope$$().getCursorFiber();
+
+    fiber.markAtomHost();
+    link(fiber.hook, this.subs, fn);
 
     return this.value$;
   }
@@ -31,9 +34,9 @@ class Atom<T = unknown> {
 
     this.value$ = detectIsFunction(value) ? value(value$) : value;
 
-    for (const [fiber, shouldUpdate = trueFn] of this.subs) {
+    for (const [hook, shouldUpdate = trueFn] of this.subs) {
       if (!shouldUpdate(value$, this.value$)) continue;
-      platform.schedule(createUpdateCallback({ rootId, getFiber: () => fiber }));
+      platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
     }
   }
 
@@ -47,8 +50,8 @@ const atom = <T>(value?: T) => new Atom(value);
 
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
 
-function link<T>(fiber: Fiber, subs: Map<Fiber, ShouldUpdate<T>>, fn: ShouldUpdate<T>) {
-  subs.set(fiber, fn) && (fiber.cleanup = () => subs.delete(fiber));
+function link<T>(hook: Hook, subs: Map<Hook, ShouldUpdate<T>>, fn: ShouldUpdate<T>) {
+  subs.set(hook, fn) && (hook.getOwner().cleanup = () => subs.delete(hook));
 }
 
 function useAtom<T>(value?: T): [Atom<T>, (value: T | ((prevValue: T) => T)) => void] {

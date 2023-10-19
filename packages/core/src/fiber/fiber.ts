@@ -117,9 +117,15 @@ class Fiber<N = NativeElement> {
 }
 
 class Hook<T = any> {
-  idx = 0;
-  values: Array<T> = [];
-  getSelf: () => Fiber = null;
+  public id = 0;
+  public idx = 0;
+  public values: Array<T> = [];
+  public getOwner: () => Fiber = null;
+  private static nextId = 0;
+
+  constructor() {
+    this.id = ++Hook.nextId;
+  }
 }
 
 function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElementInstance): Hook | null {

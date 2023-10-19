@@ -167,6 +167,8 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
     delete alt.move;
   }
 
+  fiber.hook && (fiber.hook.getOwner = () => fiber); // !
+
   if (shouldMount) {
     fiber.inst = mount(fiber, scope$);
     alt && performAlternate(fiber, alt, scope$);
@@ -174,8 +176,6 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   } else if (fiber.move) {
     fiber.tag = EffectTag.U;
   }
-
-  fiber.hook && (fiber.hook.getSelf = () => fiber);
 }
 
 function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
@@ -284,7 +284,6 @@ function setup(fiber: Fiber, alt: Fiber) {
   hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
   fiber.element && fiber.incChildElementCount();
-  alt?.cleanup?.();
 }
 
 function shouldUpdate(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
@@ -348,7 +347,6 @@ function mount(fiber: Fiber, scope$: Scope) {
       }
 
       component.children = result as Array<DarkElementInstance>;
-      fiber.cleanup && fiber.markAtomHost();
       platform.detectIsPortal(inst) && fiber.markPortalHost();
     } catch (err) {
       if (err instanceof StopWork) {

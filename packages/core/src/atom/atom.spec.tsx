@@ -11,6 +11,7 @@ let host: HTMLElement = null;
 
 beforeEach(() => {
   host = document.createElement('div');
+  jest.useFakeTimers();
 });
 
 describe('[atom]', () => {
@@ -196,6 +197,7 @@ describe('[atom]', () => {
     expect(host.innerHTML).toBe(content(1));
 
     render(null, host);
+    jest.runAllTimers();
     expect(count$['subs'].size).toBe(0);
   });
 });

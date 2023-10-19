@@ -1,5 +1,3 @@
-import { type Fiber } from './fiber';
-
 export enum EffectTag {
   C = 'C',
   U = 'U',
