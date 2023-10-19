@@ -2,7 +2,6 @@ import { type ScheduleCallbackOptions, platform } from '../platform';
 import { getRootId, scope$$ } from '../scope';
 import { type UpdateChanger, createUpdateCallback } from '../workloop';
 import { TaskPriority } from '../constants';
-import { useMemo } from '../use-memo';
 import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
 import { createFiberSign } from '../walk';
@@ -12,7 +11,6 @@ export type UpdateOptions = UpdateChanger;
 
 function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forceAsync$ }: UseUpdateOptions = {}) {
   const rootId = getRootId();
-  const scope = useMemo(() => ({ fiber: null }), []);
   const fiber = scope$$().getCursorFiber();
   const idx = fiber.hook.idx;
   const update = (createChanger?: () => UpdateChanger) => {
@@ -22,13 +20,8 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     const isBatch = scope$.getIsBatchZone();
     const priority = isTransition ? TaskPriority.LOW : priority$; // !
     const forceAsync = isTransition || forceAsync$;
-    const getFiber = () => scope.fiber;
-    const callback = createUpdateCallback({
-      rootId,
-      isTransition,
-      getFiber,
-      createChanger,
-    });
+    const getFiber = () => fiber.hook.self;
+    const callback = createUpdateCallback({ rootId, isTransition, getFiber, createChanger });
     const sign = () => createFiberSign(getFiber(), idx);
     const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition, sign };
 
@@ -42,8 +35,6 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
       platform.schedule(callback, callbackOptions);
     }
   };
-
-  scope.fiber = fiber;
 
   return update;
 }

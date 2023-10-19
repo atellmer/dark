@@ -19,6 +19,7 @@ import {
   getFiberWithElement,
   collectElements,
   walk,
+  dummyFn,
   scope$$,
   applyRef as applyRef$,
 } from '@dark-engine/core';
@@ -285,7 +286,7 @@ const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
     commitUpdate(fiber);
   },
   [EffectTag.D]: commitDeletion,
-  [EffectTag.S]: () => {},
+  [EffectTag.S]: dummyFn,
 };
 
 function commit(fiber: Fiber<NativeElement>) {

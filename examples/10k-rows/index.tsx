@@ -110,6 +110,8 @@ type RowProps = {
 const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
   const className = selected$.value((p, n) => p === id || n === id) === id ? 'selected' : undefined;
 
+  //console.log('render', id);
+
   return tr({
     class: className,
     [Flag.STATIC_SLOT_OPT]: true,
@@ -143,7 +145,7 @@ const App = component(() => {
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.data$.set(buildData(10000));
+    state.data$.set(buildData(10));
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {

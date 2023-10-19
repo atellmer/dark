@@ -156,14 +156,26 @@ function mountSibling(left: Fiber, scope$: Scope) {
 
 function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   const { alt } = fiber;
+  const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, scope$) : true;
 
   scope$.setCursorFiber(fiber);
   scope$.addCandidate(fiber);
   fiber.inst = inst;
-  fiber.inst = mount(fiber, scope$);
-  alt && performAlternate(fiber, alt, scope$);
-  setup(fiber, alt);
-  alt && detectIsMemo(fiber.inst) && performMemo(fiber, scope$);
+
+  if (alt && alt.move) {
+    fiber.move = true;
+    delete alt.move;
+  }
+
+  if (shouldMount) {
+    fiber.inst = mount(fiber, scope$);
+    alt && performAlternate(fiber, alt, scope$);
+    setup(fiber, alt);
+  } else if (fiber.move) {
+    fiber.tag = EffectTag.U;
+  }
+
+  fiber.hook && (fiber.hook.self = fiber);
 }
 
 function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
@@ -205,11 +217,6 @@ function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolea
 function performAlternate(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const { id, inst } = fiber;
   const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
-
-  if (alt.move) {
-    fiber.move = true;
-    delete alt.move;
-  }
 
   if (!areSameTypes) {
     scope$.addDeletion(alt);
@@ -274,25 +281,25 @@ function setup(fiber: Fiber, alt: Fiber) {
     getElementKey(alt.inst) === getElementKey(inst);
   isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
-  alt?.cleanup?.();
   hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
   fiber.element && fiber.incChildElementCount();
+  alt?.cleanup?.();
 }
 
-function performMemo(fiber: Fiber, scope$: Scope) {
+function shouldUpdate(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   if (process.env.NODE_ENV !== 'production') {
-    if (scope$.getIsHot()) return;
+    if (scope$.getIsHot()) return true;
   }
 
   const alt = fiber.alt;
   const pc = alt.inst as Component;
-  const nc = fiber.inst as Component;
+  const nc = inst as Component;
 
-  if (nc.type !== pc.type || nc.su(pc.props, nc.props)) return;
+  if (nc.type !== pc.type || nc.su(pc.props, nc.props)) return true;
 
   scope$.setMountDeep(false);
-  !fiber.move && (fiber.tag = EffectTag.S);
+  fiber.tag = EffectTag.S;
   fiber.child = alt.child;
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
@@ -307,13 +314,15 @@ function performMemo(fiber: Fiber, scope$: Scope) {
   const deep = diff !== 0;
 
   if (deep) {
-    walk(fiber.child, (fiber$, _, stop) => {
+    walk(fiber.child, (fiber$, skip) => {
       fiber$.eidx += diff;
-      if (fiber$.parent !== fiber && fiber$.element) return stop();
+      if (fiber$.element) return skip();
     });
   }
 
   notifyParents(fiber, alt);
+
+  return false;
 }
 
 function mount(fiber: Fiber, scope$: Scope) {
@@ -383,13 +392,13 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
     }
 
     if (children[idx]) {
-      const instance = children[idx];
-      const key = getElementKey(instance);
+      const inst = children[idx];
+      const key = getElementKey(inst);
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
       if (process.env.NODE_ENV !== 'production') {
         if (usedKeysMap[nextKey]) {
-          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [instance]);
+          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [inst]);
         }
 
         usedKeysMap[nextKey] = true;
@@ -412,59 +421,59 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
   };
 }
 
-function supportConditional(instance: DarkElementInstance) {
-  return detectIsFalsy(instance) ? createReplacer() : instance;
+function supportConditional(inst: DarkElementInstance) {
+  return detectIsFalsy(inst) ? createReplacer() : inst;
 }
 
 function detectAreSameComponentTypesWithSameKeys(
-  prevInstance: DarkElementInstance | null,
-  nextInstance: DarkElementInstance | null,
+  prevInst: DarkElementInstance | null,
+  nextInst: DarkElementInstance | null,
 ) {
   if (
-    prevInstance &&
-    nextInstance &&
-    detectIsComponent(prevInstance) &&
-    detectIsComponent(nextInstance) &&
-    detectAreSameInstanceTypes(prevInstance, nextInstance, true)
+    prevInst &&
+    nextInst &&
+    detectIsComponent(prevInst) &&
+    detectIsComponent(nextInst) &&
+    detectAreSameInstanceTypes(prevInst, nextInst, true)
   ) {
-    return getElementKey(prevInstance) === getElementKey(nextInstance);
+    return getElementKey(prevInst) === getElementKey(nextInst);
   }
 
   return false;
 }
 
 function detectAreSameInstanceTypes(
-  prevInstance: DarkElementInstance,
-  nextInstance: DarkElementInstance,
+  prevInst: DarkElementInstance,
+  nextInst: DarkElementInstance,
   isComponentFactories = false,
 ) {
   if (process.env.NODE_ENV !== 'production') {
     if (process.env.NODE_ENV === 'development' && scope$$().getIsHot()) {
-      if (detectIsComponent(prevInstance) && detectIsComponent(nextInstance)) {
-        return prevInstance.dn === nextInstance.dn;
+      if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
+        return prevInst.dn === nextInst.dn;
       }
     }
   }
 
   if (isComponentFactories) {
-    const prevComponent = prevInstance as Component;
-    const nextComponent = nextInstance as Component;
+    const pc = prevInst as Component;
+    const nc = nextInst as Component;
 
-    return prevComponent.type === nextComponent.type;
+    return pc.type === nc.type;
   }
 
-  return getInstanceType(prevInstance) === getInstanceType(nextInstance);
+  return getInstanceType(prevInst) === getInstanceType(nextInst);
 }
 
-function getHook(alternate: Fiber, prevInstance: DarkElementInstance, nextInstance: DarkElementInstance): Hook | null {
-  if (alternate && detectAreSameComponentTypesWithSameKeys(prevInstance, nextInstance)) return alternate.hook;
-  if (detectIsComponent(nextInstance)) return createHook();
+function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElementInstance): Hook | null {
+  if (alt && detectAreSameComponentTypesWithSameKeys(prevInst, nextInst)) return alt.hook;
+  if (detectIsComponent(nextInst)) return createHook();
 
   return null;
 }
 
 function createHook(): Hook {
-  return { idx: 0, values: [] };
+  return { idx: 0, values: [], self: null };
 }
 
 function commit(scope$: Scope) {
@@ -486,8 +495,8 @@ function commit(scope$: Scope) {
     platform.commit(fiber);
   }
 
-  scope$.runInsertionEffects();
   isUpdateZone && syncElementIndices(wipFiber);
+  scope$.runInsertionEffects();
 
   for (const fiber of candidates) {
     fiber.tag !== EffectTag.S && platform.commit(fiber);
@@ -500,24 +509,11 @@ function commit(scope$: Scope) {
   scope$.runLayoutEffects();
   scope$.runAsyncEffects();
   unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));
-  flush(wipFiber, scope$);
+  flush(scope$);
 }
 
-function flush(wipFiber: Fiber, scope$: Scope, cancel = false) {
-  !scope$.getIsUpdateZone() && scope$.setRoot(wipFiber); // !
-  scope$.setWorkInProgress(null);
-  scope$.setNextUnitOfWork(null);
-  scope$.setCursorFiber(null);
-  scope$.resetMount();
-  scope$.resetCandidates();
-  scope$.resetDeletions();
-  scope$.resetCancels();
-  scope$.resetInsertionEffects();
-  scope$.resetLayoutEffects();
-  scope$.resetAsyncEffects();
-  scope$.setIsHydrateZone(false);
-  scope$.setIsUpdateZone(false);
-  scope$.resetActions();
+function flush(scope$: Scope, cancel = false) {
+  scope$.flush();
   !cancel && emitter.emit('finish');
 }
 
@@ -568,7 +564,7 @@ function stopTransitionWork(scope$: Scope): false {
   wipFiber.child = wipFiber.alt.child;
   wipFiber.alt = null;
   scope$.applyCancels();
-  flush(null, scope$, true);
+  flush(scope$, true);
   platform.cancelTask(restoreTask);
 
   return false;

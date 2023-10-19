@@ -345,6 +345,23 @@ class Scope {
   public setIsHot(value: boolean) {
     this.isHot = value;
   }
+
+  public flush() {
+    !this.isUpdateZone && this.setRoot(this.wip); // !
+    this.setWorkInProgress(null);
+    this.setNextUnitOfWork(null);
+    this.setCursorFiber(null);
+    this.resetMount();
+    this.resetCandidates();
+    this.resetDeletions();
+    this.resetCancels();
+    this.resetInsertionEffects();
+    this.resetLayoutEffects();
+    this.resetAsyncEffects();
+    this.setIsHydrateZone(false);
+    this.setIsUpdateZone(false);
+    this.resetActions();
+  }
 }
 
 let rootId: number = null;

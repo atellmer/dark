@@ -1,3 +1,5 @@
+import { type Fiber } from './fiber';
+
 export enum EffectTag {
   C = 'C',
   U = 'U',
@@ -15,4 +17,5 @@ export type HookValue<T = any> = {
 export type Hook<T = any> = {
   idx: number;
   values: Array<T>;
+  self: Fiber;
 };

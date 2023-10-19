@@ -1,16 +1,24 @@
 import type { DarkElementKey, DarkElementInstance } from '../shared';
 import { ATTR_KEY } from '../constants';
-import { error, detectIsEmpty } from '../helpers';
+import { error } from '../helpers';
 import type { Ref } from '../ref';
-import type { CreateElement, ComponentFactory, ComponentOptions, ShouldUpdate, StandardComponentProps } from './types';
+import type {
+  CreateElement,
+  ComponentFactory,
+  ComponentOptions,
+  ShouldUpdate,
+  StandardComponentProps,
+  ComponentInject,
+  ComponentFactoryWithPossiblyInject,
+} from './types';
 
-const $$component = Symbol('component');
+const $$inject = Symbol('inject');
 class Component<P extends StandardComponentProps = any, R = any> {
   public type: CreateElement<P>;
-  public token: Symbol;
   public props: P;
-  public ref: Ref<R>;
-  public dn: string;
+  public dn?: string;
+  public ref?: Ref<R>;
+  public token?: Symbol;
   public su?: ShouldUpdate<P>;
   public children: Array<DarkElementInstance> = [];
 
@@ -23,18 +31,21 @@ class Component<P extends StandardComponentProps = any, R = any> {
     displayName: string,
   ) {
     this.type = type;
-    this.token = token || $$component;
     this.props = props;
     ref && (this.ref = ref);
+    token && (this.token = token);
     shouldUpdate && (this.su = shouldUpdate);
     displayName && (this.dn = displayName);
   }
 }
 
-function component<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions<P> = {}) {
-  const { token, displayName, shouldUpdate, keepRef = false } = options;
-  const factory = (props = {} as P & StandardComponentProps, ref?: Ref<R>): Component<P & StandardComponentProps> => {
-    if (!keepRef && props.ref) {
+function component<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions = {}) {
+  const { token: token$, displayName } = options;
+  type P1 = P & StandardComponentProps;
+  const factory: ComponentFactoryWithPossiblyInject<P1, R> = (props = {} as P1, ref?: Ref<R>) => {
+    const { token = token$, shouldUpdate } = factory[$$inject] || defaultInject;
+
+    if (props.ref) {
       delete props.ref;
 
       if (process.env.NODE_ENV !== 'production') {
@@ -46,14 +57,15 @@ function component<P, R = unknown>(type: CreateElement<P, R>, options: Component
     return new Component(type, token, props, ref, shouldUpdate, displayName);
   };
 
-  return factory as ComponentFactory<P & StandardComponentProps, R>;
+  return factory as ComponentFactory<P1, R>;
 }
 
-const detectIsComponent = (instance: unknown): instance is Component => instance instanceof Component;
+const defaultInject: ComponentInject = {};
 
-const getComponentKey = (instance: Component): DarkElementKey =>
-  !detectIsEmpty(instance.props[ATTR_KEY]) ? instance.props[ATTR_KEY] : null;
+const detectIsComponent = (inst: unknown): inst is Component => inst instanceof Component;
+
+const getComponentKey = (inst: Component): DarkElementKey => inst.props[ATTR_KEY] ?? null;
 
 const hasComponentFlag = (instance: Component, flag: string) => Boolean(instance.props[flag]);
 
-export { Component, component, detectIsComponent, getComponentKey, hasComponentFlag };
+export { Component, component, $$inject, detectIsComponent, getComponentKey, hasComponentFlag };

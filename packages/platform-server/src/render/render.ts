@@ -96,7 +96,6 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     off();
   };
   const off = emitter.on<string>('chunk', chunk => {
-    console.log('chunk', chunk);
     if (chunk === PREPEND_SCRIPTS_CHUNK) {
       content += addScripts(bootstrapScripts);
     }
