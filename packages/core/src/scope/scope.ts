@@ -1,6 +1,7 @@
 import type { Fiber } from '../fiber';
 import type { Callback, DarkElementKey as Key } from '../shared';
 import { platform } from '../platform';
+import { type SetPendingStatus } from '../start-transition';
 
 type Actions = Record<
   number,
@@ -31,6 +32,7 @@ class Scope {
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
   private insertionEffects: Set<Callback> = new Set();
+  private setPendingStatus: SetPendingStatus = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
   private isUpdateZone = false;
@@ -344,6 +346,14 @@ class Scope {
 
   public setIsHot(value: boolean) {
     this.isHot = value;
+  }
+
+  public getPendingStatusSetter() {
+    return this.setPendingStatus;
+  }
+
+  public setPendingStatusSetter(fn: SetPendingStatus) {
+    this.setPendingStatus = fn;
   }
 
   public flush() {

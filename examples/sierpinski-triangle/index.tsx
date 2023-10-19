@@ -5,7 +5,6 @@ import {
   memo,
   useState,
   useEffect,
-  useCallback,
   Fragment,
   DarkElement,
   TaskPriority,
@@ -42,13 +41,9 @@ const Dot = component<DotProps>(props => {
     `,
   }));
 
-  const enter = useCallback(() => {
-    setHover(true);
-  }, []);
+  const enter = () => setHover(true);
 
-  const leave = useCallback(() => {
-    setHover(false);
-  }, []);
+  const leave = () => setHover(false);
 
   const text = Number(Text.from(props.slot));
 

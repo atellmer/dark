@@ -1,6 +1,12 @@
 import { scope$$ } from '../scope';
+import { useState } from '../use-state';
+import { type Callback } from '../shared';
+import { useEvent } from '../use-event';
+import { TaskPriority } from '../constants';
 
-function startTransition(callback: () => void) {
+export type SetPendingStatus = (value: boolean) => void;
+
+function startTransition(callback: Callback) {
   const scope$ = scope$$();
 
   scope$.setIsTransitionZone(true);
@@ -8,4 +14,16 @@ function startTransition(callback: () => void) {
   scope$.setIsTransitionZone(false);
 }
 
-export { startTransition };
+function useTransition(): [boolean, typeof startTransition] {
+  const [isPending, setIsPending] = useState(false, { priority: TaskPriority.HIGH });
+  const scope$ = scope$$();
+  const startTransition$ = useEvent((callback: Callback) => {
+    scope$.setPendingStatusSetter(setIsPending);
+    startTransition(callback);
+    scope$.setPendingStatusSetter(null);
+  });
+
+  return [isPending, startTransition$];
+}
+
+export { startTransition, useTransition };

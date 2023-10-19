@@ -29,13 +29,13 @@ class VirtualNode {
 class TagVirtualNode extends VirtualNode {
   public name: string;
   public attrs: Record<string, any>;
-  public children: Array<TextVirtualNode | CommentVirtualNode | VirtualNodeFactory | ComponentFactory> = [];
+  public children: Array<TextVirtualNode | CommentVirtualNode | VirtualNodeFactory | ComponentFactory>;
 
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
-    this.name = name || this.name;
-    attrs && (this.attrs = attrs);
-    children && (this.children = children);
+    this.name = name;
+    this.attrs = attrs;
+    this.children = children;
   }
 }
 

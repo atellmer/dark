@@ -62,8 +62,8 @@ const createNativeElementMap = {
   },
 };
 
-function createNativeElement(vNode: VirtualNode): NativeElement {
-  return createNativeElementMap[vNode.type](vNode);
+function createNativeElement(node: VirtualNode): NativeElement {
+  return createNativeElementMap[node.type](node);
 }
 
 function detectIsSvgElement(tagName: string) {
@@ -78,13 +78,12 @@ function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
   applyRef$(ref, element);
 }
 
-function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
-  if (!vNode.attrs) return;
-  const attrNames = Object.keys(vNode.attrs);
+function addAttributes(element: NativeElement, node: TagVirtualNode) {
+  const attrNames = Object.keys(node.attrs);
   const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
-    const attrValue = vNode.attrs[attrName];
+    const attrValue = node.attrs[attrName];
 
     if (attrName === ATTR_REF) {
       applyRef(attrValue, element);
@@ -95,7 +94,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
     } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       const stop = patchProperties({
-        tagName: vNode.name,
+        tagName: node.name,
         element: tagElement,
         attrValue,
         attrName,
@@ -106,14 +105,26 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
   }
 }
 
-function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
-  if (!nextVNode.attrs) return;
-  const attrNames = Object.keys(nextVNode.attrs);
+function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
+  const attrNames = new Set<string>();
+  const prevAttrs = Object.keys(prevNode.attrs);
+  const nextAttrs = Object.keys(nextNode.attrs);
+  const size = Math.max(prevAttrs.length, nextAttrs.length);
+
+  for (let i = 0; i < size; i++) {
+    attrNames.add(prevAttrs[i] || nextAttrs[i]);
+  }
+
+  return attrNames;
+}
+
+function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
+  const attrNames = getAttributeNames(prevNode, nextNode);
   const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
-    const prevAttrValue = vNode.attrs[attrName];
-    const nextAttrValue = nextVNode.attrs[attrName];
+    const prevAttrValue = prevNode.attrs[attrName];
+    const nextAttrValue = nextNode.attrs[attrName];
 
     if (attrName === ATTR_REF) {
       applyRef(prevAttrValue, element);
@@ -126,7 +137,7 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
       } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
         const stop = !patchPropsBlackListMap[attrName]
           ? patchProperties({
-              tagName: nextVNode.name,
+              tagName: nextNode.name,
               element: tagElement,
               attrValue: nextAttrValue,
               attrName,

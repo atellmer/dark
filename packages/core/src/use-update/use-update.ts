@@ -9,7 +9,10 @@ import { createFiberSign } from '../walk';
 export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'priority' | 'forceAsync'>;
 export type UpdateOptions = UpdateChanger;
 
-function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forceAsync$ }: UseUpdateOptions = {}) {
+function useUpdate({
+  priority: priority$ = TaskPriority.NORMAL,
+  forceAsync: forceAsync$ = false,
+}: UseUpdateOptions = {}) {
   const rootId = getRootId();
   const fiber = scope$$().getCursorFiber();
   const hook = fiber.hook; // !
@@ -22,9 +25,16 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     const priority = isTransition ? TaskPriority.LOW : priority$; // !
     const forceAsync = isTransition || forceAsync$;
     const getFiber = () => hook.getOwner(); // !
+    const setPendingStatus = scope$.getPendingStatusSetter();
     const callback = createUpdateCallback({ rootId, isTransition, getFiber, createChanger });
-    const sign = () => createFiberSign(getFiber(), idx);
-    const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition, sign };
+    const createSign = () => createFiberSign(getFiber(), idx);
+    const callbackOptions: ScheduleCallbackOptions = {
+      priority,
+      forceAsync,
+      isTransition,
+      createSign,
+      setPendingStatus,
+    };
 
     if (isBatch) {
       addBatch(

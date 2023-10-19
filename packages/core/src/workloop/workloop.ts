@@ -532,10 +532,11 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
   const { rootId, getFiber, isTransition, createChanger = createChanger$ } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
+    const fromRestore = detectIsFunction(restore);
     const { shouldUpdate, setValue, resetValue } = createChanger();
     const scope$ = scope$$();
-    const fiber = getFiber();
-    const fromRestore = detectIsFunction(restore);
+    const self = getFiber();
+    const fiber = self.alt || self;
 
     if (!shouldUpdate() || !detectIsFiberAlive(fiber) || fromRestore) {
       fromRestore && restore({ fiber, setValue, resetValue });

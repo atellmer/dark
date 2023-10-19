@@ -1,6 +1,7 @@
 import { type Fiber } from '../fiber';
 import { type TaskPriority } from '../constants';
 import { type VirtualNode } from '../view';
+import { type SetPendingStatus } from '../start-transition';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
@@ -29,7 +30,8 @@ export type ScheduleCallbackOptions = {
   priority?: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
-  sign?: () => string;
+  createSign?: () => string;
+  setPendingStatus?: SetPendingStatus;
   onCompleted?: () => void;
 };
 

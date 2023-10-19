@@ -4,10 +4,13 @@ import {
   type WorkLoop,
   type Callback,
   type RestoreOptions,
+  type SetPendingStatus,
   getTime,
   workLoop,
   TaskPriority,
   detectIsBusy,
+  detectIsFunction,
+  nextTick,
 } from '@dark-engine/core';
 
 type QueueMap = {
@@ -53,27 +56,30 @@ if (process.env.NODE_ENV !== 'test') {
   setupPorts();
 }
 
-type TaskConstructorOptions = Omit<Task, 'id'>;
+type TaskConstructorOptions = Omit<Task, 'id' | 'isPending' | 'isCanceled'>;
 
 class Task {
   public static nextTaskId = 0;
   public id: number;
+  public isPending = false;
+  public isCanceled = false;
   public priority: TaskPriority;
   public forceAsync: boolean;
   public isTransition: boolean;
   public callback: (restore?: (options: RestoreOptions) => void) => void;
   public restore?: (options: RestoreOptions) => void;
-  public sign?: () => string;
-  public canceled?: boolean;
+  public createSign?: () => string;
+  public setPendingStatus?: SetPendingStatus;
 
   constructor(options: TaskConstructorOptions) {
-    const { priority, forceAsync, isTransition, sign, callback } = options;
+    const { priority, forceAsync, isTransition, createSign, setPendingStatus, callback } = options;
 
     this.id = ++Task.nextTaskId;
     this.priority = priority;
     this.forceAsync = forceAsync;
     this.isTransition = isTransition;
-    this.sign = sign;
+    this.createSign = createSign;
+    this.setPendingStatus = setPendingStatus;
     this.callback = callback;
   }
 }
@@ -81,8 +87,14 @@ class Task {
 const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: Callback, options?: ScheduleCallbackOptions) {
-  const { priority = TaskPriority.NORMAL, forceAsync = false, isTransition = false, sign } = options || {};
-  const task = new Task({ priority, forceAsync, isTransition, sign, callback });
+  const {
+    priority = TaskPriority.NORMAL,
+    forceAsync = false,
+    isTransition = false,
+    createSign,
+    setPendingStatus,
+  } = options || {};
+  const task = new Task({ priority, forceAsync, isTransition, createSign, setPendingStatus, callback });
 
   put(task);
   execute();
@@ -105,12 +117,24 @@ function pick(queue: Array<Task>) {
   currentTask = queue.shift();
 
   if (currentTask.isTransition) {
-    const sign = currentTask.sign();
+    const sign = currentTask.createSign();
     const hasSign = detectHasSameSign(sign, queue);
 
     if (hasSign) {
       currentTask = null;
       return pick(queue);
+    }
+
+    if (!currentTask.isPending && detectIsFunction(currentTask.setPendingStatus)) {
+      const setPendingStatus = currentTask.setPendingStatus;
+
+      currentTask.isPending = true;
+      queueMap.low.unshift(currentTask);
+      currentTask = null;
+
+      nextTick(() => setPendingStatus(true));
+
+      return true;
     }
   }
 
@@ -135,6 +159,7 @@ function performWorkUntilDeadline() {
     const hasMoreWork = scheduledCallback(true);
 
     if (!hasMoreWork) {
+      completeTask(currentTask);
       isMessageLoopRunning = false;
       scheduledCallback = null;
       currentTask = null;
@@ -163,18 +188,33 @@ function requestCallback(callback: WorkLoop) {
 }
 
 function detectHasSameSign(sign: string, queue: Array<Task>) {
-  return queue.some(x => x.isTransition && x.sign() === sign);
+  return queue.some(x => x.isTransition && x.createSign() === sign);
+}
+
+function detectIsMatchSign(sign: string, queue: Array<Task>) {
+  return queue.some(x => x.createSign && x.createSign().length > sign.length);
 }
 
 function hasPrimaryTask() {
   if (currentTask.isTransition) {
     const hasPrimary = queueMap.high.length > 0 || queueMap.normal.length > 0;
-    if (hasPrimary) return true;
-    const sign = currentTask.sign();
+
+    if (hasPrimary) {
+      const sign = currentTask.createSign();
+      const isMatch = detectIsMatchSign(sign, queueMap.high);
+
+      if (isMatch) {
+        currentTask.isCanceled = true;
+      }
+
+      return true;
+    }
+    const sign = currentTask.createSign();
     const hasSign = detectHasSameSign(sign, queueMap.low);
 
     if (hasSign) {
-      currentTask.canceled = true;
+      currentTask.isCanceled = true;
+
       return true;
     }
   }
@@ -183,9 +223,13 @@ function hasPrimaryTask() {
 }
 
 function cancelTask(restore: (options: RestoreOptions) => void) {
-  if (currentTask.canceled) return;
+  if (currentTask.isCanceled) return completeTask(currentTask);
   currentTask.restore = restore;
   queueMap.low.unshift(currentTask);
+}
+
+function completeTask(task: Task) {
+  task.isTransition && detectIsFunction(task.setPendingStatus) && task.setPendingStatus(false);
 }
 
 export { shouldYield, scheduleCallback, hasPrimaryTask, cancelTask, setupPorts, unrefPorts };
