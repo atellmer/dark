@@ -1,9 +1,10 @@
 import { detectIsFunction } from '../helpers';
 import { scope$$ } from '../scope';
-import { detectIsTagVirtualNode, detectIsPlainVirtualNode } from '../view';
+import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponentTypesWithSameKeys } from '../view';
+import { detectIsComponent } from '../component';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementInstance, Callback } from '../shared';
-import { type NativeElement, type Hook, EffectTag } from './types';
+import { type NativeElement, EffectTag } from './types';
 
 class Fiber<N = NativeElement> {
   public id = 0;
@@ -115,4 +116,17 @@ class Fiber<N = NativeElement> {
   }
 }
 
-export { Fiber };
+class Hook<T = any> {
+  idx = 0;
+  values: Array<T> = [];
+  getSelf: () => Fiber = null;
+}
+
+function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElementInstance): Hook | null {
+  if (alt && detectAreSameComponentTypesWithSameKeys(prevInst, nextInst)) return alt.hook;
+  if (detectIsComponent(nextInst)) return new Hook();
+
+  return null;
+}
+
+export { Fiber, Hook, getHook };

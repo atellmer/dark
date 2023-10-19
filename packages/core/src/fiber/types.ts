@@ -13,9 +13,3 @@ export type HookValue<T = any> = {
   deps: Array<any>;
   value: T;
 };
-
-export type Hook<T = any> = {
-  idx: number;
-  values: Array<T>;
-  self: Fiber;
-};

@@ -8,7 +8,6 @@ import {
   useCallback,
   Fragment,
   DarkElement,
-  useDeferredValue,
   TaskPriority,
   startTransition,
 } from '@dark-engine/core';
@@ -60,26 +59,20 @@ const Dot = component<DotProps>(props => {
   );
 });
 
-const MemoDot = memo(
-  Dot,
-  (p, n) => p.x !== n.x || p.y !== n.y || p.size !== n.size || Text.from(p.slot) !== Text.from(n.slot),
-);
-
 type SierpinskiTriangleProps = {
   s: number;
   x: number;
   y: number;
   id?: number;
-  first?: boolean;
   slot: DarkElement;
 };
 
-const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, first, slot }) => {
+const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, slot }) => {
   if (s <= targetSize) {
     return (
-      <MemoDot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
+      <Dot x={x - targetSize / 2} y={y - targetSize / 2} size={targetSize}>
         {slot}
-      </MemoDot>
+      </Dot>
     );
   }
 
@@ -95,15 +88,15 @@ const SierpinskiTriangle = component<SierpinskiTriangleProps>(({ x, y, s, first,
 
   return (
     <>
-      <MemoSierpinskiTriangle x={x} y={y - s / 2} s={s} id={first ? 1 : undefined}>
+      <SierpinskiTriangle x={x} y={y - s / 2} s={s}>
         {slot}
-      </MemoSierpinskiTriangle>
-      <MemoSierpinskiTriangle x={x - s} y={y + s / 2} s={s} id={first ? 2 : undefined}>
+      </SierpinskiTriangle>
+      <SierpinskiTriangle x={x - s} y={y + s / 2} s={s}>
         {slot}
-      </MemoSierpinskiTriangle>
-      <MemoSierpinskiTriangle x={x + s} y={y + s / 2} s={s} id={first ? 3 : undefined}>
+      </SierpinskiTriangle>
+      <SierpinskiTriangle x={x + s} y={y + s / 2} s={s}>
         {slot}
-      </MemoSierpinskiTriangle>
+      </SierpinskiTriangle>
     </>
   );
 });
@@ -143,9 +136,9 @@ const App = component<AppProps>(props => {
   }));
 
   return (
-    <div style='padding: 16px'>
+    <div class='container'>
       <div style={style.container}>
-        <MemoSierpinskiTriangle x={0} y={0} s={1000} first>
+        <MemoSierpinskiTriangle x={0} y={0} s={1000}>
           {seconds}
         </MemoSierpinskiTriangle>
       </div>

@@ -12,7 +12,8 @@ export type UpdateOptions = UpdateChanger;
 function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forceAsync$ }: UseUpdateOptions = {}) {
   const rootId = getRootId();
   const fiber = scope$$().getCursorFiber();
-  const idx = fiber.hook.idx;
+  const hook = fiber.hook; //!
+  const { idx } = hook;
   const update = (createChanger?: () => UpdateChanger) => {
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
@@ -20,7 +21,7 @@ function useUpdate({ priority: priority$ = TaskPriority.NORMAL, forceAsync: forc
     const isBatch = scope$.getIsBatchZone();
     const priority = isTransition ? TaskPriority.LOW : priority$; // !
     const forceAsync = isTransition || forceAsync$;
-    const getFiber = () => fiber.hook.self;
+    const getFiber = () => hook.getSelf(); //!
     const callback = createUpdateCallback({ rootId, isTransition, getFiber, createChanger });
     const sign = () => createFiberSign(getFiber(), idx);
     const callbackOptions: ScheduleCallbackOptions = { priority, forceAsync, isTransition, sign };

@@ -8,6 +8,7 @@ import {
   getComponentKey,
   hasComponentFlag,
 } from '../component';
+import { scope$$ } from '../scope';
 import { NodeType, type ViewDef } from './types';
 
 export type VirtualNodeFactory = () => VirtualNode;
@@ -140,6 +141,46 @@ function hasChildrenProp(inst: DarkElementInstance): inst is TagVirtualNode | Co
   return detectIsTagVirtualNode(inst) || detectIsComponent(inst);
 }
 
+function detectAreSameInstanceTypes(
+  prevInst: DarkElementInstance,
+  nextInst: DarkElementInstance,
+  isComponentFactories = false,
+) {
+  if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV === 'development' && scope$$().getIsHot()) {
+      if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
+        return prevInst.displayName === nextInst.displayName;
+      }
+    }
+  }
+
+  if (isComponentFactories) {
+    const pc = prevInst as Component;
+    const nc = nextInst as Component;
+
+    return pc.type === nc.type;
+  }
+
+  return getElementType(prevInst) === getElementType(nextInst);
+}
+
+function detectAreSameComponentTypesWithSameKeys(
+  prevInst: DarkElementInstance | null,
+  nextInst: DarkElementInstance | null,
+) {
+  if (
+    prevInst &&
+    nextInst &&
+    detectIsComponent(prevInst) &&
+    detectIsComponent(nextInst) &&
+    detectAreSameInstanceTypes(prevInst, nextInst, true)
+  ) {
+    return getElementKey(prevInst) === getElementKey(nextInst);
+  }
+
+  return false;
+}
+
 export {
   VirtualNode,
   TagVirtualNode,
@@ -160,4 +201,6 @@ export {
   hasElementFlag,
   getElementType,
   hasChildrenProp,
+  detectAreSameInstanceTypes,
+  detectAreSameComponentTypesWithSameKeys,
 };

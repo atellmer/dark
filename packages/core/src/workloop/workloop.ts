@@ -13,7 +13,7 @@ import {
   trueFn,
 } from '../helpers';
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
-import { type Hook, Fiber, EffectTag } from '../fiber';
+import { Fiber, EffectTag, getHook } from '../fiber';
 import type { DarkElementKey as Key, DarkElementInstance } from '../shared';
 import { type Component, detectIsComponent } from '../component';
 import {
@@ -22,10 +22,10 @@ import {
   detectIsVirtualNodeFactory,
   getElementKey,
   hasElementFlag,
-  getElementType,
   hasChildrenProp,
   detectIsReplacer,
   createReplacer,
+  detectAreSameInstanceTypes,
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
 import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
@@ -175,7 +175,7 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
     fiber.tag = EffectTag.U;
   }
 
-  fiber.hook && (fiber.hook.self = fiber);
+  fiber.hook && (fiber.hook.getSelf = () => fiber);
 }
 
 function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
@@ -423,57 +423,6 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
 
 function supportConditional(inst: DarkElementInstance) {
   return detectIsFalsy(inst) ? createReplacer() : inst;
-}
-
-function detectAreSameComponentTypesWithSameKeys(
-  prevInst: DarkElementInstance | null,
-  nextInst: DarkElementInstance | null,
-) {
-  if (
-    prevInst &&
-    nextInst &&
-    detectIsComponent(prevInst) &&
-    detectIsComponent(nextInst) &&
-    detectAreSameInstanceTypes(prevInst, nextInst, true)
-  ) {
-    return getElementKey(prevInst) === getElementKey(nextInst);
-  }
-
-  return false;
-}
-
-function detectAreSameInstanceTypes(
-  prevInst: DarkElementInstance,
-  nextInst: DarkElementInstance,
-  isComponentFactories = false,
-) {
-  if (process.env.NODE_ENV !== 'production') {
-    if (process.env.NODE_ENV === 'development' && scope$$().getIsHot()) {
-      if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
-        return prevInst.displayName === nextInst.displayName;
-      }
-    }
-  }
-
-  if (isComponentFactories) {
-    const pc = prevInst as Component;
-    const nc = nextInst as Component;
-
-    return pc.type === nc.type;
-  }
-
-  return getElementType(prevInst) === getElementType(nextInst);
-}
-
-function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElementInstance): Hook | null {
-  if (alt && detectAreSameComponentTypesWithSameKeys(prevInst, nextInst)) return alt.hook;
-  if (detectIsComponent(nextInst)) return createHook();
-
-  return null;
-}
-
-function createHook(): Hook {
-  return { idx: 0, values: [], self: null };
 }
 
 function commit(scope$: Scope) {
