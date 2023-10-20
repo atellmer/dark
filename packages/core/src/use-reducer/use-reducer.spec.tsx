@@ -12,7 +12,6 @@ jest.useFakeTimers();
 
 beforeEach(() => {
   host = document.createElement('div');
-  jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 describe('[use-reducer]', () => {

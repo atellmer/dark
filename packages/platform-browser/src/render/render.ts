@@ -6,6 +6,8 @@ import {
   platform,
   flatten,
   detectIsUndefined,
+  trueFn,
+  dummyFn,
   TagVirtualNode,
   TaskPriority,
   createReplacer,
@@ -16,7 +18,7 @@ import {
 import type { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal/utils';
-import { scheduleCallback, shouldYield, hasPrimaryTask, cancelTask } from '../scheduler';
+import { scheduler } from '../scheduler';
 
 let isInjected = false;
 const roots = new Map<Element, number>();
@@ -24,18 +26,18 @@ const roots = new Map<Element, number>();
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
-  platform.raf = requestAnimationFrame.bind(this);
-  platform.caf = cancelAnimationFrame.bind(this);
-  platform.schedule = scheduleCallback;
-  platform.shouldYield = shouldYield;
-  platform.hasPrimaryTask = hasPrimaryTask;
-  platform.cancelTask = cancelTask;
+  platform.raf = requestAnimationFrame.bind(window);
+  platform.caf = cancelAnimationFrame.bind(window);
+  platform.schedule = scheduler.schedule.bind(scheduler);
+  platform.shouldYield = scheduler.shouldYield.bind(scheduler);
+  platform.hasPrimaryTask = scheduler.hasPrimaryTask.bind(scheduler);
+  platform.cancelTask = scheduler.cancelTask.bind(scheduler);
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.detectIsDynamic = () => true;
+  platform.detectIsDynamic = trueFn;
   platform.detectIsPortal = detectIsPortal;
   platform.unmountPortal = unmountPortal;
-  platform.chunk = () => {};
+  platform.chunk = dummyFn;
   isInjected = true;
 }
 

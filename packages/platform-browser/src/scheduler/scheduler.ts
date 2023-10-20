@@ -13,223 +13,295 @@ import {
   nextTick,
 } from '@dark-engine/core';
 
-type QueueMap = {
-  high: Array<Task>;
-  normal: Array<Task>;
-  low: Array<Task>;
-};
+import { YIELD_INTERVAL } from '../constants';
 
-const queueMap: QueueMap = {
-  high: [],
-  normal: [],
-  low: [],
-};
-const YIELD_INTERVAL = 4;
-let scheduledCallback: WorkLoop = null;
-let deadline = 0;
-let isMessageLoopRunning = false;
-let currentTask: Task = null;
-let channel: MessageChannel | NodeMessageChannel = null;
-let port: MessagePort | NodeMessagePort = null;
+class Scheduler {
+  private queue: Record<TaskPriority, Array<Task>> = {
+    [TaskPriority.HIGH]: [],
+    [TaskPriority.NORMAL]: [],
+    [TaskPriority.LOW]: [],
+  };
+  private deadline = 0;
+  private task: Task = null;
+  private scheduledCallback: WorkLoop = null;
+  private isMessageLoopRunning = false;
+  private channel: MessageChannel | NodeMessageChannel = null;
+  private port: MessagePort | NodeMessagePort = null;
 
-function setupPorts() {
-  if (process.env.NODE_ENV === 'test') {
-    const worker = require('node:worker_threads');
+  public setupPorts() {
+    if (process.env.NODE_ENV === 'test') {
+      const worker = require('node:worker_threads');
 
-    channel = new worker.MessageChannel() as NodeMessageChannel;
-    port = channel.port2;
-    channel.port1.on('message', performWorkUntilDeadline);
-    return;
-  }
-
-  channel = new MessageChannel() as MessageChannel;
-  port = channel.port2;
-  channel.port1.onmessage = performWorkUntilDeadline;
-}
-
-function unrefPorts() {
-  (channel as NodeMessageChannel).port1.unref();
-  (channel as NodeMessageChannel).port2.unref();
-}
-
-if (process.env.NODE_ENV !== 'test') {
-  setupPorts();
-}
-
-type TaskConstructorOptions = Omit<Task, 'id' | 'isPending' | 'isCanceled'>;
-
-class Task {
-  public static nextTaskId = 0;
-  public id: number;
-  public isPending = false;
-  public isCanceled = false;
-  public priority: TaskPriority;
-  public forceAsync: boolean;
-  public isTransition: boolean;
-  public callback: (restore?: (options: RestoreOptions) => void) => void;
-  public restore?: (options: RestoreOptions) => void;
-  public createSign?: () => string;
-  public setPendingStatus?: SetPendingStatus;
-
-  constructor(options: TaskConstructorOptions) {
-    const { priority, forceAsync, isTransition, createSign, setPendingStatus, callback } = options;
-
-    this.id = ++Task.nextTaskId;
-    this.priority = priority;
-    this.forceAsync = forceAsync;
-    this.isTransition = isTransition;
-    this.createSign = createSign;
-    this.setPendingStatus = setPendingStatus;
-    this.callback = callback;
-  }
-}
-
-const shouldYield = () => getTime() >= deadline;
-
-function scheduleCallback(callback: Callback, options?: ScheduleCallbackOptions) {
-  const {
-    priority = TaskPriority.NORMAL,
-    forceAsync = false,
-    isTransition = false,
-    createSign,
-    setPendingStatus,
-  } = options || {};
-  const task = new Task({ priority, forceAsync, isTransition, createSign, setPendingStatus, callback });
-
-  put(task);
-  execute();
-}
-
-const tasksMap: Record<TaskPriority, Array<Task>> = {
-  [TaskPriority.HIGH]: queueMap.high,
-  [TaskPriority.NORMAL]: queueMap.normal,
-  [TaskPriority.LOW]: queueMap.low,
-};
-
-function put(task: Task) {
-  const queue = tasksMap[task.priority];
-
-  queue.push(task);
-}
-
-function pick(queue: Array<Task>) {
-  if (!queue.length) return false;
-  currentTask = queue.shift();
-
-  if (currentTask.isTransition) {
-    const sign = currentTask.createSign();
-    const hasSign = detectHasSameSign(sign, queue);
-
-    if (hasSign) {
-      currentTask = null;
-      return pick(queue);
+      this.channel = new worker.MessageChannel() as NodeMessageChannel;
+      this.port = this.channel.port2;
+      this.channel.port1.on('message', this.performWorkUntilDeadline.bind(this));
+      return;
     }
 
-    if (!currentTask.isPending && detectIsFunction(currentTask.setPendingStatus)) {
-      const setPendingStatus = currentTask.setPendingStatus;
-
-      currentTask.isPending = true;
-      queueMap.low.unshift(currentTask);
-      currentTask = null;
-
-      nextTick(() => setPendingStatus(true));
-
-      return true;
-    }
+    this.channel = new MessageChannel() as MessageChannel;
+    this.port = this.channel.port2;
+    this.channel.port1.onmessage = this.performWorkUntilDeadline.bind(this);
   }
 
-  currentTask.callback(currentTask.restore);
-  currentTask.restore && (currentTask.restore = null);
-  currentTask.forceAsync ? requestCallbackAsync(workLoop) : requestCallback(workLoop);
-
-  return true;
-}
-
-function execute() {
-  const isBusy = detectIsBusy();
-
-  if (!isBusy && !isMessageLoopRunning) {
-    pick(queueMap.high) || pick(queueMap.normal) || pick(queueMap.low);
+  public unrefPorts() {
+    (this.channel as NodeMessageChannel).port1.unref();
+    (this.channel as NodeMessageChannel).port2.unref();
   }
-}
 
-function performWorkUntilDeadline() {
-  if (scheduledCallback) {
-    deadline = getTime() + YIELD_INTERVAL;
-    const hasMoreWork = scheduledCallback(true);
-
-    if (!hasMoreWork) {
-      completeTask(currentTask);
-      isMessageLoopRunning = false;
-      scheduledCallback = null;
-      currentTask = null;
-      execute();
-    } else {
-      port.postMessage(null);
-    }
-  } else {
-    isMessageLoopRunning = false;
+  public shouldYield() {
+    return getTime() >= this.deadline;
   }
-}
 
-function requestCallbackAsync(callback: WorkLoop) {
-  scheduledCallback = callback;
+  public schedule(callback: Callback, options?: ScheduleCallbackOptions) {
+    const {
+      priority = TaskPriority.NORMAL,
+      forceAsync = false,
+      isTransition = false,
+      createSign,
+      setPendingStatus,
+    } = options || {};
+    const task = new Task(callback, priority, forceAsync);
 
-  if (!isMessageLoopRunning) {
-    isMessageLoopRunning = true;
-    port.postMessage(null);
+    task.setIsTransition(isTransition);
+    task.setPendingSetter(setPendingStatus);
+    task.setSignCreator(createSign);
+    this.put(task);
+    this.execute();
   }
-}
 
-function requestCallback(callback: WorkLoop) {
-  callback(false);
-  currentTask = null;
-  execute();
-}
+  public hasPrimaryTask() {
+    if (this.task.getIsTransition()) {
+      const { high, normal, low } = this.getQueues();
+      const hasPrimary = high.length > 0 || normal.length > 0;
 
-function detectHasSameSign(sign: string, queue: Array<Task>) {
-  return queue.some(x => x.isTransition && x.createSign() === sign);
-}
+      if (hasPrimary) {
+        const sign = this.task.createSign();
+        const isMatch = Task.detectIsMatchSign(sign, high);
 
-function detectIsMatchSign(sign: string, queue: Array<Task>) {
-  return queue.some(x => x.createSign && x.createSign().length > sign.length);
-}
+        if (isMatch) {
+          this.task.markAsUnnecessary();
+        }
 
-function hasPrimaryTask() {
-  if (currentTask.isTransition) {
-    const hasPrimary = queueMap.high.length > 0 || queueMap.normal.length > 0;
-
-    if (hasPrimary) {
-      const sign = currentTask.createSign();
-      const isMatch = detectIsMatchSign(sign, queueMap.high);
-
-      if (isMatch) {
-        currentTask.isCanceled = true;
+        return true;
       }
 
-      return true;
+      const sign = this.task.createSign();
+      const hasSame = Task.detectHasSameSign(sign, low);
+
+      if (hasSame) {
+        this.task.markAsUnnecessary();
+
+        return true;
+      }
     }
-    const sign = currentTask.createSign();
-    const hasSign = detectHasSameSign(sign, queueMap.low);
 
-    if (hasSign) {
-      currentTask.isCanceled = true;
+    return false;
+  }
 
-      return true;
+  public cancelTask(fn: TaskRestorer) {
+    if (this.task.getIsUnnecessary()) return this.completeTask(this.task);
+    this.task.setTaskRestorer(fn);
+    this.deferTransition(this.task);
+  }
+
+  public completeTask(task: Task) {
+    task.pending(false);
+  }
+
+  private put(task: Task) {
+    const queue = this.queue[task.getPriority()];
+
+    queue.push(task);
+  }
+
+  private pick(queue: Array<Task>) {
+    if (!queue.length) return false;
+    this.task = queue.shift();
+
+    if (this.task.getIsTransition()) {
+      const sign = this.task.createSign();
+      const hasSign = Task.detectHasSameSign(sign, queue);
+
+      if (hasSign) {
+        this.task = null;
+        return this.pick(queue);
+      }
+
+      if (this.task.canPending()) {
+        const task = this.task;
+
+        task.markAsPending();
+        this.deferTransition(this.task);
+        this.task = null;
+
+        nextTick(() => task.pending(true));
+
+        return true;
+      }
+    }
+
+    this.task.run();
+    this.task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
+
+    return true;
+  }
+
+  private execute() {
+    const isBusy = detectIsBusy();
+    const { high, normal, low } = this.getQueues();
+
+    if (!isBusy && !this.isMessageLoopRunning) {
+      this.pick(high) || this.pick(normal) || this.pick(low);
     }
   }
 
-  return false;
+  private requestCallbackAsync(callback: WorkLoop) {
+    this.scheduledCallback = callback;
+
+    if (!this.isMessageLoopRunning) {
+      this.isMessageLoopRunning = true;
+      this.port.postMessage(null);
+    }
+  }
+
+  private requestCallback(callback: WorkLoop) {
+    callback(false);
+    this.task = null;
+    this.execute();
+  }
+
+  private performWorkUntilDeadline() {
+    if (this.scheduledCallback) {
+      this.deadline = getTime() + YIELD_INTERVAL;
+      const hasMoreWork = this.scheduledCallback(true);
+
+      if (!hasMoreWork) {
+        this.completeTask(this.task);
+        this.isMessageLoopRunning = false;
+        this.scheduledCallback = null;
+        this.task = null;
+        this.execute();
+      } else {
+        this.port.postMessage(null);
+      }
+    } else {
+      this.isMessageLoopRunning = false;
+    }
+  }
+
+  private deferTransition(task: Task) {
+    const { low } = this.getQueues();
+
+    low.unshift(task);
+  }
+
+  private getQueues() {
+    const high = this.queue[TaskPriority.HIGH];
+    const normal = this.queue[TaskPriority.NORMAL];
+    const low = this.queue[TaskPriority.LOW];
+
+    return {
+      high,
+      normal,
+      low,
+    };
+  }
 }
 
-function cancelTask(restore: (options: RestoreOptions) => void) {
-  if (currentTask.isCanceled) return completeTask(currentTask);
-  currentTask.restore = restore;
-  queueMap.low.unshift(currentTask);
+type TaskCallback = (fn: TaskRestorer) => void;
+type TaskRestorer = (options: RestoreOptions) => void;
+type SignCreator = () => string;
+
+class Task {
+  private id: number;
+  private priority: TaskPriority;
+  private forceAsync: boolean;
+  private isTransition: boolean;
+  private isPending: boolean;
+  private isUnnecessary: boolean;
+  private callback: TaskCallback;
+  private taskRestorer?: TaskRestorer = null;
+  private signCreator?: SignCreator;
+  private pendingSetter?: SetPendingStatus = null;
+  private static nextTaskId = 0;
+
+  constructor(callback: TaskCallback, priority: TaskPriority, forceAsync: boolean) {
+    this.id = ++Task.nextTaskId;
+    this.callback = callback;
+    this.priority = priority;
+    this.forceAsync = forceAsync;
+  }
+
+  public getPriority() {
+    return this.priority;
+  }
+
+  public getForceAsync() {
+    return this.forceAsync;
+  }
+
+  public setIsTransition(value: boolean) {
+    this.isTransition = value;
+  }
+
+  public getIsTransition() {
+    return this.isTransition;
+  }
+
+  public run() {
+    this.callback(this.taskRestorer);
+    this.taskRestorer = null;
+  }
+
+  public pending(value: boolean) {
+    this.isTransition && this.pendingSetter && this.pendingSetter(value);
+  }
+
+  public markAsPending() {
+    this.isPending = true;
+  }
+
+  public canPending() {
+    return !this.isPending && detectIsFunction(this.pendingSetter);
+  }
+
+  public markAsUnnecessary() {
+    this.isUnnecessary = true;
+  }
+
+  public getIsUnnecessary() {
+    return this.isUnnecessary;
+  }
+
+  public setTaskRestorer(fn: TaskRestorer) {
+    this.taskRestorer = fn;
+  }
+
+  public setSignCreator(fn: SignCreator) {
+    this.signCreator = fn;
+  }
+
+  public createSign() {
+    return this.signCreator();
+  }
+
+  public setPendingSetter(fn: SetPendingStatus) {
+    this.pendingSetter = fn;
+  }
+
+  public static detectHasSameSign(sign: string, tasks: Array<Task>) {
+    return tasks.some(x => x.isTransition && x.createSign() === sign);
+  }
+
+  public static detectIsMatchSign(sign: string, tasks: Array<Task>) {
+    return tasks.some(x => x.createSign && x.createSign().length > sign.length);
+  }
 }
 
-function completeTask(task: Task) {
-  task.isTransition && detectIsFunction(task.setPendingStatus) && task.setPendingStatus(false);
+const scheduler = new Scheduler();
+
+if (process.env.NODE_ENV !== 'test') {
+  scheduler.setupPorts();
 }
 
-export { shouldYield, scheduleCallback, hasPrimaryTask, cancelTask, setupPorts, unrefPorts };
+export { scheduler };

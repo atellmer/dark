@@ -1,6 +1,6 @@
 /** @jsx h */
 import { render } from '@dark-engine/platform-browser';
-import { setupPorts, unrefPorts } from '@dark-engine/platform-browser/scheduler';
+import { scheduler } from '@dark-engine/platform-browser/scheduler';
 
 import { dom, sleep } from '@test-utils';
 import { h } from '../element';
@@ -13,7 +13,7 @@ let host: HTMLElement = null;
 
 beforeAll(() => {
   jest.useRealTimers();
-  setupPorts();
+  scheduler.setupPorts();
 });
 
 beforeEach(() => {
@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  unrefPorts();
+  scheduler.unrefPorts();
 });
 
 describe('[use-deferred-value]', () => {
