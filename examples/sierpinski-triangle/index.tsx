@@ -30,6 +30,7 @@ const Dot = component<DotProps>(props => {
     dot: styled`
       position: absolute;
       text-align: center;
+      white-space: nowrap;
       cursor: pointer;
       width: ${s}px;
       height: ${s}px;
@@ -49,7 +50,7 @@ const Dot = component<DotProps>(props => {
 
   return (
     <div style={style.dot} onMouseEnter={enter} onMouseLeave={leave}>
-      {hover ? `* ${text} *` : text}
+      {hover ? ` **${text}**` : text}
     </div>
   );
 });

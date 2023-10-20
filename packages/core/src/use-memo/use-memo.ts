@@ -1,62 +1,52 @@
-import type { DarkElement, SlotProps } from '../shared';
-import { detectIsUndefined, detectIsArray, detectAreDepsDifferent } from '../helpers';
-import { detectIsComponent, component } from '../component';
-import { detectIsVirtualNodeFactory } from '../view';
-import { scope$$ } from '../scope';
-import { $$memo } from '../memo';
+import { type VirtualNodeFactory, detectIsVirtualNodeFactory } from '../view';
+import { type Component, detectIsComponent, component } from '../component';
 import { type Hook, type HookValue } from '../fiber';
+import { detectAreDepsDifferent } from '../helpers';
+import { scope$$ } from '../scope';
+import { memo } from '../memo';
 
-type MemoProps = Required<SlotProps>;
+type GetMemoValue = () => Component | VirtualNodeFactory;
 
-const Memo = component<MemoProps>(({ slot }) => slot, { token: $$memo });
+type MemoProps = {
+  deps: Array<any>;
+  getValue: GetMemoValue;
+};
 
-function check<T>(value: T) {
-  return detectIsVirtualNodeFactory(value) || detectIsComponent(value);
-}
+const Memo = memo(
+  component<MemoProps>(({ getValue }) => getValue()),
+  (p, n) => detectAreDepsDifferent(p.deps, n.deps),
+);
 
-function wrap<T>(value: T, isDifferent: boolean) {
-  if (detectIsArray(value) ? check(value[0]) : check(value)) {
-    const component = Memo({ slot: value as unknown as DarkElement });
-
-    component.shouldUpdate = () => isDifferent;
-
-    return component;
-  }
-
-  return value;
-}
-
-function processValue<T>(getValue: () => T, isDifferent = false) {
-  return wrap(getValue(), isDifferent) as T;
+function detectIsElement<T>(value: T) {
+  return detectIsComponent(value) || detectIsVirtualNodeFactory(value);
 }
 
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
   const fiber = scope$$().getCursorFiber();
   const { hook } = fiber;
   const { idx, values } = hook as Hook<HookValue<T>>;
-
-  if (detectIsUndefined(values[idx])) {
-    const value = processValue(getValue);
-
-    values[idx] = {
+  const state =
+    values[idx] ||
+    (values[idx] = {
       deps,
-      value,
-    };
+      value: getValue(),
+    });
+  let value: T = null;
+  let value$: T = null;
 
-    hook.idx++;
-
-    return value as T;
+  if (detectIsElement(state.value)) {
+    value = state.value;
+    value$ = Memo({ getValue: getValue as GetMemoValue, deps }) as unknown as T;
+  } else {
+    value = detectAreDepsDifferent(deps, state.deps) ? getValue() : state.value;
+    value$ = value;
   }
 
-  const hookValue = values[idx] as HookValue;
-  const isDifferent = detectAreDepsDifferent(deps, hookValue.deps as Array<any>);
-  const getValue$ = isDifferent ? getValue : () => hookValue.value;
-
-  hookValue.deps = deps;
-  hookValue.value = processValue(getValue$, isDifferent);
+  state.deps = deps;
+  state.value = value;
   hook.idx++;
 
-  return hookValue.value;
+  return value$;
 }
 
 export { useMemo };
