@@ -1,19 +1,121 @@
 /** @jsx h */
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { h, Fragment, Text, Comment, component, useState } from '@dark-engine/core';
 
-import { setInputValue, dom } from '@test-utils';
-import { createRoot } from '../create-root';
+import { setInputValue, dom, createEnv, replacer } from '@test-utils';
 import { type SyntheticEvent } from '../events';
 
-let host: HTMLElement = null;
+let { host, render } = createEnv();
 
 beforeEach(() => {
-  host?.parentElement === document.body && document.body.removeChild(host);
-  host = document.createElement('div');
-  document.body.appendChild(host);
+  ({ host, render } = createEnv());
 });
 
 describe('[DOM]', () => {
+  test('can render text correctly', () => {
+    const content = 'hello';
+
+    render(Text(content));
+    expect(host.innerHTML).toBe(content);
+  });
+
+  test('can render comment correctly', () => {
+    const content = 'some comment';
+
+    render(Comment(content));
+    expect(host.innerHTML).toBe(`<!--${content}-->`);
+  });
+
+  test('can render tag correctly', () => {
+    const content = `<div></div>`;
+
+    render(<div />);
+    expect(host.innerHTML).toBe(content);
+  });
+
+  test('can render nullable correctly', () => {
+    render(null);
+    expect(host.innerHTML).toBe(replacer);
+
+    render('');
+    expect(host.innerHTML).toBe(replacer);
+
+    render(0);
+    expect(host.innerHTML).toBe(replacer);
+
+    render(false);
+    expect(host.innerHTML).toBe(replacer);
+
+    render(undefined);
+    expect(host.innerHTML).toBe(replacer);
+  });
+
+  test('can render nested tags correctly', () => {
+    const content = () => dom`
+      <div>
+        <div>
+          <div>ola</div>
+        </div>
+      </div>
+    `;
+
+    render(
+      <div>
+        <div>
+          <div>ola</div>
+        </div>
+      </div>,
+    );
+    expect(host.innerHTML).toBe(content());
+  });
+
+  test('can set attributes correctly', () => {
+    let div: HTMLDivElement = null;
+    const class1 = 'open';
+    const style1 = 'color: black';
+    const App = component(() => <div class={class1} style={style1} />);
+
+    render(App());
+    div = host.querySelector('div');
+    expect(div.getAttribute('class')).toBe(class1);
+    expect(div.getAttribute('style')).toBe(style1);
+  });
+
+  test('can change attributes correctly', () => {
+    type AppProps = { className: string; style: string };
+    let div: HTMLDivElement = null;
+    const class1 = 'open';
+    const class2 = 'close';
+    const style1 = 'color: black';
+    const style2 = 'color: yellow';
+    const App = component<AppProps>(({ className, style }) => <div class={className} style={style} />);
+
+    render(App({ className: class1, style: style1 }));
+    div = host.querySelector('div');
+    expect(div.getAttribute('class')).toBe(class1);
+    expect(div.getAttribute('style')).toBe(style1);
+
+    render(App({ className: class2, style: style2 }));
+    expect(div.getAttribute('class')).toBe(class2);
+    expect(div.getAttribute('style')).toBe(style2);
+  });
+
+  test('can remove attributes correctly', () => {
+    type AppProps = { className?: string; style?: string };
+    let div: HTMLDivElement = null;
+    const class1 = 'open';
+    const style1 = 'color: black';
+    const App = component<AppProps>(({ className, style }) => <div class={className} style={style} />);
+
+    render(App({ className: class1, style: style1 }));
+    div = host.querySelector('div');
+    expect(div.getAttribute('class')).toBe(class1);
+    expect(div.getAttribute('style')).toBe(style1);
+
+    render(App());
+    expect(div.getAttribute('class')).toBeNull();
+    expect(div.getAttribute('style')).toBeNull();
+  });
+
   test('set IDL properties for inputs correctly', () => {
     let inputOne: HTMLInputElement = null;
     let inputTwo: HTMLInputElement = null;
@@ -33,9 +135,7 @@ describe('[DOM]', () => {
       );
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     inputOne = host.querySelector('#a');
     inputTwo = host.querySelector('#b');
     setInputValue(inputOne, 'Taylor');
@@ -43,7 +143,6 @@ describe('[DOM]', () => {
 
     setInputValue(inputTwo, 'Taylor Swift');
     expect(inputOne.value).toBe('Taylor Swift');
-    root.unmount();
   });
 
   test('can render data-attributes', () => {
@@ -53,35 +152,23 @@ describe('[DOM]', () => {
     const App = component(() => {
       return <input data-attr-1='true' data-attr-2={true} data-attr-3={false} data-attr-4 data-attr-5='666' />;
     });
-    const root = createRoot(host);
 
-    root.render(App());
+    render(App());
     expect(host.innerHTML).toBe(content());
-    root.unmount();
   });
 
   test('does not render falsy boolean attributes if it not data-attribute', () => {
+    type AppProps = { required: boolean };
     const content = (required: boolean) => dom`
       <input ${required ? `required="" data-required="${required}"` : `data-required="${required}"`}>
     `;
+    const App = component<AppProps>(({ required }) => <input required={required} data-required={required} />);
 
-    type AppProps = {
-      required: boolean;
-    };
-
-    const root = createRoot(host);
-    const render$ = (props: AppProps) => root.render(App(props));
-
-    const App = component<AppProps>(({ required }) => {
-      return <input required={required} data-required={required} />;
-    });
-
-    render$({ required: true });
+    render(App({ required: true }));
     expect(host.innerHTML).toBe(content(true));
 
-    render$({ required: false });
+    render(App({ required: false }));
     expect(host.innerHTML).toBe(content(false));
-    root.unmount();
   });
 
   test('can render svg', () => {
@@ -90,13 +177,6 @@ describe('[DOM]', () => {
         <path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M184 112l144 144-144 144"></path>
       </svg>
     `;
-
-    const root = createRoot(host);
-
-    const render$ = (props = {}) => {
-      root.render(App(props));
-    };
-
     const App = component(() => {
       return (
         <svg
@@ -119,8 +199,7 @@ describe('[DOM]', () => {
       );
     });
 
-    render$();
+    render(App());
     expect(host.innerHTML).toBe(content());
-    root.unmount();
   });
 });

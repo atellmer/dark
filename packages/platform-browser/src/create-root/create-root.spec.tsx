@@ -13,46 +13,43 @@ beforeEach(() => {
 
 describe('[create-root]', () => {
   test('has methods', () => {
-    const App = component(() => {
-      return null;
-    });
+    const App = component(() => null);
     const root = createRoot(host);
 
     root.render(App());
     expect(root.render).toBeInstanceOf(Function);
     expect(root.unmount).toBeInstanceOf(Function);
+    root.unmount();
   });
 
   test('unmount clears all effects and unmounts root node correctly', () => {
-    const dropFn = jest.fn();
-
+    const spy = jest.fn();
     const Child = component(() => {
       useInsertionEffect(() => {
-        return () => dropFn();
+        return () => spy();
       }, []);
 
       useLayoutEffect(() => {
-        return () => dropFn();
+        return () => spy();
       }, []);
 
       useEffect(() => {
-        return () => dropFn();
+        return () => spy();
       }, []);
 
       return <div>child</div>;
     });
-
     const App = component(() => {
       useInsertionEffect(() => {
-        return () => dropFn();
+        return () => spy();
       }, []);
 
       useLayoutEffect(() => {
-        return () => dropFn();
+        return () => spy();
       }, []);
 
       useEffect(() => {
-        return () => dropFn();
+        return () => spy();
       }, []);
 
       return (
@@ -69,7 +66,7 @@ describe('[create-root]', () => {
     root.render(App());
     jest.runAllTimers();
     root.unmount();
-    expect(dropFn).toBeCalledTimes(12);
+    expect(spy).toBeCalledTimes(12);
     expect(host.innerHTML).toBe('');
     expect(root.unmount).not.toThrowError();
   });

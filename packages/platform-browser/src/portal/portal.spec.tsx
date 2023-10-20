@@ -1,70 +1,59 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
 
-import { dom } from '@test-utils';
-import { render } from '../render';
+import { dom, createEnv } from '@test-utils';
 import { createPortal } from './portal';
 
-let host: HTMLElement = null;
-let portal: HTMLElement = null;
+let { render } = createEnv();
+let portalOne: HTMLElement = null;
+let portalTwo: HTMLElement = null;
+let portalThree: HTMLElement = null;
 
 beforeEach(() => {
-  host = document.createElement('div');
-  portal = document.createElement('div');
+  ({ render } = createEnv());
+  portalOne = document.createElement('div');
+  portalTwo = document.createElement('div');
+  portalThree = document.createElement('div');
 });
 
 describe('[createPortal]', () => {
   test('renders correctly', () => {
     const value = 'hello from portal';
-
-    const content = (value: string) => {
-      return dom`
+    const content = (value: string) => dom`
       <div>${value}</div>
     `;
-    };
-
     const App = component(() => {
-      return [<div>app</div>, createPortal(<div>{value}</div>, portal)];
+      return [<div>app</div>, createPortal(<div>{value}</div>, portalOne)];
     });
 
-    render(App(), host);
-    expect(portal.innerHTML).toBe(content(value));
+    render(App());
+    expect(portalOne.innerHTML).toBe(content(value));
   });
 
   test('can unmount portal', () => {
-    type AppProps = {
-      isOpen: boolean;
-    };
+    type AppProps = { isOpen: boolean };
     const value = 'hello from portal';
     const content = (value: string) => dom`
       <div>${value}</div>
     `;
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
-
     const App = component<AppProps>(({ isOpen }) => {
-      return [<div>header</div>, isOpen && createPortal(<div>{value}</div>, portal), <div>footer</div>];
+      return [<div>header</div>, isOpen && createPortal(<div>{value}</div>, portalOne), <div>footer</div>];
     });
 
-    render$({ isOpen: true });
-    expect(portal.innerHTML).toBe(content(value));
+    render(App({ isOpen: true }));
+    expect(portalOne.innerHTML).toBe(content(value));
 
-    render$({ isOpen: false });
-    expect(portal.innerHTML).toBe('');
+    render(App({ isOpen: false }));
+    expect(portalOne.innerHTML).toBe('');
 
-    render$({ isOpen: true });
-    expect(portal.innerHTML).toBe(content(value));
+    render(App({ isOpen: true }));
+    expect(portalOne.innerHTML).toBe(content(value));
 
-    render$({ isOpen: false });
-    expect(portal.innerHTML).toBe('');
+    render(App({ isOpen: false }));
+    expect(portalOne.innerHTML).toBe('');
   });
 
   test('can mount nested portals', () => {
-    const portalOne = document.createElement('div');
-    const portalTwo = document.createElement('div');
-    const portalThree = document.createElement('div');
-
     const content = (value: string) => dom`
       <div>${value}</div>
     `;
@@ -83,27 +72,17 @@ describe('[createPortal]', () => {
       ];
     });
 
-    render(App(), host);
+    render(App());
     expect(portalOne.innerHTML).toBe(content('portal 1'));
     expect(portalTwo.innerHTML).toBe(content('portal 2'));
     expect(portalThree.innerHTML).toBe(content('portal 3'));
   });
 
   test('can unmount nested portals', () => {
-    type AppProps = {
-      isOpen: boolean;
-    };
-    const portalOne = document.createElement('div');
-    const portalTwo = document.createElement('div');
-    const portalThree = document.createElement('div');
-
+    type AppProps = { isOpen: boolean };
     const content = (value: string) => dom`
       <div>${value}</div>
     `;
-
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
 
     const App = component<AppProps>(({ isOpen }) => {
       return [
@@ -120,22 +99,22 @@ describe('[createPortal]', () => {
       ];
     });
 
-    render$({ isOpen: true });
+    render(App({ isOpen: true }));
     expect(portalOne.innerHTML).toBe(content('portal 1'));
     expect(portalTwo.innerHTML).toBe(content('portal 2'));
     expect(portalThree.innerHTML).toBe(content('portal 3'));
 
-    render$({ isOpen: false });
+    render(App({ isOpen: false }));
     expect(portalOne.innerHTML).toBe('');
     expect(portalTwo.innerHTML).toBe('');
     expect(portalThree.innerHTML).toBe('');
 
-    render$({ isOpen: true });
+    render(App({ isOpen: true }));
     expect(portalOne.innerHTML).toBe(content('portal 1'));
     expect(portalTwo.innerHTML).toBe(content('portal 2'));
     expect(portalThree.innerHTML).toBe(content('portal 3'));
 
-    render$({ isOpen: false });
+    render(App({ isOpen: false }));
     expect(portalOne.innerHTML).toBe('');
     expect(portalTwo.innerHTML).toBe('');
     expect(portalThree.innerHTML).toBe('');

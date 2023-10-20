@@ -1,10 +1,10 @@
-import { h, component, memo, useState, useMemo, useDeferredValue } from '@dark-engine/core';
+import { h, Fragment, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 function generateProducts() {
   const products: Array<string> = [];
 
-  for (let i = 0; i < 10000; i++) {
+  for (let i = 0; i < 500; i++) {
     products.push(`Product ${i + 1}`);
   }
   return products;
@@ -20,30 +20,52 @@ function filterProducts(filterTerm) {
   return dummyProducts.filter(product => product.toLowerCase().indexOf(filterTerm.toLowerCase()) !== -1);
 }
 
-type ProductListProps = {
-  name: string;
+type SlowListItemProps = {
+  slot: string;
 };
 
-const ProductList = memo(
-  component<ProductListProps>(({ name }) => {
-    const products = filterProducts(name);
-    const items = products.map(product => <li key={product}>{product}</li>);
+const SlowListItem = component<SlowListItemProps>(({ slot }) => {
+  const startTime = performance.now();
 
-    return <ul>{items}</ul>;
-  }),
-  (p, n) => p.name !== n.name,
-);
+  while (performance.now() - startTime < 3) {
+    // Do nothing for 3 ms per item to emulate extremely slow code
+  }
+
+  return <li>{slot}</li>;
+});
+
+type ProductListProps = {
+  name: string;
+  isStale: boolean;
+};
+
+const ProductList = component<ProductListProps>(({ name, isStale }) => {
+  const items = useMemo(() => {
+    const products = filterProducts(name);
+
+    return (
+      <>
+        {products.map(product => (
+          <SlowListItem key={product}>{product}</SlowListItem>
+        ))}
+      </>
+    );
+  }, [name]);
+
+  return <ul style={`color: ${isStale ? 'red' : 'yellow'}`}>{items}</ul>;
+});
 
 const App = component(() => {
   const [name, setName] = useState('');
   const deferredName = useDeferredValue(name);
+  const isStale = name !== deferredName;
 
   const handleInput = e => setName(e.target.value);
 
   return (
     <div>
       <input value={name} placeholder='type...' onInput={handleInput} />
-      <ProductList name={deferredName} />
+      <ProductList name={deferredName} isStale={isStale} />
     </div>
   );
 });

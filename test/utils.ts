@@ -1,4 +1,5 @@
 import { REPLACER } from '@dark-engine/core/constants';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
   const markup = strings
@@ -35,4 +36,37 @@ const setInputValue = (element: HTMLInputElement, value: string) => fireEvent(el
 
 const sleep = (ms = 10) => new Promise(resolve => setTimeout(resolve, ms));
 
-export { dom, waitNextTick, createReplacerString, createTestHostNode, fireEvent, click, setInputValue, sleep };
+const replacer = createReplacerString();
+
+let host: HTMLElement = null;
+let root: ReturnType<typeof createRoot> = null;
+
+function createEnv() {
+  root && root.unmount();
+  host && host.parentElement === document.body && document.body.removeChild(host);
+  host = createTestHostNode();
+  root = createRoot(host);
+  const render = root.render;
+
+  document.body.appendChild(host);
+
+  return {
+    host,
+    root,
+    render,
+    addEventListener,
+  };
+}
+
+export {
+  dom,
+  waitNextTick,
+  createReplacerString,
+  createTestHostNode,
+  fireEvent,
+  click,
+  setInputValue,
+  sleep,
+  replacer,
+  createEnv,
+};

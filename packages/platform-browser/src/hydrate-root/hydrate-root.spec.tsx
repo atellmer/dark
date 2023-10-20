@@ -23,35 +23,33 @@ describe('[hydrate-root]', () => {
   });
 
   test('unmount clears all effects and unmounts root node correctly', () => {
-    const dropFn = jest.fn();
-
+    const fn = jest.fn();
     const Child = component(() => {
       useInsertionEffect(() => {
-        return () => dropFn();
+        return () => fn();
       }, []);
 
       useLayoutEffect(() => {
-        return () => dropFn();
+        return () => fn();
       }, []);
 
       useEffect(() => {
-        return () => dropFn();
+        return () => fn();
       }, []);
 
       return <div>child</div>;
     });
-
     const App = component(() => {
       useInsertionEffect(() => {
-        return () => dropFn();
+        return () => fn();
       }, []);
 
       useLayoutEffect(() => {
-        return () => dropFn();
+        return () => fn();
       }, []);
 
       useEffect(() => {
-        return () => dropFn();
+        return () => fn();
       }, []);
 
       return (
@@ -67,7 +65,7 @@ describe('[hydrate-root]', () => {
 
     jest.runAllTimers();
     root.unmount();
-    expect(dropFn).toBeCalledTimes(12);
+    expect(fn).toBeCalledTimes(12);
     expect(host.innerHTML).toBe('');
     expect(root.unmount).not.toThrowError();
   });
@@ -101,27 +99,22 @@ describe('[hydrate-root]', () => {
       const container = document.createElement('div');
 
       container.setAttribute('class', 'app');
-
       host.appendChild(container);
 
       const line1 = document.createElement('div');
 
       line1.innerHTML = 'Hello World';
-
       container.appendChild(line1);
 
       const line2 = document.createElement('div');
 
       line2.innerHTML = `count: ${x}`;
-
       container.appendChild(line2);
 
       const button = document.createElement('button');
 
       button.setAttribute('class', 'button');
-
       button.innerHTML = 'increment';
-
       container.appendChild(button);
 
       return host.innerHTML;

@@ -5,7 +5,6 @@ import {
   component,
   View,
   Text,
-  Comment,
   useState,
   memo,
   useUpdate,
@@ -14,16 +13,16 @@ import {
   type DarkElement,
 } from '@dark-engine/core';
 
-import { dom, createTestHostNode, createReplacerString } from '@test-utils';
-import { render } from './render';
+import { dom, createTestHostNode, replacer } from '@test-utils';
+import { render as render$ } from './render';
 
 type Item = { id: number; name: string };
 
 let host: HTMLElement = null;
+let nextId = 0;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
-const replacer = createReplacerString();
-let nextId = 0;
+const render = (element: any) => render$(element, host);
 
 const generateItems = (count: number) => {
   return Array(count)
@@ -35,69 +34,18 @@ const generateItems = (count: number) => {
 };
 
 beforeEach(() => {
-  nextId = 0;
   host = createTestHostNode();
+});
+
+afterEach(() => {
+  nextId = 0;
 });
 
 describe('[render]', () => {
   test('doesn not throw error', () => {
     const App = component(() => null);
-    const render$ = () => {
-      render(App(), host);
-    };
 
-    expect(render$).not.toThrowError();
-  });
-
-  test('can render tag correctly', () => {
-    const content = `<div></div>`;
-
-    render(div(), host);
-    expect(host.innerHTML).toBe(content);
-  });
-
-  test('can render text correctly', () => {
-    const content = 'hello';
-
-    render(Text(content), host);
-    expect(host.innerHTML).toBe(content);
-  });
-
-  test('can render comment correctly', () => {
-    const content = 'some comment';
-
-    render(Comment(content), host);
-    expect(host.innerHTML).toBe(`<!--${content}-->`);
-  });
-
-  test('can render nullable correctly', () => {
-    render(null, host);
-    expect(host.innerHTML).toBe(replacer);
-
-    render('', host);
-    expect(host.innerHTML).toBe(replacer);
-
-    render(0, host);
-    expect(host.innerHTML).toBe(replacer);
-
-    render(false, host);
-    expect(host.innerHTML).toBe(replacer);
-
-    render(undefined, host);
-    expect(host.innerHTML).toBe(replacer);
-  });
-
-  test('can render nested tags correctly', () => {
-    const content = () => dom`
-      <div>
-        <div>
-          <div>ola</div>
-        </div>
-      </div>
-    `;
-
-    render(div({ slot: div({ slot: div({ slot: Text('ola') }) }) }), host);
-    expect(host.innerHTML).toBe(content());
+    expect(() => render(App())).not.toThrowError();
   });
 
   test('can render array of items correctly', () => {
@@ -108,24 +56,18 @@ describe('[render]', () => {
     `;
     const App = component(() => [div(), div(), div()]);
 
-    render(App(), host);
+    render(App());
     expect(host.innerHTML).toBe(content);
   });
 
   test('can prevent xss attacks', () => {
-    render(Text(`<script>alert('xss')</script>`), host);
+    render(Text(`<script>alert('xss')</script>`));
     expect(host.innerHTML).toBe(`&lt;script&gt;alert('xss')&lt;/script&gt;`);
   });
 
   test('conditional rendering works correctly with replacing components', () => {
-    type AppProps = {
-      items: Array<Item>;
-      one: boolean;
-    };
-
-    type ListItemProps = {
-      slot: DarkElement;
-    };
+    type AppProps = { items: Array<Item>; one: boolean };
+    type ListItemProps = { slot: DarkElement };
 
     const content = (items: AppProps['items']) => dom`
       <div>header</div>
@@ -133,15 +75,7 @@ describe('[render]', () => {
       <div>footer</div>
     `;
 
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
-
-    const ListItem = component<ListItemProps>(({ slot }) => {
-      return div({
-        slot,
-      });
-    });
+    const ListItem = component<ListItemProps>(({ slot }) => div({ slot }));
 
     const ListOne = component<{ items: AppProps['items'] }>(({ items }) => {
       return items.map(x => {
@@ -171,30 +105,24 @@ describe('[render]', () => {
 
     let items = generateItems(3);
 
-    render$({ one: true, items });
+    render(App({ one: true, items }));
     expect(host.innerHTML).toBe(content(items));
 
     items = generateItems(3);
-    render$({ one: false, items });
+    render(App({ one: false, items }));
     expect(host.innerHTML).toBe(content(items));
 
     items = generateItems(4);
-    render$({ one: true, items });
+    render(App({ one: true, items }));
     expect(host.innerHTML).toBe(content(items));
 
     items = generateItems(2);
-    render$({ one: false, items });
+    render(App({ one: false, items }));
     expect(host.innerHTML).toBe(content(items));
   });
 
   test('conditional rendering works correctly with nullable elements', () => {
-    type AppProps = {
-      show: boolean;
-    };
-
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
+    type AppProps = { show: boolean };
 
     const App = component<AppProps>(({ show }) => {
       return [div({ slot: Text('header') }), show && div({ slot: Text('hello') }), div({ slot: Text('footer') })];
@@ -206,27 +134,22 @@ describe('[render]', () => {
       <div>footer</div>
     `;
 
-    render$({ show: false });
+    render(App({ show: false }));
     expect(host.innerHTML).toBe(content(false));
 
-    render$({ show: true });
+    render(App({ show: true }));
     expect(host.innerHTML).toBe(content(true));
 
-    render$({ show: false });
+    render(App({ show: false }));
     expect(host.innerHTML).toBe(content(false));
 
-    render$({ show: true });
+    render(App({ show: true }));
     expect(host.innerHTML).toBe(content(true));
   });
 
   describe('[adding/removing/swaping nodes #1]', () => {
-    type AppProps = {
-      items: Array<Item>;
-    };
-
-    type ListItemProps = {
-      slot: DarkElement;
-    };
+    type AppProps = { items: Array<Item> };
+    type ListItemProps = { slot: DarkElement };
 
     const itemAttr = 'data-item';
     let items = [];
@@ -251,9 +174,7 @@ describe('[render]', () => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
-    const render$ = () => {
-      render(App({ items }), host);
-    };
+    const render$ = () => render(App({ items }));
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
@@ -285,15 +206,15 @@ describe('[render]', () => {
 
     test('can add nodes', () => {
       items = generateItems(5);
-      render$();
+      render(App({ items }));
       expect(host.innerHTML).toBe(content(items));
 
       addItemsToEnd(5);
-      render$();
+      render(App({ items }));
       expect(host.innerHTML).toBe(content(items));
 
       addItemsToStart(6);
-      render$();
+      render(App({ items }));
       expect(host.innerHTML).toBe(content(items));
     });
 
@@ -320,6 +241,7 @@ describe('[render]', () => {
       items = generateItems(10);
       render$();
       expect(host.innerHTML).toBe(content(items));
+
       insertNodesInDifferentPlaces();
       render$();
       expect(host.innerHTML).toBe(content(items));
@@ -414,9 +336,7 @@ describe('[render]', () => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
-    const render$ = () => {
-      render(App({ items }), host);
-    };
+    const render$ = () => render(App({ items }));
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
@@ -564,7 +484,7 @@ describe('[render]', () => {
       `;
       const App = component(() => [div(), div(), div()]);
 
-      render(App(), host);
+      render(App());
       expect(host.innerHTML).toBe(content);
     });
 
@@ -584,18 +504,12 @@ describe('[render]', () => {
 
       const App = component(() => [[[[div()], [[div()]], div()]], [Item()], div()]);
 
-      render(App(), host);
+      render(App());
       expect(host.innerHTML).toBe(content);
     });
 
     test('node recreates when key changed', () => {
-      type AppProps = {
-        x: number;
-      };
-
-      const render$ = (props: AppProps) => {
-        render(App(props), host);
-      };
+      type AppProps = { x: number };
 
       let ref: MutableRef<HTMLDivElement> = null;
       let node: HTMLDivElement = null;
@@ -606,23 +520,21 @@ describe('[render]', () => {
         return div({ ref, key: x });
       });
 
-      render$({ x: 1 });
+      render(App({ x: 1 }));
       node = ref.current;
       expect(node).toBeInstanceOf(HTMLDivElement);
 
-      render$({ x: 1 });
+      render(App({ x: 1 }));
       expect(ref.current).toBe(node);
 
-      render$({ x: 2 });
+      render(App({ x: 2 }));
       expect(ref.current).not.toBe(node);
       expect(ref.current).toBeInstanceOf(HTMLDivElement);
     });
   });
 
   test('can render nested array as component', () => {
-    type AppProps = {
-      count: number;
-    };
+    type AppProps = { count: number };
     const content = (count: number) => dom`
       <div>1</div>
       <div>2</div>
@@ -632,10 +544,6 @@ describe('[render]', () => {
         .join('')}
       <div>3</div>
     `;
-
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
 
     const NestedArray = component<AppProps>(({ count }) => {
       return Array(count)
@@ -650,13 +558,13 @@ describe('[render]', () => {
       <div>3</div>,
     ]);
 
-    render$({ count: 3 });
+    render(App({ count: 3 }));
     expect(host.innerHTML).toBe(content(3));
 
-    render$({ count: 5 });
+    render(App({ count: 5 }));
     expect(host.innerHTML).toBe(content(5));
 
-    render$({ count: 1 });
+    render(App({ count: 1 }));
     expect(host.innerHTML).toBe(content(1));
   });
 
@@ -671,30 +579,20 @@ describe('[render]', () => {
       return Tag({ slot: Text(text) });
     });
 
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
-
-    render$({ dynamic: false });
+    render(App({ dynamic: false }));
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
-    render$({ dynamic: true });
+    render(App({ dynamic: true }));
     expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
 
-    render$({ dynamic: false });
+    render(App({ dynamic: false }));
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
   });
 
   test('can work with JSX', () => {
-    type AppProps = {
-      dynamic: boolean;
-    };
+    type AppProps = { dynamic: boolean };
 
     const text = 'I am dynamic tag';
-
-    const render$ = (props: AppProps) => {
-      render(App(props), host);
-    };
 
     const CustomItem = component(({ slot }) => {
       return <span>{slot}</span>;
@@ -706,31 +604,22 @@ describe('[render]', () => {
       return <Tag>{text}</Tag>;
     });
 
-    render$({ dynamic: false });
+    render(App({ dynamic: false }));
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
 
-    render$({ dynamic: true });
+    render(App({ dynamic: true }));
     expect(host.innerHTML).toBe(dom`<span>${text}</span>`);
 
-    render$({ dynamic: false });
+    render(App({ dynamic: false }));
     expect(host.innerHTML).toBe(dom`<div>${text}</div>`);
   });
 
   test('can render app into more than one host', () => {
+    type AppProps = { name: string };
+    type NameProps = { slot: DarkElement };
+
     const hostOne = document.createElement('div');
     const hostTwo = document.createElement('div');
-
-    type AppProps = {
-      name: string;
-    };
-
-    type NameProps = {
-      slot: DarkElement;
-    };
-
-    const render$ = (props: AppProps, host: HTMLElement) => {
-      render(App(props), host);
-    };
 
     const Hello = component(() => <span>hello</span>);
     const Name = component<NameProps>(({ slot }) => <span>{slot}</span>);
@@ -750,13 +639,13 @@ describe('[render]', () => {
       </div>
     `;
 
-    render$({ name: 'Alex' }, hostOne);
-    render$({ name: 'Rebecka' }, hostTwo);
+    render$(App({ name: 'Alex' }), hostOne);
+    render$(App({ name: 'Rebecka' }), hostTwo);
     expect(hostOne.innerHTML).toBe(content('Alex'));
     expect(hostTwo.innerHTML).toBe(content('Rebecka'));
 
-    render$({ name: 'Mark' }, hostOne);
-    render$({ name: 'Rebecka' }, hostTwo);
+    render$(App({ name: 'Mark' }), hostOne);
+    render$(App({ name: 'Rebecka' }), hostTwo);
     expect(hostOne.innerHTML).toBe(content('Mark'));
     expect(hostTwo.innerHTML).toBe(content('Rebecka'));
   });
@@ -778,7 +667,7 @@ describe('[render]', () => {
     };
 
     const render$ = (props = {}) => {
-      render(List(props), host);
+      render(List(props));
     };
 
     const swap = () => {
@@ -825,18 +714,13 @@ describe('[render]', () => {
     `;
     };
 
-    const render$ = (props = {}) => {
-      render(List(props), host);
-    };
+    const render$ = (props = {}) => render(List(props));
 
     const remove = () => {
       items = [];
     };
 
-    const ListItem = component<Item>(({ id }) => {
-      return [<div>1: {id}</div>];
-    });
-
+    const ListItem = component<Item>(({ id }) => [<div>1: {id}</div>]);
     const List = component(() => {
       return items.map((x, idx) => {
         return <ListItem key={idx} id={x.id} name={x.name} />;
@@ -910,7 +794,7 @@ describe('[render]', () => {
       );
     });
 
-    render(<App />, host);
+    render(<App />);
     expect(host.innerHTML).toBe(content(true, true));
 
     setShow1(false);
@@ -952,20 +836,16 @@ describe('[render]', () => {
     const content = (items: Array<Item>) => dom`
       ${items.map(x => `<div>${x.name}</div>`).join('')}
     `;
-
     const prepend = (n: number) => {
       items = [...generateItems(n), ...items];
     };
-
     const append = (n: number) => {
       items = [...items, ...generateItems(n)];
     };
-
     const remove = (n: number) => {
       items.splice(n, 1);
       items = [...items];
     };
-
     const shuffle = () => {
       items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
         id: x,
@@ -977,61 +857,54 @@ describe('[render]', () => {
       return items.map(x => <div key={x.id}>{x.name}</div>);
     });
 
-    render(<App items={items} />, host);
+    render(<App items={items} />);
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render(<App items={items} />, host);
+    render(<App items={items} />);
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render(<App items={items} />, host);
+    render(<App items={items} />);
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render(<App items={items} />);
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render(<App items={items} />, host);
+    render(<App items={items} />);
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render(<App items={items} />);
     expect(host.innerHTML).toBe(content(items));
   });
 
   test('can move components', () => {
-    type AppProps = {
-      items: Array<Item>;
-    };
-
-    type ItemProps = {
-      item: Item;
-    };
+    type AppProps = { items: Array<Item> };
+    type ItemProps = { item: Item };
 
     let items = generateItems(10);
+
+    const render$ = () => render(<App items={items} />);
 
     const content = (items: Array<Item>) => dom`
       ${items.map(x => `<div>${x.name}</div>`).join('')}
     `;
-
     const prepend = (n: number) => {
       items = [...generateItems(n), ...items];
     };
-
     const append = (n: number) => {
       items = [...items, ...generateItems(n)];
     };
-
     const remove = (n: number) => {
       items.splice(n, 1);
       items = [...items];
     };
-
     const shuffle = () => {
       items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
         id: x,
@@ -1039,69 +912,57 @@ describe('[render]', () => {
       }));
     };
 
-    const Item = component<ItemProps>(({ item }) => {
-      return <div>{item.name}</div>;
-    });
+    const Item = component<ItemProps>(({ item }) => <div>{item.name}</div>);
+    const App = component<AppProps>(({ items }) => items.map(x => <Item key={x.id} item={x} />));
 
-    const App = component<AppProps>(({ items }) => {
-      return items.map(x => <Item key={x.id} item={x} />);
-    });
-
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
   });
 
   test('can move memo components', () => {
-    type AppProps = {
-      items: Array<Item>;
-    };
-
-    type ItemProps = {
-      item: Item;
-    };
+    type AppProps = { items: Array<Item> };
+    type ItemProps = { item: Item };
 
     let items = generateItems(10);
+
+    const render$ = () => render(<App items={items} />);
 
     const content = (items: Array<Item>) => dom`
       ${items.map(x => `<div>${x.name}</div>`).join('')}
     `;
-
     const prepend = (n: number) => {
       items = [...generateItems(n), ...items];
     };
-
     const append = (n: number) => {
       items = [...items, ...generateItems(n)];
     };
-
     const remove = (n: number) => {
       items.splice(n, 1);
       items = [...items];
     };
-
     const shuffle = () => {
       items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
         id: x,
@@ -1114,35 +975,34 @@ describe('[render]', () => {
         return <div>{item.name}</div>;
       }),
     );
-
     const App = component<AppProps>(({ items }) => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -1169,19 +1029,18 @@ describe('[render]', () => {
         .join('')}
     `;
 
+    const render$ = () => render(<App items={items} />);
+
     const prepend = (n: number) => {
       items = [...generateItems(n), ...items];
     };
-
     const append = (n: number) => {
       items = [...items, ...generateItems(n)];
     };
-
     const remove = (n: number) => {
       items.splice(n, 1);
       items = [...items];
     };
-
     const shuffle = () => {
       items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
         id: x,
@@ -1203,43 +1062,40 @@ describe('[render]', () => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render(<App items={items} />, host);
+    render$();
     expect(host.innerHTML).toBe(content(items));
   });
 
   test(`can move components with child arrays hook's update`, () => {
-    type AppProps = {
-      show?: boolean;
-    };
-
-    type ItemProps = {
-      item: Item;
-    };
+    type AppProps = { show?: boolean };
+    type ItemProps = { item: Item };
 
     let items = generateItems(10);
+
+    const render$ = (props: AppProps) => render(<App {...props} />);
 
     const content = (items: Array<Item>, show: boolean) => dom`
       ${
@@ -1272,16 +1128,13 @@ describe('[render]', () => {
     const prepend = (n: number) => {
       items = [...generateItems(n), ...items];
     };
-
     const append = (n: number) => {
       items = [...items, ...generateItems(n)];
     };
-
     const remove = (n: number) => {
       items.splice(n, 1);
       items = [...items];
     };
-
     const shuffle = () => {
       items = [8, 2, 101, 1, 3, 6, 7, 103, 5, 10, 102].map(x => ({
         id: x,
@@ -1331,10 +1184,6 @@ describe('[render]', () => {
       );
     });
 
-    const render$ = (props: AppProps) => {
-      render(<App {...props} />, host);
-    };
-
     render$({ show: false });
     expect(host.innerHTML).toBe(content(items, false));
 
@@ -1378,6 +1227,8 @@ describe('[render]', () => {
   });
 
   test('can move items in arrays', () => {
+    type AppProps = { items: Array<Item> };
+
     const content$ = (items: Array<Item>) => dom`
       ${items.map(x => ` <div>${x.name}</div>`).join('')}
     `;
@@ -1395,11 +1246,9 @@ describe('[render]', () => {
       </div>
     `;
 
-    type AppProps = {
-      items: Array<Item>;
-    };
-
     let items = generateItems(10);
+
+    const render$ = () => render(<App items={items} />);
 
     const moveItems = (idx: number, count: number) => {
       const newItems = [...items];
@@ -1442,10 +1291,6 @@ describe('[render]', () => {
       );
     });
 
-    const render$ = () => {
-      render(<App items={items} />, host);
-    };
-
     render$();
     expect(host.innerHTML).toBe(content(items));
 
@@ -1455,6 +1300,8 @@ describe('[render]', () => {
   });
 
   test('can render falsy items with container correctly #1', () => {
+    type ContainerProps = { slot: DarkElement };
+
     const content = () => dom`
       <main>
         <div>header</div>
@@ -1463,13 +1310,7 @@ describe('[render]', () => {
       </main>
     `;
 
-    type ContainerProps = {
-      slot: DarkElement;
-    };
-
-    const Container = component<ContainerProps>(({ slot }) => {
-      return <main>{slot}</main>;
-    });
+    const Container = component<ContainerProps>(({ slot }) => <main>{slot}</main>);
 
     const App = component(() => {
       return (
@@ -1481,13 +1322,13 @@ describe('[render]', () => {
       );
     });
 
-    const render$ = () => render(<App />, host);
-
-    render$();
+    render(<App />);
     expect(host.innerHTML).toBe(content());
   });
 
   test('can render falsy items with container correctly #2', () => {
+    type ContainerProps = { slot: DarkElement };
+
     const content = () => dom`
       <main>
         ${replacer}
@@ -1496,13 +1337,7 @@ describe('[render]', () => {
       </main>
     `;
 
-    type ContainerProps = {
-      slot: DarkElement;
-    };
-
-    const Container = component<ContainerProps>(({ slot }) => {
-      return <main>{slot}</main>;
-    });
+    const Container = component<ContainerProps>(({ slot }) => <main>{slot}</main>);
 
     const App = component(() => {
       return (
@@ -1514,9 +1349,7 @@ describe('[render]', () => {
       );
     });
 
-    const render$ = () => render(<App />, host);
-
-    render$();
+    render(<App />);
     expect(host.innerHTML).toBe(content());
   });
 });

@@ -1,177 +1,130 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
 
-import { click } from '@test-utils';
-import { createRoot } from '../create-root';
+import { click, createEnv } from '@test-utils';
 import { SyntheticEvent } from './events';
 
-let host: HTMLElement = null;
-
-const addEventListener = document.addEventListener.bind(document);
+let { host, render } = createEnv();
 
 beforeEach(() => {
-  host?.parentElement === document.body && document.body.removeChild(host);
-  host = document.createElement('div');
-  document.body.appendChild(host);
-});
-
-afterEach(() => {
-  document.addEventListener = addEventListener;
+  ({ host, render } = createEnv());
 });
 
 describe('[events]', () => {
   test('can pass synthetic event', () => {
-    let event: SyntheticEvent<MouseEvent, HTMLButtonElement> = null;
-
+    let event: SyntheticEvent<MouseEvent> = null;
     const App = component(() => {
-      const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+      const handleClick = (e: SyntheticEvent<MouseEvent>) => {
         event = e;
       };
 
       return <button onClick={handleClick}>click</button>;
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     click(host.querySelector('button'));
     expect(event).toBeInstanceOf(SyntheticEvent);
     expect(event.stopPropagation).toBeInstanceOf(Function);
     expect(event.preventDefault).toBeInstanceOf(Function);
     expect(event.sourceEvent).toBeInstanceOf(Event);
-    root.unmount();
   });
 
   test('can fire events', () => {
-    const mockFn = jest.fn();
     let button: HTMLButtonElement = null;
-
+    const spy = jest.fn();
     const App = component(() => {
-      const handleClick = () => mockFn();
+      const handleClick = () => spy();
 
       return <button onClick={handleClick}>click</button>;
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     button = host.querySelector('button');
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
 
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(2);
 
-    root.render(App());
+    render(App());
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(3);
-    root.unmount();
+    expect(spy).toHaveBeenCalledTimes(3);
   });
 
   test('can remove event listeners when unmount', () => {
-    const mockFn = jest.fn();
     let button: HTMLButtonElement = null;
-
+    const spy = jest.fn();
     const App = component(() => {
-      const handleClick = () => mockFn();
-
-      return <button onClick={handleClick}>click</button>;
+      return <button onClick={spy}>click</button>;
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     button = host.querySelector('button');
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
 
-    root.render(null);
+    render(null);
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(1);
-    root.unmount();
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   test('delegates all events to document', () => {
-    const mockFn1 = jest.fn();
-    const mockFn2 = jest.fn();
-
-    document.addEventListener = function (...args: Array<any>) {
-      mockFn1();
-      return addEventListener(...args);
-    };
-
+    const spy = jest.fn();
+    const listenerSpy = jest.spyOn(document, 'addEventListener');
     const App = component(() => {
-      const handleClick = () => mockFn2();
-
-      return <button onClick={handleClick}>click</button>;
+      return <button onClick={spy}>click</button>;
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     click(host.querySelector('button'));
-    expect(mockFn1).toHaveBeenCalledTimes(1);
-    expect(mockFn2).toHaveBeenCalledTimes(1);
-    expect(mockFn1.mock.invocationCallOrder[0]).toBeLessThan(mockFn2.mock.invocationCallOrder[0]);
-    root.unmount();
+    expect(listenerSpy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(listenerSpy.mock.invocationCallOrder[0]).toBeLessThan(spy.mock.invocationCallOrder[0]);
   });
 
   test('can fire event propagation', () => {
-    const mockFn1 = jest.fn();
-    const mockFn2 = jest.fn();
-
+    const spy1 = jest.fn();
+    const spy2 = jest.fn();
     const App = component(() => {
-      const handleDivClick = () => mockFn1();
-      const handleButtonClick = () => mockFn2();
-
       return (
-        <div onClick={handleDivClick}>
-          <button onClick={handleButtonClick}>click</button>
+        <div onClick={spy1}>
+          <button onClick={spy2}>click</button>
         </div>
       );
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     click(host.querySelector('button'));
-    expect(mockFn1).toHaveBeenCalledTimes(1);
-    expect(mockFn2).toHaveBeenCalledTimes(1);
-    root.unmount();
+    expect(spy1).toHaveBeenCalledTimes(1);
+    expect(spy2).toHaveBeenCalledTimes(1);
   });
 
   test('can stop event propagation', () => {
-    const mockFn1 = jest.fn();
-    const mockFn2 = jest.fn();
-
+    const spy1 = jest.fn();
+    const spy2 = jest.fn();
     const App = component(() => {
-      const handleDivClick = () => mockFn1();
       const handleButtonClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
         e.stopPropagation();
-        mockFn2();
+        spy2();
       };
 
       return (
-        <div onClick={handleDivClick}>
+        <div onClick={spy1}>
           <button onClick={handleButtonClick}>click</button>
         </div>
       );
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     click(host.querySelector('button'));
-    expect(mockFn1).not.toHaveBeenCalled();
-    expect(mockFn2).toHaveBeenCalled();
-    root.unmount();
+    expect(spy1).not.toHaveBeenCalled();
+    expect(spy2).toHaveBeenCalled();
   });
 
   test('can prevent default behaviour', () => {
-    let event: SyntheticEvent<MouseEvent, HTMLButtonElement> = null;
-
+    let event: SyntheticEvent<MouseEvent> = null;
     const App = component(() => {
-      const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => {
+      const handleClick = (e: SyntheticEvent<MouseEvent>) => {
         e.preventDefault();
         event = e;
       };
@@ -179,40 +132,33 @@ describe('[events]', () => {
       return <button onClick={handleClick}>click</button>;
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     click(host.querySelector('button'));
     expect(event.sourceEvent.defaultPrevented).toBe(true);
-    root.unmount();
   });
 
   test('can fire event with tuple handler', () => {
-    const mockFn = jest.fn();
     let button: HTMLButtonElement = null;
-
+    const spy = jest.fn();
     const App = component(() => {
-      const handleClick = (arg: string) => mockFn(arg);
+      const handleClick = (arg: string) => spy(arg);
 
       return <button onClick={[handleClick, 'Hello']}>click</button>;
     });
 
-    const root = createRoot(host);
-
-    root.render(App());
+    render(App());
     button = host.querySelector('button');
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(1);
-    expect(mockFn).toHaveBeenCalledWith('Hello');
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith('Hello');
 
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(2);
-    expect(mockFn).toHaveBeenCalledWith('Hello');
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith('Hello');
 
-    root.render(App());
+    render(App());
     click(button);
-    expect(mockFn).toHaveBeenCalledTimes(3);
-    expect(mockFn).toHaveBeenCalledWith('Hello');
-    root.unmount();
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(spy).toHaveBeenCalledWith('Hello');
   });
 });
