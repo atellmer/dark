@@ -197,7 +197,7 @@ const patchPropertiesSpecialCasesMap: Record<
   },
   textarea: (element: HTMLTextAreaElement, attrName: string, attrValue: AttributeValue) => {
     if (attrName === 'value') {
-      element.innerHTML = String(attrValue);
+      element.innerText = String(attrValue);
 
       return true;
     }

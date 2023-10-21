@@ -40,10 +40,7 @@ const Modal = component<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) 
     getAnimations: () => [
       {
         name: 'appearance',
-        mass: 35,
-        stiffness: 1000,
-        damping: 10,
-        duration: 550,
+        duration: 400,
       },
     ],
   });
@@ -84,7 +81,8 @@ const Modal = component<ModalProps>(({ isOpen: isOpenX, slot, onRequestClose }) 
       z-index: 10000;
       border-radius: 4px;
       opacity: ${x};
-      transform: scale(${1 * x}) translateY(${-100 * (1 - x)}%);
+      transform-origin: 50% 50%;
+      transform: scale(${1 * x});
     `,
     modalHeader: styled`
       padding: 32px 32px 0 32px;

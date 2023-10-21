@@ -88,7 +88,9 @@ describe('[events]', () => {
     const App = component(() => {
       return (
         <div onClick={spy1}>
-          <button onClick={spy2}>click</button>
+          <div>
+            <button onClick={spy2}>click</button>
+          </div>
         </div>
       );
     });

@@ -1158,9 +1158,6 @@ const App = component(() => {
     getAnimations: () => [
       {
         name: 'my-animation', // animation name should be uniqueness in this array
-        mass: 1,
-        stiffness: 1,
-        damping: 1,
         duration: 1000,
       },
     ],

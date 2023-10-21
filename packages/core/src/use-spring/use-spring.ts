@@ -36,7 +36,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
     let idx = 0;
 
     for (const animation of animations) {
-      const { mass = 1, stiffness = 1, damping = 1, duration = 10000, from = 0, to = 1 } = animation;
+      const { mass = 1, stiffness = 100, damping = 100, duration = 1000, from = 0, to = 1 } = animation;
       const key = createKey(animation);
       const cache = store[key];
       const slice = scope.data[idx];
@@ -364,7 +364,7 @@ function filterToggle(value: number, idx: number) {
   return value === 0 ? idx === 0 : value === 1 ? idx === 1 : idx === 0;
 }
 
-function mapToggle(value: number, size: number, idx: number) {
+function mapToggle(value: number, idx: number, size: number) {
   return size === 1 ? 1 : idx === 0 ? 1 - value : value;
 }
 
