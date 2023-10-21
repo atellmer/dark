@@ -5,6 +5,7 @@ import {
   type TextVirtualNode,
   type CommentVirtualNode,
   type PlainVirtualNode,
+  type Callback,
   type Ref,
   ATTR_REF,
   ATTR_BLACK_LIST,
@@ -36,12 +37,8 @@ import type {
   AttributeValue,
 } from '../native-element';
 
-const patchPropsBlackListMap = {
-  transform: true,
-  fill: true,
-};
-
-let moves: Array<() => void> = [];
+let moves: Array<Callback> = [];
+let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
 const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
 const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
@@ -135,14 +132,12 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       if (detectIsEvent(attrName)) {
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
       } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
-        const stop = !patchPropsBlackListMap[attrName]
-          ? patchProperties({
-              tagName: nextNode.name,
-              element: tagElement,
-              attrValue: nextAttrValue,
-              attrName,
-            })
-          : false;
+        const stop = patchProperties({
+          tagName: nextNode.name,
+          element: tagElement,
+          attrValue: nextAttrValue,
+          attrName,
+        });
 
         !stop && tagElement.setAttribute(attrName, nextAttrValue);
       }
@@ -164,7 +159,7 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   const fn = patchPropertiesSpecialCasesMap[tagName];
   let stop = fn ? fn(element, attrName, attrValue) : false;
 
-  if (canSetProperty(Object.getPrototypeOf(element), attrName)) {
+  if (canSetProperty(element, attrName)) {
     element[attrName] = attrValue;
   }
 
@@ -175,8 +170,11 @@ function patchProperties(options: PatchPropertiesOptions): boolean {
   return stop;
 }
 
-function canSetProperty(prototype: TagNativeElement, key: string) {
-  return prototype.hasOwnProperty(key) && Boolean(Object.getOwnPropertyDescriptor(prototype, key)?.set);
+function canSetProperty(element: TagNativeElement, key: string) {
+  const prototype = Object.getPrototypeOf(element);
+  const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+
+  return Boolean(descriptor?.set);
 }
 
 const patchPropertiesSpecialCasesMap: Record<
@@ -184,10 +182,15 @@ const patchPropertiesSpecialCasesMap: Record<
   (element: NativeElement, attrName: string, attrValue: AttributeValue) => boolean
 > = {
   input: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
-    if (attrName === 'value' && detectIsBoolean(attrValue)) {
-      element.checked = attrValue;
+    if (attrName === 'value') {
+      patches.push(() => {
+        detectIsBoolean(attrValue) ? (element.checked = attrValue) : (element.value = String(attrValue));
+      });
     } else if (attrName === 'autoFocus') {
-      element.autofocus = Boolean(attrValue);
+      patches.push(() => {
+        element.autofocus = Boolean(attrValue);
+        element.autofocus && element.focus();
+      });
     }
 
     return false;
@@ -306,7 +309,9 @@ function commit(fiber: Fiber<NativeElement>) {
 
 function finishCommit() {
   moves.forEach(x => x());
+  patches.forEach(x => x());
   moves = [];
+  patches = [];
 }
 
 function setTrackUpdate(fn: typeof trackUpdate) {
