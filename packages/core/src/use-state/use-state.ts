@@ -1,6 +1,7 @@
 import { detectIsFunction } from '../helpers';
 import { type UseUpdateOptions, type UpdateOptions, useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
+import { scope$$ } from '../scope';
 import { useCallback } from '../use-callback';
 
 type Value<T> = T | ((prevValue: T) => T);
@@ -17,10 +18,12 @@ function useState<T = unknown>(
     [],
   );
   const setState = useCallback((sourceValue: Value<T>) => {
+    const scope$ = scope$$();
+    const isBatch = scope$.getIsBatchZone();
     const create = (): UpdateOptions => {
       const prevValue = scope.value;
       const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
-      const shouldUpdate = () => !Object.is(prevValue, newValue);
+      const shouldUpdate = () => isBatch || !Object.is(prevValue, newValue);
       const setValue = () => (scope.value = newValue);
       const resetValue = () => (scope.value = prevValue);
 

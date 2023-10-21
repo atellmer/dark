@@ -21,7 +21,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
       getAnimations,
       loopTimerId: null,
       delayTimerId: null,
-      skipFirstRendfer: true,
+      skipFirstRender: true,
       playingIdx: -1,
       data: getAnimations(createDefaultOptions()).map(() => createInitialData()),
       keyes: [],
@@ -86,7 +86,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
     }
 
     scope.getAnimations = getAnimations;
-  }, [...deps]);
+  }, deps);
 
   useEffect(() => {
     return () => {
@@ -97,7 +97,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
   }, []);
 
   useEffect(() => {
-    if (scope.skipFirstRendfer && !mount) return;
+    if (scope.skipFirstRender && !mount) return;
     (async () => {
       const { getAnimations, playingIdx } = scope;
       const animations = getAnimations({ state, playingIdx });
@@ -117,7 +117,7 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
   }, [state, ...updatingDeps]);
 
   useEffect(() => {
-    scope.skipFirstRendfer = false;
+    scope.skipFirstRender = false;
   }, []);
 
   const play = useEvent((name: string, direction: Direction, sourceIdx?: number) => {
@@ -128,11 +128,10 @@ function useSpring(options: UseSpringOptions, deps: Array<any> = []) {
 
     scope.playingIdx = idx;
 
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve, reject) => {
       const loop = (direction: Direction) => {
         scope.data[idx].direction = direction;
         scope.playingIdx = idx;
-
         const { step, list } = scope.data[idx].values[direction];
         const x = list[step];
 
@@ -225,7 +224,7 @@ type Scope = {
   getAnimations: (options: AnimationOptions) => Array<Animation>;
   loopTimerId: number | NodeJS.Timeout;
   delayTimerId: number | NodeJS.Timeout;
-  skipFirstRendfer: boolean;
+  skipFirstRender: boolean;
   playingIdx: number;
   data: Array<AnimationData>;
   keyes: Array<string>;
