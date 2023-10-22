@@ -1,3 +1,5 @@
 const time = () => performance.now();
 
-export { time };
+const fix = (x: number, precision = 4) => Number(x.toFixed(precision));
+
+export { time, fix };

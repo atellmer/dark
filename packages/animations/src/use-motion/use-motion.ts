@@ -2,7 +2,7 @@ import { platform, useMemo, useUpdate } from '@dark-engine/core';
 
 import { type Config } from '../shared';
 import { presets } from '../presets';
-import { time } from '../utils';
+import { time, fix } from '../utils';
 
 type UseMotionOptions<T extends string> = {
   from: Record<T, number>;
@@ -11,24 +11,26 @@ type UseMotionOptions<T extends string> = {
 };
 
 function useMotion<T extends string>(options: UseMotionOptions<T>): [Record<T, number>, Api] {
-  const { from, to, config = defaultConfig } = options;
+  const { from, to, config: partialConfig = defaultConfig } = options;
   const update = useUpdate();
   const scope = useMemo<Scope<T>>(
     () => ({
-      value: { ...from },
+      springs: { ...from },
+      prevSprings: null,
       isForward: null,
       lastTime: null,
       rafId: null,
       results: null,
       completed: null,
-      config: { ...defaultConfig, ...config },
+      config: { ...defaultConfig, ...partialConfig },
     }),
     [],
   );
-  const value = scope.value as Record<T, number>;
+  const { precision } = scope.config;
+  const springs = transformSprings(scope.springs, precision);
 
   const play = (to: Record<T, number>) => {
-    const from = scope.value;
+    const from = scope.springs;
 
     scope.results = {};
     scope.completed = {};
@@ -37,7 +39,7 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [Record<T, n
       from,
       to,
       scope,
-      onLoop: update,
+      onLoop: () => detectAreSpringsDifferent(scope.prevSprings, scope.springs, precision) && update(),
     });
   };
 
@@ -58,11 +60,12 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [Record<T, n
     },
   };
 
-  return [value, api];
+  return [springs, api];
 }
 
 type Scope<T extends string> = {
-  value: Record<T, number>;
+  springs: Record<T, number>;
+  prevSprings: Record<T, number>;
   isForward: boolean | null;
   lastTime: number;
   rafId: number;
@@ -86,8 +89,10 @@ type RunOptions<T extends string> = {
 
 function run<T extends string>(options: RunOptions<T>, fromLoop = false) {
   const { from, to, scope, onLoop } = options;
-  const { value, results: cache, completed, config } = scope;
-  const keys = Object.keys(value);
+  const { springs, results, completed, config } = scope;
+  const keys = Object.keys(springs);
+
+  scope.prevSprings = { ...springs };
 
   if (!fromLoop) {
     scope.rafId && platform.caf(scope.rafId);
@@ -101,23 +106,23 @@ function run<T extends string>(options: RunOptions<T>, fromLoop = false) {
     scope.lastTime = currentTime;
 
     for (const key of keys) {
-      if (!cache[key]) {
-        cache[key] = [from[key], 0];
+      if (!results[key]) {
+        results[key] = [from[key], 0];
       }
 
-      let position = cache[key][0];
-      let velocity = cache[key][1];
+      let position = results[key][0];
+      let velocity = results[key][1];
       const destination: number = to[key];
 
       [position, velocity] = stepper({ position, velocity, destination, config, step: deltaTime });
 
-      cache[key] = [position, velocity];
+      results[key] = [position, velocity];
 
       if (position === destination) {
         completed[key] = true;
       }
 
-      value[key] = position;
+      springs[key] = position;
     }
 
     onLoop();
@@ -131,7 +136,7 @@ function run<T extends string>(options: RunOptions<T>, fromLoop = false) {
 const defaultConfig: Config = {
   ...presets.noWobble,
   mass: 1,
-  precision: 0.01,
+  precision: 2,
 };
 
 type StepperOptions = {
@@ -157,11 +162,33 @@ function stepper(options: StepperOptions) {
   const newVelocity = velocity + acceleration * step;
   const newPosition = position + newVelocity * step;
 
-  if (Math.abs(displacement) < precision) {
+  if (Math.abs(displacement) < 10 ** -precision) {
     return [destination, 0];
   }
 
   return [newPosition, newVelocity];
+}
+
+function transformSprings<T extends string>(springs: Record<T, number>, precision: number) {
+  const springs$: Record<T, number> = {} as Record<T, number>;
+
+  for (const key of Object.keys(springs)) {
+    springs$[key] = fix(springs[key], precision);
+  }
+
+  return springs$;
+}
+
+function detectAreSpringsDifferent<T extends string>(
+  prevSprings: Record<T, number>,
+  nextSprings: Record<T, number>,
+  precision: number,
+) {
+  for (const key of Object.keys(nextSprings)) {
+    if (fix(prevSprings[key], precision) !== fix(nextSprings[key], precision)) return true;
+  }
+
+  return false;
 }
 
 export { useMotion };
