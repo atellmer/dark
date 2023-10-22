@@ -1,4 +1,17 @@
-import { type DarkElement, h, Fragment, component, memo, useState, startTransition } from '@dark-engine/core';
+import {
+  h,
+  type DarkElement,
+  type Component,
+  Fragment,
+  component,
+  memo,
+  useState,
+  useEffect,
+  useMemo,
+  useDeferredValue,
+  startTransition,
+  useTransition,
+} from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 const AboutTab = component(() => {
@@ -42,36 +55,46 @@ const ContactTab = component(() => {
 });
 
 type TabButtonProps = {
+  name: string;
   slot: DarkElement;
   isActive: boolean;
   onClick: () => void;
 };
 
-const TabButton = component<TabButtonProps>(({ slot, isActive, onClick }) => {
+const TabButton = component<TabButtonProps>(({ name, slot, isActive, onClick }) => {
+  const [isPending, startTransition] = useTransition();
+
+  const handleClick = () => {
+    startTransition(() => onClick());
+  };
+
   if (isActive) {
     return <b>{slot}</b>;
   }
-  return <button onClick={() => onClick()}>{slot}</button>;
+
+  if (isPending) {
+    return <b style={`color: red;`}>{slot}</b>;
+  }
+
+  return <button onClick={handleClick}>{slot}</button>;
 });
 
 const App = component(() => {
   const [tab, setTab] = useState('about');
 
   const selectTab = (nextTab: string) => {
-    startTransition(() => {
-      setTab(nextTab);
-    });
+    setTab(nextTab);
   };
 
   return (
     <>
-      <TabButton isActive={tab === 'about'} onClick={() => selectTab('about')}>
+      <TabButton name='about' isActive={tab === 'about'} onClick={() => selectTab('about')}>
         About
       </TabButton>
-      <TabButton isActive={tab === 'posts'} onClick={() => selectTab('posts')}>
+      <TabButton name='posts' isActive={tab === 'posts'} onClick={() => selectTab('posts')}>
         Posts (slow)
       </TabButton>
-      <TabButton isActive={tab === 'contact'} onClick={() => selectTab('contact')}>
+      <TabButton name='contact' isActive={tab === 'contact'} onClick={() => selectTab('contact')}>
         Contact
       </TabButton>
       <hr />

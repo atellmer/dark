@@ -59,11 +59,11 @@
       "@dark-engine/web-router/*": [
         "./packages/web-router/src/*"
       ],
-      "@dark-engine/native-navigation": [
-        "./packages/native-navigation/src/index"
+      "@dark-engine/animations": [
+        "./packages/animations/src/index"
       ],
-      "@dark-engine/native-navigation/*": [
-        "./packages/native-navigation/src/*"
+      "@dark-engine/animations/*": [
+        "./packages/animations/src/*"
       ],
       "@test-utils": [
         "./test/utils"
