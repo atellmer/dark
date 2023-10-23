@@ -14,7 +14,6 @@ import {
   useImperativeHandle,
   createContext,
   detectIsFunction,
-  TaskPriority,
 } from '@dark-engine/core';
 
 import {
