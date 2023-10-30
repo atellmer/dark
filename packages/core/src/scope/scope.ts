@@ -40,6 +40,7 @@ class Scope {
   private isHydrateZone = false;
   private isStreamZone = false;
   private isTransitionZone = false;
+  private isEventZone = false;
   private isHot = false;
   private isDynamic = platform.detectIsDynamic();
 
@@ -340,6 +341,14 @@ class Scope {
     this.isTransitionZone = value;
   }
 
+  public getIsEventZone() {
+    return this.isEventZone;
+  }
+
+  public setIsEventZone(value: boolean) {
+    this.isEventZone = value;
+  }
+
   public getIsHot() {
     return this.isHot;
   }
@@ -386,7 +395,9 @@ const setRootId = (id: number) => {
 
 const removeScope = (id: number) => scopes.delete(id);
 
-const replaceScope = (scope: Scope, id: number = rootId) => scopes.set(id, scope);
+const replaceScope = (scope: Scope, id: number = rootId) => {
+  Object.assign(scopes.get(id), scope);
+};
 
 const scope$$ = (id: number = rootId) => scopes.get(id);
 

@@ -42,18 +42,20 @@ function delegateEvent(
 
   if (!handlersMap) {
     const rootHandler = (event: Event) => {
-      const fireEvent = eventsMap.get(eventName).get(event.target);
+      const handler = eventsMap.get(eventName).get(event.target);
       const target = event.target as TagNativeElement;
-      let syntheticEvent: SyntheticEvent<Event> = null;
+      let event$: SyntheticEvent<Event> = null;
 
-      if (detectIsFunction(fireEvent)) {
-        syntheticEvent = new SyntheticEvent({ sourceEvent: event, target });
+      if (detectIsFunction(handler)) {
+        event$ = new SyntheticEvent({ sourceEvent: event, target });
 
-        fireEvent(syntheticEvent);
+        scope$.setIsEventZone(true);
+        handler(event$);
+        scope$.setIsEventZone(false);
       }
 
       if (target.parentElement) {
-        const shouldPropagate = syntheticEvent ? syntheticEvent.getPropagation() : true;
+        const shouldPropagate = event$ ? event$.getPropagation() : true;
 
         if (shouldPropagate) {
           const constructor = event.constructor as BrowserEventConstructor;

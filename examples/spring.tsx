@@ -10,7 +10,6 @@ import {
   DarkElement,
   memo,
   batch,
-  TaskPriority,
 } from '@dark-engine/core';
 import { createRoot, useStyle } from '@dark-engine/platform-browser';
 

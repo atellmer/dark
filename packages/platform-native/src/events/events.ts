@@ -1,4 +1,5 @@
 import { EventData } from '@nativescript/core';
+import { scope$$ } from '@dark-engine/core';
 
 import { type NSElement } from '../registry';
 
@@ -15,13 +16,13 @@ class SyntheticEvent<E extends EventData, T = NSElement> {
 }
 
 function createSyntheticEventHandler(handler: Function) {
-  const syntheticHandler = (sourceEvent: EventData) => {
-    const event = new SyntheticEvent({ sourceEvent, target: sourceEvent.object });
+  const scope$ = scope$$();
 
-    handler(event);
+  return (sourceEvent: EventData) => {
+    scope$.setIsEventZone(true);
+    handler(new SyntheticEvent({ sourceEvent, target: sourceEvent.object }));
+    scope$.setIsEventZone(false);
   };
-
-  return syntheticHandler;
 }
 
 const detectIsEvent = (attrName: string) => attrName.startsWith('on');

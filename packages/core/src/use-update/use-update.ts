@@ -6,13 +6,10 @@ import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
 import { createFiberSign } from '../walk';
 
-export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'priority' | 'forceAsync'>;
+export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'forceAsync'>;
 export type UpdateOptions = UpdateChanger;
 
-function useUpdate({
-  priority: priority$ = TaskPriority.NORMAL,
-  forceAsync: forceAsync$ = false,
-}: UseUpdateOptions = {}) {
+function useUpdate({ forceAsync: forceAsync$ = false }: UseUpdateOptions = {}) {
   const rootId = getRootId();
   const fiber = scope$$().getCursorFiber();
   const hook = fiber.hook; // !
@@ -22,7 +19,8 @@ function useUpdate({
     if (scope$.getIsInsertionEffectsZone()) return;
     const isTransition = scope$.getIsTransitionZone();
     const isBatch = scope$.getIsBatchZone();
-    const priority = isTransition ? TaskPriority.LOW : priority$; // !
+    const isEvent = scope$.getIsEventZone();
+    const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition || forceAsync$;
     const getFiber = () => hook.getOwner(); // !
     const setPendingStatus = scope$.getPendingStatusSetter();

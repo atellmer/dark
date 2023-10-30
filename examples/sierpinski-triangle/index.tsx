@@ -7,7 +7,6 @@ import {
   useEffect,
   Fragment,
   DarkElement,
-  TaskPriority,
   startTransition,
 } from '@dark-engine/core';
 import { render, useStyle } from '@dark-engine/platform-browser';
@@ -24,7 +23,7 @@ type DotProps = {
 };
 
 const Dot = component<DotProps>(props => {
-  const [hover, setHover] = useState(false, { priority: TaskPriority.HIGH });
+  const [hover, setHover] = useState(false);
   const s = props.size * 1.3;
   const style = useStyle(styled => ({
     dot: styled`

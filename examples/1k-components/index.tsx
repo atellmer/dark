@@ -1,14 +1,14 @@
 import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, View, component, useState, useEffect, useMemo, useUpdate, TaskPriority, Flag } from '@dark-engine/core';
+import { h, View, component, useState, useEffect, useMemo, useUpdate, Flag } from '@dark-engine/core';
 import { render } from '@dark-engine/platform-browser';
 
 startFPSMonitor();
 startMemMonitor();
 
 const Demo = component(() => {
-  const [numPoints, setNumPoints] = useState(1000, { priority: TaskPriority.HIGH });
+  const [numPoints, setNumPoints] = useState(1000);
 
   const updateCount = e => {
     setNumPoints(Number(e.target.value));
