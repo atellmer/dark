@@ -1,12 +1,12 @@
 import { useMemo, useUpdate, useLayoutEffect, detectIsFunction } from '@dark-engine/core';
 
-import { type SpringValue, type Config } from '../shared';
-import { type Updater, MotionController } from '../controller';
+import { type SpringValue } from '../shared';
+import { type Updater, type GetPartialConfig, MotionController } from '../controller';
 
 type UseMotionOptions<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
-  config?: Partial<Config>;
+  config?: GetPartialConfig<T>;
   loop?: boolean;
   reverse?: boolean;
   outside?: (spring: SpringValue<T>) => void;
@@ -20,9 +20,7 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue
   const value = scope.controller.getValue();
   const api: Api<T> = {
     start: (fn?: Updater<T>) => {
-      const fn$ = ((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>;
-
-      scope.controller.start(fn$);
+      scope.controller.start(((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>);
     },
     reverse: () => scope.controller.reverse(),
     pause: () => scope.controller.pause(),

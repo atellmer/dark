@@ -1,16 +1,10 @@
 import { platform, type SubscriberWithValue } from '@dark-engine/core';
 
-import { type SpringValue, type Config, defaultConfig, fixValue, detectAreValuesDiff } from '../shared';
+import { type SpringValue, type Config, defaultConfig } from '../shared';
 import { stepper } from '../stepper';
-import { time, illegal, getFirstKey } from '../utils';
+import { time, illegal, getFirstKey, fix } from '../utils';
 
 const MAX_DELTA_TIME = 0.016;
-
-export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
-
-export type MotionEvent = 'start' | 'change' | 'end';
-
-export type EventValue<T extends string> = { value: SpringValue<T>; fromReverse: boolean };
 
 class MotionController<T extends string> {
   private value: SpringValue<T>;
@@ -22,23 +16,23 @@ class MotionController<T extends string> {
   private frameId: number = null;
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
-  private config: Config;
   private queue: Array<SpringValue<T>> = [];
   private events = new Map<MotionEvent, Set<SubscriberWithValue<EventValue<T>>>>();
+  private getConfig: GetConfig<T>;
   private update: (springs: SpringValue<T>) => void;
 
   constructor(
     from: SpringValue<T>,
     to: SpringValue<T> | undefined,
     update: SubscriberWithValue<SpringValue<T>>,
-    config: Partial<Config> = {},
+    getConfig: (key: T) => Partial<Config> = () => ({}),
   ) {
     this.from = from;
     this.to = to || null;
     this.value = { ...from };
     this.dest = { ...(to || from) };
     this.update = update;
-    this.setConfig(config);
+    this.getConfig = (key: T) => ({ ...defaultConfig, ...getConfig(key) });
   }
 
   public reset() {
@@ -63,11 +57,7 @@ class MotionController<T extends string> {
   }
 
   public getValue() {
-    return fixValue(this.value, this.config.precision);
-  }
-
-  public setConfig(config: Partial<Config> = {}) {
-    this.config = { ...defaultConfig, ...config };
+    return fixValue(this.value, this.getConfig);
   }
 
   public start(fn: Updater<T>, fromReverse = false) {
@@ -102,8 +92,7 @@ class MotionController<T extends string> {
     this.fireEvent('start', fromReverse);
     this.motion(to, fromReverse, () => {
       const { prevValue, value } = this;
-      const { precision } = this.config;
-      const isDiff = detectAreValuesDiff(prevValue, value, precision);
+      const isDiff = detectAreValuesDiff(prevValue, value, this.getConfig);
 
       if (isDiff) {
         this.update(this.getValue());
@@ -113,17 +102,17 @@ class MotionController<T extends string> {
   }
 
   private motion(to: SpringValue<T>, fromReverse: boolean, onLoop: () => void) {
-    const { value, results, completed, config } = this;
+    const { value, results, completed, getConfig } = this;
     const keys = Object.keys(value);
 
     this.prevValue = { ...value };
     this.lastTime = time();
     this.frameId = platform.raf(() => {
       const currentTime = time();
-      let deltaTime = (currentTime - this.lastTime) / 1000;
+      let step = (currentTime - this.lastTime) / 1000;
 
-      if (deltaTime > MAX_DELTA_TIME) {
-        deltaTime = 0;
+      if (step > MAX_DELTA_TIME) {
+        step = 0;
       }
 
       this.lastTime = currentTime;
@@ -137,13 +126,14 @@ class MotionController<T extends string> {
           results[key] = [value[key], 0];
         }
 
+        const config = getConfig(key as T);
         let position = results[key][0];
         let velocity = results[key][1];
 
         for (const update of this.queue) {
           const dest = update[key] as number;
 
-          [position, velocity] = stepper({ position, velocity, destination: dest, config, step: deltaTime });
+          [position, velocity] = stepper({ position, velocity, dest, config, step });
           results[key] = [position, velocity];
           completed[key] = position === dest;
         }
@@ -173,5 +163,41 @@ class MotionController<T extends string> {
     return true;
   }
 }
+
+function fixValue<T extends string>(value: SpringValue<T>, getConfig: GetConfig<T>) {
+  const value$ = {} as SpringValue<T>;
+
+  for (const key of Object.keys(value)) {
+    const { precision } = getConfig(key as T);
+
+    value$[key] = fix(value[key], precision);
+  }
+
+  return value$;
+}
+
+function detectAreValuesDiff<T extends string>(
+  prevValue: SpringValue<T>,
+  nextValue: SpringValue<T>,
+  getConfig: GetConfig<T>,
+) {
+  for (const key of Object.keys(nextValue)) {
+    const { precision } = getConfig(key as T);
+
+    if (fix(prevValue[key], precision) !== fix(nextValue[key], precision)) return true;
+  }
+
+  return false;
+}
+
+export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
+
+export type MotionEvent = 'start' | 'change' | 'end';
+
+export type EventValue<T extends string> = { value: SpringValue<T>; fromReverse: boolean };
+
+export type GetConfig<T extends string> = (key: T | null) => Config;
+
+export type GetPartialConfig<T extends string> = (key: T | null) => Partial<Config>;
 
 export { MotionController };

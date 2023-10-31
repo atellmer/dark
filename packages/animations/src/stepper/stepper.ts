@@ -5,22 +5,22 @@ const MAX_DISTANCE = 10 ** -2;
 type StepperOptions = {
   position: number;
   velocity: number;
-  destination: number;
+  dest: number;
   step: number;
   config: Partial<Config>;
 };
 
 function stepper(options: StepperOptions) {
   const {
-    destination,
+    dest,
     step,
     position,
     velocity,
     config: { tension, friction, mass },
   } = options;
-  const [newPosition, newVelocity] = spring(destination, step, position, velocity, tension, friction, mass);
+  const [newPosition, newVelocity] = spring(dest, step, position, velocity, tension, friction, mass);
 
-  if (Math.abs(newPosition - destination) < MAX_DISTANCE) return [destination, 0];
+  if (Math.abs(newPosition - dest) < MAX_DISTANCE) return [dest, 0];
 
   return [newPosition, newVelocity];
 }
