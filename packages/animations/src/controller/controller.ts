@@ -17,7 +17,7 @@ class MotionController<T extends string> {
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
   private queue: Array<SpringValue<T>> = [];
-  private events = new Map<MotionEvent, Set<SubscriberWithValue<EventValue<T>>>>();
+  private events = new Map<MotionEvent, Set<SubscriberWithValue<SpringValue<T>>>>();
   private getConfig: GetConfig<T>;
   private update: (springs: SpringValue<T>) => void;
 
@@ -40,7 +40,7 @@ class MotionController<T extends string> {
     this.dest = { ...(this.to || this.from) };
   }
 
-  public subscribe(event: MotionEvent, handler: SubscriberWithValue<EventValue<T>>) {
+  public subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
     if (!this.events.has(event)) {
       this.events.set(event, new Set());
     }
@@ -52,29 +52,61 @@ class MotionController<T extends string> {
     return () => subs.delete(handler);
   }
 
-  private fireEvent(event: MotionEvent, fromReverse: boolean) {
-    this.events.has(event) && this.events.get(event).forEach(x => x({ value: this.value, fromReverse }));
+  private fireEvent(event: MotionEvent) {
+    this.events.has(event) && this.events.get(event).forEach(x => x(this.value));
   }
 
   public getValue() {
     return fixValue(this.value, this.getConfig);
   }
 
-  public start(fn: Updater<T>, fromReverse = false) {
+  public start(fn: Updater<T>) {
     const dest = fn(this.value);
 
     Object.assign(this.dest, dest);
-    this.play(this.dest, fromReverse);
+    this.play(this.dest);
   }
 
   public reverse() {
+    const dest = this.calculateDest(this.from);
+
+    this.start(() => dest);
+  }
+
+  public toggle() {
+    if (!this.prevValue) {
+      this.start(() => this.to);
+    } else {
+      const dest = this.calculateDest(this.prevValue);
+
+      this.start(() => dest);
+    }
+  }
+
+  private calculateDest(target: SpringValue<T>) {
     if (!this.to) return illegal(`The destination value not found!`);
     const key = getFirstKey(this.to);
     const isFirstStrategy = this.to[key] > this.from[key];
-    const isValueGreater = this.value[key] > this.from[key];
-    const dest = isFirstStrategy ? (isValueGreater ? this.from : this.to) : isValueGreater ? this.to : this.from;
+    const isOverMax = this.value[key] > (isFirstStrategy ? this.to[key] : this.from[key]);
+    const isUnderMin = this.value[key] < (isFirstStrategy ? this.from[key] : this.to[key]);
+    const isGreater = this.value[key] > target[key];
+    const dest = isFirstStrategy
+      ? isOverMax
+        ? this.from
+        : isUnderMin
+        ? this.to
+        : isGreater
+        ? this.from
+        : this.to
+      : isOverMax
+      ? this.to
+      : isUnderMin
+      ? this.from
+      : isGreater
+      ? this.to
+      : this.from;
 
-    this.start(() => dest, true);
+    return dest;
   }
 
   public pause() {
@@ -86,26 +118,25 @@ class MotionController<T extends string> {
     this.frameId && platform.caf(this.frameId);
   }
 
-  private play(to: SpringValue<T>, fromReverse: boolean) {
+  private play(to: SpringValue<T>) {
     this.queue.push(to);
     if (this.frameId) return;
-    this.fireEvent('start', fromReverse);
-    this.motion(to, fromReverse, () => {
+    this.fireEvent('start');
+    this.motion(to, () => {
       const { prevValue, value } = this;
       const isDiff = detectAreValuesDiff(prevValue, value, this.getConfig);
 
       if (isDiff) {
         this.update(this.getValue());
-        this.fireEvent('change', fromReverse);
+        this.fireEvent('change');
       }
     });
   }
 
-  private motion(to: SpringValue<T>, fromReverse: boolean, onLoop: () => void) {
+  private motion(to: SpringValue<T>, onLoop: () => void) {
     const { value, results, completed, getConfig } = this;
     const keys = Object.keys(value);
 
-    this.prevValue = { ...value };
     this.lastTime = time();
     this.frameId = platform.raf(() => {
       const currentTime = time();
@@ -115,6 +146,7 @@ class MotionController<T extends string> {
         step = 0;
       }
 
+      this.prevValue = { ...value };
       this.lastTime = currentTime;
 
       if (this.queue.length === 0) {
@@ -145,12 +177,12 @@ class MotionController<T extends string> {
       onLoop();
 
       if (!this.checkCompleted(keys)) {
-        this.motion(to, fromReverse, onLoop);
+        this.motion(to, onLoop);
       } else {
         this.frameId = null;
         this.results = {};
         this.completed = {};
-        this.fireEvent('end', fromReverse);
+        this.fireEvent('end');
       }
     });
   }
@@ -193,8 +225,6 @@ function detectAreValuesDiff<T extends string>(
 export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
 
 export type MotionEvent = 'start' | 'change' | 'end';
-
-export type EventValue<T extends string> = { value: SpringValue<T>; fromReverse: boolean };
 
 export type GetConfig<T extends string> = (key: T | null) => Config;
 

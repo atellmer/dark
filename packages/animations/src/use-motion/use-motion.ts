@@ -2,6 +2,7 @@ import { useMemo, useUpdate, useLayoutEffect, detectIsFunction } from '@dark-eng
 
 import { type SpringValue } from '../shared';
 import { type Updater, type GetPartialConfig, MotionController } from '../controller';
+import { getFirstKey } from '../utils';
 
 type UseMotionOptions<T extends string> = {
   from: SpringValue<T>;
@@ -17,16 +18,18 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue
   const update$ = useUpdate();
   const update = (value: SpringValue<T>) => (detectIsFunction(outside) ? outside(value) : update$());
   const scope = useMemo(() => ({ controller: new MotionController(from, to, update, config) }), []);
-  const value = scope.controller.getValue();
+  const { controller } = scope;
+  const value = controller.getValue();
   const api = useMemo<MotionApi<T>>(
     () => ({
       start: (fn?: Updater<T>) => {
-        scope.controller.start(((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>);
+        controller.start(((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>);
       },
-      reverse: () => scope.controller.reverse(),
-      pause: () => scope.controller.pause(),
-      reset: () => scope.controller.reset(),
-      value: () => scope.controller.getValue(),
+      reverse: () => controller.reverse(),
+      toggle: () => controller.toggle(),
+      pause: () => controller.pause(),
+      reset: () => controller.reset(),
+      value: () => controller.getValue(),
     }),
     [],
   );
@@ -34,14 +37,22 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue
   useLayoutEffect(() => () => scope.controller.cancel(), []);
 
   useLayoutEffect(() => {
-    if (!loop) return;
-
-    const unsubscribe = scope.controller.subscribe('end', ({ fromReverse }) => {
-      if (reverse) {
-        fromReverse ? api.start() : api.reverse();
+    const unsubscribe = scope.controller.subscribe('end', value => {
+      if (loop) {
+        if (reverse) {
+          api.toggle();
+        } else {
+          api.reset();
+          api.start();
+        }
       } else {
-        api.reset();
-        api.start();
+        if (reverse) {
+          const key = getFirstKey(from);
+
+          if (value[key] !== from[key]) {
+            api.reverse();
+          }
+        }
       }
     });
 
@@ -54,6 +65,7 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue
 export type MotionApi<T extends string> = {
   start: (fn?: Updater<T>) => void;
   reverse: () => void;
+  toggle: () => void;
   pause: () => void;
   reset: () => void;
   value: () => SpringValue<T>;
