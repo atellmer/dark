@@ -1,88 +1,107 @@
 import { platform } from '@dark-engine/core';
 
-import { type SpringValue, type Config, defaultConfig, fixSprings, detectAreSpringsDiff } from '../shared';
+import { type SpringValue, type Config, defaultConfig, fixValue, detectAreValuesDiff } from '../shared';
 import { stepper } from '../stepper';
 import { time } from '../utils';
 
+const MAX_DELTA_TIME = 0.016;
+
+export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
+
 class MotionController<T extends string> {
-  private spring: SpringValue<T>;
-  private prevSpring: SpringValue<T> = null;
+  private value: SpringValue<T>;
+  private prevValue: SpringValue<T> = null;
   private lastTime: number = null;
   private animationId: number = null;
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
   private config: Config;
-  private to: SpringValue<T>;
+  private dest: SpringValue<T>;
+  private queue: Array<SpringValue<T>> = [];
   private update: (springs: SpringValue<T>) => void;
-  private updatesQueue: Array<SpringValue<T>> = [];
 
-  constructor(spring: SpringValue<T>, update: (springs: SpringValue<T>) => void, config: Partial<Config> = {}) {
-    this.spring = { ...spring };
-    this.to = { ...spring };
+  constructor(value: SpringValue<T>, update: (v: SpringValue<T>) => void, config: Partial<Config> = {}) {
+    this.value = { ...value };
+    this.dest = { ...value };
     this.update = update;
     this.setConfig(config);
   }
 
-  public start(to: Partial<SpringValue<T>>) {
-    for (const key of Object.keys(to)) {
-      this.to[key] = to[key];
-    }
+  public getValue() {
+    return fixValue(this.value, this.config.precision);
+  }
 
-    this.play(this.to);
+  public setConfig(config: Partial<Config> = {}) {
+    this.config = { ...defaultConfig, ...config };
+  }
+
+  public start(fn: Updater<T>) {
+    const dest = fn(this.dest);
+
+    Object.assign(this.dest, dest);
+    this.play(this.dest);
+  }
+
+  public pause() {
+    this.cancel();
+    this.animationId = null;
+  }
+
+  public cancel() {
+    this.animationId && platform.caf(this.animationId);
   }
 
   private play(to: SpringValue<T>) {
-    this.updatesQueue.push(to);
+    this.queue.push(to);
     if (this.animationId) return;
     this.motion(to, () => {
-      const { prevSpring, spring } = this;
+      const { prevValue, value } = this;
       const { precision } = this.config;
 
-      detectAreSpringsDiff(prevSpring, spring, precision) && this.update(this.getSpring());
+      detectAreValuesDiff(prevValue, value, precision) && this.update(this.getValue());
     });
   }
 
   private motion(to: SpringValue<T>, onLoop: () => void) {
-    const { spring, results, completed, config } = this;
-    const keys = Object.keys(spring);
+    const { value, results, completed, config } = this;
+    const keys = Object.keys(value);
 
-    this.prevSpring = { ...spring };
+    this.prevValue = { ...value };
     this.lastTime = time();
     this.animationId = platform.raf(() => {
       const currentTime = time();
       let deltaTime = (currentTime - this.lastTime) / 1000;
 
-      if (deltaTime > 0.016) {
-        deltaTime = 0.016;
+      if (deltaTime > MAX_DELTA_TIME) {
+        deltaTime = 0;
       }
 
       this.lastTime = currentTime;
 
-      if (this.updatesQueue.length === 0) {
-        this.updatesQueue.push(this.to);
+      if (this.queue.length === 0) {
+        this.queue.push(this.dest);
       }
 
       for (const key of keys) {
         if (!results[key]) {
-          results[key] = [spring[key], 0];
+          results[key] = [value[key], 0];
         }
 
         let position = results[key][0];
         let velocity = results[key][1];
 
-        for (const update of this.updatesQueue) {
-          const destination: number = update[key];
+        for (const update of this.queue) {
+          const dest = update[key] as number;
 
-          [position, velocity] = stepper({ position, velocity, destination, config, step: deltaTime });
-
+          [position, velocity] = stepper({ position, velocity, destination: dest, config, step: deltaTime });
           results[key] = [position, velocity];
-          completed[key] = position === destination;
+          completed[key] = position === dest;
         }
 
-        spring[key] = position;
+        value[key] = position;
       }
 
-      this.updatesQueue = [];
+      this.queue = [];
       onLoop();
 
       if (!this.checkCompleted(keys)) {
@@ -101,18 +120,6 @@ class MotionController<T extends string> {
     }
 
     return true;
-  }
-
-  public getSpring() {
-    return fixSprings(this.spring, this.config.precision);
-  }
-
-  public setTo(value: SpringValue<T>) {
-    this.to = value;
-  }
-
-  public setConfig(config: Partial<Config> = {}) {
-    this.config = { ...defaultConfig, ...config };
   }
 }
 

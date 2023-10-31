@@ -16,26 +16,26 @@ const defaultConfig: Config = {
   precision: 2,
 };
 
-function fixSprings<T extends string>(springs: SpringValue<T>, precision: number) {
-  const springs$ = {} as SpringValue<T>;
+function fixValue<T extends string>(value: SpringValue<T>, precision: number) {
+  const value$ = {} as SpringValue<T>;
 
-  for (const key of Object.keys(springs)) {
-    springs$[key] = fix(springs[key], precision);
+  for (const key of Object.keys(value)) {
+    value$[key] = fix(value[key], precision);
   }
 
-  return springs$;
+  return value$;
 }
 
-function detectAreSpringsDiff<T extends string>(
-  prevSprings: SpringValue<T>,
-  nextSprings: SpringValue<T>,
+function detectAreValuesDiff<T extends string>(
+  prevValue: SpringValue<T>,
+  nextValue: SpringValue<T>,
   precision: number,
 ) {
-  for (const key of Object.keys(nextSprings)) {
-    if (fix(prevSprings[key], precision) !== fix(nextSprings[key], precision)) return true;
+  for (const key of Object.keys(nextValue)) {
+    if (fix(prevValue[key], precision) !== fix(nextValue[key], precision)) return true;
   }
 
   return false;
 }
 
-export { defaultConfig, fixSprings, detectAreSpringsDiff };
+export { defaultConfig, fixValue, detectAreValuesDiff };
