@@ -1,4 +1,4 @@
-import { platform } from '@dark-engine/core';
+import { platform, type SubscriberWithValue } from '@dark-engine/core';
 
 import { type SpringValue, type Config, defaultConfig, fixValue, detectAreValuesDiff } from '../shared';
 import { stepper } from '../stepper';
@@ -8,6 +8,10 @@ const MAX_DELTA_TIME = 0.016;
 
 export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
 
+export type MotionEvent = 'start' | 'change' | 'end';
+
+export type EventValue<T extends string> = { value: SpringValue<T>; fromReverse: boolean };
+
 class MotionController<T extends string> {
   private value: SpringValue<T>;
   private prevValue: SpringValue<T> = null;
@@ -15,17 +19,18 @@ class MotionController<T extends string> {
   private from: SpringValue<T> = null;
   private to: SpringValue<T> = null;
   private lastTime: number = null;
-  private animationId: number = null;
+  private frameId: number = null;
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
   private config: Config;
   private queue: Array<SpringValue<T>> = [];
+  private events = new Map<MotionEvent, Set<SubscriberWithValue<EventValue<T>>>>();
   private update: (springs: SpringValue<T>) => void;
 
   constructor(
     from: SpringValue<T>,
     to: SpringValue<T> | undefined,
-    update: (v: SpringValue<T>) => void,
+    update: SubscriberWithValue<SpringValue<T>>,
     config: Partial<Config> = {},
   ) {
     this.from = from;
@@ -36,6 +41,27 @@ class MotionController<T extends string> {
     this.setConfig(config);
   }
 
+  public reset() {
+    this.value = { ...this.from };
+    this.dest = { ...(this.to || this.from) };
+  }
+
+  public subscribe(event: MotionEvent, handler: SubscriberWithValue<EventValue<T>>) {
+    if (!this.events.has(event)) {
+      this.events.set(event, new Set());
+    }
+
+    const subs = this.events.get(event);
+
+    subs.add(handler);
+
+    return () => subs.delete(handler);
+  }
+
+  private fireEvent(event: MotionEvent, fromReverse: boolean) {
+    this.events.has(event) && this.events.get(event).forEach(x => x({ value: this.value, fromReverse }));
+  }
+
   public getValue() {
     return fixValue(this.value, this.config.precision);
   }
@@ -44,11 +70,11 @@ class MotionController<T extends string> {
     this.config = { ...defaultConfig, ...config };
   }
 
-  public start(fn: Updater<T>) {
-    const dest = fn(this.dest);
+  public start(fn: Updater<T>, fromReverse = false) {
+    const dest = fn(this.value);
 
     Object.assign(this.dest, dest);
-    this.play(this.dest);
+    this.play(this.dest, fromReverse);
   }
 
   public reverse() {
@@ -58,36 +84,41 @@ class MotionController<T extends string> {
     const isValueGreater = this.value[key] > this.from[key];
     const dest = isFirstStrategy ? (isValueGreater ? this.from : this.to) : isValueGreater ? this.to : this.from;
 
-    this.start(() => dest);
+    this.start(() => dest, true);
   }
 
   public pause() {
     this.cancel();
-    this.animationId = null;
+    this.frameId = null;
   }
 
   public cancel() {
-    this.animationId && platform.caf(this.animationId);
+    this.frameId && platform.caf(this.frameId);
   }
 
-  private play(to: SpringValue<T>) {
+  private play(to: SpringValue<T>, fromReverse: boolean) {
     this.queue.push(to);
-    if (this.animationId) return;
-    this.motion(to, () => {
+    if (this.frameId) return;
+    this.fireEvent('start', fromReverse);
+    this.motion(to, fromReverse, () => {
       const { prevValue, value } = this;
       const { precision } = this.config;
+      const isDiff = detectAreValuesDiff(prevValue, value, precision);
 
-      detectAreValuesDiff(prevValue, value, precision) && this.update(this.getValue());
+      if (isDiff) {
+        this.update(this.getValue());
+        this.fireEvent('change', fromReverse);
+      }
     });
   }
 
-  private motion(to: SpringValue<T>, onLoop: () => void) {
+  private motion(to: SpringValue<T>, fromReverse: boolean, onLoop: () => void) {
     const { value, results, completed, config } = this;
     const keys = Object.keys(value);
 
     this.prevValue = { ...value };
     this.lastTime = time();
-    this.animationId = platform.raf(() => {
+    this.frameId = platform.raf(() => {
       const currentTime = time();
       let deltaTime = (currentTime - this.lastTime) / 1000;
 
@@ -124,11 +155,12 @@ class MotionController<T extends string> {
       onLoop();
 
       if (!this.checkCompleted(keys)) {
-        this.motion(to, onLoop);
+        this.motion(to, fromReverse, onLoop);
       } else {
-        this.animationId = null;
+        this.frameId = null;
         this.results = {};
         this.completed = {};
+        this.fireEvent('end', fromReverse);
       }
     });
   }

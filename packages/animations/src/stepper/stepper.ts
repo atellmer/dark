@@ -1,5 +1,7 @@
 import { type Config } from '../shared';
 
+const MAX_DISTANCE = 10 ** -2;
+
 type StepperOptions = {
   position: number;
   velocity: number;
@@ -17,11 +19,8 @@ function stepper(options: StepperOptions) {
     config: { tension, friction, mass },
   } = options;
   const [newPosition, newVelocity] = spring(destination, step, position, velocity, tension, friction, mass);
-  const displacement = newPosition - destination;
 
-  if (Math.abs(displacement) < 10 ** -2) {
-    return [destination, 0];
-  }
+  if (Math.abs(newPosition - destination) < MAX_DISTANCE) return [destination, 0];
 
   return [newPosition, newVelocity];
 }
@@ -36,8 +35,8 @@ function spring(
   mass: number,
 ) {
   const displacement = position - destination;
-  const springForce = -tension * displacement;
-  const dampingForce = -friction * velocity;
+  const springForce = -1 * tension * displacement;
+  const dampingForce = -1 * friction * velocity;
   const acceleration = (springForce + dampingForce) / mass;
   const newVelocity = velocity + acceleration * step;
   const newPosition = position + newVelocity * step;
