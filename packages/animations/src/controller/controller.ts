@@ -2,7 +2,7 @@ import { platform } from '@dark-engine/core';
 
 import { type SpringValue, type Config, defaultConfig, fixValue, detectAreValuesDiff } from '../shared';
 import { stepper } from '../stepper';
-import { time } from '../utils';
+import { time, illegal, getFirstKey } from '../utils';
 
 const MAX_DELTA_TIME = 0.016;
 
@@ -11,18 +11,27 @@ export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringVa
 class MotionController<T extends string> {
   private value: SpringValue<T>;
   private prevValue: SpringValue<T> = null;
+  private dest: SpringValue<T>;
+  private from: SpringValue<T> = null;
+  private to: SpringValue<T> = null;
   private lastTime: number = null;
   private animationId: number = null;
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
   private config: Config;
-  private dest: SpringValue<T>;
   private queue: Array<SpringValue<T>> = [];
   private update: (springs: SpringValue<T>) => void;
 
-  constructor(value: SpringValue<T>, update: (v: SpringValue<T>) => void, config: Partial<Config> = {}) {
-    this.value = { ...value };
-    this.dest = { ...value };
+  constructor(
+    from: SpringValue<T>,
+    to: SpringValue<T> | undefined,
+    update: (v: SpringValue<T>) => void,
+    config: Partial<Config> = {},
+  ) {
+    this.from = from;
+    this.to = to || null;
+    this.value = { ...from };
+    this.dest = { ...(to || from) };
     this.update = update;
     this.setConfig(config);
   }
@@ -40,6 +49,16 @@ class MotionController<T extends string> {
 
     Object.assign(this.dest, dest);
     this.play(this.dest);
+  }
+
+  public reverse() {
+    if (!this.to) return illegal(`The destination value not found!`);
+    const key = getFirstKey(this.to);
+    const isFirstStrategy = this.to[key] > this.from[key];
+    const isValueGreater = this.value[key] > this.from[key];
+    const dest = isFirstStrategy ? (isValueGreater ? this.from : this.to) : isValueGreater ? this.to : this.from;
+
+    this.start(() => dest);
   }
 
   public pause() {
