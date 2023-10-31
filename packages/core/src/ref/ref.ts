@@ -1,10 +1,12 @@
 import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
 import type { Component, ComponentFactory } from '../component';
-import type { RefProps } from '../shared';
+import type { RefProps, KeyProps, FlagProps } from '../shared';
 import { useMemo } from '../use-memo';
 import type { MutableRef, Ref } from './types';
 
-function forwardRef<P, R>(component: ComponentFactory<P, R>): ComponentFactory<P & RefProps<R>, R> {
+function forwardRef<P, R>(
+  component: ComponentFactory<P, R>,
+): ComponentFactory<P & RefProps<R> & KeyProps & FlagProps, R> {
   type Props = P & RefProps<R>;
 
   return (props: Props) => {

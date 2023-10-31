@@ -12,20 +12,24 @@ type UseMotionOptions<T extends string> = {
   outside?: (spring: SpringValue<T>) => void;
 };
 
-function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue<T>, Api<T>] {
+function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue<T>, MotionApi<T>] {
   const { from, to, config, loop, reverse, outside } = options;
   const update$ = useUpdate();
   const update = (value: SpringValue<T>) => (detectIsFunction(outside) ? outside(value) : update$());
   const scope = useMemo(() => ({ controller: new MotionController(from, to, update, config) }), []);
   const value = scope.controller.getValue();
-  const api: Api<T> = {
-    start: (fn?: Updater<T>) => {
-      scope.controller.start(((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>);
-    },
-    reverse: () => scope.controller.reverse(),
-    pause: () => scope.controller.pause(),
-    reset: () => scope.controller.reset(),
-  };
+  const api = useMemo<MotionApi<T>>(
+    () => ({
+      start: (fn?: Updater<T>) => {
+        scope.controller.start(((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>);
+      },
+      reverse: () => scope.controller.reverse(),
+      pause: () => scope.controller.pause(),
+      reset: () => scope.controller.reset(),
+      value: () => scope.controller.getValue(),
+    }),
+    [],
+  );
 
   useLayoutEffect(() => () => scope.controller.cancel(), []);
 
@@ -47,11 +51,12 @@ function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue
   return [value, api];
 }
 
-type Api<T extends string> = {
+export type MotionApi<T extends string> = {
   start: (fn?: Updater<T>) => void;
   reverse: () => void;
   pause: () => void;
   reset: () => void;
+  value: () => SpringValue<T>;
 };
 
 export { useMotion };
