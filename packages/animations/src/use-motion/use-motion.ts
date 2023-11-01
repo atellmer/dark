@@ -1,4 +1,4 @@
-import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, type Callback } from '@dark-engine/core';
+import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch, type Callback } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
 import { type Updater, type PartialConfigFn, MotionController } from '../controller';
@@ -16,17 +16,30 @@ export type UseMotionOptions<T extends string> = {
   onEnd?: () => void;
 };
 
-function useMotion<T extends string>(options: UseMotionOptions<T>): [SpringValue<T>, MotionApi<T>] {
+function useMotion<T extends string>(
+  options: UseMotionOptions<T>,
+  deps: Array<any> = [],
+): [SpringValue<T>, MotionApi<T>] {
   const { from, to, config, loop, reverse, outside, onStart, onChange, onEnd } = options;
   const update$ = useUpdate();
-  const update = (value: SpringValue<T>) => (detectIsFunction(outside) ? outside(value) : update$());
-  const scope = useMemo(() => ({ controller: new MotionController(from, to, update, config) }), []);
+  const update = (value: SpringValue<T>) => (detectIsFunction(outside) ? outside(value) : batch(() => update$()));
+  const scope = useMemo(() => ({ controller: new MotionController() }), []);
   const { controller } = scope;
+
+  useMemo(() => {
+    controller.setFrom(from);
+    controller.setTo(to);
+    controller.setConfigFn(config);
+    controller.setUpdate(update);
+  }, deps);
+
   const value = controller.getValue();
   const api = useMemo<MotionApi<T>>(
     () => ({
       start: (fn?: Updater<T>) => {
-        return controller.start(((pv: SpringValue<T>) => ({ ...to, ...(fn && fn(pv)) })) as Updater<T>);
+        const fn$ = ((pv: SpringValue<T>) => ({ ...controller.getTo(), ...(fn && fn(pv)) })) as Updater<T>;
+
+        return controller.start(fn$);
       },
       reverse: () => controller.reverse(),
       toggle: () => controller.toggle(),

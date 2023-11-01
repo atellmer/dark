@@ -17,9 +17,11 @@ function useTrail<T extends string>(
     () => ({
       controllers: range(count).map(() => new MotionController()),
       unsubscribe: null,
+      fromReverse: false,
     }),
     [],
   );
+
   useMemo(() => {
     scope.controllers.forEach((controller, idx) => {
       const { from, to, config, outside } = configurator(idx);
@@ -36,44 +38,68 @@ function useTrail<T extends string>(
   const api = useMemo<TrailApi<T>>(
     () => ({
       start: (fn?: Updater<T>) => {
-        return new Promise<boolean>(resolve => {
-          const [controller] = scope.controllers;
-          const controller$ = scope.controllers[scope.controllers.length - 1];
-          const fn$ = ((pv: SpringValue<T>) => ({ ...controller.getTo(), ...(fn && fn(pv)) })) as Updater<T>;
+        const [controller] = scope.controllers;
+        const fn$ = ((pv: SpringValue<T>) => ({ ...controller.getTo(), ...(fn && fn(pv)) })) as Updater<T>;
 
-          controller.start(fn$);
-          scope.unsubscribe && scope.unsubscribe();
-          scope.unsubscribe = controller$.subscribe('end', value => {
-            const dest = controller.getDest();
-            const isDiff = MotionController.detectAreValuesDiff(value, dest, controller.getConfigFn());
+        subscribeIfNecessary(false);
+        controller.start(fn$);
+      },
+      reverse: () => {
+        const lastController = scope.controllers[scope.controllers.length - 1];
 
-            if (!isDiff) {
-              scope.unsubscribe();
-              resolve(true);
-            }
-          });
-        });
+        subscribeIfNecessary(true);
+        lastController.reverse();
+      },
+      toggle: () => {
+        const [controller] = scope.controllers;
+
+        subscribeIfNecessary(false);
+        controller.toggle();
       },
     }),
     [],
   );
 
-  useLayoutEffect(() => {
+  const subscribeIfNecessary = (fromReverse: boolean) => {
+    if (scope.fromReverse || fromReverse) {
+      scope.unsubscribe && scope.unsubscribe();
+      scope.unsubscribe = subscribe(fromReverse);
+    }
+
+    scope.fromReverse = fromReverse;
+  };
+
+  const subscribe = (fromReverse = false) => {
     const { controllers } = scope;
     const unsubs: Array<Callback> = [];
+    const processController = (idx: number) => {
+      const controller = controllers[idx];
+      const controller$ = fromReverse ? controllers[idx - 1] : controllers[idx + 1];
 
-    for (let i = 0; i < controllers.length; i++) {
-      const controller = controllers[i];
-      const nextController = controllers[i + 1];
-
-      if (nextController) {
-        const unsub = controller.subscribe('change', value => nextController.start(() => value));
+      if (controller$) {
+        const unsub = controller.subscribe('change', value => controller$.start(() => value));
 
         unsubs.push(unsub);
+      }
+    };
+
+    if (fromReverse) {
+      for (let i = controllers.length - 1; i > 0; i--) {
+        processController(i);
+      }
+    } else {
+      for (let i = 0; i < controllers.length; i++) {
+        processController(i);
       }
     }
 
     return () => unsubs.forEach(x => x());
+  };
+
+  useLayoutEffect(() => {
+    scope.unsubscribe = subscribe();
+
+    return () => scope.unsubscribe && scope.unsubscribe();
   }, []);
 
   useLayoutEffect(() => () => scope.controllers.map(x => x.cancel()), []);
@@ -82,7 +108,9 @@ function useTrail<T extends string>(
 }
 
 export type TrailApi<T extends string> = {
-  start: (fn?: Updater<T>) => Promise<boolean>;
+  start: (fn?: Updater<T>) => void;
+  reverse: () => void;
+  toggle: () => void;
 };
 
 export { useTrail };

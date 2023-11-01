@@ -128,7 +128,7 @@ class MotionController<T extends string> {
     const isValueUnderMin = this.value[key] < min;
     const isTargetOverMax = target[key] > max;
     const isTargetUnderMin = target[key] < min;
-    const isGreater = this.value[key] > target[key];
+    const isGreater = this.value[key] >= target[key];
     const dest = isFirstStrategy
       ? isValueOverMax || isTargetOverMax
         ? this.from
