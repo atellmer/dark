@@ -1,8 +1,8 @@
 import { platform, type SubscriberWithValue } from '@dark-engine/core';
 
 import { type SpringValue, type Config, defaultConfig } from '../shared';
-import { stepper } from '../stepper';
 import { time, illegal, getFirstKey, fix } from '../utils';
+import { stepper } from '../stepper';
 
 const MAX_DELTA_TIME = 0.016;
 
@@ -35,11 +35,6 @@ class MotionController<T extends string> {
     this.getConfig = (key: T) => ({ ...defaultConfig, ...getConfig(key) });
   }
 
-  public reset() {
-    this.value = { ...this.from };
-    this.dest = { ...(this.to || this.from) };
-  }
-
   public subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
     if (!this.events.has(event)) {
       this.events.set(event, new Set());
@@ -52,55 +47,83 @@ class MotionController<T extends string> {
     return () => subs.delete(handler);
   }
 
-  private fireEvent(event: MotionEvent) {
-    this.events.has(event) && this.events.get(event).forEach(x => x(this.value));
-  }
-
   public getValue() {
-    return fixValue(this.value, this.getConfig);
+    const value$ = {} as SpringValue<T>;
+
+    for (const key of Object.keys(this.value)) {
+      const { precision } = this.getConfig(key as T);
+
+      value$[key] = fix(this.value[key], precision);
+    }
+
+    return value$;
   }
 
   public start(fn: Updater<T>) {
     const dest = fn(this.value);
 
     Object.assign(this.dest, dest);
-    this.play(this.dest);
+
+    return this.play(this.dest);
   }
 
   public reverse() {
     const dest = this.calculateDest(this.from);
 
-    this.start(() => dest);
+    return this.start(() => dest);
   }
 
   public toggle() {
-    if (!this.prevValue) {
-      this.start(() => this.to);
-    } else {
-      const dest = this.calculateDest(this.prevValue);
+    const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue);
 
-      this.start(() => dest);
-    }
+    return this.start(() => dest);
+  }
+
+  public pause() {
+    this.cancel();
+    this.frameId = null;
+  }
+
+  public reset() {
+    this.value = { ...this.from };
+    this.dest = { ...(this.to || this.from) };
+  }
+
+  public cancel() {
+    this.frameId && platform.caf(this.frameId);
+  }
+
+  private async play(to: SpringValue<T>) {
+    this.queue.push(to);
+    if (this.frameId) return false;
+    this.fireEvent('start');
+    const isSuccess = await this.motion(to);
+
+    return isSuccess;
   }
 
   private calculateDest(target: SpringValue<T>) {
     if (!this.to) return illegal(`The destination value not found!`);
     const key = getFirstKey(this.to);
     const isFirstStrategy = this.to[key] > this.from[key];
-    const isOverMax = this.value[key] > (isFirstStrategy ? this.to[key] : this.from[key]);
-    const isUnderMin = this.value[key] < (isFirstStrategy ? this.from[key] : this.to[key]);
+    const max = isFirstStrategy ? this.to[key] : this.from[key];
+    const min = isFirstStrategy ? this.from[key] : this.to[key];
+    const isValueOverMax = this.value[key] > max;
+    const isValueUnderMin = this.value[key] < min;
+    const isTargetOverMax = target[key] > max;
+    const isTargetUnderMin = target[key] < min;
     const isGreater = this.value[key] > target[key];
     const dest = isFirstStrategy
-      ? isOverMax
+      ? isValueOverMax || isTargetOverMax
         ? this.from
-        : isUnderMin
+        : isValueUnderMin || isTargetUnderMin
         ? this.to
         : isGreater
         ? this.from
         : this.to
-      : isOverMax
+      : isValueOverMax || isTargetOverMax
       ? this.to
-      : isUnderMin
+      : isValueUnderMin || isTargetUnderMin
       ? this.from
       : isGreater
       ? this.to
@@ -109,82 +132,75 @@ class MotionController<T extends string> {
     return dest;
   }
 
-  public pause() {
-    this.cancel();
-    this.frameId = null;
-  }
+  private motion(to: SpringValue<T>) {
+    return new Promise<boolean>((resolve, reject) => {
+      const { value, results, completed, getConfig } = this;
+      const keys = Object.keys(value);
 
-  public cancel() {
-    this.frameId && platform.caf(this.frameId);
-  }
+      this.lastTime = time();
+      this.frameId = platform.raf(() => {
+        try {
+          const currentTime = time();
+          let step = (currentTime - this.lastTime) / 1000;
 
-  private play(to: SpringValue<T>) {
-    this.queue.push(to);
-    if (this.frameId) return;
-    this.fireEvent('start');
-    this.motion(to, () => {
-      const { prevValue, value } = this;
-      const isDiff = detectAreValuesDiff(prevValue, value, this.getConfig);
+          if (step > MAX_DELTA_TIME) {
+            step = 0;
+          }
 
-      if (isDiff) {
-        this.update(this.getValue());
-        this.fireEvent('change');
-      }
+          this.prevValue = { ...value };
+          this.lastTime = currentTime;
+
+          if (this.queue.length === 0) {
+            this.queue.push(this.dest);
+          }
+
+          for (const key of keys) {
+            if (!results[key]) {
+              results[key] = [value[key], 0];
+            }
+
+            const config = getConfig(key as T);
+            let position = results[key][0];
+            let velocity = results[key][1];
+
+            for (const update of this.queue) {
+              const dest = update[key] as number;
+
+              [position, velocity] = stepper({ position, velocity, dest, config, step });
+              results[key] = [position, velocity];
+              completed[key] = position === dest;
+            }
+
+            value[key] = position;
+          }
+
+          this.queue = [];
+          this.loop();
+
+          if (!this.checkCompleted(keys)) {
+            this.motion(to).then(resolve).catch(reject);
+          } else {
+            this.frameId = null;
+            this.results = {};
+            this.completed = {};
+            this.fireEvent('end');
+            resolve(true);
+          }
+        } catch (err) {
+          reject(err);
+        }
+      });
     });
   }
 
-  private motion(to: SpringValue<T>, onLoop: () => void) {
-    const { value, results, completed, getConfig } = this;
-    const keys = Object.keys(value);
+  private loop() {
+    const { prevValue, value } = this;
+    const isDiff = MotionController.detectAreValuesDiff(prevValue, value, this.getConfig);
 
-    this.lastTime = time();
-    this.frameId = platform.raf(() => {
-      const currentTime = time();
-      let step = (currentTime - this.lastTime) / 1000;
-
-      if (step > MAX_DELTA_TIME) {
-        step = 0;
-      }
-
-      this.prevValue = { ...value };
-      this.lastTime = currentTime;
-
-      if (this.queue.length === 0) {
-        this.queue.push(this.dest);
-      }
-
-      for (const key of keys) {
-        if (!results[key]) {
-          results[key] = [value[key], 0];
-        }
-
-        const config = getConfig(key as T);
-        let position = results[key][0];
-        let velocity = results[key][1];
-
-        for (const update of this.queue) {
-          const dest = update[key] as number;
-
-          [position, velocity] = stepper({ position, velocity, dest, config, step });
-          results[key] = [position, velocity];
-          completed[key] = position === dest;
-        }
-
-        value[key] = position;
-      }
-
-      this.queue = [];
-      onLoop();
-
-      if (!this.checkCompleted(keys)) {
-        this.motion(to, onLoop);
-      } else {
-        this.frameId = null;
-        this.results = {};
-        this.completed = {};
-        this.fireEvent('end');
-      }
-    });
+    if (isDiff) {
+      this.update(this.getValue());
+      this.fireEvent('change');
+    }
   }
 
   private checkCompleted(keys: Array<string>) {
@@ -194,32 +210,24 @@ class MotionController<T extends string> {
 
     return true;
   }
-}
 
-function fixValue<T extends string>(value: SpringValue<T>, getConfig: GetConfig<T>) {
-  const value$ = {} as SpringValue<T>;
-
-  for (const key of Object.keys(value)) {
-    const { precision } = getConfig(key as T);
-
-    value$[key] = fix(value[key], precision);
+  private fireEvent(event: MotionEvent) {
+    this.events.has(event) && this.events.get(event).forEach(x => x(this.value));
   }
 
-  return value$;
-}
+  private static detectAreValuesDiff<T extends string>(
+    prevValue: SpringValue<T>,
+    nextValue: SpringValue<T>,
+    getConfig: GetConfig<T>,
+  ) {
+    for (const key of Object.keys(nextValue)) {
+      const { precision } = getConfig(key as T);
 
-function detectAreValuesDiff<T extends string>(
-  prevValue: SpringValue<T>,
-  nextValue: SpringValue<T>,
-  getConfig: GetConfig<T>,
-) {
-  for (const key of Object.keys(nextValue)) {
-    const { precision } = getConfig(key as T);
+      if (fix(prevValue[key], precision) !== fix(nextValue[key], precision)) return true;
+    }
 
-    if (fix(prevValue[key], precision) !== fix(nextValue[key], precision)) return true;
+    return false;
   }
-
-  return false;
 }
 
 export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
