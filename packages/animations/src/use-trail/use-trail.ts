@@ -5,7 +5,7 @@ import { type SpringValue } from '../shared';
 import { range } from '../utils';
 import { type UseMotionOptions } from '../use-motion';
 
-type TrailItemOptions<T extends string> = Omit<UseMotionOptions<T>, 'onStart' | 'onChange' | 'onEnd'>;
+type TrailItemOptions<T extends string> = Pick<UseMotionOptions<T>, 'from' | 'to' | 'config' | 'outside'>;
 
 function useTrail<T extends string>(
   count: number,

@@ -1,7 +1,7 @@
 import { platform, type SubscriberWithValue } from '@dark-engine/core';
 
 import { type SpringValue, type Config, defaultConfig } from '../shared';
-import { time, illegal, getFirstKey, fix } from '../utils';
+import { time, illegal, fix } from '../utils';
 import { stepper } from '../stepper';
 
 const MAX_DELTA_TIME = 0.016;
@@ -120,7 +120,7 @@ class MotionController<T extends string> {
 
   private calculateDest(target: SpringValue<T>) {
     if (!this.to) return illegal(`The destination value not found!`);
-    const key = getFirstKey(this.to);
+    const key = MotionController.getAvailableKey(target, this.to);
     const isFirstStrategy = this.to[key] > this.from[key];
     const max = isFirstStrategy ? this.to[key] : this.from[key];
     const min = isFirstStrategy ? this.from[key] : this.to[key];
@@ -128,7 +128,7 @@ class MotionController<T extends string> {
     const isValueUnderMin = this.value[key] < min;
     const isTargetOverMax = target[key] > max;
     const isTargetUnderMin = target[key] < min;
-    const isGreater = this.value[key] >= target[key];
+    const isGreater = this.value[key] > target[key];
     const dest = isFirstStrategy
       ? isValueOverMax || isTargetOverMax
         ? this.from
@@ -243,6 +243,16 @@ class MotionController<T extends string> {
     }
 
     return false;
+  }
+
+  public static getAvailableKey<T extends string>(value: SpringValue<T>, dest: SpringValue<T>) {
+    const keys = Object.keys(value);
+
+    for (const key of keys) {
+      if (value[key] !== dest[key]) return key;
+    }
+
+    return keys[0];
   }
 }
 

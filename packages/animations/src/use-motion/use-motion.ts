@@ -2,7 +2,6 @@ import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch, type Call
 
 import { type SpringValue } from '../shared';
 import { type Updater, type PartialConfigFn, MotionController } from '../controller';
-import { getFirstKey } from '../utils';
 
 export type UseMotionOptions<T extends string> = {
   from: SpringValue<T>;
@@ -63,7 +62,7 @@ function useMotion<T extends string>(
         }
       } else {
         if (reverse) {
-          const key = getFirstKey(from);
+          const key = MotionController.getAvailableKey(value, from);
 
           if (value[key] !== from[key]) {
             api.reverse();

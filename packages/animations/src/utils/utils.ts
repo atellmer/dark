@@ -6,15 +6,9 @@ const illegal = (value: string) => {
   throw new Error(value);
 };
 
-function getFirstKey<T extends object>(value: T) {
-  const [key] = Object.keys(value);
-
-  return key;
-}
-
 const range = (x: number) =>
   Array(x)
     .fill(null)
     .map((_, idx) => idx);
 
-export { time, fix, illegal, getFirstKey, range };
+export { time, fix, illegal, range };
