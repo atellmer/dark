@@ -9,7 +9,7 @@ export type UseMotionOptions<T extends string> = {
   config?: PartialConfigFn<T>;
   loop?: boolean;
   reverse?: boolean;
-  outside?: (spring: SpringValue<T>) => void;
+  outside?: (value: SpringValue<T>) => void;
   onStart?: () => void;
   onChange?: () => void;
   onEnd?: () => void;

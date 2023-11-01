@@ -4,7 +4,7 @@ import { type SpringValue, type Config, defaultConfig } from '../shared';
 import { time, illegal, fix } from '../utils';
 import { stepper } from '../stepper';
 
-const MAX_DELTA_TIME = 0.016;
+const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
 
 class MotionController<T extends string> {
   private value: SpringValue<T>;
