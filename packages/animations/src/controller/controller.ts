@@ -8,31 +8,43 @@ const MAX_DELTA_TIME = 0.016;
 
 class MotionController<T extends string> {
   private value: SpringValue<T>;
-  private prevValue: SpringValue<T> = null;
+  private prevValue: SpringValue<T>;
   private dest: SpringValue<T>;
-  private from: SpringValue<T> = null;
-  private to: SpringValue<T> = null;
+  private from: SpringValue<T>;
+  private to: SpringValue<T>;
   private lastTime: number = null;
   private frameId: number = null;
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
   private queue: Array<SpringValue<T>> = [];
   private events = new Map<MotionEvent, Set<SubscriberWithValue<SpringValue<T>>>>();
-  private getConfig: GetConfig<T>;
+  private configFn: ConfigFn<T>;
   private update: (springs: SpringValue<T>) => void;
 
-  constructor(
-    from: SpringValue<T>,
-    to: SpringValue<T> | undefined,
-    update: SubscriberWithValue<SpringValue<T>>,
-    getConfig: (key: T) => Partial<Config> = () => ({}),
-  ) {
-    this.from = from;
-    this.to = to || null;
-    this.value = { ...from };
-    this.dest = { ...(to || from) };
-    this.update = update;
-    this.getConfig = (key: T) => ({ ...defaultConfig, ...getConfig(key) });
+  public setFrom(value: SpringValue<T>) {
+    this.from = value;
+    this.value = this.value || { ...value };
+  }
+
+  public getTo() {
+    return this.to;
+  }
+
+  public setTo(value: SpringValue<T>) {
+    this.to = value;
+    this.dest = this.dest || { ...(value || this.from) };
+  }
+
+  public setConfigFn(fn: (key: T) => Partial<Config> = () => ({})) {
+    this.configFn = (key: T) => ({ ...defaultConfig, ...fn(key) });
+  }
+
+  public setUpdate(fn: (x: SpringValue<T>) => void) {
+    this.update = fn;
+  }
+
+  public getDest() {
+    return this.dest;
   }
 
   public subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
@@ -51,7 +63,7 @@ class MotionController<T extends string> {
     const value$ = {} as SpringValue<T>;
 
     for (const key of Object.keys(this.value)) {
-      const { precision } = this.getConfig(key as T);
+      const { precision } = this.configFn(key as T);
 
       value$[key] = fix(this.value[key], precision);
     }
@@ -91,6 +103,10 @@ class MotionController<T extends string> {
 
   public cancel() {
     this.frameId && platform.caf(this.frameId);
+  }
+
+  public getConfigFn() {
+    return this.configFn;
   }
 
   private async play(to: SpringValue<T>) {
@@ -134,7 +150,7 @@ class MotionController<T extends string> {
 
   private motion(to: SpringValue<T>) {
     return new Promise<boolean>((resolve, reject) => {
-      const { value, results, completed, getConfig } = this;
+      const { value, results, completed, configFn } = this;
       const keys = Object.keys(value);
 
       this.lastTime = time();
@@ -159,7 +175,7 @@ class MotionController<T extends string> {
               results[key] = [value[key], 0];
             }
 
-            const config = getConfig(key as T);
+            const config = configFn(key as T);
             let position = results[key][0];
             let velocity = results[key][1];
 
@@ -177,14 +193,14 @@ class MotionController<T extends string> {
           this.queue = [];
           this.loop();
 
-          if (!this.checkCompleted(keys)) {
-            this.motion(to).then(resolve).catch(reject);
-          } else {
+          if (this.checkCompleted(keys)) {
             this.frameId = null;
             this.results = {};
             this.completed = {};
             this.fireEvent('end');
             resolve(true);
+          } else {
+            this.motion(to).then(resolve).catch(reject);
           }
         } catch (err) {
           reject(err);
@@ -195,7 +211,7 @@ class MotionController<T extends string> {
 
   private loop() {
     const { prevValue, value } = this;
-    const isDiff = MotionController.detectAreValuesDiff(prevValue, value, this.getConfig);
+    const isDiff = MotionController.detectAreValuesDiff(prevValue, value, this.configFn);
 
     if (isDiff) {
       this.update(this.getValue());
@@ -215,10 +231,10 @@ class MotionController<T extends string> {
     this.events.has(event) && this.events.get(event).forEach(x => x(this.value));
   }
 
-  private static detectAreValuesDiff<T extends string>(
+  public static detectAreValuesDiff<T extends string>(
     prevValue: SpringValue<T>,
     nextValue: SpringValue<T>,
-    getConfig: GetConfig<T>,
+    getConfig: ConfigFn<T>,
   ) {
     for (const key of Object.keys(nextValue)) {
       const { precision } = getConfig(key as T);
@@ -234,8 +250,8 @@ export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringVa
 
 export type MotionEvent = 'start' | 'change' | 'end';
 
-export type GetConfig<T extends string> = (key: T | null) => Config;
+export type ConfigFn<T extends string> = (key: T | null) => Config;
 
-export type GetPartialConfig<T extends string> = (key: T | null) => Partial<Config>;
+export type PartialConfigFn<T extends string> = (key: T | null) => Partial<Config>;
 
 export { MotionController };

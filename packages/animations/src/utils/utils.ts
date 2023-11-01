@@ -12,4 +12,9 @@ function getFirstKey<T extends object>(value: T) {
   return key;
 }
 
-export { time, fix, illegal, getFirstKey };
+const range = (x: number) =>
+  Array(x)
+    .fill(null)
+    .map((_, idx) => idx);
+
+export { time, fix, illegal, getFirstKey, range };

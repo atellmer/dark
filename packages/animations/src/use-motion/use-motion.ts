@@ -1,13 +1,13 @@
 import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, type Callback } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
-import { type Updater, type GetPartialConfig, MotionController } from '../controller';
+import { type Updater, type PartialConfigFn, MotionController } from '../controller';
 import { getFirstKey } from '../utils';
 
-type UseMotionOptions<T extends string> = {
+export type UseMotionOptions<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
-  config?: GetPartialConfig<T>;
+  config?: PartialConfigFn<T>;
   loop?: boolean;
   reverse?: boolean;
   outside?: (spring: SpringValue<T>) => void;
