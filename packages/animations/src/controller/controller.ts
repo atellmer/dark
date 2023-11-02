@@ -176,18 +176,18 @@ class MotionController<T extends string> {
             }
 
             const config = configFn(key as T);
-            let position = results[key][0];
-            let velocity = results[key][1];
+            let pos = results[key][0];
+            let vel = results[key][1];
 
             for (const update of this.queue) {
               const dest = update[key] as number;
 
-              [position, velocity] = stepper({ position, velocity, dest, config, step });
-              results[key] = [position, velocity];
-              completed[key] = position === dest;
+              [pos, vel] = stepper(pos, vel, dest, step, config);
+              results[key] = [pos, vel];
+              completed[key] = pos === dest;
             }
 
-            value[key] = position;
+            value[key] = pos;
           }
 
           this.queue = [];

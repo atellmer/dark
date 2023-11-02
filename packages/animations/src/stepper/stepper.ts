@@ -2,46 +2,24 @@ import { type Config } from '../shared';
 
 const MAX_DISTANCE = 10 ** -2;
 
-type StepperOptions = {
-  position: number;
-  velocity: number;
-  dest: number;
-  step: number;
-  config: Partial<Config>;
-};
+function stepper(pos: number, vel: number, dest: number, step: number, config: Config) {
+  const { tension, friction, mass } = config;
+  const [nPos, nVel] = spring(pos, vel, dest, step, tension, friction, mass);
 
-function stepper(options: StepperOptions) {
-  const {
-    dest,
-    step,
-    position,
-    velocity,
-    config: { tension, friction, mass },
-  } = options;
-  const [newPosition, newVelocity] = spring(dest, step, position, velocity, tension, friction, mass);
+  if (Math.abs(nPos - dest) < MAX_DISTANCE) return [dest, 0];
 
-  if (Math.abs(newPosition - dest) < MAX_DISTANCE) return [dest, 0];
-
-  return [newPosition, newVelocity];
+  return [nPos, nVel];
 }
 
-function spring(
-  destination: number,
-  step: number,
-  position: number,
-  velocity: number,
-  tension: number,
-  friction: number,
-  mass: number,
-) {
-  const displacement = position - destination;
-  const springForce = -1 * tension * displacement;
-  const dampingForce = -1 * friction * velocity;
-  const acceleration = (springForce + dampingForce) / mass;
-  const newVelocity = velocity + acceleration * step;
-  const newPosition = position + newVelocity * step;
+function spring(pos: number, vel: number, dest: number, step: number, tension: number, friction: number, mass: number) {
+  const disp = pos - dest;
+  const sf = -1 * tension * disp;
+  const df = -1 * friction * vel;
+  const a = (sf + df) / mass;
+  const nVel = vel + a * step;
+  const nPos = pos + nVel * step;
 
-  return [newPosition, newVelocity];
+  return [nPos, nVel];
 }
 
 export { stepper };
