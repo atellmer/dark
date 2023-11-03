@@ -1,6 +1,6 @@
-import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch, type Callback } from '@dark-engine/core';
+import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch } from '@dark-engine/core';
 
-import { type Updater, SharedState, MotionController } from '../controller';
+import { type Updater, SharedState, MotionController, Flow } from '../controller';
 import { type SpringValue } from '../shared';
 import { range } from '../utils';
 import { type UseMotionOptions } from '../use-motion';
@@ -13,21 +13,38 @@ function useTrail<T extends string>(
   deps: Array<any> = [],
 ): [Array<SpringValue<T>>, TrailApi<T>] {
   const update = useUpdate();
+  const shared = useMemo(() => new SharedState(true), []);
   const scope = useMemo(() => {
-    const shared = new SharedState();
+    const controllers = range(count).map(key => new MotionController(String(key), shared));
 
-    return {
-      controllers: range(count).map(key => new MotionController(String(key), shared)),
-      unsubscribe: null,
-      fromReverse: false,
-    };
+    return { controllers };
   }, []);
 
   useMemo(() => {
-    scope.controllers.forEach((controller, idx) => {
+    const { controllers } = scope;
+    if (count === controllers.length) return;
+    const diff = Math.abs(count - controllers.length);
+
+    if (count > controllers.length) {
+      controllers.push(...range(diff).map(key => new MotionController(String(key), shared)));
+    } else {
+      controllers.splice(count, controllers.length);
+
+      if (controllers.length > 0) {
+        controllers[controllers.length - 1].setRight(null);
+      }
+
+      console.log('controllers', controllers);
+    }
+  }, [count]);
+
+  useMemo(() => {
+    const { controllers } = scope;
+
+    controllers.forEach((controller, idx) => {
       const { from, to, config, outside } = configurator(idx);
-      const left = scope.controllers[idx - 1] || null;
-      const right = scope.controllers[idx + 1] || null;
+      const left = controllers[idx - 1] || null;
+      const right = controllers[idx + 1] || null;
       const notifier = detectIsFunction(outside) ? outside : () => batch(() => update());
 
       controller.setFrom(from);
@@ -37,78 +54,39 @@ function useTrail<T extends string>(
       controller.setRight(right);
       controller.setNotifier(notifier);
     });
+  }, [...deps, count]);
 
-    console.log('controllers', scope.controllers);
-  }, deps);
+  const api = useMemo<TrailApi<T>>(() => {
+    const { controllers } = scope;
 
-  const values = scope.controllers.map(x => x.getValue());
-  const api = useMemo<TrailApi<T>>(
-    () => ({
+    return {
       start: (fn?: Updater<T>) => {
-        const [controller] = scope.controllers;
+        const [controller] = controllers;
 
-        subscribeIfNecessary(false);
+        if (!controller) return;
+        controller.setFlow(Flow.RIGHT);
         controller.start(fn);
       },
       reverse: () => {
-        const lastController = scope.controllers[scope.controllers.length - 1];
+        const controller = controllers[controllers.length - 1];
 
-        subscribeIfNecessary(true);
-        lastController.reverse();
+        if (!controller) return;
+        controller.setFlow(Flow.LEFT);
+        controller.reverse();
       },
       toggle: () => {
-        const [controller] = scope.controllers;
+        const [controller] = controllers;
 
-        subscribeIfNecessary(false);
+        if (!controller) return;
+        controller.setFlow(Flow.RIGHT);
         controller.toggle();
       },
-    }),
-    [],
-  );
-
-  const subscribeIfNecessary = (fromReverse: boolean) => {
-    if (scope.fromReverse || fromReverse) {
-      scope.unsubscribe && scope.unsubscribe();
-      scope.unsubscribe = subscribe(fromReverse);
-    }
-
-    scope.fromReverse = fromReverse;
-  };
-
-  const subscribe = (fromReverse = false) => {
-    const { controllers } = scope;
-    const unsubs: Array<Callback> = [];
-    const processController = (idx: number) => {
-      const controller = controllers[idx];
-      const controller$ = fromReverse ? controllers[idx - 1] : controllers[idx + 1];
-
-      if (controller$) {
-        const unsub = controller.subscribe('change', value => controller$.start(() => value));
-
-        unsubs.push(unsub);
-      }
     };
-
-    if (fromReverse) {
-      for (let i = controllers.length - 1; i > 0; i--) {
-        processController(i);
-      }
-    } else {
-      for (let i = 0; i < controllers.length; i++) {
-        processController(i);
-      }
-    }
-
-    return () => unsubs.forEach(x => x());
-  };
-
-  useLayoutEffect(() => {
-    scope.unsubscribe = subscribe();
-
-    return () => scope.unsubscribe && scope.unsubscribe();
   }, []);
 
   useLayoutEffect(() => () => scope.controllers.map(x => x.cancel()), []);
+
+  const values = scope.controllers.map(x => x.getValue());
 
   return [values, api];
 }

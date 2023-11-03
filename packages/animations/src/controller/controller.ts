@@ -12,6 +12,10 @@ class SharedState {
   private isLoop = false;
   private isReverse = false;
 
+  constructor(isTrail = false) {
+    this.isTrail = isTrail;
+  }
+
   setFlow(x: Flow) {
     this.flow = x;
   }
@@ -93,6 +97,10 @@ class MotionController<T extends string> {
 
   setNotifier(fn: (x: SpringValue<T>) => void) {
     this.notifier = fn;
+  }
+
+  setFlow(x: Flow) {
+    this.shared.setFlow(x);
   }
 
   subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
@@ -264,6 +272,14 @@ class MotionController<T extends string> {
   private loop() {
     this.notifier(this.getValue());
     this.fireEvent('change');
+
+    if (this.shared && this.shared.getIsTrail()) {
+      if (this.shared.detectIsRightFlow()) {
+        this.right && this.right.start(() => this.value);
+      } else {
+        this.left && this.left.start(() => this.value);
+      }
+    }
   }
 
   private checkCompleted(keys: Array<string>) {
