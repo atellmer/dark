@@ -74,12 +74,20 @@ function useTrail<T extends string>(
         controller.setFlow(Flow.LEFT);
         controller.reverse();
       },
-      toggle: () => {
-        const [controller] = controllers;
+      toggle: (reverse = false) => {
+        if (reverse) {
+          const controller = controllers[controllers.length - 1];
 
-        if (!controller) return;
-        controller.setFlow(Flow.RIGHT);
-        controller.toggle();
+          if (!controller) return;
+          controller.setFlow(Flow.LEFT);
+          controller.toggle();
+        } else {
+          const [controller] = controllers;
+
+          if (!controller) return;
+          controller.setFlow(Flow.RIGHT);
+          controller.toggle();
+        }
       },
     };
   }, []);
@@ -94,7 +102,7 @@ function useTrail<T extends string>(
 export type TrailApi<T extends string> = {
   start: (fn?: Updater<T>) => void;
   reverse: () => void;
-  toggle: () => void;
+  toggle: (reverse?: boolean) => void;
 };
 
 export { useTrail };

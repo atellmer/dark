@@ -1,7 +1,7 @@
 import { platform, type SubscriberWithValue } from '@dark-engine/core';
 
 import { type SpringValue, type Config, defaultConfig } from '../shared';
-import { time, illegal, fix } from '../utils';
+import { time, fix } from '../utils';
 import { stepper } from '../stepper';
 
 const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
@@ -144,13 +144,13 @@ class MotionController<T extends string> {
   }
 
   reverse() {
-    const dest = this.calculateDest(this.from);
+    const dest = this.calculateDest(this.from, false);
 
     return this.start(() => dest);
   }
 
   toggle() {
-    const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue);
+    const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue, true);
 
     return this.start(() => dest);
   }
@@ -182,9 +182,16 @@ class MotionController<T extends string> {
     return isSuccess;
   }
 
-  private calculateDest(target: SpringValue<T>) {
-    if (!this.to) return illegal(`The destination value not found!`);
+  private calculateDest(target: SpringValue<T>, isToggle: boolean) {
     const key = MotionController.getAvailableKey(target, this.to);
+
+    if (isToggle) {
+      if (this.value[key] === this.from[key]) return this.to;
+      if (this.value[key] === this.to[key]) return this.from;
+    } else {
+      if (this.value[key] === this.from[key] || this.value[key] === this.to[key]) return this.from;
+    }
+
     const isFirstStrategy = this.to[key] > this.from[key];
     const max = isFirstStrategy ? this.to[key] : this.from[key];
     const min = isFirstStrategy ? this.from[key] : this.to[key];
