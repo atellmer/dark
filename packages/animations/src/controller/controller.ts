@@ -66,6 +66,7 @@ class MotionController<T extends string> {
   private left: MotionController<T> = null;
   private right: MotionController<T> = null;
   private shared: SharedState = null;
+  private isAdded = false;
   private notifier: (x: SpringValue<T>) => void;
 
   constructor(key: string, shared: SharedState = null) {
@@ -91,6 +92,10 @@ class MotionController<T extends string> {
     this.configFn = (key: T) => ({ ...defaultConfig, ...fn(key) });
   }
 
+  getLeft() {
+    return this.left;
+  }
+
   setLeft(x: MotionController<T>) {
     this.left = x;
   }
@@ -105,6 +110,18 @@ class MotionController<T extends string> {
 
   setFlow(x: Flow) {
     this.shared.setFlow(x);
+  }
+
+  setIsAdded(x: boolean) {
+    this.isAdded = x;
+  }
+
+  getIsAdded() {
+    return this.isAdded;
+  }
+
+  detectIsReachedFrom() {
+    return MotionController.detectAreValuesEqual(this.value, this.from, this.configFn);
   }
 
   subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
@@ -131,7 +148,7 @@ class MotionController<T extends string> {
     return value$;
   }
 
-  start(fn: Updater<T> = () => this.to) {
+  start(fn: Updater<T> = () => this.to || this.from) {
     const dest = fn(this.value);
 
     if (!this.to) {
@@ -305,18 +322,18 @@ class MotionController<T extends string> {
     this.events.has(event) && this.events.get(event).forEach(x => x(this.value));
   }
 
-  static detectAreValuesDiff<T extends string>(
-    prevValue: SpringValue<T>,
-    nextValue: SpringValue<T>,
+  static detectAreValuesEqual<T extends string>(
+    value1: SpringValue<T>,
+    value2: SpringValue<T>,
     getConfig: ConfigFn<T>,
   ) {
-    for (const key of Object.keys(nextValue)) {
+    for (const key of Object.keys(value2)) {
       const { precision } = getConfig(key as T);
 
-      if (fix(prevValue[key], precision) !== fix(nextValue[key], precision)) return true;
+      if (fix(value1[key], precision) !== fix(value2[key], precision)) return false;
     }
 
-    return false;
+    return true;
   }
 
   static getAvailableKey<T extends string>(value: SpringValue<T>, dest: SpringValue<T>) {

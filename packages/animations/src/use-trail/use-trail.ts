@@ -7,6 +7,12 @@ import { range } from '../utils';
 
 type TrailItemOptions<T extends string> = Pick<UseMotionOptions<T>, 'from' | 'to' | 'config' | 'outside'>;
 
+type Scope<T extends string> = {
+  queue: Array<() => void>;
+  isChangeCons: boolean;
+  controllers: Array<MotionController<T>>;
+};
+
 function useTrail<T extends string>(
   count: number,
   configurator: (idx: number) => TrailItemOptions<T>,
@@ -14,47 +20,17 @@ function useTrail<T extends string>(
 ): [Array<SpringValue<T>>, TrailApi<T>] {
   const update = useUpdate();
   const shared = useMemo(() => new SharedState(true), []);
-  const scope = useMemo(() => {
-    const controllers = range(count).map(key => new MotionController(String(key), shared));
-
-    return { controllers };
+  const scope = useMemo<Scope<T>>(() => {
+    return {
+      queue: [],
+      isChangeCons: false,
+      controllers: range(count).map(key => new MotionController<T>(String(key), shared)),
+    };
   }, []);
 
   useMemo(() => {
-    const { controllers } = scope;
-    if (count === controllers.length) return;
-    const diff = Math.abs(count - controllers.length);
-
-    if (count > controllers.length) {
-      let key = controllers.length > 0 ? Number(controllers[controllers.length - 1].getKey()) : -1;
-
-      controllers.push(...range(diff).map(() => new MotionController(String(++key), shared)));
-    } else {
-      controllers.splice(count, controllers.length);
-
-      if (controllers.length > 0) {
-        controllers[controllers.length - 1].setRight(null);
-      }
-    }
-  }, [count]);
-
-  useMemo(() => {
-    const { controllers } = scope;
-
-    controllers.forEach((controller, idx) => {
-      const { from, to, config, outside } = configurator(idx);
-      const left = controllers[idx - 1] || null;
-      const right = controllers[idx + 1] || null;
-      const notifier = detectIsFunction(outside) ? outside : () => batch(() => update());
-
-      controller.setFrom(from);
-      controller.setTo(to);
-      controller.setConfigFn(config);
-      controller.setLeft(left);
-      controller.setRight(right);
-      controller.setNotifier(notifier);
-    });
-  }, [...deps, count]);
+    setupControllers(scope.controllers, configurator, update);
+  }, deps);
 
   const api = useMemo<TrailApi<T>>(() => {
     const { controllers } = scope;
@@ -92,11 +68,122 @@ function useTrail<T extends string>(
     };
   }, []);
 
-  useLayoutEffect(() => () => scope.controllers.map(x => x.cancel()), []);
+  useLayoutEffect(() => {
+    const { queue, controllers, isChangeCons } = scope;
+    const execute = () => {
+      const fn = queue.shift();
+
+      if (fn) {
+        scope.isChangeCons = true;
+        fn();
+      } else {
+        scope.isChangeCons = false;
+      }
+    };
+
+    queue.push(() => changeConnections({ count, shared, controllers, configurator, update, execute }));
+    !isChangeCons && execute();
+  }, [count]);
+
+  useLayoutEffect(
+    () => () => {
+      scope.controllers.map(x => x.cancel());
+      scope.queue = [];
+    },
+    [],
+  );
 
   const values = scope.controllers.map(x => x.getValue());
 
   return [values, api];
+}
+
+type ChangeConnectionsOptions<T extends string> = {
+  count: number;
+  shared: SharedState;
+  controllers: Array<MotionController<T>>;
+  configurator: (idx: number) => TrailItemOptions<T>;
+  update: () => void;
+  execute: () => void;
+};
+
+function changeConnections<T extends string>(options: ChangeConnectionsOptions<T>) {
+  const { count, shared, controllers, configurator, update, execute } = options;
+  if (count === controllers.length) return execute();
+  const diff = Math.abs(count - controllers.length);
+
+  if (count > controllers.length) {
+    let key = controllers.length > 0 ? Number(controllers[controllers.length - 1].getKey()) : -1;
+
+    controllers.push(
+      ...range(diff).map(() => {
+        const controller = new MotionController<T>(String(++key), shared);
+
+        controller.setIsAdded(true);
+
+        return controller;
+      }),
+    );
+
+    setupControllers(controllers, configurator, update);
+    execute();
+  } else {
+    const deleted = controllers.slice(count, controllers.length);
+
+    if (controllers.length > 0) {
+      controllers[controllers.length - 1].setRight(null);
+    }
+
+    if (deleted.length > 0) {
+      const [first] = deleted;
+      const last = deleted[deleted.length - 1];
+
+      const breakConnection = () => {
+        const left = first.getLeft();
+
+        left && left.setRight(null);
+        first.setLeft(null);
+      };
+
+      breakConnection();
+      last.reverse();
+
+      first.subscribe('end', () => {
+        if (first.detectIsReachedFrom()) {
+          breakConnection();
+          controllers.splice(count, controllers.length);
+          setupControllers(controllers, configurator, update);
+          update();
+          execute();
+        }
+      });
+    }
+  }
+}
+
+function setupControllers<T extends string>(
+  controllers: Array<MotionController<T>>,
+  configurator: (idx: number) => TrailItemOptions<T>,
+  update: () => void,
+) {
+  controllers.forEach((controller, idx) => {
+    const { from, to, config, outside } = configurator(idx);
+    const left = controllers[idx - 1] || null;
+    const right = controllers[idx + 1] || null;
+    const notifier = detectIsFunction(outside) ? outside : () => batch(() => update());
+
+    controller.setFrom(from);
+    controller.setTo(to);
+    controller.setConfigFn(config);
+    controller.setLeft(left);
+    controller.setRight(right);
+    controller.setNotifier(notifier);
+
+    if (controller.getIsAdded()) {
+      controller.setIsAdded(false);
+      controller.start();
+    }
+  });
 }
 
 export type TrailApi<T extends string> = {
