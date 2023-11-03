@@ -67,6 +67,7 @@ class MotionController<T extends string> {
   private right: MotionController<T> = null;
   private shared: SharedState = null;
   private isAdded = false;
+  private isRemoved = false;
   private notifier: (x: SpringValue<T>) => void;
 
   constructor(key: string, shared: SharedState = null) {
@@ -100,6 +101,10 @@ class MotionController<T extends string> {
     this.left = x;
   }
 
+  getRight() {
+    return this.right;
+  }
+
   setRight(x: MotionController<T>) {
     this.right = x;
   }
@@ -118,6 +123,14 @@ class MotionController<T extends string> {
 
   getIsAdded() {
     return this.isAdded;
+  }
+
+  setIsRemoved(x: boolean) {
+    this.isRemoved = x;
+  }
+
+  getIsRemoved() {
+    return this.isRemoved;
   }
 
   detectIsReachedFrom() {

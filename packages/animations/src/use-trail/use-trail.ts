@@ -68,7 +68,7 @@ function useTrail<T extends string>(
     };
   }, []);
 
-  useLayoutEffect(() => {
+  useMemo(() => {
     const { queue, controllers, isChangeCons } = scope;
     const execute = () => {
       const fn = queue.shift();
@@ -109,7 +109,9 @@ type ChangeConnectionsOptions<T extends string> = {
 
 function changeConnections<T extends string>(options: ChangeConnectionsOptions<T>) {
   const { count, shared, controllers, configurator, update, execute } = options;
+
   if (count === controllers.length) return execute();
+
   const diff = Math.abs(count - controllers.length);
 
   if (count > controllers.length) {
@@ -128,36 +130,14 @@ function changeConnections<T extends string>(options: ChangeConnectionsOptions<T
     setupControllers(controllers, configurator, update);
     execute();
   } else {
-    const deleted = controllers.slice(count, controllers.length);
-
     if (controllers.length > 0) {
       controllers[controllers.length - 1].setRight(null);
     }
 
-    if (deleted.length > 0) {
-      const [first] = deleted;
-      const last = deleted[deleted.length - 1];
-
-      const breakConnection = () => {
-        const left = first.getLeft();
-
-        left && left.setRight(null);
-        first.setLeft(null);
-      };
-
-      breakConnection();
-      last.reverse();
-
-      first.subscribe('end', () => {
-        if (first.detectIsReachedFrom()) {
-          breakConnection();
-          controllers.splice(count, controllers.length);
-          setupControllers(controllers, configurator, update);
-          update();
-          execute();
-        }
-      });
-    }
+    controllers.splice(count, controllers.length);
+    setupControllers(controllers, configurator, update);
+    update();
+    execute();
   }
 }
 
@@ -175,11 +155,16 @@ function setupControllers<T extends string>(
     controller.setFrom(from);
     controller.setTo(to);
     controller.setConfigFn(config);
-    controller.setLeft(left);
-    controller.setRight(right);
+
+    if (!controller.getIsRemoved()) {
+      controller.setLeft(left);
+      controller.setRight(right);
+    }
+
     controller.setNotifier(notifier);
 
     if (controller.getIsAdded()) {
+      controller.setFlow(Flow.RIGHT);
       controller.setIsAdded(false);
       controller.start();
     }
