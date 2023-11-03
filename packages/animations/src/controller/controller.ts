@@ -6,7 +6,47 @@ import { stepper } from '../stepper';
 
 const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
 
+class SharedState {
+  private flow = Flow.RIGHT;
+  private isTrail = false;
+  private isLoop = false;
+  private isReverse = false;
+
+  setFlow(x: Flow) {
+    this.flow = x;
+  }
+
+  detectIsRightFlow() {
+    return this.flow === Flow.RIGHT;
+  }
+
+  setIsTrail(x: boolean) {
+    this.isTrail = x;
+  }
+
+  getIsTrail() {
+    return this.isTrail;
+  }
+
+  setIsLoop(x: boolean) {
+    this.isLoop = x;
+  }
+
+  getIsLoop() {
+    return this.isLoop;
+  }
+
+  setIsReverse(x: boolean) {
+    this.isReverse = x;
+  }
+
+  getIsReverse() {
+    return this.isReverse;
+  }
+}
+
 class MotionController<T extends string> {
+  private key: string;
   private value: SpringValue<T>;
   private prevValue: SpringValue<T>;
   private dest: SpringValue<T>;
@@ -19,35 +59,43 @@ class MotionController<T extends string> {
   private queue: Array<SpringValue<T>> = [];
   private events = new Map<MotionEvent, Set<SubscriberWithValue<SpringValue<T>>>>();
   private configFn: ConfigFn<T>;
-  private update: (springs: SpringValue<T>) => void;
+  private left: MotionController<T> = null;
+  private right: MotionController<T> = null;
+  private shared: SharedState = null;
+  private notifier: (x: SpringValue<T>) => void;
 
-  public setFrom(value: SpringValue<T>) {
+  constructor(key: string, shared: SharedState = null) {
+    this.key = key;
+    this.shared = shared;
+  }
+
+  setFrom(value: SpringValue<T>) {
     this.from = value;
     this.value = this.value || { ...value };
   }
 
-  public getTo() {
-    return this.to;
-  }
-
-  public setTo(value: SpringValue<T>) {
+  setTo(value: SpringValue<T>) {
     this.to = value;
     this.dest = this.dest || { ...(value || this.from) };
   }
 
-  public setConfigFn(fn: (key: T) => Partial<Config> = () => ({})) {
+  setConfigFn(fn: (key: T) => Partial<Config> = () => ({})) {
     this.configFn = (key: T) => ({ ...defaultConfig, ...fn(key) });
   }
 
-  public setUpdate(fn: (x: SpringValue<T>) => void) {
-    this.update = fn;
+  setLeft(x: MotionController<T>) {
+    this.left = x;
   }
 
-  public getDest() {
-    return this.dest;
+  setRight(x: MotionController<T>) {
+    this.right = x;
   }
 
-  public subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
+  setNotifier(fn: (x: SpringValue<T>) => void) {
+    this.notifier = fn;
+  }
+
+  subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
     if (!this.events.has(event)) {
       this.events.set(event, new Set());
     }
@@ -59,7 +107,7 @@ class MotionController<T extends string> {
     return () => subs.delete(handler);
   }
 
-  public getValue() {
+  getValue() {
     const value$ = {} as SpringValue<T>;
 
     for (const key of Object.keys(this.value)) {
@@ -71,41 +119,45 @@ class MotionController<T extends string> {
     return value$;
   }
 
-  public start(fn: Updater<T>) {
+  start(fn: Updater<T> = () => this.to) {
     const dest = fn(this.value);
+
+    if (!this.to) {
+      this.to = { ...this.from, ...dest };
+    }
 
     Object.assign(this.dest, dest);
 
     return this.play(this.dest);
   }
 
-  public reverse() {
+  reverse() {
     const dest = this.calculateDest(this.from);
 
     return this.start(() => dest);
   }
 
-  public toggle() {
+  toggle() {
     const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue);
 
     return this.start(() => dest);
   }
 
-  public pause() {
+  pause() {
     this.cancel();
     this.frameId = null;
   }
 
-  public reset() {
+  reset() {
     this.value = { ...this.from };
     this.dest = { ...(this.to || this.from) };
   }
 
-  public cancel() {
+  cancel() {
     this.frameId && platform.caf(this.frameId);
   }
 
-  public getConfigFn() {
+  getConfigFn() {
     return this.configFn;
   }
 
@@ -210,13 +262,8 @@ class MotionController<T extends string> {
   }
 
   private loop() {
-    const { prevValue, value } = this;
-    const isDiff = MotionController.detectAreValuesDiff(prevValue, value, this.configFn);
-
-    if (isDiff) {
-      this.update(this.getValue());
-      this.fireEvent('change');
-    }
+    this.notifier(this.getValue());
+    this.fireEvent('change');
   }
 
   private checkCompleted(keys: Array<string>) {
@@ -231,7 +278,7 @@ class MotionController<T extends string> {
     this.events.has(event) && this.events.get(event).forEach(x => x(this.value));
   }
 
-  public static detectAreValuesDiff<T extends string>(
+  static detectAreValuesDiff<T extends string>(
     prevValue: SpringValue<T>,
     nextValue: SpringValue<T>,
     getConfig: ConfigFn<T>,
@@ -245,7 +292,7 @@ class MotionController<T extends string> {
     return false;
   }
 
-  public static getAvailableKey<T extends string>(value: SpringValue<T>, dest: SpringValue<T>) {
+  static getAvailableKey<T extends string>(value: SpringValue<T>, dest: SpringValue<T>) {
     const keys = Object.keys(value);
 
     for (const key of keys) {
@@ -256,6 +303,11 @@ class MotionController<T extends string> {
   }
 }
 
+export enum Flow {
+  RIGHT = 'RIGHT',
+  LEFT = 'LEFT',
+}
+
 export type Updater<T extends string> = (pv: SpringValue<T>) => Partial<SpringValue<T>>;
 
 export type MotionEvent = 'start' | 'change' | 'end';
@@ -264,4 +316,4 @@ export type ConfigFn<T extends string> = (key: T | null) => Config;
 
 export type PartialConfigFn<T extends string> = (key: T | null) => Partial<Config>;
 
-export { MotionController };
+export { SharedState, MotionController };

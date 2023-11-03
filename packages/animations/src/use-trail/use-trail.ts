@@ -1,6 +1,6 @@
 import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch, type Callback } from '@dark-engine/core';
 
-import { type Updater, MotionController } from '../controller';
+import { type Updater, SharedState, MotionController } from '../controller';
 import { type SpringValue } from '../shared';
 import { range } from '../utils';
 import { type UseMotionOptions } from '../use-motion';
@@ -12,26 +12,33 @@ function useTrail<T extends string>(
   configurator: (idx: number) => TrailItemOptions<T>,
   deps: Array<any> = [],
 ): [Array<SpringValue<T>>, TrailApi<T>] {
-  const update$ = useUpdate();
-  const scope = useMemo(
-    () => ({
-      controllers: range(count).map(() => new MotionController()),
+  const update = useUpdate();
+  const scope = useMemo(() => {
+    const shared = new SharedState();
+
+    return {
+      controllers: range(count).map(key => new MotionController(String(key), shared)),
       unsubscribe: null,
       fromReverse: false,
-    }),
-    [],
-  );
+    };
+  }, []);
 
   useMemo(() => {
     scope.controllers.forEach((controller, idx) => {
       const { from, to, config, outside } = configurator(idx);
-      const update = (value: SpringValue<T>) => (detectIsFunction(outside) ? outside(value) : batch(() => update$()));
+      const left = scope.controllers[idx - 1] || null;
+      const right = scope.controllers[idx + 1] || null;
+      const notifier = detectIsFunction(outside) ? outside : () => batch(() => update());
 
       controller.setFrom(from);
       controller.setTo(to);
       controller.setConfigFn(config);
-      controller.setUpdate(update);
+      controller.setLeft(left);
+      controller.setRight(right);
+      controller.setNotifier(notifier);
     });
+
+    console.log('controllers', scope.controllers);
   }, deps);
 
   const values = scope.controllers.map(x => x.getValue());
@@ -39,10 +46,9 @@ function useTrail<T extends string>(
     () => ({
       start: (fn?: Updater<T>) => {
         const [controller] = scope.controllers;
-        const fn$ = ((pv: SpringValue<T>) => ({ ...controller.getTo(), ...(fn && fn(pv)) })) as Updater<T>;
 
         subscribeIfNecessary(false);
-        controller.start(fn$);
+        controller.start(fn);
       },
       reverse: () => {
         const lastController = scope.controllers[scope.controllers.length - 1];

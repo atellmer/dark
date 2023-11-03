@@ -20,26 +20,23 @@ function useMotion<T extends string>(
   deps: Array<any> = [],
 ): [SpringValue<T>, MotionApi<T>] {
   const { from, to, config, loop, reverse, outside, onStart, onChange, onEnd } = options;
-  const update$ = useUpdate();
-  const update = (value: SpringValue<T>) => (detectIsFunction(outside) ? outside(value) : batch(() => update$()));
-  const scope = useMemo(() => ({ controller: new MotionController() }), []);
+  const update = useUpdate();
+  const scope = useMemo(() => ({ controller: new MotionController(String(0)) }), []);
   const { controller } = scope;
 
   useMemo(() => {
+    const notifier = detectIsFunction(outside) ? outside : () => batch(() => update());
+
     controller.setFrom(from);
     controller.setTo(to);
     controller.setConfigFn(config);
-    controller.setUpdate(update);
+    controller.setNotifier(notifier);
   }, deps);
 
   const value = controller.getValue();
   const api = useMemo<MotionApi<T>>(
     () => ({
-      start: (fn?: Updater<T>) => {
-        const fn$ = ((pv: SpringValue<T>) => ({ ...controller.getTo(), ...(fn && fn(pv)) })) as Updater<T>;
-
-        return controller.start(fn$);
-      },
+      start: (fn?: Updater<T>) => controller.start(fn),
       reverse: () => controller.reverse(),
       toggle: () => controller.toggle(),
       pause: () => controller.pause(),
