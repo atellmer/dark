@@ -1,4 +1,4 @@
-import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch } from '@dark-engine/core';
+import { useMemo, useUpdate, useEffect, detectIsFunction, batch } from '@dark-engine/core';
 
 import { type Updater, SharedState, MotionController, Flow } from '../controller';
 import { type SpringValue } from '../shared';
@@ -67,7 +67,7 @@ function useTrail<T extends string>(
     };
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const { controllers, prevCount } = scope;
     const options: UpdateCountOptions<T> = {
       count,
@@ -82,7 +82,7 @@ function useTrail<T extends string>(
     scope.prevCount = count;
   }, [count]);
 
-  useLayoutEffect(
+  useEffect(
     () => () => {
       scope.controllers.map(x => x.cancel());
     },
@@ -160,21 +160,20 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
 
     for (let i = deleted.length - 1; i >= 0; i--) {
       const controller = deleted[i];
-      const prevController = deleted[i - 1];
+      const controller$ = deleted[i - 1];
 
       controller.setIsRemoved(true);
-      prevController && controller.subscribe('change', value => prevController.start(() => value));
       controller.subscribe('end', () => {
-        if (controller.detectIsReachedFrom()) {
-          const idx = controllers.findIndex(x => x === controller);
+        if (!controller.detectIsReachedFrom()) return;
+        const idx = controllers.findIndex(x => x === controller);
 
-          if (idx !== -1) {
-            controllers.splice(idx, 1);
-            setupControllers(controllers, configurator, update);
-            update();
-          }
+        if (idx !== -1) {
+          controllers.splice(idx, 1);
+          setupControllers(controllers, configurator, update);
+          update();
         }
       });
+      controller$ && controller.subscribe('change', value => controller$.start(() => value));
     }
 
     last.reverse();
