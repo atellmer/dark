@@ -21,7 +21,7 @@ function useMotion<T extends string>(
 ): [SpringValue<T>, MotionApi<T>] {
   const { from, to, config, loop, reverse, outside, onStart, onChange, onEnd } = options;
   const update = useUpdate();
-  const scope = useMemo(() => ({ controller: new MotionController(String(0)) }), []);
+  const scope = useMemo(() => ({ controller: new MotionController() }), []);
   const { controller } = scope;
 
   useMemo(() => {

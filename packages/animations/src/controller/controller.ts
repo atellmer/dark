@@ -70,13 +70,16 @@ class MotionController<T extends string> {
   private isRemoved = false;
   private notifier: (x: SpringValue<T>) => void;
 
-  constructor(key: string, shared: SharedState = null) {
-    this.key = key;
+  constructor(shared: SharedState = null) {
     this.shared = shared;
   }
 
   getKey() {
     return this.key;
+  }
+
+  setKey(x: string) {
+    this.key = x;
   }
 
   setFrom(value: SpringValue<T>) {
@@ -314,13 +317,30 @@ class MotionController<T extends string> {
     this.notifier(this.getValue());
     this.fireEvent('change');
 
-    if (this.shared && this.shared.getIsTrail()) {
+    if (this.shared && this.shared.getIsTrail() && !this.getIsRemoved()) {
       if (this.shared.detectIsRightFlow()) {
-        this.right && this.right.start(() => this.value);
+        const right = this.getSiblingToChange(true);
+
+        right && right.start(() => this.value);
       } else {
-        this.left && this.left.start(() => this.value);
+        const left = this.getSiblingToChange(false);
+
+        left && left.start(() => this.value);
       }
     }
+  }
+
+  private getSiblingToChange(isRight: boolean) {
+    let controller = isRight ? this.right : this.left;
+
+    if (!controller) return null;
+
+    do {
+      if (!controller.getIsRemoved()) return controller;
+      controller = isRight ? controller.getRight() : controller.getLeft();
+    } while (controller);
+
+    return null;
   }
 
   private checkCompleted(keys: Array<string>) {

@@ -8,8 +8,7 @@ import { range } from '../utils';
 type TrailItemOptions<T extends string> = Pick<UseMotionOptions<T>, 'from' | 'to' | 'config' | 'outside'>;
 
 type Scope<T extends string> = {
-  queue: Array<() => void>;
-  isChangeCons: boolean;
+  prevCount: number;
   controllers: Array<MotionController<T>>;
 };
 
@@ -22,9 +21,8 @@ function useTrail<T extends string>(
   const shared = useMemo(() => new SharedState(true), []);
   const scope = useMemo<Scope<T>>(() => {
     return {
-      queue: [],
-      isChangeCons: false,
-      controllers: range(count).map(key => new MotionController<T>(String(key), shared)),
+      prevCount: count,
+      controllers: range(count).map(() => new MotionController<T>(shared)),
     };
   }, []);
 
@@ -68,27 +66,24 @@ function useTrail<T extends string>(
     };
   }, []);
 
-  useMemo(() => {
-    const { queue, controllers, isChangeCons } = scope;
-    const execute = () => {
-      const fn = queue.shift();
-
-      if (fn) {
-        scope.isChangeCons = true;
-        fn();
-      } else {
-        scope.isChangeCons = false;
-      }
+  useLayoutEffect(() => {
+    const { controllers, prevCount } = scope;
+    const options: UpdateCountOptions<T> = {
+      count,
+      prevCount,
+      shared,
+      controllers,
+      configurator,
+      update: () => batch(update),
     };
 
-    queue.push(() => changeConnections({ count, shared, controllers, configurator, update, execute }));
-    !isChangeCons && execute();
+    updateCount(options);
+    scope.prevCount = count;
   }, [count]);
 
   useLayoutEffect(
     () => () => {
       scope.controllers.map(x => x.cancel());
-      scope.queue = [];
     },
     [],
   );
@@ -96,49 +91,6 @@ function useTrail<T extends string>(
   const values = scope.controllers.map(x => x.getValue());
 
   return [values, api];
-}
-
-type ChangeConnectionsOptions<T extends string> = {
-  count: number;
-  shared: SharedState;
-  controllers: Array<MotionController<T>>;
-  configurator: (idx: number) => TrailItemOptions<T>;
-  update: () => void;
-  execute: () => void;
-};
-
-function changeConnections<T extends string>(options: ChangeConnectionsOptions<T>) {
-  const { count, shared, controllers, configurator, update, execute } = options;
-
-  if (count === controllers.length) return execute();
-
-  const diff = Math.abs(count - controllers.length);
-
-  if (count > controllers.length) {
-    let key = controllers.length > 0 ? Number(controllers[controllers.length - 1].getKey()) : -1;
-
-    controllers.push(
-      ...range(diff).map(() => {
-        const controller = new MotionController<T>(String(++key), shared);
-
-        controller.setIsAdded(true);
-
-        return controller;
-      }),
-    );
-
-    setupControllers(controllers, configurator, update);
-    execute();
-  } else {
-    if (controllers.length > 0) {
-      controllers[controllers.length - 1].setRight(null);
-    }
-
-    controllers.splice(count, controllers.length);
-    setupControllers(controllers, configurator, update);
-    update();
-    execute();
-  }
 }
 
 function setupControllers<T extends string>(
@@ -150,25 +102,75 @@ function setupControllers<T extends string>(
     const { from, to, config, outside } = configurator(idx);
     const left = controllers[idx - 1] || null;
     const right = controllers[idx + 1] || null;
-    const notifier = detectIsFunction(outside) ? outside : () => batch(() => update());
+    const notifier = detectIsFunction(outside) ? outside : () => batch(update);
 
+    controller.setKey(String(idx + 1));
     controller.setFrom(from);
     controller.setTo(to);
     controller.setConfigFn(config);
+    controller.setNotifier(notifier);
 
     if (!controller.getIsRemoved()) {
       controller.setLeft(left);
       controller.setRight(right);
     }
 
-    controller.setNotifier(notifier);
-
     if (controller.getIsAdded()) {
-      controller.setFlow(Flow.RIGHT);
       controller.setIsAdded(false);
       controller.start();
     }
   });
+}
+
+type UpdateCountOptions<T extends string> = {
+  count: number;
+  prevCount: number;
+  shared: SharedState;
+  controllers: Array<MotionController<T>>;
+  configurator: (idx: number) => TrailItemOptions<T>;
+  update: () => void;
+};
+
+function updateCount<T extends string>(options: UpdateCountOptions<T>) {
+  const { count, prevCount, shared, controllers, configurator, update } = options;
+
+  if (count > prevCount) {
+    const diff = count - prevCount;
+    const idx = controllers.findIndex(x => x.getIsRemoved());
+    const inserts = range(diff).map(() => {
+      const controller = new MotionController<T>(shared);
+
+      controller.setIsAdded(true);
+
+      return controller;
+    });
+
+    if (idx !== -1) {
+      controllers.splice(idx, 0, ...inserts);
+    } else {
+      controllers.push(...inserts);
+    }
+
+    setupControllers(controllers, configurator, update);
+  } else if (count < prevCount) {
+    const deleted = controllers.slice(count, controllers.length);
+
+    deleted.forEach(controller => {
+      controller.setIsRemoved(true);
+      controller.reverse();
+      controller.subscribe('end', () => {
+        if (controller.detectIsReachedFrom()) {
+          const idx = controllers.findIndex(x => x === controller);
+
+          if (idx !== -1) {
+            controllers.splice(idx, 1);
+            setupControllers(controllers, configurator, update);
+            update();
+          }
+        }
+      });
+    });
+  }
 }
 
 export type TrailApi<T extends string> = {
