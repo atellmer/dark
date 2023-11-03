@@ -32,19 +32,20 @@ function useTrail<T extends string>(
 
   const api = useMemo<TrailApi<T>>(() => {
     const { controllers } = scope;
+    const canUse = (controller: MotionController<T>) => controller && !controller.getIsRemoved();
 
     return {
       start: (fn?: Updater<T>) => {
         const [controller] = controllers;
 
-        if (!controller) return;
+        if (!canUse(controller)) return;
         controller.setFlow(Flow.RIGHT);
         controller.start(fn);
       },
       reverse: () => {
         const controller = controllers[controllers.length - 1];
 
-        if (!controller) return;
+        if (!canUse(controller)) return;
         controller.setFlow(Flow.LEFT);
         controller.reverse();
       },
@@ -52,13 +53,13 @@ function useTrail<T extends string>(
         if (reverse) {
           const controller = controllers[controllers.length - 1];
 
-          if (!controller) return;
+          if (!canUse(controller)) return;
           controller.setFlow(Flow.LEFT);
           controller.toggle();
         } else {
           const [controller] = controllers;
 
-          if (!controller) return;
+          if (!canUse(controller)) return;
           controller.setFlow(Flow.RIGHT);
           controller.toggle();
         }
@@ -152,6 +153,7 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
     }
 
     setupControllers(controllers, configurator, update);
+    update();
   } else if (count < prevCount) {
     const deleted = controllers.slice(count, controllers.length);
     const last = deleted[deleted.length - 1];
