@@ -73,6 +73,10 @@ class MotionController<T extends string> {
     this.shared = shared;
   }
 
+  getKey() {
+    return this.key;
+  }
+
   setFrom(value: SpringValue<T>) {
     this.from = value;
     this.value = this.value || { ...value };

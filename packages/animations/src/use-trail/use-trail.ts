@@ -2,8 +2,8 @@ import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch } from '@d
 
 import { type Updater, SharedState, MotionController, Flow } from '../controller';
 import { type SpringValue } from '../shared';
-import { range } from '../utils';
 import { type UseMotionOptions } from '../use-motion';
+import { range } from '../utils';
 
 type TrailItemOptions<T extends string> = Pick<UseMotionOptions<T>, 'from' | 'to' | 'config' | 'outside'>;
 
@@ -26,15 +26,15 @@ function useTrail<T extends string>(
     const diff = Math.abs(count - controllers.length);
 
     if (count > controllers.length) {
-      controllers.push(...range(diff).map(key => new MotionController(String(key), shared)));
+      let key = controllers.length > 0 ? Number(controllers[controllers.length - 1].getKey()) : -1;
+
+      controllers.push(...range(diff).map(() => new MotionController(String(++key), shared)));
     } else {
       controllers.splice(count, controllers.length);
 
       if (controllers.length > 0) {
         controllers[controllers.length - 1].setRight(null);
       }
-
-      console.log('controllers', controllers);
     }
   }, [count]);
 
