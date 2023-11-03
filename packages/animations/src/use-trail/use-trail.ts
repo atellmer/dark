@@ -154,10 +154,14 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
     setupControllers(controllers, configurator, update);
   } else if (count < prevCount) {
     const deleted = controllers.slice(count, controllers.length);
+    const last = deleted[deleted.length - 1];
 
-    deleted.forEach(controller => {
+    for (let i = deleted.length - 1; i >= 0; i--) {
+      const controller = deleted[i];
+      const prevController = deleted[i - 1];
+
       controller.setIsRemoved(true);
-      controller.reverse();
+      prevController && controller.subscribe('change', value => prevController.start(() => value));
       controller.subscribe('end', () => {
         if (controller.detectIsReachedFrom()) {
           const idx = controllers.findIndex(x => x === controller);
@@ -169,7 +173,9 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
           }
         }
       });
-    });
+    }
+
+    last.reverse();
   }
 }
 
