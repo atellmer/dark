@@ -88,7 +88,7 @@ class MotionController<T extends string> {
   }
 
   setTo(value: SpringValue<T>) {
-    this.to = value;
+    this.to = value || { ...this.from }; //!
     this.dest = this.dest || { ...(value || this.from) };
   }
 
