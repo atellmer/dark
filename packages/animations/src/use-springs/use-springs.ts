@@ -9,6 +9,7 @@ export type ItemConfig<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
   config?: PartialPhysicConfigurator<T>;
+  immediate?: (key: string) => boolean;
   outside?: (value: SpringValue<T>) => void;
   onStart?: (idx: number) => void;
   onChange?: (idx: number) => void;

@@ -11,6 +11,7 @@ type BaseConfig<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
   config?: PartialPhysicConfigurator<T>;
+  immediate?: (key: T) => boolean;
 };
 class Controller<T extends string> {
   private key: string;
@@ -34,6 +35,7 @@ class Controller<T extends string> {
   private isRemoved = false;
   private notifier: (x: SpringValue<T>) => void;
   private configurator: (idx: number) => BaseConfig<T>;
+  private immediate: (key: T) => boolean = () => false;
 
   constructor(shared: SharedState = null) {
     this.shared = shared;
@@ -105,6 +107,10 @@ class Controller<T extends string> {
     this.configurator = fn;
   }
 
+  setImmediate(fn: (key: T) => boolean) {
+    this.immediate = fn || this.immediate;
+  }
+
   subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
     if (!this.events.has(event)) {
       this.events.set(event, new Set());
@@ -130,11 +136,12 @@ class Controller<T extends string> {
   }
 
   start(fn: Updater<T> = () => this.to || this.from, idx = 0) {
-    const { from, to, config } = this.configurator(idx);
+    const { from, to, config, immediate } = this.configurator(idx);
 
     this.setFrom(from);
     this.setTo(to);
     this.setPhysicConf(config);
+    this.setImmediate(immediate);
     Object.assign(this.dest, fn(idx));
 
     return this.play(this.dest);
@@ -232,11 +239,11 @@ class Controller<T extends string> {
     return isSuccess;
   }
 
-  private motion(to: SpringValue<T>) {
+  private motion(to: SpringValue<T>, immediates: Array<() => void> = []) {
     return new Promise<boolean>((resolve, reject) => {
       const { value, results, completed, physicConf: configFn } = this;
-      const keys = Object.keys(value);
-      const make = () => this.motion(to).then(resolve).catch(reject);
+      const keys = Object.keys(value) as Array<T>;
+      const make = () => this.motion(to, immediates).then(resolve).catch(reject);
 
       this.lastTime = time();
       this.frameId = platform.raf(() => {
@@ -257,23 +264,33 @@ class Controller<T extends string> {
           }
 
           for (const key of keys) {
-            if (!results[key]) {
-              results[key] = [value[key], 0];
+            if (this.immediate(key)) {
+              completed[key] = true;
+
+              if (to[key] === this.from[key]) {
+                immediates.push(() => (value[key] = to[key]));
+              } else {
+                value[key] = to[key];
+              }
+            } else {
+              if (!results[key]) {
+                results[key] = [value[key], 0];
+              }
+
+              const config = configFn(key);
+              let pos = results[key][0];
+              let vel = results[key][1];
+
+              for (const update of this.queue) {
+                const dest = update[key] as number;
+
+                [pos, vel] = stepper(pos, vel, dest, step, config);
+                results[key] = [pos, vel];
+                completed[key] = pos === dest;
+              }
+
+              value[key] = pos;
             }
-
-            const config = configFn(key as T);
-            let pos = results[key][0];
-            let vel = results[key][1];
-
-            for (const update of this.queue) {
-              const dest = update[key] as number;
-
-              [pos, vel] = stepper(pos, vel, dest, step, config);
-              results[key] = [pos, vel];
-              completed[key] = pos === dest;
-            }
-
-            value[key] = pos;
           }
 
           this.queue = [];
@@ -283,6 +300,7 @@ class Controller<T extends string> {
             this.frameId = null;
             this.results = {};
             this.completed = {};
+            immediates.forEach(x => x());
             this.fireEvent('end');
             resolve(true);
           } else {
