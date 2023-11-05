@@ -1,12 +1,10 @@
 import { type PhysicConfig } from '../shared';
 
-const MAX_DISTANCE = 10 ** -2;
-
 function stepper(pos: number, vel: number, dest: number, step: number, config: PhysicConfig) {
-  const { tension, friction, mass } = config;
+  const { tension, friction, mass, precision } = config;
   const [nPos, nVel] = spring(pos, vel, dest, step, tension, friction, mass);
 
-  if (Math.abs(nPos - dest) < MAX_DISTANCE) return [dest, 0];
+  if (Math.abs(nPos - dest) < 10 ** (-1 * precision)) return [dest, 0];
 
   return [nPos, nVel];
 }

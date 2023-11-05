@@ -129,9 +129,9 @@ class Controller<T extends string> {
     const value$ = {} as SpringValue<T>;
 
     for (const key of Object.keys(this.value)) {
-      const { precision } = this.configFn(key as T);
+      const config = this.configFn(key as T);
 
-      value$[key] = fix(this.value[key], precision);
+      value$[key] = fix(this.value[key], config.fix);
     }
 
     return value$;
@@ -357,9 +357,9 @@ class Controller<T extends string> {
     getConfig: PhysicConfigFn<T>,
   ) {
     for (const key of Object.keys(value2)) {
-      const { precision } = getConfig(key as T);
+      const config = getConfig(key as T);
 
-      if (fix(value1[key], precision) !== fix(value2[key], precision)) return false;
+      if (fix(value1[key], config.fix) !== fix(value2[key], config.fix)) return false;
     }
 
     return true;

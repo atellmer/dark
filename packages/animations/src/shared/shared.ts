@@ -7,12 +7,14 @@ export type PhysicConfig = {
   tension: number;
   friction: number;
   precision: number;
+  fix: number;
 };
 
 const defaultPhysicConfig: PhysicConfig = {
   ...presets.noWobble,
   mass: 1,
   precision: 2,
+  fix: 2,
 };
 
 export { defaultPhysicConfig };
