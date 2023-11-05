@@ -141,7 +141,7 @@ class Controller<T extends string> {
     const { from, to } = this.configurator(idx);
 
     this.from = from;
-    this.to = to;
+    this.to = to || this.to;
 
     const dest = fn(idx);
 
@@ -158,7 +158,7 @@ class Controller<T extends string> {
     const { from, to } = this.configurator(idx);
 
     this.from = from;
-    this.to = to;
+    this.to = to || this.to;
 
     const dest = this.calculateDest(this.from, false);
 
@@ -169,7 +169,7 @@ class Controller<T extends string> {
     const { from, to } = this.configurator(idx);
 
     this.from = from;
-    this.to = to;
+    this.to = to || this.to;
 
     const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue, true);
 

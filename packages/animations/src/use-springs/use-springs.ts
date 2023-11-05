@@ -27,15 +27,20 @@ function useSprings<T extends string>(
     return {
       prevCount: count,
       ctrls: range(count).map(() => new Controller<T>(shared)),
+      configurator,
     };
   }, []);
 
+  scope.configurator = configurator;
+
   useMemo(() => {
-    prepare(scope.ctrls, configurator, forceUpdate);
+    const { ctrls, configurator } = scope;
+
+    prepare(ctrls, configurator, forceUpdate);
   }, deps);
 
   useLayoutEffect(() => {
-    const { ctrls, prevCount } = scope;
+    const { ctrls, prevCount, configurator } = scope;
     const options: UpdateCountOptions<T> = {
       count,
       prevCount,
@@ -50,14 +55,31 @@ function useSprings<T extends string>(
   }, [count]);
 
   useLayoutEffect(() => {
+    const { ctrls } = scope;
     const unsubs: Array<() => void> = [];
 
-    scope.ctrls.forEach((ctrl, idx) => {
-      const { onStart, onChange, onEnd } = configurator(idx);
+    ctrls.forEach((ctrl, idx) => {
+      unsubs.push(
+        ctrl.subscribe('start', () => {
+          const { onStart } = scope.configurator(idx);
 
-      detectIsFunction(onStart) && unsubs.push(ctrl.subscribe('start', () => onStart(idx)));
-      detectIsFunction(onChange) && unsubs.push(ctrl.subscribe('change', () => onChange(idx)));
-      detectIsFunction(onEnd) && unsubs.push(ctrl.subscribe('end', () => onEnd(idx)));
+          detectIsFunction(onStart) && onStart(idx);
+        }),
+      );
+      unsubs.push(
+        ctrl.subscribe('change', () => {
+          const { onChange } = scope.configurator(idx);
+
+          detectIsFunction(onChange) && onChange(idx);
+        }),
+      );
+      unsubs.push(
+        ctrl.subscribe('end', () => {
+          const { onEnd } = scope.configurator(idx);
+
+          detectIsFunction(onEnd) && onEnd(idx);
+        }),
+      );
     });
 
     return () => unsubs.forEach(x => x());
@@ -135,9 +157,10 @@ function useSprings<T extends string>(
 type Scope<T extends string> = {
   prevCount: number;
   ctrls: Array<Controller<T>>;
+  configurator: (idx: number) => ItemConfig<T>;
 };
 
-type SpringsApi<T extends string> = {
+export type SpringsApi<T extends string> = {
   start: (fn?: Updater<T>) => void;
   back: () => void;
   toggle: (reverse?: boolean) => void;
