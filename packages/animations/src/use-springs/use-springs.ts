@@ -1,14 +1,14 @@
 import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
-import { type Updater, type PartialPhysicConfigFn, Controller } from '../controller';
+import { type Updater, type PartialPhysicConfigurator, Controller } from '../controller';
 import { SharedState, Flow, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
 export type ItemConfig<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
-  config?: PartialPhysicConfigFn<T>;
+  config?: PartialPhysicConfigurator<T>;
   outside?: (value: SpringValue<T>) => void;
   onStart?: (idx: number) => void;
   onChange?: (idx: number) => void;
@@ -184,7 +184,7 @@ function prepare<T extends string>(
     ctrl.setKey(String(idx));
     ctrl.setFrom(from);
     ctrl.setTo(to);
-    ctrl.setConfigFn(config);
+    ctrl.setPhysicConf(config);
     ctrl.setNotifier(notifier);
     ctrl.setConfigurator(configurator);
 
@@ -194,7 +194,7 @@ function prepare<T extends string>(
     }
 
     if (ctrl.getIsAdded()) {
-      ctrl.setIsAdded(false);
+      ctrl.markAsAdded(false);
       ctrl.start();
     }
   });
@@ -218,7 +218,7 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
     const inserts = range(diff).map(() => {
       const controller = new Controller<T>(shared);
 
-      controller.setIsAdded(true);
+      controller.markAsAdded(true);
 
       return controller;
     });
@@ -239,7 +239,7 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
       const ctrl = deleted[i];
       const ctrl$ = deleted[i - 1];
 
-      ctrl.setIsRemoved(true);
+      ctrl.markAsRemoved(true);
       ctrl.subscribe('end', () => {
         if (!ctrl.detectIsReachedFrom()) return;
         const idx = ctrls.findIndex(x => x === ctrl);

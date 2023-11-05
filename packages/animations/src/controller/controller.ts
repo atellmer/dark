@@ -10,7 +10,7 @@ const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
 type BaseConfig<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
-  config?: PartialPhysicConfigFn<T>;
+  config?: PartialPhysicConfigurator<T>;
 };
 class Controller<T extends string> {
   private key: string;
@@ -25,7 +25,7 @@ class Controller<T extends string> {
   private completed: Record<string, boolean> = {};
   private queue: Array<SpringValue<T>> = [];
   private events = new Map<MotionEvent, Set<SubscriberWithValue<SpringValue<T>>>>();
-  private configFn: PhysicConfigFn<T>;
+  private physicConf: PhysicConfigurator<T>;
   private left: Controller<T> = null;
   private right: Controller<T> = null;
   private shared: SharedState = null;
@@ -37,14 +37,6 @@ class Controller<T extends string> {
 
   constructor(shared: SharedState = null) {
     this.shared = shared;
-  }
-
-  setConfigurator(fn: (idx: number) => BaseConfig<T>) {
-    this.configurator = fn;
-  }
-
-  getConfigurator() {
-    return this.configurator;
   }
 
   getKey() {
@@ -65,8 +57,8 @@ class Controller<T extends string> {
     this.dest = this.dest || { ...(value || this.from) };
   }
 
-  setConfigFn(fn: (key: T) => Partial<PhysicConfig> = () => ({})) {
-    this.configFn = (key: T) => ({ ...defaultPhysicConfig, ...fn(key) });
+  setPhysicConf(fn: (key: T) => Partial<PhysicConfig> = () => ({})) {
+    this.physicConf = (key: T) => ({ ...defaultPhysicConfig, ...fn(key) });
   }
 
   getLeft() {
@@ -85,15 +77,7 @@ class Controller<T extends string> {
     this.right = x;
   }
 
-  setNotifier(fn: (x: SpringValue<T>) => void) {
-    this.notifier = fn;
-  }
-
-  setFlow(x: Flow) {
-    this.shared.setFlow(x);
-  }
-
-  setIsAdded(x: boolean) {
+  markAsAdded(x: boolean) {
     this.isAdded = x;
   }
 
@@ -101,7 +85,7 @@ class Controller<T extends string> {
     return this.isAdded;
   }
 
-  setIsRemoved(x: boolean) {
+  markAsRemoved(x: boolean) {
     this.isRemoved = x;
   }
 
@@ -109,8 +93,16 @@ class Controller<T extends string> {
     return this.isRemoved;
   }
 
-  detectIsReachedFrom() {
-    return Controller.detectAreValuesEqual(this.value, this.from, this.configFn);
+  setFlow(x: Flow) {
+    this.shared.setFlow(x);
+  }
+
+  setNotifier(fn: (x: SpringValue<T>) => void) {
+    this.notifier = fn;
+  }
+
+  setConfigurator(fn: (idx: number) => BaseConfig<T>) {
+    this.configurator = fn;
   }
 
   subscribe(event: MotionEvent, handler: SubscriberWithValue<SpringValue<T>>) {
@@ -129,7 +121,7 @@ class Controller<T extends string> {
     const value$ = {} as SpringValue<T>;
 
     for (const key of Object.keys(this.value)) {
-      const config = this.configFn(key as T);
+      const config = this.physicConf(key as T);
 
       value$[key] = fix(this.value[key], config.fix);
     }
@@ -138,18 +130,12 @@ class Controller<T extends string> {
   }
 
   start(fn: Updater<T> = () => this.to || this.from, idx = 0) {
-    const { from, to } = this.configurator(idx);
+    const { from, to, config } = this.configurator(idx);
 
-    this.from = from;
-    this.to = to || this.to;
-
-    const dest = fn(idx);
-
-    if (!this.to) {
-      this.to = { ...this.from, ...dest };
-    }
-
-    Object.assign(this.dest, dest);
+    this.setFrom(from);
+    this.setTo(to);
+    this.setPhysicConf(config);
+    Object.assign(this.dest, fn(idx));
 
     return this.play(this.dest);
   }
@@ -157,8 +143,8 @@ class Controller<T extends string> {
   back(idx = 0) {
     const { from, to } = this.configurator(idx);
 
-    this.from = from;
-    this.to = to || this.to;
+    this.setFrom(from);
+    this.setTo(to);
 
     const dest = this.calculateDest(this.from, false);
 
@@ -168,8 +154,8 @@ class Controller<T extends string> {
   toggle(idx = 0) {
     const { from, to } = this.configurator(idx);
 
-    this.from = from;
-    this.to = to || this.to;
+    this.setFrom(from);
+    this.setTo(to);
 
     const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue, true);
 
@@ -196,17 +182,8 @@ class Controller<T extends string> {
     this.resume();
   }
 
-  getConfigFn() {
-    return this.configFn;
-  }
-
-  private async play(to: SpringValue<T>) {
-    this.queue.push(to);
-    if (this.frameId) return false;
-    this.fireEvent('start');
-    const isSuccess = await this.motion(to);
-
-    return isSuccess;
+  detectIsReachedFrom() {
+    return Controller.detectAreValuesEqual(this.value, this.from, this.physicConf);
   }
 
   private calculateDest(target: SpringValue<T>, isToggle: boolean) {
@@ -246,9 +223,18 @@ class Controller<T extends string> {
     return dest;
   }
 
+  private async play(to: SpringValue<T>) {
+    this.queue.push(to);
+    if (this.frameId) return false;
+    this.fireEvent('start');
+    const isSuccess = await this.motion(to);
+
+    return isSuccess;
+  }
+
   private motion(to: SpringValue<T>) {
     return new Promise<boolean>((resolve, reject) => {
-      const { value, results, completed, configFn } = this;
+      const { value, results, completed, physicConf: configFn } = this;
       const keys = Object.keys(value);
       const make = () => this.motion(to).then(resolve).catch(reject);
 
@@ -354,10 +340,10 @@ class Controller<T extends string> {
   static detectAreValuesEqual<T extends string>(
     value1: SpringValue<T>,
     value2: SpringValue<T>,
-    getConfig: PhysicConfigFn<T>,
+    conf: PhysicConfigurator<T>,
   ) {
     for (const key of Object.keys(value2)) {
-      const config = getConfig(key as T);
+      const config = conf(key as T);
 
       if (fix(value1[key], config.fix) !== fix(value2[key], config.fix)) return false;
     }
@@ -380,8 +366,8 @@ export type Updater<T extends string> = (idx: number) => Partial<SpringValue<T>>
 
 export type MotionEvent = 'start' | 'change' | 'end';
 
-export type PhysicConfigFn<T extends string> = (key: T | null) => PhysicConfig;
+export type PhysicConfigurator<T extends string> = (key: T | null) => PhysicConfig;
 
-export type PartialPhysicConfigFn<T extends string> = (key: T | null) => Partial<PhysicConfig>;
+export type PartialPhysicConfigurator<T extends string> = (key: T | null) => Partial<PhysicConfig>;
 
 export { Controller };
