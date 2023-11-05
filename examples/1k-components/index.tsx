@@ -1,11 +1,7 @@
-import { startFPSMonitor, startMemMonitor } from 'perf-monitor';
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, View, component, useState, useEffect, useMemo, useUpdate, Flag } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
-
-startFPSMonitor();
-startMemMonitor();
+import { h, component, useState, useEffect, useMemo, useUpdate, Flag, TagVirtualNode } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const Demo = component(() => {
   const [numPoints, setNumPoints] = useState(1000);
@@ -27,12 +23,7 @@ const Demo = component(() => {
         <a href='https://infernojs.github.io/inferno/1kcomponents/' target='_blank'>
           {' '}
           Inferno demo
-        </a>{' '}
-        based on Glimmer demo by{' '}
-        <a href='http://mlange.io' target='_blank'>
-          Michael Lange
         </a>
-        .
       </div>
     </div>
   );
@@ -54,7 +45,7 @@ type VizDemoProps = {
 };
 
 const VizDemo = component<VizDemoProps>(({ count }) => {
-  const update = useUpdate({ forceAsync: true });
+  const update = useUpdate();
   const scope = useMemo(
     () => ({
       layout: 0,
@@ -115,7 +106,7 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
   };
 
   return (
-    <svg class='demo'>
+    <svg class='demo' {...flagProps}>
       <g {...flagProps}>{map(scope.points, renderPoint)}</g>
     </svg>
   );
@@ -149,13 +140,16 @@ const makePoints = (count: number, scope: any) => {
 };
 
 const renderPoint = (point: Point, idx: number) => {
-  return View({
-    as: 'rect',
-    class: 'point',
-    key: idx,
-    transform: `translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`,
-    fill: point.color,
-  });
+  return new TagVirtualNode(
+    'rect',
+    {
+      key: idx,
+      class: 'point',
+      transform: `translate(${Math.floor(point.x)}, ${Math.floor(point.y)})`,
+      fill: point.color,
+    },
+    null,
+  );
 };
 
 const map = (items: Array<Point>, cb: (x: any, idx: number) => any) => {
@@ -256,4 +250,4 @@ function project(vector) {
   return translate([ww, wh], scale(Math.min(wh, ww), vector));
 }
 
-render(<Demo />, document.getElementById('root'));
+createRoot(document.getElementById('root')).render(<Demo />);

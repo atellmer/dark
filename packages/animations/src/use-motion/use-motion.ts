@@ -1,12 +1,12 @@
 import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch, type Callback } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
-import { type Updater, type PartialConfigFn, MotionController } from '../controller';
+import { type Updater, type PartialPhysicConfigFn, Controller } from '../controller';
 
 export type UseMotionOptions<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
-  config?: PartialConfigFn<T>;
+  config?: PartialPhysicConfigFn<T>;
   loop?: boolean;
   reverse?: boolean;
   outside?: (value: SpringValue<T>) => void;
@@ -21,7 +21,7 @@ function useMotion<T extends string>(
 ): [SpringValue<T>, MotionApi<T>] {
   const { from, to, config, loop, reverse, outside, onStart, onChange, onEnd } = options;
   const update = useUpdate();
-  const scope = useMemo(() => ({ controller: new MotionController() }), []);
+  const scope = useMemo(() => ({ controller: new Controller() }), []);
   const { controller } = scope;
 
   useMemo(() => {
@@ -59,7 +59,7 @@ function useMotion<T extends string>(
         }
       } else {
         if (reverse) {
-          const key = MotionController.getAvailableKey(value, from);
+          const key = Controller.getAvailableKey(value, from);
 
           if (value[key] !== from[key]) {
             api.reverse();

@@ -1,8 +1,8 @@
-import { type Config } from '../shared';
+import { type PhysicConfig } from '../shared';
 
 const MAX_DISTANCE = 10 ** -2;
 
-function stepper(pos: number, vel: number, dest: number, step: number, config: Config) {
+function stepper(pos: number, vel: number, dest: number, step: number, config: PhysicConfig) {
   const { tension, friction, mass } = config;
   const [nPos, nVel] = spring(pos, vel, dest, step, tension, friction, mass);
 
