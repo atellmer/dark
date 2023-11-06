@@ -249,15 +249,13 @@ class Controller<T extends string> {
       this.frameId = platform.raf(() => {
         if (this.isPaused) return make();
         try {
-          const currentTime = time();
-          let step = (currentTime - this.lastTime) / 1000;
+          let step = (time() - this.lastTime) / 1000;
 
           if (step > MAX_DELTA_TIME) {
             step = 0;
           }
 
           this.prevValue = { ...value };
-          this.lastTime = currentTime;
 
           if (this.queue.length === 0) {
             this.queue.push(this.dest);
@@ -267,10 +265,15 @@ class Controller<T extends string> {
             if (this.immediate(key)) {
               completed[key] = true;
 
-              if (to[key] === this.from[key]) {
-                immediates.push(() => (value[key] = to[key]));
-              } else {
+              const complete = () => {
                 value[key] = to[key];
+                results[key] = [to[key], 0];
+              };
+
+              if (to[key] === this.from[key]) {
+                immediates.push(complete);
+              } else {
+                complete();
               }
             } else {
               if (!results[key]) {
