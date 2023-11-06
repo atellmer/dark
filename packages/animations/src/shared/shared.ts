@@ -2,7 +2,7 @@ import { presets } from '../presets';
 
 export type SpringValue<T extends string> = Record<T, number>;
 
-export type PhysicConfig = {
+export type SpringConfig = {
   mass: number;
   tension: number;
   friction: number;
@@ -10,11 +10,11 @@ export type PhysicConfig = {
   fix: number;
 };
 
-const defaultPhysicConfig: PhysicConfig = {
+const defaultSpringConfig: SpringConfig = {
   ...presets.noWobble,
   mass: 1,
   precision: 2,
   fix: 2,
 };
 
-export { defaultPhysicConfig };
+export { defaultSpringConfig };

@@ -27,6 +27,8 @@ const dummyFn = () => {};
 
 const trueFn = () => true;
 
+const falseFn = () => false;
+
 const sameFn = <T = any>(x: T) => x;
 
 const error = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
@@ -97,6 +99,7 @@ export {
   getTime,
   dummyFn,
   trueFn,
+  falseFn,
   error,
   flatten,
   keyBy,

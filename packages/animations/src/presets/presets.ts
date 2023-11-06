@@ -1,6 +1,6 @@
-import { type Config } from '../shared';
+import { type SpringConfig } from '../shared';
 
-type Preset = Pick<Config, 'tension' | 'friction'>;
+type Preset = Pick<SpringConfig, 'tension' | 'friction'>;
 
 type PresetName = 'noWobble' | 'gentle' | 'wobbly' | 'stiff';
 

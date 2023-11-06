@@ -1,8 +1,8 @@
 import { stepper } from './stepper';
-import { type Config } from '../shared';
+import { type SpringConfig } from '../shared';
 
 const step = 0.01;
-const config: Config = {
+const config: SpringConfig = {
   mass: 1,
   tension: 170,
   friction: 26,

@@ -1,24 +1,20 @@
 import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
-import { type Updater, type PartialPhysicConfigurator, Controller } from '../controller';
+import { type BaseOptions, type StartFn, Controller } from '../controller';
 import { SharedState, Flow, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
-export type ItemConfig<T extends string> = {
-  from: SpringValue<T>;
-  to?: SpringValue<T>;
-  config?: PartialPhysicConfigurator<T>;
-  immediate?: (key: string) => boolean;
+export type ItemOptions<T extends string> = {
   outside?: (value: SpringValue<T>) => void;
   onStart?: (idx: number) => void;
   onChange?: (idx: number) => void;
   onEnd?: (idx: number) => void;
-};
+} & BaseOptions<T>;
 
 function useSprings<T extends string>(
   count: number,
-  configurator: (idx: number) => ItemConfig<T>,
+  configurator: (idx: number) => ItemOptions<T>,
   deps: Array<any> = [],
 ): [Array<SpringValue<T>>, SpringsApi<T>] {
   const update = useUpdate();
@@ -93,7 +89,7 @@ function useSprings<T extends string>(
     const canUse = (controller: Controller<T>) => controller && !controller.getIsRemoved();
 
     return {
-      start: (fn?: Updater<T>) => {
+      start: (fn?: StartFn<T>) => {
         if (shared.getIsTrail()) {
           const [ctrl] = ctrls;
 
@@ -158,11 +154,11 @@ function useSprings<T extends string>(
 type Scope<T extends string> = {
   prevCount: number;
   ctrls: Array<Controller<T>>;
-  configurator: (idx: number) => ItemConfig<T>;
+  configurator: (idx: number) => ItemOptions<T>;
 };
 
 export type SpringsApi<T extends string> = {
-  start: (fn?: Updater<T>) => void;
+  start: (fn?: StartFn<T>) => void;
   back: () => void;
   toggle: (reverse?: boolean) => void;
   pause: () => void;
@@ -173,7 +169,7 @@ export type SpringsApi<T extends string> = {
 
 function prepare<T extends string>(
   ctrls: Array<Controller<T>>,
-  configurator: (idx: number) => ItemConfig<T>,
+  configurator: (idx: number) => ItemOptions<T>,
   update: () => void,
 ) {
   ctrls.forEach((ctrl, idx) => {
@@ -185,7 +181,7 @@ function prepare<T extends string>(
     ctrl.setKey(String(idx));
     ctrl.setFrom(from);
     ctrl.setTo(to);
-    ctrl.setPhysicConf(config);
+    ctrl.setSpringConfigFn(config);
     ctrl.setNotifier(notifier);
     ctrl.setConfigurator(configurator);
 
@@ -206,7 +202,7 @@ type UpdateCountOptions<T extends string> = {
   prevCount: number;
   shared: SharedState;
   ctrls: Array<Controller<T>>;
-  configurator: (idx: number) => ItemConfig<T>;
+  configurator: (idx: number) => ItemOptions<T>;
   update: () => void;
 };
 
@@ -251,7 +247,7 @@ function updateCount<T extends string>(options: UpdateCountOptions<T>) {
           update();
         }
       });
-      ctrl$ && ctrl.subscribe('change', value => ctrl$.start(() => value));
+      ctrl$ && ctrl.subscribe('change', value => ctrl$.start(() => ({ to: value })));
     }
 
     last.back();
