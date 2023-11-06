@@ -14,7 +14,7 @@ const defaultSpringConfig: SpringConfig = {
   ...presets.noWobble,
   mass: 1,
   precision: 2,
-  fix: 2,
+  fix: 4,
 };
 
 export { defaultSpringConfig };

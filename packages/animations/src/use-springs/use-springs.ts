@@ -7,9 +7,9 @@ import { range } from '../utils';
 
 export type ItemOptions<T extends string> = {
   outside?: (value: SpringValue<T>) => void;
-  onStart?: (idx: number) => void;
-  onChange?: (idx: number) => void;
-  onEnd?: (idx: number) => void;
+  onStart?: () => void;
+  onChange?: () => void;
+  onEnd?: () => void;
 } & BaseOptions<T>;
 
 function useSprings<T extends string>(
@@ -60,21 +60,21 @@ function useSprings<T extends string>(
         ctrl.subscribe('start', () => {
           const { onStart } = scope.configurator(idx);
 
-          detectIsFunction(onStart) && onStart(idx);
+          detectIsFunction(onStart) && onStart();
         }),
       );
       unsubs.push(
         ctrl.subscribe('change', () => {
           const { onChange } = scope.configurator(idx);
 
-          detectIsFunction(onChange) && onChange(idx);
+          detectIsFunction(onChange) && onChange();
         }),
       );
       unsubs.push(
         ctrl.subscribe('end', () => {
           const { onEnd } = scope.configurator(idx);
 
-          detectIsFunction(onEnd) && onEnd(idx);
+          detectIsFunction(onEnd) && onEnd();
         }),
       );
     });
