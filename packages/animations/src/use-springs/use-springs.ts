@@ -44,7 +44,9 @@ function useSprings<T extends string>(
       ctrls.push(...range(count - prevCount).map(() => new Controller<T>(state)));
       prepare(ctrls, configurator, forceUpdate);
     } else if (count < prevCount) {
-      ctrls.splice(count, ctrls.length);
+      const deleted = ctrls.splice(count, ctrls.length);
+
+      deleted.forEach(ctrl => ctrl.setIsPlaying(false));
       prepare(ctrls, configurator, forceUpdate);
     }
 

@@ -190,7 +190,7 @@ class Controller<T extends string> {
     return this.state.getIsTrail();
   }
 
-  private setIsPlaying(x: boolean) {
+  setIsPlaying(x: boolean) {
     this.state.setIsPlaying(x, this.key);
   }
 
@@ -324,7 +324,7 @@ class Controller<T extends string> {
     const isReachedTo = this.detectIsReachedTo();
     const isReachedFrom = this.detectIsReachedFrom();
     const isLoop = this.state.getIsLoop();
-    const withReset = true;
+    const withReset = false; // TODO
 
     this.frameId = null;
     this.results = {};
