@@ -15,7 +15,7 @@ class Controller<T extends string> {
   private value: SpringValue<T>;
   private prevValue: SpringValue<T>;
   private dest: SpringValue<T>;
-  private sharedState: SharedState = null;
+  private state: SharedState = null;
   private frameTime: number;
   private frameId: number;
   private results: Record<string, [number, number]> = {};
@@ -30,8 +30,8 @@ class Controller<T extends string> {
   private immediate: ImmediateFn<T> = falseFn;
   private immediates: Array<() => void> = [];
 
-  constructor(sharedState: SharedState) {
-    this.sharedState = sharedState;
+  constructor(state: SharedState) {
+    this.state = state;
     this.key = String(++Controller.id);
   }
 
@@ -82,7 +82,7 @@ class Controller<T extends string> {
   }
 
   setFlow(x: Flow) {
-    this.sharedState.setFlow(x);
+    this.state.setFlow(x);
   }
 
   setNotifier(fn: (x: SpringValue<T>) => void) {
@@ -169,7 +169,7 @@ class Controller<T extends string> {
   cancel() {
     this.frameId && platform.caf(this.frameId);
     this.frameId = null;
-    this.sharedState.resume();
+    this.state.resume();
   }
 
   detectIsReachedFrom() {
@@ -182,12 +182,16 @@ class Controller<T extends string> {
 
   getAnimationStatus() {
     return {
-      isPlaying: !this.sharedState.getIsSeriesCompleted(),
+      isPlaying: !this.state.getIsSeriesCompleted(),
     };
   }
 
+  getIsTrail() {
+    return this.state.getIsTrail();
+  }
+
   private setIsPlaying(x: boolean) {
-    this.sharedState.setIsPlaying(x, this.key);
+    this.state.setIsPlaying(x, this.key);
   }
 
   private calculateDest(target: SpringValue<T>, isToggle: boolean) {
@@ -242,7 +246,7 @@ class Controller<T extends string> {
 
     this.frameTime = time();
     this.frameId = platform.raf(() => {
-      if (this.sharedState.getIsPaused()) return make();
+      if (this.state.getIsPaused()) return make();
       let step = (time() - this.frameTime) / 1000;
 
       if (step > MAX_DELTA_TIME) {
@@ -305,8 +309,8 @@ class Controller<T extends string> {
     this.notifier(this.getValue());
     this.event('change');
 
-    if (this.sharedState.getIsTrail()) {
-      if (this.sharedState.detectIsRightFlow()) {
+    if (this.state.getIsTrail()) {
+      if (this.state.detectIsRightFlow()) {
         this.right && this.right.start(() => ({ to: this.value }));
       } else {
         this.left && this.left.start(() => ({ to: this.value }));
@@ -316,11 +320,11 @@ class Controller<T extends string> {
 
   private complete() {
     this.setIsPlaying(false);
-    const isSeriesCompleted = this.sharedState.getIsSeriesCompleted();
+    const isSeriesCompleted = this.state.getIsSeriesCompleted();
     const isReachedTo = this.detectIsReachedTo();
     const isReachedFrom = this.detectIsReachedFrom();
-    const isLoop = this.sharedState.getIsLoop();
-    const withReset = this.sharedState.getWithReset();
+    const isLoop = this.state.getIsLoop();
+    const withReset = this.state.getWithReset();
 
     this.frameId = null;
     this.results = {};
