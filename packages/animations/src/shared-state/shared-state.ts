@@ -4,6 +4,9 @@ class SharedState {
   private isTrail = false;
   private isLoop = false;
   private withReset = false;
+  private isPaused = false;
+  private delay: number;
+  private delayId: number | NodeJS.Timeout;
 
   constructor(isTrail = false) {
     this.isTrail = isTrail;
@@ -51,6 +54,31 @@ class SharedState {
 
   getWithReset() {
     return this.withReset;
+  }
+
+  pause() {
+    this.isPaused = true;
+  }
+
+  resume() {
+    this.isPaused = false;
+  }
+
+  getIsPaused() {
+    return this.isPaused;
+  }
+
+  setDelay(x: number) {
+    this.delay = x;
+  }
+
+  getDelay() {
+    return this.delay;
+  }
+
+  setDelayId(x: number | NodeJS.Timeout) {
+    this.delayId && clearTimeout(this.delayId);
+    this.delayId = x;
   }
 }
 

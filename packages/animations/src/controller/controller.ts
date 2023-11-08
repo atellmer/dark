@@ -24,7 +24,6 @@ class Controller<T extends string> {
   private events = new Map<AnimationEventName, Set<SubscriberWithValue<SpringValue<T>>>>();
   private left: Controller<T> = null;
   private right: Controller<T> = null;
-  private isPaused = false;
   private isAdded = false;
   private isRemoved = false;
   private springConfigFn: SpringConfigFn<T>;
@@ -155,7 +154,11 @@ class Controller<T extends string> {
     this.setImmediate(immediate);
     Object.assign(this.dest, to);
 
-    this.play(this.dest);
+    if (this.sharedState.getDelay()) {
+      //
+    } else {
+      this.play(this.dest);
+    }
   }
 
   back() {
@@ -180,14 +183,6 @@ class Controller<T extends string> {
     this.start(() => ({ to: dest }));
   }
 
-  pause() {
-    this.isPaused = true;
-  }
-
-  resume() {
-    this.isPaused = false;
-  }
-
   reset() {
     this.value = { ...this.from };
     this.dest = { ...(this.to || this.from) };
@@ -196,7 +191,7 @@ class Controller<T extends string> {
   cancel() {
     this.frameId && platform.caf(this.frameId);
     this.frameId = null;
-    this.resume();
+    this.sharedState.resume();
   }
 
   detectIsReachedFrom() {
@@ -269,7 +264,7 @@ class Controller<T extends string> {
 
     this.frameTime = time();
     this.frameId = platform.raf(() => {
-      if (this.isPaused) return make();
+      if (this.sharedState.getIsPaused()) return make();
       let step = (time() - this.frameTime) / 1000;
 
       if (step > MAX_DELTA_TIME) {
@@ -318,7 +313,7 @@ class Controller<T extends string> {
       }
 
       this.queue = [];
-      this.loop();
+      this.change();
 
       if (this.checkCompleted(keys)) {
         this.complete();
@@ -328,7 +323,7 @@ class Controller<T extends string> {
     });
   }
 
-  private loop() {
+  private change() {
     this.notifier(this.getValue());
     this.event('change');
 
@@ -465,7 +460,6 @@ export type BaseOptions<T extends string> = {
   to?: SpringValue<T>;
   config?: PatialConfigFn<T>;
   immediate?: ImmediateFn<T>;
-  delay?: number;
 };
 
 export type StartOptions<T extends string> = {

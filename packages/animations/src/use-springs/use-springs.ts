@@ -86,7 +86,7 @@ function useSprings<T extends string>(
 
   const api = useMemo<SpringsApi<T>>(() => {
     const { ctrls } = scope;
-    const canUse = (controller: Controller<T>) => controller && !controller.getIsRemoved();
+    const canUse = (ctrl: Controller<T>) => ctrl && !ctrl.getIsRemoved();
 
     return {
       start: (fn?: StartFn<T>) => {
@@ -142,14 +142,15 @@ function useSprings<T extends string>(
           });
         }
       },
-      pause: () => ctrls.forEach(ctrl => ctrl.pause()),
-      resume: () => ctrls.forEach(ctrl => ctrl.resume()),
+      pause: () => sharedState.pause(),
+      resume: () => sharedState.resume(),
       reset: () => ctrls.forEach(ctrl => canUse(ctrl) && ctrl.reset()),
       cancel: () => ctrls.forEach(ctrl => ctrl.cancel()),
       loop: (isEnabled: boolean, withReset = false) => {
         sharedState.setIsLoop(isEnabled);
         sharedState.setWithReset(withReset);
       },
+      delay: (x: number) => sharedState.setDelay(x),
     };
   }, []);
 
@@ -173,6 +174,7 @@ export type SpringsApi<T extends string> = {
   reset: () => void;
   cancel: () => void;
   loop: (isEnabled: boolean, withReset?: boolean) => void;
+  delay: (x: number) => void;
 };
 
 function prepare<T extends string>(
