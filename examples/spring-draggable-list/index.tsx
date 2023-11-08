@@ -1,6 +1,6 @@
 import { h, component, useMemo, useLayoutEffect } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
-import { useSprings, range, type BaseOptions, type StartFn } from '@dark-engine/animations';
+import { useSprings, range, type BaseOptions, type StartFn, presets } from '@dark-engine/animations';
 
 function reorder(arr: Array<any>, from: number, to: number) {
   const buffer = arr.slice(0);
@@ -41,13 +41,7 @@ const createConfig =
 const App = component(() => {
   const size = 4;
   const scope = useMemo(
-    () => ({
-      isActive: false,
-      activeIdx: -1,
-      order: range(size),
-      originalOrder: null,
-      initialY: null,
-    }),
+    () => ({ isActive: false, activeIdx: -1, order: range(size), originalOrder: null, initialY: null }),
     [],
   );
   const [springs, api] = useSprings(size, idx => ({
@@ -61,10 +55,10 @@ const App = component(() => {
   }));
 
   useLayoutEffect(() => {
-    const handleDrag = (e: MouseEvent | TouchEvent) => {
+    const handleDrag = (e: PointerEvent) => {
       e.preventDefault();
       if (!scope.isActive) return;
-      const pageY = e instanceof MouseEvent ? e.pageY : e.touches[0].pageY;
+      const pageY = e.pageY;
       const { activeIdx, originalOrder, initialY } = scope;
       const movement = Number((pageY - initialY).toFixed(0));
       if (Math.abs(movement) < NOISE) return;
@@ -76,11 +70,7 @@ const App = component(() => {
       api.start(createConfig(scope.order, true, activeIdx, y) as StartFn<SpringProps>);
     };
     document.addEventListener('pointermove', handleDrag);
-    document.addEventListener('touchmove', handleDrag);
-    return () => {
-      document.removeEventListener('mousemove', handleDrag);
-      document.removeEventListener('touchmove', handleDrag);
-    };
+    return () => document.removeEventListener('pointermove', handleDrag);
   }, []);
 
   useLayoutEffect(() => {
@@ -88,17 +78,13 @@ const App = component(() => {
       scope.isActive = false;
       api.start(createConfig(scope.order, false) as StartFn<SpringProps>);
     };
-    document.addEventListener('mouseup', handleDragEnd);
-    document.addEventListener('touchend', handleDragEnd);
-    return () => {
-      document.removeEventListener('mouseup', handleDragEnd);
-      document.removeEventListener('touchend', handleDragEnd);
-    };
+    document.addEventListener('pointerup', handleDragEnd);
+    return () => document.removeEventListener('pointerup', handleDragEnd);
   });
 
-  const handleDragStart = (idx: number) => (e: SyntheticEvent<MouseEvent | TouchEvent>) => {
+  const handleDragStart = (idx: number) => (e: SyntheticEvent<PointerEvent>) => {
     const { sourceEvent } = e;
-    const pageY = sourceEvent instanceof MouseEvent ? sourceEvent.pageY : sourceEvent.touches[0].pageY;
+    const pageY = sourceEvent.pageY;
 
     scope.isActive = true;
     scope.activeIdx = idx;
@@ -121,12 +107,7 @@ const App = component(() => {
           `;
 
           return (
-            <div
-              key={idx}
-              class='item'
-              style={style}
-              onMouseDown={handleDragStart(idx)}
-              onTouchStart={handleDragStart(idx)}>
+            <div key={idx} class='item' style={style} onPointerDown={handleDragStart(idx)}>
               {idx + 1}
             </div>
           );
