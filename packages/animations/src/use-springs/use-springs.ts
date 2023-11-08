@@ -200,12 +200,20 @@ function prepare<T extends string>(
 
     if (ctrl.getIsAdded()) {
       const { isPlaying } = ctrl.getAnimationStatus();
+      const [first] = ctrls;
 
       ctrl.markAsAdded(false);
 
       if (!isPlaying) {
-        ctrl.setFlow(Flow.RIGHT);
-        ctrl.start();
+        if (first !== ctrl) {
+          if (!first.detectIsReachedFrom()) {
+            ctrl.setFlow(Flow.RIGHT);
+            ctrl.start();
+          }
+        } else {
+          ctrl.setFlow(Flow.RIGHT);
+          ctrl.start();
+        }
       }
     }
   });

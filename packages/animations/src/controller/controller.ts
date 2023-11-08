@@ -16,7 +16,7 @@ class Controller<T extends string> {
   private prevValue: SpringValue<T>;
   private dest: SpringValue<T>;
   private sharedState: SharedState = null;
-  private lastTime: number;
+  private frameTime: number;
   private frameId: number;
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
@@ -267,10 +267,10 @@ class Controller<T extends string> {
     const keys = Object.keys(value) as Array<T>;
     const make = () => this.motion(to);
 
-    this.lastTime = time();
+    this.frameTime = time();
     this.frameId = platform.raf(() => {
       if (this.isPaused) return make();
-      let step = (time() - this.lastTime) / 1000;
+      let step = (time() - this.frameTime) / 1000;
 
       if (step > MAX_DELTA_TIME) {
         step = 0;
@@ -358,7 +358,6 @@ class Controller<T extends string> {
     this.completed = {};
     this.immediates.forEach(x => x());
     this.immediates = [];
-    this.event('end');
 
     if (isSeriesCompleted) {
       if (isReachedTo) {
@@ -403,6 +402,8 @@ class Controller<T extends string> {
         }
       }
     }
+
+    this.event('end'); // !
   }
 
   private getSiblingToChange(isRight: boolean) {
@@ -464,6 +465,7 @@ export type BaseOptions<T extends string> = {
   to?: SpringValue<T>;
   config?: PatialConfigFn<T>;
   immediate?: ImmediateFn<T>;
+  delay?: number;
 };
 
 export type StartOptions<T extends string> = {
