@@ -1,8 +1,9 @@
 class SharedState {
+  private stack = new Set();
   private flow = Flow.RIGHT;
   private isTrail = false;
   private isLoop = false;
-  private isReverse = false;
+  private withReset = false;
 
   constructor(isTrail = false) {
     this.isTrail = isTrail;
@@ -14,6 +15,18 @@ class SharedState {
 
   detectIsRightFlow() {
     return this.flow === Flow.RIGHT;
+  }
+
+  getIsSeriesCompleted() {
+    return this.stack.size === 0;
+  }
+
+  setIsPlaying(x: boolean, key: string) {
+    if (x) {
+      this.stack.add(key);
+    } else {
+      this.stack.delete(key);
+    }
   }
 
   setIsTrail(x: boolean) {
@@ -32,12 +45,12 @@ class SharedState {
     return this.isLoop;
   }
 
-  setIsReverse(x: boolean) {
-    this.isReverse = x;
+  setWithReset(x: boolean) {
+    this.withReset = x;
   }
 
-  getIsReverse() {
-    return this.isReverse;
+  getWithReset() {
+    return this.withReset;
   }
 }
 

@@ -13,7 +13,7 @@ export type SpringConfig = {
 const defaultSpringConfig: SpringConfig = {
   ...presets.noWobble,
   mass: 1,
-  precision: 2,
+  precision: 3,
   fix: 4,
 };
 

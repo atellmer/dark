@@ -19,11 +19,11 @@ function useSprings<T extends string>(
 ): [Array<SpringValue<T>>, SpringsApi<T>] {
   const update = useUpdate();
   const forceUpdate = () => batch(update);
-  const shared = useMemo(() => getSharedState() || new SharedState(), []);
+  const sharedState = useMemo(() => getSharedState() || new SharedState(), []);
   const scope = useMemo<Scope<T>>(() => {
     return {
       prevCount: count,
-      ctrls: range(count).map(() => new Controller<T>(shared)),
+      ctrls: range(count).map(() => new Controller<T>(sharedState)),
       configurator,
     };
   }, []);
@@ -41,7 +41,7 @@ function useSprings<T extends string>(
     const options: UpdateCountOptions<T> = {
       count,
       prevCount,
-      shared,
+      sharedState,
       ctrls,
       configurator,
       update: forceUpdate,
@@ -90,52 +90,55 @@ function useSprings<T extends string>(
 
     return {
       start: (fn?: StartFn<T>) => {
-        if (shared.getIsTrail()) {
+        if (sharedState.getIsTrail()) {
           const [ctrl] = ctrls;
 
           if (!canUse(ctrl)) return;
           ctrl.setFlow(Flow.RIGHT);
-          ctrl.start(fn, 0);
+          ctrl.start(fn);
         } else {
-          ctrls.forEach((ctrl, idx) => {
+          ctrls.forEach(ctrl => {
             if (!canUse(ctrl)) return;
-            ctrl.start(fn, idx);
+            ctrl.setFlow(Flow.RIGHT);
+            ctrl.start(fn);
           });
         }
       },
       back: () => {
-        if (shared.getIsTrail()) {
+        if (sharedState.getIsTrail()) {
           const ctrl = ctrls[ctrls.length - 1];
 
           if (!canUse(ctrl)) return;
           ctrl.setFlow(Flow.LEFT);
           ctrl.back();
         } else {
-          ctrls.forEach((ctrl, idx) => {
+          ctrls.forEach(ctrl => {
             if (!canUse(ctrl)) return;
-            ctrl.back(idx);
+            ctrl.setFlow(Flow.LEFT);
+            ctrl.back();
           });
         }
       },
       toggle: (reverse = false) => {
-        if (shared.getIsTrail()) {
+        if (sharedState.getIsTrail()) {
           if (reverse) {
-            const controller = ctrls[ctrls.length - 1];
+            const ctrl = ctrls[ctrls.length - 1];
 
-            if (!canUse(controller)) return;
-            controller.setFlow(Flow.LEFT);
-            controller.toggle();
+            if (!canUse(ctrl)) return;
+            ctrl.setFlow(Flow.LEFT);
+            ctrl.toggle();
           } else {
-            const [controller] = ctrls;
+            const [ctrl] = ctrls;
 
-            if (!canUse(controller)) return;
-            controller.setFlow(Flow.RIGHT);
-            controller.toggle();
+            if (!canUse(ctrl)) return;
+            ctrl.setFlow(Flow.RIGHT);
+            ctrl.toggle();
           }
         } else {
-          ctrls.forEach((ctrl, idx) => {
+          ctrls.forEach(ctrl => {
             if (!canUse(ctrl)) return;
-            ctrl.toggle(idx);
+            ctrl.setFlow(Flow.RIGHT);
+            ctrl.toggle();
           });
         }
       },
@@ -143,6 +146,10 @@ function useSprings<T extends string>(
       resume: () => ctrls.forEach(ctrl => ctrl.resume()),
       reset: () => ctrls.forEach(ctrl => canUse(ctrl) && ctrl.reset()),
       cancel: () => ctrls.forEach(ctrl => ctrl.cancel()),
+      loop: (isEnabled: boolean, withReset = false) => {
+        sharedState.setIsLoop(isEnabled);
+        sharedState.setWithReset(withReset);
+      },
     };
   }, []);
 
@@ -165,6 +172,7 @@ export type SpringsApi<T extends string> = {
   resume: () => void;
   reset: () => void;
   cancel: () => void;
+  loop: (isEnabled: boolean, withReset?: boolean) => void;
 };
 
 function prepare<T extends string>(
@@ -178,7 +186,7 @@ function prepare<T extends string>(
     const right = ctrls[idx + 1] || null;
     const notifier = detectIsFunction(outside) ? outside : update;
 
-    ctrl.setKey(String(idx));
+    ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
@@ -191,8 +199,14 @@ function prepare<T extends string>(
     }
 
     if (ctrl.getIsAdded()) {
+      const { isPlaying } = ctrl.getAnimationStatus();
+
       ctrl.markAsAdded(false);
-      ctrl.start();
+
+      if (!isPlaying) {
+        ctrl.setFlow(Flow.RIGHT);
+        ctrl.start();
+      }
     }
   });
 }
@@ -200,24 +214,24 @@ function prepare<T extends string>(
 type UpdateCountOptions<T extends string> = {
   count: number;
   prevCount: number;
-  shared: SharedState;
+  sharedState: SharedState;
   ctrls: Array<Controller<T>>;
   configurator: (idx: number) => ItemOptions<T>;
   update: () => void;
 };
 
 function updateCount<T extends string>(options: UpdateCountOptions<T>) {
-  const { count, prevCount, shared, ctrls, configurator, update } = options;
+  const { count, prevCount, sharedState, ctrls, configurator, update } = options;
 
   if (count > prevCount) {
     const diff = count - prevCount;
     const idx = ctrls.findIndex(x => x.getIsRemoved());
     const inserts = range(diff).map(() => {
-      const controller = new Controller<T>(shared);
+      const ctrl = new Controller<T>(sharedState);
 
-      controller.markAsAdded(true);
+      ctrl.markAsAdded(true);
 
-      return controller;
+      return ctrl;
     });
 
     if (idx !== -1) {
