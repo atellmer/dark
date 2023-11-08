@@ -1,13 +1,23 @@
-class SharedState {
+import { type Controller } from '../controller';
+
+class SharedState<T extends string = string> {
+  private ctrls: Array<Controller<T>> = [];
   private stack = new Set();
   private flow = Flow.RIGHT;
   private isTrail = false;
   private isLoop = false;
-  private withReset = false;
   private isPaused = false;
 
   constructor(isTrail = false) {
     this.isTrail = isTrail;
+  }
+
+  setCtrls(ctrls: Array<Controller<T>>) {
+    this.ctrls = ctrls;
+  }
+
+  getCtrls() {
+    return this.ctrls;
   }
 
   setFlow(x: Flow) {
@@ -46,14 +56,6 @@ class SharedState {
     return this.isLoop;
   }
 
-  setWithReset(x: boolean) {
-    this.withReset = x;
-  }
-
-  getWithReset() {
-    return this.withReset;
-  }
-
   pause() {
     this.isPaused = true;
   }
@@ -74,16 +76,16 @@ export enum Flow {
 
 let sharedState: SharedState = null;
 
-function setSharedState(shared: SharedState) {
-  sharedState = shared;
+function setSharedState(state: SharedState) {
+  sharedState = state;
 }
 
 function getSharedState() {
-  const shared = sharedState;
+  const state = sharedState;
 
   sharedState = null;
 
-  return shared;
+  return state;
 }
 
 export { SharedState, setSharedState, getSharedState };

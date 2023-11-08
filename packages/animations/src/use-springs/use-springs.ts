@@ -33,6 +33,7 @@ function useSprings<T extends string>(
     const { ctrls } = scope;
     const configurator = (idx: number) => scope.configurator(idx);
 
+    state.setCtrls(ctrls);
     prepare(ctrls, configurator, forceUpdate);
   }, []);
 
@@ -91,10 +92,7 @@ function useSprings<T extends string>(
       start: createStart(ctrls),
       back: createBack(ctrls),
       toggle: createToggle(ctrls),
-      loop: (isEnabled: boolean, withReset = false) => {
-        state.setIsLoop(isEnabled);
-        state.setWithReset(withReset);
-      },
+      loop: (isEnabled: boolean) => state.setIsLoop(isEnabled),
       pause: () => state.pause(),
       resume: () => state.resume(),
       reset: () => ctrls.forEach(ctrl => ctrl.reset()),
@@ -201,7 +199,7 @@ export type SpringsApi<T extends string> = {
   start: (fn?: StartFn<T>) => void;
   back: () => void;
   toggle: (reverse?: boolean) => void;
-  loop: (isEnabled: boolean, withReset?: boolean) => void;
+  loop: (isEnabled: boolean) => void;
   pause: () => void;
   resume: () => void;
   reset: () => void;

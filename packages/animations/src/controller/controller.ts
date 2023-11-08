@@ -324,21 +324,25 @@ class Controller<T extends string> {
     const isReachedTo = this.detectIsReachedTo();
     const isReachedFrom = this.detectIsReachedFrom();
     const isLoop = this.state.getIsLoop();
-    const withReset = this.state.getWithReset();
+    const withReset = true;
 
     this.frameId = null;
     this.results = {};
     this.completed = {};
     this.immediates.forEach(x => x());
     this.immediates = [];
+    this.event('end');
 
     if (isSeriesCompleted) {
       if (isReachedTo) {
         if (isLoop) {
           if (withReset) {
-            this.setFlow(Flow.RIGHT);
-            this.reset();
-            this.start();
+            const ctrls = this.state.getCtrls();
+            const [ctrl] = ctrls;
+
+            ctrls.forEach(x => x.reset());
+            ctrl.setFlow(Flow.RIGHT);
+            ctrl.start();
           } else {
             this.setFlow(Flow.LEFT);
             this.back();
@@ -351,8 +355,6 @@ class Controller<T extends string> {
         }
       }
     }
-
-    this.event('end'); // !
   }
 
   private checkCompleted(keys: Array<string>) {
