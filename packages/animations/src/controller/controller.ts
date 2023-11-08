@@ -24,8 +24,6 @@ class Controller<T extends string> {
   private events = new Map<AnimationEventName, Set<SubscriberWithValue<SpringValue<T>>>>();
   private left: Controller<T> = null;
   private right: Controller<T> = null;
-  private isAdded = false;
-  private isRemoved = false;
   private springConfigFn: SpringConfigFn<T>;
   private configurator: ConfiguratorFn<T>;
   private notifier: NotifierFn<T>;
@@ -83,22 +81,6 @@ class Controller<T extends string> {
     this.right = x;
   }
 
-  markAsAdded(x: boolean) {
-    this.isAdded = x;
-  }
-
-  getIsAdded() {
-    return this.isAdded;
-  }
-
-  markAsRemoved(x: boolean) {
-    this.isRemoved = x;
-  }
-
-  getIsRemoved() {
-    return this.isRemoved;
-  }
-
   setFlow(x: Flow) {
     this.sharedState.setFlow(x);
   }
@@ -154,11 +136,7 @@ class Controller<T extends string> {
     this.setImmediate(immediate);
     Object.assign(this.dest, to);
 
-    if (this.sharedState.getDelay()) {
-      //
-    } else {
-      this.play(this.dest);
-    }
+    this.play(this.dest);
   }
 
   back() {
@@ -327,25 +305,21 @@ class Controller<T extends string> {
     this.notifier(this.getValue());
     this.event('change');
 
-    if (this.sharedState.getIsTrail() && !this.isRemoved) {
+    if (this.sharedState.getIsTrail()) {
       if (this.sharedState.detectIsRightFlow()) {
-        const right = this.getSiblingToChange(true);
-
-        right && right.start(() => ({ to: this.value }));
+        this.right && this.right.start(() => ({ to: this.value }));
       } else {
-        const left = this.getSiblingToChange(false);
-
-        left && left.start(() => ({ to: this.value }));
+        this.left && this.left.start(() => ({ to: this.value }));
       }
     }
   }
 
   private complete() {
     this.setIsPlaying(false);
+    const isSeriesCompleted = this.sharedState.getIsSeriesCompleted();
     const isReachedTo = this.detectIsReachedTo();
     const isReachedFrom = this.detectIsReachedFrom();
     const isLoop = this.sharedState.getIsLoop();
-    const isSeriesCompleted = this.sharedState.getIsSeriesCompleted();
     const withReset = this.sharedState.getWithReset();
 
     this.frameId = null;
@@ -359,59 +333,22 @@ class Controller<T extends string> {
         if (isLoop) {
           if (withReset) {
             this.setFlow(Flow.RIGHT);
-
-            if (this.isRemoved) {
-              const sibling = this.getSiblingToChange(false);
-
-              if (sibling) {
-                sibling.reset();
-                sibling.start();
-              }
-            } else {
-              this.reset();
-              this.start();
-            }
+            this.reset();
+            this.start();
           } else {
             this.setFlow(Flow.LEFT);
-
-            if (this.isRemoved) {
-              const sibling = this.getSiblingToChange(false);
-
-              sibling && sibling.back();
-            } else {
-              this.back();
-            }
+            this.back();
           }
         }
       } else if (isReachedFrom) {
         if (isLoop) {
           this.setFlow(Flow.RIGHT);
-
-          if (this.isRemoved) {
-            const sibling = this.getSiblingToChange(false);
-
-            sibling && sibling.start();
-          } else {
-            this.start();
-          }
+          this.start();
         }
       }
     }
 
     this.event('end'); // !
-  }
-
-  private getSiblingToChange(isRight: boolean) {
-    let controller = isRight ? this.right : this.left;
-
-    if (!controller) return null;
-
-    do {
-      if (!controller.getIsRemoved()) return controller;
-      controller = isRight ? controller.getRight() : controller.getLeft();
-    } while (controller);
-
-    return null;
   }
 
   private checkCompleted(keys: Array<string>) {
