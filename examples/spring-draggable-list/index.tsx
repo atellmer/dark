@@ -47,7 +47,6 @@ const App = component(() => {
       order: range(size),
       originalOrder: null,
       initialY: null,
-      time: null,
     }),
     [],
   );
@@ -87,13 +86,7 @@ const App = component(() => {
   useLayoutEffect(() => {
     const handleDragEnd = () => {
       scope.isActive = false;
-      if (performance.now() - scope.time < 100) {
-        setTimeout(() => {
-          api.start(createConfig(scope.order, false) as StartFn<SpringProps>);
-        }, 16);
-      } else {
-        api.start(createConfig(scope.order, false) as StartFn<SpringProps>);
-      }
+      api.start(createConfig(scope.order, false) as StartFn<SpringProps>);
     };
     document.addEventListener('mouseup', handleDragEnd);
     document.addEventListener('touchend', handleDragEnd);
@@ -107,7 +100,6 @@ const App = component(() => {
     const { sourceEvent } = e;
     const pageY = sourceEvent instanceof MouseEvent ? sourceEvent.pageY : sourceEvent.touches[0].pageY;
 
-    scope.time = performance.now();
     scope.isActive = true;
     scope.activeIdx = idx;
     scope.originalOrder = scope.order;
