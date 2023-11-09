@@ -1,5 +1,5 @@
 import {
-  type ComponentFactory,
+  type Component,
   type TagVirtualNodeFactory,
   component,
   useMemo,
@@ -13,7 +13,7 @@ import { type SpringValue, type SpringItem } from '../shared';
 type AnimatedProps<E = unknown, T extends string = string> = {
   item: SpringItem<T>;
   style: StyleSubscriber<E, T>;
-  slot: ComponentFactory | TagVirtualNodeFactory;
+  slot: Component | TagVirtualNodeFactory;
 };
 
 const Animated = component<AnimatedProps>(({ item, style, slot }) => {
@@ -34,6 +34,7 @@ const Animated = component<AnimatedProps>(({ item, style, slot }) => {
   }, []);
 
   item.ctrl.setNotifier(value => scope.element && style(scope.element, value));
+  scope.element && style(scope.element, item.value);
 
   return slot;
 });

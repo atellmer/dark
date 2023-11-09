@@ -1,9 +1,10 @@
 import { type TouchGestureEventData, AccessibilityRole } from '@nativescript/core';
 import { type DarkElement, type ComponentFactory, component, detectIsFunction, useEvent } from '@dark-engine/core';
-import { useMotion } from '@dark-engine/animations';
+import { type SpringValue, Animated, useSpring } from '@dark-engine/animations';
 
 import { type ViewProps, View } from './view';
 import { type SyntheticEvent } from '../events';
+import { type TagNativeElement } from '../native-element';
 
 export type TouchableOpacityProps = {
   disabled?: boolean;
@@ -13,10 +14,9 @@ export type TouchableOpacityProps = {
 
 const TouchableOpacity = component<TouchableOpacityProps>(
   ({ disabled, slot, onPress, ...rest }) => {
-    const [{ opacity }, api] = useMotion({
+    const [item, api] = useSpring({
       from: { opacity: 1 },
       to: { opacity: 0.3 },
-      reverse: true,
       config: () => ({ tension: 400 }),
     });
 
@@ -24,24 +24,34 @@ const TouchableOpacity = component<TouchableOpacityProps>(
       if (disabled) return;
       const action = e.sourceEvent.action;
       const isDown = action === 'down';
+      const isUp = action === 'up';
 
       detectIsFunction(rest.onTouch) && rest.onTouch(e);
 
       if (isDown) {
         detectIsFunction(onPress) && onPress(e);
         api.start();
+      } else if (isUp) {
+        api.back();
       }
     });
 
-    return View({
-      accessibilityRole: AccessibilityRole.Button,
-      ...rest,
-      slot,
-      opacity: disabled ? 0.5 : opacity,
-      onTouch: handleTouch,
+    return Animated({
+      item,
+      style: styleFn(disabled),
+      slot: View({
+        accessibilityRole: AccessibilityRole.Button,
+        ...rest,
+        slot,
+        onTouch: handleTouch,
+      }),
     });
   },
   { displayName: 'TouchableOpacity' },
 ) as ComponentFactory<TouchableOpacityProps>;
+
+const styleFn = (isDisabled: boolean) => (element: TagNativeElement, value: SpringValue<'opacity'>) => {
+  element.getNativeView().opacity = isDisabled ? 0.5 : value.opacity;
+};
 
 export { TouchableOpacity };
