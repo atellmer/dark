@@ -1,12 +1,11 @@
-import { useMemo, useUpdate, useLayoutEffect, detectIsFunction, batch } from '@dark-engine/core';
+import { useMemo, useLayoutEffect, detectIsFunction } from '@dark-engine/core';
 
-import { type SpringValue } from '../shared';
+import { type SpringItem } from '../shared';
 import { type BaseOptions, type StartFn, Controller } from '../controller';
 import { SharedState, Flow, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
 export type ItemOptions<T extends string> = {
-  outside?: (value: SpringValue<T>) => void;
   onStart?: () => void;
   onChange?: () => void;
   onEnd?: () => void;
@@ -15,9 +14,7 @@ export type ItemOptions<T extends string> = {
 function useSprings<T extends string>(
   count: number,
   configurator: (idx: number) => ItemOptions<T>,
-): [Array<SpringValue<T>>, SpringsApi<T>] {
-  const update = useUpdate();
-  const forceUpdate = () => batch(update);
+): [Array<SpringItem<T>>, SpringsApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
   const scope = useMemo<Scope<T>>(() => {
     return {
@@ -30,28 +27,19 @@ function useSprings<T extends string>(
   scope.configurator = configurator;
 
   useMemo(() => {
-    const { ctrls } = scope;
-    const configurator = (idx: number) => scope.configurator(idx);
-
-    state.setCtrls(ctrls);
-    prepare(ctrls, configurator, forceUpdate);
-  }, []);
-
-  useLayoutEffect(() => {
     const { ctrls, prevCount, configurator } = scope;
 
     if (count > prevCount) {
       ctrls.push(...range(count - prevCount).map(() => new Controller<T>(state)));
-      prepare(ctrls, configurator, forceUpdate);
     } else if (count < prevCount) {
       const deleted = ctrls.splice(count, ctrls.length);
 
       deleted.forEach(ctrl => ctrl.setIsPlaying(false));
-      prepare(ctrls, configurator, forceUpdate);
     }
 
-    forceUpdate();
+    state.setCtrls(ctrls);
     scope.prevCount = count;
+    prepare(ctrls, configurator);
   }, [count]);
 
   useLayoutEffect(() => {
@@ -102,27 +90,21 @@ function useSprings<T extends string>(
     };
   }, []);
 
-  const values = scope.ctrls.map(x => x.getValue());
+  const items = scope.ctrls.map(ctrl => ({ ctrl, value: ctrl.getValue() }));
 
-  return [values, api];
+  return [items, api];
 }
 
-function prepare<T extends string>(
-  ctrls: Array<Controller<T>>,
-  configurator: (idx: number) => ItemOptions<T>,
-  update: () => void,
-) {
+function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (idx: number) => ItemOptions<T>) {
   ctrls.forEach((ctrl, idx) => {
-    const { from, to, config, outside } = configurator(idx);
+    const { from, to, config } = configurator(idx);
     const left = ctrls[idx - 1] || null;
     const right = ctrls[idx + 1] || null;
-    const notifier = detectIsFunction(outside) ? outside : () => update();
 
     ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
-    ctrl.setNotifier(notifier);
     ctrl.setConfigurator(configurator);
     ctrl.setLeft(left);
     ctrl.setRight(right);

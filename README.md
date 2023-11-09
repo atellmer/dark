@@ -1147,29 +1147,27 @@ render ThemeConsumer!
 Animations in Dark are based on spring physics and placed in a separate package `@dark-engine/animations`. To get the effect you want, you should experiment with its parameters. Dark supports an array of animations that run sequentially one after another, including in the opposite direction. With this technique, you can create complex effects of moving elements.
 
 ```tsx
-import { useMotion, presets } from '@dark-engine/animations';
+import { Animated, useSpring } from '@dark-engine/animations';
 ```
 
 ```tsx
 const App = component(() => {
-  const [{ opacity }, api] = useMotion({
+  const [item, api] = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
-    config: () => presets.gentle,
   });
-  const style = useStyle(styled => ({
-    root: styled`
-      opacity: ${opacity};
-    `,
-  }));
 
   return (
     <>
       <button onClick={() => api.toggle()}>toggle</button>
-      <div style={style.root}>Hello Spring Animation!</div>
+      <Animated item={item} style={styleFn}>
+        <h1>Hello 🥰</h1>
+      </Animated>
     </>
   );
 });
+
+const styleFn = (e: HTMLElement, v: SpringValue<'opacity'>) => e.style.setProperty('opacity', `${v.opacity}`);
 ```
 
 <a name="code-splitting"></a>

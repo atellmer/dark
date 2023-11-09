@@ -1,6 +1,6 @@
 import { h, component, useMemo, useLayoutEffect } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
-import { useSprings, range, type BaseOptions, type StartFn, presets } from '@dark-engine/animations';
+import { type SpringValue, type BaseOptions, type StartFn, Animated, useSprings, range } from '@dark-engine/animations';
 
 function reorder(arr: Array<any>, from: number, to: number) {
   const buffer = arr.slice(0);
@@ -18,6 +18,7 @@ const HEIGHT = 90;
 const MARGINS = 10;
 const FULL_HEIGHT = HEIGHT + MARGINS;
 const NOISE = 10;
+const height = HEIGHT;
 type SpringProps = 'y' | 'scale' | 'shadow';
 
 const createConfig =
@@ -44,7 +45,7 @@ const App = component(() => {
     () => ({ isActive: false, activeIdx: -1, order: range(size), originalOrder: null, initialY: null }),
     [],
   );
-  const [springs, api] = useSprings(size, idx => ({
+  const [items, api] = useSprings(size, idx => ({
     ...createConfig(scope.order, false)(idx),
     onEnd: () => {
       if (!scope.isActive && idx === scope.activeIdx) {
@@ -83,6 +84,7 @@ const App = component(() => {
   });
 
   const handleDragStart = (idx: number) => (e: SyntheticEvent<PointerEvent>) => {
+    e.stopPropagation();
     const { sourceEvent } = e;
     const pageY = sourceEvent.pageY;
 
@@ -96,25 +98,32 @@ const App = component(() => {
   return (
     <div class='container'>
       <div class='content'>
-        {springs.map(({ scale, shadow, y }, idx) => {
-          const isActive = idx === scope.activeIdx;
-          const zIndex = isActive ? 1 : 0;
-          const style = `
-            height: ${HEIGHT}px;
-            transform: translate3d(0, ${y}px, 0) scale(${scale});
-            box-shadow: rgba(0, 0, 0, 0.2) 0px ${shadow}px ${2 * shadow}px 0px;
-            z-index: ${zIndex};
-          `;
-
+        {items.map((item, idx) => {
           return (
-            <div key={idx} class='item' style={style} onPointerDown={handleDragStart(idx)}>
-              {idx + 1}
-            </div>
+            <Animated key={idx} item={item} style={styleFn(idx, height, scope)}>
+              <div class='item' onPointerDown={handleDragStart(idx)}>
+                {idx + 1}
+              </div>
+            </Animated>
           );
         })}
       </div>
     </div>
   );
 });
+
+const styleFn =
+  (idx: number, height: number, scope: { activeIdx: number }) =>
+  (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+    const { y, scale, shadow } = value;
+    const setProp = setPropOf(element);
+
+    setProp('height', `${height}px`);
+    setProp('z-index', `${idx === scope.activeIdx ? 1 : 0}`);
+    setProp('transform', `translate3d(0, ${y}px, 0) scale(${scale})`);
+    setProp('box-shadow', `rgba(0, 0, 0, 0.2) 0px ${shadow}px ${2 * shadow}px 0px`);
+  };
+
+const setPropOf = (element: HTMLDivElement) => (k: string, v: string) => element.style.setProperty(k, v);
 
 createRoot(document.getElementById('root')).render(<App />);
