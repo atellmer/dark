@@ -28,7 +28,6 @@ export { useMemo } from './use-memo';
 export { useReducer } from './use-reducer';
 export { useUpdate } from './use-update';
 export { useState } from './use-state';
-export { useReactiveState } from './use-reactive-state';
 export { useId } from './use-id';
 export { useSyncExternalStore } from './use-sync-external-store';
 export * from './walk';

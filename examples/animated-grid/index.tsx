@@ -6,7 +6,6 @@ import {
   useLayoutEffect,
   useMemo,
   useState,
-  useReactiveState,
   useRef,
   type DarkElement,
   type MutableRef,
@@ -204,16 +203,16 @@ type AnimatedList = <T>(props?: MergedProps<T>, ref?: Ref) => Component<MergedPr
 // usage
 
 const App = component(() => {
-  const state = useReactiveState({ items: shuffle(100) });
+  const [items, setItems] = useState(() => shuffle(100));
 
   const handleShuffle = () => {
-    state.items = shuffle(state.items.length);
+    setItems(shuffle(items.length));
   };
 
   return (
     <>
       <div class='content'>
-        <AnimatedList items={state.items} getKey={x => x.id} duration={1000}>
+        <AnimatedList items={items} getKey={x => x.id} duration={1000}>
           {({ items, containerRef, itemRef }) => {
             return (
               <div ref={containerRef} class='grid'>

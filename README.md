@@ -73,20 +73,17 @@ According to the results of this [benchmark](https://krausest.github.io/js-frame
 Simple example with component:
 
 ```tsx
-import { h, Fragment, component, useReactiveState } from '@dark-engine/core';
+import { h, Fragment, component, useState } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const App = component(() => {
-  const state = useReactiveState({ name: 'Alex' });
-
-  const handleInput = (e) => {
-    state.name = e.target.value;
-  };
+  const [name, setName] = useState('Alex');
+  const handleInput = (e) => setName(e.target.value);
 
   return (
     <>
-      <div>Hello {state.name}</div>
-      <input value={state.name} onInput={handleInput} />
+      <div>Hello {name}</div>
+      <input value={name} onInput={handleInput} />
     </>
   );
 });
@@ -101,15 +98,12 @@ import { Text, component, useReactiveState } from '@dark-engine/core';
 import { createRoot, div, input } from '@dark-engine/platform-browser';
 
 const App = component(() => {
-  const state = useReactiveState({ name: 'Alex' });
-
-  const handleInput = (e) => {
-    state.name = e.target.value;
-  };
+  const [name, setName] = useState('Alex');
+  const handleInput = (e) => setName(e.target.value);
 
   return [
-    div({ slot: Text(`Hello ${state.name}`) }),
-    input({ value: state.name, onInput: handleInput }),
+    div({ slot: Text(`Hello ${name}`) }),
+    input({ value: name, onInput: handleInput }),
   ];
 });
 
@@ -200,7 +194,6 @@ import {
   useImperativeHandle,
   useState,
   useReducer,
-  useReactiveState,
   useDeferredValue,
   useSyncExternalStore,
   detectIsServer,
@@ -633,7 +626,7 @@ const handleClick = (e: SyntheticEvent<MouseEvent, HTMLButtonElement>) => consol
 Hooks are needed to bring components to life: give them an internal state, start some actions, and so on. The basic rule for using hooks is to use them at the top level of the component, i.e. do not nest them inside other functions, cycles, conditions. This is a necessary condition, because hooks are not magic, but work based on array indices.
 <a name="state"></a>
 ## State
-Components should be able to store their state between renders. There are useState, useReactiveState and useReducer hooks for this.
+Components should be able to store their state between renders. There are useState and useReducer hooks for this.
 
 #### useState
 
@@ -655,24 +648,6 @@ The setter can take a function as an argument to which the previous state is pas
 
 ```tsx
 const handleClick = () => setCount(x => x + 1);
-```
-
-#### useReactiveState
-
-The hook uses Proxy under the hood and allows you to update state reactively when properties change. Performs automatic async batching of updates.
-
-```tsx
-import { useReactiveState } from '@dark-engine/core';
-```
-
-```tsx
-const App = component(() => {
-  const state = useReactiveState({ count: 0 });
-
-  return (
-    <button onClick={() => state.count++}>fired {state.count} times</button>
-  );
-});
 ```
 
 #### useReducer
