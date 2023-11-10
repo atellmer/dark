@@ -30,11 +30,11 @@ const Animated = component<AnimatedProps>(({ item, style, slot }) => {
       }
     });
 
-    style(scope.element, item.value);
+    style(scope.element, item.getValue());
   }, []);
 
   item.ctrl.setNotifier(value => scope.element && style(scope.element, value));
-  scope.element && style(scope.element, item.value);
+  scope.element && style(scope.element, item.getValue());
 
   return slot;
 });

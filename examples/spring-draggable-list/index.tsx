@@ -45,15 +45,7 @@ const App = component(() => {
     () => ({ isActive: false, activeIdx: -1, order: range(size), originalOrder: null, initialY: null }),
     [],
   );
-  const [items, api] = useSprings(size, idx => ({
-    ...createConfig(scope.order, false)(idx),
-    onEnd: () => {
-      if (!scope.isActive && idx === scope.activeIdx) {
-        scope.activeIdx = -1;
-        scope.initialY = null;
-      }
-    },
-  }));
+  const [items, api] = useSprings(size, idx => createConfig(scope.order, false)(idx));
 
   useLayoutEffect(() => {
     const handleDrag = (e: PointerEvent) => {
@@ -82,6 +74,14 @@ const App = component(() => {
     document.addEventListener('pointerup', handleDragEnd);
     return () => document.removeEventListener('pointerup', handleDragEnd);
   });
+
+  useLayoutEffect(() => {
+    const off = api.on('series-end', () => {
+      scope.activeIdx = -1;
+      scope.initialY = null;
+    });
+    return off;
+  }, []);
 
   const handleDragStart = (idx: number) => (e: SyntheticEvent<PointerEvent>) => {
     e.stopPropagation();

@@ -1,22 +1,18 @@
-import { useMemo, useLayoutEffect, detectIsFunction } from '@dark-engine/core';
+import { useMemo, useLayoutEffect } from '@dark-engine/core';
 
 import { type SpringItem } from '../shared';
 import { type BaseOptions, type StartFn, Controller } from '../controller';
-import { SharedState, getSharedState } from '../shared-state';
+import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
-export type ItemOptions<T extends string> = {
-  onStart?: () => void;
-  onChange?: () => void;
-  onEnd?: () => void;
-} & BaseOptions<T>;
+export type ItemOptions<T extends string> = BaseOptions<T>;
 
 function useSprings<T extends string>(
   count: number,
   configurator: (idx: number) => ItemOptions<T>,
 ): [Array<SpringItem<T>>, SpringsApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
-  const scope = useMemo<Scope<T>>(() => {
+  const scope = useMemo(() => {
     return {
       configurator,
       prevCount: count,
@@ -27,7 +23,8 @@ function useSprings<T extends string>(
   scope.configurator = configurator;
 
   useMemo(() => {
-    const { ctrls, prevCount, configurator } = scope;
+    const { ctrls, prevCount } = scope;
+    const configurator = (idx: number) => scope.configurator(idx);
 
     if (count > prevCount) {
       ctrls.push(...range(count - prevCount).map(() => new Controller<T>(state)));
@@ -42,37 +39,6 @@ function useSprings<T extends string>(
     prepare(ctrls, configurator);
   }, [count]);
 
-  useLayoutEffect(() => {
-    const { ctrls } = scope;
-    const unsubs: Array<() => void> = [];
-
-    ctrls.forEach((ctrl, idx) => {
-      unsubs.push(
-        ctrl.subscribe('start', () => {
-          const { onStart } = scope.configurator(idx);
-
-          detectIsFunction(onStart) && onStart();
-        }),
-      );
-      unsubs.push(
-        ctrl.subscribe('change', () => {
-          const { onChange } = scope.configurator(idx);
-
-          detectIsFunction(onChange) && onChange();
-        }),
-      );
-      unsubs.push(
-        ctrl.subscribe('end', () => {
-          const { onEnd } = scope.configurator(idx);
-
-          detectIsFunction(onEnd) && onEnd();
-        }),
-      );
-    });
-
-    return () => unsubs.forEach(x => x());
-  }, [count]);
-
   useLayoutEffect(() => () => api.cancel(), []);
 
   const api = useMemo<SpringsApi<T>>(() => {
@@ -85,10 +51,12 @@ function useSprings<T extends string>(
       resume: state.resume.bind(state),
       reset: state.reset.bind(state),
       cancel: state.cancel.bind(state),
+      on: state.on.bind(state),
+      once: state.once.bind(state),
     };
   }, []);
 
-  const items = scope.ctrls.map(ctrl => ({ ctrl, value: ctrl.getValue() }));
+  const items = scope.ctrls.map(ctrl => ({ ctrl, getValue: () => ctrl.getValue() }));
 
   return [items, api];
 }
@@ -109,12 +77,6 @@ function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (i
   });
 }
 
-type Scope<T extends string> = {
-  prevCount: number;
-  ctrls: Array<Controller<T>>;
-  configurator: (idx: number) => ItemOptions<T>;
-};
-
 export type SpringsApi<T extends string> = {
   start: (fn?: StartFn<T>) => void;
   back: () => void;
@@ -124,6 +86,8 @@ export type SpringsApi<T extends string> = {
   resume: () => void;
   reset: () => void;
   cancel: () => void;
+  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => void;
+  once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => void;
 };
 
 export { useSprings };

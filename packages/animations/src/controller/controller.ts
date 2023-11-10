@@ -1,14 +1,14 @@
-import { type SubscriberWithValue, platform, falseFn } from '@dark-engine/core';
+import { platform, falseFn } from '@dark-engine/core';
 
-import { type SpringValue, type SpringConfig, defaultSpringConfig } from '../shared';
+import { type SpringValue, type SpringConfig, type Key, defaultSpringConfig } from '../shared';
 import { time, fix } from '../utils';
 import { stepper } from '../stepper';
-import { SharedState } from '../shared-state';
+import { type AnimationEventName, SharedState } from '../shared-state';
 
 const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
 
 class Controller<T extends string> {
-  private key: string;
+  private key: Key;
   private idx: number;
   private from: SpringValue<T>;
   private to: SpringValue<T>;
@@ -21,7 +21,6 @@ class Controller<T extends string> {
   private results: Record<string, [number, number]> = {};
   private completed: Record<string, boolean> = {};
   private queue: Array<SpringValue<T>> = [];
-  private events = new Map<AnimationEventName, Set<SubscriberWithValue<SpringValue<T>>>>();
   private left: Controller<T> = null;
   private right: Controller<T> = null;
   private springConfigFn: SpringConfigFn<T>;
@@ -83,18 +82,6 @@ class Controller<T extends string> {
 
   setImmediate(fn: ImmediateFn<T>) {
     this.immediate = fn || this.immediate;
-  }
-
-  subscribe(event: AnimationEventName, handler: SubscriberWithValue<SpringValue<T>>) {
-    if (!this.events.has(event)) {
-      this.events.set(event, new Set());
-    }
-
-    const subs = this.events.get(event);
-
-    subs.add(handler);
-
-    return () => subs.delete(handler);
   }
 
   getValue() {
@@ -213,7 +200,7 @@ class Controller<T extends string> {
     this.queue.push(to);
     if (this.frameId) return false;
     this.setIsPlaying(true);
-    this.event('start');
+    this.event('item-start');
     this.motion(to);
   }
 
@@ -285,7 +272,7 @@ class Controller<T extends string> {
 
   private change() {
     this.notifier(this.getValue());
-    this.event('change');
+    this.event('item-change');
 
     if (this.state.getIsTrail()) {
       if (this.state.detectIsRightFlow()) {
@@ -303,8 +290,8 @@ class Controller<T extends string> {
     this.completed = {};
     this.immediates.forEach(x => x());
     this.immediates = [];
-    this.event('end');
-    this.state.complete();
+    this.event('item-end');
+    this.state.completeSeries();
   }
 
   private checkCompleted(keys: Array<string>) {
@@ -316,7 +303,7 @@ class Controller<T extends string> {
   }
 
   private event(name: AnimationEventName) {
-    this.events.has(name) && this.events.get(name).forEach(x => x(this.value));
+    this.state.event(name, { value: this.value, idx: this.idx, key: this.key });
   }
 
   private static id = -1;
@@ -371,7 +358,5 @@ export type PatialConfigFn<T extends string> = (key: T) => Partial<SpringConfig>
 export type ImmediateFn<T extends string> = (key: T) => boolean;
 
 export type NotifierFn<T extends string> = (x: SpringValue<T>) => void;
-
-export type AnimationEventName = 'start' | 'change' | 'end';
 
 export { Controller };

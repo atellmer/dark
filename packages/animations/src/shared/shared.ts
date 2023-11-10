@@ -5,7 +5,7 @@ export type SpringValue<T extends string> = Record<T, number>;
 
 export type SpringItem<T extends string = string> = {
   ctrl: Controller<T>;
-  value: SpringValue<T>;
+  getValue: () => SpringValue<T>;
 };
 
 export type SpringConfig = {
@@ -15,6 +15,8 @@ export type SpringConfig = {
   precision: number;
   fix: number;
 };
+
+export type Key = string | number;
 
 const defaultSpringConfig: SpringConfig = {
   ...presets.noWobble,
