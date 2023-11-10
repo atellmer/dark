@@ -46,7 +46,7 @@ class SharedState<T extends string = string> {
   wrap(fn: () => void) {
     this.resetScheduledDelay();
 
-    if (this.delay) {
+    if (this.delayTimeout > 0) {
       this.delayId = setTimeout(fn, this.delayTimeout);
     } else {
       fn();
