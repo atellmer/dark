@@ -6,6 +6,7 @@ class SharedState<T extends string = string> {
   private flow = Flow.RIGHT;
   private isTrail = false;
   private isLoop = false;
+  private withReset = false;
   private isPaused = false;
 
   constructor(isTrail = false) {
@@ -54,6 +55,14 @@ class SharedState<T extends string = string> {
 
   getIsLoop() {
     return this.isLoop;
+  }
+
+  setWithReset(x: boolean) {
+    this.withReset = x;
+  }
+
+  getWithReset() {
+    return this.withReset;
   }
 
   pause() {

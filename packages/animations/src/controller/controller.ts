@@ -324,7 +324,7 @@ class Controller<T extends string> {
     const isReachedTo = this.detectIsReachedTo();
     const isReachedFrom = this.detectIsReachedFrom();
     const isLoop = this.state.getIsLoop();
-    const withReset = false; // TODO
+    const withReset = this.state.getWithReset();
 
     this.frameId = null;
     this.results = {};

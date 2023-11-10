@@ -82,7 +82,10 @@ function useSprings<T extends string>(
       start: createStart(ctrls),
       back: createBack(ctrls),
       toggle: createToggle(ctrls),
-      loop: (isEnabled: boolean) => state.setIsLoop(isEnabled),
+      loop: (isEnabled: boolean, withReset: boolean) => {
+        state.setIsLoop(isEnabled);
+        state.setWithReset(withReset);
+      },
       pause: () => state.pause(),
       resume: () => state.resume(),
       reset: () => ctrls.forEach(ctrl => ctrl.reset()),
@@ -148,12 +151,12 @@ function createBack<T extends string>(ctrls: Array<Controller<T>>) {
 }
 
 function createToggle<T extends string>(ctrls: Array<Controller<T>>) {
-  return (reverse: boolean) => {
+  return (isReversed: boolean) => {
     const [ctrl] = ctrls;
 
     if (!ctrl) return;
     if (ctrl.getIsTrail()) {
-      if (reverse) {
+      if (isReversed) {
         const ctrl = ctrls[ctrls.length - 1];
 
         ctrl.setFlow(Flow.LEFT);
@@ -182,8 +185,8 @@ type Scope<T extends string> = {
 export type SpringsApi<T extends string> = {
   start: (fn?: StartFn<T>) => void;
   back: () => void;
-  toggle: (reverse?: boolean) => void;
-  loop: (isEnabled: boolean) => void;
+  toggle: (isReversed?: boolean) => void;
+  loop: (isEnabled: boolean, withReset?: boolean) => void;
   pause: () => void;
   resume: () => void;
   reset: () => void;
