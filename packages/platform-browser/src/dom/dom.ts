@@ -6,12 +6,12 @@ import {
   type CommentVirtualNode,
   type PlainVirtualNode,
   type Callback,
-  type Ref,
   ATTR_REF,
   ATTR_BLACK_LIST,
   EffectTag,
   detectIsUndefined,
   detectIsBoolean,
+  detectIsObject,
   keyBy,
   NodeType,
   detectIsTagVirtualNode,
@@ -22,12 +22,12 @@ import {
   walk,
   dummyFn,
   scope$$,
-  applyRef as applyRef$,
+  applyRef,
 } from '@dark-engine/core';
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { SVG_TAG_NAMES, VOID_TAG_NAMES } from '../constants';
+import { SVG_TAG_NAMES, VOID_TAG_NAMES, ATTR_STYLE } from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -71,8 +71,12 @@ function detectIsVoidElement(tagName: string) {
   return Boolean(voidTagNamesMap[tagName]);
 }
 
-function applyRef(ref: Ref<NativeElement>, element: NativeElement) {
-  applyRef$(ref, element);
+function setObjectStyle(element: TagNativeElement, style: object) {
+  const keys = Object.keys(style);
+
+  for (const key of keys) {
+    element.style.setProperty(key, String(style[key]));
+  }
 }
 
 function addAttributes(element: NativeElement, node: TagVirtualNode) {
@@ -84,6 +88,11 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
 
     if (attrName === ATTR_REF) {
       applyRef(attrValue, element);
+      continue;
+    }
+
+    if (attrName === ATTR_STYLE && attrValue && detectIsObject(attrValue)) {
+      setObjectStyle(tagElement, attrValue);
       continue;
     }
 
@@ -125,6 +134,11 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
 
     if (attrName === ATTR_REF) {
       applyRef(prevAttrValue, element);
+      continue;
+    }
+
+    if (attrName === ATTR_STYLE && nextAttrValue && prevAttrValue !== nextAttrValue && detectIsObject(nextAttrValue)) {
+      setObjectStyle(tagElement, nextAttrValue);
       continue;
     }
 

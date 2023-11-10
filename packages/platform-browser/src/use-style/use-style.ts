@@ -1,22 +1,31 @@
 import { useMemo, detectIsUndefined } from '@dark-engine/core';
 
-function styled(strings: TemplateStringsArray, ...args: Array<string | number>): string {
+function styled(strings: TemplateStringsArray, ...args: Array<string | number>): Record<string, string> {
   const style = useMemo(() => {
-    return strings
+    const style: Record<string, string> = {};
+    const items = strings
       .map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : ''))
       .join('')
-      .replace(/([:;])\s*/gm, '$1')
-      .trim();
+      .split(';');
+
+    for (const item of items) {
+      const [key, value] = item.split(':');
+      if (!value) continue;
+
+      style[key.trim()] = value.trim();
+    }
+
+    return style;
   }, [strings, ...args]);
 
   return style;
 }
 
-type Style = Record<string, string>;
+type StyleRecord = Record<string, Record<string, string>>;
 
-type Config<T extends Style> = (x: typeof styled) => T;
+type Config<T extends StyleRecord> = (x: typeof styled) => T;
 
-function useStyle<T extends Style>(config: Config<T>) {
+function useStyle<T extends StyleRecord>(config: Config<T>) {
   return config(styled);
 }
 
