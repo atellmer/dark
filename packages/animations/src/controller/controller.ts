@@ -144,7 +144,6 @@ class Controller<T extends string> {
   cancel() {
     this.frameId && platform.caf(this.frameId);
     this.frameId = null;
-    this.state.resume();
   }
 
   detectIsReachedFrom() {

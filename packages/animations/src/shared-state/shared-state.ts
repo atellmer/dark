@@ -11,6 +11,8 @@ class SharedState<T extends string = string> {
   private isLoop = false;
   private withReset = false;
   private isPaused = false;
+  private delayTimeout = 0;
+  private delayId: number | NodeJS.Timeout = null;
   private events = new Map<AnimationEventName, Set<AnimationEventHandler<T>>>();
 
   setCtrls(ctrls: Array<Controller<T>>) {
@@ -41,53 +43,74 @@ class SharedState<T extends string = string> {
     }
   }
 
-  start(fn?: StartFn<T>) {
-    const [ctrl] = this.ctrls;
-    if (!ctrl) return;
-    this.event('series-start');
-    this.setFlow(Flow.RIGHT);
+  wrap(fn: () => void) {
+    this.resetScheduledDelay();
 
-    if (this.isTrail) {
-      ctrl.start(fn);
+    if (this.delay) {
+      this.delayId = setTimeout(fn, this.delayTimeout);
     } else {
-      this.ctrls.forEach(x => x.start(fn));
+      fn();
     }
+  }
+
+  start(fn?: StartFn<T>) {
+    this.event('setup-start');
+    this.wrap(() => {
+      const [ctrl] = this.ctrls;
+      if (!ctrl) return;
+      this.event('series-start');
+      this.setFlow(Flow.RIGHT);
+
+      if (this.isTrail) {
+        ctrl.start(fn);
+      } else {
+        this.ctrls.forEach(x => x.start(fn));
+      }
+    });
   }
 
   back() {
-    const [ctrl] = this.ctrls;
-    if (!ctrl) return;
-    this.setFlow(Flow.LEFT);
+    this.event('setup-back');
+    this.wrap(() => {
+      const [ctrl] = this.ctrls;
+      if (!ctrl) return;
+      this.event('series-start');
+      this.setFlow(Flow.LEFT);
 
-    if (this.isTrail) {
-      const ctrl = this.ctrls[this.ctrls.length - 1];
+      if (this.isTrail) {
+        const ctrl = this.ctrls[this.ctrls.length - 1];
 
-      ctrl.back();
-    } else {
-      this.ctrls.forEach(x => x.back());
-    }
+        ctrl.back();
+      } else {
+        this.ctrls.forEach(x => x.back());
+      }
+    });
   }
 
   toggle(isReversed: boolean) {
-    const [ctrl] = this.ctrls;
+    this.event('setup-toggle');
+    this.wrap(() => {
+      const [ctrl] = this.ctrls;
 
-    if (!ctrl) return;
-    if (this.isTrail) {
-      if (isReversed) {
-        const ctrl = this.ctrls[this.ctrls.length - 1];
+      if (!ctrl) return;
+      this.event('series-start');
+      if (this.isTrail) {
+        if (isReversed) {
+          const ctrl = this.ctrls[this.ctrls.length - 1];
 
-        this.setFlow(Flow.LEFT);
-        ctrl.toggle();
+          this.setFlow(Flow.LEFT);
+          ctrl.toggle();
+        } else {
+          const [ctrl] = this.ctrls;
+
+          this.setFlow(Flow.RIGHT);
+          ctrl.toggle();
+        }
       } else {
-        const [ctrl] = this.ctrls;
-
         this.setFlow(Flow.RIGHT);
-        ctrl.toggle();
+        this.ctrls.forEach(x => x.toggle());
       }
-    } else {
-      this.setFlow(Flow.RIGHT);
-      this.ctrls.forEach(x => x.toggle());
-    }
+    });
   }
 
   pause() {
@@ -103,12 +126,18 @@ class SharedState<T extends string = string> {
     this.withReset = withReset;
   }
 
+  delay(timeout: number) {
+    this.delayTimeout = timeout;
+  }
+
   reset() {
     this.ctrls.forEach(x => x.reset());
   }
 
   cancel() {
     this.ctrls.forEach(x => x.cancel());
+    this.resume();
+    this.resetScheduledDelay();
   }
 
   on(event: AnimationEventName, handler: AnimationEventHandler<T>) {
@@ -177,6 +206,11 @@ class SharedState<T extends string = string> {
   private detectIsCompleted() {
     return this.stack.size === 0;
   }
+
+  private resetScheduledDelay() {
+    this.delayId && clearTimeout(this.delayId);
+    this.delayId = null;
+  }
 }
 
 export enum Flow {
@@ -198,7 +232,15 @@ function getSharedState() {
   return state;
 }
 
-export type AnimationEventName = 'series-start' | 'item-start' | 'item-change' | 'item-end' | 'series-end';
+export type AnimationEventName =
+  | 'setup-start'
+  | 'setup-back'
+  | 'setup-toggle'
+  | 'series-start'
+  | 'item-start'
+  | 'item-change'
+  | 'item-end'
+  | 'series-end';
 
 export type AnimationEventValue<T extends string = string> = {
   value: SpringValue<T>;
