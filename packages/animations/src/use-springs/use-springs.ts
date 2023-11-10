@@ -2,7 +2,7 @@ import { useMemo, useLayoutEffect, detectIsFunction } from '@dark-engine/core';
 
 import { type SpringItem } from '../shared';
 import { type BaseOptions, type StartFn, Controller } from '../controller';
-import { SharedState, Flow, getSharedState } from '../shared-state';
+import { SharedState, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
 export type ItemOptions<T extends string> = {
@@ -76,20 +76,15 @@ function useSprings<T extends string>(
   useLayoutEffect(() => () => api.cancel(), []);
 
   const api = useMemo<SpringsApi<T>>(() => {
-    const { ctrls } = scope;
-
     return {
-      start: createStart(ctrls),
-      back: createBack(ctrls),
-      toggle: createToggle(ctrls),
-      loop: (isEnabled: boolean, withReset: boolean) => {
-        state.setIsLoop(isEnabled);
-        state.setWithReset(withReset);
-      },
-      pause: () => state.pause(),
-      resume: () => state.resume(),
-      reset: () => ctrls.forEach(ctrl => ctrl.reset()),
-      cancel: () => ctrls.forEach(ctrl => ctrl.cancel()),
+      start: state.start.bind(state),
+      back: state.back.bind(state),
+      toggle: state.toggle.bind(state),
+      loop: state.loop.bind(state),
+      pause: state.pause.bind(state),
+      resume: state.resume.bind(state),
+      reset: state.reset.bind(state),
+      cancel: state.cancel.bind(state),
     };
   }, []);
 
@@ -112,68 +107,6 @@ function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (i
     ctrl.setLeft(left);
     ctrl.setRight(right);
   });
-}
-
-function createStart<T extends string>(ctrls: Array<Controller<T>>) {
-  return (fn?: StartFn<T>) => {
-    const [ctrl] = ctrls;
-
-    if (!ctrl) return;
-    if (ctrl.getIsTrail()) {
-      ctrl.setFlow(Flow.RIGHT);
-      ctrl.start(fn);
-    } else {
-      ctrls.forEach(ctrl => {
-        ctrl.setFlow(Flow.RIGHT);
-        ctrl.start(fn);
-      });
-    }
-  };
-}
-
-function createBack<T extends string>(ctrls: Array<Controller<T>>) {
-  return () => {
-    const [ctrl] = ctrls;
-
-    if (!ctrl) return;
-    if (ctrl.getIsTrail()) {
-      const ctrl = ctrls[ctrls.length - 1];
-
-      ctrl.setFlow(Flow.LEFT);
-      ctrl.back();
-    } else {
-      ctrls.forEach(ctrl => {
-        ctrl.setFlow(Flow.LEFT);
-        ctrl.back();
-      });
-    }
-  };
-}
-
-function createToggle<T extends string>(ctrls: Array<Controller<T>>) {
-  return (isReversed: boolean) => {
-    const [ctrl] = ctrls;
-
-    if (!ctrl) return;
-    if (ctrl.getIsTrail()) {
-      if (isReversed) {
-        const ctrl = ctrls[ctrls.length - 1];
-
-        ctrl.setFlow(Flow.LEFT);
-        ctrl.toggle();
-      } else {
-        const [ctrl] = ctrls;
-
-        ctrl.setFlow(Flow.RIGHT);
-        ctrl.toggle();
-      }
-    } else {
-      ctrls.forEach(ctrl => {
-        ctrl.setFlow(Flow.RIGHT);
-        ctrl.toggle();
-      });
-    }
-  };
 }
 
 type Scope<T extends string> = {

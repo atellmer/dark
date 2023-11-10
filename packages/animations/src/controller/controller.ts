@@ -3,7 +3,7 @@ import { type SubscriberWithValue, platform, falseFn } from '@dark-engine/core';
 import { type SpringValue, type SpringConfig, defaultSpringConfig } from '../shared';
 import { time, fix } from '../utils';
 import { stepper } from '../stepper';
-import { SharedState, Flow } from '../shared-state';
+import { SharedState } from '../shared-state';
 
 const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
 
@@ -65,24 +65,12 @@ class Controller<T extends string> {
     this.springConfigFn = fn ? (key: T) => ({ ...defaultSpringConfig, ...fn(key) }) : () => defaultSpringConfig;
   }
 
-  getLeft() {
-    return this.left;
-  }
-
   setLeft(x: Controller<T>) {
     this.left = x;
   }
 
-  getRight() {
-    return this.right;
-  }
-
   setRight(x: Controller<T>) {
     this.right = x;
-  }
-
-  setFlow(x: Flow) {
-    this.state.setFlow(x);
   }
 
   setNotifier(fn: (x: SpringValue<T>) => void) {
@@ -178,16 +166,6 @@ class Controller<T extends string> {
 
   detectIsReachedTo() {
     return detectAreValuesEqual(this.value, this.to, this.springConfigFn);
-  }
-
-  getAnimationStatus() {
-    return {
-      isPlaying: !this.state.getIsSeriesCompleted(),
-    };
-  }
-
-  getIsTrail() {
-    return this.state.getIsTrail();
   }
 
   setIsPlaying(x: boolean) {
@@ -320,41 +298,13 @@ class Controller<T extends string> {
 
   private complete() {
     this.setIsPlaying(false);
-    const isSeriesCompleted = this.state.getIsSeriesCompleted();
-    const isReachedTo = this.detectIsReachedTo();
-    const isReachedFrom = this.detectIsReachedFrom();
-    const isLoop = this.state.getIsLoop();
-    const withReset = this.state.getWithReset();
-
     this.frameId = null;
     this.results = {};
     this.completed = {};
     this.immediates.forEach(x => x());
     this.immediates = [];
     this.event('end');
-
-    if (isSeriesCompleted) {
-      if (isReachedTo) {
-        if (isLoop) {
-          if (withReset) {
-            const ctrls = this.state.getCtrls();
-            const [ctrl] = ctrls;
-
-            ctrls.forEach(x => x.reset());
-            ctrl.setFlow(Flow.RIGHT);
-            ctrl.start();
-          } else {
-            this.setFlow(Flow.LEFT);
-            this.back();
-          }
-        }
-      } else if (isReachedFrom) {
-        if (isLoop) {
-          this.setFlow(Flow.RIGHT);
-          this.start();
-        }
-      }
-    }
+    this.state.complete();
   }
 
   private checkCompleted(keys: Array<string>) {
