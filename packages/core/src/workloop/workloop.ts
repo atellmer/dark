@@ -306,7 +306,7 @@ function shouldUpdate(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   alt.element && (fiber.element = alt.element);
   alt.provider && (fiber.provider = alt.provider);
   alt.catch && (fiber.catch = alt.catch);
-  alt.cleanup && (fiber.cleanup = alt.cleanup);
+  alt.atoms && (fiber.atoms = alt.atoms);
 
   const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;

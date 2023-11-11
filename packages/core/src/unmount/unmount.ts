@@ -23,7 +23,13 @@ function unmountFiber(fiber: Fiber) {
       fiber.aefHost && dropEffects(fiber.hook);
     }
 
-    fiber.cleanup && fiber.cleanup();
+    if (fiber.atoms) {
+      for (const [_, cleanup] of fiber.atoms) {
+        cleanup();
+      }
+      delete fiber.atoms;
+    }
+
     fiber.portalHost && platform.unmountPortal(fiber);
   });
 }

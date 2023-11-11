@@ -4,6 +4,7 @@ import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponen
 import { detectIsComponent } from '../component';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementInstance, Callback } from '../shared';
+import { type Atom } from '../atom';
 import { type NativeElement, EffectTag } from './types';
 
 class Fiber<N = NativeElement> {
@@ -34,8 +35,8 @@ class Fiber<N = NativeElement> {
     timer: number | NodeJS.Timeout;
     changes: Array<Callback>;
   };
+  public atoms: Map<Atom, Callback>;
   public catch: (error: Error) => void;
-  public cleanup: Callback;
   private static nextId = 0;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {

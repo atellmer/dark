@@ -5,8 +5,6 @@ import { createUpdateCallback } from '../workloop';
 import { scope$$, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
 
-type ShouldUpdate<T> = (p: T, n: T) => boolean;
-
 class Atom<T = unknown> {
   private value$: T;
   private subs: Map<Hook, ShouldUpdate<T>> = new Map();
@@ -19,7 +17,7 @@ class Atom<T = unknown> {
     const fiber = scope$$().getCursorFiber();
 
     fiber.markAtomHost();
-    link(fiber.hook, this.subs, fn);
+    this.on(fiber.hook, fn);
 
     return this.value$;
   }
@@ -44,20 +42,42 @@ class Atom<T = unknown> {
     this.value$ = value;
     this.subs = new Map();
   }
+
+  toString() {
+    return String(this.value$);
+  }
+
+  toJSON() {
+    return this.value$;
+  }
+
+  private on(hook: Hook, fn: ShouldUpdate<T>) {
+    const fiber = hook.getOwner();
+
+    this.subs.set(hook, fn);
+
+    !fiber.atoms && (fiber.atoms = new Map());
+    fiber.atoms.set(this, () => this.subs.delete(hook));
+  }
 }
 
 const atom = <T>(value?: T) => new Atom(value);
 
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
 
-function link<T>(hook: Hook, subs: Map<Hook, ShouldUpdate<T>>, fn: ShouldUpdate<T>) {
-  subs.set(hook, fn) && (hook.getOwner().cleanup = () => subs.delete(hook));
+function useAtom<T>(value?: T): [Atom<T>, SetAtom<T>] {
+  const [atom$, setAtom] = useMemo(() => {
+    const atom$ = atom<T>(value);
+    const setAtom = atom$.set.bind(atom$) as SetAtom<T>;
+
+    return [atom$, setAtom];
+  }, []);
+
+  return [atom$, setAtom];
 }
 
-function useAtom<T>(value?: T): [Atom<T>, (value: T | ((prevValue: T) => T)) => void] {
-  const atom$ = useMemo(() => atom(value), []);
+type ShouldUpdate<T> = (p: T, n: T) => boolean;
 
-  return [atom$, (...args) => atom$.set(...args)];
-}
+type SetAtom<T = unknown> = (value: T | ((prevValue: T) => T)) => void;
 
 export { Atom, atom, detectIsAtom, useAtom };

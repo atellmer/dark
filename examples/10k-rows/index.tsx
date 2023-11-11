@@ -108,7 +108,7 @@ type RowProps = {
 };
 
 const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
-  const className = selected$.value((p, n) => p === id || n === id) === id ? 'selected' : undefined;
+  const className = selected$.value((p, n) => p !== n && (p === id || n === id)) === id ? 'selected' : undefined;
 
   return tr({
     class: className,
@@ -143,7 +143,7 @@ const App = component(() => {
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
     e.stopPropagation();
-    state.data$.set(buildData(10000));
+    state.data$.set(buildData(10));
     measurer.stop();
   };
   const handlePrepend = (e: E<MouseEvent>) => {
