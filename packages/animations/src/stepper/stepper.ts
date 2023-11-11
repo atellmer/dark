@@ -1,6 +1,6 @@
 import { type SpringConfig } from '../shared';
 
-function stepper(pos: number, vel: number, dest: number, step: number, config: SpringConfig) {
+function stepper(pos: number, vel: number, dest: number, step: number, config: Omit<SpringConfig, 'fix'>) {
   const { tension, friction, mass, precision } = config;
   const [nPos, nVel] = spring(pos, vel, dest, step, tension, friction, mass);
 

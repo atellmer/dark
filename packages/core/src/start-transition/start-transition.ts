@@ -2,7 +2,6 @@ import { scope$$ } from '../scope';
 import { useState } from '../use-state';
 import { type Callback } from '../shared';
 import { useEvent } from '../use-event';
-import { TaskPriority } from '../constants';
 
 export type SetPendingStatus = (value: boolean) => void;
 
@@ -15,7 +14,7 @@ function startTransition(callback: Callback) {
 }
 
 function useTransition(): [boolean, typeof startTransition] {
-  const [isPending, setIsPending] = useState(false, { priority: TaskPriority.HIGH });
+  const [isPending, setIsPending] = useState(false);
   const scope$ = scope$$();
   const startTransition$ = useEvent((callback: Callback) => {
     scope$.setPendingStatusSetter(setIsPending);

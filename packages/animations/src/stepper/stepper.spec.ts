@@ -2,7 +2,7 @@ import { stepper } from './stepper';
 import { type SpringConfig } from '../shared';
 
 const step = 0.01;
-const config: SpringConfig = {
+const config: Omit<SpringConfig, 'fix'> = {
   mass: 1,
   tension: 170,
   friction: 26,
