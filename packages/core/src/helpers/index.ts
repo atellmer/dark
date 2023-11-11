@@ -9,6 +9,8 @@ const detectIsNumber = (o: any): o is number => typeof o === 'number';
 
 const detectIsString = (o: any): o is string => typeof o === 'string';
 
+const detectIsTextBased = (o: any): o is string | number => typeof o === 'string' || typeof o === 'number';
+
 const detectIsObject = (o: any): o is object => typeof o === 'object';
 
 const detectIsBoolean = (o: any): o is boolean => typeof o === 'boolean';
@@ -90,6 +92,7 @@ export {
   detectIsUndefined,
   detectIsNumber,
   detectIsString,
+  detectIsTextBased,
   detectIsObject,
   detectIsBoolean,
   detectIsArray,

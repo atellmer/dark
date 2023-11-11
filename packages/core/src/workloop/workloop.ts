@@ -6,9 +6,8 @@ import {
   detectIsEmpty,
   detectIsFalsy,
   detectIsArray,
-  detectIsString,
-  detectIsNumber,
   detectIsFunction,
+  detectIsTextBased,
   createIndexKey,
   trueFn,
 } from '../helpers';
@@ -342,7 +341,7 @@ function mount(fiber: Fiber, scope$: Scope) {
 
       if (detectIsArray(result)) {
         !detectIsFragment(component) && (result = Fragment({ slot: result }));
-      } else if (detectIsString(result) || detectIsNumber(result)) {
+      } else if (detectIsTextBased(result)) {
         result = Text(result);
       }
 
@@ -362,7 +361,7 @@ function mount(fiber: Fiber, scope$: Scope) {
   }
 
   if (hasChildrenProp(inst)) {
-    inst.children = flatten(inst.children, x => x || supportConditional(x));
+    inst.children = flatten(inst.children, x => (detectIsTextBased(x) ? Text(x) : x || supportConditional(x)));
     isComponent && component.children.length === 0 && component.children.push(createReplacer());
   }
 

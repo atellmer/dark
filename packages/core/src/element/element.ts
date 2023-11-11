@@ -1,35 +1,18 @@
-import { detectIsNumber, detectIsString, detectIsFunction } from '../helpers';
-import { View, Text, type TagVirtualNodeFactory } from '../view';
+import { detectIsString, detectIsFunction } from '../helpers';
+import { View, type TagVirtualNodeFactory } from '../view';
 import { type ComponentFactory } from '../component';
 
-function transformChildren(slot: Array<any>) {
-  for (let i = 0; i < slot.length; i++) {
-    const element = slot[i];
-
-    if (detectIsString(element) || detectIsNumber(element)) {
-      slot[i] = Text(element);
-    }
-  }
-
-  return slot;
-}
-
 function createElement(
-  tag: string | Function,
+  element: string | Function,
   props: object,
   ...slot: Array<any>
 ): ComponentFactory | TagVirtualNodeFactory | null {
-  if (detectIsString(tag)) {
-    slot = transformChildren(slot);
-
-    return View({ ...props, as: tag, slot });
+  if (detectIsString(element)) {
+    return View({ ...props, as: element, slot });
   }
 
-  if (detectIsFunction(tag)) {
-    slot = transformChildren(slot);
-    slot = slot.length === 1 ? slot[0] : slot;
-
-    return tag({ ...props, slot });
+  if (detectIsFunction(element)) {
+    return element({ ...props, slot: slot.length === 1 ? slot[0] : slot });
   }
 
   return null;
