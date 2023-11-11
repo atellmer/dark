@@ -1,4 +1,5 @@
 import { type Hook } from '../fiber';
+import { type Callback } from '../shared';
 import { platform } from '../platform';
 import { detectIsFunction, trueFn } from '../helpers';
 import { createUpdateCallback } from '../workloop';
@@ -8,6 +9,7 @@ import { useMemo } from '../use-memo';
 class Atom<T = unknown> {
   private value$: T;
   private subs: Map<Hook, ShouldUpdate<T>> = new Map();
+  private unsubs: Map<Hook, Callback> = new Map();
 
   constructor(value: T) {
     this.value$ = value;
@@ -38,9 +40,11 @@ class Atom<T = unknown> {
     }
   }
 
-  reset(value?: T) {
+  off(value?: T) {
     this.value$ = value;
     this.subs = new Map();
+    this.unsubs.forEach(x => x());
+    this.unsubs = new Map();
   }
 
   toString() {
@@ -53,8 +57,14 @@ class Atom<T = unknown> {
 
   private on(hook: Hook, fn: ShouldUpdate<T>) {
     const fiber = hook.getOwner();
+    const off = () => {
+      const fiber = hook.getOwner();
+
+      fiber.atoms && fiber.atoms.delete(this);
+    };
 
     this.subs.set(hook, fn);
+    this.unsubs.set(hook, off);
 
     !fiber.atoms && (fiber.atoms = new Map());
     fiber.atoms.set(this, () => this.subs.delete(hook));

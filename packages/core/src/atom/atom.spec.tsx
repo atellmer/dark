@@ -21,7 +21,7 @@ describe('[atom]', () => {
     expect(count$.value).toBeDefined();
     expect(count$.get).toBeDefined();
     expect(count$.set).toBeDefined();
-    expect(count$.reset).toBeDefined();
+    expect(count$.off).toBeDefined();
   });
 
   test('can trigger render and update a state correctly', () => {
