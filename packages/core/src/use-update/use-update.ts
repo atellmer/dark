@@ -6,10 +6,9 @@ import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
 import { createFiberSign } from '../walk';
 
-export type UseUpdateOptions = Pick<ScheduleCallbackOptions, 'forceAsync'>;
 export type UpdateOptions = UpdateChanger;
 
-function useUpdate({ forceAsync: forceAsync$ = false }: UseUpdateOptions = {}) {
+function useUpdate() {
   const rootId = getRootId();
   const fiber = scope$$().getCursorFiber();
   const hook = fiber.hook; // !
@@ -17,14 +16,20 @@ function useUpdate({ forceAsync: forceAsync$ = false }: UseUpdateOptions = {}) {
   const update = (createChanger?: () => UpdateChanger) => {
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
+    const hasChanger = detectIsFunction(createChanger);
     const isTransition = scope$.getIsTransitionZone();
     const isBatch = scope$.getIsBatchZone();
     const isEvent = scope$.getIsEventZone();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
-    const forceAsync = isTransition || forceAsync$;
+    const forceAsync = isTransition;
     const getFiber = () => hook.getOwner(); // !
     const setPendingStatus = scope$.getPendingStatusSetter();
-    const callback = createUpdateCallback({ rootId, isTransition, getFiber, createChanger });
+    const callback = createUpdateCallback({
+      rootId,
+      isTransition,
+      getFiber,
+      createChanger: hasChanger ? createChanger : undefined,
+    });
     const createSign = () => createFiberSign(getFiber(), idx);
     const callbackOptions: ScheduleCallbackOptions = {
       priority,
@@ -38,7 +43,7 @@ function useUpdate({ forceAsync: forceAsync$ = false }: UseUpdateOptions = {}) {
       addBatch(
         getFiber(),
         () => platform.schedule(callback, callbackOptions),
-        () => detectIsFunction(createChanger) && createChanger().setValue(),
+        () => hasChanger && createChanger().setValue(),
       );
     } else {
       platform.schedule(callback, callbackOptions);

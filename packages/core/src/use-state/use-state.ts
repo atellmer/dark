@@ -1,16 +1,13 @@
 import { detectIsFunction } from '../helpers';
-import { type UseUpdateOptions, type UpdateOptions, useUpdate } from '../use-update';
+import { type UpdateOptions, useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { scope$$ } from '../scope';
 import { useCallback } from '../use-callback';
 
 type Value<T> = T | ((prevValue: T) => T);
 
-function useState<T = unknown>(
-  initialValue: T | (() => T),
-  options?: UseUpdateOptions,
-): [T, (value: Value<T>) => void] {
-  const update = useUpdate(options);
+function useState<T = unknown>(initialValue: T | (() => T)): [T, (value: Value<T>) => void] {
+  const update = useUpdate();
   const scope = useMemo(
     () => ({
       value: detectIsFunction(initialValue) ? initialValue() : initialValue,
