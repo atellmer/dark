@@ -57,7 +57,11 @@ function useSprings<T extends string>(
     };
   }, []);
 
-  const items = scope.ctrls.map(ctrl => ({ ctrl, getValue: () => ctrl.getValue() }));
+  const items = scope.ctrls.map(ctrl => ({
+    ctrl,
+    getValue: () => ctrl.getValue(),
+    detectIsActive: () => state.detectIsPlaying(),
+  }));
 
   return [items, api];
 }
@@ -78,7 +82,7 @@ function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (i
   });
 }
 
-export type SpringsApi<T extends string> = {
+export type SpringsApi<T extends string = string> = {
   start: (fn?: StartFn<T>) => void;
   back: () => void;
   toggle: (isReversed?: boolean) => void;
@@ -88,7 +92,7 @@ export type SpringsApi<T extends string> = {
   resume: () => void;
   reset: () => void;
   cancel: () => void;
-  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => void;
+  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
   once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => void;
 };
 

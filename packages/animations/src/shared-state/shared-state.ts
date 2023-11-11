@@ -43,6 +43,10 @@ class SharedState<T extends string = string> {
     }
   }
 
+  detectIsPlaying() {
+    return this.stack.size > 0;
+  }
+
   wrap(fn: () => void) {
     this.resetScheduledDelay();
 
@@ -59,6 +63,7 @@ class SharedState<T extends string = string> {
       const [ctrl] = this.ctrls;
       if (!ctrl) return;
       this.event('series-start');
+      this.event('series-start-forward');
       this.setFlow(Flow.RIGHT);
 
       if (this.isTrail) {
@@ -75,6 +80,7 @@ class SharedState<T extends string = string> {
       const [ctrl] = this.ctrls;
       if (!ctrl) return;
       this.event('series-start');
+      this.event('series-start-backward');
       this.setFlow(Flow.LEFT);
 
       if (this.isTrail) {
@@ -171,7 +177,7 @@ class SharedState<T extends string = string> {
   }
 
   completeSeries() {
-    const isCompleted = this.detectIsCompleted();
+    const isCompleted = !this.detectIsPlaying();
 
     if (isCompleted) {
       this.event('series-end');
@@ -181,6 +187,7 @@ class SharedState<T extends string = string> {
       const isReachedFrom = ctrl.detectIsReachedFrom();
 
       if (isReachedTo) {
+        this.event('series-end-forward');
         if (this.isLoop) {
           if (this.withReset) {
             nextTick(() => {
@@ -192,6 +199,7 @@ class SharedState<T extends string = string> {
           }
         }
       } else if (isReachedFrom) {
+        this.event('series-end-backward');
         if (this.isLoop) {
           nextTick(() => this.start());
         }
@@ -201,10 +209,6 @@ class SharedState<T extends string = string> {
 
   private setFlow(x: Flow) {
     this.flow = x;
-  }
-
-  private detectIsCompleted() {
-    return this.stack.size === 0;
   }
 
   private resetScheduledDelay() {
@@ -237,10 +241,14 @@ export type AnimationEventName =
   | 'setup-back'
   | 'setup-toggle'
   | 'series-start'
+  | 'series-start-forward'
+  | 'series-start-backward'
   | 'item-start'
   | 'item-change'
   | 'item-end'
-  | 'series-end';
+  | 'series-end'
+  | 'series-end-forward'
+  | 'series-end-backward';
 
 export type AnimationEventValue<T extends string = string> = {
   value: SpringValue<T>;

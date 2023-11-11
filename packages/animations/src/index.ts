@@ -1,9 +1,11 @@
 export { type BaseOptions, type StartOptions, type ConfiguratorFn, type StartFn } from './controller';
-export { type SpringValue } from './shared';
+export { type SpringValue, type SpringItem } from './shared';
 export { range } from './utils';
 export * from './constants';
 export * from './use-trail';
 export * from './presets';
 export * from './use-springs';
 export * from './use-spring';
+export * from './use-parallel';
+export * from './use-chain';
 export * from './animated';

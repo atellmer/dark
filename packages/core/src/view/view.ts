@@ -1,13 +1,7 @@
 import { REPLACER, ATTR_KEY } from '../constants';
 import { detectIsArray, detectIsFunction } from '../helpers';
 import type { DarkElementKey as Key, DarkElement, DarkElementInstance } from '../shared';
-import {
-  type Component,
-  type ComponentFactory,
-  detectIsComponent,
-  getComponentKey,
-  hasComponentFlag,
-} from '../component';
+import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
 import { scope$$ } from '../scope';
 import { NodeType, type ViewDef } from './types';
 
@@ -29,7 +23,7 @@ class VirtualNode {
 class TagVirtualNode extends VirtualNode {
   public name: string;
   public attrs: Record<string, any>;
-  public children: Array<TextVirtualNode | CommentVirtualNode | VirtualNodeFactory | ComponentFactory>;
+  public children: Array<TextVirtualNode | CommentVirtualNode | TagVirtualNode | VirtualNodeFactory | Component>;
 
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);

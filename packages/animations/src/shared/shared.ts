@@ -6,6 +6,7 @@ export type SpringValue<T extends string> = Record<T, number>;
 export type SpringItem<T extends string = string> = {
   ctrl: Controller<T>;
   getValue: () => SpringValue<T>;
+  detectIsActive: () => boolean;
 };
 
 export type SpringConfig = {
