@@ -92,7 +92,7 @@ function useTransition<T extends string, I = unknown>(
 
   useLayoutEffect(() => {
     const unmounts: Array<() => void> = [];
-    const off = api.on('item-end', e => completeEvent({ e, unmounts, update, scope, api }));
+    const off = api.on('item-end', e => completeEvent({ e, update, scope }));
 
     unmounts.push(off);
 
@@ -284,18 +284,14 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
 
 type CompleteEventOptions<T extends string, I = unknown> = {
   e: AnimationEventValue<T>;
-  api: TransitionApi<T>;
-  unmounts: Array<() => void>;
   scope: Scope<T, I>;
   update: () => void;
 };
 
 function completeEvent<T extends string, I = unknown>(options: CompleteEventOptions<T, I>) {
   const {
-    api,
     scope,
     update,
-    unmounts,
     e: { key },
   } = options;
   const { map, fakes, record, enters, configurator } = scope;
@@ -310,19 +306,9 @@ function completeEvent<T extends string, I = unknown>(options: CompleteEventOpti
   } else if (detectIsNumber(enters[key])) {
     if (ctrl.detectIsValueEqual(leave)) {
       const { enter } = configurator(ctrl.getIdx());
-      const off = api.on('item-change', ({ key: key$ }) => {
-        if (key === key$) {
-          const idx = unmounts.findIndex(x => x === off);
-
-          off();
-          update();
-          idx !== -1 && unmounts.splice(idx, 1);
-        }
-      });
 
       ctrl.replaceValue({ ...enter });
       ctrl.event('item-change');
-      unmounts.push(off);
     }
 
     delete enters[key];
