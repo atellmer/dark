@@ -1,4 +1,4 @@
-import { useMemo, useLayoutEffect, useUpdate, batch } from '@dark-engine/core';
+import { useMemo, useLayoutEffect, useUpdate, batch, detectIsNumber } from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
 import { type AnimationEventName, type AnimationEventHandler, SharedState } from '../shared-state';
@@ -18,7 +18,10 @@ function useTransition<T extends string, I = unknown>(
   const forceUpdate = useUpdate();
   const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
-  const scope = useMemo<Scope<T, I>>(() => ({ fakes: {}, record: {}, map: new Map(), configurator, items }), []);
+  const scope = useMemo<Scope<T, I>>(
+    () => ({ fakes: {}, record: {}, enters: {}, map: new Map(), configurator, items }),
+    [],
+  );
 
   scope.configurator = configurator;
 
@@ -43,7 +46,7 @@ function useTransition<T extends string, I = unknown>(
       const ctrl = map.get(key);
       const item = ctrl.getItem();
       const isPlaying = state.detectIsPlaying(key);
-      const fn = () => ({ to: enter, value: { ...from } });
+      const fn = () => ({ to: enter });
 
       if (isPlaying) {
         const fake = new Controller<T, I>(state);
@@ -73,34 +76,40 @@ function useTransition<T extends string, I = unknown>(
 
     scope.items = items;
     scope.record = record;
+    scope.enters = enters;
   }, [items]);
 
   useLayoutEffect(() => {
     const unmounts: Array<() => void> = [];
     const off = api.on('item-end', ({ key }) => {
-      const { map, fakes, record } = scope;
+      const { map, fakes, record, enters, configurator } = scope;
       const ctrl = map.get(key);
+      const { leave } = configurator(ctrl.getIdx());
 
       if (ctrl.detectIsFake()) {
         map.delete(key);
         delete fakes[key];
       } else if (!record[key]) {
         map.delete(key);
-      } else {
-        const { enter } = configurator(ctrl.getIdx());
-        const off = api.on('item-change', ({ key: key$ }) => {
-          if (key === key$) {
-            const idx = unmounts.findIndex(x => x === off);
+      } else if (detectIsNumber(enters[key])) {
+        if (ctrl.detectIsValueEqual(leave)) {
+          const { enter } = configurator(ctrl.getIdx());
+          const off = api.on('item-change', ({ key: key$ }) => {
+            if (key === key$) {
+              const idx = unmounts.findIndex(x => x === off);
 
-            off();
-            update();
-            idx !== -1 && unmounts.splice(idx, 1);
-          }
-        });
+              off();
+              update();
+              idx !== -1 && unmounts.splice(idx, 1);
+            }
+          });
 
-        unmounts.push(off);
-        ctrl.replaceValue({ ...enter });
-        ctrl.event('item-change');
+          ctrl.replaceValue({ ...enter });
+          ctrl.event('item-change');
+          unmounts.push(off);
+        }
+
+        delete enters[key];
       }
 
       update();
@@ -116,8 +125,9 @@ function useTransition<T extends string, I = unknown>(
   const api = useMemo<TransitionApi<T>>(() => {
     return {
       start: state.start.bind(state),
-      back: state.back.bind(state),
       cancel: state.cancel.bind(state),
+      pause: state.pause.bind(state),
+      resume: state.resume.bind(state),
       on: state.on.bind(state),
       once: state.once.bind(state),
     };
@@ -278,12 +288,14 @@ type Scope<T extends string, I = unknown> = {
   configurator: (idx: number) => TransitionItemOptions<T>;
   map: Map<Key, Controller<T, I>>;
   record: Record<Key, I>;
+  enters: Record<Key, number>;
 };
 
 export type TransitionApi<T extends string = string> = {
   start: (fn?: StartFn<T>) => void;
-  back: () => void;
   cancel: () => void;
+  pause: () => void;
+  resume: () => void;
   on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
   once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
 };

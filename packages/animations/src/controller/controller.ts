@@ -139,13 +139,11 @@ class Controller<T extends string, I = unknown> {
     const to = { ...config1.to, ...config2.to };
     const config = config2.config || config1.config;
     const immediate = config2.immediate || config1.immediate;
-    const value = (config2 as StartOptions<T>).value || this.value;
 
     this.setFrom(config1.from || from);
     this.setTo(config1.to || to);
     this.setSpringConfigFn(config);
     this.setImmediate(immediate);
-    this.value = value;
     Object.assign(this.dest, to);
 
     this.play(this.dest);
@@ -183,12 +181,16 @@ class Controller<T extends string, I = unknown> {
     this.frameId = null;
   }
 
+  detectIsValueEqual(value: SpringValue<T>) {
+    return detectAreValuesEqual(this.value, value, this.springConfigFn);
+  }
+
   detectIsReachedFrom() {
-    return detectAreValuesEqual(this.value, this.from, this.springConfigFn);
+    return this.detectIsValueEqual(this.from);
   }
 
   detectIsReachedTo() {
-    return detectAreValuesEqual(this.value, this.to, this.springConfigFn);
+    return this.detectIsValueEqual(this.to);
   }
 
   setIsPlaying(x: boolean) {
@@ -375,7 +377,6 @@ export type BaseOptions<T extends string> = {
 };
 
 export type StartOptions<T extends string> = {
-  value?: SpringValue<T>;
   from?: SpringValue<T>;
   to: Partial<SpringValue<T>>;
 } & Omit<BaseOptions<T>, 'from' | 'to'>;
