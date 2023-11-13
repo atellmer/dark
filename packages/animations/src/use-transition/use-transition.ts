@@ -5,7 +5,6 @@ import {
   batch,
   useMemo,
   useUpdate,
-  detectIsNumber,
   useLayoutEffect,
 } from '@dark-engine/core';
 
@@ -291,9 +290,9 @@ function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventVal
     delete fakes[key];
   } else if (!record[key]) {
     map.delete(key);
-  } else if (detectIsNumber(enters[key])) {
-    delete enters[key];
   }
+
+  delete enters[key];
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, scope: Scope<T, I>) {
