@@ -78,6 +78,11 @@ class Controller<T extends string, I = unknown> {
     this.notifier = fn;
   }
 
+  notify() {
+    this.notifier(this.getValue());
+    this.event('item-change');
+  }
+
   setConfigurator(fn: ConfiguratorFn<T>) {
     this.configurator = fn;
   }
@@ -88,10 +93,6 @@ class Controller<T extends string, I = unknown> {
 
   replaceValue(x: SpringValue<T>) {
     this.value = x;
-  }
-
-  event(name: AnimationEventName) {
-    this.state.event(name, { value: this.value, idx: this.idx, key: this.key });
   }
 
   markAsFake(x: Key) {
@@ -308,9 +309,12 @@ class Controller<T extends string, I = unknown> {
     });
   }
 
+  private event(name: AnimationEventName) {
+    this.state.event(name, { value: this.value, idx: this.idx, key: this.key });
+  }
+
   private change() {
-    this.notifier(this.getValue());
-    this.event('item-change');
+    this.notify();
 
     if (this.state.getIsTrail()) {
       if (this.state.detectIsRightFlow()) {

@@ -299,7 +299,7 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, scop
     const { enter } = configurator(ctrl.getIdx());
 
     ctrl.replaceValue({ ...enter });
-    ctrl.event('item-change');
+    ctrl.notify();
   }
 
   update();
