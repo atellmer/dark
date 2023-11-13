@@ -33,7 +33,7 @@ function useTransition<T extends string, I = unknown>(
   const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(
-    () => ({ fakes: {}, record: {}, enters: {}, map: new Map(), configurator, items }),
+    () => ({ fakes: {}, record: {}, enters: {}, leaves: {}, map: new Map(), configurator, items }),
     [],
   );
 
@@ -58,10 +58,10 @@ function useTransition<T extends string, I = unknown>(
 
     const transition: TransitionFn<T, I> = (render: TransitionRenderFn<T, I>) => {
       const elements: Array<Element> = [];
-      let idx = 0;
 
       for (const [key, ctrl] of map) {
         const item = ctrl.getItem();
+        const idx = ctrl.getIdx();
         const spring: TransitionItem<T, I> = {
           ctrl,
           item,
@@ -70,7 +70,6 @@ function useTransition<T extends string, I = unknown>(
         };
 
         elements.push(Fragment({ key, slot: render({ spring, idx }) }));
-        idx++;
       }
 
       return elements;
@@ -92,9 +91,10 @@ function useTransition<T extends string, I = unknown>(
 
   useLayoutEffect(() => {
     const unmounts: Array<() => void> = [];
-    const off = api.on('item-end', e => completeEvent({ e, update, scope }));
+    const off1 = api.on('item-end', e => handleItemEnd(e, scope));
+    const off2 = api.on('series-end', () => handleSeriesEnd(update, scope));
 
-    unmounts.push(off);
+    unmounts.push(off1, off2);
 
     return () => unmounts.forEach(x => x());
   }, []);
@@ -282,21 +282,9 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
   }
 }
 
-type CompleteEventOptions<T extends string, I = unknown> = {
-  e: AnimationEventValue<T>;
-  scope: Scope<T, I>;
-  update: () => void;
-};
-
-function completeEvent<T extends string, I = unknown>(options: CompleteEventOptions<T, I>) {
-  const {
-    scope,
-    update,
-    e: { key },
-  } = options;
-  const { map, fakes, record, enters, configurator } = scope;
+function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {
+  const { map, fakes, record, enters } = scope;
   const ctrl = map.get(key);
-  const { leave } = configurator(ctrl.getIdx());
 
   if (ctrl.detectIsFake()) {
     map.delete(key);
@@ -304,14 +292,18 @@ function completeEvent<T extends string, I = unknown>(options: CompleteEventOpti
   } else if (!record[key]) {
     map.delete(key);
   } else if (detectIsNumber(enters[key])) {
-    if (ctrl.detectIsValueEqual(leave)) {
-      const { enter } = configurator(ctrl.getIdx());
-
-      ctrl.replaceValue({ ...enter });
-      ctrl.event('item-change');
-    }
-
     delete enters[key];
+  }
+}
+
+function handleSeriesEnd<T extends string, I = unknown>(update: () => void, scope: Scope<T, I>) {
+  const { map, configurator } = scope;
+
+  for (const [_, ctrl] of map) {
+    const { enter } = configurator(ctrl.getIdx());
+
+    ctrl.replaceValue({ ...enter });
+    ctrl.event('item-change');
   }
 
   update();
