@@ -53,7 +53,6 @@ function useTransition<T extends string, I = unknown>(
 
     scope.items = items; // !
     scope.record = record;
-    scope.enters = enters;
 
     const transition: TransitionFn<T, I> = (render: TransitionRenderFn<T, I>) => {
       const elements: Array<Element> = [];
@@ -282,7 +281,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
 }
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {
-  const { map, fakes, record, enters } = scope;
+  const { map, fakes, record } = scope;
   const ctrl = map.get(key);
 
   if (ctrl.detectIsFake()) {
@@ -291,8 +290,6 @@ function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventVal
   } else if (!record[key]) {
     map.delete(key);
   }
-
-  delete enters[key];
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, scope: Scope<T, I>) {
@@ -314,7 +311,6 @@ type Scope<T extends string, I = unknown> = {
   map: Map<Key, Controller<T, I>>;
   record: Record<Key, I>;
   fakes: Record<Key, number>;
-  enters: Record<Key, number>;
 };
 
 type DestKey<T extends string> = keyof Pick<TransitionItemOptions<T>, 'leave' | 'update' | 'enter'>;
