@@ -224,7 +224,11 @@ function performAlternate(fiber: Fiber, alt: Fiber, scope$: Scope) {
     const check = hasElementFlag(inst, Flag.SKIP_SCAN_OPT) ? !hasSameCount : true;
 
     if (check) {
-      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, inst.children);
+      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap, hasBrokenKey } = extractKeys(
+        alt.child,
+        inst.children,
+      );
+      if (hasBrokenKey) return;
       const flush = nextKeys.length === 0;
       let size = Math.max(prevKeys.length, nextKeys.length);
       let p = 0;
@@ -377,6 +381,7 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
   const nextKeysMap: Record<Key, boolean> = {};
   const keyedFibersMap: Record<Key, Fiber> = {};
   const usedKeysMap: Record<Key, boolean> = {};
+  let hasBrokenKey = false;
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
@@ -393,16 +398,14 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
       const key = getElementKey(inst);
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
 
-      if (process.env.NODE_ENV !== 'production') {
-        if (usedKeysMap[nextKey]) {
-          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [inst]);
-        }
-
-        usedKeysMap[nextKey] = true;
+      if (usedKeysMap[nextKey]) {
+        hasBrokenKey = true;
+        error(`[Dark]: The key of node [${nextKey}] already has been used!`, [inst]);
       }
 
       nextKeys.push(nextKey);
       nextKeysMap[nextKey] = true;
+      usedKeysMap[nextKey] = true;
     }
 
     nextFiber = nextFiber ? nextFiber.next : null;
@@ -415,6 +418,7 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
     prevKeysMap,
     nextKeysMap,
     keyedFibersMap,
+    hasBrokenKey,
   };
 }
 

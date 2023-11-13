@@ -1,4 +1,4 @@
-import { nextTick } from '@dark-engine/core';
+import { nextTick, detectIsEmpty } from '@dark-engine/core';
 
 import { type Controller, type StartFn } from '../controller';
 import { type SpringValue, type Key } from '../shared';
@@ -17,6 +17,16 @@ class SharedState<T extends string = string> {
 
   setCtrls(ctrls: Array<Controller<T>>) {
     this.ctrls = ctrls;
+  }
+
+  addCtrl(ctrl: Controller<T>) {
+    this.ctrls.push(ctrl);
+  }
+
+  removeCtrl(ctrl: Controller<T>) {
+    const idx = this.ctrls.findIndex(x => x === ctrl);
+
+    idx !== -1 && this.ctrls.splice(idx, 1);
   }
 
   setIsTrail(x: boolean) {
@@ -43,8 +53,8 @@ class SharedState<T extends string = string> {
     }
   }
 
-  detectIsPlaying() {
-    return this.stack.size > 0;
+  detectIsPlaying(key?: Key) {
+    return detectIsEmpty(key) ? this.stack.size > 0 : this.stack.has(key);
   }
 
   wrap(fn: () => void) {
@@ -170,6 +180,8 @@ class SharedState<T extends string = string> {
     };
 
     subs.add(handler$);
+
+    return () => subs.delete(handler$);
   }
 
   event(name: AnimationEventName, value: AnimationEventValue<T> = null) {

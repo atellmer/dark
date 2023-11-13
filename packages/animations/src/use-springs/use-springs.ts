@@ -5,12 +5,12 @@ import { type BaseOptions, type StartFn, Controller } from '../controller';
 import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
-export type ItemOptions<T extends string> = BaseOptions<T>;
+export type SpringItemOptions<T extends string> = BaseOptions<T>;
 
 function useSprings<T extends string>(
   count: number,
-  configurator: (idx: number) => ItemOptions<T>,
-): [Array<SpringItem<T>>, SpringsApi<T>] {
+  configurator: (idx: number) => SpringItemOptions<T>,
+): [Array<SpringItem<T>>, SpringApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
   const scope = useMemo(() => {
     return {
@@ -41,7 +41,7 @@ function useSprings<T extends string>(
 
   useLayoutEffect(() => () => api.cancel(), []);
 
-  const api = useMemo<SpringsApi<T>>(() => {
+  const api = useMemo<SpringApi<T>>(() => {
     return {
       start: state.start.bind(state),
       back: state.back.bind(state),
@@ -57,16 +57,16 @@ function useSprings<T extends string>(
     };
   }, []);
 
-  const items = scope.ctrls.map(ctrl => ({
+  const springs = scope.ctrls.map(ctrl => ({
     ctrl,
     getValue: () => ctrl.getValue(),
     detectIsActive: () => state.detectIsPlaying(),
   }));
 
-  return [items, api];
+  return [springs, api];
 }
 
-function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (idx: number) => ItemOptions<T>) {
+function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (idx: number) => SpringItemOptions<T>) {
   ctrls.forEach((ctrl, idx) => {
     const { from, to, config } = configurator(idx);
     const left = ctrls[idx - 1] || null;
@@ -82,7 +82,7 @@ function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (i
   });
 }
 
-export type SpringsApi<T extends string = string> = {
+export type SpringApi<T extends string = string> = {
   start: (fn?: StartFn<T>) => void;
   back: () => void;
   toggle: (isReversed?: boolean) => void;
@@ -93,7 +93,7 @@ export type SpringsApi<T extends string = string> = {
   reset: () => void;
   cancel: () => void;
   on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
-  once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => void;
+  once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
 };
 
 export { useSprings };

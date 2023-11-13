@@ -1,8 +1,8 @@
 import { useLayoutEffect } from '@dark-engine/core';
 
-import { type SpringsApi } from '../use-springs';
+import { type SpringApi } from '../use-springs';
 
-type ChainLink = Pick<SpringsApi, 'start' | 'back' | 'on'>;
+type ChainLink = Pick<SpringApi, 'start' | 'back' | 'on'>;
 
 function useChain(chain: Array<ChainLink>) {
   useLayoutEffect(() => {

@@ -1,8 +1,8 @@
 import { useLayoutEffect } from '@dark-engine/core';
 
-import { type SpringsApi } from '../use-springs';
+import { type SpringApi } from '../use-springs';
 
-type ParallelItem = Pick<SpringsApi, 'start' | 'back' | 'on'>;
+type ParallelItem = Pick<SpringApi, 'start' | 'back' | 'on'>;
 
 function useParallel(parallel: Array<ParallelItem>) {
   useLayoutEffect(() => {

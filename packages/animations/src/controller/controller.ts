@@ -1,4 +1,4 @@
-import { platform, falseFn } from '@dark-engine/core';
+import { platform, falseFn, detectIsUndefined } from '@dark-engine/core';
 
 import { type SpringValue, type SpringConfig, type Key, defaultSpringConfig } from '../shared';
 import { time, fix } from '../utils';
@@ -7,7 +7,7 @@ import { type AnimationEventName, SharedState } from '../shared-state';
 
 const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
 
-class Controller<T extends string> {
+class Controller<T extends string, I = unknown> {
   private key: Key;
   private idx: number;
   private from: SpringValue<T>;
@@ -28,6 +28,8 @@ class Controller<T extends string> {
   private notifier: NotifierFn<T>;
   private immediate: ImmediateFn<T> = falseFn;
   private immediates: Array<() => void> = [];
+  private primaryKey: Key;
+  private item: I = null;
 
   constructor(state: SharedState) {
     this.state = state;
@@ -38,7 +40,7 @@ class Controller<T extends string> {
     return this.key;
   }
 
-  setKey(x: string) {
+  setKey(x: Key) {
     this.key = x;
   }
 
@@ -84,6 +86,26 @@ class Controller<T extends string> {
     this.immediate = fn || this.immediate;
   }
 
+  markAsFake(x: Key) {
+    this.primaryKey = x;
+  }
+
+  detectIsFake() {
+    return !detectIsUndefined(this.primaryKey);
+  }
+
+  getPrimaryKey() {
+    return this.primaryKey;
+  }
+
+  setItem(x: I) {
+    this.item = x;
+  }
+
+  getItem() {
+    return this.item;
+  }
+
   getValue() {
     const fixed = {} as SpringValue<T>;
     const keys = Object.keys(this.value) as Array<T>;
@@ -104,11 +126,13 @@ class Controller<T extends string> {
     const to = { ...config1.to, ...config2.to };
     const config = config2.config || config1.config;
     const immediate = config2.immediate || config1.immediate;
+    const value = (config2 as StartOptions<T>).value || this.value;
 
     this.setFrom(config1.from || from);
     this.setTo(config1.to || to);
     this.setSpringConfigFn(config);
     this.setImmediate(immediate);
+    this.value = value;
     Object.assign(this.dest, to);
 
     this.play(this.dest);
@@ -342,6 +366,7 @@ export type BaseOptions<T extends string> = {
 };
 
 export type StartOptions<T extends string> = {
+  value?: SpringValue<T>;
   from?: SpringValue<T>;
   to: Partial<SpringValue<T>>;
 } & Omit<BaseOptions<T>, 'from' | 'to'>;
