@@ -18,8 +18,8 @@ function useTransition<T extends string, I = unknown>(
   const update = useUpdate();
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(() => {
-    const map: Record<Key, QueueItem<T, I>> = {};
-    const ctrls = items.map(x => createController<T, I>(state, x, map, getKey));
+    const map: Map<Key, Controller<T, I>> = new Map();
+    const ctrls = items.map(x => createController<T, I>(state, x, getKey, map));
 
     state.setCtrls(ctrls);
     prepare(ctrls, configurator);
@@ -36,21 +36,16 @@ function useTransition<T extends string, I = unknown>(
 
   useMemo(() => {
     if (items === scope.prevItems) return;
-    const { map } = scope;
+    const { prevItems, map, fakeKeys } = scope;
     const configurator = (idx: number) => scope.configurator(idx);
-    const ctrls = items.map(x => createController<T, I>(state, x, map, getKey));
+    const ctrls = items.map(item => createController<T, I>(state, item, getKey, map));
+    const { enters, leaves } = diff(prevItems, items, getKey);
 
     state.setCtrls(ctrls);
     prepare(ctrls, configurator);
-  }, [items]);
 
-  useMemo(() => {
-    if (items === scope.prevItems) return;
-    const { prevItems, map, fakeKeys } = scope;
-    const { enters, leaves } = diff(prevItems, items, getKey);
-
-    for (const fakeKey of Object.keys(fakeKeys)) {
-      const { ctrl } = scope.map[fakeKey];
+    for (const key of Object.keys(fakeKeys)) {
+      const ctrl = scope.map.get(key);
       const idx = ctrl.getIdx();
       const { leave } = configurator(idx);
 
@@ -60,15 +55,17 @@ function useTransition<T extends string, I = unknown>(
     for (const key of Object.keys(enters)) {
       const idx = enters[key];
       const { from, enter, config } = configurator(idx);
-      const { ctrl, item } = map[key];
+      const ctrl = map.get(key);
+      const item = ctrl.getItem();
       const isPlaying = state.detectIsPlaying(key);
       let ctrl$ = ctrl;
 
       if (isPlaying) {
-        const ctrl = new Controller<T>(state);
+        const ctrl = new Controller<T, I>(state);
 
         ctrl.markAsFake(key);
         ctrl.setIdx(idx);
+        ctrl.setItem(item);
         ctrl.setFrom(from);
         ctrl.setTo(enter);
         ctrl.setSpringConfigFn(config);
@@ -78,7 +75,7 @@ function useTransition<T extends string, I = unknown>(
         const fakeKey = ctrl.getKey();
 
         fakeKeys[fakeKey] = true;
-        map[fakeKey] = { ctrl: ctrl, item };
+        map.set(fakeKey, ctrl);
         ctrl$ = ctrl;
       }
 
@@ -88,7 +85,7 @@ function useTransition<T extends string, I = unknown>(
     for (const key of Object.keys(leaves)) {
       const idx = leaves[key];
       const { leave } = configurator(idx);
-      const { ctrl } = map[key];
+      const ctrl = map.get(key);
 
       ctrl.start(() => ({ to: leave }));
     }
@@ -108,17 +105,19 @@ function useTransition<T extends string, I = unknown>(
     };
   }, []);
 
-  const springs = Object.keys(scope.map).map(key => {
-    const { ctrl, item } = scope.map[key];
+  const springs: Array<TransitionItem<T, I>> = [];
 
-    return {
+  for (const [key, ctrl] of scope.map) {
+    const item = ctrl.getItem();
+
+    springs.push({
       ctrl,
       item,
       key,
       getValue: () => ctrl.getValue(),
       detectIsActive: () => state.detectIsPlaying(),
-    };
-  });
+    });
+  }
 
   return [springs, api];
 }
@@ -126,18 +125,19 @@ function useTransition<T extends string, I = unknown>(
 function createController<T extends string, I = unknown>(
   state: SharedState<T>,
   item: I,
-  map: Record<Key, QueueItem<T, I>>,
   getKey: (x: I) => Key,
+  map: Map<Key, Controller<T, I>>,
 ) {
   const key = getKey(item);
-  let ctrl: Controller<T> = null;
+  let ctrl: Controller<T, I> = null;
 
-  if (map[key]) {
-    ctrl = map[key].ctrl;
+  if (map.has(key)) {
+    ctrl = map.get(key);
   } else {
-    ctrl = new Controller<T>(state);
+    ctrl = new Controller<T, I>(state);
     ctrl.setKey(key);
-    map[key] = { ctrl, item };
+    ctrl.setItem(item);
+    map.set(key, ctrl);
   }
 
   return ctrl;
@@ -240,12 +240,7 @@ type Scope<T extends string, I = unknown> = {
   prevItems: Array<I>;
   fakeKeys: Record<Key, boolean>;
   configurator: (idx: number) => TransitionItemOptions<T>;
-  map: Record<Key, QueueItem<T, I>>;
-};
-
-type QueueItem<T extends string = string, I = unknown> = {
-  ctrl: Controller<T>;
-  item: I;
+  map: Map<Key, Controller<T, I>>;
 };
 
 export type TransitionApi<T extends string = string> = {
