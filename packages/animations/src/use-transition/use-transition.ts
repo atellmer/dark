@@ -1,4 +1,13 @@
-import { useMemo, useLayoutEffect, useUpdate, batch, detectIsNumber } from '@dark-engine/core';
+import {
+  type Component,
+  type TagVirtualNodeFactory,
+  Fragment,
+  batch,
+  useMemo,
+  useUpdate,
+  detectIsNumber,
+  useLayoutEffect,
+} from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
 import {
@@ -19,7 +28,7 @@ function useTransition<T extends string, I = unknown>(
   items: Array<I>,
   getKey: (x: I) => Key,
   configurator: (idx: number) => TransitionItemOptions<T>,
-): [Array<TransitionItem<T, I>>, TransitionApi<T>] {
+): [TransitionFn<T, I>, TransitionApi<T>] {
   const forceUpdate = useUpdate();
   const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
@@ -30,12 +39,11 @@ function useTransition<T extends string, I = unknown>(
 
   scope.configurator = configurator;
 
-  const springs = useMemo(() => {
+  const transition = useMemo(() => {
     const configurator = (idx: number) => scope.configurator(idx);
     const { map, fakes, items: prevItems } = scope;
     const { ctrls, record } = data({ items, getKey, configurator, state, map });
     const { enters, leaves, updates } = diff(prevItems, items, getKey);
-    const springs: Array<TransitionItem<T, I>> = [];
 
     state.setCtrls(ctrls);
 
@@ -48,19 +56,27 @@ function useTransition<T extends string, I = unknown>(
     scope.record = record;
     scope.enters = enters;
 
-    for (const [key, ctrl] of scope.map) {
-      const item = ctrl.getItem();
+    const transition: TransitionFn<T, I> = (render: TransitionRenderFn<T, I>) => {
+      const elements: Array<Element> = [];
+      let idx = 0;
 
-      springs.push({
-        ctrl,
-        item,
-        key,
-        getValue: () => ctrl.getValue(),
-        detectIsActive: () => state.detectIsPlaying(),
-      });
-    }
+      for (const [key, ctrl] of map) {
+        const item = ctrl.getItem();
+        const spring: TransitionItem<T, I> = {
+          ctrl,
+          item,
+          getValue: () => ctrl.getValue(),
+          detectIsActive: () => state.detectIsPlaying(),
+        };
 
-    return springs;
+        elements.push(Fragment({ key, slot: render({ spring, idx }) }));
+        idx++;
+      }
+
+      return elements;
+    };
+
+    return transition;
   }, [items]);
 
   const api = useMemo<TransitionApi<T>>(() => {
@@ -85,7 +101,7 @@ function useTransition<T extends string, I = unknown>(
 
   useLayoutEffect(() => () => api.cancel(), []);
 
-  return [springs, api];
+  return [transition, api];
 }
 
 type DataOptions<T extends string, I = unknown> = {
@@ -261,7 +277,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
       const to = configurator(space[key])[destKey];
       const ctrl = map.get(key);
 
-      ctrl.start(() => ({ to }));
+      to && ctrl.start(() => ({ to })); // !
     }
   }
 }
@@ -336,8 +352,16 @@ export type TransitionApi<T extends string = string> = {
 };
 
 export type TransitionItem<T extends string = string, I = unknown> = {
-  key: Key;
   item: I;
 } & SpringItem<T>;
+
+type Element = Component | TagVirtualNodeFactory;
+
+export type TransitionRenderFn<T extends string = string, I = unknown> = (options: {
+  spring: TransitionItem<T, I>;
+  idx: number;
+}) => Element;
+
+export type TransitionFn<T extends string = string, I = unknown> = (render: TransitionRenderFn<T, I>) => Array<Element>;
 
 export { useTransition };
