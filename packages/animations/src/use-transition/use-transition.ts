@@ -1,7 +1,12 @@
 import { useMemo, useLayoutEffect, useUpdate, batch, detectIsNumber } from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
-import { type AnimationEventName, type AnimationEventHandler, SharedState } from '../shared-state';
+import {
+  type AnimationEventName,
+  type AnimationEventHandler,
+  type AnimationEventValue,
+  SharedState,
+} from '../shared-state';
 import { type BaseOptions, type StartFn, Controller } from '../controller';
 
 export type TransitionItemOptions<T extends string> = {
@@ -26,57 +31,26 @@ function useTransition<T extends string, I = unknown>(
   scope.configurator = configurator;
 
   useMemo(() => {
-    const { map, fakes, items: prevItems } = scope;
     const configurator = (idx: number) => scope.configurator(idx);
+    const { map, fakes, items: prevItems } = scope;
     const { ctrls, record } = data({ items, getKey, configurator, state, map });
     const { enters, leaves, updates } = diff(prevItems, items, getKey);
 
     state.setCtrls(ctrls);
-    scope.items = items;
+
+    startLoop({ destKey: 'leave', space: fakes, state, scope }); // !
+    startLoop({ destKey: 'enter', space: enters, state, scope });
+    startLoop({ destKey: 'leave', space: leaves, state, scope });
+    startLoop({ destKey: 'update', space: updates, state, scope });
+
+    scope.items = items; // !
     scope.record = record;
     scope.enters = enters;
-
-    startLoopOf({ destKey: 'leave', space: fakes, configurator, state, map, fakes }); // !
-    startLoopOf({ destKey: 'enter', space: enters, configurator, state, map, fakes });
-    startLoopOf({ destKey: 'leave', space: leaves, configurator, state, map, fakes });
-    startLoopOf({ destKey: 'update', space: updates, configurator, state, map, fakes });
   }, [items]);
 
   useLayoutEffect(() => {
     const unmounts: Array<() => void> = [];
-    const off = api.on('item-end', ({ key }) => {
-      const { map, fakes, record, enters, configurator } = scope;
-      const ctrl = map.get(key);
-      const { leave } = configurator(ctrl.getIdx());
-
-      if (ctrl.detectIsFake()) {
-        map.delete(key);
-        delete fakes[key];
-      } else if (!record[key]) {
-        map.delete(key);
-      } else if (detectIsNumber(enters[key])) {
-        if (ctrl.detectIsValueEqual(leave)) {
-          const { enter } = configurator(ctrl.getIdx());
-          const off = api.on('item-change', ({ key: key$ }) => {
-            if (key === key$) {
-              const idx = unmounts.findIndex(x => x === off);
-
-              off();
-              update();
-              idx !== -1 && unmounts.splice(idx, 1);
-            }
-          });
-
-          ctrl.replaceValue({ ...enter });
-          ctrl.event('item-change');
-          unmounts.push(off);
-        }
-
-        delete enters[key];
-      }
-
-      update();
-    });
+    const off = api.on('item-end', e => completeEvent({ e, unmounts, update, scope, api }));
 
     unmounts.push(off);
 
@@ -116,10 +90,8 @@ function useTransition<T extends string, I = unknown>(
 type DataOptions<T extends string, I = unknown> = {
   items: Array<I>;
   getKey: (x: I) => Key;
-  configurator: (idx: number) => TransitionItemOptions<T>;
   state: SharedState<T>;
-  map: Map<Key, Controller<T, I>>;
-};
+} & Pick<Scope<T, I>, 'configurator' | 'map'>;
 
 function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
   const { items, getKey, configurator, state, map } = options;
@@ -245,17 +217,16 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   };
 }
 
-type StartLoopOfOptions<T extends string, I = unknown> = {
+type StartLoopOptions<T extends string, I = unknown> = {
   destKey: DestKey<T>;
   space: Record<Key, number>;
-  configurator: (idx: number) => TransitionItemOptions<T>;
   state: SharedState<T>;
-  map: Map<Key, Controller<T, I>>;
-  fakes: Record<Key, number>;
+  scope: Scope<T, I>;
 };
 
-function startLoopOf<T extends string, I = unknown>(options: StartLoopOfOptions<T, I>) {
-  const { space, destKey, configurator, state, map, fakes } = options;
+function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I>) {
+  const { space, destKey, state, scope } = options;
+  const { configurator, map, fakes } = scope;
 
   if (destKey === 'enter') {
     for (const key of Object.keys(space)) {
@@ -294,6 +265,55 @@ function startLoopOf<T extends string, I = unknown>(options: StartLoopOfOptions<
   }
 }
 
+type CompleteEventOptions<T extends string, I = unknown> = {
+  e: AnimationEventValue<T>;
+  api: TransitionApi<T>;
+  unmounts: Array<() => void>;
+  scope: Scope<T, I>;
+  update: () => void;
+};
+
+function completeEvent<T extends string, I = unknown>(options: CompleteEventOptions<T, I>) {
+  const {
+    api,
+    scope,
+    update,
+    unmounts,
+    e: { key },
+  } = options;
+  const { map, fakes, record, enters, configurator } = scope;
+  const ctrl = map.get(key);
+  const { leave } = configurator(ctrl.getIdx());
+
+  if (ctrl.detectIsFake()) {
+    map.delete(key);
+    delete fakes[key];
+  } else if (!record[key]) {
+    map.delete(key);
+  } else if (detectIsNumber(enters[key])) {
+    if (ctrl.detectIsValueEqual(leave)) {
+      const { enter } = configurator(ctrl.getIdx());
+      const off = api.on('item-change', ({ key: key$ }) => {
+        if (key === key$) {
+          const idx = unmounts.findIndex(x => x === off);
+
+          off();
+          update();
+          idx !== -1 && unmounts.splice(idx, 1);
+        }
+      });
+
+      ctrl.replaceValue({ ...enter });
+      ctrl.event('item-change');
+      unmounts.push(off);
+    }
+
+    delete enters[key];
+  }
+
+  update();
+}
+
 type Scope<T extends string, I = unknown> = {
   items: Array<I>;
   configurator: (idx: number) => TransitionItemOptions<T>;
@@ -315,8 +335,8 @@ export type TransitionApi<T extends string = string> = {
 };
 
 export type TransitionItem<T extends string = string, I = unknown> = {
-  item: I;
   key: Key;
+  item: I;
 } & SpringItem<T>;
 
 export { useTransition };
