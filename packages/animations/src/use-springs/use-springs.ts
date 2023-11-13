@@ -22,9 +22,9 @@ function useSprings<T extends string>(
 
   scope.configurator = configurator;
 
-  useMemo(() => {
-    const { ctrls, prevCount } = scope;
+  const springs = useMemo(() => {
     const configurator = (idx: number) => scope.configurator(idx);
+    const { ctrls, prevCount } = scope;
 
     if (count > prevCount) {
       ctrls.push(...range(count - prevCount).map(() => new Controller<T>(state)));
@@ -37,9 +37,15 @@ function useSprings<T extends string>(
     state.setCtrls(ctrls);
     scope.prevCount = count;
     prepare(ctrls, configurator);
-  }, [count]);
 
-  useLayoutEffect(() => () => api.cancel(), []);
+    const springs = ctrls.map(ctrl => ({
+      ctrl,
+      getValue: () => ctrl.getValue(),
+      detectIsActive: () => state.detectIsPlaying(),
+    }));
+
+    return springs;
+  }, [count]);
 
   const api = useMemo<SpringApi<T>>(() => {
     return {
@@ -57,11 +63,7 @@ function useSprings<T extends string>(
     };
   }, []);
 
-  const springs = scope.ctrls.map(ctrl => ({
-    ctrl,
-    getValue: () => ctrl.getValue(),
-    detectIsActive: () => state.detectIsPlaying(),
-  }));
+  useLayoutEffect(() => () => api.cancel(), []);
 
   return [springs, api];
 }

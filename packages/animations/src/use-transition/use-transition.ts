@@ -30,11 +30,12 @@ function useTransition<T extends string, I = unknown>(
 
   scope.configurator = configurator;
 
-  useMemo(() => {
+  const springs = useMemo(() => {
     const configurator = (idx: number) => scope.configurator(idx);
     const { map, fakes, items: prevItems } = scope;
     const { ctrls, record } = data({ items, getKey, configurator, state, map });
     const { enters, leaves, updates } = diff(prevItems, items, getKey);
+    const springs: Array<TransitionItem<T, I>> = [];
 
     state.setCtrls(ctrls);
 
@@ -46,18 +47,21 @@ function useTransition<T extends string, I = unknown>(
     scope.items = items; // !
     scope.record = record;
     scope.enters = enters;
+
+    for (const [key, ctrl] of scope.map) {
+      const item = ctrl.getItem();
+
+      springs.push({
+        ctrl,
+        item,
+        key,
+        getValue: () => ctrl.getValue(),
+        detectIsActive: () => state.detectIsPlaying(),
+      });
+    }
+
+    return springs;
   }, [items]);
-
-  useLayoutEffect(() => {
-    const unmounts: Array<() => void> = [];
-    const off = api.on('item-end', e => completeEvent({ e, unmounts, update, scope, api }));
-
-    unmounts.push(off);
-
-    return () => unmounts.forEach(x => x());
-  }, []);
-
-  useLayoutEffect(() => () => api.cancel(), []);
 
   const api = useMemo<TransitionApi<T>>(() => {
     return {
@@ -70,19 +74,16 @@ function useTransition<T extends string, I = unknown>(
     };
   }, []);
 
-  const springs: Array<TransitionItem<T, I>> = [];
+  useLayoutEffect(() => {
+    const unmounts: Array<() => void> = [];
+    const off = api.on('item-end', e => completeEvent({ e, unmounts, update, scope, api }));
 
-  for (const [key, ctrl] of scope.map) {
-    const item = ctrl.getItem();
+    unmounts.push(off);
 
-    springs.push({
-      ctrl,
-      item,
-      key,
-      getValue: () => ctrl.getValue(),
-      detectIsActive: () => state.detectIsPlaying(),
-    });
-  }
+    return () => unmounts.forEach(x => x());
+  }, []);
+
+  useLayoutEffect(() => () => api.cancel(), []);
 
   return [springs, api];
 }
