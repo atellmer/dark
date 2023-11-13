@@ -53,8 +53,7 @@ function useTransition<T extends string, I = unknown>(
 
     for (const key of Object.keys(fakes)) {
       const ctrl = scope.map.get(key);
-      const idx = ctrl.getIdx();
-      const { leave } = configurator(idx);
+      const { leave } = configurator(ctrl.getIdx());
 
       ctrl.start(() => ({ to: leave }));
     }
@@ -79,16 +78,15 @@ function useTransition<T extends string, I = unknown>(
         fake.setConfigurator(configurator);
         state.addCtrl(fake);
         fake.start(fn);
-        fakes[fakeKey] = true;
         map.set(fakeKey, fake);
+        fakes[fakeKey] = true;
       } else {
         ctrl.start(fn);
       }
     }
 
     for (const key of Object.keys(leaves)) {
-      const idx = leaves[key];
-      const { leave } = configurator(idx);
+      const { leave } = configurator(leaves[key]);
       const ctrl = map.get(key);
 
       ctrl.start(() => ({ to: leave }));
@@ -102,7 +100,7 @@ function useTransition<T extends string, I = unknown>(
     const unmounts: Array<() => void> = [];
     const off = api.on('item-end', ({ key }) => {
       const { map, fakes, record } = scope;
-      const ctrl = scope.map.get(key);
+      const ctrl = map.get(key);
 
       if (ctrl.detectIsFake()) {
         map.delete(key);
@@ -110,8 +108,7 @@ function useTransition<T extends string, I = unknown>(
       } else if (!record[key]) {
         map.delete(key);
       } else {
-        const idx = ctrl.getIdx();
-        const { enter } = configurator(idx);
+        const { enter } = configurator(ctrl.getIdx());
         const off = api.on('item-change', ({ key: key$ }) => {
           if (key === key$) {
             const idx = unmounts.findIndex(x => x === off);
