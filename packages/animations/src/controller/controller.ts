@@ -87,7 +87,12 @@ class Controller<T extends string, I = unknown> {
   }
 
   markAsFake(x: Key) {
+    const key = this.key || ++Controller.id;
+
     this.primaryKey = x;
+    this.key = `fake:${key}`;
+
+    return this.key;
   }
 
   detectIsFake() {
