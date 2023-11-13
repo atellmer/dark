@@ -26,57 +26,20 @@ function useTransition<T extends string, I = unknown>(
   scope.configurator = configurator;
 
   useMemo(() => {
-    const { map, fakes } = scope;
+    const { map, fakes, items: prevItems } = scope;
     const configurator = (idx: number) => scope.configurator(idx);
     const { ctrls, record } = data({ items, getKey, configurator, state, map });
-    const { enters, leaves } = diff(scope.items, items, getKey);
+    const { enters, leaves, updates } = diff(prevItems, items, getKey);
 
     state.setCtrls(ctrls);
-
-    for (const key of Object.keys(fakes)) {
-      const ctrl = scope.map.get(key);
-      const { leave } = configurator(ctrl.getIdx());
-
-      ctrl.start(() => ({ to: leave }));
-    }
-
-    for (const key of Object.keys(enters)) {
-      const idx = enters[key];
-      const { from, enter, config } = configurator(idx);
-      const ctrl = map.get(key);
-      const item = ctrl.getItem();
-      const isPlaying = state.detectIsPlaying(key);
-      const fn = () => ({ to: enter });
-
-      if (isPlaying) {
-        const fake = new Controller<T, I>(state);
-        const fakeKey = fake.markAsFake(key);
-
-        fakes[fakeKey] = true;
-        map.set(fakeKey, fake);
-        state.addCtrl(fake);
-        fake.setIdx(idx);
-        fake.setItem(item);
-        fake.setFrom(from);
-        fake.setTo(enter);
-        fake.setSpringConfigFn(config);
-        fake.setConfigurator(configurator);
-        fake.start(fn);
-      } else {
-        ctrl.start(fn);
-      }
-    }
-
-    for (const key of Object.keys(leaves)) {
-      const { leave } = configurator(leaves[key]);
-      const ctrl = map.get(key);
-
-      ctrl.start(() => ({ to: leave }));
-    }
-
     scope.items = items;
     scope.record = record;
     scope.enters = enters;
+
+    startLoopOf({ destKey: 'leave', space: fakes, configurator, state, map, fakes }); // !
+    startLoopOf({ destKey: 'enter', space: enters, configurator, state, map, fakes });
+    startLoopOf({ destKey: 'leave', space: leaves, configurator, state, map, fakes });
+    startLoopOf({ destKey: 'update', space: updates, configurator, state, map, fakes });
   }, [items]);
 
   useLayoutEffect(() => {
@@ -282,14 +245,65 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   };
 }
 
+type StartLoopOfOptions<T extends string, I = unknown> = {
+  destKey: DestKey<T>;
+  space: Record<Key, number>;
+  configurator: (idx: number) => TransitionItemOptions<T>;
+  state: SharedState<T>;
+  map: Map<Key, Controller<T, I>>;
+  fakes: Record<Key, number>;
+};
+
+function startLoopOf<T extends string, I = unknown>(options: StartLoopOfOptions<T, I>) {
+  const { space, destKey, configurator, state, map, fakes } = options;
+
+  if (destKey === 'enter') {
+    for (const key of Object.keys(space)) {
+      const idx = space[key];
+      const { from, enter, config } = configurator(idx);
+      const ctrl = map.get(key);
+      const item = ctrl.getItem();
+      const isPlaying = state.detectIsPlaying(key);
+      const fn = () => ({ to: enter });
+
+      if (isPlaying) {
+        const fake = new Controller<T, I>(state);
+        const fakeKey = fake.markAsFake(key);
+
+        fakes[fakeKey] = idx;
+        map.set(fakeKey, fake);
+        state.addCtrl(fake);
+        fake.setIdx(idx);
+        fake.setItem(item);
+        fake.setFrom(from);
+        fake.setTo(enter);
+        fake.setSpringConfigFn(config);
+        fake.setConfigurator(configurator);
+        fake.start(fn);
+      } else {
+        ctrl.start(fn);
+      }
+    }
+  } else {
+    for (const key of Object.keys(space)) {
+      const to = configurator(space[key])[destKey];
+      const ctrl = map.get(key);
+
+      ctrl.start(() => ({ to }));
+    }
+  }
+}
+
 type Scope<T extends string, I = unknown> = {
   items: Array<I>;
-  fakes: Record<Key, boolean>;
   configurator: (idx: number) => TransitionItemOptions<T>;
   map: Map<Key, Controller<T, I>>;
   record: Record<Key, I>;
+  fakes: Record<Key, number>;
   enters: Record<Key, number>;
 };
+
+type DestKey<T extends string> = keyof Pick<TransitionItemOptions<T>, 'leave' | 'update' | 'enter'>;
 
 export type TransitionApi<T extends string = string> = {
   start: (fn?: StartFn<T>) => void;
