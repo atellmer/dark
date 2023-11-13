@@ -88,7 +88,10 @@ class Controller<T extends string, I = unknown> {
 
   replaceValue(x: SpringValue<T>) {
     this.value = x;
-    this.event('item-change');
+  }
+
+  event(name: AnimationEventName) {
+    this.state.event(name, { value: this.value, idx: this.idx, key: this.key });
   }
 
   markAsFake(x: Key) {
@@ -333,10 +336,6 @@ class Controller<T extends string, I = unknown> {
     }
 
     return true;
-  }
-
-  private event(name: AnimationEventName) {
-    this.state.event(name, { value: this.value, idx: this.idx, key: this.key });
   }
 
   private static id = -1;
