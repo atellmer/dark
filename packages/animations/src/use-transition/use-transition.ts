@@ -18,35 +18,14 @@ function useTransition<T extends string, I = unknown>(
   const forceUpdate = useUpdate();
   const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
-  const scope = useMemo<Scope<T, I>>(() => {
-    const map: Map<Key, Controller<T, I>> = new Map();
-    const ctrls = items.map((item, idx) => getController<T, I>({ idx, item, getKey, configurator, state, map }));
-
-    state.setCtrls(ctrls);
-
-    return {
-      fakes: {},
-      record: {},
-      configurator,
-      items,
-      map,
-    };
-  }, []);
+  const scope = useMemo<Scope<T, I>>(() => ({ fakes: {}, record: {}, map: new Map(), configurator, items }), []);
 
   scope.configurator = configurator;
 
   useMemo(() => {
-    if (items === scope.items) return;
     const { map, fakes } = scope;
     const configurator = (idx: number) => scope.configurator(idx);
-    const record: Record<Key, I> = {};
-    const ctrls = items.map((item, idx) => {
-      const key = getKey(item);
-
-      record[key] = item;
-
-      return getController<T, I>({ idx, item, getKey, configurator, state, map });
-    });
+    const { ctrls, record } = data({ items, getKey, configurator, state, map });
     const { enters, leaves } = diff(scope.items, items, getKey);
 
     state.setCtrls(ctrls);
@@ -70,16 +49,16 @@ function useTransition<T extends string, I = unknown>(
         const fake = new Controller<T, I>(state);
         const fakeKey = fake.markAsFake(key);
 
+        fakes[fakeKey] = true;
+        map.set(fakeKey, fake);
+        state.addCtrl(fake);
         fake.setIdx(idx);
         fake.setItem(item);
         fake.setFrom(from);
         fake.setTo(enter);
         fake.setSpringConfigFn(config);
         fake.setConfigurator(configurator);
-        state.addCtrl(fake);
         fake.start(fn);
-        map.set(fakeKey, fake);
-        fakes[fakeKey] = true;
       } else {
         ctrl.start(fn);
       }
@@ -161,14 +140,35 @@ function useTransition<T extends string, I = unknown>(
   return [springs, api];
 }
 
-type GetControllerOptions<T extends string, I = unknown> = {
-  idx: number;
-  item: I;
+type DataOptions<T extends string, I = unknown> = {
+  items: Array<I>;
   getKey: (x: I) => Key;
   configurator: (idx: number) => TransitionItemOptions<T>;
   state: SharedState<T>;
   map: Map<Key, Controller<T, I>>;
 };
+
+function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
+  const { items, getKey, configurator, state, map } = options;
+  const record: Record<Key, I> = {};
+  const ctrls = items.map((item, idx) => {
+    const key = getKey(item);
+
+    record[key] = item;
+
+    return getController<T, I>({ idx, item, getKey, configurator, state, map });
+  });
+
+  return {
+    ctrls,
+    record,
+  };
+}
+
+type GetControllerOptions<T extends string, I = unknown> = {
+  idx: number;
+  item: I;
+} & Pick<DataOptions<T, I>, 'getKey' | 'configurator' | 'state' | 'map'>;
 
 function getController<T extends string, I = unknown>(options: GetControllerOptions<T, I>) {
   const { idx, item, getKey, configurator, state, map } = options;
