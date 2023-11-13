@@ -86,11 +86,16 @@ class Controller<T extends string, I = unknown> {
     this.immediate = fn || this.immediate;
   }
 
+  replaceValue(x: SpringValue<T>) {
+    this.value = x;
+    this.event('item-change');
+  }
+
   markAsFake(x: Key) {
     const key = this.key || ++Controller.id;
 
     this.primaryKey = x;
-    this.key = `fake:${key}`;
+    this.key = `fake:${x}:${key}`;
 
     return this.key;
   }

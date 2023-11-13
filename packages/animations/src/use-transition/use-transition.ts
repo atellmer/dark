@@ -1,4 +1,4 @@
-import { useMemo, useLayoutEffect, useUpdate } from '@dark-engine/core';
+import { useMemo, useLayoutEffect, useUpdate, batch, keyBy } from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
 import { type AnimationEventName, type AnimationEventHandler, SharedState } from '../shared-state';
@@ -15,7 +15,8 @@ function useTransition<T extends string, I = unknown>(
   getKey: (x: I) => Key,
   configurator: (idx: number) => TransitionItemOptions<T>,
 ): [Array<TransitionItem<T, I>>, TransitionApi<T>] {
-  const update = useUpdate();
+  const forceUpdate = useUpdate();
+  const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(() => {
     const map: Map<Key, Controller<T, I>> = new Map();
@@ -24,9 +25,9 @@ function useTransition<T extends string, I = unknown>(
     state.setCtrls(ctrls);
 
     return {
-      prevItems: items,
       fakes: {},
       configurator,
+      items,
       map,
     };
   }, []);
@@ -34,11 +35,11 @@ function useTransition<T extends string, I = unknown>(
   scope.configurator = configurator;
 
   useMemo(() => {
-    if (items === scope.prevItems) return;
-    const { prevItems, map, fakes } = scope;
+    if (items === scope.items) return;
+    const { map, fakes } = scope;
     const configurator = (idx: number) => scope.configurator(idx);
     const ctrls = items.map((item, idx) => createController<T, I>(idx, item, getKey, configurator, state, map));
-    const { enters, leaves } = diff(prevItems, items, getKey);
+    const { enters, leaves } = diff(scope.items, items, getKey);
 
     state.setCtrls(ctrls);
 
@@ -85,8 +86,45 @@ function useTransition<T extends string, I = unknown>(
       ctrl.start(() => ({ to: leave }));
     }
 
-    scope.prevItems = items;
+    scope.items = items;
   }, [items]);
+
+  useLayoutEffect(() => {
+    const unmounts: Array<() => void> = [];
+    const off = api.on('item-end', ({ key }) => {
+      const { map, fakes } = scope;
+      const ctrl = scope.map.get(key);
+      const record = keyBy(scope.items, x => getKey(x), true);
+
+      if (ctrl.detectIsFake()) {
+        map.delete(key);
+        delete fakes[key];
+      } else if (!record[key]) {
+        map.delete(key);
+      } else {
+        const idx = ctrl.getIdx();
+        const { enter } = configurator(idx);
+        const off = api.on('item-change', ({ key: key$ }) => {
+          if (key === key$) {
+            const idx = unmounts.findIndex(x => x === off);
+
+            off();
+            update();
+            idx !== -1 && unmounts.splice(idx, 1);
+          }
+        });
+
+        unmounts.push(off);
+        ctrl.replaceValue({ ...enter });
+      }
+
+      update();
+    });
+
+    unmounts.push(off);
+
+    return () => unmounts.forEach(x => x());
+  }, []);
 
   useLayoutEffect(() => () => api.cancel(), []);
 
@@ -226,7 +264,7 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
 }
 
 type Scope<T extends string, I = unknown> = {
-  prevItems: Array<I>;
+  items: Array<I>;
   fakes: Record<Key, boolean>;
   configurator: (idx: number) => TransitionItemOptions<T>;
   map: Map<Key, Controller<T, I>>;
