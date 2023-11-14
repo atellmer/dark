@@ -10,14 +10,15 @@ import {
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
 import { type AnimationEventValue, SharedState } from '../shared-state';
-import { type BaseItemConfig, Controller } from '../controller';
+import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
 import { type SpringApi } from '../use-springs';
 
-export type TransitionItemConfig<T extends string> = {
-  enter: SpringValue<T>;
-  leave: SpringValue<T>;
-  update?: SpringValue<T>;
-} & Pick<BaseItemConfig<T>, 'from' | 'config' | 'immediate'>;
+export type TransitionItemConfig<T extends string, I = unknown> = {
+  from: (x: I) => SpringValue<T>;
+  enter: (x: I) => SpringValue<T>;
+  leave: (x: I) => SpringValue<T>;
+  update?: (x: I) => SpringValue<T>;
+} & Pick<BaseItemConfig<T>, 'config' | 'immediate'>;
 
 function useTransition<T extends string, I = unknown>(
   items: Array<I>,
@@ -236,7 +237,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
       const ctrl = map.get(key);
       const item = ctrl.getItem();
       const isPlaying = state.detectIsPlaying(key);
-      const fn = () => ({ to: enter });
+      const fn = () => ({ to: enter(item) });
 
       if (isPlaying) {
         const fake = new Controller<T, I>(state);
@@ -255,8 +256,9 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
     for (const key of Object.keys(space)) {
       const to = configurator(space[key])[destKey];
       const ctrl = map.get(key);
+      const item = ctrl.getItem();
 
-      to && ctrl.start(() => ({ to })); // !
+      to && ctrl.start(() => ({ to: to(item) })); // !
     }
   }
 }
@@ -272,14 +274,19 @@ type PrepareOptions<T extends string, I = unknown> = {
 function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
   const { ctrl, key, idx, item, configurator } = options;
   const { from, enter, config } = configurator(idx);
+  const configurator$: ConfiguratorFn<T> = (idx: number) => {
+    const { from, enter, leave, update, ...rest } = configurator(idx);
+
+    return { from: from(item), ...rest };
+  };
 
   ctrl.setKey(key);
   ctrl.setIdx(idx);
   ctrl.setItem(item);
-  ctrl.setFrom(from);
-  ctrl.setTo(enter);
+  ctrl.setFrom(from(item));
+  ctrl.setTo(enter(item));
   ctrl.setSpringConfigFn(config);
-  ctrl.setConfigurator(configurator);
+  ctrl.setConfigurator(configurator$);
 }
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {
@@ -301,7 +308,7 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
   for (const [_, ctrl] of map) {
     const { enter } = configurator(ctrl.getIdx());
 
-    ctrl.replaceValue({ ...enter });
+    ctrl.replaceValue({ ...enter(ctrl.getItem()) });
     ctrl.notify();
     ctrls.push(ctrl);
   }
