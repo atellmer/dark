@@ -40,7 +40,7 @@ describe('[use-style]', () => {
   test('useStyle renders styles correctly', () => {
     type AppProps = { color: string };
     const content = (color: string) => dom`
-      <div style="position: absolute; transform: translate(10px, 10px); text-transform: uppercase;">
+      <div style="position: absolute; transform: translate(10px, 10px); text-transform: uppercase; background-image: url(https://images.com/1);">
         <button style="color: ${color};">click</button>
       </div>  
     `;
@@ -51,6 +51,7 @@ describe('[use-style]', () => {
           position: absolute;
           transform: translate(10px, 10px);
           text-transform: uppercase;
+          background-image: url('https://images.com/1');
         `,
         button: styled`
           color: ${color};

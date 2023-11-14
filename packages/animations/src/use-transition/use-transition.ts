@@ -23,7 +23,7 @@ export type TransitionItemConfig<T extends string, I = unknown> = {
 function useTransition<T extends string, I = unknown>(
   items: Array<I>,
   getKey: (x: I) => Key,
-  configurator: (idx: number) => TransitionItemConfig<T>,
+  configurator: (idx: number) => TransitionItemConfig<T, I>,
 ): [TransitionFn<T, I>, TransitionApi<T>] {
   const forceUpdate = useUpdate();
   const update = () => batch(forceUpdate);
@@ -154,15 +154,19 @@ function extractKeys<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getK
     if (prevItem) {
       const prevKey = getKey(prevItem);
 
-      prevKeysMap[prevKey] = true;
-      prevKeys.push(prevKey);
+      if (!prevKeysMap[prevKey]) {
+        prevKeysMap[prevKey] = true;
+        prevKeys.push(prevKey);
+      }
     }
 
     if (nextItem) {
       const nextKey = getKey(nextItem);
 
-      nextKeysMap[nextKey] = true;
-      nextKeys.push(nextKey);
+      if (!nextKeysMap[nextKey]) {
+        nextKeysMap[nextKey] = true;
+        nextKeys.push(nextKey);
+      }
     }
   }
 

@@ -9,7 +9,7 @@ function styled(strings: TemplateStringsArray, ...args: Array<string | number>):
       .split(';');
 
     for (const item of items) {
-      const [key, value] = item.split(':');
+      const [key, value] = item.split(/:(?!\/\/)/);
       if (!value) continue;
 
       style[key.trim()] = value.trim();
