@@ -52,7 +52,7 @@ function useTransition<T extends string, I = unknown>(
     scope.record = record;
 
     const transition: TransitionFn<T, I> = (render: TransitionRenderFn<T, I>) => {
-      const elements: Array<Element> = [];
+      const elements: Array<TransitionElement> = [];
 
       for (const [key, ctrl] of map) {
         const item = ctrl.getItem();
@@ -61,7 +61,7 @@ function useTransition<T extends string, I = unknown>(
           ctrl,
           item,
           getValue: () => ctrl.getValue(),
-          detectIsActive: () => state.detectIsPlaying(key),
+          detectIsSeriesPlaying: () => state.detectIsPlaying(),
         };
 
         elements.push(Fragment({ key, slot: render({ spring, idx }) }));
@@ -320,7 +320,7 @@ type Scope<T extends string, I = unknown> = {
 
 type DestinationKey<T extends string> = keyof Pick<TransitionItemConfig<T>, 'leave' | 'update' | 'enter'>;
 
-type Element = Component | TagVirtualNodeFactory;
+type TransitionElement = Component | TagVirtualNodeFactory;
 
 export type TransitionApi<T extends string = string> = {} & Pick<
   SpringApi<T>,
@@ -334,8 +334,10 @@ export type TransitionItem<T extends string = string, I = unknown> = {
 export type TransitionRenderFn<T extends string = string, I = unknown> = (options: {
   spring: TransitionItem<T, I>;
   idx: number;
-}) => Element;
+}) => TransitionElement;
 
-export type TransitionFn<T extends string = string, I = unknown> = (render: TransitionRenderFn<T, I>) => Array<Element>;
+export type TransitionFn<T extends string = string, I = unknown> = (
+  render: TransitionRenderFn<T, I>,
+) => Array<TransitionElement>;
 
 export { useTransition };
