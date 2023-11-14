@@ -1,6 +1,13 @@
 import { h, component, useMemo, useLayoutEffect } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
-import { type SpringValue, type BaseOptions, type StartFn, Animated, useSprings, range } from '@dark-engine/animations';
+import {
+  type SpringValue,
+  type BaseItemConfig,
+  type StartFn,
+  Animated,
+  useSprings,
+  range,
+} from '@dark-engine/animations';
 
 function reorder(arr: Array<any>, from: number, to: number) {
   const buffer = arr.slice(0);
@@ -29,14 +36,14 @@ const createConfig =
     const y2 = isActive && isMove ? y : y1;
     const scale = isActive ? 1.1 : 1;
     const shadow = isActive ? 16 : 1;
-    const options: BaseOptions<SpringProps> = {
+    const config: BaseItemConfig<SpringProps> = {
       from: { y: y1, scale: 1, shadow: 1 },
       to: { y: y2, scale, shadow },
       immediate: key => isActive && key === 'y',
       config: () => ({ tension: 300, friction: 50, precision: 4 }),
     };
 
-    return options;
+    return config;
   };
 
 const App = component(() => {
