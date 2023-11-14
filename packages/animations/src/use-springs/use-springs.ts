@@ -41,7 +41,7 @@ function useSprings<T extends string>(
     const springs = ctrls.map(ctrl => ({
       ctrl,
       getValue: () => ctrl.getValue(),
-      detectIsActive: () => state.detectIsPlaying(),
+      detectIsActive: () => state.detectIsPlaying(ctrl.getKey()),
     }));
 
     return springs;

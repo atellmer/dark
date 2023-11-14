@@ -61,7 +61,7 @@ function useTransition<T extends string, I = unknown>(
           ctrl,
           item,
           getValue: () => ctrl.getValue(),
-          detectIsActive: () => state.detectIsPlaying(),
+          detectIsActive: () => state.detectIsPlaying(key),
         };
 
         elements.push(Fragment({ key, slot: render({ spring, idx }) }));
@@ -130,24 +130,11 @@ type GetControllerOptions<T extends string, I = unknown> = {
 
 function getController<T extends string, I = unknown>(options: GetControllerOptions<T, I>) {
   const { idx, item, getKey, configurator, state, map } = options;
-  const { from, enter, config } = configurator(idx);
   const key = getKey(item);
-  let ctrl: Controller<T, I> = null;
+  const ctrl = map.get(key) || new Controller<T, I>(state);
 
-  if (map.has(key)) {
-    ctrl = map.get(key);
-  } else {
-    ctrl = new Controller<T, I>(state);
-    ctrl.setKey(key);
-    ctrl.setItem(item);
-    map.set(key, ctrl);
-  }
-
-  ctrl.setIdx(idx);
-  ctrl.setFrom(from);
-  ctrl.setTo(enter);
-  ctrl.setSpringConfigFn(config);
-  ctrl.setConfigurator(configurator);
+  prepare({ ctrl, key, idx, item, configurator });
+  map.set(key, ctrl);
 
   return ctrl;
 }
@@ -240,11 +227,12 @@ type StartLoopOptions<T extends string, I = unknown> = {
 function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I>) {
   const { space, destKey, state, scope } = options;
   const { configurator, map, fakes } = scope;
+  const ctrls = state.getCtrls();
 
   if (destKey === 'enter') {
     for (const key of Object.keys(space)) {
       const idx = space[key];
-      const { from, enter, config } = configurator(idx);
+      const { enter } = configurator(idx);
       const ctrl = map.get(key);
       const item = ctrl.getItem();
       const isPlaying = state.detectIsPlaying(key);
@@ -254,15 +242,10 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
         const fake = new Controller<T, I>(state);
         const fakeKey = fake.markAsFake(key);
 
+        prepare({ ctrl: fake, key: fakeKey, idx, item, configurator });
         fakes[fakeKey] = idx;
         map.set(fakeKey, fake);
-        state.addCtrl(fake);
-        fake.setIdx(idx);
-        fake.setItem(item);
-        fake.setFrom(from);
-        fake.setTo(enter);
-        fake.setSpringConfigFn(config);
-        fake.setConfigurator(configurator);
+        ctrls.push(fake);
         fake.start(fn);
       } else {
         ctrl.start(fn);
@@ -276,6 +259,27 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
       to && ctrl.start(() => ({ to })); // !
     }
   }
+}
+
+type PrepareOptions<T extends string, I = unknown> = {
+  ctrl: Controller<T, I>;
+  idx: number;
+  key: Key;
+  item: I;
+  configurator: (idx: number) => TransitionItemConfig<T>;
+};
+
+function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
+  const { ctrl, key, idx, item, configurator } = options;
+  const { from, enter, config } = configurator(idx);
+
+  ctrl.setKey(key);
+  ctrl.setIdx(idx);
+  ctrl.setItem(item);
+  ctrl.setFrom(from);
+  ctrl.setTo(enter);
+  ctrl.setSpringConfigFn(config);
+  ctrl.setConfigurator(configurator);
 }
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {

@@ -5,7 +5,9 @@ import { time, fix } from '../utils';
 import { stepper } from '../stepper';
 import { type AnimationEventName, SharedState } from '../shared-state';
 
-const MAX_DELTA_TIME = 10 * (1000 / 60 / 1000);
+const BASE_FRAME_TIME_IN_MS = 1000 / 60;
+const MAX_SKIPPED_FRAMES = 10;
+const MAX_DELTA_TIME_IN_SEC = MAX_SKIPPED_FRAMES * (BASE_FRAME_TIME_IN_MS / 1000);
 
 class Controller<T extends string, I = unknown> {
   private key: Key;
@@ -33,7 +35,7 @@ class Controller<T extends string, I = unknown> {
 
   constructor(state: SharedState) {
     this.state = state;
-    this.key = String(++Controller.id);
+    this.key = String(++Controller.key);
   }
 
   getKey() {
@@ -96,12 +98,9 @@ class Controller<T extends string, I = unknown> {
   }
 
   markAsFake(x: Key) {
-    const key = this.key || ++Controller.id;
-
     this.primaryKey = x;
-    this.key = `fake:${x}:${key}`;
 
-    return this.key;
+    return Controller.generateFakeKey(x);
   }
 
   detectIsFake() {
@@ -112,12 +111,12 @@ class Controller<T extends string, I = unknown> {
     return this.primaryKey;
   }
 
-  setItem(x: I) {
-    this.item = x;
-  }
-
   getItem() {
     return this.item;
+  }
+
+  setItem(x: I) {
+    this.item = x;
   }
 
   getValue() {
@@ -253,7 +252,7 @@ class Controller<T extends string, I = unknown> {
       if (this.state.getIsPaused()) return make();
       let step = (time() - this.frameTime) / 1000;
 
-      if (step > MAX_DELTA_TIME) {
+      if (step > MAX_DELTA_TIME_IN_SEC) {
         step = 0;
       }
 
@@ -344,7 +343,12 @@ class Controller<T extends string, I = unknown> {
     return true;
   }
 
-  private static id = -1;
+  private static generateFakeKey(x: Key) {
+    return `__${x}:${++Controller.fakeKey}__`;
+  }
+
+  private static key = -1;
+  private static fakeKey = -1;
 }
 
 function detectAreValuesEqual<T extends string>(

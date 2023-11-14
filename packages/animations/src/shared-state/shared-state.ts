@@ -15,12 +15,12 @@ class SharedState<T extends string = string> {
   private delayId: number | NodeJS.Timeout = null;
   private events = new Map<AnimationEventName, Set<AnimationEventHandler<T>>>();
 
-  setCtrls(ctrls: Array<Controller<T>>) {
-    this.ctrls = ctrls;
+  getCtrls() {
+    return this.ctrls;
   }
 
-  addCtrl(ctrl: Controller<T>) {
-    this.ctrls.push(ctrl);
+  setCtrls(ctrls: Array<Controller<T>>) {
+    this.ctrls = ctrls;
   }
 
   setIsTrail(x: boolean) {
