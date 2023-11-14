@@ -1,7 +1,7 @@
-import { type SpringItemOptions, type SpringApi, useSprings } from '../use-springs';
+import { type SpringItemConfig, type SpringApi, useSprings } from '../use-springs';
 import { type SpringItem } from '../shared';
 
-function useSpring<T extends string>(options: SpringItemOptions<T>): [SpringItem<T>, SpringApi<T>] {
+function useSpring<T extends string>(options: SpringItemConfig<T>): [SpringItem<T>, SpringApi<T>] {
   const [items, api] = useSprings(1, () => options);
 
   return [items[0], api];

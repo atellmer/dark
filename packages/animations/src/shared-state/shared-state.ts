@@ -23,12 +23,6 @@ class SharedState<T extends string = string> {
     this.ctrls.push(ctrl);
   }
 
-  removeCtrl(ctrl: Controller<T>) {
-    const idx = this.ctrls.findIndex(x => x === ctrl);
-
-    idx !== -1 && this.ctrls.splice(idx, 1);
-  }
-
   setIsTrail(x: boolean) {
     this.isTrail = x;
   }

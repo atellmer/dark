@@ -9,24 +9,20 @@ import {
 } from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
-import {
-  type AnimationEventName,
-  type AnimationEventHandler,
-  type AnimationEventValue,
-  SharedState,
-} from '../shared-state';
-import { type BaseOptions, type StartFn, Controller } from '../controller';
+import { type AnimationEventValue, SharedState } from '../shared-state';
+import { type BaseItemConfig, Controller } from '../controller';
+import { type SpringApi } from '../use-springs';
 
-export type TransitionItemOptions<T extends string> = {
+export type TransitionItemConfig<T extends string> = {
   enter: SpringValue<T>;
   leave: SpringValue<T>;
   update?: SpringValue<T>;
-} & Pick<BaseOptions<T>, 'from' | 'config' | 'immediate'>;
+} & Pick<BaseItemConfig<T>, 'from' | 'config' | 'immediate'>;
 
 function useTransition<T extends string, I = unknown>(
   items: Array<I>,
   getKey: (x: I) => Key,
-  configurator: (idx: number) => TransitionItemOptions<T>,
+  configurator: (idx: number) => TransitionItemConfig<T>,
 ): [TransitionFn<T, I>, TransitionApi<T>] {
   const forceUpdate = useUpdate();
   const update = () => batch(forceUpdate);
@@ -42,14 +38,15 @@ function useTransition<T extends string, I = unknown>(
     const configurator = (idx: number) => scope.configurator(idx);
     const { map, fakes, items: prevItems } = scope;
     const { ctrls, record } = data({ items, getKey, configurator, state, map });
-    const { enters, leaves, updates } = diff(prevItems, items, getKey);
+    const { insertions, removes, moves, stable } = diff(prevItems, items, getKey);
 
     state.setCtrls(ctrls);
 
     startLoop({ destKey: 'leave', space: fakes, state, scope }); // !
-    startLoop({ destKey: 'enter', space: enters, state, scope });
-    startLoop({ destKey: 'leave', space: leaves, state, scope });
-    startLoop({ destKey: 'update', space: updates, state, scope });
+    startLoop({ destKey: 'enter', space: insertions, state, scope });
+    startLoop({ destKey: 'leave', space: removes, state, scope });
+    startLoop({ destKey: 'update', space: moves, state, scope });
+    startLoop({ destKey: 'update', space: stable, state, scope });
 
     scope.items = items; // !
     scope.record = record;
@@ -89,10 +86,11 @@ function useTransition<T extends string, I = unknown>(
 
   useLayoutEffect(() => {
     const unmounts: Array<() => void> = [];
-    const off1 = api.on('item-end', e => handleItemEnd(e, scope));
-    const off2 = api.on('series-end', () => handleSeriesEnd(update, scope));
 
-    unmounts.push(off1, off2);
+    unmounts.push(
+      api.on('item-end', e => handleItemEnd(e, scope)),
+      api.on('series-end', () => handleSeriesEnd(update, state, scope)),
+    );
 
     return () => unmounts.forEach(x => x());
   }, []);
@@ -193,9 +191,9 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   let size = Math.max(prevKeys.length, nextKeys.length);
   let p = 0;
   let n = 0;
-  const enters: Record<Key, number> = {};
-  const leaves: Record<Key, number> = {};
-  const updates: Record<Key, number> = {};
+  const insertions: Record<Key, number> = {};
+  const removes: Record<Key, number> = {};
+  const moves: Record<Key, number> = {};
   const stable: Record<Key, number> = {};
 
   for (let i = 0; i < size; i++) {
@@ -205,19 +203,19 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
     if (nextKey !== prevKey) {
       if (nextKey !== null && !prevKeysMap[nextKey]) {
         if (prevKey !== null && !nextKeysMap[prevKey]) {
-          enters[nextKey] = i;
-          leaves[prevKey] = i;
+          insertions[nextKey] = i;
+          removes[prevKey] = i;
         } else {
-          enters[nextKey] = i;
+          insertions[nextKey] = i;
           p++;
           size++;
         }
       } else if (!nextKeysMap[prevKey]) {
-        leaves[prevKey] = i;
+        removes[prevKey] = i;
         n++;
         size++;
       } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-        updates[nextKey] = i;
+        moves[nextKey] = i;
       }
     } else if (nextKey !== null) {
       stable[nextKey] = i;
@@ -225,15 +223,15 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   }
 
   return {
-    enters,
-    leaves,
-    updates,
+    insertions,
+    removes,
+    moves,
     stable,
   };
 }
 
 type StartLoopOptions<T extends string, I = unknown> = {
-  destKey: DestKey<T>;
+  destKey: DestinationKey<T>;
   space: Record<Key, number>;
   state: SharedState<T>;
   scope: Scope<T, I>;
@@ -292,43 +290,42 @@ function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventVal
   }
 }
 
-function handleSeriesEnd<T extends string, I = unknown>(update: () => void, scope: Scope<T, I>) {
+function handleSeriesEnd<T extends string, I = unknown>(update: () => void, state: SharedState<T>, scope: Scope<T, I>) {
   const { map, configurator } = scope;
+  const ctrls: Array<Controller<T, I>> = [];
 
   for (const [_, ctrl] of map) {
     const { enter } = configurator(ctrl.getIdx());
 
     ctrl.replaceValue({ ...enter });
     ctrl.notify();
+    ctrls.push(ctrl);
   }
 
+  state.setCtrls(ctrls);
   update();
 }
 
 type Scope<T extends string, I = unknown> = {
   items: Array<I>;
-  configurator: (idx: number) => TransitionItemOptions<T>;
+  configurator: (idx: number) => TransitionItemConfig<T>;
   map: Map<Key, Controller<T, I>>;
   record: Record<Key, I>;
   fakes: Record<Key, number>;
 };
 
-type DestKey<T extends string> = keyof Pick<TransitionItemOptions<T>, 'leave' | 'update' | 'enter'>;
+type DestinationKey<T extends string> = keyof Pick<TransitionItemConfig<T>, 'leave' | 'update' | 'enter'>;
 
-export type TransitionApi<T extends string = string> = {
-  start: (fn?: StartFn<T>) => void;
-  cancel: () => void;
-  pause: () => void;
-  resume: () => void;
-  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
-  once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
-};
+type Element = Component | TagVirtualNodeFactory;
+
+export type TransitionApi<T extends string = string> = {} & Pick<
+  SpringApi<T>,
+  'start' | 'cancel' | 'pause' | 'resume' | 'on' | 'once'
+>;
 
 export type TransitionItem<T extends string = string, I = unknown> = {
   item: I;
 } & SpringItem<T>;
-
-type Element = Component | TagVirtualNodeFactory;
 
 export type TransitionRenderFn<T extends string = string, I = unknown> = (options: {
   spring: TransitionItem<T, I>;

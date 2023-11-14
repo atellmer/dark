@@ -1,15 +1,15 @@
 import { useMemo, useLayoutEffect } from '@dark-engine/core';
 
 import { type SpringItem } from '../shared';
-import { type BaseOptions, type StartFn, Controller } from '../controller';
+import { type BaseItemConfig, type StartFn, Controller } from '../controller';
 import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../shared-state';
 import { range } from '../utils';
 
-export type SpringItemOptions<T extends string> = BaseOptions<T>;
+export type SpringItemConfig<T extends string> = BaseItemConfig<T>;
 
 function useSprings<T extends string>(
   count: number,
-  configurator: (idx: number) => SpringItemOptions<T>,
+  configurator: (idx: number) => SpringItemConfig<T>,
 ): [Array<SpringItem<T>>, SpringApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
   const scope = useMemo(() => {
@@ -68,7 +68,7 @@ function useSprings<T extends string>(
   return [springs, api];
 }
 
-function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (idx: number) => SpringItemOptions<T>) {
+function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (idx: number) => SpringItemConfig<T>) {
   ctrls.forEach((ctrl, idx) => {
     const { from, to, config } = configurator(idx);
     const left = ctrls[idx - 1] || null;

@@ -1,9 +1,9 @@
 import { useMemo } from '@dark-engine/core';
 
 import { SharedState, setSharedState } from '../shared-state';
-import { type SpringItemOptions, useSprings } from '../use-springs';
+import { type SpringItemConfig, useSprings } from '../use-springs';
 
-function useTrail<T extends string>(count: number, configurator: (idx: number) => SpringItemOptions<T>) {
+function useTrail<T extends string>(count: number, configurator: (idx: number) => SpringItemConfig<T>) {
   useMemo(() => {
     const state = new SharedState();
 

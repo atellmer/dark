@@ -373,21 +373,21 @@ function getAvailableKey<T extends string>(value: SpringValue<T>, dest: SpringVa
   return keys[0];
 }
 
-export type BaseOptions<T extends string> = {
+export type BaseItemConfig<T extends string> = {
   from: SpringValue<T>;
   to?: SpringValue<T>;
   config?: PatialConfigFn<T>;
   immediate?: ImmediateFn<T>;
 };
 
-export type StartOptions<T extends string> = {
+export type StartFnConfig<T extends string> = {
   from?: SpringValue<T>;
   to: Partial<SpringValue<T>>;
-} & Omit<BaseOptions<T>, 'from' | 'to'>;
+} & Omit<BaseItemConfig<T>, 'from' | 'to'>;
 
-export type ConfiguratorFn<T extends string> = (idx: number) => BaseOptions<T>;
+export type ConfiguratorFn<T extends string> = (idx: number) => BaseItemConfig<T>;
 
-export type StartFn<T extends string> = (idx: number) => StartOptions<T>;
+export type StartFn<T extends string> = (idx: number) => StartFnConfig<T>;
 
 export type SpringConfigFn<T extends string> = (key: T) => SpringConfig;
 
