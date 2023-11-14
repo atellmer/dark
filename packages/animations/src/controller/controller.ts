@@ -133,6 +133,7 @@ class Controller<T extends string, I = unknown> {
   }
 
   start(fn?: StartFn<T>) {
+    if (this.state.getIsCanceled()) return; // !
     const config1 = this.configurator(this.idx);
     const config2 = fn ? fn(this.idx) : this.configurator(this.idx);
     const from = { ...config1.from, ...config2.from };

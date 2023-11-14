@@ -18,6 +18,7 @@ export type TransitionItemConfig<T extends string, I = unknown> = {
   enter: (x: I) => SpringValue<T>;
   leave: (x: I) => SpringValue<T>;
   update?: (x: I) => SpringValue<T>;
+  trail?: number;
 } & Pick<BaseItemConfig<T>, 'config' | 'immediate'>;
 
 function useTransition<T extends string, I = unknown>(
@@ -118,10 +119,7 @@ function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
     return getController<T, I>({ idx, item, getKey, configurator, state, map });
   });
 
-  return {
-    ctrls,
-    record,
-  };
+  return { ctrls, record };
 }
 
 type GetControllerOptions<T extends string, I = unknown> = {
@@ -233,6 +231,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
   const { space, destKey, state, scope } = options;
   const { configurator, map, fakes } = scope;
   const ctrls = state.getCtrls();
+  let idx = 0;
 
   if (destKey === 'enter') {
     for (const key of Object.keys(space)) {
@@ -258,12 +257,29 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
     }
   } else {
     for (const key of Object.keys(space)) {
-      const to = configurator(space[key])[destKey];
+      const config = configurator(space[key]);
+      const { trail } = config;
+      const dest = config[destKey];
       const ctrl = map.get(key);
       const item = ctrl.getItem();
+      const fn = () => ({ to: dest(item) });
 
-      to && ctrl.start(() => ({ to: to(item) })); // !
+      if (destKey === 'update') {
+        dest && withTrail(trail, idx, () => ctrl.start(fn)); // !
+      } else {
+        ctrl.start(fn);
+      }
+
+      idx++;
     }
+  }
+}
+
+function withTrail(trail: number, idx: number, fn: () => void) {
+  if (trail) {
+    setTimeout(() => fn(), idx * trail);
+  } else {
+    fn();
   }
 }
 
@@ -279,7 +295,7 @@ function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
   const { ctrl, key, idx, item, configurator } = options;
   const { from, enter, config } = configurator(idx);
   const configurator$: ConfiguratorFn<T> = (idx: number) => {
-    const { from, enter, leave, update, ...rest } = configurator(idx);
+    const { from, enter, leave, update, trail, ...rest } = configurator(idx);
 
     return { from: from(item), ...rest };
   };

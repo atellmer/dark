@@ -11,6 +11,7 @@ class SharedState<T extends string = string> {
   private isLoop = false;
   private withReset = false;
   private isPaused = false;
+  private isCanceled = false;
   private delayTimeout = 0;
   private delayId: number | NodeJS.Timeout = null;
   private events = new Map<AnimationEventName, Set<AnimationEventHandler<T>>>();
@@ -33,6 +34,10 @@ class SharedState<T extends string = string> {
 
   getIsPaused() {
     return this.isPaused;
+  }
+
+  getIsCanceled() {
+    return this.isCanceled;
   }
 
   detectIsRightFlow() {
@@ -146,8 +151,8 @@ class SharedState<T extends string = string> {
 
   cancel() {
     this.ctrls.forEach(x => x.cancel());
-    this.resume();
     this.resetScheduledDelay();
+    this.isCanceled = true;
   }
 
   on(event: AnimationEventName, handler: AnimationEventHandler<T>) {
