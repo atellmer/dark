@@ -107,10 +107,6 @@ class Controller<T extends string, I = unknown> {
     return !detectIsUndefined(this.primaryKey);
   }
 
-  getPrimaryKey() {
-    return this.primaryKey;
-  }
-
   getItem() {
     return this.item;
   }

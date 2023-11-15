@@ -6,12 +6,14 @@ import {
   useMemo,
   useUpdate,
   useLayoutEffect,
+  detectIsArray,
 } from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
 import { type AnimationEventValue, SharedState } from '../shared-state';
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
 import { type SpringApi } from '../use-springs';
+import { uniq } from '../utils';
 
 export type TransitionItemConfig<T extends string, I = unknown> = {
   from: (x: I) => SpringValue<T>;
@@ -30,7 +32,7 @@ function useTransition<T extends string, I = unknown>(
   const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(
-    () => ({ ctrlsMap: new Map(), itemsMap: new Map(), fakesMap: new Map(), configurator, items }),
+    () => ({ ctrlsMap: new Map(), itemsMap: new Map(), fakesMap: new Map(), fromItems: true, items, configurator }),
     [],
   );
 
@@ -38,8 +40,9 @@ function useTransition<T extends string, I = unknown>(
 
   const transition = useMemo(() => {
     const configurator = (idx: number) => scope.configurator(idx);
+    const items$ = uniq(items, getKey);
     const { ctrlsMap, fakesMap, items: prevItems } = scope;
-    const { ctrls, itemsMap } = data({ items, getKey, configurator, state, ctrlsMap });
+    const { ctrls, itemsMap } = data({ items: items$, getKey, configurator, state, ctrlsMap });
     const { insertionsMap, removesMap, movesMap, stableMap } = diff(prevItems, items, getKey);
 
     state.setCtrls(ctrls);
@@ -50,8 +53,9 @@ function useTransition<T extends string, I = unknown>(
     startLoop({ destKey: 'update', space: movesMap, state, scope });
     startLoop({ destKey: 'update', space: stableMap, state, scope });
 
-    scope.items = items; // !
+    scope.items = items$; // !
     scope.itemsMap = itemsMap;
+    scope.fromItems = true;
 
     const transition: TransitionFn<T, I> = (render: TransitionRenderFn<T, I>) => {
       const elements: Array<TransitionElement> = [];
@@ -65,8 +69,19 @@ function useTransition<T extends string, I = unknown>(
           getValue: () => ctrl.getValue(),
           detectIsSeriesPlaying: () => state.detectIsPlaying(),
         };
+        const element = Fragment({ key, slot: render({ spring, item, idx }) });
 
-        elements.splice(idx, 0, Fragment({ key, slot: render({ spring, item, idx }) }));
+        if (elements[idx]) {
+          const sibling = elements[idx];
+
+          if (detectIsArray(sibling)) {
+            sibling.push(element);
+          } else {
+            elements[idx] = [sibling, element] as unknown as TransitionElement;
+          }
+        } else {
+          elements[idx] = element;
+        }
       }
 
       return elements;
@@ -77,7 +92,10 @@ function useTransition<T extends string, I = unknown>(
 
   const api = useMemo<TransitionApi<T>>(() => {
     return {
-      start: state.start.bind(state),
+      start: fn => {
+        scope.fromItems = false;
+        state.start(fn);
+      },
       cancel: state.cancel.bind(state),
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
@@ -323,8 +341,10 @@ function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventVal
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, state: SharedState<T>, scope: Scope<T, I>) {
-  const { ctrlsMap, configurator } = scope;
+  const { ctrlsMap, configurator, fromItems } = scope;
   const ctrls: Array<Controller<T, I>> = [];
+
+  if (!fromItems) return;
 
   for (const [_, ctrl] of ctrlsMap) {
     const { enter } = configurator(ctrl.getIdx());
@@ -344,6 +364,7 @@ type Scope<T extends string, I = unknown> = {
   ctrlsMap: Map<Key, Controller<T, I>>;
   itemsMap: Map<Key, I>;
   fakesMap: Map<Key, number>;
+  fromItems: boolean;
 };
 
 type DestinationKey<T extends string> = keyof Pick<TransitionItemConfig<T>, 'leave' | 'update' | 'enter'>;

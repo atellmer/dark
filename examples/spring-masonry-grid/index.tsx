@@ -56,7 +56,6 @@ const data: Array<DataItem> = [
   { src: 'https://images.pexels.com/photos/249074/pexels-photo-249074.jpeg', height: 150 },
   { src: 'https://images.pexels.com/photos/310452/pexels-photo-310452.jpeg', height: 400 },
   { src: 'https://images.pexels.com/photos/380337/pexels-photo-380337.jpeg', height: 200 },
-  { src: 'https://images.pexels.com/photos/380337/pexels-photo-380337.jpeg', height: 200 },
 ];
 
 type SpringProps = 'x' | 'y' | 'width' | 'height' | 'opacity';
