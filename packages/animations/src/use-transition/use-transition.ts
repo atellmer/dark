@@ -30,7 +30,7 @@ function useTransition<T extends string, I = unknown>(
   const update = () => batch(forceUpdate);
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(
-    () => ({ fakes: {}, record: {}, enters: {}, leaves: {}, map: new Map(), configurator, items }),
+    () => ({ ctrlsMap: new Map(), itemsMap: new Map(), fakesMap: new Map(), configurator, items }),
     [],
   );
 
@@ -38,25 +38,25 @@ function useTransition<T extends string, I = unknown>(
 
   const transition = useMemo(() => {
     const configurator = (idx: number) => scope.configurator(idx);
-    const { map, fakes, items: prevItems } = scope;
-    const { ctrls, record } = data({ items, getKey, configurator, state, map });
-    const { insertions, removes, moves, stable } = diff(prevItems, items, getKey);
+    const { ctrlsMap, fakesMap, items: prevItems } = scope;
+    const { ctrls, itemsMap } = data({ items, getKey, configurator, state, ctrlsMap });
+    const { insertionsMap, removesMap, movesMap, stableMap } = diff(prevItems, items, getKey);
 
     state.setCtrls(ctrls);
 
-    startLoop({ destKey: 'leave', space: fakes, state, scope }); // !
-    startLoop({ destKey: 'enter', space: insertions, state, scope });
-    startLoop({ destKey: 'leave', space: removes, state, scope });
-    startLoop({ destKey: 'update', space: moves, state, scope });
-    startLoop({ destKey: 'update', space: stable, state, scope });
+    startLoop({ destKey: 'leave', space: fakesMap, state, scope }); // !
+    startLoop({ destKey: 'enter', space: insertionsMap, state, scope });
+    startLoop({ destKey: 'leave', space: removesMap, state, scope });
+    startLoop({ destKey: 'update', space: movesMap, state, scope });
+    startLoop({ destKey: 'update', space: stableMap, state, scope });
 
     scope.items = items; // !
-    scope.record = record;
+    scope.itemsMap = itemsMap;
 
     const transition: TransitionFn<T, I> = (render: TransitionRenderFn<T, I>) => {
       const elements: Array<TransitionElement> = [];
 
-      for (const [key, ctrl] of map) {
+      for (const [key, ctrl] of ctrlsMap) {
         const item = ctrl.getItem();
         const idx = ctrl.getIdx();
         const spring: TransitionItem<T, I> = {
@@ -106,34 +106,34 @@ type DataOptions<T extends string, I = unknown> = {
   items: Array<I>;
   getKey: (x: I) => Key;
   state: SharedState<T>;
-} & Pick<Scope<T, I>, 'configurator' | 'map'>;
+} & Pick<Scope<T, I>, 'configurator' | 'ctrlsMap'>;
 
 function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
-  const { items, getKey, configurator, state, map } = options;
-  const record: Record<Key, I> = {};
+  const { items, getKey, configurator, state, ctrlsMap } = options;
+  const itemsMap = new Map<Key, I>();
   const ctrls = items.map((item, idx) => {
     const key = getKey(item);
 
-    record[key] = item;
+    itemsMap.set(key, item);
 
-    return getController<T, I>({ idx, item, getKey, configurator, state, map });
+    return getController<T, I>({ idx, item, getKey, configurator, state, ctrlsMap });
   });
 
-  return { ctrls, record };
+  return { ctrls, itemsMap };
 }
 
 type GetControllerOptions<T extends string, I = unknown> = {
   idx: number;
   item: I;
-} & Pick<DataOptions<T, I>, 'getKey' | 'configurator' | 'state' | 'map'>;
+} & Pick<DataOptions<T, I>, 'getKey' | 'configurator' | 'state' | 'ctrlsMap'>;
 
 function getController<T extends string, I = unknown>(options: GetControllerOptions<T, I>) {
-  const { idx, item, getKey, configurator, state, map } = options;
+  const { idx, item, getKey, configurator, state, ctrlsMap } = options;
   const key = getKey(item);
-  const ctrl = map.get(key) || new Controller<T, I>(state);
+  const ctrl = ctrlsMap.get(key) || new Controller<T, I>(state);
 
   prepare({ ctrl, key, idx, item, configurator });
-  map.set(key, ctrl);
+  ctrlsMap.set(key, ctrl);
 
   return ctrl;
 }
@@ -181,10 +181,10 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   let size = Math.max(prevKeys.length, nextKeys.length);
   let p = 0;
   let n = 0;
-  const insertions: Record<Key, number> = {};
-  const removes: Record<Key, number> = {};
-  const moves: Record<Key, number> = {};
-  const stable: Record<Key, number> = {};
+  const insertionsMap = new Map<Key, number>();
+  const removesMap = new Map<Key, number>();
+  const movesMap = new Map<Key, number>();
+  const stableMap = new Map<Key, number>();
 
   for (let i = 0; i < size; i++) {
     const nextKey = nextKeys[i - n] ?? null;
@@ -193,51 +193,50 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
     if (nextKey !== prevKey) {
       if (nextKey !== null && !prevKeysMap[nextKey]) {
         if (prevKey !== null && !nextKeysMap[prevKey]) {
-          insertions[nextKey] = i;
-          removes[prevKey] = i;
+          insertionsMap.set(nextKey, i);
+          removesMap.set(prevKey, i);
         } else {
-          insertions[nextKey] = i;
+          insertionsMap.set(nextKey, i);
           p++;
           size++;
         }
       } else if (!nextKeysMap[prevKey]) {
-        removes[prevKey] = i;
+        removesMap.set(prevKey, i);
         n++;
         size++;
       } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-        moves[nextKey] = i;
+        movesMap.set(nextKey, i);
       }
     } else if (nextKey !== null) {
-      stable[nextKey] = i;
+      stableMap.set(nextKey, i);
     }
   }
 
   return {
-    insertions,
-    removes,
-    moves,
-    stable,
+    insertionsMap,
+    removesMap,
+    movesMap,
+    stableMap,
   };
 }
 
 type StartLoopOptions<T extends string, I = unknown> = {
   destKey: DestinationKey<T>;
-  space: Record<Key, number>;
+  space: Map<Key, number>;
   state: SharedState<T>;
   scope: Scope<T, I>;
 };
 
 function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I>) {
   const { space, destKey, state, scope } = options;
-  const { configurator, map, fakes } = scope;
+  const { configurator, ctrlsMap, fakesMap } = scope;
   const ctrls = state.getCtrls();
-  let idx = 0;
+  let idx$ = 0;
 
   if (destKey === 'enter') {
-    for (const key of Object.keys(space)) {
-      const idx = space[key];
+    for (const [key, idx] of space) {
       const { enter } = configurator(idx);
-      const ctrl = map.get(key);
+      const ctrl = ctrlsMap.get(key);
       const item = ctrl.getItem();
       const isPlaying = state.detectIsPlaying(key);
       const fn = () => ({ to: enter(item) });
@@ -247,8 +246,8 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
         const fakeKey = fake.markAsFake(key);
 
         prepare({ ctrl: fake, key: fakeKey, idx, item, configurator });
-        fakes[fakeKey] = idx;
-        map.set(fakeKey, fake);
+        ctrlsMap.set(fakeKey, fake);
+        fakesMap.set(fakeKey, idx);
         ctrls.push(fake);
         fake.start(fn);
       } else {
@@ -256,21 +255,23 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
       }
     }
   } else {
-    for (const key of Object.keys(space)) {
-      const config = configurator(space[key]);
+    for (const [key, idx] of space) {
+      const config = configurator(idx);
       const { trail } = config;
       const dest = config[destKey];
-      const ctrl = map.get(key);
+      const ctrl = ctrlsMap.get(key);
       const item = ctrl.getItem();
       const fn = () => ({ to: dest(item) });
 
-      if (destKey === 'update') {
-        dest && withTrail(trail, idx, () => ctrl.start(fn)); // !
-      } else {
-        ctrl.start(fn);
+      if (dest) {
+        if (destKey === 'update') {
+          withTrail(trail, idx$, () => ctrl.start(fn)); // !
+        } else {
+          ctrl.start(fn);
+        }
       }
 
-      idx++;
+      idx$++;
     }
   }
 }
@@ -310,22 +311,22 @@ function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
 }
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {
-  const { map, fakes, record } = scope;
-  const ctrl = map.get(key);
+  const { ctrlsMap, fakesMap, itemsMap } = scope;
+  const ctrl = ctrlsMap.get(key);
 
   if (ctrl.detectIsFake()) {
-    map.delete(key);
-    delete fakes[key];
-  } else if (!record[key]) {
-    map.delete(key);
+    ctrlsMap.delete(key);
+    fakesMap.delete(key);
+  } else if (!itemsMap.has(key)) {
+    ctrlsMap.delete(key);
   }
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, state: SharedState<T>, scope: Scope<T, I>) {
-  const { map, configurator } = scope;
+  const { ctrlsMap, configurator } = scope;
   const ctrls: Array<Controller<T, I>> = [];
 
-  for (const [_, ctrl] of map) {
+  for (const [_, ctrl] of ctrlsMap) {
     const { enter } = configurator(ctrl.getIdx());
 
     ctrl.replaceValue({ ...enter(ctrl.getItem()) });
@@ -340,9 +341,9 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
 type Scope<T extends string, I = unknown> = {
   items: Array<I>;
   configurator: (idx: number) => TransitionItemConfig<T>;
-  map: Map<Key, Controller<T, I>>;
-  record: Record<Key, I>;
-  fakes: Record<Key, number>;
+  ctrlsMap: Map<Key, Controller<T, I>>;
+  itemsMap: Map<Key, I>;
+  fakesMap: Map<Key, number>;
 };
 
 type DestinationKey<T extends string> = keyof Pick<TransitionItemConfig<T>, 'leave' | 'update' | 'enter'>;

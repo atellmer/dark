@@ -84,6 +84,7 @@ const App = component(() => {
 
   useLayoutEffect(() => {
     const off = api.on('series-end', () => {
+      if (scope.isActive) return;
       scope.activeIdx = -1;
       scope.initialY = null;
     });
