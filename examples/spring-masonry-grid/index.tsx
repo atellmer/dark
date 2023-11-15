@@ -87,11 +87,11 @@ const App = component(() => {
   const [transition] = useTransition<SpringProps, GridItem>(
     gridItems,
     x => x.src,
-    () => ({
-      from: ({ x, y, width, height }) => ({ x, y, width, height, opacity: 0 }),
-      enter: ({ x, y, width, height }) => ({ x, y, width, height, opacity: 1 }),
-      update: ({ x, y, width, height }) => ({ x, y, width, height, opacity: 1 }),
-      leave: ({ x, y, width }) => ({ x, y, width, height: 0, opacity: 0 }),
+    (_, { x, y, width, height }) => ({
+      from: { x, y, width, height, opacity: 0 },
+      enter: { x, y, width, height, opacity: 1 },
+      update: { x, y, width, height, opacity: 1 },
+      leave: { x, y, width, height: 0, opacity: 0 },
       config: () => ({ mass: 5, tension: 500, friction: 100 }),
       trail: 25,
     }),
