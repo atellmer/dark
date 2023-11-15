@@ -2,7 +2,7 @@ import { h, component, useMemo, useLayoutEffect } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
 import {
   type SpringValue,
-  type BaseItemConfig,
+  type SpringItemConfig,
   type StartFn,
   Animated,
   useSprings,
@@ -24,7 +24,6 @@ function clamp(n: number, min: number, max: number) {
 const HEIGHT = 90;
 const MARGINS = 10;
 const FULL_HEIGHT = HEIGHT + MARGINS;
-const NOISE = 10;
 const height = HEIGHT;
 type SpringProps = 'y' | 'scale' | 'shadow';
 
@@ -36,7 +35,7 @@ const createConfig =
     const y2 = isActive && isMove ? y : y1;
     const scale = isActive ? 1.1 : 1;
     const shadow = isActive ? 16 : 1;
-    const config: BaseItemConfig<SpringProps> = {
+    const config: SpringItemConfig<SpringProps> = {
       from: { y: y1, scale: 1, shadow: 1 },
       to: { y: y2, scale, shadow },
       immediate: key => isActive && key === 'y',
@@ -61,7 +60,6 @@ const App = component(() => {
       const pageY = e.pageY;
       const { activeIdx, originalOrder, initialY } = scope;
       const movement = Number((pageY - initialY).toFixed(0));
-      if (Math.abs(movement) < NOISE) return;
       const idx = originalOrder.indexOf(activeIdx);
       const y = idx * FULL_HEIGHT + movement;
       const nextIdx = clamp(Math.round(y / FULL_HEIGHT), 0, size - 1);

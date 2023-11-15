@@ -1,4 +1,4 @@
-export { type BaseItemConfig, type StartFnConfig, type ConfiguratorFn, type StartFn } from './controller';
+export { type StartFnConfig, type ConfiguratorFn, type StartFn } from './controller';
 export { type SpringValue, type SpringItem } from './shared';
 export { range } from './utils';
 export * from './constants';

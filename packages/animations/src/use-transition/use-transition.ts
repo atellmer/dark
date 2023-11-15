@@ -16,7 +16,7 @@ import { type SpringApi } from '../use-springs';
 export type TransitionItemConfig<T extends string, I = unknown> = {
   from: (x: I) => SpringValue<T>;
   enter: (x: I) => SpringValue<T>;
-  leave: (x: I) => SpringValue<T>;
+  leave?: (x: I) => SpringValue<T>;
   update?: (x: I) => SpringValue<T>;
   trail?: number;
 } & Pick<BaseItemConfig<T>, 'config' | 'immediate'>;
@@ -66,7 +66,7 @@ function useTransition<T extends string, I = unknown>(
           detectIsSeriesPlaying: () => state.detectIsPlaying(),
         };
 
-        elements.push(Fragment({ key, slot: render({ spring, idx }) }));
+        elements.splice(idx, 0, Fragment({ key, slot: render({ spring, item, idx }) }));
       }
 
       return elements;
@@ -361,6 +361,7 @@ export type TransitionItem<T extends string = string, I = unknown> = {
 
 export type TransitionRenderFn<T extends string = string, I = unknown> = (options: {
   spring: TransitionItem<T, I>;
+  item: I;
   idx: number;
 }) => TransitionElement;
 
