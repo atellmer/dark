@@ -6,7 +6,6 @@ export * from './presets';
 export * from './use-trail';
 export * from './use-springs';
 export * from './use-spring';
-export * from './use-parallel';
 export * from './use-chain';
 export * from './use-transition';
 export * from './animated';

@@ -1,4 +1,4 @@
-import { useMemo, useLayoutEffect } from '@dark-engine/core';
+import { useMemo, useLayoutEffect, useEffect } from '@dark-engine/core';
 
 import { type SpringItem } from '../shared';
 import { type BaseItemConfig, type StartFn, Controller } from '../controller';
@@ -9,14 +9,17 @@ export type SpringItemConfig<T extends string> = BaseItemConfig<T>;
 
 function useSprings<T extends string>(
   count: number,
-  configurator: (idx: number) => SpringItemConfig<T>,
+  configurator: SpringConfiguratorFn<T>,
+  deps?: Array<any>,
 ): [Array<SpringItem<T>>, SpringApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
-  const scope = useMemo(() => {
+  const scope = useMemo<Scope<T>>(() => {
     return {
       configurator,
       prevCount: count,
       ctrls: range(count).map(() => new Controller<T>(state)),
+      chain: false,
+      updates: [],
     };
   }, []);
 
@@ -49,9 +52,19 @@ function useSprings<T extends string>(
 
   const api = useMemo<SpringApi<T>>(() => {
     return {
-      start: state.start.bind(state),
+      start: fn => {
+        if (scope.chain) {
+          scope.updates.forEach(x => x());
+          scope.updates = [];
+        } else {
+          state.start(fn);
+        }
+      },
       back: state.back.bind(state),
       toggle: state.toggle.bind(state),
+      chain: (value: boolean) => {
+        scope.chain = value;
+      },
       loop: state.loop.bind(state),
       delay: state.delay.bind(state),
       pause: state.pause.bind(state),
@@ -62,6 +75,15 @@ function useSprings<T extends string>(
       once: state.once.bind(state),
     };
   }, []);
+
+  useEffect(() => {
+    if (!deps) return;
+    if (scope.chain) {
+      scope.updates.push(() => state.start());
+    } else {
+      state.start();
+    }
+  }, deps || []);
 
   useLayoutEffect(() => () => api.cancel(), []);
 
@@ -84,10 +106,21 @@ function prepare<T extends string>(ctrls: Array<Controller<T>>, configurator: (i
   });
 }
 
+type SpringConfiguratorFn<T extends string> = (idx: number) => SpringItemConfig<T>;
+
+type Scope<T extends string> = {
+  prevCount: number;
+  configurator: SpringConfiguratorFn<T>;
+  ctrls: Array<Controller<T>>;
+  chain: boolean;
+  updates: Array<() => void>;
+};
+
 export type SpringApi<T extends string = string> = {
   start: (fn?: StartFn<T>) => void;
   back: () => void;
   toggle: (isReversed?: boolean) => void;
+  chain: (value: boolean) => void;
   loop: (isEnabled: boolean, withReset?: boolean) => void;
   delay: (timeout: number) => void;
   pause: () => void;

@@ -32,6 +32,7 @@ class Controller<T extends string, I = unknown> {
   private immediates: Array<() => void> = [];
   private primaryKey: Key;
   private item: I = null;
+  private isReplaced = false;
 
   constructor(state: SharedState) {
     this.state = state;
@@ -113,6 +114,14 @@ class Controller<T extends string, I = unknown> {
 
   setItem(x: I) {
     this.item = x;
+  }
+
+  getIsReplaced() {
+    return this.isReplaced;
+  }
+
+  setIsReplaced(x: boolean) {
+    this.isReplaced = x;
   }
 
   getValue() {
