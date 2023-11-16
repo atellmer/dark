@@ -96,6 +96,7 @@ function useTransition<T extends string, I = unknown>(
         scope.fromItems = false;
         state.start(fn);
       },
+      back: () => {},
       cancel: state.cancel.bind(state),
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
@@ -249,48 +250,34 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
   const { space, destKey, state, scope } = options;
   const { configurator, ctrlsMap, fakesMap } = scope;
   const ctrls = state.getCtrls();
+  const isEnter = destKey === 'enter';
   let idx$ = 0;
 
-  if (destKey === 'enter') {
-    for (const [key, idx] of space) {
-      const ctrl = ctrlsMap.get(key);
-      const item = ctrl.getItem();
-      const { enter } = configurator(idx, item);
+  for (const [key, idx] of space) {
+    const ctrl = ctrlsMap.get(key);
+    const item = ctrl.getItem();
+    const config = configurator(idx, item);
+    const { trail } = config;
+    const to = config[destKey];
+    let ctrl$ = ctrl;
+
+    if (isEnter) {
       const isPlaying = state.detectIsPlaying(key);
-      const fn = () => ({ to: enter });
 
       if (isPlaying) {
         const fake = new Controller<T, I>(state);
         const fakeKey = fake.markAsFake(key);
 
+        ctrl$ = fake;
         prepare({ ctrl: fake, key: fakeKey, idx, item, configurator });
         ctrlsMap.set(fakeKey, fake);
         fakesMap.set(fakeKey, idx);
         ctrls.push(fake);
-        fake.start(fn);
-      } else {
-        ctrl.start(fn);
       }
     }
-  } else {
-    for (const [key, idx] of space) {
-      const ctrl = ctrlsMap.get(key);
-      const item = ctrl.getItem();
-      const config = configurator(idx, item);
-      const { trail } = config;
-      const dest = config[destKey];
-      const fn = () => ({ to: dest });
 
-      if (dest) {
-        if (destKey === 'update') {
-          withTrail(trail, idx$, () => ctrl.start(fn)); // !
-        } else {
-          ctrl.start(fn);
-        }
-      }
-
-      idx$++;
-    }
+    to && withTrail(trail, idx$, () => ctrl$.start(() => ({ to })));
+    idx$++;
   }
 }
 
@@ -330,9 +317,8 @@ function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {
   const { ctrlsMap, fakesMap, itemsMap } = scope;
-  const ctrl = ctrlsMap.get(key);
 
-  if (ctrl.detectIsFake()) {
+  if (ctrlsMap.has(key) && ctrlsMap.get(key).detectIsFake()) {
     ctrlsMap.delete(key);
     fakesMap.delete(key);
   } else if (!itemsMap.has(key)) {
@@ -378,7 +364,7 @@ type TransitionConfiguratorFn<T extends string = string, I = unknown> = (
 
 export type TransitionApi<T extends string = string> = {} & Pick<
   SpringApi<T>,
-  'start' | 'cancel' | 'pause' | 'resume' | 'on' | 'once'
+  'start' | 'back' | 'cancel' | 'pause' | 'resume' | 'on' | 'once'
 >;
 
 export type TransitionItem<T extends string = string, I = unknown> = {

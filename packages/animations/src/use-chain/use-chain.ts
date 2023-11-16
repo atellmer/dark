@@ -23,7 +23,7 @@ function useChain(chain: Array<ChainLink>) {
     }
 
     return () => off.forEach(x => x());
-  }, [chain.length]);
+  });
 }
 
 export { useChain };

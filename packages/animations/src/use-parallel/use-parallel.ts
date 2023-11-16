@@ -17,7 +17,7 @@ function useParallel(parallel: Array<ParallelItem>) {
     }
 
     return () => off.forEach(x => x());
-  }, [parallel.length]);
+  });
 }
 
 export { useParallel };

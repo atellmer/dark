@@ -265,7 +265,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
   if (fiber.flush) {
-    parentFiber.element.textContent && (parentFiber.element.textContent = '');
+    parentFiber.element.innerHTML && (parentFiber.element.innerHTML = '');
     return;
   }
 
