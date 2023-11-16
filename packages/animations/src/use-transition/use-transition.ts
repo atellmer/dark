@@ -111,7 +111,9 @@ function useTransition<T extends string, I = unknown>(
       const items$ = uniq(items, getKey);
       const { ctrlsMap, fakesMap, items: prevItems } = scope;
       const { ctrls, itemsMap } = data({ items: items$, getKey, configurator, state, ctrlsMap });
-      const { insertionsMap, removesMap, movesMap, stableMap, replaced } = diff(prevItems, items, getKey);
+      const { hasChanges, insertionsMap, removesMap, movesMap, stableMap, replaced } = diff(prevItems, items, getKey);
+
+      if (!hasChanges) return;
       state.setCtrls(ctrls);
       replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
 
@@ -230,6 +232,7 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   let size = Math.max(prevKeys.length, nextKeys.length);
   let p = 0;
   let n = 0;
+  let hasChanges = false;
   const insertionsMap = new Map<Key, number>();
   const removesMap = new Map<Key, number>();
   const movesMap = new Map<Key, number>();
@@ -246,17 +249,21 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
           insertionsMap.set(nextKey, i);
           removesMap.set(prevKey, i);
           replaced.add(prevKey);
+          hasChanges = true;
         } else {
           insertionsMap.set(nextKey, i);
+          hasChanges = true;
           p++;
           size++;
         }
       } else if (!nextKeysMap[prevKey]) {
         removesMap.set(prevKey, i);
+        hasChanges = true;
         n++;
         size++;
       } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
         movesMap.set(nextKey, i);
+        hasChanges = true;
       }
     } else if (nextKey !== null) {
       stableMap.set(nextKey, i);
@@ -264,6 +271,7 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   }
 
   return {
+    hasChanges,
     insertionsMap,
     removesMap,
     movesMap,
