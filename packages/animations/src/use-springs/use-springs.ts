@@ -60,12 +60,9 @@ function useSprings<T extends string>(
           state.start(fn);
         }
       },
-      back: state.back.bind(state),
-      toggle: state.toggle.bind(state),
       chain: (value: boolean) => {
         scope.chain = value;
       },
-      loop: state.loop.bind(state),
       delay: state.delay.bind(state),
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
@@ -118,10 +115,7 @@ type Scope<T extends string> = {
 
 export type SpringApi<T extends string = string> = {
   start: (fn?: StartFn<T>) => void;
-  back: () => void;
-  toggle: (isReversed?: boolean) => void;
   chain: (value: boolean) => void;
-  loop: (isEnabled: boolean, withReset?: boolean) => void;
   delay: (timeout: number) => void;
   pause: () => void;
   resume: () => void;

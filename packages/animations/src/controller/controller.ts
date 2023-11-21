@@ -15,7 +15,6 @@ class Controller<T extends string, I = unknown> {
   private from: SpringValue<T>;
   private to: SpringValue<T>;
   private value: SpringValue<T>;
-  private prevValue: SpringValue<T>;
   private dest: SpringValue<T>;
   private state: SharedState = null;
   private frameTime: number;
@@ -155,28 +154,6 @@ class Controller<T extends string, I = unknown> {
     this.play(this.dest);
   }
 
-  back() {
-    const { from, to } = this.configurator(this.idx);
-
-    this.setFrom(from);
-    this.setTo(to);
-
-    const dest = this.calculateDest(this.from, false);
-
-    this.start(() => ({ to: dest }));
-  }
-
-  toggle() {
-    const { from, to } = this.configurator(this.idx);
-
-    this.setFrom(from);
-    this.setTo(to);
-
-    const dest = !this.prevValue ? this.to : this.calculateDest(this.prevValue, true);
-
-    this.start(() => ({ to: dest }));
-  }
-
   reset() {
     this.value = { ...this.from };
     this.dest = { ...(this.to || this.from) };
@@ -203,43 +180,6 @@ class Controller<T extends string, I = unknown> {
     this.state.setIsPlaying(x, this.key);
   }
 
-  private calculateDest(target: SpringValue<T>, isToggle: boolean) {
-    const key = getAvailableKey(target, this.to);
-
-    if (isToggle) {
-      if (this.value[key] === this.from[key]) return this.to;
-      if (this.value[key] === this.to[key]) return this.from;
-    } else {
-      if (this.value[key] === this.from[key] || this.value[key] === this.to[key]) return this.from;
-    }
-
-    const isFirstStrategy = this.to[key] > this.from[key];
-    const max = isFirstStrategy ? this.to[key] : this.from[key];
-    const min = isFirstStrategy ? this.from[key] : this.to[key];
-    const isValueOverMax = this.value[key] > max;
-    const isValueUnderMin = this.value[key] < min;
-    const isTargetOverMax = target[key] > max;
-    const isTargetUnderMin = target[key] < min;
-    const isGreater = this.value[key] > target[key];
-    const dest = isFirstStrategy
-      ? isValueOverMax || isTargetOverMax
-        ? this.from
-        : isValueUnderMin || isTargetUnderMin
-        ? this.to
-        : isGreater
-        ? this.from
-        : this.to
-      : isValueOverMax || isTargetOverMax
-      ? this.to
-      : isValueUnderMin || isTargetUnderMin
-      ? this.from
-      : isGreater
-      ? this.to
-      : this.from;
-
-    return dest;
-  }
-
   private play(to: SpringValue<T>) {
     this.queue.push(to);
     if (this.frameId) return false;
@@ -261,8 +201,6 @@ class Controller<T extends string, I = unknown> {
       if (step > MAX_DELTA_TIME_IN_SEC) {
         step = 0;
       }
-
-      this.prevValue = { ...value };
 
       if (this.queue.length === 0) {
         this.queue.push(this.dest);
@@ -371,16 +309,6 @@ function detectAreValuesEqual<T extends string>(
   }
 
   return true;
-}
-
-function getAvailableKey<T extends string>(value: SpringValue<T>, dest: SpringValue<T>) {
-  const keys = Object.keys(value) as Array<T>;
-
-  for (const key of keys) {
-    if (value[key] !== dest[key]) return key;
-  }
-
-  return keys[0];
 }
 
 export type BaseItemConfig<T extends string> = {

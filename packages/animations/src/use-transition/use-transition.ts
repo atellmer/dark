@@ -97,6 +97,7 @@ function useTransition<T extends string, I = unknown>(
       chain: (value: boolean) => {
         scope.chain = value;
       },
+      delay: state.delay.bind(state),
       cancel: state.cancel.bind(state),
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
@@ -410,10 +411,7 @@ type TransitionConfiguratorFn<T extends string = string, I = unknown> = (
   item: I,
 ) => TransitionItemConfig<T>;
 
-export type TransitionApi<T extends string = string> = {} & Pick<
-  SpringApi<T>,
-  'start' | 'chain' | 'cancel' | 'pause' | 'resume' | 'on' | 'once'
->;
+export type TransitionApi<T extends string = string> = Omit<SpringApi<T>, 'reset'>;
 
 export type TransitionItem<T extends string = string, I = unknown> = {
   item: I;
