@@ -1,8 +1,8 @@
 import { useMemo, useLayoutEffect, useEffect } from '@dark-engine/core';
 
-import { type SpringItem } from '../shared';
+import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../state';
 import { type BaseItemConfig, type StartFn, Controller } from '../controller';
-import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../shared-state';
+import { type SpringItem } from '../shared';
 import { range } from '../utils';
 
 export type SpringItemConfig<T extends string> = BaseItemConfig<T>;

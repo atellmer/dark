@@ -11,7 +11,7 @@ import {
 } from '@dark-engine/core';
 
 import { type Key, type SpringValue, type SpringItem } from '../shared';
-import { type AnimationEventValue, SharedState } from '../shared-state';
+import { type AnimationEventValue, SharedState } from '../state';
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
 import { type SpringApi } from '../use-springs';
 import { uniq } from '../utils';

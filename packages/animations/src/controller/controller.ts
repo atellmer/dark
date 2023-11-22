@@ -1,9 +1,9 @@
 import { platform, falseFn, detectIsUndefined } from '@dark-engine/core';
 
 import { type SpringValue, type SpringConfig, type Key, defaultSpringConfig } from '../shared';
+import { type AnimationEventName, SharedState } from '../state';
 import { time, fix } from '../utils';
 import { stepper } from '../stepper';
-import { type AnimationEventName, SharedState } from '../shared-state';
 
 const BASE_FRAME_TIME_IN_MS = 1000 / 60;
 const MAX_SKIPPED_FRAMES = 10;
@@ -30,8 +30,8 @@ class Controller<T extends string, I = unknown> {
   private immediate: ImmediateFn<T> = falseFn;
   private immediates: Array<() => void> = [];
   private primaryKey: Key;
-  private item: I = null;
   private isReplaced = false;
+  private item: I = null;
 
   constructor(state: SharedState) {
     this.state = state;
@@ -107,20 +107,20 @@ class Controller<T extends string, I = unknown> {
     return !detectIsUndefined(this.primaryKey);
   }
 
-  getItem() {
-    return this.item;
-  }
-
-  setItem(x: I) {
-    this.item = x;
-  }
-
   getIsReplaced() {
     return this.isReplaced;
   }
 
   setIsReplaced(x: boolean) {
     this.isReplaced = x;
+  }
+
+  getItem() {
+    return this.item;
+  }
+
+  setItem(x: I) {
+    this.item = x;
   }
 
   getValue() {
@@ -162,18 +162,6 @@ class Controller<T extends string, I = unknown> {
   cancel() {
     this.frameId && platform.caf(this.frameId);
     this.frameId = null;
-  }
-
-  detectIsValueEqual(value: SpringValue<T>) {
-    return detectAreValuesEqual(this.value, value, this.springConfigFn);
-  }
-
-  detectIsReachedFrom() {
-    return this.detectIsValueEqual(this.from);
-  }
-
-  detectIsReachedTo() {
-    return this.detectIsValueEqual(this.to);
   }
 
   setIsPlaying(x: boolean) {
@@ -293,22 +281,6 @@ class Controller<T extends string, I = unknown> {
 
   private static key = -1;
   private static fakeKey = -1;
-}
-
-function detectAreValuesEqual<T extends string>(
-  value1: SpringValue<T>,
-  value2: SpringValue<T>,
-  springConfigFn: SpringConfigFn<T>,
-) {
-  const keys = Object.keys(value2) as Array<T>;
-
-  for (const key of keys) {
-    const config = springConfigFn(key as T);
-
-    if (fix(value1[key], config.fix) !== fix(value2[key], config.fix)) return false;
-  }
-
-  return true;
 }
 
 export type BaseItemConfig<T extends string> = {
