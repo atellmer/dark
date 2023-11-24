@@ -5,10 +5,6 @@ import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } 
 import { scope$$ } from '../scope';
 import { NodeType, type ViewDef } from './types';
 
-export type VirtualNodeFactory = () => VirtualNode;
-export type TagVirtualNodeFactory = () => TagVirtualNode;
-export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
-
 const $$vNode = Symbol('vNode');
 const ATTR_TYPE = 'type';
 
@@ -34,11 +30,11 @@ class TagVirtualNode extends VirtualNode {
 }
 
 class TextVirtualNode extends VirtualNode {
-  public value = '';
+  public value: string;
 
-  constructor(text: string) {
+  constructor(source: TextSource) {
     super(NodeType.TEXT);
-    this.value = text;
+    this.value = String(source);
   }
 }
 
@@ -66,7 +62,7 @@ function View(def: ViewDef): TagVirtualNodeFactory {
   return factory;
 }
 
-const Text = (source: string | number) => new TextVirtualNode(source + '');
+const Text = (source: TextSource) => new TextVirtualNode(source);
 
 Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
 
@@ -175,26 +171,32 @@ function detectAreSameComponentTypesWithSameKeys(
   return false;
 }
 
+type TextSource = string | number;
+
+export type VirtualNodeFactory = () => VirtualNode;
+export type TagVirtualNodeFactory = () => TagVirtualNode;
+export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
+
 export {
+  View,
+  Text,
+  Comment,
   VirtualNode,
   TagVirtualNode,
   TextVirtualNode,
   CommentVirtualNode,
-  View,
-  Text,
-  Comment,
-  detectIsVirtualNode,
-  detectIsTagVirtualNode,
-  detectIsCommentVirtualNode,
-  detectIsTextVirtualNode,
-  detectIsPlainVirtualNode,
-  detectIsVirtualNodeFactory,
   createReplacer,
   detectIsReplacer,
   getElementKey,
   hasElementFlag,
   getElementType,
   hasChildrenProp,
+  detectIsVirtualNode,
+  detectIsTagVirtualNode,
+  detectIsCommentVirtualNode,
+  detectIsTextVirtualNode,
+  detectIsPlainVirtualNode,
+  detectIsVirtualNodeFactory,
   detectAreSameInstanceTypes,
   detectAreSameComponentTypesWithSameKeys,
 };

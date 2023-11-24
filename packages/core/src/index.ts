@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 export * from './component';
+export * from './view';
 export { createContext, useContext } from './context';
 export { h } from './element';
 export * from './fiber';
@@ -36,7 +37,6 @@ export { batch } from './batch';
 export { hot } from './hot';
 export { emitter } from './emitter';
 export * from './start-transition';
-export * from './view';
 export * from './constants';
 
 declare global {

@@ -111,19 +111,6 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
   }
 }
 
-function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
-  const attrNames = new Set<string>();
-  const prevAttrs = Object.keys(prevNode.attrs);
-  const nextAttrs = Object.keys(nextNode.attrs);
-  const size = Math.max(prevAttrs.length, nextAttrs.length);
-
-  for (let i = 0; i < size; i++) {
-    attrNames.add(prevAttrs[i] || nextAttrs[i]);
-  }
-
-  return attrNames;
-}
-
 function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
   const attrNames = getAttributeNames(prevNode, nextNode);
   const tagElement = element as TagNativeElement;
@@ -159,6 +146,19 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       tagElement.removeAttribute(attrName);
     }
   }
+}
+
+function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
+  const attrNames = new Set<string>();
+  const prevAttrs = Object.keys(prevNode.attrs);
+  const nextAttrs = Object.keys(nextNode.attrs);
+  const size = Math.max(prevAttrs.length, nextAttrs.length);
+
+  for (let i = 0; i < size; i++) {
+    attrNames.add(prevAttrs[i] || nextAttrs[i]);
+  }
+
+  return attrNames;
 }
 
 type PatchPropertiesOptions = {

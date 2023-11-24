@@ -1,6 +1,5 @@
 import { type Fiber } from '../fiber';
 import { platform } from '../platform';
-import { detectIsComponent } from '../component';
 import { dropEffects } from '../use-effect';
 import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
@@ -15,9 +14,8 @@ function unmountFiber(fiber: Fiber) {
   if (!shouldUnmountFiber(fiber)) return;
   walk(fiber, (fiber, skip) => {
     if (!shouldUnmountFiber(fiber)) return skip();
-    if (!detectIsComponent(fiber.inst)) return;
 
-    if (fiber.hook.values.length > 0) {
+    if (fiber.hook && fiber.hook.values.length > 0) {
       fiber.iefHost && dropInsertionEffects(fiber.hook);
       fiber.lefHost && dropLayoutEffects(fiber.hook);
       fiber.aefHost && dropEffects(fiber.hook);

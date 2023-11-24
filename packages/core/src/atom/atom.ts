@@ -7,67 +7,74 @@ import { scope$$, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
 
 class Atom<T = unknown> {
-  private value$: T;
-  private subs: Map<Hook, ShouldUpdate<T>> = new Map();
+  private x: T;
+  private subs: Map<Hook, Subscriber<T>> = new Map();
   private unsubs: Map<Hook, Callback> = new Map();
 
   constructor(value: T) {
-    this.value$ = value;
+    this.x = value;
   }
 
-  value(fn?: ShouldUpdate<T>) {
+  value(shouldUpdate: ShouldUpdate<T> = trueFn) {
+    const rootId = getRootId();
     const fiber = scope$$().getCursorFiber();
+    const { hook } = fiber;
 
-    fiber.markAtomHost();
-    this.on(fiber.hook, fn);
+    this.on(hook, (p, n) => {
+      shouldUpdate(p, n) && platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
+    });
 
-    return this.value$;
+    return this.x;
   }
 
   get() {
-    return this.value$;
+    return this.x;
   }
 
   set(value: T | ((prevValue: T) => T)) {
-    const rootId = getRootId();
-    const value$ = this.value$;
+    const p = this.x;
+    const n = detectIsFunction(value) ? value(this.x) : value;
 
-    this.value$ = detectIsFunction(value) ? value(value$) : value;
+    this.x = n;
 
-    for (const [hook, shouldUpdate = trueFn] of this.subs) {
-      if (!shouldUpdate(value$, this.value$)) continue;
-      platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
+    for (const [_, fn] of this.subs) {
+      fn(p, n);
     }
   }
 
-  off(value?: T) {
-    this.value$ = value;
+  on(hook: Hook, fn: Subscriber<T>) {
+    const fiber = hook.getOwner();
+    const off = () => this.unsubs.has(hook) && this.unsubs.get(hook)();
+
+    fiber.markAtomHost();
+    this.subs.set(hook, fn);
+    this.unsubs.set(hook, () => {
+      const fiber = hook.getOwner();
+
+      fiber.atoms.delete(this);
+      this.subs.delete(hook);
+      this.unsubs.delete(hook);
+    });
+
+    !fiber.atoms && (fiber.atoms = new Map());
+    fiber.atoms.set(this, off);
+
+    return off;
+  }
+
+  reset(value?: T) {
+    this.x = value;
     this.subs = new Map();
     this.unsubs.forEach(x => x());
     this.unsubs = new Map();
   }
 
   toString() {
-    return String(this.value$);
+    return String(this.x);
   }
 
   toJSON() {
-    return this.value$;
-  }
-
-  private on(hook: Hook, fn: ShouldUpdate<T>) {
-    const fiber = hook.getOwner();
-    const off = () => {
-      const fiber = hook.getOwner();
-
-      fiber.atoms && fiber.atoms.delete(this);
-    };
-
-    this.subs.set(hook, fn);
-    this.unsubs.set(hook, off);
-
-    !fiber.atoms && (fiber.atoms = new Map());
-    fiber.atoms.set(this, () => this.subs.delete(hook));
+    return this.x;
   }
 }
 
@@ -87,6 +94,8 @@ function useAtom<T>(value?: T): [Atom<T>, SetAtom<T>] {
 }
 
 type ShouldUpdate<T> = (p: T, n: T) => boolean;
+
+type Subscriber<T> = (p: T, n: T) => void;
 
 type SetAtom<T = unknown> = (value: T | ((prevValue: T) => T)) => void;
 

@@ -16,7 +16,6 @@ const TouchableOpacity = component<TouchableOpacityProps>(
   ({ disabled, slot, onPress, ...rest }) => {
     const [item, api] = useSpring({
       from: { opacity: 1 },
-      to: { opacity: 0.3 },
       config: () => ({ tension: 400 }),
     });
 
@@ -30,9 +29,9 @@ const TouchableOpacity = component<TouchableOpacityProps>(
 
       if (isDown) {
         detectIsFunction(onPress) && onPress(e);
-        api.start();
+        api.start(to(0.3));
       } else if (isUp) {
-        api.back();
+        api.start(to(1));
       }
     });
 
@@ -49,6 +48,8 @@ const TouchableOpacity = component<TouchableOpacityProps>(
   },
   { displayName: 'TouchableOpacity' },
 ) as ComponentFactory<TouchableOpacityProps>;
+
+const to = (x: number) => () => ({ to: { opacity: x } });
 
 const styleFn = (isDisabled: boolean) => (element: TagNativeElement, value: SpringValue<'opacity'>) => {
   element.getNativeView().opacity = isDisabled ? 0.5 : value.opacity;

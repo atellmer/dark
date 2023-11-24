@@ -4,7 +4,7 @@ import { render } from '@dark-engine/platform-browser';
 import { dom } from '@test-utils';
 import { h } from '../element';
 import { Fragment } from '../fragment';
-import { component } from '../component/component';
+import { component } from '../component';
 import { type Atom, atom, useAtom } from './atom';
 
 let host: HTMLElement = null;
@@ -21,7 +21,7 @@ describe('[atom]', () => {
     expect(count$.value).toBeDefined();
     expect(count$.get).toBeDefined();
     expect(count$.set).toBeDefined();
-    expect(count$.off).toBeDefined();
+    expect(count$.reset).toBeDefined();
   });
 
   test('can trigger render and update a state correctly', () => {

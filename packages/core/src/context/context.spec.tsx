@@ -2,12 +2,12 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
-import { component } from '../component';
 import { h } from '../element';
+import { component } from '../component';
 import { useState } from '../use-state';
-import { createContext, useContext } from './context';
 import { memo } from '../memo';
 import { type DarkElement } from '../shared';
+import { createContext, useContext } from './context';
 
 let host: HTMLElement = null;
 
