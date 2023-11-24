@@ -36,8 +36,8 @@ const TouchableOpacity = component<TouchableOpacityProps>(
     });
 
     return Animated({
-      item,
-      style: styleFn(disabled),
+      spring: item,
+      fn: styleFn(disabled),
       slot: View({
         accessibilityRole: AccessibilityRole.Button,
         ...rest,

@@ -106,7 +106,7 @@ const App = component(() => {
       <div class='content'>
         {items.map((item, idx) => {
           return (
-            <Animated key={idx} item={item} style={styleFn(idx, height, scope)}>
+            <Animated key={idx} spring={item} fn={styleFn(idx, height, scope)}>
               <div class='item' onPointerDown={handleDragStart(idx)}>
                 {idx + 1}
               </div>

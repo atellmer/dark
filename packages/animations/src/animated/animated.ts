@@ -11,12 +11,12 @@ import {
 import { type SpringValue, type SpringItem } from '../shared';
 
 type AnimatedProps<E = unknown, T extends string = string> = {
-  item: SpringItem<T>;
-  style: StyleSubscriber<E, T>;
+  spring: SpringItem<T>;
+  fn: StyleSubscriber<E, T>;
   slot: Component | TagVirtualNodeFactory;
 };
 
-const Animated = component<AnimatedProps>(({ item, style, slot }) => {
+const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   const cursor = scope$$().getCursorFiber();
   const scope = useMemo(() => ({ element: null }), []);
 
@@ -30,11 +30,11 @@ const Animated = component<AnimatedProps>(({ item, style, slot }) => {
       }
     });
 
-    style(scope.element, item.getValue());
+    fn(scope.element, spring.getValue());
   }, []);
 
-  item.ctrl.setNotifier(value => scope.element && style(scope.element, value));
-  scope.element && style(scope.element, item.getValue());
+  spring.ctrl.setNotifier(value => scope.element && fn(scope.element, value));
+  scope.element && fn(scope.element, spring.getValue());
 
   return slot;
 });
