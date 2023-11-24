@@ -4,20 +4,17 @@ import { type ConfiguratorFn, Controller } from './controller';
 import { type SpringValue } from '../shared';
 import { SharedState } from '../state';
 
-const originalRaf = platform.raf;
-const originalCaf = platform.caf;
 const idx = 0;
+
+jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 8));
+jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
 
 beforeAll(() => {
   jest.useFakeTimers();
-  platform.raf = (cb: FrameRequestCallback) => setTimeout(cb, 8);
-  platform.caf = (id: number) => clearTimeout(id);
 });
 
 afterAll(() => {
   jest.useRealTimers();
-  platform.raf = originalRaf;
-  platform.caf = originalCaf;
 });
 
 describe('@animations/controller', () => {

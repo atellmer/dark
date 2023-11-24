@@ -54,16 +54,6 @@ class SharedState<T extends string = string> {
     return detectIsEmpty(key) ? this.stack.size > 0 : this.stack.has(key);
   }
 
-  wrap(fn: () => void) {
-    this.resetScheduledDelay();
-
-    if (this.delayTimeout > 0) {
-      this.delayId = setTimeout(fn, this.delayTimeout);
-    } else {
-      fn();
-    }
-  }
-
   start(fn?: StartFn<T>) {
     this.wrap(() => {
       if (this.ctrls.length === 0) return;
@@ -138,6 +128,16 @@ class SharedState<T extends string = string> {
     const isCompleted = !this.detectIsPlaying();
 
     isCompleted && this.event('series-end');
+  }
+
+  private wrap(fn: () => void) {
+    this.resetScheduledDelay();
+
+    if (this.delayTimeout > 0) {
+      this.delayId = setTimeout(fn, this.delayTimeout);
+    } else {
+      fn();
+    }
   }
 
   private setFlow(x: Flow) {
