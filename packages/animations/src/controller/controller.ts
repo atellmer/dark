@@ -81,7 +81,7 @@ class Controller<T extends string, I = unknown> {
   }
 
   notify() {
-    this.notifier(this.getValue());
+    this.notifier && this.notifier(this.getValue());
     this.event('item-change');
   }
 

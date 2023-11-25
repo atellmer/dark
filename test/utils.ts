@@ -1,4 +1,4 @@
-import { REPLACER } from '@dark-engine/core/constants';
+import { platform, REPLACER } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
@@ -58,6 +58,11 @@ function createEnv() {
   };
 }
 
+function mockPlatformRaf() {
+  jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 16));
+  jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
+}
+
 export {
   dom,
   waitNextTick,
@@ -69,4 +74,5 @@ export {
   sleep,
   replacer,
   createEnv,
+  mockPlatformRaf,
 };

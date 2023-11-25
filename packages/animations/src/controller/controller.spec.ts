@@ -1,23 +1,23 @@
-import { platform } from '@dark-engine/core';
+import { mockPlatformRaf } from '@test-utils';
 
 import { type ConfiguratorFn, Controller } from './controller';
-import { type SpringValue } from '../shared';
 import { SharedState } from '../state';
 
 const idx = 0;
 
-jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 8));
-jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
-
 beforeAll(() => {
   jest.useFakeTimers();
+});
+
+beforeEach(() => {
+  mockPlatformRaf();
 });
 
 afterAll(() => {
   jest.useRealTimers();
 });
 
-describe('@animations/controller', () => {
+describe('[@animations/controller]', () => {
   test('has required methods', () => {
     const ctrl = new Controller(new SharedState());
 
@@ -66,7 +66,7 @@ describe('@animations/controller', () => {
     ctrl.start();
     jest.runAllTimers();
 
-    expect(spy).toHaveBeenCalledTimes(105);
+    expect(spy).toHaveBeenCalledTimes(56);
   });
 
   test('can animate a single value', () => {
@@ -77,22 +77,22 @@ describe('@animations/controller', () => {
       to: { x: 100 },
     });
     const { from, to, config } = configurator(idx);
-    const updates: Array<SpringValue<SpringProps>> = [];
+    const spy = jest.fn();
 
     ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(x => updates.push(x));
+    ctrl.setNotifier(spy);
     ctrl.start();
     jest.runAllTimers();
 
-    expect(updates.length).toEqual(154);
-    expect(updates[0]).toEqual({ x: 1.088 });
-    expect(updates[10]).toEqual({ x: 35.1839 });
-    expect(updates[50]).toEqual({ x: 96.5711 });
-    expect(updates[150]).toEqual({ x: 99.9988 });
+    expect(spy).toHaveBeenCalledTimes(84);
+    expect(spy).toHaveBeenCalledWith({ x: 4.352 });
+    expect(spy).toHaveBeenCalledWith({ x: 70.2667 });
+    expect(spy).toHaveBeenCalledWith({ x: 99.9639 });
+    expect(spy).toHaveBeenCalledWith({ x: 100 });
     expect(ctrl.getValue()).toEqual({ x: 100 });
   });
 
@@ -104,29 +104,28 @@ describe('@animations/controller', () => {
       to: { x: 100, y: 200, z: 10 },
     });
     const { from, to, config } = configurator(idx);
-    const updates: Array<SpringValue<SpringProps>> = [];
+    const spy = jest.fn();
 
     ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(x => updates.push(x));
+    ctrl.setNotifier(spy);
     ctrl.start();
     jest.runAllTimers();
 
-    expect(updates.length).toEqual(163);
-    expect(updates[0]).toEqual({ x: -97.824, y: 2.176, z: 0.1088 });
-    expect(updates[10]).toEqual({ x: -29.6322, y: 70.3678, z: 3.5184 });
-    expect(updates[50]).toEqual({ x: 93.1421, y: 193.1421, z: 9.6571 });
-    expect(updates[100]).toEqual({ x: 99.8691, y: 199.8691, z: 9.9935 });
+    expect(spy).toHaveBeenCalledTimes(88);
+    expect(spy).toHaveBeenCalledWith({ x: -91.296, y: 8.704, z: 0.4352 });
+    expect(spy).toHaveBeenCalledWith({ x: 90.5842, y: 190.5842, z: 9.5292 });
+    expect(spy).toHaveBeenCalledWith({ x: 99.6508, y: 199.6508, z: 9.9825 });
     expect(ctrl.getValue()).toEqual({ x: 100, y: 200, z: 10 });
   });
 
   test('can use a custom config', () => {
     type SpringProps = 'opacity';
-    const updates1: Array<SpringValue<SpringProps>> = [];
-    const updates2: Array<SpringValue<SpringProps>> = [];
+    const spy1 = jest.fn();
+    const spy2 = jest.fn();
     {
       const ctrl = new Controller<SpringProps>(new SharedState());
       const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -140,7 +139,7 @@ describe('@animations/controller', () => {
       ctrl.setTo(to);
       ctrl.setSpringConfigFn(config);
       ctrl.setConfigurator(configurator);
-      ctrl.setNotifier(x => updates1.push(x));
+      ctrl.setNotifier(spy1);
       ctrl.start();
     }
     {
@@ -157,16 +156,16 @@ describe('@animations/controller', () => {
       ctrl.setTo(to);
       ctrl.setSpringConfigFn(config);
       ctrl.setConfigurator(configurator);
-      ctrl.setNotifier(x => updates2.push(x));
+      ctrl.setNotifier(spy2);
       ctrl.start();
     }
 
     jest.runAllTimers();
 
-    expect(updates1.length).toEqual(96);
-    expect(updates2.length).toEqual(534);
-    expect(updates1[updates1.length - 1]).toEqual({ opacity: 1 });
-    expect(updates2[updates2.length - 1]).toEqual({ opacity: 1 });
+    expect(spy1).toHaveBeenCalledTimes(51);
+    expect(spy2).toHaveBeenCalledTimes(269);
+    expect(spy1).toHaveBeenCalledWith({ opacity: 1 });
+    expect(spy2).toHaveBeenCalledWith({ opacity: 1 });
   });
 
   test('can use a cutom config for different values', () => {
@@ -178,23 +177,22 @@ describe('@animations/controller', () => {
       config: key => ({ tension: key === 'y' ? 100 : 200 }),
     });
     const { from, to, config } = configurator(idx);
-    const updates: Array<SpringValue<SpringProps>> = [];
+    const spy = jest.fn();
 
     ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(x => updates.push(x));
+    ctrl.setNotifier(spy);
     ctrl.start();
     jest.runAllTimers();
 
-    expect(updates.length).toEqual(321);
-    expect(updates[0]).toEqual({ x: 1.28, y: 0.64 });
-    expect(updates[10]).toEqual({ x: 40.6131, y: 21.6316 });
-    expect(updates[50]).toEqual({ x: 98.9403, y: 81.2511 });
-    expect(updates[100]).toEqual({ x: 100, y: 96.9774 });
-    expect(updates[updates.length - 1]).toEqual({ x: 100, y: 100 });
+    expect(spy).toHaveBeenCalledTimes(164);
+    expect(spy).toHaveBeenCalledWith({ x: 5.12, y: 2.56 });
+    expect(spy).toHaveBeenCalledWith({ x: 99.481, y: 87.408 });
+    expect(spy).toHaveBeenCalledWith({ x: 100, y: 98.9548 });
+    expect(spy).toHaveBeenCalledWith({ x: 100, y: 100 });
   });
 
   test('can animate without initial destination value', () => {
@@ -204,23 +202,22 @@ describe('@animations/controller', () => {
       from: { x: 0 },
     });
     const { from, to, config } = configurator(idx);
-    const updates: Array<SpringValue<SpringProps>> = [];
+    const spy = jest.fn();
 
     ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(x => updates.push(x));
+    ctrl.setNotifier(spy);
     ctrl.start(() => ({ to: { x: 100 } }));
     jest.runAllTimers();
 
-    expect(updates.length).toEqual(154);
-    expect(updates[0]).toEqual({ x: 1.088 });
-    expect(updates[10]).toEqual({ x: 35.1839 });
-    expect(updates[50]).toEqual({ x: 96.5711 });
-    expect(updates[150]).toEqual({ x: 99.9988 });
-    expect(ctrl.getValue()).toEqual({ x: 100 });
+    expect(spy).toHaveBeenCalledTimes(84);
+    expect(spy).toHaveBeenCalledWith({ x: 4.352 });
+    expect(spy).toHaveBeenCalledWith({ x: 98.8756 });
+    expect(spy).toHaveBeenCalledWith({ x: 99.9901 });
+    expect(spy).toHaveBeenCalledWith({ x: 100 });
   });
 
   test('can set an immediate value', () => {
@@ -232,26 +229,26 @@ describe('@animations/controller', () => {
       immediate: key => key === 'zIndex',
     });
     const { from, to, config } = configurator(idx);
-    let updates: Array<SpringValue<SpringProps>> = [];
+    const spy = jest.fn();
 
     ctrl.setIdx(idx);
     ctrl.setFrom(from);
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(x => updates.push(x));
+    ctrl.setNotifier(spy);
     ctrl.start();
     jest.runAllTimers();
 
-    expect(updates[0]).toEqual({ x: 1.088, zIndex: 1 });
-    expect(updates[updates.length - 1]).toEqual({ x: 100, zIndex: 1 });
+    expect(spy).toHaveBeenCalledWith({ x: 4.352, zIndex: 1 });
+    expect(spy).toHaveBeenCalledWith({ x: 100, zIndex: 1 });
+    spy.mockClear();
 
-    updates = [];
     ctrl.start(() => ({ to: { x: 0, zIndex: 0 } }));
     jest.runAllTimers();
 
-    expect(updates[0]).toEqual({ x: 98.912, zIndex: 1 });
-    expect(updates[updates.length - 1]).toEqual({ x: 0, zIndex: 1 });
+    expect(spy).toHaveBeenCalledWith({ x: 95.648, zIndex: 1 });
+    expect(spy).toHaveBeenCalledWith({ x: 0, zIndex: 1 });
     expect(ctrl.getValue()).toEqual({ x: 0, zIndex: 0 });
   });
 

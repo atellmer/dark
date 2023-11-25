@@ -1,24 +1,24 @@
-import { platform } from '@dark-engine/core';
+import { sleep, mockPlatformRaf } from '@test-utils';
 
-import { sleep } from '@test-utils';
 import { type ConfiguratorFn, Controller } from '../controller';
-import { type SpringValue } from '../shared';
 import { SharedState } from './state';
 import { range } from '../utils';
 
 type SpringProps = 'scale';
-
-jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 8));
-jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
-
 let nextKey = -1;
 const genKey = () => ++nextKey;
 const time = () => Date.now();
 
+beforeEach(() => {
+  mockPlatformRaf();
+});
+
+const getSpyLength = (x: jest.Mock) => x.mock.calls.length;
+
 function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
-  const updates: Array<Array<SpringValue<T>>> = [];
   const state = new SharedState();
   const ctrls = range(size).map(() => new Controller<T>(state));
+  const spies: Array<jest.Mock> = [];
 
   state.setCtrls(ctrls);
   ctrls.forEach((ctrl, idx) => {
@@ -26,7 +26,7 @@ function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
     const left = ctrls[idx - 1] || null;
     const right = ctrls[idx + 1] || null;
 
-    updates[idx] = [];
+    spies[idx] = jest.fn();
     ctrl.setIdx(idx);
     ctrl.setKey(genKey());
     ctrl.setFrom(from);
@@ -35,17 +35,17 @@ function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
     ctrl.setConfigurator(configurator);
     ctrl.setLeft(left);
     ctrl.setRight(right);
-    ctrl.setNotifier(x => updates[idx].push(x));
+    ctrl.setNotifier(spies[idx]);
   });
 
   return {
     state,
-    updates,
     ctrls,
+    spies,
   };
 }
 
-describe('@animations/state', () => {
+describe('[@animations/state]', () => {
   test('has required methods', () => {
     const state = new SharedState();
 
@@ -76,17 +76,17 @@ describe('@animations/state', () => {
       from: { scale: 0 },
       to: { scale: 1 },
     });
-    const { state, updates } = setup<SpringProps>(configurator);
+    const { state, spies } = setup<SpringProps>(configurator);
 
     state.start();
     jest.runAllTimers();
 
-    expect(updates[0]).toEqual(updates[1]);
-    expect(updates[1]).toEqual(updates[2]);
-    expect(updates[2]).toEqual(updates[3]);
-    expect(updates[0][0]).toEqual({ scale: 0.0109 });
-    expect(updates[0][10]).toEqual({ scale: 0.3518 });
-    expect(updates[0][updates[0].length - 1]).toEqual({ scale: 1 });
+    expect(spies[0].mock.calls).toEqual(spies[1].mock.calls);
+    expect(spies[1].mock.calls).toEqual(spies[2].mock.calls);
+    expect(spies[2].mock.calls).toEqual(spies[3].mock.calls);
+    expect(spies[0]).toHaveBeenCalledWith({ scale: 0.0435 });
+    expect(spies[0]).toHaveBeenCalledWith({ scale: 0.8044 });
+    expect(spies[0]).toHaveBeenLastCalledWith({ scale: 1 });
   });
 
   test('runs an animation in trail sequence correctly', () => {
@@ -96,23 +96,24 @@ describe('@animations/state', () => {
       to: { scale: 1 },
       config: () => ({ tension: 2000 }),
     });
-    const { state, updates } = setup<SpringProps>(configurator);
+    const { state, spies } = setup<SpringProps>(configurator);
 
     state.setIsTrail(true);
     state.start();
     jest.runAllTimers();
 
-    expect(updates[0]).not.toEqual(updates[1]);
-    expect(updates[1]).not.toEqual(updates[2]);
-    expect(updates[2]).not.toEqual(updates[3]);
-    expect(updates[0][0]).toEqual({ scale: 0.128 });
-    expect(updates[1][0]).toEqual({ scale: 0.0164 });
-    expect(updates[2][0]).toEqual({ scale: 0.0021 });
-    expect(updates[3][0]).toEqual({ scale: 0.0003 });
-    expect(updates[0][updates[0].length - 1]).toEqual({ scale: 1 });
-    expect(updates[1][updates[1].length - 1]).toEqual({ scale: 1 });
-    expect(updates[2][updates[2].length - 1]).toEqual({ scale: 1 });
-    expect(updates[3][updates[3].length - 1]).toEqual({ scale: 1 });
+    expect(spies[0].mock.calls).not.toEqual(spies[1].mock.calls);
+    expect(spies[1].mock.calls).not.toEqual(spies[2].mock.calls);
+    expect(spies[2].mock.calls).not.toEqual(spies[3].mock.calls);
+    expect(spies[0]).toHaveBeenCalledWith({ scale: 0.512 });
+    expect(spies[1]).toHaveBeenCalledWith({ scale: 0.2621 });
+    expect(spies[2]).toHaveBeenCalledWith({ scale: 0.1342 });
+    expect(spies[3]).toHaveBeenCalledWith({ scale: 0.0687 });
+
+    expect(spies[0]).toHaveBeenLastCalledWith({ scale: 1 });
+    expect(spies[1]).toHaveBeenLastCalledWith({ scale: 1 });
+    expect(spies[2]).toHaveBeenLastCalledWith({ scale: 1 });
+    expect(spies[3]).toHaveBeenLastCalledWith({ scale: 1 });
   });
 
   test('can subscribe on events correctly via on method', () => {
@@ -155,7 +156,7 @@ describe('@animations/state', () => {
 
     expect(seriesStartSpy).toHaveBeenCalledTimes(1);
     expect(itemStartSpy).toHaveBeenCalledTimes(4);
-    expect(itemChangeSpy).toHaveBeenCalledTimes(96 * 4);
+    expect(itemChangeSpy).toHaveBeenCalledTimes(51 * 4);
     expect(itemEndSpy).toHaveBeenCalledTimes(4);
     expect(seriesEndSpy).toHaveBeenCalledTimes(1);
     expect(seriesStartSpy).toHaveBeenCalledTimes(1);
@@ -299,31 +300,31 @@ describe('@animations/state', () => {
       from: { scale: 0 },
       to: { scale: 1 },
     });
-    const { state, updates } = setup<SpringProps>(configurator);
+    const { state, spies } = setup<SpringProps>(configurator);
 
     state.start();
-    await sleep(10);
-    expect(updates[0].length).toBeGreaterThan(0);
-    expect(updates[1].length).toBeGreaterThan(0);
-    expect(updates[2].length).toBeGreaterThan(0);
-    expect(updates[3].length).toBeGreaterThan(0);
+    await sleep(20);
+    expect(getSpyLength(spies[0])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[1])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[2])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[3])).toBeGreaterThan(0);
 
-    const length0 = updates[0].length;
-    const length1 = updates[1].length;
-    const length2 = updates[2].length;
-    const length3 = updates[3].length;
+    const length0 = getSpyLength(spies[0]);
+    const length1 = getSpyLength(spies[1]);
+    const length2 = getSpyLength(spies[2]);
+    const length3 = getSpyLength(spies[3]);
 
     state.pause();
-    await sleep(10);
-    expect(updates[0].length).toBe(length0);
-    expect(updates[1].length).toBe(length1);
-    expect(updates[2].length).toBe(length2);
-    expect(updates[3].length).toBe(length3);
-    await sleep(10);
-    expect(updates[0].length).toBe(length0);
-    expect(updates[1].length).toBe(length1);
-    expect(updates[2].length).toBe(length2);
-    expect(updates[3].length).toBe(length3);
+    await sleep(20);
+    expect(getSpyLength(spies[0])).toBe(length0);
+    expect(getSpyLength(spies[1])).toBe(length1);
+    expect(getSpyLength(spies[2])).toBe(length2);
+    expect(getSpyLength(spies[3])).toBe(length3);
+    await sleep(20);
+    expect(getSpyLength(spies[0])).toBe(length0);
+    expect(getSpyLength(spies[1])).toBe(length1);
+    expect(getSpyLength(spies[2])).toBe(length2);
+    expect(getSpyLength(spies[3])).toBe(length3);
   });
 
   test('can resume animation after pause correctly', async () => {
@@ -332,28 +333,28 @@ describe('@animations/state', () => {
       from: { scale: 0 },
       to: { scale: 1 },
     });
-    const { state, updates } = setup<SpringProps>(configurator);
+    const { state, spies } = setup<SpringProps>(configurator);
 
     state.start();
-    await sleep(10);
-    expect(updates[0].length).toBeGreaterThan(0);
-    expect(updates[1].length).toBeGreaterThan(0);
-    expect(updates[2].length).toBeGreaterThan(0);
-    expect(updates[3].length).toBeGreaterThan(0);
+    await sleep(20);
+    expect(getSpyLength(spies[0])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[1])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[2])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[3])).toBeGreaterThan(0);
 
-    const length0 = updates[0].length;
-    const length1 = updates[1].length;
-    const length2 = updates[2].length;
-    const length3 = updates[3].length;
+    const length0 = getSpyLength(spies[0]);
+    const length1 = getSpyLength(spies[1]);
+    const length2 = getSpyLength(spies[2]);
+    const length3 = getSpyLength(spies[3]);
 
     state.pause();
-    await sleep(10);
+    await sleep(20);
     state.resume();
-    await sleep(10);
-    expect(updates[0].length).toBeGreaterThan(length0);
-    expect(updates[1].length).toBeGreaterThan(length1);
-    expect(updates[2].length).toBeGreaterThan(length2);
-    expect(updates[3].length).toBeGreaterThan(length3);
+    await sleep(20);
+    expect(getSpyLength(spies[0])).toBeGreaterThan(length0);
+    expect(getSpyLength(spies[1])).toBeGreaterThan(length1);
+    expect(getSpyLength(spies[2])).toBeGreaterThan(length2);
+    expect(getSpyLength(spies[3])).toBeGreaterThan(length3);
   });
 
   test('can delay animation correctly', async () => {
@@ -362,42 +363,20 @@ describe('@animations/state', () => {
       from: { scale: 0 },
       to: { scale: 1 },
     });
-    const { state, updates } = setup<SpringProps>(configurator);
+    const { state, spies } = setup<SpringProps>(configurator);
 
     state.delay(50);
     state.start();
-    await sleep(10);
-    expect(updates[0].length).toBe(0);
-    expect(updates[1].length).toBe(0);
-    expect(updates[2].length).toBe(0);
-    expect(updates[3].length).toBe(0);
+    await sleep(20);
+    expect(getSpyLength(spies[0])).toBe(0);
+    expect(getSpyLength(spies[1])).toBe(0);
+    expect(getSpyLength(spies[2])).toBe(0);
+    expect(getSpyLength(spies[3])).toBe(0);
     await sleep(100);
-    expect(updates[0].length).toBeGreaterThan(0);
-    expect(updates[1].length).toBeGreaterThan(0);
-    expect(updates[2].length).toBeGreaterThan(0);
-    expect(updates[3].length).toBeGreaterThan(0);
-  });
-
-  test('can delay animation correctly', async () => {
-    jest.useRealTimers();
-    const configurator: ConfiguratorFn<SpringProps> = () => ({
-      from: { scale: 0 },
-      to: { scale: 1 },
-    });
-    const { state, updates } = setup<SpringProps>(configurator);
-
-    state.delay(50);
-    state.start();
-    await sleep(10);
-    expect(updates[0].length).toBe(0);
-    expect(updates[1].length).toBe(0);
-    expect(updates[2].length).toBe(0);
-    expect(updates[3].length).toBe(0);
-    await sleep(100);
-    expect(updates[0].length).toBeGreaterThan(0);
-    expect(updates[1].length).toBeGreaterThan(0);
-    expect(updates[2].length).toBeGreaterThan(0);
-    expect(updates[3].length).toBeGreaterThan(0);
+    expect(getSpyLength(spies[0])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[1])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[2])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[3])).toBeGreaterThan(0);
   });
 
   test('can reset animation correctly', () => {
@@ -428,27 +407,27 @@ describe('@animations/state', () => {
       from: { scale: 0 },
       to: { scale: 1 },
     });
-    const { state, updates } = setup<SpringProps>(configurator);
+    const { state, spies } = setup<SpringProps>(configurator);
 
-    state.delay(10);
+    state.delay(20);
     state.start();
     await sleep(50);
-    expect(updates[0].length).toBeGreaterThan(0);
-    expect(updates[1].length).toBeGreaterThan(0);
-    expect(updates[2].length).toBeGreaterThan(0);
-    expect(updates[3].length).toBeGreaterThan(0);
+    expect(getSpyLength(spies[0])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[1])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[2])).toBeGreaterThan(0);
+    expect(getSpyLength(spies[3])).toBeGreaterThan(0);
 
-    const length0 = updates[0].length;
-    const length1 = updates[1].length;
-    const length2 = updates[2].length;
-    const length3 = updates[3].length;
+    const length0 = getSpyLength(spies[0]);
+    const length1 = getSpyLength(spies[1]);
+    const length2 = getSpyLength(spies[2]);
+    const length3 = getSpyLength(spies[3]);
 
     state.cancel();
     await sleep(50);
-    expect(updates[0].length).toBe(length0);
-    expect(updates[1].length).toBe(length1);
-    expect(updates[2].length).toBe(length2);
-    expect(updates[3].length).toBe(length3);
+    expect(getSpyLength(spies[0])).toBe(length0);
+    expect(getSpyLength(spies[1])).toBe(length1);
+    expect(getSpyLength(spies[2])).toBe(length2);
+    expect(getSpyLength(spies[3])).toBe(length3);
   });
 
   test('can detect a playing animation correctly', () => {
