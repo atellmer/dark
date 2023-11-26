@@ -3,7 +3,7 @@ import webpack from 'webpack';
 
 const __dirname = resolve(dirname(''));
 const config = {
-  mode: 'production',
+  mode: process.env.NODE_ENV,
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
