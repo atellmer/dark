@@ -501,10 +501,13 @@ function stopTransitionWork(scope$: Scope): false {
     detectIsFunction(resetValue) && scope$$$.addCancel(resetValue);
 
     wipFiber.alt = new Fiber().mutate(wipFiber);
-    wipFiber.marker = '✌️';
     wipFiber.tag = EffectTag.U;
     wipFiber.child = child;
     child && (child.parent = wipFiber);
+
+    if (process.env.NODE_ENV !== 'production') {
+      wipFiber.marker = '✌️';
+    }
 
     scope$$$.setRoot(scope$.getRoot());
     scope$$$.setWorkInProgress(wipFiber);
@@ -550,11 +553,14 @@ function createUpdateCallback(options: CreateUpdateCallbackOptions) {
     detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
 
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.marker = '🔥';
     fiber.tag = EffectTag.U;
     fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
+
+    if (process.env.NODE_ENV !== 'production') {
+      fiber.marker = '🔥';
+    }
 
     scope$.setIsUpdateZone(true);
     scope$.resetMount();

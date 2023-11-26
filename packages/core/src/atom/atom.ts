@@ -9,7 +9,7 @@ import { type Hook } from '../fiber';
 
 class Atom<T = unknown> {
   private x: T;
-  private connections: Map<Hook, [number, ShouldUpdate<T>]> = new Map();
+  private connections: Map<Hook, [number, ShouldUpdate<T>, Args]> = new Map();
   private drops: Map<Hook, Callback> = new Map();
   private emitter: EventEmitter = null;
 
@@ -17,8 +17,8 @@ class Atom<T = unknown> {
     this.x = value;
   }
 
-  value(fn?: ShouldUpdate<T>) {
-    this.connect(fn);
+  value(fn?: ShouldUpdate<T>, ...args: Args) {
+    this.connect(fn, args);
 
     return this.x;
   }
@@ -33,14 +33,15 @@ class Atom<T = unknown> {
 
     this.x = n;
 
-    for (const [hook, [rootId, shouldUpdate = trueFn]] of this.connections) {
-      shouldUpdate(p, n) && platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
+    for (const [hook, [rootId, shouldUpdate = trueFn, args]] of this.connections) {
+      shouldUpdate(p, n, ...args) &&
+        platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
     }
 
     this.emitter && this.emitter.emit('data', this.x);
   }
 
-  connect(fn: ShouldUpdate<T>) {
+  connect(fn: ShouldUpdate<T>, args: Args) {
     const rootId = getRootId();
     const fiber = scope$$().getCursorFiber();
     const { hook } = fiber;
@@ -50,7 +51,7 @@ class Atom<T = unknown> {
     fiber.atoms.set(this, off);
     fiber.markAtomHost();
 
-    this.connections.set(hook, [rootId, fn]);
+    this.connections.set(hook, [rootId, fn, args]);
     this.drops.set(hook, () => {
       hook.getOwner().atoms.delete(this);
       this.connections.delete(hook);
@@ -94,6 +95,8 @@ function useAtom<T>(value?: T): Atom<T> {
   return useMemo(() => atom<T>(value), []);
 }
 
-type ShouldUpdate<T> = (p: T, n: T) => boolean;
+type ShouldUpdate<T> = (p: T, n: T, ...args: Args) => boolean;
+
+type Args = Array<any>;
 
 export { Atom, atom, detectIsAtom, useAtom };
