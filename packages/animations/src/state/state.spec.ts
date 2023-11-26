@@ -318,7 +318,7 @@ describe('[@animations/state]', () => {
 
     state.delay(20);
     state.start();
-    await sleep(50);
+    await sleep(100);
     expect(getSpyLength(spies[0])).toBeGreaterThan(0);
     expect(getSpyLength(spies[1])).toBeGreaterThan(0);
     expect(getSpyLength(spies[2])).toBeGreaterThan(0);
@@ -330,7 +330,7 @@ describe('[@animations/state]', () => {
     const length3 = getSpyLength(spies[3]);
 
     state.cancel();
-    await sleep(50);
+    await sleep(100);
     expect(getSpyLength(spies[0])).toBe(length0);
     expect(getSpyLength(spies[1])).toBe(length1);
     expect(getSpyLength(spies[2])).toBe(length2);

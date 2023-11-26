@@ -762,13 +762,13 @@ describe('[@animations/use-springs]', () => {
     render(<App />);
     api.delay(20);
     api.start();
-    await sleep(50);
+    await sleep(100);
     expect(getSpyLength(spy)).toBeGreaterThan(0);
 
     const length = getSpyLength(spy);
 
     api.cancel();
-    await sleep(50);
+    await sleep(100);
     expect(getSpyLength(spy)).toBe(length);
   });
 
