@@ -123,6 +123,10 @@ class Controller<T extends string, I = unknown> {
     this.item = x;
   }
 
+  getState() {
+    return this.state;
+  }
+
   getValue() {
     const fixed = {} as SpringValue<T>;
     const keys = Object.keys(this.value) as Array<T>;
@@ -262,6 +266,7 @@ class Controller<T extends string, I = unknown> {
     this.results = {};
     this.completed = {};
     this.immediates.forEach(x => x());
+    this.immediates.length > 0 && this.notify();
     this.immediates = [];
     this.event('item-end');
     this.state.completeSeries();

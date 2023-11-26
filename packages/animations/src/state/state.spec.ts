@@ -1,4 +1,4 @@
-import { sleep, mockPlatformRaf } from '@test-utils';
+import { sleep, mockPlatformRaf, getSpyLength, time } from '@test-utils';
 
 import { type ConfiguratorFn, Controller } from '../controller';
 import { SharedState } from './state';
@@ -7,13 +7,10 @@ import { range } from '../utils';
 type SpringProps = 'scale';
 let nextKey = -1;
 const genKey = () => ++nextKey;
-const time = () => Date.now();
 
 beforeEach(() => {
   mockPlatformRaf();
 });
-
-const getSpyLength = (x: jest.Mock) => x.mock.calls.length;
 
 function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
   const state = new SharedState();
@@ -67,7 +64,6 @@ describe('[@animations/state]', () => {
     expect(state.delay).toBeDefined();
     expect(state.cancel).toBeDefined();
     expect(state.on).toBeDefined();
-    expect(state.once).toBeDefined();
   });
 
   test('runs an animation in sequence correctly', () => {
@@ -116,7 +112,7 @@ describe('[@animations/state]', () => {
     expect(spies[3]).toHaveBeenLastCalledWith({ scale: 1 });
   });
 
-  test('can subscribe on events correctly via on method', () => {
+  test('can subscribe on events correctly', () => {
     jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
@@ -205,96 +201,7 @@ describe('[@animations/state]', () => {
     expect(seriesStartSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('can subscribe on events correctly via once method', () => {
-    jest.useFakeTimers();
-    const configurator: ConfiguratorFn<SpringProps> = () => ({
-      from: { scale: 0 },
-      to: { scale: 1 },
-    });
-    const { state } = setup<SpringProps>(configurator);
-    const seriesStartSpy = jest.fn();
-    const itemStartSpy = jest.fn();
-    const itemChangeSpy = jest.fn();
-    const itemEndSpy = jest.fn();
-    const seriesEndSpy = jest.fn();
-    let seriesStartTime = null;
-    let itemStartTime = null;
-    let itemEndTime = null;
-    let seriesEndTime = null;
-
-    state.once('series-start', () => {
-      seriesStartTime = time();
-      seriesStartSpy();
-    });
-    state.once('item-start', () => {
-      itemStartTime = time();
-      itemStartSpy();
-    });
-    state.once('item-change', itemChangeSpy);
-    state.once('item-end', () => {
-      itemEndTime = time();
-      itemEndSpy();
-    });
-    state.once('series-end', () => {
-      seriesEndTime = time();
-      seriesEndSpy();
-    });
-
-    state.start();
-    jest.runAllTimers();
-
-    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
-    expect(itemStartSpy).toHaveBeenCalledTimes(1);
-    expect(itemChangeSpy).toHaveBeenCalledTimes(1);
-    expect(itemEndSpy).toHaveBeenCalledTimes(1);
-    expect(seriesEndSpy).toHaveBeenCalledTimes(1);
-    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
-    expect(seriesEndTime).toBeGreaterThan(seriesStartTime);
-    expect(itemEndTime).toBeGreaterThan(itemStartTime);
-  });
-
-  test('the once method returns an off function', () => {
-    jest.useFakeTimers();
-    const configurator: ConfiguratorFn<SpringProps> = () => ({
-      from: { scale: 0 },
-      to: { scale: 1 },
-    });
-    const { state } = setup<SpringProps>(configurator);
-    const seriesStartSpy = jest.fn();
-    const itemStartSpy = jest.fn();
-    const itemChangeSpy = jest.fn();
-    const itemEndSpy = jest.fn();
-    const seriesEndSpy = jest.fn();
-    const seriesStartOff = state.once('series-start', seriesStartSpy);
-    const itemStartOff = state.once('item-start', itemStartSpy);
-    const itemChangeOff = state.once('item-change', itemChangeSpy);
-    const itemEndOff = state.once('item-end', itemEndSpy);
-    const seriesEndOff = state.once('series-end', seriesEndSpy);
-
-    expect(typeof seriesStartOff).toBe('function');
-    expect(typeof itemStartOff).toBe('function');
-    expect(typeof itemChangeOff).toBe('function');
-    expect(typeof itemEndOff).toBe('function');
-    expect(typeof seriesEndOff).toBe('function');
-
-    seriesStartOff();
-    itemStartOff();
-    itemChangeOff();
-    itemEndOff();
-    seriesEndOff();
-
-    state.start();
-    jest.runAllTimers();
-
-    expect(seriesStartSpy).toHaveBeenCalledTimes(0);
-    expect(itemStartSpy).toHaveBeenCalledTimes(0);
-    expect(itemChangeSpy).toHaveBeenCalledTimes(0);
-    expect(itemEndSpy).toHaveBeenCalledTimes(0);
-    expect(seriesEndSpy).toHaveBeenCalledTimes(0);
-    expect(seriesStartSpy).toHaveBeenCalledTimes(0);
-  });
-
-  test('can pause animation correctly', async () => {
+  test('can pause an animation correctly', async () => {
     jest.useRealTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
@@ -327,7 +234,7 @@ describe('[@animations/state]', () => {
     expect(getSpyLength(spies[3])).toBe(length3);
   });
 
-  test('can resume animation after pause correctly', async () => {
+  test('can resume an animation after pause correctly', async () => {
     jest.useRealTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
@@ -357,7 +264,7 @@ describe('[@animations/state]', () => {
     expect(getSpyLength(spies[3])).toBeGreaterThan(length3);
   });
 
-  test('can delay animation correctly', async () => {
+  test('can delay an animation correctly', async () => {
     jest.useRealTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
@@ -379,7 +286,7 @@ describe('[@animations/state]', () => {
     expect(getSpyLength(spies[3])).toBeGreaterThan(0);
   });
 
-  test('can reset animation correctly', () => {
+  test('can reset an animation correctly', () => {
     jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
@@ -401,7 +308,7 @@ describe('[@animations/state]', () => {
     expect(ctrls[3].getValue()).toEqual({ scale: 0 });
   });
 
-  test('can cancel animation correctly', async () => {
+  test('can cancel an animation correctly', async () => {
     jest.useRealTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },

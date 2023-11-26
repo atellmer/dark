@@ -18,8 +18,8 @@ function useSprings<T extends string>(
       configurator,
       prevCount: count,
       ctrls: range(count).map(() => new Controller<T>(state)),
-      chain: false,
-      updates: [],
+      inChain: false,
+      queue: [],
     };
   }, []);
 
@@ -53,30 +53,29 @@ function useSprings<T extends string>(
   const api = useMemo<SpringApi<T>>(() => {
     return {
       start: fn => {
-        if (scope.chain) {
-          scope.updates.forEach(x => x());
-          scope.updates = [];
+        if (scope.inChain) {
+          scope.queue.forEach(x => x());
+          scope.queue = [];
         } else {
           state.start(fn);
         }
       },
-      chain: (value: boolean) => {
-        scope.chain = value;
-      },
+      chain: (value: boolean) => (scope.inChain = value),
       delay: state.delay.bind(state),
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
       reset: state.reset.bind(state),
       cancel: state.cancel.bind(state),
       on: state.on.bind(state),
-      once: state.once.bind(state),
     };
   }, []);
 
   useEffect(() => {
     if (!deps) return;
-    if (scope.chain) {
-      scope.updates.push(() => state.start());
+    const { inChain, queue } = scope;
+
+    if (inChain) {
+      queue.push(() => state.start());
     } else {
       state.start();
     }
@@ -109,8 +108,8 @@ type Scope<T extends string> = {
   prevCount: number;
   configurator: SpringConfiguratorFn<T>;
   ctrls: Array<Controller<T>>;
-  chain: boolean;
-  updates: Array<() => void>;
+  inChain: boolean;
+  queue: Array<() => void>;
 };
 
 export type SpringApi<T extends string = string> = {
@@ -122,7 +121,6 @@ export type SpringApi<T extends string = string> = {
   reset: () => void;
   cancel: () => void;
   on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
-  once: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
 };
 
 export { useSprings };

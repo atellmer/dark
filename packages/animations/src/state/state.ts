@@ -104,22 +104,6 @@ class SharedState<T extends string = string> {
     return () => subs.delete(handler);
   }
 
-  once(event: AnimationEventName, handler: AnimationEventHandler<T>) {
-    if (!this.events.has(event)) {
-      this.events.set(event, new Set());
-    }
-
-    const subs = this.events.get(event);
-    const handler$: AnimationEventHandler<T> = (...args) => {
-      handler(...args);
-      subs.delete(handler$);
-    };
-
-    subs.add(handler$);
-
-    return () => subs.delete(handler$);
-  }
-
   event(name: AnimationEventName, value: AnimationEventValue<T> = null) {
     this.events.has(name) && this.events.get(name).forEach(x => x(value));
   }

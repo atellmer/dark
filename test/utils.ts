@@ -36,6 +36,10 @@ const setInputValue = (element: HTMLInputElement, value: string) => fireEvent(el
 
 const sleep = (ms = 10) => new Promise(resolve => setTimeout(resolve, ms));
 
+const getSpyLength = (x: jest.Mock) => x.mock.calls.length;
+
+const time = () => Date.now();
+
 const replacer = createReplacerString();
 
 let host: HTMLElement = null;
@@ -71,7 +75,9 @@ export {
   fireEvent,
   click,
   setInputValue,
+  getSpyLength,
   sleep,
+  time,
   replacer,
   createEnv,
   mockPlatformRaf,

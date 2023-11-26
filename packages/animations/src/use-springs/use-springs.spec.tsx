@@ -1,11 +1,13 @@
 /** @jsx h */
 
-import { h, component, useState } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf } from '@test-utils';
+import { h, component, useState, useEffect, detectIsArray } from '@dark-engine/core';
+import { dom, createEnv, mockPlatformRaf, getSpyLength, time, replacer } from '@test-utils';
+import { sleep } from '@test-utils';
 
+import { type SpringValue, type SpringItem } from '../shared';
 import { type SpringApi, useSprings } from './use-springs';
 import { Animated } from '../animated';
-import { type SpringValue } from '../shared';
+import { Controller } from '../controller';
 import { range } from '../utils';
 
 let { host, render } = createEnv();
@@ -16,21 +18,30 @@ beforeEach(() => {
 });
 
 describe('[@animations/use-springs]', () => {
-  test('has an api with required methods', () => {
+  test('returns springs and an api', () => {
     type SpringProps = 'scale';
+    let springs: Array<SpringItem<SpringProps>> = null;
     let api: SpringApi<SpringProps> = null;
     const App = component(() => {
-      const [_, _api] = useSprings<SpringProps>(1, () => ({
+      const [_springs, _api] = useSprings<SpringProps>(1, () => ({
         from: { scale: 0 },
         to: { scale: 1 },
       }));
 
+      springs = _springs;
       api = _api;
 
       return null;
     });
 
     render(<App />);
+    expect(springs).toBeDefined();
+    expect(detectIsArray(springs)).toBeTruthy();
+    expect(springs[0].ctrl).toBeInstanceOf(Controller);
+    expect(typeof springs[0].detectIsSeriesPlaying).toBe('function');
+    expect(typeof springs[0].getValue).toBe('function');
+    expect(springs[0].getValue()).toEqual({ scale: 0 });
+    expect(api).toBeDefined();
     expect(api.start).toBeDefined();
     expect(api.pause).toBeDefined();
     expect(api.reset).toBeDefined();
@@ -39,7 +50,6 @@ describe('[@animations/use-springs]', () => {
     expect(api.chain).toBeDefined();
     expect(api.delay).toBeDefined();
     expect(api.on).toBeDefined();
-    expect(api.once).toBeDefined();
   });
 
   test('can animate a simple value via api', () => {
@@ -593,5 +603,344 @@ describe('[@animations/use-springs]', () => {
     };
 
     expect(make).not.toThrow();
+  });
+
+  test('can pause an animation correctly', async () => {
+    jest.useRealTimers();
+    let api: SpringApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    api.start();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+
+    const length = getSpyLength(spy);
+
+    api.pause();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBe(length);
+
+    await sleep(20);
+    expect(getSpyLength(spy)).toBe(length);
+  });
+
+  test('can resume an animation after pause correctly', async () => {
+    jest.useRealTimers();
+    let api: SpringApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    api.start();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+
+    const length = getSpyLength(spy);
+
+    api.pause();
+    await sleep(20);
+    api.resume();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBeGreaterThan(length);
+  });
+
+  test('can delay an animation correctly', async () => {
+    jest.useRealTimers();
+    let api: SpringApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    spy.mockClear();
+    api.delay(50);
+    api.start();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBe(0);
+
+    await sleep(100);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+  });
+
+  test('can reset an animation correctly', () => {
+    jest.useFakeTimers();
+    let api: SpringApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    api.start();
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledWith({ scale: 1 });
+
+    api.reset();
+    expect(spy).toHaveBeenCalledWith({ scale: 0 });
+  });
+
+  test('can cancel an animation correctly', async () => {
+    jest.useRealTimers();
+    let api: SpringApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    api.delay(20);
+    api.start();
+    await sleep(50);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+
+    const length = getSpyLength(spy);
+
+    api.cancel();
+    await sleep(50);
+    expect(getSpyLength(spy)).toBe(length);
+  });
+
+  test('can subscribe on events correctly', () => {
+    jest.useFakeTimers();
+    let api: SpringApi = null;
+    const seriesStartSpy = jest.fn();
+    const itemStartSpy = jest.fn();
+    const itemChangeSpy = jest.fn();
+    const itemEndSpy = jest.fn();
+    const seriesEndSpy = jest.fn();
+    let seriesStartTime = null;
+    let itemStartTime = null;
+    let itemEndTime = null;
+    let seriesEndTime = null;
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      useEffect(() => {
+        api.on('series-start', () => {
+          seriesStartTime = time();
+          seriesStartSpy();
+        });
+        api.on('item-start', () => {
+          itemStartTime = time();
+          itemStartSpy();
+        });
+        api.on('item-change', itemChangeSpy);
+        api.on('item-end', () => {
+          itemEndTime = time();
+          itemEndSpy();
+        });
+        api.on('series-end', () => {
+          seriesEndTime = time();
+          seriesEndSpy();
+        });
+      }, []);
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={() => {}}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    jest.runAllTimers();
+    api.start();
+    jest.runAllTimers();
+
+    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
+    expect(itemStartSpy).toHaveBeenCalledTimes(1);
+    expect(itemChangeSpy).toHaveBeenCalledTimes(51);
+    expect(itemEndSpy).toHaveBeenCalledTimes(1);
+    expect(seriesEndSpy).toHaveBeenCalledTimes(1);
+    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
+    expect(seriesEndTime).toBeGreaterThan(seriesStartTime);
+    expect(itemEndTime).toBeGreaterThan(itemStartTime);
+  });
+
+  test('the on method returns an off function', () => {
+    jest.useFakeTimers();
+    let api: SpringApi = null;
+    const seriesStartSpy = jest.fn();
+    const itemStartSpy = jest.fn();
+    const itemChangeSpy = jest.fn();
+    const itemEndSpy = jest.fn();
+    const seriesEndSpy = jest.fn();
+    let seriesStartOff: Function = null;
+    let itemStartOff: Function = null;
+    let itemChangeOff: Function = null;
+    let itemEndOff: Function = null;
+    let seriesEndOff: Function = null;
+
+    const App = component(() => {
+      const [springs, _api] = useSprings(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+
+      useEffect(() => {
+        seriesStartOff = api.on('series-start', seriesStartSpy);
+        itemStartOff = api.on('item-start', itemStartSpy);
+        itemChangeOff = api.on('item-change', itemChangeSpy);
+        itemEndOff = api.on('item-end', itemEndSpy);
+        seriesEndOff = api.on('series-end', seriesEndSpy);
+      }, []);
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={() => {}}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    jest.runAllTimers();
+
+    expect(typeof seriesStartOff).toBe('function');
+    expect(typeof itemStartOff).toBe('function');
+    expect(typeof itemChangeOff).toBe('function');
+    expect(typeof itemEndOff).toBe('function');
+    expect(typeof seriesEndOff).toBe('function');
+
+    seriesStartOff();
+    itemStartOff();
+    itemChangeOff();
+    itemEndOff();
+    seriesEndOff();
+
+    api.start();
+    jest.runAllTimers();
+
+    expect(seriesStartSpy).toHaveBeenCalledTimes(0);
+    expect(itemStartSpy).toHaveBeenCalledTimes(0);
+    expect(itemChangeSpy).toHaveBeenCalledTimes(0);
+    expect(itemEndSpy).toHaveBeenCalledTimes(0);
+    expect(seriesEndSpy).toHaveBeenCalledTimes(0);
+    expect(seriesStartSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('cancels an animation at unmounting correctly', () => {
+    jest.useFakeTimers();
+    const content = (scale: number) => dom`
+      <div style="transform: scale(${scale});">A</div>
+    `;
+    type SpringProps = 'scale';
+    let springs: Array<SpringItem<SpringProps>> = null;
+    let api: SpringApi<SpringProps> = null;
+    const App = component(() => {
+      const [_springs, _api] = useSprings<SpringProps>(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+      springs = _springs;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={styleFn}>
+            <div>A</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spy = jest.fn();
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spy(value);
+      element.style.setProperty('transform', `scale(${value.scale})`);
+    };
+
+    render(<App />);
+    expect(host.innerHTML).toBe(content(0));
+    spy.mockClear();
+
+    api.start();
+    render(null);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(replacer);
+    expect(springs[0].ctrl.getState().getIsCanceled()).toBe(true);
   });
 });

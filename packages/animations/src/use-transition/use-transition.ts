@@ -38,8 +38,8 @@ function useTransition<T extends string, I = unknown>(
       itemsMap: new Map(),
       fakesMap: new Map(),
       fromItems: true,
-      chain: false,
-      updates: [],
+      inChain: false,
+      queue: [],
       items: [],
       configurator,
     }),
@@ -87,43 +87,41 @@ function useTransition<T extends string, I = unknown>(
       start: fn => {
         scope.fromItems = false;
 
-        if (scope.chain) {
-          scope.updates.forEach(x => x());
-          scope.updates = [];
+        if (scope.inChain) {
+          scope.queue.forEach(x => x());
+          scope.queue = [];
         } else {
           state.start(fn);
         }
       },
-      chain: (value: boolean) => {
-        scope.chain = value;
-      },
+      chain: (value: boolean) => (scope.inChain = value),
       delay: state.delay.bind(state),
       cancel: state.cancel.bind(state),
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
       on: state.on.bind(state),
-      once: state.once.bind(state),
     };
   }, []);
 
   useEffect(() => {
+    const { inChain, queue } = scope;
     const loop = () => {
       const configurator: TransitionConfiguratorFn<T, I> = (idx, item) => scope.configurator(idx, item);
       const items$ = uniq(items, getKey);
       const { ctrlsMap, fakesMap, items: prevItems } = scope;
       const { ctrls, itemsMap } = data({ items: items$, getKey, configurator, state, ctrlsMap });
-      const { hasChanges, insertionsMap, removesMap, movesMap, stableMap, replaced } = diff(prevItems, items, getKey);
+      const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff(prevItems, items, getKey);
 
       if (!hasChanges) return;
       state.setCtrls(ctrls);
       replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
 
       state.event('series-start');
-      startLoop({ destKey: 'leave', space: fakesMap, state, scope }); // !
-      startLoop({ destKey: 'enter', space: insertionsMap, state, scope });
-      startLoop({ destKey: 'leave', space: removesMap, state, scope });
-      startLoop({ destKey: 'update', space: movesMap, state, scope });
-      startLoop({ destKey: 'update', space: stableMap, state, scope });
+      startLoop({ action: Action.LEAVE, space: fakesMap, state, scope }); // !
+      startLoop({ action: Action.ENTER, space: insMap, state, scope });
+      startLoop({ action: Action.LEAVE, space: remMap, state, scope });
+      startLoop({ action: Action.UPDATE, space: movMap, state, scope });
+      startLoop({ action: Action.UPDATE, space: stabMap, state, scope });
 
       scope.items = items$; // !
       scope.itemsMap = itemsMap;
@@ -131,8 +129,8 @@ function useTransition<T extends string, I = unknown>(
       forceUpdate(); //!
     };
 
-    if (scope.chain) {
-      scope.updates.push(loop);
+    if (inChain) {
+      queue.push(loop);
     } else {
       loop();
     }
@@ -234,10 +232,10 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
   let p = 0;
   let n = 0;
   let hasChanges = false;
-  const insertionsMap = new Map<Key, number>();
-  const removesMap = new Map<Key, number>();
-  const movesMap = new Map<Key, number>();
-  const stableMap = new Map<Key, number>();
+  const insMap = new Map<Key, number>();
+  const remMap = new Map<Key, number>();
+  const movMap = new Map<Key, number>();
+  const stabMap = new Map<Key, number>();
   const replaced = new Set<Key>();
 
   for (let i = 0; i < size; i++) {
@@ -247,52 +245,52 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
     if (nextKey !== prevKey) {
       if (nextKey !== null && !prevKeysMap[nextKey]) {
         if (prevKey !== null && !nextKeysMap[prevKey]) {
-          insertionsMap.set(nextKey, i);
-          removesMap.set(prevKey, i);
+          insMap.set(nextKey, i);
+          remMap.set(prevKey, i);
           replaced.add(prevKey);
           hasChanges = true;
         } else {
-          insertionsMap.set(nextKey, i);
+          insMap.set(nextKey, i);
           hasChanges = true;
           p++;
           size++;
         }
       } else if (!nextKeysMap[prevKey]) {
-        removesMap.set(prevKey, i);
+        remMap.set(prevKey, i);
         hasChanges = true;
         n++;
         size++;
       } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-        movesMap.set(nextKey, i);
+        movMap.set(nextKey, i);
         hasChanges = true;
       }
     } else if (nextKey !== null) {
-      stableMap.set(nextKey, i);
+      stabMap.set(nextKey, i);
     }
   }
 
   return {
     hasChanges,
-    insertionsMap,
-    removesMap,
-    movesMap,
-    stableMap,
+    insMap,
+    remMap,
+    movMap,
+    stabMap,
     replaced,
   };
 }
 
 type StartLoopOptions<T extends string, I = unknown> = {
-  destKey: DestinationKey<T>;
+  action: Action;
   space: Map<Key, number>;
   state: SharedState<T>;
   scope: Scope<T, I>;
 };
 
 function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I>) {
-  const { space, destKey, state, scope } = options;
+  const { space, action, state, scope } = options;
   const { configurator, ctrlsMap, fakesMap } = scope;
   const ctrls = state.getCtrls();
-  const isEnter = destKey === 'enter';
+  const isEnter = action === Action.ENTER;
   let idx$ = 0;
 
   for (const [key, idx] of space) {
@@ -300,7 +298,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
     const item = ctrl.getItem();
     const config = configurator(idx, item);
     const { trail } = config;
-    const to = config[destKey];
+    const to = config[action];
     let ctrl$ = ctrl;
 
     if (isEnter) {
@@ -398,11 +396,15 @@ type Scope<T extends string, I = unknown> = {
   itemsMap: Map<Key, I>;
   fakesMap: Map<Key, number>;
   fromItems: boolean;
-  chain: boolean;
-  updates: Array<() => void>;
+  inChain: boolean;
+  queue: Array<() => void>;
 };
 
-type DestinationKey<T extends string> = keyof Pick<TransitionItemConfig<T>, 'leave' | 'update' | 'enter'>;
+enum Action {
+  ENTER = 'enter',
+  LEAVE = 'leave',
+  UPDATE = 'update',
+}
 
 type TransitionElement = Component | TagVirtualNodeFactory;
 

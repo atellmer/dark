@@ -25,6 +25,7 @@ describe('[@animations/controller]', () => {
     expect(ctrl.cancel).toBeDefined();
     expect(ctrl.reset).toBeDefined();
     expect(ctrl.notify).toBeDefined();
+    expect(ctrl.getState).toBeDefined();
     expect(ctrl.getValue).toBeDefined();
     expect(ctrl.getIdx).toBeDefined();
     expect(ctrl.setIdx).toBeDefined();
@@ -249,7 +250,7 @@ describe('[@animations/controller]', () => {
 
     expect(spy).toHaveBeenCalledWith({ x: 95.648, zIndex: 1 });
     expect(spy).toHaveBeenCalledWith({ x: 0, zIndex: 1 });
-    expect(ctrl.getValue()).toEqual({ x: 0, zIndex: 0 });
+    expect(spy).toHaveBeenLastCalledWith({ x: 0, zIndex: 0 });
   });
 
   test('can reset value correctly', () => {
