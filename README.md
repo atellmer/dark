@@ -39,6 +39,14 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 <Greeting name='Taylor Swift' />
 ```
 
+install from template
+```
+npx degit github:atellmer/dark/templates/typescript my-app
+cd my-app
+npm i
+npm start
+```
+
 ## Demos
 
 - [1k components](https://atellmer.github.io/dark/examples/1k-components/)
