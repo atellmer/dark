@@ -77,9 +77,7 @@ describe('[@animations/state]', () => {
     state.start();
     jest.runAllTimers();
 
-    expect(spies[0].mock.calls).toEqual(spies[1].mock.calls);
-    expect(spies[1].mock.calls).toEqual(spies[2].mock.calls);
-    expect(spies[2].mock.calls).toEqual(spies[3].mock.calls);
+    spies.forEach((spy, idx) => spies[idx + 1] && expect(spy.mock.calls).toEqual(spies[idx + 1].mock.calls));
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.0435 });
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.8044 });
     expect(spies[0]).toHaveBeenLastCalledWith({ scale: 1 });
@@ -98,14 +96,11 @@ describe('[@animations/state]', () => {
     state.start();
     jest.runAllTimers();
 
-    expect(spies[0].mock.calls).not.toEqual(spies[1].mock.calls);
-    expect(spies[1].mock.calls).not.toEqual(spies[2].mock.calls);
-    expect(spies[2].mock.calls).not.toEqual(spies[3].mock.calls);
+    spies.forEach((spy, idx) => spies[idx + 1] && expect(spy.mock.calls).not.toEqual(spies[idx + 1].mock.calls));
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.512 });
     expect(spies[1]).toHaveBeenCalledWith({ scale: 0.2621 });
     expect(spies[2]).toHaveBeenCalledWith({ scale: 0.1342 });
     expect(spies[3]).toHaveBeenCalledWith({ scale: 0.0687 });
-
     expect(spies[0]).toHaveBeenLastCalledWith({ scale: 1 });
     expect(spies[1]).toHaveBeenLastCalledWith({ scale: 1 });
     expect(spies[2]).toHaveBeenLastCalledWith({ scale: 1 });

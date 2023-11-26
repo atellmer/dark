@@ -1,5 +1,4 @@
 /** @jsx h */
-
 import { h, component, useState, useEffect, detectIsArray } from '@dark-engine/core';
 import { dom, createEnv, mockPlatformRaf, getSpyLength, time, replacer } from '@test-utils';
 import { sleep } from '@test-utils';
@@ -582,7 +581,6 @@ describe('[@animations/use-springs]', () => {
 
   test(`doesn't throw an exception without notifier`, () => {
     jest.useFakeTimers();
-
     const make = () => {
       const count = 4;
       let api: SpringApi = null;

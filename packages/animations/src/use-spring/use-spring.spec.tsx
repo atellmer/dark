@@ -1,5 +1,4 @@
 /** @jsx h */
-
 import { h, component, useState } from '@dark-engine/core';
 import { dom, createEnv, mockPlatformRaf } from '@test-utils';
 
@@ -17,7 +16,7 @@ beforeEach(() => {
 });
 
 describe('[@animations/use-spring]', () => {
-  test('returns springs and an api', () => {
+  test('returns spring and an api', () => {
     type SpringProps = 'scale';
     let spring: SpringItem<SpringProps> = null;
     let api: SpringApi<SpringProps> = null;
