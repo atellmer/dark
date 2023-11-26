@@ -11,7 +11,7 @@ class Atom<T = unknown> {
   private x: T;
   private connections: Map<Hook, [number, ShouldUpdate<T>]> = new Map();
   private drops: Map<Hook, Callback> = new Map();
-  private emitter = new EventEmitter();
+  private emitter: EventEmitter = null;
 
   constructor(value: T) {
     this.x = value;
@@ -37,7 +37,7 @@ class Atom<T = unknown> {
       shouldUpdate(p, n) && platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
     }
 
-    this.emitter.emit('data', this.x);
+    this.emitter && this.emitter.emit('data', this.x);
   }
 
   connect(fn: ShouldUpdate<T>) {
@@ -61,6 +61,8 @@ class Atom<T = unknown> {
   }
 
   on(fn: SubscriberWithValue<T>) {
+    !this.emitter && (this.emitter = new EventEmitter());
+
     return this.emitter.on('data', fn);
   }
 
@@ -68,7 +70,7 @@ class Atom<T = unknown> {
     this.drops.forEach(x => x());
     this.drops = new Map();
     this.connections = new Map();
-    this.emitter = new EventEmitter();
+    this.emitter = null;
   }
 
   toString() {
