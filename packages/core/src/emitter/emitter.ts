@@ -1,21 +1,21 @@
-type Subscriber<T = unknown> = (data?: T) => void;
+import { type SubscriberWithValue } from '../shared';
 
-type EventName = 'finish' | 'chunk';
+type EventName = 'finish' | 'chunk' | 'data';
 
 class EventEmitter {
-  private map: Partial<Record<EventName, Set<Subscriber>>> = {};
+  private subscribers: Partial<Record<EventName, Set<SubscriberWithValue<unknown>>>> = {};
 
-  public on<T>(e: EventName, sub: Subscriber<T>) {
-    !this.map[e] && (this.map[e] = new Set()), this.map[e].add(sub);
+  public on<T>(e: EventName, sub: SubscriberWithValue<T>) {
+    !this.subscribers[e] && (this.subscribers[e] = new Set()), this.subscribers[e].add(sub);
 
-    return () => this.map[e].delete(sub);
+    return () => this.subscribers[e].delete(sub);
   }
 
   public emit<T>(e: EventName, data?: T) {
-    this.map[e] && this.map[e].forEach(x => x(data));
+    this.subscribers[e] && this.subscribers[e].forEach(x => x(data));
   }
 }
 
 const emitter = new EventEmitter();
 
-export { emitter };
+export { EventEmitter, emitter };

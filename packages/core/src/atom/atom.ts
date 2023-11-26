@@ -1,28 +1,24 @@
-import { type Hook } from '../fiber';
-import { type Callback } from '../shared';
-import { platform } from '../platform';
+import { type Callback, type SubscriberWithValue } from '../shared';
 import { detectIsFunction, trueFn } from '../helpers';
 import { createUpdateCallback } from '../workloop';
 import { scope$$, getRootId } from '../scope';
+import { EventEmitter } from '../emitter';
+import { platform } from '../platform';
 import { useMemo } from '../use-memo';
+import { type Hook } from '../fiber';
 
 class Atom<T = unknown> {
   private x: T;
-  private subs: Map<Hook, Subscriber<T>> = new Map();
-  private unsubs: Map<Hook, Callback> = new Map();
+  private connections: Map<Hook, [number, ShouldUpdate<T>]> = new Map();
+  private drops: Map<Hook, Callback> = new Map();
+  private emitter = new EventEmitter();
 
   constructor(value: T) {
     this.x = value;
   }
 
-  value(shouldUpdate: ShouldUpdate<T> = trueFn) {
-    const rootId = getRootId();
-    const fiber = scope$$().getCursorFiber();
-    const { hook } = fiber;
-
-    this.on(hook, (p, n) => {
-      shouldUpdate(p, n) && platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
-    });
+  value(fn?: ShouldUpdate<T>) {
+    this.connect(fn);
 
     return this.x;
   }
@@ -37,36 +33,42 @@ class Atom<T = unknown> {
 
     this.x = n;
 
-    for (const [_, fn] of this.subs) {
-      fn(p, n);
+    for (const [hook, [rootId, shouldUpdate = trueFn]] of this.connections) {
+      shouldUpdate(p, n) && platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
     }
+
+    this.emitter.emit('data', this.x);
   }
 
-  on(hook: Hook, fn: Subscriber<T>) {
-    const fiber = hook.getOwner();
-    const off = () => this.unsubs.has(hook) && this.unsubs.get(hook)();
-
-    fiber.markAtomHost();
-    this.subs.set(hook, fn);
-    this.unsubs.set(hook, () => {
-      const fiber = hook.getOwner();
-
-      fiber.atoms.delete(this);
-      this.subs.delete(hook);
-      this.unsubs.delete(hook);
-    });
+  connect(fn: ShouldUpdate<T>) {
+    const rootId = getRootId();
+    const fiber = scope$$().getCursorFiber();
+    const { hook } = fiber;
+    const off = () => this.drops.has(hook) && this.drops.get(hook)();
 
     !fiber.atoms && (fiber.atoms = new Map());
     fiber.atoms.set(this, off);
+    fiber.markAtomHost();
+
+    this.connections.set(hook, [rootId, fn]);
+    this.drops.set(hook, () => {
+      hook.getOwner().atoms.delete(this);
+      this.connections.delete(hook);
+      this.drops.delete(hook);
+    });
 
     return off;
   }
 
-  reset(value?: T) {
-    this.x = value;
-    this.subs = new Map();
-    this.unsubs.forEach(x => x());
-    this.unsubs = new Map();
+  on(fn: SubscriberWithValue<T>) {
+    return this.emitter.on('data', fn);
+  }
+
+  kill() {
+    this.drops.forEach(x => x());
+    this.drops = new Map();
+    this.connections = new Map();
+    this.emitter = new EventEmitter();
   }
 
   toString() {
@@ -76,27 +78,20 @@ class Atom<T = unknown> {
   toJSON() {
     return this.x;
   }
+
+  valueOf() {
+    return this.x;
+  }
 }
 
 const atom = <T>(value?: T) => new Atom(value);
 
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
 
-function useAtom<T>(value?: T): [Atom<T>, SetAtom<T>] {
-  const [atom$, setAtom] = useMemo(() => {
-    const atom$ = atom<T>(value);
-    const setAtom = atom$.set.bind(atom$) as SetAtom<T>;
-
-    return [atom$, setAtom];
-  }, []);
-
-  return [atom$, setAtom];
+function useAtom<T>(value?: T): Atom<T> {
+  return useMemo(() => atom<T>(value), []);
 }
 
 type ShouldUpdate<T> = (p: T, n: T) => boolean;
-
-type Subscriber<T> = (p: T, n: T) => void;
-
-type SetAtom<T = unknown> = (value: T | ((prevValue: T) => T)) => void;
 
 export { Atom, atom, detectIsAtom, useAtom };
