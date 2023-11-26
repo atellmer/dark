@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "baseUrl": "."
+  },
+  "include": [
+    "./src/*"
+  ]
+}

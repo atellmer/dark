@@ -79,6 +79,7 @@
   "include": [
     "./packages/**/*",
     "./examples/**/*",
+    "./templates/**/*",
     "./test/**/*",
     "./*.js"
   ]
