@@ -38,7 +38,6 @@ import {
 } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
-import { emitter } from '../emitter';
 
 let hasRenderError = false;
 
@@ -465,7 +464,7 @@ function commit(scope$: Scope) {
 
 function flush(scope$: Scope, cancel = false) {
   scope$.flush();
-  !cancel && emitter.emit('finish');
+  !cancel && scope$.getEmitter().emit('finish');
 }
 
 function syncElementIndices(fiber: Fiber) {

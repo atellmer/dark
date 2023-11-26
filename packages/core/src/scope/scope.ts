@@ -1,7 +1,8 @@
-import type { Fiber } from '../fiber';
 import type { Callback, DarkElementKey as Key } from '../shared';
-import { platform } from '../platform';
 import { type SetPendingStatus } from '../start-transition';
+import { type Fiber } from '../fiber';
+import { EventEmitter } from '../emitter';
+import { platform } from '../platform';
 
 type Actions = Record<
   number,
@@ -43,6 +44,7 @@ class Scope {
   private isEventZone = false;
   private isHot = false;
   private isDynamic = platform.detectIsDynamic();
+  private emitter = new EventEmitter();
 
   public resetActions() {
     this.actions = {};
@@ -111,6 +113,7 @@ class Scope {
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.insertionEffects = new Set([...this.insertionEffects]);
     scope.isUpdateZone = this.isUpdateZone;
+    scope.emitter = this.emitter;
 
     return scope;
   }
@@ -380,6 +383,10 @@ class Scope {
     this.setIsHydrateZone(false);
     this.setIsUpdateZone(false);
     this.resetActions();
+  }
+
+  public getEmitter() {
+    return this.emitter;
   }
 }
 

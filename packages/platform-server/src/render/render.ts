@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import {
   type DarkElement,
+  type Callback,
   ROOT,
   Fiber,
   EffectTag,
@@ -12,8 +13,8 @@ import {
   unmountRoot,
   setRootId,
   scope$$,
-  emitter,
   nextTick,
+  dummyFn,
 } from '@dark-engine/core';
 
 import { createNativeElement, commit, finishCommit, chunk } from '../dom';
@@ -40,7 +41,15 @@ function inject() {
   isInjected = true;
 }
 
-function createRenderCallback(element: DarkElement, stream = false) {
+type CreateRenderCallbackOptions = {
+  element: DarkElement;
+  isStream?: boolean;
+  onCompleted: Callback;
+  onStart?: Callback;
+};
+
+function createRenderCallback(options: CreateRenderCallbackOptions) {
+  const { element, isStream = false, onCompleted, onStart = dummyFn } = options;
   !isInjected && inject();
 
   const rootId = getNextRootId();
@@ -52,10 +61,18 @@ function createRenderCallback(element: DarkElement, stream = false) {
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       tag: EffectTag.C,
     });
-    scope$.setIsStreamZone(stream);
+    const emitter = scope$.getEmitter();
+
+    scope$.setIsStreamZone(isStream);
     scope$.resetMount();
     scope$.setWorkInProgress(fiber);
     scope$.setNextUnitOfWork(fiber);
+
+    onStart();
+    emitter.on('finish', () => {
+      emitter.kill();
+      onCompleted();
+    });
   };
 
   return { rootId, callback };
@@ -63,7 +80,6 @@ function createRenderCallback(element: DarkElement, stream = false) {
 
 function renderToString(element: DarkElement): Promise<string> {
   return new Promise<string>(resolve => {
-    const { rootId, callback } = createRenderCallback(element);
     const onCompleted = () => {
       const { element: nativeElement } = scope$$().getRoot() as Fiber<TagNativeElement>;
       const content = nativeElement.renderToString(true);
@@ -71,8 +87,9 @@ function renderToString(element: DarkElement): Promise<string> {
       resolve(content);
       unmountRoot(rootId, () => {});
     };
+    const { rootId, callback } = createRenderCallback({ element, onCompleted });
 
-    platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted });
+    platform.schedule(callback, { priority: TaskPriority.NORMAL });
   });
 }
 
@@ -84,31 +101,38 @@ type RenderToStreamOptions = {
 function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
   const { bootstrapScripts = [], chunkSize = 500 } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
-  const { rootId, callback } = createRenderCallback(element, true);
   let content = '';
+
   const onCompleted = () => {
     if (content) {
       stream.push(content);
       content = '';
     }
+
     stream.push(null);
     unmountRoot(rootId, () => {});
-    off();
   };
-  const off = emitter.on<string>('chunk', chunk => {
-    if (chunk === PREPEND_SCRIPTS_CHUNK) {
-      content += addScripts(bootstrapScripts);
-    }
 
-    content += chunk;
+  const onStart = () => {
+    const emitter = scope$$().getEmitter();
 
-    if (content.length >= chunkSize) {
-      stream.push(content);
-      content = '';
-    }
-  });
+    emitter.on<string>('chunk', chunk => {
+      if (chunk === PREPEND_SCRIPTS_CHUNK) {
+        content += addScripts(bootstrapScripts);
+      }
 
-  nextTick(() => platform.schedule(callback, { priority: TaskPriority.NORMAL, onCompleted }));
+      content += chunk;
+
+      if (content.length >= chunkSize) {
+        stream.push(content);
+        content = '';
+      }
+    });
+  };
+
+  const { rootId, callback } = createRenderCallback({ element, isStream: true, onCompleted, onStart });
+
+  nextTick(() => platform.schedule(callback, { priority: TaskPriority.NORMAL }));
   stream.push(DOCTYPE);
 
   return stream;

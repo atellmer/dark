@@ -1,13 +1,10 @@
 import {
   type ScheduleCallbackOptions,
   type WorkLoop,
-  detectIsFunction,
   getTime,
   workLoop,
   detectIsBusy,
   TaskPriority,
-  dummyFn,
-  emitter,
 } from '@dark-engine/core';
 
 type QueueMap = {
@@ -23,7 +20,6 @@ const queueMap: QueueMap = {
 };
 const YIELD_INTERVAL = 4;
 let deadline = 0;
-let onCompleted: () => void;
 
 class Task {
   public static nextTaskId = 0;
@@ -32,7 +28,6 @@ class Task {
   public priority: TaskPriority;
   public forceAsync: boolean;
   public callback: () => void;
-  public onCompleted: () => void;
 
   constructor(options: Omit<Task, 'id'>) {
     this.id = ++Task.nextTaskId;
@@ -40,15 +35,14 @@ class Task {
     this.priority = options.priority;
     this.forceAsync = options.forceAsync;
     this.callback = options.callback;
-    this.onCompleted = options.onCompleted;
   }
 }
 
 const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
-  const { priority = TaskPriority.NORMAL, forceAsync = false, onCompleted = dummyFn } = options || {};
-  const task = new Task({ time: getTime(), priority, forceAsync, callback, onCompleted });
+  const { priority = TaskPriority.NORMAL, forceAsync = false } = options || {};
+  const task = new Task({ time: getTime(), priority, forceAsync, callback });
   const map: Record<TaskPriority, () => void> = {
     [TaskPriority.HIGH]: () => queueMap.high.push(task),
     [TaskPriority.NORMAL]: () => queueMap.normal.push(task),
@@ -64,7 +58,6 @@ function pick(queue: Array<Task>) {
   const task = queue.shift();
 
   task.callback();
-  onCompleted = task.onCompleted;
   task.forceAsync ? requestCallbackAsync(workLoop) : requestCallback(workLoop);
 
   return true;
@@ -105,12 +98,5 @@ function requestCallback(callback: WorkLoop) {
   callback(false);
   executeTasks();
 }
-
-emitter.on('finish', () => {
-  if (detectIsFunction(onCompleted)) {
-    onCompleted();
-    onCompleted = null;
-  }
-});
 
 export { shouldYield, scheduleCallback };

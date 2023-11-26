@@ -1,13 +1,5 @@
 import { MessageChannel, type MessagePort } from 'node:worker_threads';
-import {
-  type ScheduleCallbackOptions,
-  type WorkLoop,
-  detectIsFunction,
-  getTime,
-  workLoop,
-  detectIsBusy,
-  emitter,
-} from '@dark-engine/core';
+import { type ScheduleCallbackOptions, type WorkLoop, getTime, workLoop, detectIsBusy } from '@dark-engine/core';
 
 type Queue = Array<Task>;
 
@@ -16,7 +8,6 @@ const YIELD_INTERVAL = 4;
 let scheduledCallback: WorkLoop = null;
 let deadline = 0;
 let isMessageLoopRunning = false;
-let onCompleted: () => void;
 
 class Task {
   public static nextTaskId = 0;
@@ -24,22 +15,20 @@ class Task {
   public time: number;
   public forceAsync: boolean;
   public callback: () => void;
-  public onCompleted: () => void;
 
   constructor(options: Omit<Task, 'id'>) {
     this.id = ++Task.nextTaskId;
     this.time = options.time;
     this.forceAsync = options.forceAsync;
     this.callback = options.callback;
-    this.onCompleted = options.onCompleted;
   }
 }
 
 const shouldYield = () => getTime() >= deadline;
 
 function scheduleCallback(callback: () => void, options?: ScheduleCallbackOptions) {
-  const { forceAsync = false, onCompleted = () => {} } = options || {};
-  const task = new Task({ time: getTime(), forceAsync, callback, onCompleted });
+  const { forceAsync = false } = options || {};
+  const task = new Task({ time: getTime(), forceAsync, callback });
 
   queue.push(task);
   executeTasks();
@@ -50,7 +39,6 @@ function pick(queue: Array<Task>) {
   const task = queue.shift();
 
   task.callback();
-  onCompleted = task.onCompleted;
   task.forceAsync ? requestCallbackAsync(workLoop) : requestCallback(workLoop);
 }
 
@@ -102,13 +90,6 @@ function requestCallback(callback: WorkLoop) {
   callback(false);
   executeTasks();
 }
-
-emitter.on('finish', () => {
-  if (detectIsFunction(onCompleted)) {
-    onCompleted();
-    onCompleted = null;
-  }
-});
 
 let channel: MessageChannel = null;
 let port: MessagePort = null;

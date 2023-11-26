@@ -22,6 +22,7 @@ import { type NSElement } from '../registry';
 
 const APP_ID = 0;
 let isInjected = false;
+let nextRootId = APP_ID;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
@@ -64,28 +65,27 @@ function render(options: RenderOptions): NSElement {
       alt: root,
       tag: isUpdate ? EffectTag.U : EffectTag.C,
     });
+    const emitter = scope$.getEmitter();
 
     scope$.resetMount();
     scope$.setWorkInProgress(fiber);
     scope$.setNextUnitOfWork(fiber);
-  };
 
-  platform.schedule(callback, {
-    priority: TaskPriority.NORMAL,
-    onCompleted: () => {
+    emitter.on('finish', () => {
+      emitter.kill();
+
       if (detectIsFunction(onCompleted)) {
         const nativeView = getRootNativeView();
 
-        if (isSubRoot) {
-          unmountRoot(rootId, () => {});
-        }
-
+        isSubRoot && unmountRoot(rootId, () => {});
         onCompleted(nativeView);
       }
 
       setRootId(APP_ID);
-    },
-  });
+    });
+  };
+
+  platform.schedule(callback, { priority: TaskPriority.NORMAL });
 
   if (isSubRoot) return null;
 
@@ -100,8 +100,6 @@ function getRootNativeView() {
 
   return nativeView;
 }
-
-let nextRootId = APP_ID;
 
 function renderRoot(element: DarkElement) {
   return render({ element });
