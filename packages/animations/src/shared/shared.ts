@@ -1,4 +1,4 @@
-import { presets } from '../presets';
+import { preset } from '../preset';
 import { type Controller } from '../controller';
 
 export type SpringValue<T extends string> = Record<T, number>;
@@ -20,7 +20,7 @@ export type SpringConfig = {
 export type Key = string | number;
 
 const defaultSpringConfig: SpringConfig = {
-  ...presets.noWobble,
+  ...preset('no-wobble'),
   mass: 1,
   precision: 3,
   fix: 4,

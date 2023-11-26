@@ -2,7 +2,7 @@ export { type ConfiguratorFn, type StartFn, type StartFnConfig } from './control
 export { type SpringValue, type SpringItem } from './shared';
 export { range } from './utils';
 export * from './constants';
-export * from './presets';
+export * from './preset';
 export * from './use-trail';
 export * from './use-springs';
 export * from './use-spring';

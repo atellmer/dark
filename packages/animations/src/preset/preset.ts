@@ -1,14 +1,17 @@
 import { type SpringConfig } from '../shared';
 
 type Preset = Pick<SpringConfig, 'tension' | 'friction'>;
-
-type PresetName = 'noWobble' | 'gentle' | 'wobbly' | 'stiff';
+type PresetName = 'no-wobble' | 'gentle' | 'wobbly' | 'stiff';
 
 const presets: Record<PresetName, Preset> = {
-  noWobble: { tension: 170, friction: 26 },
+  'no-wobble': { tension: 170, friction: 26 },
   gentle: { tension: 120, friction: 14 },
   wobbly: { tension: 180, friction: 12 },
   stiff: { tension: 210, friction: 20 },
 };
 
-export { presets };
+function preset(name: PresetName): Preset {
+  return presets[name] || ({} as Preset);
+}
+
+export { preset };
