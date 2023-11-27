@@ -2,6 +2,7 @@ import { platform, falseFn, detectIsUndefined } from '@dark-engine/core';
 
 import { type SpringValue, type SpringConfig, type Key, defaultSpringConfig } from '../shared';
 import { type AnimationEventName, SharedState } from '../state';
+import { Spring } from '../spring';
 import { time, fix } from '../utils';
 import { stepper } from '../stepper';
 
@@ -26,12 +27,12 @@ class Controller<T extends string, I = unknown> {
   private right: Controller<T> = null;
   private springConfigFn: SpringConfigFn<T>;
   private configurator: ConfiguratorFn<T>;
-  private notifier: NotifierFn<T>;
   private immediate: ImmediateFn<T> = falseFn;
   private immediates: Array<() => void> = [];
   private primaryKey: Key;
   private isReplaced = false;
   private item: I = null;
+  private spring = new Spring<T>();
 
   constructor(state: SharedState) {
     this.state = state;
@@ -76,12 +77,8 @@ class Controller<T extends string, I = unknown> {
     this.right = x;
   }
 
-  setNotifier(fn: (x: SpringValue<T>) => void) {
-    this.notifier = fn;
-  }
-
   notify() {
-    this.notifier && this.notifier(this.getValue());
+    this.springify();
     this.event('item-change');
   }
 
@@ -95,6 +92,7 @@ class Controller<T extends string, I = unknown> {
 
   replaceValue(x: SpringValue<T>) {
     this.value = x;
+    this.springify();
   }
 
   markAsFake(x: Key) {
@@ -127,17 +125,8 @@ class Controller<T extends string, I = unknown> {
     return this.state;
   }
 
-  getValue() {
-    const fixed = {} as SpringValue<T>;
-    const keys = Object.keys(this.value) as Array<T>;
-
-    for (const key of keys) {
-      const config = this.springConfigFn(key);
-
-      fixed[key] = fix(this.value[key], config.fix);
-    }
-
-    return fixed;
+  getSpring() {
+    return this.springify();
   }
 
   start(fn?: StartFn<T>) {
@@ -161,6 +150,7 @@ class Controller<T extends string, I = unknown> {
   reset() {
     this.value = { ...this.from };
     this.dest = { ...(this.to || this.from) };
+    this.springify();
   }
 
   cancel() {
@@ -278,6 +268,19 @@ class Controller<T extends string, I = unknown> {
     }
 
     return true;
+  }
+
+  private springify() {
+    const keys = Object.keys(this.value) as Array<T>;
+
+    for (const key of keys) {
+      const config = this.springConfigFn(key);
+      const value = fix(this.value[key], config.fix);
+
+      this.spring.setProp(key, value);
+    }
+
+    return this.spring;
   }
 
   private static generateFakeKey(x: Key) {

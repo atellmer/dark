@@ -8,17 +8,19 @@ import {
   walk,
 } from '@dark-engine/core';
 
-import { type SpringValue, type SpringItem } from '../shared';
+import { type SpringValue } from '../shared';
+import { type Spring } from '../spring';
 
 type AnimatedProps<E = unknown, T extends string = string> = {
-  spring: SpringItem<T>;
-  fn: StyleSubscriber<E, T>;
+  spring: Spring<T>;
+  fn: StyleFn<E, T>;
   slot: Component | TagVirtualNodeFactory;
 };
 
 const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   const cursor = scope$$().getCursorFiber();
   const scope = useMemo(() => ({ element: null }), []);
+  const notify = () => scope.element && fn(scope.element, spring.toValue());
 
   useLayoutEffect(() => {
     const fiber = cursor.hook.getOwner();
@@ -30,15 +32,16 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
       }
     });
 
-    fn(scope.element, spring.getValue());
+    notify();
+
+    return spring.on(notify);
   }, []);
 
-  spring.ctrl.setNotifier(value => scope.element && fn(scope.element, value));
-  scope.element && fn(scope.element, spring.getValue());
+  notify();
 
   return slot;
 });
 
-type StyleSubscriber<E = unknown, T extends string = string> = (element: E, value: SpringValue<T>) => void;
+type StyleFn<E = unknown, T extends string = string> = (element: E, value: SpringValue<T>) => void;
 
 export { Animated };

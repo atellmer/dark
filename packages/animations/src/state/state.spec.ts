@@ -32,7 +32,7 @@ function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
     ctrl.setConfigurator(configurator);
     ctrl.setLeft(left);
     ctrl.setRight(right);
-    ctrl.setNotifier(spies[idx]);
+    ctrl.getSpring().on(spies[idx]);
   });
 
   return {
@@ -41,6 +41,8 @@ function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
     spies,
   };
 }
+
+const toValue = <T extends string>(ctrl: Controller<T>) => ctrl.getSpring().toValue();
 
 describe('[@animations/state]', () => {
   test('has required methods', () => {
@@ -292,15 +294,15 @@ describe('[@animations/state]', () => {
     state.start();
     jest.runAllTimers();
 
-    expect(ctrls[0].getValue()).toEqual({ scale: 1 });
-    expect(ctrls[1].getValue()).toEqual({ scale: 1 });
-    expect(ctrls[2].getValue()).toEqual({ scale: 1 });
-    expect(ctrls[3].getValue()).toEqual({ scale: 1 });
+    expect(toValue(ctrls[0])).toEqual({ scale: 1 });
+    expect(toValue(ctrls[1])).toEqual({ scale: 1 });
+    expect(toValue(ctrls[2])).toEqual({ scale: 1 });
+    expect(toValue(ctrls[3])).toEqual({ scale: 1 });
     state.reset();
-    expect(ctrls[0].getValue()).toEqual({ scale: 0 });
-    expect(ctrls[1].getValue()).toEqual({ scale: 0 });
-    expect(ctrls[2].getValue()).toEqual({ scale: 0 });
-    expect(ctrls[3].getValue()).toEqual({ scale: 0 });
+    expect(toValue(ctrls[0])).toEqual({ scale: 0 });
+    expect(toValue(ctrls[1])).toEqual({ scale: 0 });
+    expect(toValue(ctrls[2])).toEqual({ scale: 0 });
+    expect(toValue(ctrls[3])).toEqual({ scale: 0 });
   });
 
   test('can cancel an animation correctly', async () => {

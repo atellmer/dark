@@ -120,11 +120,11 @@ const App = component(() => {
   return (
     <>
       <div ref={ref} class='list' style={{ height: Math.max(...heights) + 'px' }}>
-        {transition(({ spring }) => {
+        {transition(({ spring, item }) => {
           return (
             <Animated spring={spring} fn={styleFn}>
               <div>
-                <div style={{ 'background-image': `url(${spring.item.src}?auto=compress&dpr=2&h=500&w=500)` }} />
+                <div style={{ 'background-image': `url(${item.src}?auto=compress&dpr=2&h=500&w=500)` }} />
               </div>
             </Animated>
           );

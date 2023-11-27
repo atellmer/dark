@@ -23,7 +23,7 @@ const Portal = component<PortalProps>(
     const element = props.container;
     const fiber = scope$$().getCursorFiber();
 
-    useMemo(() => (element.textContent = ''), []);
+    useMemo(() => (element.innerHTML = ''), []);
 
     fiber.element = element;
     delete props.container;

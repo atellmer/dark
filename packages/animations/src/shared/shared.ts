@@ -1,13 +1,6 @@
 import { preset } from '../preset';
-import { type Controller } from '../controller';
 
-export type SpringValue<T extends string> = Record<T, number>;
-
-export type SpringItem<T extends string = string> = {
-  ctrl: Controller<T>;
-  getValue: () => SpringValue<T>;
-  detectIsSeriesPlaying: () => boolean;
-};
+export type SpringValue<T extends string = string> = Record<T, number>;
 
 export type SpringConfig = {
   mass: number;

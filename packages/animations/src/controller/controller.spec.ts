@@ -4,6 +4,7 @@ import { type ConfiguratorFn, Controller } from './controller';
 import { SharedState } from '../state';
 
 const idx = 0;
+const setup = <T extends string>() => new Controller<T>(new SharedState());
 
 beforeAll(() => {
   jest.useFakeTimers();
@@ -26,7 +27,7 @@ describe('[@animations/controller]', () => {
     expect(ctrl.reset).toBeDefined();
     expect(ctrl.notify).toBeDefined();
     expect(ctrl.getState).toBeDefined();
-    expect(ctrl.getValue).toBeDefined();
+    expect(ctrl.getSpring).toBeDefined();
     expect(ctrl.getIdx).toBeDefined();
     expect(ctrl.setIdx).toBeDefined();
     expect(ctrl.getKey).toBeDefined();
@@ -50,7 +51,7 @@ describe('[@animations/controller]', () => {
 
   test('calls a notifier function correctly', () => {
     type SpringProps = 'scale';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 2 },
@@ -63,7 +64,7 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(spy);
+    ctrl.getSpring().on(spy);
     ctrl.start();
     jest.runAllTimers();
 
@@ -72,7 +73,7 @@ describe('[@animations/controller]', () => {
 
   test('can animate a single value', () => {
     type SpringProps = 'x';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { x: 0 },
       to: { x: 100 },
@@ -85,7 +86,7 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(spy);
+    ctrl.getSpring().on(spy);
     ctrl.start();
     jest.runAllTimers();
 
@@ -93,13 +94,12 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenCalledWith({ x: 4.352 });
     expect(spy).toHaveBeenCalledWith({ x: 70.2667 });
     expect(spy).toHaveBeenCalledWith({ x: 99.9639 });
-    expect(spy).toHaveBeenCalledWith({ x: 100 });
-    expect(ctrl.getValue()).toEqual({ x: 100 });
+    expect(spy).toHaveBeenLastCalledWith({ x: 100 });
   });
 
   test('can animate a complex value', () => {
     type SpringProps = 'x' | 'y' | 'x';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { x: -100, y: 0, z: 0 },
       to: { x: 100, y: 200, z: 10 },
@@ -112,15 +112,15 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(spy);
+    ctrl.getSpring().on(spy);
     ctrl.start();
     jest.runAllTimers();
 
-    expect(spy).toHaveBeenCalledTimes(88);
+    expect(spy).toHaveBeenCalledTimes(88 * 3);
     expect(spy).toHaveBeenCalledWith({ x: -91.296, y: 8.704, z: 0.4352 });
     expect(spy).toHaveBeenCalledWith({ x: 90.5842, y: 190.5842, z: 9.5292 });
     expect(spy).toHaveBeenCalledWith({ x: 99.6508, y: 199.6508, z: 9.9825 });
-    expect(ctrl.getValue()).toEqual({ x: 100, y: 200, z: 10 });
+    expect(spy).toHaveBeenLastCalledWith({ x: 100, y: 200, z: 10 });
   });
 
   test('can use a custom config', () => {
@@ -128,7 +128,7 @@ describe('[@animations/controller]', () => {
     const spy1 = jest.fn();
     const spy2 = jest.fn();
     {
-      const ctrl = new Controller<SpringProps>(new SharedState());
+      const ctrl = setup<SpringProps>();
       const configurator: ConfiguratorFn<SpringProps> = () => ({
         from: { opacity: 0 },
         to: { opacity: 1 },
@@ -140,11 +140,11 @@ describe('[@animations/controller]', () => {
       ctrl.setTo(to);
       ctrl.setSpringConfigFn(config);
       ctrl.setConfigurator(configurator);
-      ctrl.setNotifier(spy1);
+      ctrl.getSpring().on(spy1);
       ctrl.start();
     }
     {
-      const ctrl = new Controller<SpringProps>(new SharedState());
+      const ctrl = setup<SpringProps>();
       const configurator: ConfiguratorFn<SpringProps> = () => ({
         from: { opacity: 0 },
         to: { opacity: 1 },
@@ -157,7 +157,7 @@ describe('[@animations/controller]', () => {
       ctrl.setTo(to);
       ctrl.setSpringConfigFn(config);
       ctrl.setConfigurator(configurator);
-      ctrl.setNotifier(spy2);
+      ctrl.getSpring().on(spy2);
       ctrl.start();
     }
 
@@ -165,13 +165,13 @@ describe('[@animations/controller]', () => {
 
     expect(spy1).toHaveBeenCalledTimes(51);
     expect(spy2).toHaveBeenCalledTimes(269);
-    expect(spy1).toHaveBeenCalledWith({ opacity: 1 });
-    expect(spy2).toHaveBeenCalledWith({ opacity: 1 });
+    expect(spy1).toHaveBeenLastCalledWith({ opacity: 1 });
+    expect(spy2).toHaveBeenLastCalledWith({ opacity: 1 });
   });
 
   test('can use a cutom config for different values', () => {
     type SpringProps = 'x' | 'y';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { x: 0, y: 0 },
       to: { x: 100, y: 100 },
@@ -185,20 +185,20 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(spy);
+    ctrl.getSpring().on(spy);
     ctrl.start();
     jest.runAllTimers();
 
-    expect(spy).toHaveBeenCalledTimes(164);
+    expect(spy).toHaveBeenCalledTimes(164 * 2);
     expect(spy).toHaveBeenCalledWith({ x: 5.12, y: 2.56 });
     expect(spy).toHaveBeenCalledWith({ x: 99.481, y: 87.408 });
     expect(spy).toHaveBeenCalledWith({ x: 100, y: 98.9548 });
-    expect(spy).toHaveBeenCalledWith({ x: 100, y: 100 });
+    expect(spy).toHaveBeenLastCalledWith({ x: 100, y: 100 });
   });
 
   test('can animate without initial destination value', () => {
     type SpringProps = 'x';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { x: 0 },
     });
@@ -210,7 +210,7 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(spy);
+    ctrl.getSpring().on(spy);
     ctrl.start(() => ({ to: { x: 100 } }));
     jest.runAllTimers();
 
@@ -218,12 +218,12 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenCalledWith({ x: 4.352 });
     expect(spy).toHaveBeenCalledWith({ x: 98.8756 });
     expect(spy).toHaveBeenCalledWith({ x: 99.9901 });
-    expect(spy).toHaveBeenCalledWith({ x: 100 });
+    expect(spy).toHaveBeenLastCalledWith({ x: 100 });
   });
 
   test('can set an immediate value', () => {
     type SpringProps = 'x' | 'zIndex';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { x: 0, zIndex: 0 },
       to: { x: 100, zIndex: 1 },
@@ -237,7 +237,7 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(spy);
+    ctrl.getSpring().on(spy);
     ctrl.start();
     jest.runAllTimers();
 
@@ -255,7 +255,7 @@ describe('[@animations/controller]', () => {
 
   test('can reset value correctly', () => {
     type SpringProps = 'scale';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 2 },
@@ -267,20 +267,21 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(() => {});
     ctrl.start();
     jest.runAllTimers();
 
-    expect(ctrl.getValue()).toEqual({ scale: 2 });
+    const spring = ctrl.getSpring();
+
+    expect(spring.toValue()).toEqual({ scale: 2 });
 
     ctrl.reset();
 
-    expect(ctrl.getValue()).toEqual({ scale: 0 });
+    expect(spring.toValue()).toEqual({ scale: 0 });
   });
 
   test('can cancel animation', () => {
     type SpringProps = 'scale';
-    const ctrl = new Controller<SpringProps>(new SharedState());
+    const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 2 },
@@ -292,11 +293,12 @@ describe('[@animations/controller]', () => {
     ctrl.setTo(to);
     ctrl.setSpringConfigFn(config);
     ctrl.setConfigurator(configurator);
-    ctrl.setNotifier(() => {});
     ctrl.start();
     ctrl.cancel();
     jest.runAllTimers();
 
-    expect(ctrl.getValue()).toEqual({ scale: 0 });
+    const spring = ctrl.getSpring();
+
+    expect(spring.toValue()).toEqual({ scale: 0 });
   });
 });

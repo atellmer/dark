@@ -2,7 +2,7 @@ import { useMemo, useLayoutEffect, useEffect } from '@dark-engine/core';
 
 import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../state';
 import { type BaseItemConfig, type StartFn, Controller } from '../controller';
-import { type SpringItem } from '../shared';
+import { type Spring } from '../spring';
 import { range } from '../utils';
 
 export type SpringItemConfig<T extends string> = BaseItemConfig<T>;
@@ -11,7 +11,7 @@ function useSprings<T extends string>(
   count: number,
   configurator: SpringConfiguratorFn<T>,
   deps?: Array<any>,
-): [Array<SpringItem<T>>, SpringApi<T>] {
+): [Array<Spring<T>>, SpringApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
   const scope = useMemo<Scope<T>>(() => {
     return {
@@ -41,13 +41,7 @@ function useSprings<T extends string>(
     scope.prevCount = count;
     prepare(ctrls, configurator);
 
-    const springs = ctrls.map(ctrl => ({
-      ctrl,
-      getValue: () => ctrl.getValue(),
-      detectIsSeriesPlaying: () => state.detectIsPlaying(),
-    }));
-
-    return springs;
+    return ctrls.map(ctrl => ctrl.getSpring());
   }, [count]);
 
   const api = useMemo<SpringApi<T>>(() => {
@@ -67,6 +61,7 @@ function useSprings<T extends string>(
       reset: state.reset.bind(state),
       cancel: state.cancel.bind(state),
       on: state.on.bind(state),
+      isCanceled: state.getIsCanceled.bind(state),
     };
   }, []);
 
@@ -121,6 +116,7 @@ export type SpringApi<T extends string = string> = {
   reset: () => void;
   cancel: () => void;
   on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
+  isCanceled: () => void;
 };
 
 export { useSprings };

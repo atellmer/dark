@@ -10,10 +10,11 @@ import {
   detectIsArray,
 } from '@dark-engine/core';
 
-import { type Key, type SpringValue, type SpringItem } from '../shared';
+import { type Key, type SpringValue } from '../shared';
 import { type AnimationEventValue, SharedState } from '../state';
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
 import { type SpringApi } from '../use-springs';
+import { type Spring } from '../spring';
 import { uniq } from '../utils';
 
 export type TransitionItemConfig<T extends string> = {
@@ -54,14 +55,9 @@ function useTransition<T extends string, I = unknown>(
       const elements: Array<TransitionElement> = [];
 
       for (const [key, ctrl] of ctrlsMap) {
-        const item = ctrl.getItem();
         const idx = ctrl.getIdx();
-        const spring: TransitionItem<T, I> = {
-          ctrl,
-          item,
-          getValue: () => ctrl.getValue(),
-          detectIsSeriesPlaying: () => state.detectIsPlaying(),
-        };
+        const item = ctrl.getItem();
+        const spring = ctrl.getSpring();
         const element = Fragment({ key, slot: render({ spring, item, idx }) });
 
         if (elements[idx]) {
@@ -100,6 +96,7 @@ function useTransition<T extends string, I = unknown>(
       pause: state.pause.bind(state),
       resume: state.resume.bind(state),
       on: state.on.bind(state),
+      isCanceled: state.getIsCanceled.bind(state),
     };
   }, []);
 
@@ -415,12 +412,8 @@ type TransitionConfiguratorFn<T extends string = string, I = unknown> = (
 
 export type TransitionApi<T extends string = string> = Omit<SpringApi<T>, 'reset'>;
 
-export type TransitionItem<T extends string = string, I = unknown> = {
-  item: I;
-} & SpringItem<T>;
-
 export type TransitionRenderFn<T extends string = string, I = unknown> = (options: {
-  spring: TransitionItem<T, I>;
+  spring: Spring<T>;
   item: I;
   idx: number;
 }) => TransitionElement;

@@ -3,12 +3,12 @@
 import { h, component, useState, detectIsArray } from '@dark-engine/core';
 import { dom, createEnv, mockPlatformRaf } from '@test-utils';
 
-import { type SpringValue, type SpringItem } from '../shared';
+import { type SpringValue } from '../shared';
 import { type SpringApi } from '../use-springs';
-import { useTrail } from '../use-trail';
 import { Animated } from '../animated';
-import { Controller } from '../controller';
+import { Spring } from '../spring';
 import { range } from '../utils';
+import { useTrail } from './use-trail';
 
 let { host, render } = createEnv();
 
@@ -20,7 +20,7 @@ beforeEach(() => {
 describe('[@animations/use-trail]', () => {
   test('returns springs and an api', () => {
     type SpringProps = 'scale';
-    let springs: Array<SpringItem<SpringProps>> = null;
+    let springs: Array<Spring<SpringProps>> = null;
     let api: SpringApi<SpringProps> = null;
     const App = component(() => {
       const [_springs, _api] = useTrail<SpringProps>(1, () => ({
@@ -37,10 +37,8 @@ describe('[@animations/use-trail]', () => {
     render(<App />);
     expect(springs).toBeDefined();
     expect(detectIsArray(springs)).toBeTruthy();
-    expect(springs[0].ctrl).toBeInstanceOf(Controller);
-    expect(typeof springs[0].detectIsSeriesPlaying).toBe('function');
-    expect(typeof springs[0].getValue).toBe('function');
-    expect(springs[0].getValue()).toEqual({ scale: 0 });
+    expect(springs[0]).toBeInstanceOf(Spring);
+    expect(springs[0].toValue()).toEqual({ scale: 0 });
     expect(api).toBeDefined();
     expect(api.start).toBeDefined();
     expect(api.pause).toBeDefined();

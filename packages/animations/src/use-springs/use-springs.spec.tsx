@@ -3,11 +3,11 @@ import { h, component, useState, useEffect, detectIsArray } from '@dark-engine/c
 import { dom, createEnv, mockPlatformRaf, getSpyLength, time, replacer } from '@test-utils';
 import { sleep } from '@test-utils';
 
-import { type SpringValue, type SpringItem } from '../shared';
-import { type SpringApi, useSprings } from './use-springs';
+import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
-import { Controller } from '../controller';
+import { Spring } from '../spring';
 import { range } from '../utils';
+import { type SpringApi, useSprings } from './use-springs';
 
 let { host, render } = createEnv();
 
@@ -19,7 +19,7 @@ beforeEach(() => {
 describe('[@animations/use-springs]', () => {
   test('returns springs and an api', () => {
     type SpringProps = 'scale';
-    let springs: Array<SpringItem<SpringProps>> = null;
+    let springs: Array<Spring<SpringProps>> = null;
     let api: SpringApi<SpringProps> = null;
     const App = component(() => {
       const [_springs, _api] = useSprings<SpringProps>(1, () => ({
@@ -36,10 +36,8 @@ describe('[@animations/use-springs]', () => {
     render(<App />);
     expect(springs).toBeDefined();
     expect(detectIsArray(springs)).toBeTruthy();
-    expect(springs[0].ctrl).toBeInstanceOf(Controller);
-    expect(typeof springs[0].detectIsSeriesPlaying).toBe('function');
-    expect(typeof springs[0].getValue).toBe('function');
-    expect(springs[0].getValue()).toEqual({ scale: 0 });
+    expect(springs[0]).toBeInstanceOf(Spring);
+    expect(springs[0].toValue()).toEqual({ scale: 0 });
     expect(api).toBeDefined();
     expect(api.start).toBeDefined();
     expect(api.pause).toBeDefined();
@@ -137,7 +135,7 @@ describe('[@animations/use-springs]', () => {
     api.start();
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(2, 1));
-    expect(spy).toHaveBeenCalledTimes(56);
+    expect(spy).toHaveBeenCalledTimes(56 * 2);
     expect(spy).toHaveBeenCalledWith({ scale: 0.3768, opacity: 0.1884 });
     expect(spy).toHaveBeenCalledWith({ scale: 1.7782, opacity: 0.8891 });
     expect(spy).toHaveBeenCalledWith({ scale: 1.9701, opacity: 0.985 });
@@ -260,7 +258,7 @@ describe('[@animations/use-springs]', () => {
     setIsOpen(true);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(1, 1));
-    expect(spy).toHaveBeenCalledTimes(51);
+    expect(spy).toHaveBeenCalledTimes(101);
     expect(spy).toHaveBeenCalledWith({ scale: 0.1106, opacity: 0.1106 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.6589, opacity: 0.6589 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.8721, opacity: 0.8721 });
@@ -270,7 +268,7 @@ describe('[@animations/use-springs]', () => {
     setIsOpen(false);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0, 0));
-    expect(spy).toHaveBeenCalledTimes(52);
+    expect(spy).toHaveBeenCalledTimes(103);
     expect(spy).toHaveBeenCalledWith({ scale: 0.9565, opacity: 0.9565 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.5087, opacity: 0.5087 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.0543, opacity: 0.0543 });
@@ -280,7 +278,7 @@ describe('[@animations/use-springs]', () => {
     setIsOpen(true);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(1, 1));
-    expect(spy).toHaveBeenCalledTimes(52);
+    expect(spy).toHaveBeenCalledTimes(103);
     expect(spy).toHaveBeenCalledWith({ scale: 0.1106, opacity: 0.1106 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.5535, opacity: 0.5535 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.9964, opacity: 0.9964 });
@@ -423,7 +421,7 @@ describe('[@animations/use-springs]', () => {
     api.start();
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(50, 50));
-    expect(spy).toHaveBeenCalledTimes(227);
+    expect(spy).toHaveBeenCalledTimes(227 * 2);
     expect(spy).toHaveBeenCalledWith({ x: 3, y: 5 });
     expect(spy).toHaveBeenCalledWith({ x: 22, y: 41 });
     expect(spy).toHaveBeenCalledWith({ x: 41, y: 68 });
@@ -531,7 +529,7 @@ describe('[@animations/use-springs]', () => {
     api.start(() => ({ to: { scale: 0 } }));
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0));
-    expect(spy).toHaveBeenCalledTimes(212);
+    expect(spy).toHaveBeenCalledTimes(216);
     spy.mockClear();
 
     count -= 1;
@@ -539,7 +537,7 @@ describe('[@animations/use-springs]', () => {
     api.start(() => ({ to: { scale: 2 } }));
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(2));
-    expect(spy).toHaveBeenCalledTimes(285);
+    expect(spy).toHaveBeenCalledTimes(290);
   });
 
   test('pass idx to configurator', () => {
@@ -905,7 +903,7 @@ describe('[@animations/use-springs]', () => {
       <div style="transform: scale(${scale});">A</div>
     `;
     type SpringProps = 'scale';
-    let springs: Array<SpringItem<SpringProps>> = null;
+    let springs: Array<Spring<SpringProps>> = null;
     let api: SpringApi<SpringProps> = null;
     const App = component(() => {
       const [_springs, _api] = useSprings<SpringProps>(1, () => ({
@@ -939,6 +937,6 @@ describe('[@animations/use-springs]', () => {
     render(null);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(replacer);
-    expect(springs[0].ctrl.getState().getIsCanceled()).toBe(true);
+    expect(api.isCanceled()).toBe(true);
   });
 });
