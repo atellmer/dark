@@ -78,7 +78,7 @@ class Controller<T extends string, I = unknown> {
   }
 
   notify() {
-    this.springify();
+    this.sync();
     this.event('item-change');
   }
 
@@ -92,7 +92,7 @@ class Controller<T extends string, I = unknown> {
 
   replaceValue(x: SpringValue<T>) {
     this.value = x;
-    this.springify();
+    this.sync();
   }
 
   markAsFake(x: Key) {
@@ -126,7 +126,9 @@ class Controller<T extends string, I = unknown> {
   }
 
   getSpring() {
-    return this.springify();
+    this.sync();
+
+    return this.spring;
   }
 
   start(fn?: StartFn<T>) {
@@ -150,7 +152,7 @@ class Controller<T extends string, I = unknown> {
   reset() {
     this.value = { ...this.from };
     this.dest = { ...(this.to || this.from) };
-    this.springify();
+    this.sync();
   }
 
   cancel() {
@@ -270,7 +272,7 @@ class Controller<T extends string, I = unknown> {
     return true;
   }
 
-  private springify() {
+  private sync() {
     const keys = Object.keys(this.value) as Array<T>;
 
     for (const key of keys) {
@@ -280,7 +282,7 @@ class Controller<T extends string, I = unknown> {
       this.spring.setProp(key, value);
     }
 
-    return this.spring;
+    this.spring.notify();
   }
 
   private static generateFakeKey(x: Key) {

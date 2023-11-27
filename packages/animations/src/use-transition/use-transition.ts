@@ -109,7 +109,6 @@ function useTransition<T extends string, I = unknown>(
       const { ctrls, itemsMap } = data({ items: items$, getKey, configurator, state, ctrlsMap });
       const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff(prevItems, items, getKey);
 
-      if (!hasChanges) return;
       state.setCtrls(ctrls);
       replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
 
@@ -123,7 +122,7 @@ function useTransition<T extends string, I = unknown>(
       scope.items = items$; // !
       scope.itemsMap = itemsMap;
       scope.fromItems = true;
-      forceUpdate(); //!
+      hasChanges && forceUpdate(); //!
     };
 
     if (inChain) {

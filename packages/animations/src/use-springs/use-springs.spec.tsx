@@ -135,7 +135,7 @@ describe('[@animations/use-springs]', () => {
     api.start();
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(2, 1));
-    expect(spy).toHaveBeenCalledTimes(56 * 2);
+    expect(spy).toHaveBeenCalledTimes(56);
     expect(spy).toHaveBeenCalledWith({ scale: 0.3768, opacity: 0.1884 });
     expect(spy).toHaveBeenCalledWith({ scale: 1.7782, opacity: 0.8891 });
     expect(spy).toHaveBeenCalledWith({ scale: 1.9701, opacity: 0.985 });
@@ -257,8 +257,9 @@ describe('[@animations/use-springs]', () => {
 
     setIsOpen(true);
     jest.runAllTimers();
+
     expect(host.innerHTML).toBe(content(1, 1));
-    expect(spy).toHaveBeenCalledTimes(101);
+    expect(spy).toHaveBeenCalledTimes(51);
     expect(spy).toHaveBeenCalledWith({ scale: 0.1106, opacity: 0.1106 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.6589, opacity: 0.6589 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.8721, opacity: 0.8721 });
@@ -268,7 +269,7 @@ describe('[@animations/use-springs]', () => {
     setIsOpen(false);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0, 0));
-    expect(spy).toHaveBeenCalledTimes(103);
+    expect(spy).toHaveBeenCalledTimes(52);
     expect(spy).toHaveBeenCalledWith({ scale: 0.9565, opacity: 0.9565 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.5087, opacity: 0.5087 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.0543, opacity: 0.0543 });
@@ -278,7 +279,7 @@ describe('[@animations/use-springs]', () => {
     setIsOpen(true);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(1, 1));
-    expect(spy).toHaveBeenCalledTimes(103);
+    expect(spy).toHaveBeenCalledTimes(52);
     expect(spy).toHaveBeenCalledWith({ scale: 0.1106, opacity: 0.1106 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.5535, opacity: 0.5535 });
     expect(spy).toHaveBeenCalledWith({ scale: 0.9964, opacity: 0.9964 });
@@ -421,7 +422,7 @@ describe('[@animations/use-springs]', () => {
     api.start();
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(50, 50));
-    expect(spy).toHaveBeenCalledTimes(227 * 2);
+    expect(spy).toHaveBeenCalledTimes(227);
     expect(spy).toHaveBeenCalledWith({ x: 3, y: 5 });
     expect(spy).toHaveBeenCalledWith({ x: 22, y: 41 });
     expect(spy).toHaveBeenCalledWith({ x: 41, y: 68 });

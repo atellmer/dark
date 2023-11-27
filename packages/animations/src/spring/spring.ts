@@ -1,11 +1,12 @@
-import { type Atom, type Callback, type SubscriberWithValue, atom } from '@dark-engine/core';
+import { type Atom, type SubscriberWithValue, atom } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
 
 class Spring<T extends string = string> {
   private props: Record<T, Atom<number>> = {} as Record<T, Atom<number>>;
+  private subscribers = new Set<SubscriberWithValue<SpringValue<T>>>();
 
-  getProp(key: T) {
+  prop(key: T) {
     return this.props[key] ? this.props[key].get() : null;
   }
 
@@ -21,19 +22,13 @@ class Spring<T extends string = string> {
   }
 
   on(fn: SubscriberWithValue<SpringValue<T>>) {
-    const offs: Array<Callback> = [];
+    this.subscribers.add(fn);
 
-    for (const key of this.getKeys()) {
-      const off = this.props[key].on(() => fn(this.toValue()));
-
-      offs.push(off);
-    }
-
-    return () => offs.forEach(x => x());
+    return () => this.subscribers.delete(fn);
   }
 
-  private getKeys() {
-    return Object.keys(this.props) as Array<T>;
+  notify() {
+    this.subscribers.forEach(x => x(this.toValue()));
   }
 }
 

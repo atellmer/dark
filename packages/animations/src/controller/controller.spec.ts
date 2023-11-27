@@ -116,7 +116,7 @@ describe('[@animations/controller]', () => {
     ctrl.start();
     jest.runAllTimers();
 
-    expect(spy).toHaveBeenCalledTimes(88 * 3);
+    expect(spy).toHaveBeenCalledTimes(88);
     expect(spy).toHaveBeenCalledWith({ x: -91.296, y: 8.704, z: 0.4352 });
     expect(spy).toHaveBeenCalledWith({ x: 90.5842, y: 190.5842, z: 9.5292 });
     expect(spy).toHaveBeenCalledWith({ x: 99.6508, y: 199.6508, z: 9.9825 });
@@ -189,7 +189,7 @@ describe('[@animations/controller]', () => {
     ctrl.start();
     jest.runAllTimers();
 
-    expect(spy).toHaveBeenCalledTimes(164 * 2);
+    expect(spy).toHaveBeenCalledTimes(164);
     expect(spy).toHaveBeenCalledWith({ x: 5.12, y: 2.56 });
     expect(spy).toHaveBeenCalledWith({ x: 99.481, y: 87.408 });
     expect(spy).toHaveBeenCalledWith({ x: 100, y: 98.9548 });
