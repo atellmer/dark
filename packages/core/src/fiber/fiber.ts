@@ -121,7 +121,7 @@ class Hook<T = any> {
   public id = 0;
   public idx = 0;
   public values: Array<T> = [];
-  public getOwner: () => Fiber = null;
+  public owner: Fiber = null;
   private static nextId = 0;
 
   constructor() {

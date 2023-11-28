@@ -16,21 +16,21 @@ function useUpdate() {
   const update = (createChanger?: () => UpdateChanger) => {
     const scope$ = scope$$();
     if (scope$.getIsInsertionEffectsZone()) return;
+    const { owner } = hook;
     const hasChanger = detectIsFunction(createChanger);
     const isTransition = scope$.getIsTransitionZone();
     const isBatch = scope$.getIsBatchZone();
     const isEvent = scope$.getIsEventZone();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
-    const getFiber = () => hook.getOwner(); // !
     const setPendingStatus = scope$.getPendingStatusSetter();
     const callback = createUpdateCallback({
       rootId,
+      hook,
       isTransition,
-      getFiber,
       createChanger: hasChanger ? createChanger : undefined,
     });
-    const createSign = () => createFiberSign(getFiber(), idx);
+    const createSign = () => createFiberSign(owner, idx);
     const callbackOptions: ScheduleCallbackOptions = {
       priority,
       forceAsync,
@@ -41,7 +41,7 @@ function useUpdate() {
 
     if (isBatch) {
       addBatch(
-        getFiber(),
+        owner,
         () => platform.schedule(callback, callbackOptions),
         () => hasChanger && createChanger().setValue(),
       );

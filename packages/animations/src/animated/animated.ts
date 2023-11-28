@@ -26,7 +26,7 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   scope.notify = notify;
 
   useLayoutEffect(() => {
-    const fiber = cursor.hook.getOwner();
+    const fiber = cursor.hook.owner;
 
     walk(fiber.child, (fiber, _, stop) => {
       if (fiber.element) {

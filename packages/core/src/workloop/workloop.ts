@@ -12,7 +12,7 @@ import {
   trueFn,
 } from '../helpers';
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
-import { Fiber, EffectTag, getHook } from '../fiber';
+import { Fiber, EffectTag, getHook, Hook } from '../fiber';
 import type { DarkElementKey as Key, DarkElementInstance } from '../shared';
 import { type Component, detectIsComponent } from '../component';
 import {
@@ -165,7 +165,7 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
     delete alt.move;
   }
 
-  fiber.hook && (fiber.hook.getOwner = () => fiber); // !
+  fiber.hook && (fiber.hook.owner = fiber); // !
 
   if (shouldMount) {
     fiber.inst = mount(fiber, scope$);
@@ -526,7 +526,7 @@ function stopTransitionWork(scope$: Scope): false {
 export type CreateUpdateCallbackOptions = {
   rootId: number;
   isTransition?: boolean;
-  getFiber: () => Fiber;
+  hook: Hook;
   createChanger?: () => UpdateChanger;
 };
 
@@ -535,14 +535,14 @@ export type UpdateChanger = {
 } & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
 
 function createUpdateCallback(options: CreateUpdateCallbackOptions) {
-  const { rootId, getFiber, isTransition, createChanger = createChanger$ } = options;
+  const { rootId, hook, isTransition, createChanger = createChanger$ } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
     const fromRestore = detectIsFunction(restore);
     const { shouldUpdate, setValue, resetValue } = createChanger();
     const scope$ = scope$$();
-    const self = getFiber();
-    const fiber = self.alt || self;
+    const owner = hook.owner;
+    const fiber = owner.alt || owner;
 
     if (!shouldUpdate() || !detectIsFiberAlive(fiber) || fromRestore) {
       fromRestore && restore({ fiber, setValue, resetValue });

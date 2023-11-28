@@ -34,8 +34,7 @@ class Atom<T = unknown> {
     this.x = n;
 
     for (const [hook, [rootId, shouldUpdate = trueFn, args]] of this.connections) {
-      shouldUpdate(p, n, ...args) &&
-        platform.schedule(createUpdateCallback({ rootId, getFiber: () => hook.getOwner() }));
+      shouldUpdate(p, n, ...args) && platform.schedule(createUpdateCallback({ rootId, hook }));
     }
 
     this.emitter && this.emitter.emit('data', this.x);
@@ -53,7 +52,7 @@ class Atom<T = unknown> {
 
     this.connections.set(hook, [rootId, fn, args]);
     this.drops.set(hook, () => {
-      hook.getOwner().atoms.delete(this);
+      hook.owner.atoms.delete(this);
       this.connections.delete(hook);
       this.drops.delete(hook);
     });
