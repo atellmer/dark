@@ -35,7 +35,7 @@ describe('[@animations/use-spring]', () => {
     render(<App />);
     expect(spring).toBeDefined();
     expect(spring).toBeInstanceOf(Spring);
-    expect(spring.toValue()).toEqual({ scale: 0 });
+    expect(spring.value()).toEqual({ scale: 0 });
     expect(api).toBeDefined();
     expect(api.start).toBeDefined();
     expect(api.pause).toBeDefined();

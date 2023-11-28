@@ -20,7 +20,7 @@ type AnimatedProps<E = unknown, T extends string = string> = {
 const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   const cursor = scope$$().getCursorFiber();
   const scope = useMemo(() => ({ element: null }), []);
-  const notify = () => scope.element && fn(scope.element, spring.toValue());
+  const notify = () => scope.element && fn(scope.element, spring.value());
 
   useLayoutEffect(() => {
     const fiber = cursor.hook.getOwner();

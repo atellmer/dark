@@ -7,7 +7,7 @@ class Spring<T extends string = string> {
   private subscribers = new Set<SubscriberWithValue<SpringValue<T>>>();
 
   prop(key: T) {
-    return this.props[key] ? this.props[key].get() : null;
+    return this.props[key] || null;
   }
 
   setProp(key: T, value: number) {
@@ -15,7 +15,7 @@ class Spring<T extends string = string> {
     this.props[key].set(value);
   }
 
-  toValue(): SpringValue<T> {
+  value(): SpringValue<T> {
     const value = Object.keys(this.props).reduce((acc, x) => ((acc[x] = this.props[x].get()), acc), {});
 
     return value as SpringValue<T>;
@@ -28,7 +28,7 @@ class Spring<T extends string = string> {
   }
 
   notify() {
-    this.subscribers.forEach(x => x(this.toValue()));
+    this.subscribers.forEach(x => x(this.value()));
   }
 }
 

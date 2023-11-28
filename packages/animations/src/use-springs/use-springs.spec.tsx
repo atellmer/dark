@@ -37,7 +37,7 @@ describe('[@animations/use-springs]', () => {
     expect(springs).toBeDefined();
     expect(detectIsArray(springs)).toBeTruthy();
     expect(springs[0]).toBeInstanceOf(Spring);
-    expect(springs[0].toValue()).toEqual({ scale: 0 });
+    expect(springs[0].value()).toEqual({ scale: 0 });
     expect(api).toBeDefined();
     expect(api.start).toBeDefined();
     expect(api.pause).toBeDefined();

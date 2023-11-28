@@ -20,7 +20,7 @@ afterAll(() => {
 
 describe('[@animations/controller]', () => {
   test('has required methods', () => {
-    const ctrl = new Controller(new SharedState());
+    const ctrl = setup();
 
     expect(ctrl.start).toBeDefined();
     expect(ctrl.cancel).toBeDefined();
@@ -272,11 +272,11 @@ describe('[@animations/controller]', () => {
 
     const spring = ctrl.getSpring();
 
-    expect(spring.toValue()).toEqual({ scale: 2 });
+    expect(spring.value()).toEqual({ scale: 2 });
 
     ctrl.reset();
 
-    expect(spring.toValue()).toEqual({ scale: 0 });
+    expect(spring.value()).toEqual({ scale: 0 });
   });
 
   test('can cancel animation', () => {
@@ -299,6 +299,6 @@ describe('[@animations/controller]', () => {
 
     const spring = ctrl.getSpring();
 
-    expect(spring.toValue()).toEqual({ scale: 0 });
+    expect(spring.value()).toEqual({ scale: 0 });
   });
 });
