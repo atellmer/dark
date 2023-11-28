@@ -41,9 +41,9 @@ import { Fragment, detectIsFragment } from '../fragment';
 
 let hasRenderError = false;
 
-export type WorkLoop = (yield$: boolean) => boolean;
+export type WorkLoop = (isAsync: boolean) => boolean;
 
-function workLoop(yield$: boolean) {
+function workLoop(isAsync: boolean) {
   if (hasRenderError) return false;
   const scope$ = scope$$();
   const wipFiber = scope$.getWorkInProgress();
@@ -56,7 +56,7 @@ function workLoop(yield$: boolean) {
       unit = performUnitOfWork(unit, scope$);
       scope$.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
-      shouldYield = yield$ && platform.shouldYield();
+      shouldYield = isAsync && platform.shouldYield();
       if (platform.hasPrimaryTask()) return stopTransitionWork(scope$);
     }
 
@@ -65,7 +65,7 @@ function workLoop(yield$: boolean) {
     }
   } catch (err) {
     if (err instanceof StopWork) {
-      !yield$ && setTimeout(() => workLoop(false), RESTART_TIMEOUT);
+      !isAsync && setTimeout(() => workLoop(false), RESTART_TIMEOUT);
     } else {
       hasRenderError = true;
       throw err;
@@ -169,7 +169,7 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
 
   if (shouldMount) {
     fiber.inst = mount(fiber, scope$);
-    alt && performAlternate(fiber, alt, scope$);
+    alt && reconcile(fiber, alt, scope$);
     setup(fiber, alt);
   } else if (fiber.move) {
     fiber.tag = EffectTag.U;
@@ -212,7 +212,7 @@ function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolea
   return alt;
 }
 
-function performAlternate(fiber: Fiber, alt: Fiber, scope$: Scope) {
+function reconcile(fiber: Fiber, alt: Fiber, scope$: Scope) {
   const { id, inst } = fiber;
   const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
 

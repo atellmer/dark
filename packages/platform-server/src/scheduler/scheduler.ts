@@ -74,10 +74,6 @@ function performWorkUntilDeadline() {
 }
 
 function requestCallbackAsync(callback: WorkLoop) {
-  if (process.env.NODE_ENV === 'test') {
-    return requestCallback(callback);
-  }
-
   scheduledCallback = callback;
 
   if (!isMessageLoopRunning) {
@@ -94,17 +90,19 @@ function requestCallback(callback: WorkLoop) {
 let channel: MessageChannel = null;
 let port: MessagePort = null;
 
-function setup() {
-  if (process.env.NODE_ENV === 'test') {
-    return;
-  }
-
+function setupPorts() {
   channel = new MessageChannel();
   port = channel.port2;
-
   channel.port1.on('message', performWorkUntilDeadline);
 }
 
-setup();
+function unrefPorts() {
+  channel.port1.unref();
+  channel.port2.unref();
+}
 
-export { shouldYield, scheduleCallback };
+if (process.env.NODE_ENV !== 'test') {
+  setupPorts();
+}
+
+export { shouldYield, scheduleCallback, setupPorts, unrefPorts };

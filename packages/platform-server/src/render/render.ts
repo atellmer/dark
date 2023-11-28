@@ -12,6 +12,7 @@ import {
   createReplacer,
   unmountRoot,
   setRootId,
+  getRootId,
   scope$$,
   nextTick,
   dummyFn,
@@ -41,14 +42,14 @@ function inject() {
   isInjected = true;
 }
 
-type CreateRenderCallbackOptions = {
+type ScheduleRenderOptions = {
   element: DarkElement;
   isStream?: boolean;
   onCompleted: Callback;
   onStart?: Callback;
 };
 
-function createRenderCallback(options: CreateRenderCallbackOptions) {
+function scheduleRender(options: ScheduleRenderOptions) {
   const { element, isStream = false, onCompleted, onStart = dummyFn } = options;
   !isInjected && inject();
 
@@ -75,21 +76,21 @@ function createRenderCallback(options: CreateRenderCallbackOptions) {
     });
   };
 
-  return { rootId, callback };
+  platform.schedule(callback, { priority: TaskPriority.NORMAL, forceAsync: true });
 }
 
 function renderToString(element: DarkElement): Promise<string> {
   return new Promise<string>(resolve => {
     const onCompleted = () => {
+      const rootId = getRootId();
       const { element: nativeElement } = scope$$().getRoot() as Fiber<TagNativeElement>;
       const content = nativeElement.renderToString(true);
 
       resolve(content);
       unmountRoot(rootId, () => {});
     };
-    const { rootId, callback } = createRenderCallback({ element, onCompleted });
 
-    platform.schedule(callback, { priority: TaskPriority.NORMAL });
+    scheduleRender({ element, onCompleted });
   });
 }
 
@@ -104,6 +105,8 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
   let content = '';
 
   const onCompleted = () => {
+    const rootId = getRootId();
+
     if (content) {
       stream.push(content);
       content = '';
@@ -130,9 +133,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     });
   };
 
-  const { rootId, callback } = createRenderCallback({ element, isStream: true, onCompleted, onStart });
-
-  nextTick(() => platform.schedule(callback, { priority: TaskPriority.NORMAL }));
+  nextTick(() => scheduleRender({ element, isStream: true, onCompleted, onStart }));
   stream.push(DOCTYPE);
 
   return stream;

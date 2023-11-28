@@ -11,12 +11,17 @@ import {
   useEffect,
 } from '@dark-engine/core';
 
-import { dom, createReplacerString } from '@test-utils';
+import { dom, sleep, replacer } from '@test-utils';
 import { renderToString, renderToStream } from './render';
+import { setupPorts, unrefPorts } from '../scheduler';
 
-jest.useFakeTimers();
+beforeAll(() => {
+  setupPorts();
+});
 
-const replacer = createReplacerString();
+afterAll(() => {
+  unrefPorts();
+});
 
 describe('[SSR]', () => {
   test('can render text correctly', async () => {
@@ -93,14 +98,12 @@ describe('[SSR]', () => {
 
     const app = await renderToString(App());
 
-    jest.runAllTimers();
+    await sleep(10);
     expect(effectFn).toBeCalledTimes(0);
     expect(app).toBe(replacer);
   });
 
   test('can render to stream correctly', done => {
-    jest.useRealTimers();
-
     const content = (x: number) =>
       dom`
         <!DOCTYPE html>
