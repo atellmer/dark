@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe('[@animations/use-spring]', () => {
-  test('returns spring and an api', () => {
+  test('returns the spring value and the api', () => {
     type SpringProps = 'scale';
     let spring: Spring<SpringProps> = null;
     let api: SpringApi<SpringProps> = null;
@@ -47,7 +47,7 @@ describe('[@animations/use-spring]', () => {
     expect(api.on).toBeDefined();
   });
 
-  test('can animate a value via api', () => {
+  test('can animate the value via api', () => {
     jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};">A</div>
@@ -93,7 +93,7 @@ describe('[@animations/use-spring]', () => {
     expect(spy).toHaveBeenCalledWith({ scale: 2, opacity: 1 });
   });
 
-  test('can animate a value via state', () => {
+  test('can animate the value via state', () => {
     jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};">A</div>

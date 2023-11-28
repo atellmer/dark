@@ -1,6 +1,7 @@
 import {
   type Component,
   type TagVirtualNodeFactory,
+  type Callback,
   component,
   useMemo,
   useLayoutEffect,
@@ -19,8 +20,10 @@ type AnimatedProps<E = unknown, T extends string = string> = {
 
 const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   const cursor = scope$$().getCursorFiber();
-  const scope = useMemo(() => ({ element: null }), []);
+  const scope = useMemo<Scope>(() => ({ element: null, notify: null }), []);
   const notify = () => scope.element && fn(scope.element, spring.value());
+
+  scope.notify = notify;
 
   useLayoutEffect(() => {
     const fiber = cursor.hook.getOwner();
@@ -34,7 +37,7 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
 
     notify();
 
-    return spring.on(notify);
+    return spring.on(() => scope.notify());
   }, []);
 
   notify();
@@ -42,6 +45,7 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   return slot;
 });
 
+type Scope = { element: unknown; notify: Callback };
 type StyleFn<E = unknown, T extends string = string> = (element: E, value: SpringValue<T>) => void;
 
 export { Animated };

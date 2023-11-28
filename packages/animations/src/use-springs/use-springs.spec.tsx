@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 describe('[@animations/use-springs]', () => {
-  test('returns springs and an api', () => {
+  test('returns the springs and the api', () => {
     type SpringProps = 'scale';
     let springs: Array<Spring<SpringProps>> = null;
     let api: SpringApi<SpringProps> = null;

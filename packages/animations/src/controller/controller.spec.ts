@@ -49,7 +49,7 @@ describe('[@animations/controller]', () => {
     expect(ctrl.setSpringConfigFn).toBeDefined();
   });
 
-  test('calls a notifier function correctly', () => {
+  test('calls the notifier function correctly', () => {
     type SpringProps = 'scale';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -71,7 +71,7 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenCalledTimes(56);
   });
 
-  test('can animate a single value', () => {
+  test('can animate the single value', () => {
     type SpringProps = 'x';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -97,7 +97,7 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenLastCalledWith({ x: 100 });
   });
 
-  test('can animate a complex value', () => {
+  test('can animate the complex value', () => {
     type SpringProps = 'x' | 'y' | 'x';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -123,7 +123,7 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenLastCalledWith({ x: 100, y: 200, z: 10 });
   });
 
-  test('can use a custom config', () => {
+  test('can use the custom config', () => {
     type SpringProps = 'opacity';
     const spy1 = jest.fn();
     const spy2 = jest.fn();
@@ -169,7 +169,7 @@ describe('[@animations/controller]', () => {
     expect(spy2).toHaveBeenLastCalledWith({ opacity: 1 });
   });
 
-  test('can use a cutom config for different values', () => {
+  test('can use the cutom config for different values', () => {
     type SpringProps = 'x' | 'y';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -221,7 +221,7 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenLastCalledWith({ x: 100 });
   });
 
-  test('can set an immediate value', () => {
+  test('can set the immediate value', () => {
     type SpringProps = 'x' | 'zIndex';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -253,7 +253,7 @@ describe('[@animations/controller]', () => {
     expect(spy).toHaveBeenLastCalledWith({ x: 0, zIndex: 0 });
   });
 
-  test('can reset value correctly', () => {
+  test('can reset the value correctly', () => {
     type SpringProps = 'scale';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
@@ -279,7 +279,7 @@ describe('[@animations/controller]', () => {
     expect(spring.value()).toEqual({ scale: 0 });
   });
 
-  test('can cancel animation', () => {
+  test('can cancel the animation', () => {
     type SpringProps = 'scale';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
