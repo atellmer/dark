@@ -49,7 +49,7 @@ describe('[@animations/use-springs]', () => {
     expect(api.on).toBeDefined();
   });
 
-  test('can animate a simple value via api', () => {
+  test('can animate the simple value via api', () => {
     jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});">A</div>
@@ -95,7 +95,51 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledWith({ scale: 1 });
   });
 
-  test('can animate a complex value via api', () => {
+  test('can animate the value without render', () => {
+    jest.useFakeTimers();
+    const content = (scale: number) => dom`
+      <div style="transform: scale(${scale});"></div>
+    `;
+    type SpringProps = 'scale';
+    let api: SpringApi<SpringProps> = null;
+    const renderSpy = jest.fn();
+    const styleSpy = jest.fn();
+    const App = component(() => {
+      const [springs, _api] = useSprings<SpringProps>(1, () => ({
+        from: { scale: 0 },
+        to: { scale: 1 },
+      }));
+
+      api = _api;
+      renderSpy();
+
+      return (
+        <Animated spring={springs[0]} fn={styleFn}>
+          <div />
+        </Animated>
+      );
+    });
+
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      styleSpy(element, value);
+      element.style.setProperty('transform', `scale(${value.scale})`);
+    };
+
+    render(<App />);
+    expect(host.innerHTML).toBe(content(0));
+    expect(renderSpy).toHaveBeenCalledTimes(1);
+    expect(styleSpy).toHaveBeenCalledTimes(1);
+    renderSpy.mockClear();
+    styleSpy.mockClear();
+
+    api.start();
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(1));
+    expect(renderSpy).toHaveBeenCalledTimes(0);
+    expect(styleSpy).toHaveBeenCalledTimes(51);
+  });
+
+  test('can animate the complex value via api', () => {
     jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};">A</div>
@@ -142,7 +186,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledWith({ scale: 2, opacity: 1 });
   });
 
-  test('can animate a simple value via state', () => {
+  test('can animate the simple value via state', () => {
     jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});">A</div>
@@ -213,7 +257,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledWith({ scale: 1 });
   });
 
-  test('can animate a complex value via state', () => {
+  test('can animate the complex value via state', () => {
     jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};">A</div>
@@ -286,7 +330,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledWith({ scale: 1, opacity: 1 });
   });
 
-  test('can animate a value without initial "to" parameter', () => {
+  test('can animate the value without the initial "to" parameter', () => {
     jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});">A</div>
@@ -429,7 +473,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledWith({ x: 50, y: 50 });
   });
 
-  test('can animate a value via api with many controllers #1', () => {
+  test('can animate the value via api with many controllers #1', () => {
     jest.useFakeTimers();
     const count = 4;
     const content = (scale: number) =>
@@ -477,7 +521,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledTimes(51 * count);
   });
 
-  test('can animate a value via api with many controllers #2', () => {
+  test('can animate the value via api with many controllers #2', () => {
     jest.useFakeTimers();
     let count = 4;
     const content = (scale: number) =>
@@ -541,7 +585,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledTimes(290);
   });
 
-  test('pass idx to configurator', () => {
+  test('pass the idx to the configurator', () => {
     jest.useFakeTimers();
     const count = 4;
     type SpringProps = 'scale';
@@ -602,7 +646,7 @@ describe('[@animations/use-springs]', () => {
     expect(make).not.toThrow();
   });
 
-  test('can pause an animation correctly', async () => {
+  test('can pause the animation correctly', async () => {
     jest.useRealTimers();
     let api: SpringApi = null;
     const spy = jest.fn();
@@ -638,7 +682,7 @@ describe('[@animations/use-springs]', () => {
     expect(getSpyLength(spy)).toBe(length);
   });
 
-  test('can resume an animation after pause correctly', async () => {
+  test('can resume the animation after pause correctly', async () => {
     jest.useRealTimers();
     let api: SpringApi = null;
     const spy = jest.fn();
@@ -673,7 +717,7 @@ describe('[@animations/use-springs]', () => {
     expect(getSpyLength(spy)).toBeGreaterThan(length);
   });
 
-  test('can delay an animation correctly', async () => {
+  test('can delay the animation correctly', async () => {
     jest.useRealTimers();
     let api: SpringApi = null;
     const spy = jest.fn();
@@ -705,7 +749,7 @@ describe('[@animations/use-springs]', () => {
     expect(getSpyLength(spy)).toBeGreaterThan(0);
   });
 
-  test('can reset an animation correctly', () => {
+  test('can reset the animation correctly', () => {
     jest.useFakeTimers();
     let api: SpringApi = null;
     const spy = jest.fn();
@@ -735,7 +779,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledWith({ scale: 0 });
   });
 
-  test('can cancel an animation correctly', async () => {
+  test('can cancel the animation correctly', async () => {
     jest.useRealTimers();
     let api: SpringApi = null;
     const spy = jest.fn();
@@ -833,7 +877,7 @@ describe('[@animations/use-springs]', () => {
     expect(itemEndTime).toBeGreaterThan(itemStartTime);
   });
 
-  test('the on method returns an off function', () => {
+  test('the "on" method returns the off function', () => {
     jest.useFakeTimers();
     let api: SpringApi = null;
     const seriesStartSpy = jest.fn();
@@ -898,7 +942,7 @@ describe('[@animations/use-springs]', () => {
     expect(seriesStartSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('cancels an animation at unmounting correctly', () => {
+  test('cancels the animation at unmounting correctly', () => {
     jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});">A</div>
