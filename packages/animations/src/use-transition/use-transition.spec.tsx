@@ -1,6 +1,6 @@
 /** @jsx h */
-import { h, component, useState } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf, replacer } from '@test-utils';
+import { h, component, useState, useLayoutEffect } from '@dark-engine/core';
+import { dom, createEnv, mockPlatformRaf, replacer, time, sleep, getSpyLength } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -560,5 +560,365 @@ describe('[@animations/use-transition]', () => {
     jest.runAllTimers();
     expect(spy).toHaveBeenCalledTimes(51);
     expect(host.innerHTML).toBe(content(true, 2));
+  });
+
+  test('can pause the animation correctly', async () => {
+    type SpringProps = 'scale';
+    let api: TransitionApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [transition, _api] = useTransition<SpringProps, number>(
+        [1],
+        x => x,
+        () => ({
+          from: { scale: 0 },
+          enter: { scale: 1 },
+        }),
+      );
+
+      api = _api;
+
+      return transition(({ spring }) => {
+        return (
+          <Animated spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    jest.useFakeTimers();
+    render(<App />);
+    jest.runAllTimers();
+    spy.mockClear();
+    jest.useRealTimers();
+    api.start(() => ({ to: { scale: 2 } }));
+    await sleep(20);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+
+    const length = getSpyLength(spy);
+
+    api.pause();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBe(length);
+
+    await sleep(20);
+    expect(getSpyLength(spy)).toBe(length);
+  });
+
+  test('can resume the animation after pause correctly', async () => {
+    type SpringProps = 'scale';
+    let api: TransitionApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [transition, _api] = useTransition<SpringProps, number>(
+        [1],
+        x => x,
+        () => ({
+          from: { scale: 0 },
+          enter: { scale: 1 },
+        }),
+      );
+
+      api = _api;
+
+      return transition(({ spring }) => {
+        return (
+          <Animated spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    jest.useFakeTimers();
+    render(<App />);
+    jest.runAllTimers();
+    spy.mockClear();
+    jest.useRealTimers();
+    api.start(() => ({ to: { scale: 2 } }));
+    await sleep(20);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+
+    const length = getSpyLength(spy);
+
+    api.pause();
+    await sleep(20);
+    api.resume();
+    await sleep(20);
+    expect(getSpyLength(spy)).toBeGreaterThan(length);
+  });
+
+  test('can delay the animation correctly', async () => {
+    type SpringProps = 'scale';
+    let api: TransitionApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [transition, _api] = useTransition<SpringProps, number>(
+        [1],
+        x => x,
+        () => ({
+          from: { scale: 0 },
+          enter: { scale: 1 },
+        }),
+      );
+
+      api = _api;
+
+      return transition(({ spring }) => {
+        return (
+          <Animated spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    jest.useFakeTimers();
+    render(<App />);
+    jest.runAllTimers();
+    spy.mockClear();
+    jest.useRealTimers();
+    api.delay(50);
+    api.start(() => ({ to: { scale: 2 } }));
+    await sleep(20);
+    expect(getSpyLength(spy)).toBe(0);
+
+    await sleep(100);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+  });
+
+  test('can cancel the animation correctly', async () => {
+    jest.useRealTimers();
+    type SpringProps = 'scale';
+    let api: TransitionApi = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [transition, _api] = useTransition<SpringProps, number>(
+        [1],
+        x => x,
+        () => ({
+          from: { scale: 0 },
+          enter: { scale: 1 },
+        }),
+      );
+
+      api = _api;
+
+      return transition(({ spring }) => {
+        return (
+          <Animated spring={spring} fn={(_, x) => spy(x)}>
+            <div />
+          </Animated>
+        );
+      });
+    });
+
+    render(<App />);
+    await sleep(100);
+    expect(getSpyLength(spy)).toBeGreaterThan(0);
+
+    const length = getSpyLength(spy);
+
+    api.cancel();
+    await sleep(100);
+    expect(getSpyLength(spy)).toBe(length);
+  });
+
+  test('can subscribe on events correctly', () => {
+    jest.useFakeTimers();
+    let items: Array<Item> = null;
+    type SpringProps = 'opacity';
+    type AppProps = { items: Array<Item> };
+    const seriesStartSpy = jest.fn();
+    const itemStartSpy = jest.fn();
+    const itemChangeSpy = jest.fn();
+    const itemEndSpy = jest.fn();
+    const seriesEndSpy = jest.fn();
+    let seriesStartTime = null;
+    let itemStartTime = null;
+    let itemEndTime = null;
+    let seriesEndTime = null;
+    const App = component<AppProps>(({ items }) => {
+      const [transition, api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+          update: { opacity: 1 },
+        }),
+      );
+
+      useLayoutEffect(() => {
+        api.on('series-start', () => {
+          seriesStartTime = time();
+          seriesStartSpy();
+        });
+        api.on('item-start', () => {
+          itemStartTime = time();
+          itemStartSpy();
+        });
+        api.on('item-change', itemChangeSpy);
+        api.on('item-end', () => {
+          itemEndTime = time();
+          itemEndSpy();
+        });
+        api.on('series-end', () => {
+          seriesEndTime = time();
+          seriesEndSpy();
+        });
+      }, []);
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <div>{item.data}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    items = generate(1);
+    render(<App items={items} />);
+    jest.runAllTimers();
+
+    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
+    expect(itemStartSpy).toHaveBeenCalledTimes(1);
+    expect(itemChangeSpy).toHaveBeenCalledTimes(52);
+    expect(itemEndSpy).toHaveBeenCalledTimes(1);
+    expect(seriesEndSpy).toHaveBeenCalledTimes(1);
+    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
+    expect(seriesEndTime).toBeGreaterThan(seriesStartTime);
+    expect(itemEndTime).toBeGreaterThan(itemStartTime);
+  });
+
+  test('the "on" method returns the off function', () => {
+    jest.useFakeTimers();
+    let items: Array<Item> = null;
+    type SpringProps = 'opacity';
+    type AppProps = { items: Array<Item> };
+    const seriesStartSpy = jest.fn();
+    const itemStartSpy = jest.fn();
+    const itemChangeSpy = jest.fn();
+    const itemEndSpy = jest.fn();
+    const seriesEndSpy = jest.fn();
+    let seriesStartOff: Function = null;
+    let itemStartOff: Function = null;
+    let itemChangeOff: Function = null;
+    let itemEndOff: Function = null;
+    let seriesEndOff: Function = null;
+    const App = component<AppProps>(({ items }) => {
+      const [transition, api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+          update: { opacity: 1 },
+        }),
+      );
+
+      useLayoutEffect(() => {
+        seriesStartOff = api.on('series-start', seriesStartSpy);
+        itemStartOff = api.on('item-start', itemStartSpy);
+        itemChangeOff = api.on('item-change', itemChangeSpy);
+        itemEndOff = api.on('item-end', itemEndSpy);
+        seriesEndOff = api.on('series-end', seriesEndSpy);
+      }, []);
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <div>{item.data}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    items = generate(1);
+    render(<App items={items} />);
+
+    expect(typeof seriesStartOff).toBe('function');
+    expect(typeof itemStartOff).toBe('function');
+    expect(typeof itemChangeOff).toBe('function');
+    expect(typeof itemEndOff).toBe('function');
+    expect(typeof seriesEndOff).toBe('function');
+
+    seriesStartOff();
+    itemStartOff();
+    itemChangeOff();
+    itemEndOff();
+    seriesEndOff();
+    jest.runAllTimers();
+
+    expect(seriesStartSpy).toHaveBeenCalledTimes(0);
+    expect(itemStartSpy).toHaveBeenCalledTimes(0);
+    expect(itemChangeSpy).toHaveBeenCalledTimes(0);
+    expect(itemEndSpy).toHaveBeenCalledTimes(0);
+    expect(seriesEndSpy).toHaveBeenCalledTimes(0);
+    expect(seriesStartSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('cancels the animation at unmounting correctly', () => {
+    jest.useFakeTimers();
+    const content = (items: Array<Item>, opacity: number) =>
+      items
+        .map(
+          x => dom`
+              <div style="opacity: ${opacity};">${x.data}</div>
+            `,
+        )
+        .join('');
+    let items: Array<Item> = null;
+    type SpringProps = 'opacity';
+    type AppProps = { items: Array<Item> };
+    let api: TransitionApi<SpringProps> = null;
+    const App = component<AppProps>(({ items }) => {
+      const [transition, _api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+          update: { opacity: 1 },
+        }),
+      );
+
+      api = _api;
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <div>{item.data}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    items = generate(1);
+    render(<App items={items} />);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(items, 1));
+
+    render(null);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(replacer);
+    expect(api.isCanceled()).toBe(true);
   });
 });

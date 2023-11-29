@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, component, useState, useEffect, detectIsArray } from '@dark-engine/core';
+import { h, component, useState, useLayoutEffect, detectIsArray } from '@dark-engine/core';
 import { dom, createEnv, mockPlatformRaf, getSpyLength, time, replacer } from '@test-utils';
 import { sleep } from '@test-utils';
 
@@ -833,7 +833,7 @@ describe('[@animations/use-springs]', () => {
 
       api = _api;
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         api.on('series-start', () => {
           seriesStartTime = time();
           seriesStartSpy();
@@ -899,7 +899,7 @@ describe('[@animations/use-springs]', () => {
 
       api = _api;
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         seriesStartOff = api.on('series-start', seriesStartSpy);
         itemStartOff = api.on('item-start', itemStartSpy);
         itemChangeOff = api.on('item-change', itemChangeSpy);
@@ -968,15 +968,12 @@ describe('[@animations/use-springs]', () => {
       });
     });
 
-    const spy = jest.fn();
     const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
-      spy(value);
       element.style.setProperty('transform', `scale(${value.scale})`);
     };
 
     render(<App />);
     expect(host.innerHTML).toBe(content(0));
-    spy.mockClear();
 
     api.start();
     render(null);
