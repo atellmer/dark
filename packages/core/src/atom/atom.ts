@@ -15,7 +15,7 @@ class Atom<T = unknown> {
   private connections2: Map<T, Tuple<T>>;
   private emitter: EventEmitter;
   private drops: Array<Callback>;
-  private isComputed: boolean;
+  private isWritable = true;
 
   constructor(value: T) {
     this.value = value;
@@ -32,9 +32,9 @@ class Atom<T = unknown> {
   }
 
   set(value: T | ((prevValue: T) => T)) {
-    if (this.isComputed) {
+    if (!this.isWritable) {
       if (process.env.NODE_ENV !== 'production') {
-        error('[Dark]: Invalid call to set computed atom!');
+        error('[Dark]: Invalid call to set the readonly atom!');
       }
 
       return;
@@ -121,8 +121,8 @@ class Atom<T = unknown> {
     return size1 + size2;
   }
 
-  markAsComputed(value: boolean) {
-    this.isComputed = value;
+  setIsWritable(value: boolean) {
+    this.isWritable = value;
   }
 
   setDrops(drops: Array<Callback>) {
@@ -166,15 +166,15 @@ function computed<T>(deps$: Array<Atom>, fn: ComputedFn<T>) {
         const value = compute(deps$, fn);
 
         if (!Object.is(atom$.get(), value)) {
-          atom$.markAsComputed(false);
+          atom$.setIsWritable(true);
           atom$.set(value);
-          atom$.markAsComputed(true);
+          atom$.setIsWritable(false);
         }
       }),
     );
   }
 
-  atom$.markAsComputed(true);
+  atom$.setIsWritable(false);
   atom$.setDrops(drops);
 
   return atom$;
