@@ -27,7 +27,7 @@ import {
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { SVG_TAG_NAMES, VOID_TAG_NAMES, ATTR_STYLE, ATTR_CLASS } from '../constants';
+import { SVG_TAG_NAMES, VOID_TAG_NAMES, ATTR_STYLE, ATTR_CLASS, ATTR_CLASS_NAME } from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -91,8 +91,8 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
       continue;
     }
 
-    if (attrName === ATTR_CLASS) {
-      toggleAttribute(tagElement, attrName, attrValue);
+    if (attrName === ATTR_CLASS || attrName === ATTR_CLASS_NAME) {
+      toggleAttribute(tagElement, ATTR_CLASS, attrValue);
       continue;
     }
 
@@ -129,8 +129,8 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       continue;
     }
 
-    if (attrName === ATTR_CLASS && prevAttrValue !== nextAttrValue) {
-      toggleAttribute(tagElement, attrName, nextAttrValue);
+    if ((attrName === ATTR_CLASS || attrName === ATTR_CLASS_NAME) && prevAttrValue !== nextAttrValue) {
+      toggleAttribute(tagElement, ATTR_CLASS, nextAttrValue);
       continue;
     }
 

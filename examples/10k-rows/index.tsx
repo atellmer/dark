@@ -1,5 +1,15 @@
-import { type Atom, Text, Flag, component, memo, useMemo, atom } from '@dark-engine/core';
-import { type SyntheticEvent as E, createRoot, table, tbody, tr, td, div, button } from '@dark-engine/platform-browser';
+import {
+  type Atom,
+  Text,
+  TagVirtualNode,
+  TextVirtualNode,
+  Flag,
+  component,
+  memo,
+  useMemo,
+  atom,
+} from '@dark-engine/core';
+import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
 
 const createMeasurer = () => {
   let startTime;
@@ -97,7 +107,7 @@ type NameProps = {
   name$: Atom<string>;
 };
 
-const Name = component<NameProps>(({ name$ }) => Text(name$.value()));
+const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.value()));
 
 type RowProps = {
   id: number;
@@ -110,24 +120,22 @@ type RowProps = {
 const fn = (p: number, n: number, id: number) => p !== n && (p === id || n === id);
 
 const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
-  const className = selected$.value(fn, id) === id ? 'selected' : undefined;
-
-  return tr({
-    class: className,
-    [Flag.STATIC_SLOT_OPT]: true,
-    slot: [
-      td({ class: 'cell', slot: Name({ name$ }) }),
-      td({ class: 'cell', slot: Text('qqq') }),
-      td({ class: 'cell', slot: Text('xxx') }),
-      td({
-        class: 'cell',
-        slot: [
-          button({ onClick: [onRemove, id], slot: Text('remove') }),
-          button({ onClick: [onHighlight, id], slot: Text('highlight') }),
-        ],
-      }),
+  return new TagVirtualNode(
+    'tr',
+    {
+      class: selected$.value(fn, id) === id ? 'selected' : undefined,
+      [Flag.STATIC_SLOT_OPT]: true,
+    },
+    [
+      new TagVirtualNode('td', {}, [Name({ name$ })]),
+      new TagVirtualNode('td', {}, [new TextVirtualNode('qqq')]),
+      new TagVirtualNode('td', {}, [new TextVirtualNode('xxx')]),
+      new TagVirtualNode('td', {}, [
+        new TagVirtualNode('button', { onClick: [onRemove, id] }, [new TextVirtualNode('remove')]),
+        new TagVirtualNode('button', { onClick: [onHighlight, id] }, [new TextVirtualNode('highlight')]),
+      ]),
     ],
-  });
+  );
 });
 
 const MemoRow = memo(Row, () => false);

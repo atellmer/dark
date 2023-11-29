@@ -4,4 +4,5 @@ export const SVG_TAG_NAMES =
 export const VOID_TAG_NAMES = 'area,base,br,col,embed,hr,img,input,link,meta,param,source,track,wbr';
 export const ATTR_STYLE = 'style';
 export const ATTR_CLASS = 'class';
+export const ATTR_CLASS_NAME = 'className';
 export const YIELD_INTERVAL = 2;

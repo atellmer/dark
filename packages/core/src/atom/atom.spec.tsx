@@ -173,7 +173,7 @@ describe('[@core/atom]', () => {
     });
 
     render(<App />);
-    expect(count$['connections'].size).toBe(1);
+    expect(count$.getSize()).toBe(1);
     expect(host.innerHTML).toBe(content(0));
 
     count$.set(x => x + 1);
@@ -181,7 +181,7 @@ describe('[@core/atom]', () => {
 
     render(null);
     jest.runAllTimers();
-    expect(count$['connections'].size).toBe(0);
+    expect(count$.getSize()).toBe(0);
   });
 
   test('the kill method works correctly', () => {
