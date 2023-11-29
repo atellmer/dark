@@ -447,7 +447,7 @@ function commit(scope$: Scope) {
     platform.commit(fiber);
   }
 
-  isUpdateZone && syncElementIndices(wipFiber);
+  isUpdateZone && sync(wipFiber);
   scope$.runInsertionEffects();
 
   for (const fiber of candidates) {
@@ -469,7 +469,7 @@ function flush(scope$: Scope, cancel = false) {
   !cancel && scope$.getEmitter().emit('finish');
 }
 
-function syncElementIndices(fiber: Fiber) {
+function sync(fiber: Fiber) {
   const diff = fiber.cec - fiber.alt.cec;
   if (diff === 0) return;
   const parentFiber = getFiberWithElement(fiber.parent);
@@ -525,7 +525,7 @@ function fork(scope$: Scope): false {
   return false;
 }
 
-export type CreateUpdateCallbackOptions = {
+export type CreateUpdateOptions = {
   rootId: number;
   isTransition?: boolean;
   hook: Hook;
@@ -536,7 +536,7 @@ export type UpdateChanger = {
   shouldUpdate: () => boolean;
 } & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
 
-function createUpdateCallback(options: CreateUpdateCallbackOptions) {
+function createUpdate(options: CreateUpdateOptions) {
   const { rootId, hook, isTransition, createChanger = createChanger$ } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
@@ -585,4 +585,4 @@ const detectIsBusy = () => Boolean(scope$$()?.getWorkInProgress());
 
 class StopWork extends Error {}
 
-export { Fiber, workLoop, createUpdateCallback, detectIsBusy };
+export { Fiber, workLoop, createUpdate, detectIsBusy };

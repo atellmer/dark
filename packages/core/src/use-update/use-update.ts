@@ -1,6 +1,6 @@
 import { type ScheduleCallbackOptions, platform } from '../platform';
 import { getRootId, scope$$ } from '../scope';
-import { type UpdateChanger, createUpdateCallback } from '../workloop';
+import { type UpdateChanger, createUpdate } from '../workloop';
 import { TaskPriority } from '../constants';
 import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
@@ -24,7 +24,7 @@ function useUpdate() {
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
     const setPendingStatus = scope$.getPendingStatusSetter();
-    const callback = createUpdateCallback({
+    const callback = createUpdate({
       rootId,
       hook,
       isTransition,

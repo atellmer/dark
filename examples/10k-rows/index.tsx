@@ -8,6 +8,7 @@ import {
   memo,
   useMemo,
   atom,
+  computed,
 } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
 
@@ -107,7 +108,7 @@ type NameProps = {
   name$: Atom<string>;
 };
 
-const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.value()));
+const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.val()));
 
 type RowProps = {
   id: number;
@@ -117,13 +118,11 @@ type RowProps = {
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const fn = (p: number, n: number, id: number) => p !== n && (p === id || n === id);
-
 const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
   return new TagVirtualNode(
     'tr',
     {
-      class: selected$.value(fn, id) === id ? 'selected' : undefined,
+      class: selected$.val(null, id) === id ? 'selected' : undefined,
       [Flag.STATIC_SLOT_OPT]: true,
     },
     [
@@ -148,7 +147,7 @@ type State = {
 const App = component(() => {
   const state = useMemo<State>(() => ({ data$: atom([]), selected$: atom() }), []);
   const { data$, selected$ } = state;
-  const items = data$.value();
+  const items = data$.val();
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
@@ -257,3 +256,19 @@ const App = component(() => {
 });
 
 createRoot(document.getElementById('root')).render(App());
+
+(() => {
+  const a = atom(0);
+  const b = atom(0);
+  const c = computed([a, b], (a: number, b: number) => a + b);
+  const d = computed([c], (c: number) => c + 1);
+
+  c.on(c => console.log('c:', c));
+  d.on(d => console.log('d:', d));
+
+  a.set(1);
+
+  setTimeout(() => {
+    b.set(2);
+  }, 2000);
+})();

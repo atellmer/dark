@@ -16,7 +16,7 @@ describe('[@core/atom]', () => {
   test('has required methods', () => {
     const count$ = atom(0);
 
-    expect(count$.value).toBeDefined();
+    expect(count$.val).toBeDefined();
     expect(count$.get).toBeDefined();
     expect(count$.set).toBeDefined();
     expect(count$.kill).toBeDefined();
@@ -32,7 +32,7 @@ describe('[@core/atom]', () => {
     `;
     const count$ = atom(0);
     const App = component(() => {
-      return <div>{count$.value()}</div>;
+      return <div>{count$.val()}</div>;
     });
 
     render(<App />);
@@ -55,8 +55,8 @@ describe('[@core/atom]', () => {
     const App = component(() => {
       return (
         <>
-          <div>{count1$.value()}</div>
-          <div>{count2$.value()}</div>
+          <div>{count1$.val()}</div>
+          <div>{count2$.val()}</div>
         </>
       );
     });
@@ -83,7 +83,7 @@ describe('[@core/atom]', () => {
     `;
     const count$ = atom(0);
     const App = component(() => {
-      const count = count$.value((p, n) => n !== 2);
+      const count = count$.val((p, n) => n !== 2);
 
       return <div>{count}</div>;
     });
@@ -109,7 +109,7 @@ describe('[@core/atom]', () => {
     const App = component(() => {
       count$ = useAtom(0);
 
-      return <div>{count$.value()}</div>;
+      return <div>{count$.val()}</div>;
     });
 
     render(<App />);
@@ -137,7 +137,7 @@ describe('[@core/atom]', () => {
     };
     const Child = component<ChildProps>(({ count$ }) => {
       fn2();
-      return <div>{count$.value()}</div>;
+      return <div>{count$.val()}</div>;
     });
 
     const App = component(() => {
@@ -169,7 +169,7 @@ describe('[@core/atom]', () => {
     `;
     const count$ = atom(0);
     const App = component(() => {
-      return <div>{count$.value()}</div>;
+      return <div>{count$.val()}</div>;
     });
 
     render(<App />);
@@ -190,7 +190,7 @@ describe('[@core/atom]', () => {
     `;
     const count$ = atom(0);
     const App = component(() => {
-      return <div>{count$.value()}</div>;
+      return <div>{count$.val()}</div>;
     });
 
     render(<App />);

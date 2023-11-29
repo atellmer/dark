@@ -22,8 +22,8 @@ class Fiber<N = NativeElement> {
   inst: DarkElementInstance = null; // instance of component or virtual node
   hook: Hook | null; // hook
   provider: Map<Context, ContextProviderValue>; // provider of context
-  mask = 0;
-  marker: string;
+  mask = 0; // bit mask
+  marker: string; // for dev
   batch: Batch;
   atoms: Map<Atom, Callback>;
   catch: (error: Error) => void;
