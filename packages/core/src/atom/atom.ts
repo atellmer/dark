@@ -7,6 +7,7 @@ import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
 import { type Hook } from '../fiber';
+import { error } from '../helpers';
 
 class Atom<T = unknown> {
   private value: T;
@@ -14,6 +15,7 @@ class Atom<T = unknown> {
   private connections2: Map<T, Tuple<T>>;
   private emitter: EventEmitter;
   private drops: Array<Callback>;
+  private isComputed: boolean;
 
   constructor(value: T) {
     this.value = value;
@@ -30,6 +32,14 @@ class Atom<T = unknown> {
   }
 
   set(value: T | ((prevValue: T) => T)) {
+    if (this.isComputed) {
+      if (process.env.NODE_ENV !== 'production') {
+        error('[Dark]: Invalid call to set computed atom!');
+      }
+
+      return;
+    }
+
     const p = this.value;
     const n = detectIsFunction(value) ? value(this.value) : value;
     const make = (t: Tuple<T>, p: T, n: T) => {
@@ -111,6 +121,10 @@ class Atom<T = unknown> {
     return size1 + size2;
   }
 
+  markAsComputed(value: boolean) {
+    this.isComputed = value;
+  }
+
   setDrops(drops: Array<Callback>) {
     this.drops = drops;
   }
@@ -152,12 +166,15 @@ function computed<T>(deps$: Array<Atom>, fn: ComputedFn<T>) {
         const value = compute(deps$, fn);
 
         if (!Object.is(atom$.get(), value)) {
+          atom$.markAsComputed(false);
           atom$.set(value);
+          atom$.markAsComputed(true);
         }
       }),
     );
   }
 
+  atom$.markAsComputed(true);
   atom$.setDrops(drops);
 
   return atom$;
