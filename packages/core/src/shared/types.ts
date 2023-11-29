@@ -23,9 +23,9 @@ export type Subscribe<S extends Function> = (subscriber: S) => Unsubscribe;
 
 export type Unsubscribe = () => void;
 
-export type SlotProps<T = DarkElement> = Readonly<{
+export type SlotProps<T = DarkElement> = {
   slot: T;
-}>;
+};
 
 export type RefProps<T = unknown> = {
   ref?: Ref<T>;

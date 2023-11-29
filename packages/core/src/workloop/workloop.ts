@@ -57,7 +57,7 @@ function workLoop(isAsync: boolean) {
       scope$.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = isAsync && platform.shouldYield();
-      if (platform.hasPrimaryTask()) return stopTransitionWork(scope$);
+      if (platform.hasPrimaryTask()) return fork(scope$);
     }
 
     if (!unit && wipFiber) {
@@ -440,6 +440,7 @@ function commit(scope$: Scope) {
   // !
   for (const fiber of deletions) {
     const withNextTick = fiber.atomHost && !fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.portalHost;
+
     withNextTick ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = EffectTag.D;
     platform.commit(fiber);
@@ -486,14 +487,14 @@ function syncElementIndices(fiber: Fiber) {
   });
 }
 
-function stopTransitionWork(scope$: Scope): false {
+function fork(scope$: Scope): false {
   const scope$$$ = scope$.copy();
   const wipFiber = scope$.getWorkInProgress();
   const child = wipFiber.child;
 
   child && (child.parent = null);
 
-  const restoreTask = (options: RestoreOptions) => {
+  const restore = (options: RestoreOptions) => {
     const { fiber: wipFiber, setValue, resetValue } = options;
     const scope$ = scope$$();
 
@@ -518,7 +519,7 @@ function stopTransitionWork(scope$: Scope): false {
   wipFiber.alt = null;
   scope$.applyCancels();
   flush(scope$, true);
-  platform.cancelTask(restoreTask);
+  platform.cancelTask(restore);
 
   return false;
 }

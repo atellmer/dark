@@ -27,7 +27,7 @@ import {
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { SVG_TAG_NAMES, VOID_TAG_NAMES, ATTR_STYLE } from '../constants';
+import { SVG_TAG_NAMES, VOID_TAG_NAMES, ATTR_STYLE, ATTR_CLASS } from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -91,6 +91,11 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
       continue;
     }
 
+    if (attrName === ATTR_CLASS) {
+      toggleAttribute(tagElement, attrName, attrValue);
+      continue;
+    }
+
     if (attrName === ATTR_STYLE && attrValue && detectIsObject(attrValue)) {
       setObjectStyle(tagElement, attrValue);
       continue;
@@ -124,6 +129,11 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       continue;
     }
 
+    if (attrName === ATTR_CLASS && prevAttrValue !== nextAttrValue) {
+      toggleAttribute(tagElement, attrName, nextAttrValue);
+      continue;
+    }
+
     if (attrName === ATTR_STYLE && nextAttrValue && prevAttrValue !== nextAttrValue && detectIsObject(nextAttrValue)) {
       setObjectStyle(tagElement, nextAttrValue);
       continue;
@@ -146,6 +156,10 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       tagElement.removeAttribute(attrName);
     }
   }
+}
+
+function toggleAttribute(element: TagNativeElement, name: string, value: string) {
+  value ? element.setAttribute(name, value) : element.removeAttribute(name);
 }
 
 function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {

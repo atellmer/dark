@@ -3,7 +3,7 @@ import { detectIsArray, detectIsFunction } from '../helpers';
 import type { DarkElementKey as Key, DarkElement, DarkElementInstance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
 import { scope$$ } from '../scope';
-import { NodeType, type ViewDef } from './types';
+import { NodeType, type ViewOptions } from './types';
 
 const $$vNode = Symbol('vNode');
 const ATTR_TYPE = 'type';
@@ -47,17 +47,17 @@ class CommentVirtualNode extends VirtualNode {
   }
 }
 
-function View(def: ViewDef): TagVirtualNodeFactory {
+function View(options: ViewOptions): TagVirtualNodeFactory {
   const factory = () => {
-    const { as: name, slot, _void = false, ...attrs } = def;
+    const { as: name, slot, _void = false, ...attrs } = options;
     const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
 
     return new TagVirtualNode(name, attrs, children);
   };
 
   factory[$$vNode] = true;
-  factory[ATTR_TYPE] = def.as;
-  factory[ATTR_KEY] = def.key;
+  factory[ATTR_TYPE] = options.as;
+  factory[ATTR_KEY] = options.key;
 
   return factory;
 }

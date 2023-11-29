@@ -1,8 +1,10 @@
-import { View, type ViewDef } from '@dark-engine/core';
+import { View, type ViewOptions } from '@dark-engine/core';
 
-type TagProps = Omit<ViewDef, 'as' | 'isVoid'>;
+type TagProps = Omit<ViewOptions, 'as' | 'isVoid'>;
 
 export const factory =
   (as: string) =>
-  (props: TagProps = {}) =>
-    View({ as, ...props });
+  (props: TagProps = {}) => {
+    props.as = as;
+    return View(props as ViewOptions);
+  };

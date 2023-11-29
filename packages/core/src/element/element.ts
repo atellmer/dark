@@ -1,5 +1,5 @@
 import { detectIsString, detectIsFunction } from '../helpers';
-import { View, type TagVirtualNodeFactory } from '../view';
+import { type TagVirtualNodeFactory, type ViewOptions, View } from '../view';
 import { type ComponentFactory } from '../component';
 
 function createElement(
@@ -8,11 +8,20 @@ function createElement(
   ...slot: Array<any>
 ): ComponentFactory | TagVirtualNodeFactory | null {
   if (detectIsString(element)) {
-    return View({ ...props, as: element, slot });
+    const options = (props || {}) as ViewOptions;
+
+    options.as = element;
+    options.slot = slot;
+
+    return View(options);
   }
 
   if (detectIsFunction(element)) {
-    return element({ ...props, slot: slot.length === 1 ? slot[0] : slot });
+    const options = (props || {}) as { slot: unknown };
+
+    options.slot = slot.length === 1 ? slot[0] : slot;
+
+    return element(options);
   }
 
   return null;

@@ -1,6 +1,6 @@
 import { SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
 
-export type ViewDef = {
+export type ViewOptions = {
   as: string;
   _void?: boolean;
   [prop: string]: any;
