@@ -12,7 +12,7 @@ import {
   trueFn,
 } from '../helpers';
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
-import { Fiber, EffectTag, getHook, Hook } from '../fiber';
+import { Fiber, EffectTag, Mask, getHook, Hook } from '../fiber';
 import type { DarkElementKey as Key, DarkElementInstance } from '../shared';
 import { type Component, detectIsComponent } from '../component';
 import {
@@ -160,9 +160,9 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   scope$.addCandidate(fiber);
   fiber.inst = inst;
 
-  if (alt && alt.move) {
-    fiber.move = true;
-    delete alt.move;
+  if (alt && alt.mask & Mask.MOVE) {
+    fiber.mask |= Mask.MOVE;
+    alt.mask &= ~Mask.MOVE;
   }
 
   fiber.hook && (fiber.hook.owner = fiber); // !
@@ -171,7 +171,7 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
     fiber.inst = mount(fiber, scope$);
     alt && reconcile(fiber, alt, scope$);
     setup(fiber, alt);
-  } else if (fiber.move) {
+  } else if (fiber.mask & Mask.MOVE) {
     fiber.tag = EffectTag.U;
   }
 }
@@ -198,7 +198,7 @@ function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolea
       if (isMove || isStable) {
         const alt = actions.map[key];
 
-        isMove && (alt.move = true);
+        isMove && (alt.mask |= Mask.MOVE);
 
         return alt;
       }
@@ -249,7 +249,7 @@ function reconcile(fiber: Fiber, alt: Fiber, scope$: Scope) {
           } else if (!nextKeysMap[prevKey]) {
             scope$.addRemoveAction(id, prevKey);
             scope$.addDeletion(prevKeyFiber);
-            flush && (prevKeyFiber.flush = true);
+            flush && (prevKeyFiber.mask |= Mask.FLUSH);
             n++;
             size++;
           } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
@@ -271,7 +271,7 @@ function setup(fiber: Fiber, alt: Fiber) {
   let isUpdate = false;
 
   fiber.parent.tag === EffectTag.C && (fiber.tag = fiber.parent.tag);
-  fiber.parent.shadow && !fiber.parent.element && !detectIsReplacer(inst) && (fiber.shadow = true);
+  fiber.parent.mask & Mask.SHADOW && !fiber.parent.element && !detectIsReplacer(inst) && (fiber.mask |= Mask.SHADOW);
   isUpdate =
     alt &&
     fiber.tag !== EffectTag.C &&
@@ -436,10 +436,11 @@ function commit(scope$: Scope) {
   const candidates = scope$.getCandidates();
   const isUpdateZone = scope$.getIsUpdateZone();
   const unmounts: Array<Fiber> = [];
+  const combinedMask = Mask.INSERTION_EFFECT_HOST | Mask.LAYOUT_EFFECT_HOST | Mask.ASYNC_EFFECT_HOST | Mask.PORTAL_HOST;
 
   // !
   for (const fiber of deletions) {
-    const withNextTick = fiber.atomHost && !fiber.iefHost && !fiber.lefHost && !fiber.aefHost && !fiber.portalHost;
+    const withNextTick = fiber.mask & Mask.ATOM_HOST && !(fiber.mask & combinedMask);
 
     withNextTick ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = EffectTag.D;

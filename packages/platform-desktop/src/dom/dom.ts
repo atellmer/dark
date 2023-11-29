@@ -9,6 +9,7 @@ import {
   ATTR_REF,
   ATTR_BLACK_LIST,
   EffectTag,
+  Mask,
   detectIsUndefined,
   detectIsObject,
   NodeType,
@@ -195,7 +196,7 @@ const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
     commitCreation(fiber);
   },
   [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
-    fiber.move && (move(fiber), (fiber.move = false));
+    fiber.mask & Mask.MOVE && (move(fiber), (fiber.mask &= ~Mask.MOVE));
     if (!fiber.element) return;
     commitUpdate(fiber);
   },

@@ -5,39 +5,28 @@ import { detectIsComponent } from '../component';
 import type { Context, ContextProviderValue } from '../context';
 import type { DarkElementInstance, Callback } from '../shared';
 import { type Atom } from '../atom';
-import { type NativeElement, EffectTag } from './types';
+import { type NativeElement, EffectTag, Mask } from './types';
 
 class Fiber<N = NativeElement> {
-  public id = 0;
-  public cc = 0; // child fibers count
-  public cec = 0; // child native elements count
-  public idx = 0; // idx of fiber in the parent fiber
-  public eidx = 0; // native element idx
-  public element: N; // native element
-  public parent: Fiber<N> = null; // parent fiber
-  public child: Fiber<N>; // child fiber
-  public next: Fiber<N>; // next sibling fiber
-  public alt: Fiber<N> = null; // alternate fiber (previous)
-  public tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
-  public inst: DarkElementInstance = null; // instance of component or virtual node
-  public hook: Hook | null; // hook
-  public provider: Map<Context, ContextProviderValue>; // provider of context
-  public move: boolean; // flag of reordering in list
-  public aefHost: boolean; // effect host
-  public lefHost: boolean; // layout effect host
-  public iefHost: boolean; // insertion effect host
-  public atomHost: boolean; // atom host
-  public portalHost: boolean; // portal host
-  public marker: string; // for dev
-  public shadow: boolean; // flag for shadow rendering
-  public flush: boolean; // flag for optimizing removing of all elements in parent fiber
-  public batch: {
-    timer: number | NodeJS.Timeout;
-    changes: Array<Callback>;
-  };
-  public atoms: Map<Atom, Callback>;
-  public catch: (error: Error) => void;
-  private static nextId = 0;
+  id = 0;
+  cc = 0; // child fibers count
+  cec = 0; // child native elements count
+  idx = 0; // idx of fiber in the parent fiber
+  eidx = 0; // native element idx
+  element: N; // native element
+  parent: Fiber<N> = null; // parent fiber
+  child: Fiber<N>; // child fiber
+  next: Fiber<N>; // next sibling fiber
+  alt: Fiber<N> = null; // alternate fiber (previous)
+  tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
+  inst: DarkElementInstance = null; // instance of component or virtual node
+  hook: Hook | null; // hook
+  provider: Map<Context, ContextProviderValue>; // provider of context
+  mask = 0;
+  marker: string;
+  batch: Batch;
+  atoms: Map<Atom, Callback>;
+  catch: (error: Error) => void;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
     this.id = ++Fiber.nextId;
@@ -46,7 +35,7 @@ class Fiber<N = NativeElement> {
     provider && (this.provider = provider);
   }
 
-  public mutate(fiber: Partial<Fiber<N>>) {
+  mutate(fiber: Partial<Fiber<N>>) {
     const keys = Object.keys(fiber);
 
     for (const key of keys) {
@@ -56,32 +45,42 @@ class Fiber<N = NativeElement> {
     return this;
   }
 
-  public markAsyncEffectHost() {
-    this.aefHost = true;
-    this.parent && !this.parent.aefHost && this.parent.markAsyncEffectHost();
+  markAsyncEffectHost() {
+    const m = Mask.ASYNC_EFFECT_HOST;
+
+    this.mask |= m;
+    this.parent && !(this.parent.mask & m) && this.parent.markAsyncEffectHost();
   }
 
-  public markLayoutEffectHost() {
-    this.lefHost = true;
-    this.parent && !this.parent.lefHost && this.parent.markLayoutEffectHost();
+  markLayoutEffectHost() {
+    const m = Mask.LAYOUT_EFFECT_HOST;
+
+    this.mask |= m;
+    this.parent && !(this.parent.mask & m) && this.parent.markLayoutEffectHost();
   }
 
-  public markInsertionEffectHost() {
-    this.iefHost = true;
-    this.parent && !this.parent.iefHost && this.parent.markInsertionEffectHost();
+  markInsertionEffectHost() {
+    const m = Mask.INSERTION_EFFECT_HOST;
+
+    this.mask |= m;
+    this.parent && !(this.parent.mask & m) && this.parent.markInsertionEffectHost();
   }
 
-  public markAtomHost() {
-    this.atomHost = true;
-    this.parent && !this.parent.atomHost && this.parent.markAtomHost();
+  markAtomHost() {
+    const m = Mask.ATOM_HOST;
+
+    this.mask |= m;
+    this.parent && !(this.parent.mask & m) && this.parent.markAtomHost();
   }
 
-  public markPortalHost() {
-    this.portalHost = true;
-    this.parent && !this.parent.portalHost && this.parent.markPortalHost();
+  markPortalHost() {
+    const m = Mask.PORTAL_HOST;
+
+    this.mask |= m;
+    this.parent && !(this.parent.mask & m) && this.parent.markPortalHost();
   }
 
-  public incChildElementCount(count = 1, force = false) {
+  incChildElementCount(count = 1, force = false) {
     if (!this.parent) return;
     const scope$ = scope$$();
     const isUpdateZone = scope$.getIsUpdateZone();
@@ -104,7 +103,7 @@ class Fiber<N = NativeElement> {
     }
   }
 
-  public setError(error: Error) {
+  setError(error: Error) {
     if (detectIsFunction(this.catch)) {
       this.catch(error);
     } else if (this.parent) {
@@ -112,16 +111,18 @@ class Fiber<N = NativeElement> {
     }
   }
 
-  public static setNextId(id: number) {
+  static setNextId(id: number) {
     Fiber.nextId = id;
   }
+
+  private static nextId = 0;
 }
 
 class Hook<T = any> {
-  public id = 0;
-  public idx = 0;
-  public values: Array<T> = [];
-  public owner: Fiber = null;
+  id = 0;
+  idx = 0;
+  values: Array<T> = [];
+  owner: Fiber = null;
   private static nextId = 0;
 
   constructor() {
@@ -135,5 +136,10 @@ function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElemen
 
   return null;
 }
+
+type Batch = {
+  timer: number | NodeJS.Timeout;
+  changes: Array<Callback>;
+};
 
 export { Fiber, Hook, getHook };

@@ -47,8 +47,8 @@ class CommentVirtualNode extends VirtualNode {
   }
 }
 
-function View(options: ViewOptions): TagVirtualNodeFactory {
-  const factory = () => {
+function View(options: ViewOptions) {
+  const factory: TagVirtualNodeFactory = () => {
     const { as: name, slot, _void = false, ...attrs } = options;
     const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
 

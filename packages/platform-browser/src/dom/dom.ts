@@ -9,6 +9,7 @@ import {
   ATTR_REF,
   ATTR_BLACK_LIST,
   EffectTag,
+  Mask,
   detectIsUndefined,
   detectIsBoolean,
   detectIsObject,
@@ -252,7 +253,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (!fiber.shadow) {
+    if (!(fiber.mask & Mask.SHADOW)) {
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
         !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
           appendNativeElement(fiber.element, parentElement);
@@ -278,14 +279,16 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  if (fiber.flush) {
+  if (fiber.mask & Mask.FLUSH) {
     parentFiber.element.innerHTML && (parentFiber.element.innerHTML = '');
     return;
   }
 
   walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
-      !fiber.shadow && !detectIsPortal(fiber.inst) && removeNativeElement(fiber.element, parentFiber.element);
+      !(fiber.mask & Mask.SHADOW) &&
+        !detectIsPortal(fiber.inst) &&
+        removeNativeElement(fiber.element, parentFiber.element);
       return skip();
     }
   });
@@ -322,7 +325,7 @@ const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
     commitCreation(fiber);
   },
   [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
-    fiber.move && (move(fiber), delete fiber.move);
+    fiber.mask & Mask.MOVE && (move(fiber), (fiber.mask &= ~Mask.MOVE));
     if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);

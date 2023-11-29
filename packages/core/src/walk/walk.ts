@@ -1,4 +1,4 @@
-import { Fiber, EffectTag } from '../fiber';
+import { Fiber, EffectTag, Mask } from '../fiber';
 import { platform } from '../platform';
 import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
 import { type Scope } from '../scope';
@@ -129,7 +129,7 @@ function tryOptMov(fiber: Fiber, alt: Fiber, scope$: Scope) {
     if (!actions.move[key]) return;
     fiber.alt = new Fiber().mutate(fiber);
     fiber.tag = EffectTag.U;
-    fiber.move = true;
+    fiber.mask |= Mask.MOVE;
     scope$.addCandidate(fiber);
   });
 }
@@ -193,11 +193,11 @@ function getKey(inst: Inst, idx: number) {
 
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   fiber.incChildElementCount(alt.element ? 1 : alt.cec);
-  alt.aefHost && fiber.markAsyncEffectHost();
-  alt.lefHost && fiber.markLayoutEffectHost();
-  alt.iefHost && fiber.markInsertionEffectHost();
-  alt.atomHost && fiber.markAtomHost();
-  alt.portalHost && fiber.markPortalHost();
+  alt.mask & Mask.INSERTION_EFFECT_HOST && fiber.markInsertionEffectHost();
+  alt.mask & Mask.LAYOUT_EFFECT_HOST && fiber.markLayoutEffectHost();
+  alt.mask & Mask.ASYNC_EFFECT_HOST && fiber.markAsyncEffectHost();
+  alt.mask & Mask.ATOM_HOST && fiber.markAtomHost();
+  alt.mask & Mask.PORTAL_HOST && fiber.markPortalHost();
 }
 
 export {

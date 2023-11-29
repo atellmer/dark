@@ -1,4 +1,4 @@
-import { type Callback, type SubscriberWithValue } from '../shared';
+import { type SubscriberWithValue } from '../shared';
 import { detectIsFunction, detectIsEmpty, trueFn } from '../helpers';
 import { createUpdateCallback } from '../workloop';
 import { scope$$, getRootId } from '../scope';
@@ -11,7 +11,6 @@ class Atom<T = unknown> {
   private x: T;
   private connections1: Map<Hook, Tuple<T>>;
   private connections2: Map<T, Tuple<T>>;
-  private drops: Map<Hook, Callback>;
   private emitter: EventEmitter;
 
   constructor(value: T) {
@@ -59,29 +58,21 @@ class Atom<T = unknown> {
     const rootId = getRootId();
     const fiber = scope$$().getCursorFiber();
     const { hook } = fiber;
-    const off = () => this.drops.has(hook) && this.drops.get(hook)();
+    const disconnect = () => this.off(hook, key);
 
     !fiber.atoms && (fiber.atoms = new Map());
-    fiber.atoms.set(this, off);
+    fiber.atoms.set(this, disconnect);
     fiber.markAtomHost();
 
     if (detectIsEmpty(key)) {
       !this.connections1 && (this.connections1 = new Map());
-      this.connections1.set(hook, [rootId, hook, fn]);
+      this.connections1.set(hook, [rootId, hook, fn, key]);
     } else {
       !this.connections2 && (this.connections2 = new Map());
-      this.connections2.set(key, [rootId, hook, fn]);
+      this.connections2.set(key, [rootId, hook, fn, key]);
     }
 
-    !this.drops && (this.drops = new Map());
-    this.drops.set(hook, () => {
-      hook.owner.atoms.delete(this);
-      this.connections1 && this.connections1.delete(hook);
-      this.connections2 && this.connections2.delete(key);
-      this.drops.delete(hook);
-    });
-
-    return off;
+    return disconnect;
   }
 
   on(fn: SubscriberWithValue<T>) {
@@ -91,8 +82,18 @@ class Atom<T = unknown> {
   }
 
   kill() {
-    this.drops.forEach(x => x());
-    this.drops = null;
+    if (this.connections1) {
+      for (const [hook, [_, __, ___, key]] of this.connections1) {
+        this.off(hook, key);
+      }
+    }
+
+    if (this.connections2) {
+      for (const [key, [_, hook]] of this.connections2) {
+        this.off(hook, key);
+      }
+    }
+
     this.connections1 = null;
     this.connections2 = null;
     this.emitter = null;
@@ -116,6 +117,12 @@ class Atom<T = unknown> {
   valueOf() {
     return this.x;
   }
+
+  private off(hook: Hook, key: T) {
+    hook.owner.atoms.delete(this);
+    this.connections1 && this.connections1.delete(hook);
+    this.connections2 && this.connections2.delete(key);
+  }
 }
 
 const atom = <T>(value?: T) => new Atom(value);
@@ -128,6 +135,6 @@ function useAtom<T>(value?: T): Atom<T> {
 
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;
 
-type Tuple<T> = [number, Hook, ShouldUpdate<T>];
+type Tuple<T> = [number, Hook, ShouldUpdate<T>, T];
 
 export { Atom, atom, detectIsAtom, useAtom };
