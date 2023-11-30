@@ -73,7 +73,7 @@ function useTransition<T extends string, I = unknown>(
         }
       }
 
-      return elements;
+      return Fragment({ slot: elements });
     },
     [],
   );
@@ -417,8 +417,6 @@ export type TransitionRenderFn<T extends string = string, I = unknown> = (option
   idx: number;
 }) => TransitionElement;
 
-export type TransitionFn<T extends string = string, I = unknown> = (
-  render: TransitionRenderFn<T, I>,
-) => Array<TransitionElement>;
+export type TransitionFn<T extends string = string, I = unknown> = (render: TransitionRenderFn<T, I>) => Component;
 
 export { useTransition };
