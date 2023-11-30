@@ -39,7 +39,7 @@ describe('[@core/atom]', () => {
     expect(computed$.valueOf).toBeDefined();
   });
 
-  test('the wriable atom can trigger render and update a state correctly', () => {
+  test('the wriable atom can trigger render and update the state correctly', () => {
     const content = (count: number) => dom`
       <div>${count}</div>
     `;
@@ -58,7 +58,7 @@ describe('[@core/atom]', () => {
     expect(host.innerHTML).toBe(content(2));
   });
 
-  test('the readable atom can trigger render and update a state correctly', () => {
+  test('the readable atom can trigger render and update the state correctly', () => {
     const content = (count: number) => dom`
       <div>${count}</div>
     `;
