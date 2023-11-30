@@ -13,58 +13,26 @@ class Atom<T = unknown> {
   private value: T;
   private connections1: Map<Hook, Tuple<T>>;
   private connections2: Map<T, Tuple<T>>;
-  private emitter: EventEmitter;
-  private drops: Array<Callback>;
-  private isWritable = true;
+  private emitter: EventEmitter<EmitterValue<T>>;
 
   constructor(value: T) {
     this.value = value;
   }
 
   val(fn?: ShouldUpdate<T>, key?: T) {
-    this.connect(fn, key);
+    try {
+      this.connect(fn, key);
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') {
+        error('[Dark]: Illegal invocation val() outside render process!');
+      }
+    }
 
     return this.value;
   }
 
   get() {
     return this.value;
-  }
-
-  set(value: T | ((prevValue: T) => T)) {
-    if (!this.isWritable) {
-      if (process.env.NODE_ENV !== 'production') {
-        error('[Dark]: Invalid call to set the readonly atom!');
-      }
-
-      return;
-    }
-
-    const p = this.value;
-    const n = detectIsFunction(value) ? value(this.value) : value;
-    const make = (t: Tuple<T>, p: T, n: T) => {
-      const [rootId, hook, shouldUpdate] = t;
-      const fn = shouldUpdate || trueFn;
-
-      fn(p, n, n) && platform.schedule(createUpdate({ rootId, hook }));
-    };
-
-    this.value = n;
-
-    if (this.connections1) {
-      for (const [_, t] of this.connections1) {
-        make(t, p, n);
-      }
-    }
-
-    if (this.connections2) {
-      if (this.connections2.has(n)) {
-        make(this.connections2.get(n), p, n);
-        this.connections2.has(p) && make(this.connections2.get(p), p, n);
-      }
-    }
-
-    this.emitter && this.emitter.emit('data', this.value);
   }
 
   connect(fn: ShouldUpdate<T>, key: T) {
@@ -88,7 +56,7 @@ class Atom<T = unknown> {
     return disconnect;
   }
 
-  on(fn: SubscriberWithValue<T>) {
+  on(fn: SubscriberWithValue<EmitterValue<T>>) {
     !this.emitter && (this.emitter = new EventEmitter());
 
     return this.emitter.on('data', fn);
@@ -110,8 +78,6 @@ class Atom<T = unknown> {
     this.connections1 = null;
     this.connections2 = null;
     this.emitter = null;
-    this.drops && this.drops.forEach(x => x());
-    this.drops = null;
   }
 
   getSize() {
@@ -119,14 +85,6 @@ class Atom<T = unknown> {
     const size2 = this.connections2 ? this.connections2.size : 0;
 
     return size1 + size2;
-  }
-
-  setIsWritable(value: boolean) {
-    this.isWritable = value;
-  }
-
-  setDrops(drops: Array<Callback>) {
-    this.drops = drops;
   }
 
   toString() {
@@ -141,6 +99,34 @@ class Atom<T = unknown> {
     return this.value;
   }
 
+  protected setValue(value: T | ((prevValue: T) => T)) {
+    const prev = this.value;
+    const next = detectIsFunction(value) ? value(this.value) : value;
+    const make = (tuple: Tuple<T>, prev: T, next: T) => {
+      const [rootId, hook, shouldUpdate, key] = tuple;
+      const fn = shouldUpdate || trueFn;
+
+      fn(prev, next, key) && platform.schedule(createUpdate({ rootId, hook }));
+    };
+
+    this.value = next;
+
+    if (this.connections1) {
+      for (const [_, t] of this.connections1) {
+        make(t, prev, next);
+      }
+    }
+
+    if (this.connections2) {
+      if (this.connections2.has(next)) {
+        make(this.connections2.get(next), prev, next);
+        this.connections2.has(prev) && make(this.connections2.get(prev), prev, next);
+      }
+    }
+
+    this.emitter && this.emitter.emit('data', { prev, next });
+  }
+
   private off(hook: Hook, key: T) {
     hook.owner.atoms.delete(this);
     this.connections1 && this.connections1.delete(hook);
@@ -148,39 +134,60 @@ class Atom<T = unknown> {
   }
 }
 
-const atom = <T>(value?: T) => new Atom(value);
+class WritableAtom<T = unknown> extends Atom<T> {
+  set(value: T | ((prevValue: T) => T)) {
+    super.setValue(value);
+  }
+}
+
+class ReadableAtom<T = unknown> extends Atom<T> {
+  private drops: Array<Callback> = [];
+
+  constructor(deps$: Array<Atom>, fn: ComputedFn<T>) {
+    const value = ReadableAtom.compute(deps$, fn);
+
+    super(value);
+
+    for (const dep$ of deps$) {
+      this.drops.push(
+        dep$.on(({ prev, next }) => {
+          if (Object.is(prev, next)) return;
+          const value = ReadableAtom.compute(deps$, fn);
+
+          if (!Object.is(this.get(), value)) {
+            super.setValue(value);
+          }
+        }),
+      );
+    }
+  }
+
+  override kill() {
+    super.kill();
+    this.drops && this.drops.forEach(x => x());
+    this.drops = [];
+  }
+
+  private static compute<T>(deps$: Array<Atom>, fn: ComputedFn<T>) {
+    return fn(...ReadableAtom.values(deps$));
+  }
+
+  private static values(deps$: Array<Atom>) {
+    return deps$.map(x => x.get());
+  }
+}
 
 const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
 
-const values = (atoms$: Array<Atom>) => atoms$.map(x => x.get());
+const detectIsWritableAtom = (value: unknown): value is WritableAtom => value instanceof WritableAtom;
 
-const compute = <T>(atoms$: Array<Atom>, fn: ComputedFn<T>) => fn(...values(atoms$));
+const detectIsReadableAtom = (value: unknown): value is ReadableAtom => value instanceof ReadableAtom;
 
-function computed<T>(deps$: Array<Atom>, fn: ComputedFn<T>) {
-  const atom$ = atom(compute(deps$, fn));
-  const drops: Array<Callback> = [];
+const atom = <T>(value?: T) => new WritableAtom(value);
 
-  for (const dep$ of deps$) {
-    drops.push(
-      dep$.on(() => {
-        const value = compute(deps$, fn);
+const computed = <T>(deps$: Array<Atom>, fn: ComputedFn<T>) => new ReadableAtom(deps$, fn);
 
-        if (!Object.is(atom$.get(), value)) {
-          atom$.setIsWritable(true);
-          atom$.set(value);
-          atom$.setIsWritable(false);
-        }
-      }),
-    );
-  }
-
-  atom$.setIsWritable(false);
-  atom$.setDrops(drops);
-
-  return atom$;
-}
-
-function useAtom<T>(value?: T): Atom<T> {
+function useAtom<T>(value?: T): WritableAtom<T> {
   const atom$ = useMemo(() => atom<T>(value), []);
 
   useLayoutEffect(() => () => atom$.kill(), []);
@@ -188,7 +195,7 @@ function useAtom<T>(value?: T): Atom<T> {
   return atom$;
 }
 
-function useComputed<T>(deps$: Array<Atom>, fn: (...args: Array<any>) => T): Atom<T> {
+function useComputed<T>(deps$: Array<Atom>, fn: ComputedFn<T>): ReadableAtom<T> {
   const atom$ = useMemo(() => computed(deps$, fn), []);
 
   useLayoutEffect(() => () => atom$.kill(), []);
@@ -197,9 +204,19 @@ function useComputed<T>(deps$: Array<Atom>, fn: (...args: Array<any>) => T): Ato
 }
 
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;
-
+type EmitterValue<T> = { prev: T; next: T };
 type Tuple<T> = [number, Hook, ShouldUpdate<T>, T];
-
 type ComputedFn<T> = (...args: Array<any>) => T;
 
-export { Atom, atom, detectIsAtom, computed, useAtom, useComputed };
+export {
+  type Atom,
+  WritableAtom,
+  ReadableAtom,
+  detectIsAtom,
+  detectIsWritableAtom,
+  detectIsReadableAtom,
+  atom,
+  computed,
+  useAtom,
+  useComputed,
+};

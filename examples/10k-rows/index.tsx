@@ -1,5 +1,5 @@
 import {
-  type Atom,
+  type WritableAtom,
   Text,
   TagVirtualNode,
   TextVirtualNode,
@@ -51,7 +51,7 @@ const buildData = (count, prefix = ''): Array<DataItem> => {
     }));
 };
 
-type DataItem = { id: number; name$: Atom<string> };
+type DataItem = { id: number; name$: WritableAtom<string> };
 
 type HeaderProps = {
   onCreate: (e: E<MouseEvent>) => void;
@@ -105,15 +105,15 @@ const Header = component<HeaderProps>(
 const MemoHeader = memo(Header, () => false);
 
 type NameProps = {
-  name$: Atom<string>;
+  name$: WritableAtom<string>;
 };
 
 const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.val()));
 
 type RowProps = {
   id: number;
-  name$: Atom<string>;
-  selected$: Atom<number>;
+  name$: WritableAtom<string>;
+  selected$: WritableAtom<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
@@ -140,8 +140,8 @@ const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }
 const MemoRow = memo(Row, () => false);
 
 type State = {
-  data$: Atom<Array<DataItem>>;
-  selected$: Atom<number>;
+  data$: WritableAtom<Array<DataItem>>;
+  selected$: WritableAtom<number>;
 };
 
 const App = component(() => {
@@ -263,8 +263,8 @@ createRoot(document.getElementById('root')).render(App());
   const c = computed([a, b], (a: number, b: number) => a + b);
   const d = computed([c], (c: number) => c + 1);
 
-  c.on(c => console.log('c:', c));
-  d.on(d => console.log('d:', d));
+  c.on(({ next }) => console.log('c:', next));
+  d.on(({ next }) => console.log('d:', next));
 
   a.set(1);
 

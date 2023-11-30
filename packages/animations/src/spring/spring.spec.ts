@@ -1,4 +1,4 @@
-import { Atom } from '@dark-engine/core';
+import { WritableAtom } from '@dark-engine/core';
 
 import { Spring } from './spring';
 
@@ -20,9 +20,9 @@ describe('[@animations/spring]', () => {
     spring.setProp('x', 1);
     spring.setProp('y', 2);
 
-    expect(spring.prop('x')).toBeInstanceOf(Atom);
+    expect(spring.prop('x')).toBeInstanceOf(WritableAtom);
     expect(spring.prop('x').get()).toBe(1);
-    expect(spring.prop('y')).toBeInstanceOf(Atom);
+    expect(spring.prop('y')).toBeInstanceOf(WritableAtom);
     expect(spring.prop('y').get()).toBe(2);
   });
 

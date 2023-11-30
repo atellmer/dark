@@ -4,7 +4,7 @@ import { dom, createEnv } from '@test-utils';
 import { h } from '../element';
 import { Fragment } from '../fragment';
 import { component } from '../component';
-import { type Atom, atom, useAtom } from './atom';
+import { type WritableAtom, atom, useAtom } from './atom';
 
 let { host, render } = createEnv();
 
@@ -105,7 +105,7 @@ describe('[@core/atom]', () => {
     const content = (count: number) => dom`
       <div>${count}</div>
     `;
-    let count$: Atom<number> = null;
+    let count$: WritableAtom<number> = null;
     const App = component(() => {
       count$ = useAtom(0);
 
@@ -131,9 +131,9 @@ describe('[@core/atom]', () => {
     `;
     const fn1 = jest.fn();
     const fn2 = jest.fn();
-    let count$: Atom<number> = null;
+    let count$: WritableAtom<number> = null;
     type ChildProps = {
-      count$: Atom<number>;
+      count$: WritableAtom<number>;
     };
     const Child = component<ChildProps>(({ count$ }) => {
       fn2();

@@ -2,7 +2,7 @@ import { type SubscriberWithValue } from '../shared';
 
 type EventName = 'finish' | 'chunk' | 'data';
 
-class EventEmitter {
+class EventEmitter<T = unknown> {
   private subscribers: Partial<Record<EventName, Set<SubscriberWithValue<unknown>>>> = {};
 
   on<T>(e: EventName, sub: SubscriberWithValue<T>) {
@@ -11,7 +11,7 @@ class EventEmitter {
     return () => this.subscribers[e] && this.subscribers[e].delete(sub);
   }
 
-  emit<T>(e: EventName, data?: T) {
+  emit(e: EventName, data?: T) {
     this.subscribers[e] && this.subscribers[e].forEach(x => x(data));
   }
 

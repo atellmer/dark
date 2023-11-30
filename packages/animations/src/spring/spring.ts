@@ -1,9 +1,9 @@
-import { type Atom, type SubscriberWithValue, atom } from '@dark-engine/core';
+import { type WritableAtom, type SubscriberWithValue, atom } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
 
 class Spring<T extends string = string> {
-  private props: Record<T, Atom<number>> = {} as Record<T, Atom<number>>;
+  private props: Record<T, WritableAtom<number>> = {} as Record<T, WritableAtom<number>>;
   private subscribers = new Set<SubscriberWithValue<SpringValue<T>>>();
 
   prop(key: T) {
