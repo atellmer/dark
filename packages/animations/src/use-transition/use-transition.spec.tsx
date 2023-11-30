@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, component, useState, useLayoutEffect } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf, replacer, time, sleep, getSpyLength } from '@test-utils';
+import { dom, createEnv, mockPlatformRaf, replacer, time, getSpyLength } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -15,6 +15,7 @@ let { host, render } = createEnv();
 beforeEach(() => {
   ({ host, render } = createEnv());
   mockPlatformRaf();
+  jest.useFakeTimers();
 });
 
 describe('[@animations/use-transition]', () => {
@@ -53,7 +54,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can animate the items', () => {
-    jest.useFakeTimers();
     const content = (items: Array<Item>, opacity: number) =>
       items
         .map(
@@ -105,7 +105,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can animate the dynamic items', () => {
-    jest.useFakeTimers();
     const content = (items: Array<Item>, scale: number) =>
       items
         .map(
@@ -251,7 +250,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can toggle items', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean) =>
       isOpen
         ? dom`
@@ -321,7 +319,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can use a custom  spring config', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean) =>
       isOpen
         ? dom`
@@ -383,7 +380,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can use a different spring config', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean) =>
       isOpen
         ? dom`
@@ -448,7 +444,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can set the immediate value', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean) =>
       isOpen
         ? dom`
@@ -513,7 +508,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('can animate items via api', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean, scale: number) =>
       isOpen
         ? dom`
@@ -562,7 +556,7 @@ describe('[@animations/use-transition]', () => {
     expect(host.innerHTML).toBe(content(true, 2));
   });
 
-  test('can pause the animation correctly', async () => {
+  test('can pause the animation correctly', () => {
     type SpringProps = 'scale';
     let api: TransitionApi = null;
     const spy = jest.fn();
@@ -587,26 +581,24 @@ describe('[@animations/use-transition]', () => {
       });
     });
 
-    jest.useFakeTimers();
     render(<App />);
     jest.runAllTimers();
     spy.mockClear();
-    jest.useRealTimers();
     api.start(() => ({ to: { scale: 2 } }));
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spy)).toBeGreaterThan(0);
 
     const length = getSpyLength(spy);
 
     api.pause();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spy)).toBe(length);
 
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spy)).toBe(length);
   });
 
-  test('can resume the animation after pause correctly', async () => {
+  test('can resume the animation after pause correctly', () => {
     type SpringProps = 'scale';
     let api: TransitionApi = null;
     const spy = jest.fn();
@@ -631,25 +623,23 @@ describe('[@animations/use-transition]', () => {
       });
     });
 
-    jest.useFakeTimers();
     render(<App />);
     jest.runAllTimers();
     spy.mockClear();
-    jest.useRealTimers();
     api.start(() => ({ to: { scale: 2 } }));
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spy)).toBeGreaterThan(0);
 
     const length = getSpyLength(spy);
 
     api.pause();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     api.resume();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spy)).toBeGreaterThan(length);
   });
 
-  test('can delay the animation correctly', async () => {
+  test('can delay the animation correctly', () => {
     type SpringProps = 'scale';
     let api: TransitionApi = null;
     const spy = jest.fn();
@@ -674,22 +664,19 @@ describe('[@animations/use-transition]', () => {
       });
     });
 
-    jest.useFakeTimers();
     render(<App />);
     jest.runAllTimers();
     spy.mockClear();
-    jest.useRealTimers();
     api.delay(50);
     api.start(() => ({ to: { scale: 2 } }));
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spy)).toBe(0);
 
-    await sleep(100);
+    jest.advanceTimersByTime(100);
     expect(getSpyLength(spy)).toBeGreaterThan(0);
   });
 
-  test('can cancel the animation correctly', async () => {
-    jest.useRealTimers();
+  test('can cancel the animation correctly', () => {
     type SpringProps = 'scale';
     let api: TransitionApi = null;
     const spy = jest.fn();
@@ -715,18 +702,17 @@ describe('[@animations/use-transition]', () => {
     });
 
     render(<App />);
-    await sleep(100);
+    jest.advanceTimersByTime(100);
     expect(getSpyLength(spy)).toBeGreaterThan(0);
 
     const length = getSpyLength(spy);
 
     api.cancel();
-    await sleep(100);
+    jest.advanceTimersByTime(100);
     expect(getSpyLength(spy)).toBe(length);
   });
 
   test('can subscribe on events correctly', () => {
-    jest.useFakeTimers();
     let items: Array<Item> = null;
     type SpringProps = 'opacity';
     type AppProps = { items: Array<Item> };
@@ -799,7 +785,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('the "on" method returns the off function', () => {
-    jest.useFakeTimers();
     let items: Array<Item> = null;
     type SpringProps = 'opacity';
     type AppProps = { items: Array<Item> };
@@ -871,7 +856,6 @@ describe('[@animations/use-transition]', () => {
   });
 
   test('cancels the animation at unmounting correctly', () => {
-    jest.useFakeTimers();
     const content = (items: Array<Item>, opacity: number) =>
       items
         .map(

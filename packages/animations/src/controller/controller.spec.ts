@@ -6,16 +6,9 @@ import { SharedState } from '../state';
 const idx = 0;
 const setup = <T extends string>() => new Controller<T>(new SharedState());
 
-beforeAll(() => {
-  jest.useFakeTimers();
-});
-
 beforeEach(() => {
+  jest.useFakeTimers();
   mockPlatformRaf();
-});
-
-afterAll(() => {
-  jest.useRealTimers();
 });
 
 describe('[@animations/controller]', () => {

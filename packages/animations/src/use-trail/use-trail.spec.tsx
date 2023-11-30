@@ -15,6 +15,7 @@ let { host, render } = createEnv();
 beforeEach(() => {
   ({ host, render } = createEnv());
   mockPlatformRaf();
+  jest.useFakeTimers();
 });
 
 describe('[@animations/use-trail]', () => {
@@ -51,7 +52,6 @@ describe('[@animations/use-trail]', () => {
   });
 
   test('can animate a value via api', () => {
-    jest.useFakeTimers();
     const count = 4;
     const items = range(count);
     const content = (scale: number) =>
@@ -101,7 +101,6 @@ describe('[@animations/use-trail]', () => {
   });
 
   test('can animate a value via state', () => {
-    jest.useFakeTimers();
     const count = 4;
     const items = range(count);
     const content = (scale: number) =>

@@ -13,6 +13,7 @@ let { host, render } = createEnv();
 beforeEach(() => {
   ({ host, render } = createEnv());
   mockPlatformRaf();
+  jest.useFakeTimers();
 });
 
 describe('[@animations/use-spring]', () => {
@@ -48,7 +49,6 @@ describe('[@animations/use-spring]', () => {
   });
 
   test('can animate the value via api', () => {
-    jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};">A</div>
     `;
@@ -94,7 +94,6 @@ describe('[@animations/use-spring]', () => {
   });
 
   test('can animate the value via state', () => {
-    jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};">A</div>
     `;

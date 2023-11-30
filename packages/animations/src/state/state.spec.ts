@@ -1,4 +1,4 @@
-import { sleep, mockPlatformRaf, getSpyLength, time } from '@test-utils';
+import { mockPlatformRaf, getSpyLength, time } from '@test-utils';
 
 import { type ConfiguratorFn, Controller } from '../controller';
 import { SharedState } from './state';
@@ -9,6 +9,7 @@ let nextKey = -1;
 const genKey = () => ++nextKey;
 
 beforeEach(() => {
+  jest.useFakeTimers();
   mockPlatformRaf();
 });
 
@@ -70,7 +71,6 @@ describe('[@animations/state]', () => {
   });
 
   test('runs the animation in sequence correctly', () => {
-    jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -87,7 +87,6 @@ describe('[@animations/state]', () => {
   });
 
   test('runs the animation in trail sequence correctly', () => {
-    jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -111,7 +110,6 @@ describe('[@animations/state]', () => {
   });
 
   test('can subscribe on events correctly', () => {
-    jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -159,7 +157,6 @@ describe('[@animations/state]', () => {
   });
 
   test('the "on" method returns the off function', () => {
-    jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -199,8 +196,7 @@ describe('[@animations/state]', () => {
     expect(seriesStartSpy).toHaveBeenCalledTimes(0);
   });
 
-  test('can pause the animation correctly', async () => {
-    jest.useRealTimers();
+  test('can pause the animation correctly', () => {
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -208,7 +204,7 @@ describe('[@animations/state]', () => {
     const { state, spies } = setup<SpringProps>(configurator);
 
     state.start();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spies[0])).toBeGreaterThan(0);
     expect(getSpyLength(spies[1])).toBeGreaterThan(0);
     expect(getSpyLength(spies[2])).toBeGreaterThan(0);
@@ -220,20 +216,19 @@ describe('[@animations/state]', () => {
     const length3 = getSpyLength(spies[3]);
 
     state.pause();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spies[0])).toBe(length0);
     expect(getSpyLength(spies[1])).toBe(length1);
     expect(getSpyLength(spies[2])).toBe(length2);
     expect(getSpyLength(spies[3])).toBe(length3);
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spies[0])).toBe(length0);
     expect(getSpyLength(spies[1])).toBe(length1);
     expect(getSpyLength(spies[2])).toBe(length2);
     expect(getSpyLength(spies[3])).toBe(length3);
   });
 
-  test('can resume the animation after pause correctly', async () => {
-    jest.useRealTimers();
+  test('can resume the animation after pause correctly', () => {
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -241,7 +236,7 @@ describe('[@animations/state]', () => {
     const { state, spies } = setup<SpringProps>(configurator);
 
     state.start();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spies[0])).toBeGreaterThan(0);
     expect(getSpyLength(spies[1])).toBeGreaterThan(0);
     expect(getSpyLength(spies[2])).toBeGreaterThan(0);
@@ -253,17 +248,16 @@ describe('[@animations/state]', () => {
     const length3 = getSpyLength(spies[3]);
 
     state.pause();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     state.resume();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spies[0])).toBeGreaterThan(length0);
     expect(getSpyLength(spies[1])).toBeGreaterThan(length1);
     expect(getSpyLength(spies[2])).toBeGreaterThan(length2);
     expect(getSpyLength(spies[3])).toBeGreaterThan(length3);
   });
 
-  test('can delay the animation correctly', async () => {
-    jest.useRealTimers();
+  test('can delay the animation correctly', () => {
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -272,12 +266,12 @@ describe('[@animations/state]', () => {
 
     state.delay(50);
     state.start();
-    await sleep(20);
+    jest.advanceTimersByTime(20);
     expect(getSpyLength(spies[0])).toBe(0);
     expect(getSpyLength(spies[1])).toBe(0);
     expect(getSpyLength(spies[2])).toBe(0);
     expect(getSpyLength(spies[3])).toBe(0);
-    await sleep(100);
+    jest.advanceTimersByTime(100);
     expect(getSpyLength(spies[0])).toBeGreaterThan(0);
     expect(getSpyLength(spies[1])).toBeGreaterThan(0);
     expect(getSpyLength(spies[2])).toBeGreaterThan(0);
@@ -285,7 +279,6 @@ describe('[@animations/state]', () => {
   });
 
   test('can reset the animation correctly', () => {
-    jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -306,8 +299,7 @@ describe('[@animations/state]', () => {
     expect(toValue(ctrls[3])).toEqual({ scale: 0 });
   });
 
-  test('can cancel the animation correctly', async () => {
-    jest.useRealTimers();
+  test('can cancel the animation correctly', () => {
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },
@@ -316,7 +308,7 @@ describe('[@animations/state]', () => {
 
     state.delay(20);
     state.start();
-    await sleep(100);
+    jest.advanceTimersByTime(100);
     expect(getSpyLength(spies[0])).toBeGreaterThan(0);
     expect(getSpyLength(spies[1])).toBeGreaterThan(0);
     expect(getSpyLength(spies[2])).toBeGreaterThan(0);
@@ -328,7 +320,7 @@ describe('[@animations/state]', () => {
     const length3 = getSpyLength(spies[3]);
 
     state.cancel();
-    await sleep(100);
+    jest.advanceTimersByTime(100);
     expect(getSpyLength(spies[0])).toBe(length0);
     expect(getSpyLength(spies[1])).toBe(length1);
     expect(getSpyLength(spies[2])).toBe(length2);
@@ -336,7 +328,6 @@ describe('[@animations/state]', () => {
   });
 
   test('can detect the playing animation correctly', () => {
-    jest.useFakeTimers();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { scale: 0 },
       to: { scale: 1 },

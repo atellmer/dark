@@ -26,11 +26,11 @@ let { host, render } = createEnv();
 beforeEach(() => {
   ({ host, render } = createEnv());
   mockPlatformRaf();
+  jest.useFakeTimers();
 });
 
 describe('[@animations/use-chain]', () => {
   test('can run animations in the sequence via events', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean, opacity1: number, opacity2: number, opacity3: number, opacity4: number) => dom`
       <div style="opacity: ${opacity1};">A</div>
       <div style="opacity: ${opacity2};">B</div>
@@ -160,7 +160,6 @@ describe('[@animations/use-chain]', () => {
   });
 
   test('can run animations in the sequence via timesteps', () => {
-    jest.useFakeTimers();
     const content = (isOpen: boolean, opacity1: number, opacity2: number, opacity3: number, opacity4: number) => dom`
       <div style="opacity: ${opacity1};">A</div>
       <div style="opacity: ${opacity2};">B</div>
