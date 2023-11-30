@@ -10,11 +10,8 @@ import { type SpringApi, useSprings } from './use-springs';
 
 let { host, render } = createEnv();
 
-beforeAll(() => {
-  jest.useFakeTimers();
-});
-
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createEnv());
   mockPlatformRaf();
 });

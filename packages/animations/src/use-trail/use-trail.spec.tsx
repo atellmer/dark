@@ -13,9 +13,9 @@ import { useTrail } from './use-trail';
 let { host, render } = createEnv();
 
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createEnv());
   mockPlatformRaf();
-  jest.useFakeTimers();
 });
 
 describe('[@animations/use-trail]', () => {

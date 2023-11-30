@@ -11,9 +11,9 @@ import { useSpring } from './use-spring';
 let { host, render } = createEnv();
 
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createEnv());
   mockPlatformRaf();
-  jest.useFakeTimers();
 });
 
 describe('[@animations/use-spring]', () => {

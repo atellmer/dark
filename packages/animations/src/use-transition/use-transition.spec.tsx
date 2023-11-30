@@ -13,9 +13,9 @@ const generate = (size: number): Array<Item> => range(size).map((_, idx) => ({ i
 let { host, render } = createEnv();
 
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createEnv());
   mockPlatformRaf();
-  jest.useFakeTimers();
 });
 
 describe('[@animations/use-transition]', () => {

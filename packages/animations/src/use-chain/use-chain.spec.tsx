@@ -24,9 +24,9 @@ jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
 let { host, render } = createEnv();
 
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createEnv());
   mockPlatformRaf();
-  jest.useFakeTimers();
 });
 
 describe('[@animations/use-chain]', () => {

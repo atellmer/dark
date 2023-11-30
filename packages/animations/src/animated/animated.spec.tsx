@@ -12,11 +12,11 @@ let { host, render } = createEnv();
 beforeEach(() => {
   ({ host, render } = createEnv());
   mockPlatformRaf();
+  jest.useFakeTimers();
 });
 
 describe('[@animations/animated]', () => {
   test('can animate the value', () => {
-    jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});"></div>
     `;
@@ -55,7 +55,6 @@ describe('[@animations/animated]', () => {
   });
 
   test('can animate the value with the deep nested element', () => {
-    jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});"></div>
     `;
@@ -98,7 +97,6 @@ describe('[@animations/animated]', () => {
   });
 
   test('can animate the value of the first element found', () => {
-    jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});">
         <span></span>
@@ -147,7 +145,6 @@ describe('[@animations/animated]', () => {
   });
 
   test('nested animated elements works correcrly', () => {
-    jest.useFakeTimers();
     const content = (scale: number, opacity: number) => dom`
       <div style="transform: scale(${scale}); opacity: ${opacity};"></div>
     `;
@@ -195,7 +192,6 @@ describe('[@animations/animated]', () => {
   });
 
   test('unmounts correctly', () => {
-    jest.useFakeTimers();
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});"></div>
     `;
