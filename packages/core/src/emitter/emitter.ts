@@ -3,20 +3,25 @@ import { type SubscriberWithValue } from '../shared';
 type EventName = 'finish' | 'chunk' | 'data';
 
 class EventEmitter<T = unknown> {
-  private subscribers: Partial<Record<EventName, Set<SubscriberWithValue<unknown>>>> = {};
+  private subscribers: Map<Partial<EventName>, Set<SubscriberWithValue<unknown>>> = new Map();
 
-  on<T>(e: EventName, sub: SubscriberWithValue<T>) {
-    !this.subscribers[e] && (this.subscribers[e] = new Set()), this.subscribers[e].add(sub);
+  on<T>(e: EventName, fn: SubscriberWithValue<T>) {
+    !this.subscribers.has(e) && this.subscribers.set(e, new Set());
+    this.subscribers.get(e).add(fn);
 
-    return () => this.subscribers[e] && this.subscribers[e].delete(sub);
+    return () => this.subscribers.has(e) && this.subscribers.get(e).delete(fn);
   }
 
   emit(e: EventName, data?: T) {
-    this.subscribers[e] && this.subscribers[e].forEach(x => x(data));
+    this.subscribers.has(e) && this.subscribers.get(e).forEach(x => x(data));
   }
 
   kill() {
-    this.subscribers = {};
+    this.subscribers = new Map();
+  }
+
+  __getSize() {
+    return this.subscribers.size;
   }
 }
 

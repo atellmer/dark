@@ -100,14 +100,16 @@ class Atom<T = unknown> {
   }
 
   __removeSubject(atom$: ReadableAtom) {
-    this.subjects && this.subjects.delete(atom$);
+    return this.subjects && this.subjects.delete(atom$);
   }
 
   __getSize() {
     const size1 = this.connections1 ? this.connections1.size : 0;
     const size2 = this.connections2 ? this.connections2.size : 0;
+    const size3 = this.subjects ? this.subjects.size : 0;
+    const size4 = this.emitter ? this.emitter.__getSize() : 0;
 
-    return size1 + size2;
+    return size1 + size2 + size3 + size4;
   }
 
   protected setValue(value: T | ((prevValue: T) => T)) {
@@ -124,8 +126,8 @@ class Atom<T = unknown> {
     this.value = next;
 
     if (this.connections1) {
-      for (const [_, t] of this.connections1) {
-        make(t, prev, next);
+      for (const [_, tuple] of this.connections1) {
+        make(tuple, prev, next);
       }
     }
 

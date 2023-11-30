@@ -1,5 +1,6 @@
 import {
   type WritableAtom,
+  h,
   Text,
   TagVirtualNode,
   TextVirtualNode,
@@ -256,19 +257,3 @@ const App = component(() => {
 });
 
 createRoot(document.getElementById('root')).render(App());
-
-(() => {
-  const a = atom(0);
-  const b = atom(0);
-  const c = computed([a, b], (a: number, b: number) => a + b);
-  const d = computed([c], (c: number) => c + 1);
-
-  c.on(({ next }) => console.log('c:', next));
-  d.on(({ next }) => console.log('d:', next));
-
-  a.set(1);
-
-  setTimeout(() => {
-    b.set(2);
-  }, 2000);
-})();
