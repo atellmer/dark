@@ -55,7 +55,7 @@ class SharedState<T extends string = string> {
   }
 
   start(fn?: StartFn<T>) {
-    this.wrap(() => {
+    this.defer(() => {
       if (this.ctrls.length === 0) return;
       this.event('series-start');
       this.setFlow(Flow.RIGHT);
@@ -114,7 +114,7 @@ class SharedState<T extends string = string> {
     isCompleted && this.event('series-end');
   }
 
-  private wrap(fn: () => void) {
+  defer(fn: () => void) {
     this.resetScheduledDelay();
 
     if (this.delayTimeout > 0) {

@@ -64,6 +64,7 @@ describe('[@animations/state]', () => {
     expect(state.reset).toBeDefined();
     expect(state.resume).toBeDefined();
     expect(state.delay).toBeDefined();
+    expect(state.defer).toBeDefined();
     expect(state.cancel).toBeDefined();
     expect(state.on).toBeDefined();
   });

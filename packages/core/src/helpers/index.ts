@@ -83,7 +83,9 @@ function detectAreDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>):
   return false;
 }
 
-const nextTick = (callback: () => void) => Promise.resolve().then(callback);
+const nextTick = (callback: () => void) => {
+  Promise.resolve().then(callback);
+};
 
 const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 

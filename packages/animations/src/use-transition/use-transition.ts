@@ -84,8 +84,10 @@ function useTransition<T extends string, I = unknown>(
         scope.fromItems = false;
 
         if (scope.inChain) {
-          scope.queue.forEach(x => x());
+          const queue = [...scope.queue];
+
           scope.queue = [];
+          state.defer(() => queue.forEach(x => x()));
         } else {
           state.start(fn);
         }
@@ -287,6 +289,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
   const { configurator, ctrlsMap, fakesMap } = scope;
   const ctrls = state.getCtrls();
   const isEnter = action === Action.ENTER;
+  const isLeave = action === Action.LEAVE;
   let idx$ = 0;
 
   for (const [key, idx] of space) {
@@ -294,7 +297,7 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
     const item = ctrl.getItem();
     const config = configurator(idx, item);
     const { trail } = config;
-    const to = config[action];
+    const to = isLeave && !config[action] ? config.from : config[action];
     let ctrl$ = ctrl;
 
     if (isEnter) {
