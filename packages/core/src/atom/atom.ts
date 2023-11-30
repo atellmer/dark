@@ -1,18 +1,19 @@
-import { type SubscriberWithValue, type Callback } from '../shared';
+import { type SubscriberWithValue } from '../shared';
 import { detectIsFunction, detectIsEmpty, trueFn } from '../helpers';
 import { useLayoutEffect } from '../use-layout-effect';
-import { createUpdate } from '../workloop';
 import { scope$$, getRootId } from '../scope';
+import { type Hook, Mask } from '../fiber';
+import { createUpdate } from '../workloop';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
-import { type Hook, Mask } from '../fiber';
 import { error } from '../helpers';
 
 class Atom<T = unknown> {
   private value: T;
   private connections1: Map<Hook, Tuple<T>>;
   private connections2: Map<T, Tuple<T>>;
+  private subjects: Set<ReadableAtom>;
   private emitter: EventEmitter<EmitterValue<T>>;
 
   constructor(value: T) {
@@ -21,7 +22,7 @@ class Atom<T = unknown> {
 
   val(fn?: ShouldUpdate<T>, key?: T) {
     try {
-      this.connect(fn, key);
+      this.__connect(fn, key);
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
         error('[Dark]: Illegal invocation val() outside render process!');
@@ -33,27 +34,6 @@ class Atom<T = unknown> {
 
   get() {
     return this.value;
-  }
-
-  connect(fn: ShouldUpdate<T>, key: T) {
-    const rootId = getRootId();
-    const fiber = scope$$().getCursorFiber();
-    const { hook } = fiber;
-    const disconnect = () => this.off(hook, key);
-
-    !fiber.atoms && (fiber.atoms = new Map());
-    fiber.atoms.set(this, disconnect);
-    fiber.markHost(Mask.ATOM_HOST);
-
-    if (detectIsEmpty(key)) {
-      !this.connections1 && (this.connections1 = new Map());
-      this.connections1.set(hook, [rootId, hook, fn, key]);
-    } else {
-      !this.connections2 && (this.connections2 = new Map());
-      this.connections2.set(key, [rootId, hook, fn, key]);
-    }
-
-    return disconnect;
   }
 
   on(fn: SubscriberWithValue<EmitterValue<T>>) {
@@ -78,13 +58,7 @@ class Atom<T = unknown> {
     this.connections1 = null;
     this.connections2 = null;
     this.emitter = null;
-  }
-
-  getSize() {
-    const size1 = this.connections1 ? this.connections1.size : 0;
-    const size2 = this.connections2 ? this.connections2.size : 0;
-
-    return size1 + size2;
+    this.subjects = null;
   }
 
   toString() {
@@ -99,9 +73,47 @@ class Atom<T = unknown> {
     return this.value;
   }
 
+  __connect(fn: ShouldUpdate<T>, key: T) {
+    const rootId = getRootId();
+    const fiber = scope$$().getCursorFiber();
+    const { hook } = fiber;
+    const disconnect = () => this.off(hook, key);
+
+    !fiber.atoms && (fiber.atoms = new Map());
+    fiber.atoms.set(this, disconnect);
+    fiber.markHost(Mask.ATOM_HOST);
+
+    if (detectIsEmpty(key)) {
+      !this.connections1 && (this.connections1 = new Map());
+      this.connections1.set(hook, [rootId, hook, fn, key]);
+    } else {
+      !this.connections2 && (this.connections2 = new Map());
+      this.connections2.set(key, [rootId, hook, fn, key]);
+    }
+
+    return disconnect;
+  }
+
+  __addSubject(atom$: ReadableAtom) {
+    !this.subjects && (this.subjects = new Set());
+    this.subjects.add(atom$);
+  }
+
+  __removeSubject(atom$: ReadableAtom) {
+    this.subjects && this.subjects.delete(atom$);
+  }
+
+  __getSize() {
+    const size1 = this.connections1 ? this.connections1.size : 0;
+    const size2 = this.connections2 ? this.connections2.size : 0;
+
+    return size1 + size2;
+  }
+
   protected setValue(value: T | ((prevValue: T) => T)) {
     const prev = this.value;
     const next = detectIsFunction(value) ? value(this.value) : value;
+    const data: EmitterValue<T> = { prev, next };
     const make = (tuple: Tuple<T>, prev: T, next: T) => {
       const [rootId, hook, shouldUpdate, key] = tuple;
       const fn = shouldUpdate || trueFn;
@@ -124,7 +136,8 @@ class Atom<T = unknown> {
       }
     }
 
-    this.emitter && this.emitter.emit('data', { prev, next });
+    this.emitter && this.emitter.emit('data', data);
+    this.subjects && this.subjects.forEach(x => x.__notify(data));
   }
 
   private off(hook: Hook, key: T) {
@@ -141,31 +154,30 @@ class WritableAtom<T = unknown> extends Atom<T> {
 }
 
 class ReadableAtom<T = unknown> extends Atom<T> {
-  private drops: Array<Callback> = [];
+  private deps$: Array<Atom> = [];
+  private fn: ComputedFn<T> = null;
 
   constructor(deps$: Array<Atom>, fn: ComputedFn<T>) {
-    const value = ReadableAtom.compute(deps$, fn);
+    super(ReadableAtom.compute(deps$, fn));
+    this.deps$ = deps$;
+    this.fn = fn;
+    deps$.forEach(x => x.__addSubject(this));
+  }
 
-    super(value);
+  __notify({ prev, next }: EmitterValue<unknown>) {
+    if (Object.is(prev, next)) return;
+    const value = ReadableAtom.compute(this.deps$, this.fn);
 
-    for (const dep$ of deps$) {
-      this.drops.push(
-        dep$.on(({ prev, next }) => {
-          if (Object.is(prev, next)) return;
-          const value = ReadableAtom.compute(deps$, fn);
-
-          if (!Object.is(this.get(), value)) {
-            super.setValue(value);
-          }
-        }),
-      );
+    if (!Object.is(this.get(), value)) {
+      super.setValue(value);
     }
   }
 
   override kill() {
     super.kill();
-    this.drops && this.drops.forEach(x => x());
-    this.drops = [];
+    this.deps$.forEach(x => x.__removeSubject(this));
+    this.deps$ = [];
+    this.fn = null;
   }
 
   private static compute<T>(deps$: Array<Atom>, fn: ComputedFn<T>) {
