@@ -281,7 +281,7 @@ function setup(fiber: Fiber, alt: Fiber) {
   fiber.tag = isUpdate ? EffectTag.U : EffectTag.C;
   hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
-  fiber.element && fiber.incChildElementCount();
+  fiber.element && fiber.increment();
 }
 
 function shouldUpdate(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
@@ -345,7 +345,7 @@ function mount(fiber: Fiber, scope$: Scope) {
       }
 
       component.children = result as Array<DarkElementInstance>;
-      platform.detectIsPortal(inst) && fiber.markPortalHost();
+      platform.detectIsPortal(inst) && fiber.markHost(Mask.PORTAL_HOST);
     } catch (err) {
       if (err instanceof StopWork) {
         throw err;
@@ -475,7 +475,7 @@ function sync(fiber: Fiber) {
   const parentFiber = getFiberWithElement(fiber.parent);
   let isRight = false;
 
-  fiber.incChildElementCount(diff, true);
+  fiber.increment(diff, true);
 
   walk(parentFiber.child, (fiber$, skip) => {
     if (fiber$ === fiber) {

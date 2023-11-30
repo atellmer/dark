@@ -6,7 +6,7 @@ import { scope$$, getRootId } from '../scope';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
-import { type Hook } from '../fiber';
+import { type Hook, Mask } from '../fiber';
 import { error } from '../helpers';
 
 class Atom<T = unknown> {
@@ -43,7 +43,7 @@ class Atom<T = unknown> {
 
     !fiber.atoms && (fiber.atoms = new Map());
     fiber.atoms.set(this, disconnect);
-    fiber.markAtomHost();
+    fiber.markHost(Mask.ATOM_HOST);
 
     if (detectIsEmpty(key)) {
       !this.connections1 && (this.connections1 = new Map());

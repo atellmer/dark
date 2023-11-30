@@ -192,12 +192,12 @@ function getKey(inst: Inst, idx: number) {
 }
 
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
-  fiber.incChildElementCount(alt.element ? 1 : alt.cec);
-  alt.mask & Mask.INSERTION_EFFECT_HOST && fiber.markInsertionEffectHost();
-  alt.mask & Mask.LAYOUT_EFFECT_HOST && fiber.markLayoutEffectHost();
-  alt.mask & Mask.ASYNC_EFFECT_HOST && fiber.markAsyncEffectHost();
-  alt.mask & Mask.ATOM_HOST && fiber.markAtomHost();
-  alt.mask & Mask.PORTAL_HOST && fiber.markPortalHost();
+  fiber.increment(alt.element ? 1 : alt.cec);
+  alt.mask & Mask.INSERTION_EFFECT_HOST && fiber.markHost(Mask.INSERTION_EFFECT_HOST);
+  alt.mask & Mask.LAYOUT_EFFECT_HOST && fiber.markHost(Mask.LAYOUT_EFFECT_HOST);
+  alt.mask & Mask.ASYNC_EFFECT_HOST && fiber.markHost(Mask.ASYNC_EFFECT_HOST);
+  alt.mask & Mask.ATOM_HOST && fiber.markHost(Mask.ATOM_HOST);
+  alt.mask & Mask.PORTAL_HOST && fiber.markHost(Mask.PORTAL_HOST);
 }
 
 export {

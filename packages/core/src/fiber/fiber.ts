@@ -45,42 +45,12 @@ class Fiber<N = NativeElement> {
     return this;
   }
 
-  markAsyncEffectHost() {
-    const m = Mask.ASYNC_EFFECT_HOST;
-
-    this.mask |= m;
-    this.parent && !(this.parent.mask & m) && this.parent.markAsyncEffectHost();
+  markHost(mask: Mask) {
+    this.mask |= mask;
+    this.parent && !(this.parent.mask & mask) && this.parent.markHost(mask);
   }
 
-  markLayoutEffectHost() {
-    const m = Mask.LAYOUT_EFFECT_HOST;
-
-    this.mask |= m;
-    this.parent && !(this.parent.mask & m) && this.parent.markLayoutEffectHost();
-  }
-
-  markInsertionEffectHost() {
-    const m = Mask.INSERTION_EFFECT_HOST;
-
-    this.mask |= m;
-    this.parent && !(this.parent.mask & m) && this.parent.markInsertionEffectHost();
-  }
-
-  markAtomHost() {
-    const m = Mask.ATOM_HOST;
-
-    this.mask |= m;
-    this.parent && !(this.parent.mask & m) && this.parent.markAtomHost();
-  }
-
-  markPortalHost() {
-    const m = Mask.PORTAL_HOST;
-
-    this.mask |= m;
-    this.parent && !(this.parent.mask & m) && this.parent.markPortalHost();
-  }
-
-  incChildElementCount(count = 1, force = false) {
+  increment(count = 1, force = false) {
     if (!this.parent) return;
     const scope$ = scope$$();
     const isUpdateZone = scope$.getIsUpdateZone();
@@ -99,7 +69,7 @@ class Fiber<N = NativeElement> {
     this.parent.cec += count;
 
     if (!this.parent.element) {
-      this.parent.incChildElementCount(count);
+      this.parent.increment(count);
     }
   }
 
