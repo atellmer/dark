@@ -2,12 +2,13 @@ import { type SubscriberWithValue } from '../shared';
 import { detectIsFunction, detectIsEmpty, trueFn } from '../helpers';
 import { useLayoutEffect } from '../use-layout-effect';
 import { scope$$, getRootId } from '../scope';
-import { type Hook, Mask } from '../fiber';
+import { type Hook } from '../fiber';
 import { createUpdate } from '../workloop';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
 import { error, detectAreDepsDifferent } from '../helpers';
+import { MASK_ATOM_HOST } from '../constants';
 
 class Atom<T = unknown> {
   private value: T;
@@ -81,7 +82,7 @@ class Atom<T = unknown> {
 
     !fiber.atoms && (fiber.atoms = new Map());
     fiber.atoms.set(this, disconnect);
-    fiber.markHost(Mask.ATOM_HOST);
+    fiber.markHost(MASK_ATOM_HOST);
 
     if (detectIsEmpty(key)) {
       !this.connections1 && (this.connections1 = new Map());

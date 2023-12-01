@@ -1,4 +1,15 @@
-import { Fiber, EffectTag, Mask } from '../fiber';
+import {
+  EFFECT_TAG_DELETE,
+  EFFECT_TAG_UPDATE,
+  EFFECT_TAG_SKIP,
+  MASK_INSERTION_EFFECT_HOST,
+  MASK_LAYOUT_EFFECT_HOST,
+  MASK_ASYNC_EFFECT_HOST,
+  MASK_ATOM_HOST,
+  MASK_PORTAL_HOST,
+  MASK_MOVE,
+} from '../constants';
+import { Fiber } from '../fiber';
 import { platform } from '../platform';
 import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
 import { type Scope } from '../scope';
@@ -53,7 +64,7 @@ function detectIsFiberAlive(fiber: Fiber) {
   let fiber$ = fiber;
 
   while (fiber$) {
-    if (fiber$.tag === EffectTag.D) return false;
+    if (fiber$.tag === EFFECT_TAG_DELETE) return false;
     fiber$ = fiber$.parent;
   }
 
@@ -128,8 +139,8 @@ function tryOptMov(fiber: Fiber, alt: Fiber, scope$: Scope) {
   buildChildNodes(fiber, alt, scope$, (fiber, key) => {
     if (!actions.move[key]) return;
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.tag = EffectTag.U;
-    fiber.mask |= Mask.MOVE;
+    fiber.tag = EFFECT_TAG_UPDATE;
+    fiber.mask |= MASK_MOVE;
     scope$.addCandidate(fiber);
   });
 }
@@ -178,7 +189,7 @@ function buildChildNode(
   isFirst && (parent.child = fiber);
   fiber.alt = null;
   fiber.parent = parent;
-  fiber.tag = EffectTag.S;
+  fiber.tag = EFFECT_TAG_SKIP;
   fiber.idx = idx;
   left ? (fiber.eidx = left.eidx + (left.element ? 1 : left.cec)) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
@@ -193,11 +204,11 @@ function getKey(inst: Instance, idx: number) {
 
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   fiber.increment(alt.element ? 1 : alt.cec);
-  alt.mask & Mask.INSERTION_EFFECT_HOST && fiber.markHost(Mask.INSERTION_EFFECT_HOST);
-  alt.mask & Mask.LAYOUT_EFFECT_HOST && fiber.markHost(Mask.LAYOUT_EFFECT_HOST);
-  alt.mask & Mask.ASYNC_EFFECT_HOST && fiber.markHost(Mask.ASYNC_EFFECT_HOST);
-  alt.mask & Mask.ATOM_HOST && fiber.markHost(Mask.ATOM_HOST);
-  alt.mask & Mask.PORTAL_HOST && fiber.markHost(Mask.PORTAL_HOST);
+  alt.mask & MASK_INSERTION_EFFECT_HOST && fiber.markHost(MASK_INSERTION_EFFECT_HOST);
+  alt.mask & MASK_LAYOUT_EFFECT_HOST && fiber.markHost(MASK_LAYOUT_EFFECT_HOST);
+  alt.mask & MASK_ASYNC_EFFECT_HOST && fiber.markHost(MASK_ASYNC_EFFECT_HOST);
+  alt.mask & MASK_ATOM_HOST && fiber.markHost(MASK_ATOM_HOST);
+  alt.mask & MASK_PORTAL_HOST && fiber.markHost(MASK_PORTAL_HOST);
 }
 
 export {

@@ -7,7 +7,10 @@ import {
   ROOT,
   ATTR_REF,
   ATTR_BLACK_LIST,
-  EffectTag,
+  EFFECT_TAG_CREATE,
+  EFFECT_TAG_UPDATE,
+  EFFECT_TAG_DELETE,
+  EFFECT_TAG_SKIP,
   detectIsFunction,
   detectIsUndefined,
   NodeType,
@@ -113,11 +116,11 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
-const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
-  [EffectTag.C]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
-  [EffectTag.U]: () => {},
-  [EffectTag.D]: () => {},
-  [EffectTag.S]: () => {},
+const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
+  [EFFECT_TAG_CREATE]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
+  [EFFECT_TAG_UPDATE]: () => {},
+  [EFFECT_TAG_DELETE]: () => {},
+  [EFFECT_TAG_SKIP]: () => {},
 };
 
 function commit(fiber: Fiber<NativeElement>) {

@@ -2,7 +2,8 @@ import {
   type DarkElement,
   ROOT,
   Fiber,
-  EffectTag,
+  EFFECT_TAG_CREATE,
+  EFFECT_TAG_UPDATE,
   platform,
   flatten,
   detectIsUndefined,
@@ -75,7 +76,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
       element: container,
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: rootFiber,
-      tag: isUpdate ? EffectTag.U : EffectTag.C,
+      tag: isUpdate ? EFFECT_TAG_UPDATE : EFFECT_TAG_CREATE,
     });
 
     scope$.resetMount();

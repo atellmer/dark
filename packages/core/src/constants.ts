@@ -4,6 +4,18 @@ export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';
 export const ATTR_KEY = 'key';
 export const ATTR_REF = 'ref';
+export const EFFECT_TAG_CREATE = 'C';
+export const EFFECT_TAG_UPDATE = 'U';
+export const EFFECT_TAG_DELETE = 'D';
+export const EFFECT_TAG_SKIP = 'S';
+export const MASK_INSERTION_EFFECT_HOST = 1;
+export const MASK_LAYOUT_EFFECT_HOST = 2;
+export const MASK_ASYNC_EFFECT_HOST = 4;
+export const MASK_ATOM_HOST = 8;
+export const MASK_PORTAL_HOST = 16;
+export const MASK_SHADOW = 32;
+export const MASK_FLUSH = 64;
+export const MASK_MOVE = 128;
 export const RESTART_TIMEOUT = 10;
 
 export enum TaskPriority {

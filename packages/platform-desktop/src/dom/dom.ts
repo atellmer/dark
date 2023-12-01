@@ -8,8 +8,11 @@ import {
   type Ref,
   ATTR_REF,
   ATTR_BLACK_LIST,
-  EffectTag,
-  Mask,
+  EFFECT_TAG_CREATE,
+  EFFECT_TAG_UPDATE,
+  EFFECT_TAG_DELETE,
+  EFFECT_TAG_SKIP,
+  MASK_MOVE,
   detectIsUndefined,
   detectIsObject,
   NodeType,
@@ -190,18 +193,18 @@ function move(fiber: Fiber<NativeElement>) {
   moves.push(move);
 }
 
-const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
-  [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
+const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
+  [EFFECT_TAG_CREATE]: (fiber: Fiber<NativeElement>) => {
     if (!fiber.element) return;
     commitCreation(fiber);
   },
-  [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
-    fiber.mask & Mask.MOVE && (move(fiber), (fiber.mask &= ~Mask.MOVE));
+  [EFFECT_TAG_UPDATE]: (fiber: Fiber<NativeElement>) => {
+    fiber.mask & MASK_MOVE && (move(fiber), (fiber.mask &= ~MASK_MOVE));
     if (!fiber.element) return;
     commitUpdate(fiber);
   },
-  [EffectTag.D]: commitDeletion,
-  [EffectTag.S]: () => {},
+  [EFFECT_TAG_DELETE]: commitDeletion,
+  [EFFECT_TAG_SKIP]: () => {},
 };
 
 function commit(fiber: Fiber<NativeElement>) {

@@ -8,8 +8,13 @@ import {
   type Callback,
   ATTR_REF,
   ATTR_BLACK_LIST,
-  EffectTag,
-  Mask,
+  EFFECT_TAG_CREATE,
+  EFFECT_TAG_UPDATE,
+  EFFECT_TAG_DELETE,
+  EFFECT_TAG_SKIP,
+  MASK_MOVE,
+  MASK_FLUSH,
+  MASK_SHADOW,
   detectIsUndefined,
   detectIsBoolean,
   detectIsObject,
@@ -254,7 +259,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (!(fiber.mask & Mask.SHADOW)) {
+    if (!(fiber.mask & MASK_SHADOW)) {
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
         !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
           appendNativeElement(fiber.element, parentElement);
@@ -280,14 +285,14 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  if (fiber.mask & Mask.FLUSH) {
+  if (fiber.mask & MASK_FLUSH) {
     parentFiber.element.innerHTML && (parentFiber.element.innerHTML = '');
     return;
   }
 
   walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
-      !(fiber.mask & Mask.SHADOW) &&
+      !(fiber.mask & MASK_SHADOW) &&
         !detectIsPortal(fiber.inst) &&
         removeNativeElement(fiber.element, parentFiber.element);
       return skip();
@@ -319,20 +324,20 @@ function move(fiber: Fiber<NativeElement>) {
   moves.push(move);
 }
 
-const commitMap: Record<EffectTag, (fiber: Fiber<NativeElement>) => void> = {
-  [EffectTag.C]: (fiber: Fiber<NativeElement>) => {
+const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
+  [EFFECT_TAG_CREATE]: (fiber: Fiber<NativeElement>) => {
     if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitCreation(fiber);
   },
-  [EffectTag.U]: (fiber: Fiber<NativeElement>) => {
-    fiber.mask & Mask.MOVE && (move(fiber), (fiber.mask &= ~Mask.MOVE));
+  [EFFECT_TAG_UPDATE]: (fiber: Fiber<NativeElement>) => {
+    fiber.mask & MASK_MOVE && (move(fiber), (fiber.mask &= ~MASK_MOVE));
     if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },
-  [EffectTag.D]: commitDeletion,
-  [EffectTag.S]: dummyFn,
+  [EFFECT_TAG_DELETE]: commitDeletion,
+  [EFFECT_TAG_SKIP]: dummyFn,
 };
 
 function commit(fiber: Fiber<NativeElement>) {

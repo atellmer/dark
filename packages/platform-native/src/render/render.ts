@@ -3,7 +3,8 @@ import {
   type DarkElement,
   ROOT,
   Fiber,
-  EffectTag,
+  EFFECT_TAG_CREATE,
+  EFFECT_TAG_UPDATE,
   platform,
   flatten,
   TagVirtualNode,
@@ -63,7 +64,7 @@ function render(options: RenderOptions): NSElement {
       element: isUpdate ? root.element : new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: root,
-      tag: isUpdate ? EffectTag.U : EffectTag.C,
+      tag: isUpdate ? EFFECT_TAG_UPDATE : EFFECT_TAG_CREATE,
     });
     const emitter = scope$.getEmitter();
 

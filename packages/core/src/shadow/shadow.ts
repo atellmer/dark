@@ -1,6 +1,6 @@
 import type { DarkElement } from '../shared';
 import { component } from '../component';
-import { Mask } from '../fiber';
+import { MASK_SHADOW } from '../constants';
 import { useLayoutEffect } from '../use-layout-effect';
 import { scope$$ } from '../scope';
 import { collectElements, getFiberWithElement } from '../walk';
@@ -19,9 +19,9 @@ const Shadow = component<ShadowProps>(
 
     if (isEnabled) {
       if (isVisible) {
-        fiber.mask &= ~Mask.SHADOW;
+        fiber.mask &= ~MASK_SHADOW;
       } else {
-        fiber.mask |= Mask.SHADOW;
+        fiber.mask |= MASK_SHADOW;
       }
     }
 

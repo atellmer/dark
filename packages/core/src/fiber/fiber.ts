@@ -5,7 +5,6 @@ import { detectIsComponent } from '../component';
 import { detectIsFunction } from '../helpers';
 import { type Atom } from '../atom';
 import { scope$$ } from '../scope';
-import { type NativeElement, EffectTag, Mask } from './types';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -15,7 +14,7 @@ class Fiber<N = NativeElement> {
   eidx = 0; // native element idx
   mask = 0; // bit mask
   element: N = null; // native element
-  tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
+  tag: string = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   parent: Fiber<N> = null; // parent fiber
   child: Fiber<N> = null; // child fiber
   next: Fiber<N> = null; // next sibling fiber
@@ -45,7 +44,7 @@ class Fiber<N = NativeElement> {
     return this;
   }
 
-  markHost(mask: Mask) {
+  markHost(mask: number) {
     this.mask |= mask;
     this.parent && !(this.parent.mask & mask) && this.parent.markHost(mask);
   }
@@ -111,5 +110,8 @@ type Batch = {
   timer: TimerId;
   changes: Array<Callback>;
 };
+
+export type NativeElement = unknown;
+export type HookValue<T = any> = { deps: Array<any>; value: T };
 
 export { Fiber, Hook, getHook };
