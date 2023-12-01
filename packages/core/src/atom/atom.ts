@@ -1,16 +1,15 @@
-import { type SubscriberWithValue, type Callback } from '../shared';
-import { detectIsFunction, detectIsEmpty, trueFn } from '../helpers';
+import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, error } from '../helpers';
 import { useLayoutEffect } from '../use-layout-effect';
+import { type SubscriberWithValue } from '../shared';
+import { MASK_ATOM_HOST } from '../constants';
 import { scope$$, getRootId } from '../scope';
-import { type Hook } from '../fiber';
 import { createUpdate } from '../workloop';
+import { useUpdate } from '../use-update';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
-import { useUpdate } from '../use-update';
+import { type Hook } from '../fiber';
 import { batch } from '../batch';
-import { error, detectAreDepsDifferent } from '../helpers';
-import { MASK_ATOM_HOST } from '../constants';
 
 class Atom<T = unknown> {
   private value: T;
