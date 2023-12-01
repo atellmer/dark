@@ -4,7 +4,7 @@ import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
 import { type Scope } from '../scope';
 import { type Component } from '../component';
 import { detectIsMemo } from '../memo/utils';
-import { type DarkElementInstance as Inst, type DarkElementKey as Key } from '../shared';
+import { type Instance, type ElementKey } from '../shared';
 import { createIndexKey } from '../helpers';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
@@ -138,7 +138,7 @@ function tryOptRem(fiber: Fiber, alt: Fiber, scope$: Scope) {
   buildChildNodes(fiber, alt, scope$);
 }
 
-function buildChildNodes(fiber: Fiber, alt: Fiber, scope$: Scope, onNode?: (fiber: Fiber, key: Key) => void) {
+function buildChildNodes(fiber: Fiber, alt: Fiber, scope$: Scope, onNode?: (fiber: Fiber, key: ElementKey) => void) {
   const actions = scope$.getActionsById(fiber.id);
   const inst = fiber.inst as Component | TagVirtualNode;
   const children = inst.children;
@@ -158,7 +158,7 @@ function buildChildNodes(fiber: Fiber, alt: Fiber, scope$: Scope, onNode?: (fibe
 }
 
 function buildChildNode(
-  children: Array<Inst>,
+  children: Array<Instance>,
   parent: Fiber,
   altMap: Record<string, Fiber>,
   idx: number,
@@ -186,7 +186,7 @@ function buildChildNode(
   notifyParents(fiber);
 }
 
-function getKey(inst: Inst, idx: number) {
+function getKey(inst: Instance, idx: number) {
   const key = getElementKey(inst);
   return key !== null ? key : createIndexKey(idx);
 }

@@ -1,6 +1,6 @@
 import { REPLACER, ATTR_KEY } from '../constants';
 import { detectIsArray, detectIsFunction } from '../helpers';
-import type { DarkElementKey as Key, DarkElement, DarkElementInstance } from '../shared';
+import { type ElementKey, type DarkElement, type Instance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
 import { scope$$ } from '../scope';
 import { NodeType, type ViewOptions } from './types';
@@ -79,12 +79,12 @@ const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vN
 const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
   detectIsFunction(factory) && factory[$$vNode] === true;
 
-const getTagVirtualNodeKey = (vNode: TagVirtualNode): Key | null =>
+const getTagVirtualNodeKey = (vNode: TagVirtualNode): ElementKey | null =>
   vNode.attrs ? vNode.attrs[ATTR_KEY] ?? null : null;
 
 const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs && vNode.attrs[flag]);
 
-const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): Key | null => factory[ATTR_KEY] ?? null;
+const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): ElementKey | null => factory[ATTR_KEY] ?? null;
 
 const hasVirtualNodeFactoryFlag = (factory: VirtualNodeFactory, flag: string) => Boolean(factory[flag]);
 
@@ -95,7 +95,7 @@ const createReplacer = () => new CommentVirtualNode(REPLACER);
 
 const detectIsReplacer = (vNode: unknown) => detectIsCommentVirtualNode(vNode) && vNode.value === REPLACER;
 
-function getElementKey(inst: DarkElementInstance): Key | null {
+function getElementKey(inst: Instance): ElementKey | null {
   return detectIsComponent(inst)
     ? getComponentKey(inst)
     : detectIsVirtualNodeFactory(inst)
@@ -105,7 +105,7 @@ function getElementKey(inst: DarkElementInstance): Key | null {
     : null;
 }
 
-function hasElementFlag(inst: DarkElementInstance, flag: string) {
+function hasElementFlag(inst: Instance, flag: string) {
   return detectIsComponent(inst)
     ? hasComponentFlag(inst, flag)
     : detectIsVirtualNodeFactory(inst)
@@ -115,7 +115,7 @@ function hasElementFlag(inst: DarkElementInstance, flag: string) {
     : false;
 }
 
-function getElementType(inst: DarkElementInstance): string | Function {
+function getElementType(inst: Instance): string | Function {
   return detectIsComponent(inst)
     ? inst.type
     : detectIsVirtualNodeFactory(inst)
@@ -127,15 +127,11 @@ function getElementType(inst: DarkElementInstance): string | Function {
     : null;
 }
 
-function hasChildrenProp(inst: DarkElementInstance): inst is TagVirtualNode | Component {
+function hasChildrenProp(inst: Instance): inst is TagVirtualNode | Component {
   return detectIsTagVirtualNode(inst) || detectIsComponent(inst);
 }
 
-function detectAreSameInstanceTypes(
-  prevInst: DarkElementInstance,
-  nextInst: DarkElementInstance,
-  isComponentFactories = false,
-) {
+function detectAreSameInstanceTypes(prevInst: Instance, nextInst: Instance, isComponentFactories = false) {
   if (process.env.NODE_ENV !== 'production') {
     if (process.env.NODE_ENV === 'development' && scope$$().getIsHot()) {
       if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
@@ -154,10 +150,7 @@ function detectAreSameInstanceTypes(
   return getElementType(prevInst) === getElementType(nextInst);
 }
 
-function detectAreSameComponentTypesWithSameKeys(
-  prevInst: DarkElementInstance | null,
-  nextInst: DarkElementInstance | null,
-) {
+function detectAreSameComponentTypesWithSameKeys(prevInst: Instance | null, nextInst: Instance | null) {
   if (
     prevInst &&
     nextInst &&

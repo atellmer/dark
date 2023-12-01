@@ -1,4 +1,4 @@
-import type { Callback, DarkElementKey as Key } from '../shared';
+import type { Callback, ElementKey } from '../shared';
 import { type SetPendingStatus } from '../start-transition';
 import { type Fiber } from '../fiber';
 import { EventEmitter } from '../emitter';
@@ -7,12 +7,12 @@ import { platform } from '../platform';
 type Actions = Record<
   number,
   {
-    map: Record<Key, Fiber>;
-    replace: Record<Key, true>;
-    insert: Record<Key, true>;
-    remove: Record<Key, true>;
-    move: Record<Key, true>;
-    stable: Record<Key, true>;
+    map: Record<ElementKey, Fiber>;
+    replace: Record<ElementKey, true>;
+    insert: Record<ElementKey, true>;
+    remove: Record<ElementKey, true>;
+    move: Record<ElementKey, true>;
+    stable: Record<ElementKey, true>;
   }
 >;
 
@@ -54,7 +54,7 @@ class Scope {
     return this.actions[id];
   }
 
-  public addActionMap(id: number, map: Record<Key, Fiber>) {
+  public addActionMap(id: number, map: Record<ElementKey, Fiber>) {
     this.actions[id] = {
       map,
       replace: null,
@@ -69,27 +69,27 @@ class Scope {
     delete this.actions[id];
   }
 
-  public addReplaceAction(id: number, nextKey: Key) {
+  public addReplaceAction(id: number, nextKey: ElementKey) {
     !this.actions[id].replace && (this.actions[id].replace = {});
     this.actions[id].replace[nextKey] = true;
   }
 
-  public addInsertAction(id: number, nextKey: Key) {
+  public addInsertAction(id: number, nextKey: ElementKey) {
     !this.actions[id].insert && (this.actions[id].insert = {});
     this.actions[id].insert[nextKey] = true;
   }
 
-  public addRemoveAction(id: number, prevKey: Key) {
+  public addRemoveAction(id: number, prevKey: ElementKey) {
     !this.actions[id].remove && (this.actions[id].remove = {});
     this.actions[id].remove[prevKey] = true;
   }
 
-  public addMoveAction(id: number, nextKey: Key) {
+  public addMoveAction(id: number, nextKey: ElementKey) {
     !this.actions[id].move && (this.actions[id].move = {});
     this.actions[id].move[nextKey] = true;
   }
 
-  public addStableAction(id: number, nextKey: Key) {
+  public addStableAction(id: number, nextKey: ElementKey) {
     !this.actions[id].stable && (this.actions[id].stable = {});
     this.actions[id].stable[nextKey] = true;
   }

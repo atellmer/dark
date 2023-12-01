@@ -1,6 +1,6 @@
-import { platform, falseFn, detectIsUndefined } from '@dark-engine/core';
+import { type ElementKey, platform, falseFn, detectIsUndefined } from '@dark-engine/core';
 
-import { type SpringValue, type SpringConfig, type Key, defaultSpringConfig } from '../shared';
+import { type SpringValue, type SpringConfig, defaultSpringConfig } from '../shared';
 import { type AnimationEventName, SharedState } from '../state';
 import { Spring } from '../spring';
 import { time, fix } from '../utils';
@@ -12,7 +12,7 @@ const MAX_DELTA_TIME_IN_SEC = MAX_SKIPPED_FRAMES * (BASE_FRAME_TIME_IN_MS / 1000
 const MIN_STEP = 0.01;
 
 class Controller<T extends string, I = unknown> {
-  private key: Key;
+  private key: ElementKey;
   private idx: number;
   private from: SpringValue<T>;
   private to: SpringValue<T>;
@@ -30,7 +30,7 @@ class Controller<T extends string, I = unknown> {
   private configurator: ConfiguratorFn<T>;
   private immediate: ImmediateFn<T> = falseFn;
   private immediates: Array<() => void> = [];
-  private primaryKey: Key;
+  private primaryKey: ElementKey;
   private isReplaced = false;
   private item: I = null;
   private spring = new Spring<T>();
@@ -44,7 +44,7 @@ class Controller<T extends string, I = unknown> {
     return this.key;
   }
 
-  setKey(x: Key) {
+  setKey(x: ElementKey) {
     this.key = x;
   }
 
@@ -96,7 +96,7 @@ class Controller<T extends string, I = unknown> {
     this.sync();
   }
 
-  markAsFake(x: Key) {
+  markAsFake(x: ElementKey) {
     this.primaryKey = x;
 
     return Controller.generateFakeKey(x);
@@ -287,7 +287,7 @@ class Controller<T extends string, I = unknown> {
     this.spring.notify();
   }
 
-  private static generateFakeKey(x: Key) {
+  private static generateFakeKey(x: ElementKey) {
     return `__${x}:${++Controller.fakeKey}__`;
   }
 

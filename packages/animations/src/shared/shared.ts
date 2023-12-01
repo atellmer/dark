@@ -10,8 +10,6 @@ export type SpringConfig = {
   fix: number;
 };
 
-export type Key = string | number;
-
 const defaultSpringConfig: SpringConfig = {
   ...preset('no-wobble'),
   mass: 1,

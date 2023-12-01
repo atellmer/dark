@@ -11,9 +11,9 @@ export type NestedArray<T> = T | Array<NestedArray<T>>;
 
 export type RenderProps = (...args: Array<any>) => DarkElement;
 
-export type DarkElementKey = string | number;
+export type ElementKey = string | number;
 
-export type DarkElementInstance = VirtualNode | VirtualNodeFactory | Component | ComponentFactory | Nullable;
+export type Instance = VirtualNode | VirtualNodeFactory | Component | ComponentFactory | Nullable;
 
 export type Subscriber = () => void;
 
@@ -32,7 +32,7 @@ export type RefProps<T = unknown> = {
 };
 
 export type KeyProps = {
-  key?: DarkElementKey;
+  key?: ElementKey;
 };
 
 export type FlagProps = Partial<Record<keyof typeof FLAGS, boolean>>;

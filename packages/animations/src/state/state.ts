@@ -1,11 +1,11 @@
-import { type TimerId, detectIsEmpty } from '@dark-engine/core';
+import { type ElementKey, type TimerId, detectIsEmpty } from '@dark-engine/core';
 
 import { type Controller, type StartFn } from '../controller';
-import { type SpringValue, type Key } from '../shared';
+import { type SpringValue } from '../shared';
 
 class SharedState<T extends string = string> {
   private ctrls: Array<Controller<T>> = [];
-  private stack = new Set<Key>();
+  private stack = new Set<ElementKey>();
   private flow = Flow.RIGHT;
   private isTrail = false;
   private isPaused = false;
@@ -42,7 +42,7 @@ class SharedState<T extends string = string> {
     return this.flow === Flow.RIGHT;
   }
 
-  setIsPlaying(x: boolean, key: Key) {
+  setIsPlaying(x: boolean, key: ElementKey) {
     if (x) {
       this.stack.add(key);
     } else {
@@ -50,7 +50,7 @@ class SharedState<T extends string = string> {
     }
   }
 
-  detectIsPlaying(key?: Key) {
+  detectIsPlaying(key?: ElementKey) {
     return detectIsEmpty(key) ? this.stack.size > 0 : this.stack.has(key);
   }
 
@@ -161,7 +161,7 @@ export type AnimationEventName = 'series-start' | 'item-start' | 'item-change' |
 export type AnimationEventValue<T extends string = string> = {
   value: SpringValue<T>;
   idx: number;
-  key: Key;
+  key: ElementKey;
 };
 
 export type AnimationEventHandler<T extends string = string> = (value?: AnimationEventValue<T>) => void;

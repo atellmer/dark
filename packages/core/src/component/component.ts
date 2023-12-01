@@ -1,7 +1,7 @@
-import type { DarkElementKey, DarkElementInstance } from '../shared';
+import { type ElementKey, type Instance } from '../shared';
 import { ATTR_KEY } from '../constants';
 import { error } from '../helpers';
-import type { Ref } from '../ref';
+import { type Ref } from '../ref';
 import type {
   CreateElement,
   ComponentFactory,
@@ -20,7 +20,7 @@ class Component<P extends StandardComponentProps = any, R = any> {
   public token?: Symbol;
   public displayName?: string;
   public shouldUpdate?: ShouldUpdate<P>;
-  public children: Array<DarkElementInstance> = [];
+  public children: Array<Instance> = [];
 
   constructor(
     type: CreateElement<P>,
@@ -64,7 +64,7 @@ const defaultInject: ComponentInject = {};
 
 const detectIsComponent = (inst: unknown): inst is Component => inst instanceof Component;
 
-const getComponentKey = (inst: Component): DarkElementKey => inst.props[ATTR_KEY] ?? null;
+const getComponentKey = (inst: Component): ElementKey => inst.props[ATTR_KEY] ?? null;
 
 const hasComponentFlag = (instance: Component, flag: string) => Boolean(instance.props[flag]);
 

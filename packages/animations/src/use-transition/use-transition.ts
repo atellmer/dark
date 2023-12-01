@@ -2,6 +2,7 @@ import {
   type Component,
   type TagVirtualNodeFactory,
   type Callback,
+  type ElementKey,
   Fragment,
   batch,
   useMemo,
@@ -12,7 +13,7 @@ import {
   detectIsNumber,
 } from '@dark-engine/core';
 
-import { type Key, type SpringValue } from '../shared';
+import { type SpringValue } from '../shared';
 import { type AnimationEventValue, SharedState } from '../state';
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
 import { type SpringApi } from '../use-springs';
@@ -29,7 +30,7 @@ export type TransitionItemConfig<T extends string> = {
 
 function useTransition<T extends string, I = unknown>(
   items: Array<I>,
-  getKey: (x: I) => Key,
+  getKey: KeyExtractor<I>,
   configurator: TransitionConfiguratorFn<T, I>,
 ): [TransitionFn<T, I>, TransitionApi<T>] {
   const forceUpdate = useUpdate();
@@ -152,13 +153,13 @@ function useTransition<T extends string, I = unknown>(
 
 type DataOptions<T extends string, I = unknown> = {
   items: Array<I>;
-  getKey: (x: I) => Key;
+  getKey: KeyExtractor<I>;
   state: SharedState<T>;
 } & Pick<Scope<T, I>, 'configurator' | 'ctrlsMap'>;
 
 function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
   const { items, getKey, configurator, state, ctrlsMap } = options;
-  const itemsMap = new Map<Key, I>();
+  const itemsMap = new Map<ElementKey, I>();
   const ctrls = items.map((item, idx) => {
     const key = getKey(item);
 
@@ -186,11 +187,11 @@ function getController<T extends string, I = unknown>(options: GetControllerOpti
   return ctrl;
 }
 
-function extractKeys<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x: I) => Key) {
-  const prevKeys: Array<Key> = [];
-  const nextKeys: Array<Key> = [];
-  const prevKeysMap: Record<Key, boolean> = {};
-  const nextKeysMap: Record<Key, boolean> = {};
+function extractKeys<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: KeyExtractor<I>) {
+  const prevKeys: Array<ElementKey> = [];
+  const nextKeys: Array<ElementKey> = [];
+  const prevKeysMap: Record<ElementKey, boolean> = {};
+  const nextKeysMap: Record<ElementKey, boolean> = {};
   const max = Math.max(prevItems.length, nextItems.length);
 
   for (let i = 0; i < max; i++) {
@@ -224,17 +225,17 @@ function extractKeys<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getK
   };
 }
 
-function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x: I) => Key) {
+function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: KeyExtractor<I>) {
   const { prevKeys, nextKeys, prevKeysMap, nextKeysMap } = extractKeys(prevItems, nextItems, getKey);
   let size = Math.max(prevKeys.length, nextKeys.length);
   let p = 0;
   let n = 0;
   let hasChanges = false;
-  const insMap = new Map<Key, number>();
-  const remMap = new Map<Key, number>();
-  const movMap = new Map<Key, number>();
-  const stabMap = new Map<Key, number>();
-  const replaced = new Set<Key>();
+  const insMap = new Map<ElementKey, number>();
+  const remMap = new Map<ElementKey, number>();
+  const movMap = new Map<ElementKey, number>();
+  const stabMap = new Map<ElementKey, number>();
+  const replaced = new Set<ElementKey>();
 
   for (let i = 0; i < size; i++) {
     const nextKey = nextKeys[i - n] ?? null;
@@ -279,7 +280,7 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: (x:
 
 type StartLoopOptions<T extends string, I = unknown> = {
   action: Action;
-  space: Map<Key, number>;
+  space: Map<ElementKey, number>;
   state: SharedState<T>;
   scope: Scope<T, I>;
 };
@@ -336,7 +337,7 @@ function withTrail(fn: () => void, idx: number, trail?: number) {
 type PrepareOptions<T extends string, I = unknown> = {
   ctrl: Controller<T, I>;
   idx: number;
-  key: Key;
+  key: ElementKey;
   item: I;
   configurator: TransitionConfiguratorFn<T, I>;
 };
@@ -391,9 +392,9 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
 type Scope<T extends string, I = unknown> = {
   items: Array<I>;
   configurator: TransitionConfiguratorFn<T, I>;
-  ctrlsMap: Map<Key, Controller<T, I>>;
-  itemsMap: Map<Key, I>;
-  fakesMap: Map<Key, number>;
+  ctrlsMap: Map<ElementKey, Controller<T, I>>;
+  itemsMap: Map<ElementKey, I>;
+  fakesMap: Map<ElementKey, number>;
   fromItems: boolean;
   inChain: boolean;
   pending: Callback;
@@ -404,6 +405,8 @@ enum Action {
   LEAVE = 'leave',
   UPDATE = 'update',
 }
+
+type KeyExtractor<I> = (x: I) => ElementKey;
 
 type TransitionElement = Component | TagVirtualNodeFactory;
 

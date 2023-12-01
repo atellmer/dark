@@ -13,7 +13,7 @@ import {
 } from '../helpers';
 import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
 import { Fiber, EffectTag, Mask, getHook, Hook } from '../fiber';
-import type { DarkElementKey as Key, DarkElementInstance } from '../shared';
+import { type ElementKey, type Instance } from '../shared';
 import { type Component, detectIsComponent } from '../component';
 import {
   Text,
@@ -152,7 +152,7 @@ function mountSibling(left: Fiber, scope$: Scope) {
   return fiber;
 }
 
-function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
+function share(fiber: Fiber, inst: Instance, scope$: Scope) {
   const { alt } = fiber;
   const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, scope$) : true;
 
@@ -176,7 +176,7 @@ function share(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
   }
 }
 
-function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
+function createFiber(alt: Fiber, inst: Instance, idx: number) {
   const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
 
   fiber.alt = alt || null;
@@ -184,7 +184,7 @@ function createFiber(alt: Fiber, inst: DarkElementInstance, idx: number) {
   return fiber;
 }
 
-function getAlternate(fiber: Fiber, inst: DarkElementInstance, fromChild: boolean, scope$: Scope) {
+function getAlternate(fiber: Fiber, inst: Instance, fromChild: boolean, scope$: Scope) {
   const key = getElementKey(inst);
 
   if (key !== null) {
@@ -284,7 +284,7 @@ function setup(fiber: Fiber, alt: Fiber) {
   fiber.element && fiber.increment();
 }
 
-function shouldUpdate(fiber: Fiber, inst: DarkElementInstance, scope$: Scope) {
+function shouldUpdate(fiber: Fiber, inst: Instance, scope$: Scope) {
   if (process.env.NODE_ENV !== 'production') {
     if (scope$.getIsHot()) return true;
   }
@@ -344,7 +344,7 @@ function mount(fiber: Fiber, scope$: Scope) {
         result = Text(result);
       }
 
-      component.children = result as Array<DarkElementInstance>;
+      component.children = result as Array<Instance>;
       platform.detectIsPortal(inst) && fiber.markHost(Mask.PORTAL_HOST);
     } catch (err) {
       if (err instanceof StopWork) {
@@ -367,15 +367,15 @@ function mount(fiber: Fiber, scope$: Scope) {
   return inst;
 }
 
-function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
+function extractKeys(alt: Fiber, children: Array<Instance>) {
   let nextFiber = alt;
   let idx = 0;
-  const prevKeys: Array<Key> = [];
-  const nextKeys: Array<Key> = [];
-  const prevKeysMap: Record<Key, boolean> = {};
-  const nextKeysMap: Record<Key, boolean> = {};
-  const keyedFibersMap: Record<Key, Fiber> = {};
-  const usedKeysMap: Record<Key, boolean> = {};
+  const prevKeys: Array<ElementKey> = [];
+  const nextKeys: Array<ElementKey> = [];
+  const prevKeysMap: Record<ElementKey, boolean> = {};
+  const nextKeysMap: Record<ElementKey, boolean> = {};
+  const keyedFibersMap: Record<ElementKey, Fiber> = {};
+  const usedKeysMap: Record<ElementKey, boolean> = {};
 
   while (nextFiber || idx < children.length) {
     if (nextFiber) {
@@ -422,7 +422,7 @@ function extractKeys(alt: Fiber, children: Array<DarkElementInstance>) {
   };
 }
 
-function supportConditional(inst: DarkElementInstance) {
+function supportConditional(inst: Instance) {
   return detectIsFalsy(inst) ? createReplacer() : inst;
 }
 

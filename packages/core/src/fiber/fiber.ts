@@ -1,5 +1,5 @@
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponentTypesWithSameKeys } from '../view';
-import { type DarkElementInstance, type Callback, type TimerId } from '../shared';
+import { type Instance, type Callback, type TimerId } from '../shared';
 import { type Context, type ContextProviderValue } from '../context';
 import { detectIsComponent } from '../component';
 import { detectIsFunction } from '../helpers';
@@ -13,19 +13,19 @@ class Fiber<N = NativeElement> {
   cec = 0; // child native elements count
   idx = 0; // idx of fiber in the parent fiber
   eidx = 0; // native element idx
-  element: N; // native element
-  parent: Fiber<N> = null; // parent fiber
-  child: Fiber<N>; // child fiber
-  next: Fiber<N>; // next sibling fiber
-  alt: Fiber<N> = null; // alternate fiber (previous)
-  tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
-  inst: DarkElementInstance = null; // instance of component or virtual node
-  hook: Hook | null; // hook
-  provider: Map<Context, ContextProviderValue>; // provider of context
   mask = 0; // bit mask
+  element: N = null; // native element
+  tag: EffectTag = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
+  parent: Fiber<N> = null; // parent fiber
+  child: Fiber<N> = null; // child fiber
+  next: Fiber<N> = null; // next sibling fiber
+  alt: Fiber<N> = null; // alternate fiber (previous)
+  inst: Instance = null; // instance of component or virtual node
+  hook: Hook | null = null; // hook
+  provider: Map<Context, ContextProviderValue> = null; // provider of context
+  atoms: Map<Atom, Callback> = null;
   marker: string; // for dev
   batch: Batch;
-  atoms: Map<Atom, Callback>;
   catch: (error: Error) => void;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
@@ -100,7 +100,7 @@ class Hook<T = any> {
   }
 }
 
-function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElementInstance): Hook | null {
+function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | null {
   if (alt && detectAreSameComponentTypesWithSameKeys(prevInst, nextInst)) return alt.hook;
   if (detectIsComponent(nextInst)) return new Hook();
 
