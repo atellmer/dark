@@ -4,7 +4,7 @@ import {
   type Callback,
   component,
   useMemo,
-  useLayoutEffect,
+  useInsertionEffect,
   scope$$,
   walk,
 } from '@dark-engine/core';
@@ -25,7 +25,7 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
 
   scope.notify = notify;
 
-  useLayoutEffect(() => {
+  useInsertionEffect(() => {
     const fiber = cursor.hook.owner;
 
     walk(fiber.child, (fiber, _, stop) => {
@@ -38,7 +38,7 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
     notify();
 
     return spring.on(() => scope.notify());
-  }, []);
+  }, [spring]);
 
   notify();
 

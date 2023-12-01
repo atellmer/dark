@@ -1,4 +1,4 @@
-import { useMemo, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { type Callback, useMemo, useLayoutEffect, useEffect } from '@dark-engine/core';
 
 import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../state';
 import { type BaseItemConfig, type StartFn, Controller } from '../controller';
@@ -19,7 +19,7 @@ function useSprings<T extends string>(
       prevCount: count,
       ctrls: range(count).map(() => new Controller<T>(state)),
       inChain: false,
-      queue: [],
+      pending: null,
     };
   }, []);
 
@@ -48,8 +48,8 @@ function useSprings<T extends string>(
     return {
       start: fn => {
         if (scope.inChain) {
-          scope.queue.forEach(x => x());
-          scope.queue = [];
+          scope.pending && scope.pending();
+          scope.pending = null;
         } else {
           state.start(fn);
         }
@@ -67,10 +67,10 @@ function useSprings<T extends string>(
 
   useEffect(() => {
     if (!deps) return;
-    const { inChain, queue } = scope;
+    const { inChain } = scope;
 
     if (inChain) {
-      queue.push(() => state.start());
+      scope.pending = () => state.start();
     } else {
       state.start();
     }
@@ -104,7 +104,7 @@ type Scope<T extends string> = {
   configurator: SpringConfiguratorFn<T>;
   ctrls: Array<Controller<T>>;
   inChain: boolean;
-  queue: Array<() => void>;
+  pending: Callback;
 };
 
 export type SpringApi<T extends string = string> = {

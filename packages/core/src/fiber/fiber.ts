@@ -1,10 +1,10 @@
-import { detectIsFunction } from '../helpers';
-import { scope$$ } from '../scope';
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponentTypesWithSameKeys } from '../view';
+import { type DarkElementInstance, type Callback, type TimerId } from '../shared';
+import { type Context, type ContextProviderValue } from '../context';
 import { detectIsComponent } from '../component';
-import type { Context, ContextProviderValue } from '../context';
-import type { DarkElementInstance, Callback } from '../shared';
+import { detectIsFunction } from '../helpers';
 import { type Atom } from '../atom';
+import { scope$$ } from '../scope';
 import { type NativeElement, EffectTag, Mask } from './types';
 
 class Fiber<N = NativeElement> {
@@ -108,7 +108,7 @@ function getHook(alt: Fiber, prevInst: DarkElementInstance, nextInst: DarkElemen
 }
 
 type Batch = {
-  timer: number | NodeJS.Timeout;
+  timer: TimerId;
   changes: Array<Callback>;
 };
 

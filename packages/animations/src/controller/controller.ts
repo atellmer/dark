@@ -9,6 +9,7 @@ import { stepper } from '../stepper';
 const BASE_FRAME_TIME_IN_MS = 1000 / 60;
 const MAX_SKIPPED_FRAMES = 10;
 const MAX_DELTA_TIME_IN_SEC = MAX_SKIPPED_FRAMES * (BASE_FRAME_TIME_IN_MS / 1000);
+const MIN_STEP = 0.01;
 
 class Controller<T extends string, I = unknown> {
   private key: Key;
@@ -183,7 +184,7 @@ class Controller<T extends string, I = unknown> {
       let step = (time() - this.frameTime) / 1000;
 
       if (step > MAX_DELTA_TIME_IN_SEC) {
-        step = 0;
+        step = MIN_STEP;
       }
 
       if (this.queue.length === 0) {
@@ -254,6 +255,7 @@ class Controller<T extends string, I = unknown> {
 
   private complete() {
     this.setIsPlaying(false);
+    this.frameTime = null;
     this.frameId = null;
     this.results = {};
     this.completed = {};

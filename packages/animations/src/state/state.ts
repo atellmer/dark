@@ -1,4 +1,4 @@
-import { detectIsEmpty } from '@dark-engine/core';
+import { type TimerId, detectIsEmpty } from '@dark-engine/core';
 
 import { type Controller, type StartFn } from '../controller';
 import { type SpringValue, type Key } from '../shared';
@@ -10,8 +10,8 @@ class SharedState<T extends string = string> {
   private isTrail = false;
   private isPaused = false;
   private isCanceled = false;
-  private delayTimeout = 0;
-  private delayId: number | NodeJS.Timeout = null;
+  private timeout = 0;
+  private timerId: TimerId = null;
   private events = new Map<AnimationEventName, Set<AnimationEventHandler<T>>>();
 
   getCtrls() {
@@ -79,7 +79,7 @@ class SharedState<T extends string = string> {
   }
 
   delay(timeout: number) {
-    this.delayTimeout = timeout;
+    this.timeout = timeout;
   }
 
   reset() {
@@ -88,7 +88,7 @@ class SharedState<T extends string = string> {
 
   cancel() {
     this.ctrls.forEach(x => x.cancel());
-    this.resetScheduledDelay();
+    this.resetTimer();
     this.isCanceled = true;
   }
 
@@ -115,10 +115,13 @@ class SharedState<T extends string = string> {
   }
 
   defer(fn: () => void) {
-    this.resetScheduledDelay();
+    this.resetTimer();
 
-    if (this.delayTimeout > 0) {
-      this.delayId = setTimeout(fn, this.delayTimeout);
+    if (this.timeout > 0) {
+      this.timerId = setTimeout(() => {
+        this.timerId = null;
+        fn();
+      }, this.timeout);
     } else {
       fn();
     }
@@ -128,9 +131,9 @@ class SharedState<T extends string = string> {
     this.flow = x;
   }
 
-  private resetScheduledDelay() {
-    this.delayId && clearTimeout(this.delayId);
-    this.delayId = null;
+  private resetTimer() {
+    this.timerId && clearTimeout(this.timerId);
+    this.timerId = null;
   }
 }
 

@@ -1,6 +1,7 @@
 import {
   type Component,
   type TagVirtualNodeFactory,
+  type Callback,
   Fragment,
   batch,
   useMemo,
@@ -8,6 +9,7 @@ import {
   useEffect,
   useLayoutEffect,
   detectIsArray,
+  detectIsNumber,
 } from '@dark-engine/core';
 
 import { type Key, type SpringValue } from '../shared';
@@ -40,8 +42,8 @@ function useTransition<T extends string, I = unknown>(
       fakesMap: new Map(),
       fromItems: true,
       inChain: false,
-      queue: [],
       items: [],
+      pending: null,
       configurator,
     }),
     [],
@@ -84,10 +86,8 @@ function useTransition<T extends string, I = unknown>(
         scope.fromItems = false;
 
         if (scope.inChain) {
-          const queue = [...scope.queue];
-
-          scope.queue = [];
-          state.defer(() => queue.forEach(x => x()));
+          scope.pending && scope.pending();
+          scope.pending = null;
         } else {
           state.start(fn);
         }
@@ -103,13 +103,13 @@ function useTransition<T extends string, I = unknown>(
   }, []);
 
   useEffect(() => {
-    const { inChain, queue } = scope;
-    const loop = () => {
+    const { inChain } = scope;
+    const nextItems = uniq(items, getKey);
+    const loop = (items: Array<I>) => {
+      const { ctrlsMap, fakesMap, items: $items } = scope;
       const configurator: TransitionConfiguratorFn<T, I> = (idx, item) => scope.configurator(idx, item);
-      const items$ = uniq(items, getKey);
-      const { ctrlsMap, fakesMap, items: prevItems } = scope;
-      const { ctrls, itemsMap } = data({ items: items$, getKey, configurator, state, ctrlsMap });
-      const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff(prevItems, items, getKey);
+      const { ctrls, itemsMap } = data({ items, getKey, configurator, state, ctrlsMap });
+      const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff($items, items, getKey);
 
       state.setCtrls(ctrls);
       replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
@@ -121,16 +121,16 @@ function useTransition<T extends string, I = unknown>(
       startLoop({ action: Action.UPDATE, space: movMap, state, scope });
       startLoop({ action: Action.UPDATE, space: stabMap, state, scope });
 
-      scope.items = items$; // !
+      scope.items = items; // !
       scope.itemsMap = itemsMap;
       scope.fromItems = true;
       hasChanges && forceUpdate(); //!
     };
 
     if (inChain) {
-      queue.push(loop);
+      scope.pending = () => state.defer(() => loop(nextItems));
     } else {
-      loop();
+      loop(nextItems);
     }
   }, [items]);
 
@@ -320,14 +320,14 @@ function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I
       }
     }
 
-    to && withTrail(trail, idx$, () => ctrl$.start(() => ({ to })));
+    to && withTrail(() => ctrl$.start(() => ({ to })), idx$, trail);
     idx$++;
   }
 }
 
-function withTrail(trail: number, idx: number, fn: () => void) {
-  if (trail) {
-    setTimeout(() => fn(), idx * trail);
+function withTrail(fn: () => void, idx: number, trail?: number) {
+  if (detectIsNumber(trail)) {
+    setTimeout(fn, idx * trail);
   } else {
     fn();
   }
@@ -365,9 +365,9 @@ function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventVal
   if (ctrlsMap.has(key) && ctrlsMap.get(key).detectIsFake()) {
     ctrlsMap.delete(key);
     fakesMap.delete(key);
-  } else if (!itemsMap.has(key)) {
-    ctrlsMap.delete(key);
   }
+
+  !itemsMap.has(key) && ctrlsMap.delete(key);
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, state: SharedState<T>, scope: Scope<T, I>) {
@@ -396,7 +396,7 @@ type Scope<T extends string, I = unknown> = {
   fakesMap: Map<Key, number>;
   fromItems: boolean;
   inChain: boolean;
-  queue: Array<() => void>;
+  pending: Callback;
 };
 
 enum Action {
