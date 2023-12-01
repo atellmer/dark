@@ -38,7 +38,7 @@ function useMemo<T>(getValue: () => T, deps: Array<any>): T {
     value = state.value;
     value$ = Memo({ getValue: getValue as GetMemoValue, deps }) as unknown as T;
   } else {
-    value = detectAreDepsDifferent(deps, state.deps) ? getValue() : state.value;
+    value = detectAreDepsDifferent(state.deps, deps) ? getValue() : state.value;
     value$ = value;
   }
 

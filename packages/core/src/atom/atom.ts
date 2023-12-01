@@ -1,4 +1,4 @@
-import { type SubscriberWithValue } from '../shared';
+import { type SubscriberWithValue, type Callback } from '../shared';
 import { detectIsFunction, detectIsEmpty, trueFn } from '../helpers';
 import { useLayoutEffect } from '../use-layout-effect';
 import { scope$$, getRootId } from '../scope';
@@ -7,6 +7,8 @@ import { createUpdate } from '../workloop';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
+import { useUpdate } from '../use-update';
+import { batch } from '../batch';
 import { error, detectAreDepsDifferent } from '../helpers';
 import { MASK_ATOM_HOST } from '../constants';
 
@@ -277,7 +279,16 @@ function useStore<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
     Atom<N>?,
   ],
 ) {
-  return atoms$.map(x => x.val()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
+  const forceUpdate = useUpdate();
+  const update = () => batch(forceUpdate);
+
+  useLayoutEffect(() => {
+    const offs = atoms$.map(x => x.on(update));
+
+    return () => offs.forEach(x => x());
+  }, [...atoms$]);
+
+  return atoms$.map(x => x.get()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
 }
 
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;
