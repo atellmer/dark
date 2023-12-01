@@ -182,7 +182,7 @@ class ReadableAtom<T = unknown> extends Atom<T> {
     this.fn = null;
   }
 
-  private static compute<T>(deps$: Array<Atom>, fn: ComputedFn<T>) {
+  private static compute(deps$: Array<Atom>, fn: Function) {
     return fn(...ReadableAtom.values(deps$));
   }
 
@@ -199,7 +199,25 @@ const detectIsReadableAtom = (value: unknown): value is ReadableAtom => value in
 
 const atom = <T>(value?: T) => new WritableAtom(value);
 
-const computed = <T>(deps$: Array<Atom>, fn: ComputedFn<T>) => new ReadableAtom(deps$, fn);
+const computed = <T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+  deps$: [
+    Atom<A>,
+    Atom<B>?,
+    Atom<C>?,
+    Atom<D>?,
+    Atom<E>?,
+    Atom<F>?,
+    Atom<G>?,
+    Atom<H>?,
+    Atom<I>?,
+    Atom<J>?,
+    Atom<K>?,
+    Atom<L>?,
+    Atom<M>?,
+    Atom<N>?,
+  ],
+  fn: ComputedFn<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>,
+) => new ReadableAtom(deps$, fn) as ReadableAtom<ReturnType<typeof fn>>;
 
 function useAtom<T>(value?: T): WritableAtom<T> {
   const atom$ = useMemo(() => atom<T>(value), []);
@@ -209,7 +227,25 @@ function useAtom<T>(value?: T): WritableAtom<T> {
   return atom$;
 }
 
-function useComputed<T>(deps$: Array<Atom>, fn: ComputedFn<T>): ReadableAtom<T> {
+function useComputed<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+  deps$: [
+    Atom<A>,
+    Atom<B>?,
+    Atom<C>?,
+    Atom<D>?,
+    Atom<E>?,
+    Atom<F>?,
+    Atom<G>?,
+    Atom<H>?,
+    Atom<I>?,
+    Atom<J>?,
+    Atom<K>?,
+    Atom<L>?,
+    Atom<M>?,
+    Atom<N>?,
+  ],
+  fn: ComputedFn<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>,
+) {
   const atom$ = useMemo(() => computed(deps$, fn), []);
 
   useLayoutEffect(() => () => atom$.kill(), []);
@@ -220,7 +256,23 @@ function useComputed<T>(deps$: Array<Atom>, fn: ComputedFn<T>): ReadableAtom<T> 
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;
 type EmitterValue<T> = { prev: T; next: T };
 type Tuple<T> = [number, Hook, ShouldUpdate<T>, T];
-type ComputedFn<T> = (...args: Array<any>) => T;
+type ComputedFn<
+  T,
+  A = unknown,
+  B = unknown,
+  C = unknown,
+  D = unknown,
+  E = unknown,
+  F = unknown,
+  G = unknown,
+  H = unknown,
+  I = unknown,
+  J = unknown,
+  K = unknown,
+  L = unknown,
+  M = unknown,
+  N = unknown,
+> = (a: A, b?: B, c?: C, d?: D, e?: E, f?: F, g?: G, h?: H, i?: I, j?: J, k?: K, l?: L, m?: M, n?: N) => T;
 
 export {
   type Atom,

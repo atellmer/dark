@@ -28,7 +28,7 @@ describe('[@core/atom]', () => {
 
   test('the readable atom has required public methods', () => {
     const atom$ = atom(0);
-    const computed$ = computed([atom$], (x: number) => x + 1);
+    const computed$ = computed([atom$], x => x + 1);
 
     expect(computed$.val).toBeDefined();
     expect(computed$.get).toBeDefined();
@@ -63,7 +63,7 @@ describe('[@core/atom]', () => {
       <div>${count}</div>
     `;
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
     const App = component(() => {
       return <div>{computed$.val()}</div>;
     });
@@ -117,8 +117,8 @@ describe('[@core/atom]', () => {
     `;
     const count1$ = atom(0);
     const count2$ = atom(100);
-    const computed1$ = computed([count1$], (x: number) => x + 1);
-    const computed2$ = computed([count2$], (x: number) => x + 1);
+    const computed1$ = computed([count1$], x => x + 1);
+    const computed2$ = computed([count2$], x => x + 1);
     const App = component(() => {
       return (
         <>
@@ -173,7 +173,7 @@ describe('[@core/atom]', () => {
       <div>${count}</div>
     `;
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
     const App = component(() => {
       const computed = computed$.val((p, n) => n === 4);
 
@@ -223,7 +223,7 @@ describe('[@core/atom]', () => {
     `;
     const count$ = atom(0);
     const App = component(() => {
-      const computed$ = useComputed([count$], (x: number) => x + 1);
+      const computed$ = useComputed([count$], x => x + 1);
 
       return <div>{computed$.val()}</div>;
     });
@@ -294,7 +294,7 @@ describe('[@core/atom]', () => {
     });
 
     const App = component(() => {
-      const computed$ = useComputed([count$], (x: number) => x + 1);
+      const computed$ = useComputed([count$], x => x + 1);
       spy1();
       return <Child computed$={computed$} />;
     });
@@ -343,7 +343,7 @@ describe('[@core/atom]', () => {
       <div>${count}</div>
     `;
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
     const App = component(() => {
       return <div>{computed$.val()}</div>;
     });
@@ -385,7 +385,7 @@ describe('[@core/atom]', () => {
       <div>${count}</div>
     `;
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
     const App = component(() => {
       return <div>{computed$.val()}</div>;
     });
@@ -421,7 +421,7 @@ describe('[@core/atom]', () => {
 
   test('the on method of the readable atom works correctly', () => {
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
     const spy = jest.fn();
     const off = computed$.on(spy);
 
@@ -447,7 +447,7 @@ describe('[@core/atom]', () => {
 
   test('the toString method of the readable atom works correctly', () => {
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
 
     count$.set(x => x + 1);
     expect('computed is ' + computed$).toBe('computed is 2');
@@ -464,7 +464,7 @@ describe('[@core/atom]', () => {
   test('the toJSON method of the readable atom works correctly', () => {
     type Value = { x: number };
     const atom$ = atom<Value>({ x: 1 });
-    const computed$ = computed([atom$], (value: Value) => ({ x: value.x + 1 }));
+    const computed$ = computed([atom$], value => ({ x: value.x + 1 }));
 
     atom$.set({ x: 2 });
     expect(JSON.stringify(computed$)).toBe(JSON.stringify({ x: 3 }));
@@ -479,7 +479,7 @@ describe('[@core/atom]', () => {
 
   test('the valueOf method of the readable atom works correctly', () => {
     const count$ = atom(0);
-    const computed$ = computed([count$], (x: number) => x + 1);
+    const computed$ = computed([count$], x => x + 1);
 
     count$.set(10);
     expect((computed$ as unknown as number) + 2).toBe(13);
@@ -488,7 +488,7 @@ describe('[@core/atom]', () => {
   test('the readable atom can depend on multiple deps', () => {
     const a$ = atom(0);
     const b$ = atom(0);
-    const computed$ = computed([a$, b$], (a: number, b: number) => a + b);
+    const computed$ = computed([a$, b$], (a, b) => a + b);
     const spy = jest.fn();
 
     computed$.on(spy);
@@ -521,8 +521,8 @@ describe('[@core/atom]', () => {
     {
       const a$ = atom(0);
       const b$ = atom(0);
-      const c$ = computed([a$, b$], (a: number, b: number) => a + b);
-      const d$ = computed([c$], (c: number) => c + 1);
+      const c$ = computed([a$, b$], (a, b) => a + b);
+      const d$ = computed([c$], c => c + 1);
 
       d$.on(({ next }) => spy(next));
       c$.on(({ next }) => spy(next));
@@ -540,8 +540,8 @@ describe('[@core/atom]', () => {
     {
       const a$ = atom(0);
       const b$ = atom(0);
-      const c$ = computed([a$, b$], (a: number, b: number) => a + b);
-      const d$ = computed([c$], (c: number) => c + 1);
+      const c$ = computed([a$, b$], (a, b) => a + b);
+      const d$ = computed([c$], c => c + 1);
 
       c$.on(({ next }) => spy(next));
       d$.on(({ next }) => spy(next));
@@ -559,11 +559,11 @@ describe('[@core/atom]', () => {
     {
       const a$ = atom(0);
       const b$ = atom(0);
-      const c$ = computed([a$, b$], (a: number, b: number) => a + b);
+      const c$ = computed([a$, b$], (a, b) => a + b);
 
       c$.on(({ next }) => spy(next));
 
-      const d$ = computed([c$], (c: number) => c + 1);
+      const d$ = computed([c$], c => c + 1);
 
       d$.on(({ next }) => spy(next));
 

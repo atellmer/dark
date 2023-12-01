@@ -71,4 +71,4 @@ comments$.on(({ next: comments }) => console.log('comments: ', comments));
 // using
 postId$.set(1);
 postId$.set(2);
-postId$.set(3); // load only this post
+postId$.set(3); // loads only this post
