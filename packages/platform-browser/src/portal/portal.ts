@@ -26,7 +26,7 @@ const Portal = component<PortalProps>(
     useMemo(() => (element.innerHTML = ''), []);
 
     fiber.element = element;
-    delete props.container;
+    props.container = null;
 
     return props.slot;
   },

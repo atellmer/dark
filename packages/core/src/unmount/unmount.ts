@@ -27,7 +27,7 @@ function unmountFiber(fiber: Fiber) {
       for (const [_, cleanup] of fiber.atoms) {
         cleanup();
       }
-      delete fiber.atoms;
+      fiber.atoms = null;
     }
 
     fiber.mask & Mask.PORTAL_HOST && platform.unmountPortal(fiber);

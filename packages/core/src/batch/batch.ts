@@ -24,7 +24,7 @@ function addBatch(fiber: Fiber, callback: Callback, change: Callback) {
     batch.timer = setTimeout(() => {
       batch.changes.splice(-1);
       batch.changes.forEach(x => x());
-      delete fiber.batch;
+      fiber.batch = null;
       callback();
     });
   }

@@ -182,7 +182,7 @@ function buildChildNode(
   fiber.idx = idx;
   left ? (fiber.eidx = left.eidx + (left.element ? 1 : left.cec)) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
-  isLast && delete fiber.next;
+  isLast && (fiber.next = null);
   notifyParents(fiber);
 }
 

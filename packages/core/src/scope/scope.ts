@@ -160,7 +160,6 @@ class Scope {
   }
 
   public navToParent() {
-    delete this.mountNav[this.mountLevel];
     this.mountLevel = this.mountLevel - 1;
   }
 
