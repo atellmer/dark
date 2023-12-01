@@ -76,7 +76,7 @@ function keyBy<T = any>(
 function detectAreDepsDifferent(deps: Array<unknown>, prevDeps: Array<unknown>): boolean {
   if (deps && prevDeps && deps.length > 0 && prevDeps.length > 0) {
     for (let i = 0; i < prevDeps.length; i++) {
-      if (prevDeps[i] !== deps[i]) return true;
+      if (!Object.is(prevDeps[i], deps[i])) return true;
     }
   }
 

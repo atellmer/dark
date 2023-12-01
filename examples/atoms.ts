@@ -52,7 +52,7 @@ const post$ = atom<Post>(null);
 const comments$ = atom<Array<Comment>>([]);
 
 postId$.on(async ({ prev, next }) => {
-  if (Object.is(prev, next)) return;
+  if (prev === next) return;
   abort();
 
   try {

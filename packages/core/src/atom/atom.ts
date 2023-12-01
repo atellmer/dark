@@ -7,7 +7,7 @@ import { createUpdate } from '../workloop';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { useMemo } from '../use-memo';
-import { error } from '../helpers';
+import { error, detectAreDepsDifferent } from '../helpers';
 
 class Atom<T = unknown> {
   private value: T;
@@ -139,7 +139,7 @@ class Atom<T = unknown> {
     }
 
     this.emitter && this.emitter.emit('data', data);
-    this.subjects && this.subjects.forEach(x => x.__notify(data));
+    this.subjects && this.subjects.forEach(x => x.__notify());
   }
 
   private off(hook: Hook, key: T) {
@@ -158,21 +158,26 @@ class WritableAtom<T = unknown> extends Atom<T> {
 class ReadableAtom<T = unknown> extends Atom<T> {
   private deps$: Array<Atom> = [];
   private fn: ComputedFn<T> = null;
+  private values: Array<unknown> = [];
 
   constructor(deps$: Array<Atom>, fn: ComputedFn<T>) {
-    super(ReadableAtom.compute(deps$, fn));
+    const values = ReadableAtom.values(deps$);
+
+    super(ReadableAtom.compute(fn, values));
     this.deps$ = deps$;
     this.fn = fn;
+    this.values = values;
     deps$.forEach(x => x.__addSubject(this));
   }
 
-  __notify({ prev, next }: EmitterValue<unknown>) {
-    if (Object.is(prev, next)) return;
-    const value = ReadableAtom.compute(this.deps$, this.fn);
+  __notify() {
+    const values = ReadableAtom.values(this.deps$);
 
-    if (!Object.is(this.get(), value)) {
-      super.setValue(value);
+    if (detectAreDepsDifferent(this.values, values)) {
+      super.setValue(ReadableAtom.compute(this.fn, values));
     }
+
+    this.values = values;
   }
 
   override kill() {
@@ -182,8 +187,8 @@ class ReadableAtom<T = unknown> extends Atom<T> {
     this.fn = null;
   }
 
-  private static compute(deps$: Array<Atom>, fn: Function) {
-    return fn(...ReadableAtom.values(deps$));
+  private static compute(fn: Function, values: Array<unknown>) {
+    return fn(...values);
   }
 
   private static values(deps$: Array<Atom>) {
