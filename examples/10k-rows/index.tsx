@@ -9,7 +9,6 @@ import {
   memo,
   useMemo,
   atom,
-  computed,
 } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
 

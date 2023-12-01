@@ -259,6 +259,27 @@ function useComputed<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   return atom$;
 }
 
+function useStore<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+  atoms$: [
+    Atom<A>,
+    Atom<B>?,
+    Atom<C>?,
+    Atom<D>?,
+    Atom<E>?,
+    Atom<F>?,
+    Atom<G>?,
+    Atom<H>?,
+    Atom<I>?,
+    Atom<J>?,
+    Atom<K>?,
+    Atom<L>?,
+    Atom<M>?,
+    Atom<N>?,
+  ],
+) {
+  return atoms$.map(x => x.val()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
+}
+
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;
 type EmitterValue<T> = { prev: T; next: T };
 type Tuple<T> = [number, Hook, ShouldUpdate<T>, T];
@@ -291,4 +312,5 @@ export {
   computed,
   useAtom,
   useComputed,
+  useStore,
 };
