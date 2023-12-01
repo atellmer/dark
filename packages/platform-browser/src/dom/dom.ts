@@ -47,10 +47,11 @@ const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
     const tagNode = vNode as TagVirtualNode;
+    const name = tagNode.name;
 
-    return detectIsSvgElement(tagNode.name)
-      ? document.createElementNS('http://www.w3.org/2000/svg', tagNode.name)
-      : document.createElement(tagNode.name);
+    return detectIsSvgElement(name)
+      ? document.createElementNS('http://www.w3.org/2000/svg', name)
+      : document.createElement(name);
   },
   [NodeType.TEXT]: (vNode: VirtualNode): TextNativeElement => {
     return document.createTextNode((vNode as TextVirtualNode).value);

@@ -100,7 +100,6 @@ function performUnitOfWork(fiber: Fiber, scope$: Scope): Fiber | null {
         return next;
       }
 
-      scope$.removeActionMap(fiber.id);
       fiber = fiber.parent;
     }
   }

@@ -46,7 +46,7 @@ class Scope {
   private isDynamic = platform.detectIsDynamic();
   private emitter = new EventEmitter();
 
-  public resetActions() {
+  private resetActions() {
     this.actions = {};
   }
 
@@ -63,10 +63,6 @@ class Scope {
       move: null,
       stable: null,
     };
-  }
-
-  public removeActionMap(id: number) {
-    delete this.actions[id];
   }
 
   public addReplaceAction(id: number, nextKey: ElementKey) {
