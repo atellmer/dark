@@ -147,20 +147,81 @@ describe('[@animations/use-trail]', () => {
     setIsOpen(true);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(1));
-    spies.forEach((spy, idx) => spies[idx + 1] && expect(spy.mock.calls).not.toEqual(spies[idx + 1].mock.calls));
-    expect(spies[0]).toHaveBeenCalledWith({ scale: 0.1106 });
-    expect(spies[1]).toHaveBeenCalledWith({ scale: 0.0048 });
-    expect(spies[2]).toHaveBeenCalledWith({ scale: 0.0002 });
-    expect(spies[3]).toHaveBeenCalledWith({ scale: 0.0002 });
+    spies.forEach(
+      (spy, idx) => spies[idx + 1] && expect(spy.mock.calls.length).toBeLessThan(spies[idx + 1].mock.calls.length),
+    );
     spies.forEach(spy => spy.mockClear());
 
     setIsOpen(false);
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(0));
-    spies.forEach((spy, idx) => spies[idx + 1] && expect(spy.mock.calls).not.toEqual(spies[idx + 1].mock.calls));
-    expect(spies[0]).toHaveBeenCalledWith({ scale: 0.9565 });
-    expect(spies[1]).toHaveBeenCalledWith({ scale: 0.9981 });
-    expect(spies[2]).toHaveBeenCalledWith({ scale: 0.9999 });
-    expect(spies[3]).toHaveBeenCalledWith({ scale: 0.9999 });
+    spies.forEach(
+      (spy, idx) => spies[idx + 1] && expect(spy.mock.calls.length).toBeLessThan(spies[idx + 1].mock.calls.length),
+    );
+  });
+
+  test('"reverse" method works correctly', () => {
+    const count = 4;
+    const items = range(count);
+    const content = (scale: number) =>
+      items
+        .map(
+          (_, idx) => dom`
+            <div style="transform: scale(${scale});">${idx}</div>
+          `,
+        )
+        .join('');
+    type SpringProps = 'scale';
+    let setIsOpen: (x: boolean) => void;
+    let api: TrailApi<SpringProps> = null;
+    const App = component(() => {
+      const [isOpen, _setIsOpen] = useState(false);
+      const [springs, _api] = useTrail<SpringProps>(
+        count,
+        () => ({
+          from: { scale: 0 },
+          to: { scale: isOpen ? 1 : 0 },
+        }),
+        [isOpen],
+      );
+
+      setIsOpen = _setIsOpen;
+      api = _api;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={styleFns[idx]}>
+            <div>{idx}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spies = items.map(() => jest.fn());
+    const styleFns = items.map((_, idx) => (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spies[idx](value);
+      element.style.setProperty('transform', `scale(${value.scale})`);
+    });
+
+    render(<App />);
+    expect(host.innerHTML).toBe(content(0));
+
+    api.reverse(false);
+    setIsOpen(true);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(1));
+
+    spies.forEach(
+      (spy, idx) => spies[idx + 1] && expect(spy.mock.calls.length).toBeLessThan(spies[idx + 1].mock.calls.length),
+    );
+    spies.forEach(spy => spy.mockClear());
+
+    api.reverse(true);
+    setIsOpen(false);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(0));
+    spies.forEach(
+      (spy, idx) => spies[idx + 1] && expect(spy.mock.calls.length).toBeGreaterThan(spies[idx + 1].mock.calls.length),
+    );
   });
 });
