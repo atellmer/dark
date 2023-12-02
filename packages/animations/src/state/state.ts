@@ -30,6 +30,10 @@ class SharedState<T extends string = string> {
     return this.isTrail;
   }
 
+  setFlow(x: Flow) {
+    this.flow = x;
+  }
+
   getIsPaused() {
     return this.isPaused;
   }
@@ -58,10 +62,9 @@ class SharedState<T extends string = string> {
     this.defer(() => {
       if (this.ctrls.length === 0) return;
       this.event('series-start');
-      this.setFlow(Flow.RIGHT);
 
       if (this.isTrail) {
-        const [ctrl] = this.ctrls;
+        const ctrl = this.flow === Flow.RIGHT ? this.ctrls[0] : this.ctrls[this.ctrls.length - 1];
 
         ctrl.start(fn);
       } else {
@@ -125,10 +128,6 @@ class SharedState<T extends string = string> {
     } else {
       fn();
     }
-  }
-
-  private setFlow(x: Flow) {
-    this.flow = x;
   }
 
   private resetTimer() {

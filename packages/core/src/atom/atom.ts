@@ -27,7 +27,7 @@ class Atom<T = unknown> {
       this.__connect(fn, key);
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
-        error('[Dark]: Illegal invocation val() outside render process!');
+        error('[Dark]: Illegal invocation atom.val() outside render process!');
       }
     }
 

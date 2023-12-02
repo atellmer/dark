@@ -4,11 +4,10 @@ import { h, component, useState, detectIsArray } from '@dark-engine/core';
 import { dom, createEnv, mockPlatformRaf } from '@test-utils';
 
 import { type SpringValue } from '../shared';
-import { type SpringApi } from '../use-springs';
 import { Animated } from '../animated';
 import { Spring } from '../spring';
 import { range } from '../utils';
-import { useTrail } from './use-trail';
+import { type TrailApi, useTrail } from './use-trail';
 
 let { host, render } = createEnv();
 
@@ -22,7 +21,7 @@ describe('[@animations/use-trail]', () => {
   test('returns springs and an api', () => {
     type SpringProps = 'scale';
     let springs: Array<Spring<SpringProps>> = null;
-    let api: SpringApi<SpringProps> = null;
+    let api: TrailApi<SpringProps> = null;
     const App = component(() => {
       const [_springs, _api] = useTrail<SpringProps>(1, () => ({
         from: { scale: 0 },
@@ -42,6 +41,7 @@ describe('[@animations/use-trail]', () => {
     expect(springs[0].value()).toEqual({ scale: 0 });
     expect(api).toBeDefined();
     expect(api.start).toBeDefined();
+    expect(api.reverse).toBeDefined();
     expect(api.pause).toBeDefined();
     expect(api.reset).toBeDefined();
     expect(api.resume).toBeDefined();
@@ -63,7 +63,7 @@ describe('[@animations/use-trail]', () => {
         )
         .join('');
     type SpringProps = 'scale';
-    let api: SpringApi<SpringProps> = null;
+    let api: TrailApi<SpringProps> = null;
     const App = component(() => {
       const [springs, _api] = useTrail<SpringProps>(count, () => ({
         from: { scale: 0 },

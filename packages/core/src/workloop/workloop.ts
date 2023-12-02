@@ -1,7 +1,5 @@
 import { type RestoreOptions, platform, detectIsServer } from '../platform';
 import {
-  RESTART_TIMEOUT,
-  Flag,
   EFFECT_TAG_CREATE,
   EFFECT_TAG_UPDATE,
   EFFECT_TAG_DELETE,
@@ -14,6 +12,8 @@ import {
   MASK_MOVE,
   MASK_FLUSH,
   MASK_SHADOW,
+  RESTART_TIMEOUT,
+  Flag,
 } from '../constants';
 import {
   flatten,
@@ -72,7 +72,7 @@ function workLoop(isAsync: boolean) {
       scope$.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = isAsync && platform.shouldYield();
-      if (platform.hasPrimaryTask()) return fork(scope$);
+      if (shouldYield && platform.hasPrimaryTask()) return fork(scope$);
     }
 
     if (!unit && wipFiber) {
