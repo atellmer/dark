@@ -30,7 +30,7 @@ export type ScheduleCallbackOptions = {
   priority?: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
-  createSign?: () => string;
+  createLocation?: () => string;
   setPendingStatus?: SetPendingStatus;
   onCompleted?: () => void;
 };

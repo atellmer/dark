@@ -11,6 +11,8 @@ import {
   detectIsBusy,
   detectIsFunction,
   nextTick,
+  HOOK_DELIMETER,
+  ROOT,
 } from '@dark-engine/core';
 
 import { YIELD_INTERVAL } from '../constants';
@@ -57,41 +59,45 @@ class Scheduler {
       priority = TaskPriority.NORMAL,
       forceAsync = false,
       isTransition = false,
-      createSign,
+      createLocation,
       setPendingStatus,
     } = options || {};
     const task = new Task(callback, priority, forceAsync);
 
     task.setIsTransition(isTransition);
     task.setPendingSetter(setPendingStatus);
-    task.setSignCreator(createSign);
+    task.setLocationCreator(createLocation || createRootLocation);
     this.put(task);
     this.execute();
   }
 
   public hasPrimaryTask() {
-    if (this.task.getIsTransition()) {
-      const { high, normal, low } = this.getQueues();
-      const hasPrimary = high.length > 0 || normal.length > 0;
+    if (!this.task.getIsTransition()) return false;
+    const { high, normal, low } = this.getQueues();
+    const hasPrimary = high.length > 0 || normal.length > 0;
+    const hasLow = low.length > 0;
+
+    if (hasPrimary || hasLow) {
+      const loc = this.task.createLocation();
 
       if (hasPrimary) {
-        const sign = this.task.createSign();
-        const isMatch = Task.detectIsMatchSign(sign, high);
+        const has = Task.detectHasChildUpdate(loc, [...high, ...normal]);
 
-        if (isMatch) {
+        if (has) {
           this.task.markAsUnnecessary();
         }
 
         return true;
       }
 
-      const sign = this.task.createSign();
-      const hasSame = Task.detectHasSameSign(sign, low);
+      if (hasLow) {
+        const has = Task.detectHasSameUpdate(loc, low);
 
-      if (hasSame) {
-        this.task.markAsUnnecessary();
+        if (has) {
+          this.task.markAsUnnecessary();
 
-        return true;
+          return true;
+        }
       }
     }
 
@@ -115,29 +121,19 @@ class Scheduler {
   }
 
   private pick(queue: Array<Task>) {
-    if (!queue.length) return false;
+    if (queue.length === 0) return false;
     this.task = queue.shift();
 
-    if (this.task.getIsTransition()) {
-      const sign = this.task.createSign();
-      const hasSign = Task.detectHasSameSign(sign, queue);
+    if (this.task.getIsTransition() && this.task.canPending()) {
+      const task = this.task;
 
-      if (hasSign) {
-        this.task = null;
-        return this.pick(queue);
-      }
+      task.markAsPending();
+      this.deferTransition(this.task);
+      this.task = null;
 
-      if (this.task.canPending()) {
-        const task = this.task;
+      nextTick(() => task.pending(true));
 
-        task.markAsPending();
-        this.deferTransition(this.task);
-        this.task = null;
-
-        nextTick(() => task.pending(true));
-
-        return true;
-      }
+      return true;
     }
 
     this.task.run();
@@ -210,7 +206,7 @@ class Scheduler {
 
 type TaskCallback = (fn: TaskRestorer) => void;
 type TaskRestorer = (options: RestoreOptions) => void;
-type SignCreator = () => string;
+type LocationCreator = () => string;
 
 class Task {
   private id: number;
@@ -221,7 +217,7 @@ class Task {
   private isUnnecessary: boolean;
   private callback: TaskCallback;
   private taskRestorer?: TaskRestorer = null;
-  private signCreator?: SignCreator;
+  private locationCreator?: LocationCreator;
   private pendingSetter?: SetPendingStatus = null;
   private static nextTaskId = 0;
 
@@ -277,26 +273,40 @@ class Task {
     this.taskRestorer = fn;
   }
 
-  public setSignCreator(fn: SignCreator) {
-    this.signCreator = fn;
+  public setLocationCreator(fn: LocationCreator) {
+    this.locationCreator = fn;
   }
 
-  public createSign() {
-    return this.signCreator();
+  public createLocation() {
+    return this.locationCreator();
   }
 
   public setPendingSetter(fn: SetPendingStatus) {
     this.pendingSetter = fn;
   }
 
-  public static detectHasSameSign(sign: string, tasks: Array<Task>) {
-    return tasks.some(x => x.isTransition && x.createSign() === sign);
+  public static detectHasSameUpdate(loc: string, tasks: Array<Task>) {
+    return tasks.some(x => {
+      const $loc = x.createLocation();
+      const has = $loc === loc;
+
+      return has;
+    });
   }
 
-  public static detectIsMatchSign(sign: string, tasks: Array<Task>) {
-    return tasks.some(x => x.createSign && x.createSign().length > sign.length);
+  public static detectHasChildUpdate(loc: string, tasks: Array<Task>) {
+    const [$loc] = loc.split(HOOK_DELIMETER);
+
+    return tasks.some(x => {
+      const $$loc = x.createLocation();
+      const has = $$loc.length > loc.length && $$loc.indexOf($loc) !== -1;
+
+      return has;
+    });
   }
 }
+
+const createRootLocation: LocationCreator = () => ROOT;
 
 const scheduler = new Scheduler();
 

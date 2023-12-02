@@ -17,6 +17,7 @@ export const MASK_SHADOW = 32;
 export const MASK_FLUSH = 64;
 export const MASK_MOVE = 128;
 export const RESTART_TIMEOUT = 10;
+export const HOOK_DELIMETER = ':';
 
 export enum TaskPriority {
   HIGH = 2,

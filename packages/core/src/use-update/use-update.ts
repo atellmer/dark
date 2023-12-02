@@ -4,7 +4,7 @@ import { type UpdateChanger, createUpdate } from '../workloop';
 import { TaskPriority } from '../constants';
 import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
-import { createFiberSign } from '../walk';
+import { createHookLocation } from '../walk';
 
 export type UpdateOptions = UpdateChanger;
 
@@ -30,12 +30,12 @@ function useUpdate() {
       isTransition,
       createChanger: hasChanger ? createChanger : undefined,
     });
-    const createSign = () => createFiberSign(owner, idx);
+    const createLocation = () => createHookLocation(rootId, idx, owner);
     const callbackOptions: ScheduleCallbackOptions = {
       priority,
       forceAsync,
       isTransition,
-      createSign,
+      createLocation,
       setPendingStatus,
     };
 

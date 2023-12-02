@@ -8,6 +8,7 @@ import {
   MASK_ATOM_HOST,
   MASK_PORTAL_HOST,
   MASK_MOVE,
+  HOOK_DELIMETER,
 } from '../constants';
 import { Fiber } from '../fiber';
 import { platform } from '../platform';
@@ -71,16 +72,18 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
-function createFiberSign(fiber: Fiber, hook?: number) {
+function createHookLocation(rootId: number, idx: number, fiber: Fiber) {
   let $fiber = fiber;
-  let sign = fiber.idx + (hook ? `:${hook}` : '');
+  let loc = `${fiber.idx}${HOOK_DELIMETER}${idx}`;
 
   while ($fiber) {
     $fiber = $fiber.parent;
-    $fiber && (sign = `${$fiber.idx}.${sign}`);
+    $fiber && (loc = `${$fiber.idx}.${loc}`);
   }
 
-  return sign;
+  loc = `[${rootId}]${loc}`;
+
+  return loc;
 }
 
 function detectIsStableMemoTree(fiber: Fiber, $scope: Scope) {
@@ -216,7 +219,7 @@ export {
   collectElements,
   getFiberWithElement,
   detectIsFiberAlive,
-  createFiberSign,
+  createHookLocation,
   tryOptStaticSlot,
   tryOptMemoSlot,
   notifyParents,
