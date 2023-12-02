@@ -575,7 +575,7 @@ describe('[@animations/use-springs]', () => {
     expect(spy).toHaveBeenCalledTimes(290);
   });
 
-  test('pass the idx to the configurator', () => {
+  test('passes the index to the configurator', () => {
     const count = 4;
     type SpringProps = 'scale';
     let api: SpringApi<SpringProps> = null;
@@ -611,7 +611,7 @@ describe('[@animations/use-springs]', () => {
     range(count).forEach((_, idx) => expect(spy).toHaveBeenCalledWith(idx));
   });
 
-  test(`doesn't throw an exception without notifier`, () => {
+  test(`doesn't throw an exception without Animated`, () => {
     const make = () => {
       const count = 4;
       let api: SpringApi = null;

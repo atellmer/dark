@@ -905,4 +905,80 @@ describe('[@animations/use-transition]', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(api.isCanceled()).toBe(true);
   });
+
+  test('passes the index and the item to the configurator', () => {
+    const count = 4;
+    type SpringProps = 'scale';
+    let items: Array<Item> = null;
+    let api: TransitionApi<SpringProps> = null;
+    const spy = jest.fn();
+    const App = component(() => {
+      const [transition, _api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        (idx, item) => {
+          spy(idx, item);
+          return {
+            from: { scale: 0 },
+            enter: { scale: 1 },
+            leave: { scale: 0 },
+            update: { scale: 1 },
+          };
+        },
+      );
+
+      api = _api;
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <div>{item.data}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      element.style.setProperty('transform', `scale(${value.scale})`);
+    };
+
+    items = generate(count);
+    render(<App />);
+    api.start();
+    jest.runAllTimers();
+
+    items.forEach((x, idx) => expect(spy).toHaveBeenCalledWith(idx, x));
+  });
+
+  test(`doesn't throw an exception without the transition call`, () => {
+    const count = 4;
+    type SpringProps = 'scale';
+    let items: Array<Item> = null;
+    let api: TransitionApi<SpringProps> = null;
+    const make = () => {
+      const App = component(() => {
+        const [_, _api] = useTransition<SpringProps, Item>(
+          items,
+          x => x.id,
+          () => ({
+            from: { scale: 0 },
+            enter: { scale: 1 },
+            leave: { scale: 0 },
+            update: { scale: 1 },
+          }),
+        );
+
+        api = _api;
+
+        return null;
+      });
+
+      items = generate(count);
+      render(<App />);
+      api.start();
+      jest.runAllTimers();
+    };
+
+    expect(make).not.toThrow();
+  });
 });
