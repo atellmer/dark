@@ -41,10 +41,10 @@ function useTransition<T extends string, I = unknown>(
       ctrlsMap: new Map(),
       itemsMap: new Map(),
       fakesMap: new Map(),
-      fromItems: true,
+      pending: null,
+      fromApi: false,
       inChain: false,
       items: [],
-      pending: null,
       configurator,
     }),
     [],
@@ -84,7 +84,7 @@ function useTransition<T extends string, I = unknown>(
   const api = useMemo<TransitionApi<T>>(() => {
     return {
       start: fn => {
-        scope.fromItems = false;
+        scope.fromApi = true;
 
         if (scope.inChain) {
           scope.pending && scope.pending();
@@ -106,7 +106,7 @@ function useTransition<T extends string, I = unknown>(
   useEffect(() => {
     const { inChain } = scope;
     const nextItems = uniq(items, getKey);
-    const loop = (items: Array<I>) => {
+    const start = (items: Array<I>) => {
       const { ctrlsMap, fakesMap, items: $items } = scope;
       const configurator: TransitionConfiguratorFn<T, I> = (idx, item) => scope.configurator(idx, item);
       const { ctrls, itemsMap } = data({ items, getKey, configurator, state, ctrlsMap });
@@ -116,34 +116,34 @@ function useTransition<T extends string, I = unknown>(
       replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
 
       state.event('series-start');
-      startLoop({ action: Action.LEAVE, space: fakesMap, state, scope }); // !
-      startLoop({ action: Action.ENTER, space: insMap, state, scope });
-      startLoop({ action: Action.LEAVE, space: remMap, state, scope });
-      startLoop({ action: Action.UPDATE, space: movMap, state, scope });
-      startLoop({ action: Action.UPDATE, space: stabMap, state, scope });
+      animate({ action: Action.LEAVE, space: fakesMap, state, scope }); // !
+      animate({ action: Action.ENTER, space: insMap, state, scope });
+      animate({ action: Action.LEAVE, space: remMap, state, scope });
+      animate({ action: Action.UPDATE, space: movMap, state, scope });
+      animate({ action: Action.UPDATE, space: stabMap, state, scope });
 
       scope.items = items; // !
       scope.itemsMap = itemsMap;
-      scope.fromItems = true;
-      hasChanges && forceUpdate(); //!
+      scope.fromApi = false;
+      hasChanges && forceUpdate(); // !
     };
 
     if (inChain) {
-      scope.pending = () => state.defer(() => loop(nextItems));
+      scope.pending = () => state.defer(() => start(nextItems));
     } else {
-      loop(nextItems);
+      start(nextItems);
     }
   }, [items]);
 
   useLayoutEffect(() => {
-    const unmounts: Array<() => void> = [];
+    const offs: Array<Callback> = [];
 
-    unmounts.push(
+    offs.push(
       api.on('item-end', e => handleItemEnd(e, scope)),
       api.on('series-end', () => handleSeriesEnd(update, state, scope)),
     );
 
-    return () => unmounts.forEach(x => x());
+    return () => offs.forEach(x => x());
   }, []);
 
   useLayoutEffect(() => () => api.cancel(), []);
@@ -278,14 +278,14 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: Key
   };
 }
 
-type StartLoopOptions<T extends string, I = unknown> = {
+type AnimateOptions<T extends string, I = unknown> = {
   action: Action;
   space: Map<ElementKey, number>;
   state: SharedState<T>;
   scope: Scope<T, I>;
 };
 
-function startLoop<T extends string, I = unknown>(options: StartLoopOptions<T, I>) {
+function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
   const { space, action, state, scope } = options;
   const { configurator, ctrlsMap, fakesMap } = scope;
   const ctrls = state.getCtrls();
@@ -372,10 +372,10 @@ function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventVal
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, state: SharedState<T>, scope: Scope<T, I>) {
-  const { ctrlsMap, configurator, fromItems } = scope;
+  const { ctrlsMap, configurator, fromApi } = scope;
   const ctrls: Array<Controller<T, I>> = [];
 
-  if (!fromItems) return;
+  if (fromApi) return;
 
   for (const [_, ctrl] of ctrlsMap) {
     const { enter } = configurator(ctrl.getIdx(), ctrl.getItem());
@@ -395,9 +395,9 @@ type Scope<T extends string, I = unknown> = {
   ctrlsMap: Map<ElementKey, Controller<T, I>>;
   itemsMap: Map<ElementKey, I>;
   fakesMap: Map<ElementKey, number>;
-  fromItems: boolean;
-  inChain: boolean;
   pending: Callback;
+  fromApi: boolean;
+  inChain: boolean;
 };
 
 enum Action {
