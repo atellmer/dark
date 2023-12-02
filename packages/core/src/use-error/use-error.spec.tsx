@@ -25,7 +25,7 @@ describe('[use-error]', () => {
       <div>error</div>
     `;
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -55,14 +55,14 @@ describe('[use-error]', () => {
       return <Chlld hasError={hasError} />;
     });
 
-    render$({ hasError: false });
+    $render({ hasError: false });
     expect(host.innerHTML).toBe(content());
 
-    render$({ hasError: true });
+    $render({ hasError: true });
     jest.runAllTimers();
     expect(host.innerHTML).toBe(errorContent());
 
-    render$({ hasError: false });
+    $render({ hasError: false });
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content());
   });
@@ -84,7 +84,7 @@ describe('[use-error]', () => {
       <div>error</div>
     `;
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -124,14 +124,14 @@ describe('[use-error]', () => {
       ];
     });
 
-    render$({ hasError: false });
+    $render({ hasError: false });
     expect(host.innerHTML).toBe(content());
 
-    render$({ hasError: true });
+    $render({ hasError: true });
     jest.runAllTimers();
     expect(host.innerHTML).toBe(errorContent());
 
-    render$({ hasError: false });
+    $render({ hasError: false });
     expect(host.innerHTML).toBe(content());
   });
 });

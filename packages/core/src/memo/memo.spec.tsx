@@ -14,7 +14,7 @@ describe('[memo]', () => {
   test('works correctly by default', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(MemoApp(props), host);
     };
 
@@ -25,9 +25,9 @@ describe('[memo]', () => {
 
     const MemoApp = memo(App);
 
-    render$();
+    $render();
     expect(mockFn).toBeCalledTimes(1);
-    render$();
+    $render();
     expect(mockFn).toBeCalledTimes(1);
   });
 
@@ -35,7 +35,7 @@ describe('[memo]', () => {
     type AppProps = { name: string; age: number };
     const mockFn = jest.fn();
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(MemoApp(props), host);
     };
 
@@ -45,16 +45,16 @@ describe('[memo]', () => {
     });
     const MemoApp = memo<AppProps>(App, (props, nextProps) => props.name !== nextProps.name);
 
-    render$({ name: 'Alex', age: 24 });
+    $render({ name: 'Alex', age: 24 });
     expect(mockFn).toBeCalledTimes(1);
 
-    render$({ name: 'Alex', age: 26 });
+    $render({ name: 'Alex', age: 26 });
     expect(mockFn).toBeCalledTimes(1);
 
-    render$({ name: 'Jane', age: 24 });
+    $render({ name: 'Jane', age: 24 });
     expect(mockFn).toBeCalledTimes(2);
 
-    render$({ name: 'Jane', age: 28 });
+    $render({ name: 'Jane', age: 28 });
     expect(mockFn).toBeCalledTimes(2);
   });
 });

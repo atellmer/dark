@@ -13,7 +13,7 @@ import {
   TaskPriority,
   createReplacer,
   setRootId,
-  scope$$,
+  $$scope,
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
@@ -62,15 +62,15 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
     rootId = roots.get(container);
   }
 
-  const scope$ = scope$$(rootId);
+  const $scope = $$scope(rootId);
 
   // insertion effect can't schedule renders
-  if (scope$?.getIsInsertionEffectsZone()) return;
+  if ($scope?.getIsInsertionEffectsZone()) return;
 
   const callback = () => {
     setRootId(rootId); // !
-    const scope$ = scope$$();
-    const rootFiber = scope$.getRoot();
+    const $scope = $$scope();
+    const rootFiber = $scope.getRoot();
     const isUpdate = Boolean(rootFiber);
     const fiber = new Fiber().mutate({
       element: container,
@@ -79,10 +79,10 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
       tag: isUpdate ? EFFECT_TAG_UPDATE : EFFECT_TAG_CREATE,
     });
 
-    scope$.resetMount();
-    scope$.setWorkInProgress(fiber);
-    scope$.setIsHydrateZone(hydrate);
-    scope$.setNextUnitOfWork(fiber);
+    $scope.resetMount();
+    $scope.setWorkInProgress(fiber);
+    $scope.setIsHydrateZone(hydrate);
+    $scope.setNextUnitOfWork(fiber);
   };
 
   platform.schedule(callback, { priority: TaskPriority.NORMAL });

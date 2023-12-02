@@ -13,7 +13,7 @@ import {
   unmountRoot,
   setRootId,
   getRootId,
-  scope$$,
+  $$scope,
   nextTick,
   dummyFn,
 } from '@dark-engine/core';
@@ -56,18 +56,18 @@ function scheduleRender(options: ScheduleRenderOptions) {
   const rootId = getNextRootId();
   const callback = () => {
     setRootId(rootId);
-    const scope$ = scope$$();
+    const $scope = $$scope();
     const fiber = new Fiber().mutate({
       element: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       tag: EFFECT_TAG_CREATE,
     });
-    const emitter = scope$.getEmitter();
+    const emitter = $scope.getEmitter();
 
-    scope$.setIsStreamZone(isStream);
-    scope$.resetMount();
-    scope$.setWorkInProgress(fiber);
-    scope$.setNextUnitOfWork(fiber);
+    $scope.setIsStreamZone(isStream);
+    $scope.resetMount();
+    $scope.setWorkInProgress(fiber);
+    $scope.setNextUnitOfWork(fiber);
 
     onStart();
     emitter.on('finish', () => {
@@ -83,7 +83,7 @@ function renderToString(element: DarkElement): Promise<string> {
   return new Promise<string>(resolve => {
     const onCompleted = () => {
       const rootId = getRootId();
-      const { element: nativeElement } = scope$$().getRoot() as Fiber<TagNativeElement>;
+      const { element: nativeElement } = $$scope().getRoot() as Fiber<TagNativeElement>;
       const content = nativeElement.renderToString(true);
 
       resolve(content);
@@ -117,7 +117,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
   };
 
   const onStart = () => {
-    const emitter = scope$$().getEmitter();
+    const emitter = $$scope().getEmitter();
 
     emitter.on<string>('chunk', chunk => {
       if (chunk === PREPEND_SCRIPTS_CHUNK) {

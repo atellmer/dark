@@ -1,19 +1,19 @@
-import { scope$$ } from '../scope';
+import { $$scope } from '../scope';
 import { type Fiber } from '../fiber';
 import { type Callback } from '../shared';
 
 function batch(callback: () => void) {
-  const scope$ = scope$$();
+  const $scope = $$scope();
 
-  scope$.setIsBatchZone(true);
+  $scope.setIsBatchZone(true);
   callback();
-  scope$.setIsBatchZone(false);
+  $scope.setIsBatchZone(false);
 }
 
 function addBatch(fiber: Fiber, callback: Callback, change: Callback) {
-  const scope$ = scope$$();
+  const $scope = $$scope();
 
-  if (scope$.getIsTransitionZone()) {
+  if ($scope.getIsTransitionZone()) {
     callback();
   } else {
     const batch = fiber.batch || { timer: null, changes: [] };

@@ -13,7 +13,7 @@ describe('[use-event]', () => {
   test('works correctly', () => {
     const handlers: Array<() => number> = [];
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -29,9 +29,9 @@ describe('[use-event]', () => {
       return null;
     });
 
-    render$({ x: 1 });
-    render$({ x: 2 });
-    render$({ x: 3 });
+    $render({ x: 1 });
+    $render({ x: 2 });
+    $render({ x: 3 });
     expect(handlers.every(x => x === handlers[0])).toBeTruthy();
     expect(handlers.every(x => x() === 3)).toBeTruthy();
   });

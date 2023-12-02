@@ -1,6 +1,6 @@
 import { detectIsFunction } from '../helpers';
 import { MASK_INSERTION_EFFECT_HOST, MASK_LAYOUT_EFFECT_HOST, MASK_ASYNC_EFFECT_HOST } from '../constants';
-import { scope$$ } from '../scope';
+import { $$scope } from '../scope';
 import { useMemo } from '../use-memo';
 import { type Hook, type HookValue } from '../fiber';
 import { type Effect, type DropEffect, EffectType } from './types';
@@ -15,8 +15,8 @@ type UseEffectValue = {
 
 function createEffect(token: Symbol, type: EffectType) {
   function useEffect(effect: Effect, deps: Array<any> = [{}]) {
-    const scope$ = scope$$();
-    const fiber = scope$.getCursorFiber();
+    const $scope = $$scope();
+    const fiber = $scope.getCursorFiber();
     const scope = useMemo<UseEffectValue>(() => ({ token, cleanup: undefined }), []);
     const isInsertionEffect = type === EffectType.INSERTION;
     const isLayoutEffect = type === EffectType.LAYOUT;
@@ -29,9 +29,9 @@ function createEffect(token: Symbol, type: EffectType) {
     useMemo(() => {
       const runEffect = () => (scope.cleanup = effect());
 
-      isInsertionEffect && scope$.addInsertionEffect(runEffect);
-      isLayoutEffect && scope$.addLayoutEffect(runEffect);
-      isAsyncEffect && scope$.addAsyncEffect(runEffect);
+      isInsertionEffect && $scope.addInsertionEffect(runEffect);
+      isLayoutEffect && $scope.addLayoutEffect(runEffect);
+      isAsyncEffect && $scope.addAsyncEffect(runEffect);
 
       detectIsFunction(scope.cleanup) && scope.cleanup();
 

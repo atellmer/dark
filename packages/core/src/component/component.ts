@@ -40,10 +40,10 @@ class Component<P extends StandardComponentProps = any, R = any> {
 }
 
 function component<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions = {}) {
-  const { token: token$, displayName } = options;
+  const { token: $token, displayName } = options;
   type P1 = P & StandardComponentProps;
   const factory: ComponentFactoryWithPossiblyInject<P1, R> = (props = {} as P1, ref?: Ref<R>) => {
-    const { token = token$, shouldUpdate } = factory[$$inject] || defaultInject;
+    const { token = $token, shouldUpdate } = factory[$$inject] || defaultInject;
 
     if (props.ref) {
       delete props.ref;

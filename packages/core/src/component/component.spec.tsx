@@ -99,7 +99,7 @@ describe('[component]', () => {
       x: number;
     };
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -115,23 +115,23 @@ describe('[component]', () => {
       return <Child key={x} />;
     });
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     jest.runAllTimers();
     expect(dropFn).toHaveBeenCalledTimes(0);
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     jest.runAllTimers();
     expect(dropFn).toHaveBeenCalledTimes(0);
 
-    render$({ x: 2 });
+    $render({ x: 2 });
     jest.runAllTimers();
     expect(dropFn).toHaveBeenCalledTimes(1);
 
-    render$({ x: 3 });
+    $render({ x: 3 });
     jest.runAllTimers();
     expect(dropFn).toHaveBeenCalledTimes(2);
 
-    render$({ x: 3 });
+    $render({ x: 3 });
     jest.runAllTimers();
     expect(dropFn).toHaveBeenCalledTimes(2);
   });

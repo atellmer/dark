@@ -5,7 +5,7 @@ import {
   component,
   useMemo,
   useInsertionEffect,
-  scope$$,
+  $$scope,
   walk,
 } from '@dark-engine/core';
 
@@ -19,7 +19,7 @@ type AnimatedProps<E = unknown, T extends string = string> = {
 };
 
 const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
-  const cursor = scope$$().getCursorFiber();
+  const cursor = $$scope().getCursorFiber();
   const scope = useMemo<Scope>(() => ({ element: null, notify: null }), []);
   const notify = () => scope.element && fn(scope.element, spring.value());
 

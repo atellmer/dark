@@ -50,42 +50,42 @@ function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>)
 }
 
 function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
-  let fiber$ = fiber as unknown as Fiber<T2>;
+  let $fiber = fiber as unknown as Fiber<T2>;
 
-  while (fiber$) {
-    if (fiber$.element) return fiber$;
-    fiber$ = fiber$.parent;
+  while ($fiber) {
+    if ($fiber.element) return $fiber;
+    $fiber = $fiber.parent;
   }
 
-  return fiber$;
+  return $fiber;
 }
 
 function detectIsFiberAlive(fiber: Fiber) {
-  let fiber$ = fiber;
+  let $fiber = fiber;
 
-  while (fiber$) {
-    if (fiber$.tag === EFFECT_TAG_DELETE) return false;
-    fiber$ = fiber$.parent;
+  while ($fiber) {
+    if ($fiber.tag === EFFECT_TAG_DELETE) return false;
+    $fiber = $fiber.parent;
   }
 
   return Boolean(fiber);
 }
 
 function createFiberSign(fiber: Fiber, hook?: number) {
-  let fiber$ = fiber;
+  let $fiber = fiber;
   let sign = fiber.idx + (hook ? `:${hook}` : '');
 
-  while (fiber$) {
-    fiber$ = fiber$.parent;
-    fiber$ && (sign = `${fiber$.idx}.${sign}`);
+  while ($fiber) {
+    $fiber = $fiber.parent;
+    $fiber && (sign = `${$fiber.idx}.${sign}`);
   }
 
   return sign;
 }
 
-function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
+function detectIsStableMemoTree(fiber: Fiber, $scope: Scope) {
   if (!hasChildrenProp(fiber.inst)) return;
-  const actions = scope$.getActionsById(fiber.id);
+  const actions = $scope.getActionsById(fiber.id);
   const children = fiber.inst.children;
 
   for (let i = 0; i < children.length; i++) {
@@ -105,8 +105,8 @@ function detectIsStableMemoTree(fiber: Fiber, scope$: Scope) {
   return true;
 }
 
-function tryOptStaticSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
-  const actions = scope$.getActionsById(fiber.id);
+function tryOptStaticSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
+  const actions = $scope.getActionsById(fiber.id);
   const inst = fiber.inst as Component | TagVirtualNode;
 
   alt.element && (fiber.element = alt.element); //!
@@ -116,41 +116,41 @@ function tryOptStaticSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
   }
 
   fiber.cc = inst.children.length;
-  scope$.setMountDeep(false);
+  $scope.setMountDeep(false);
 }
 
-function tryOptMemoSlot(fiber: Fiber, alt: Fiber, scope$: Scope) {
-  const actions = scope$.getActionsById(fiber.id);
+function tryOptMemoSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
+  const actions = $scope.getActionsById(fiber.id);
   const hasMove = Boolean(actions.move);
   const hasRemove = Boolean(actions.remove);
   const hasInsert = Boolean(actions.insert);
   const hasReplace = Boolean(actions.insert);
   const canOptimize = ((hasMove && !hasRemove) || (hasRemove && !hasMove)) && !hasInsert && !hasReplace;
 
-  if (!canOptimize || !detectIsStableMemoTree(fiber, scope$)) return;
+  if (!canOptimize || !detectIsStableMemoTree(fiber, $scope)) return;
 
-  hasMove && tryOptMov(fiber, alt, scope$);
-  hasRemove && tryOptRem(fiber, alt, scope$);
+  hasMove && tryOptMov(fiber, alt, $scope);
+  hasRemove && tryOptRem(fiber, alt, $scope);
 }
 
-function tryOptMov(fiber: Fiber, alt: Fiber, scope$: Scope) {
-  const actions = scope$.getActionsById(fiber.id);
+function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
+  const actions = $scope.getActionsById(fiber.id);
 
-  buildChildNodes(fiber, alt, scope$, (fiber, key) => {
+  buildChildNodes(fiber, alt, $scope, (fiber, key) => {
     if (!actions.move[key]) return;
     fiber.alt = new Fiber().mutate(fiber);
     fiber.tag = EFFECT_TAG_UPDATE;
     fiber.mask |= MASK_MOVE;
-    scope$.addCandidate(fiber);
+    $scope.addCandidate(fiber);
   });
 }
 
-function tryOptRem(fiber: Fiber, alt: Fiber, scope$: Scope) {
-  buildChildNodes(fiber, alt, scope$);
+function tryOptRem(fiber: Fiber, alt: Fiber, $scope: Scope) {
+  buildChildNodes(fiber, alt, $scope);
 }
 
-function buildChildNodes(fiber: Fiber, alt: Fiber, scope$: Scope, onNode?: (fiber: Fiber, key: ElementKey) => void) {
-  const actions = scope$.getActionsById(fiber.id);
+function buildChildNodes(fiber: Fiber, alt: Fiber, $scope: Scope, onNode?: (fiber: Fiber, key: ElementKey) => void) {
+  const actions = $scope.getActionsById(fiber.id);
   const inst = fiber.inst as Component | TagVirtualNode;
   const children = inst.children;
 
@@ -158,14 +158,14 @@ function buildChildNodes(fiber: Fiber, alt: Fiber, scope$: Scope, onNode?: (fibe
 
   for (let i = 0; i < children.length; i++) {
     const key = getKey(children[i], i);
-    const fiber$ = actions.map[key];
+    const $fiber = actions.map[key];
 
     buildChildNode(children, fiber, actions.map, i, fiber.eidx);
-    onNode && onNode(fiber$, key);
+    onNode && onNode($fiber, key);
   }
 
   fiber.cc = children.length;
-  scope$.setMountDeep(false);
+  $scope.setMountDeep(false);
 }
 
 function buildChildNode(

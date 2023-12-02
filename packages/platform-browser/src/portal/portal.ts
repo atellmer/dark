@@ -1,4 +1,4 @@
-import { type DarkElement, component, useMemo, scope$$ } from '@dark-engine/core';
+import { type DarkElement, component, useMemo, $$scope } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 import { $$portal } from './utils';
@@ -21,7 +21,7 @@ type PortalProps = {
 const Portal = component<PortalProps>(
   props => {
     const element = props.container;
-    const fiber = scope$$().getCursorFiber();
+    const fiber = $$scope().getCursorFiber();
 
     useMemo(() => (element.innerHTML = ''), []);
 

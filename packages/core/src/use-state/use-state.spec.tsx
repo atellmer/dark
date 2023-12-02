@@ -92,7 +92,7 @@ describe('[use-state]', () => {
         count: 0,
       }));
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -135,7 +135,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne[1](1);
@@ -149,13 +149,13 @@ describe('[use-state]', () => {
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -186,7 +186,7 @@ describe('[use-state]', () => {
         count: 0,
       }));
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -215,7 +215,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](1);
@@ -224,7 +224,7 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 2;
     swap();
     setCounts = [];
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](20);
@@ -233,7 +233,7 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 30;
     swap();
     setCounts = [];
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -270,7 +270,7 @@ describe('[use-state]', () => {
         count: 0,
       }));
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -309,7 +309,7 @@ describe('[use-state]', () => {
       items[items.length - 2] = temp;
     };
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](1);
@@ -318,7 +318,7 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 2;
     swap();
     setCounts = [];
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](20);
@@ -327,7 +327,7 @@ describe('[use-state]', () => {
     items[items.length - 2].count = 30;
     swap();
     setCounts = [];
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 

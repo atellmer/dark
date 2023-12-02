@@ -42,9 +42,9 @@ const RouterLink = component<RoutreLinkProps>(
 );
 
 function detectIsActiveLink(pathname: string, hash: string, to: string): boolean {
-  const { pathname: to$, hash: hash$ } = parseURL(to);
+  const { pathname: $to, hash: $hash } = parseURL(to);
 
-  return normalaizePathname(pathname).indexOf(to$) !== -1 && hash === hash$;
+  return normalaizePathname(pathname).indexOf($to) !== -1 && hash === $hash;
 }
 
 export { RouterLink };

@@ -14,7 +14,7 @@ beforeEach(() => {
 
 describe('[use-id]', () => {
   test('can generate stable id', () => {
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), hostOne);
     };
 
@@ -27,17 +27,17 @@ describe('[use-id]', () => {
       return null;
     });
 
-    render$();
+    $render();
     firstId = id;
     expect(typeof id).toBe('string');
-    render$();
+    $render();
     expect(id).toBe(firstId);
-    render$();
+    $render();
     expect(id).toBe(firstId);
   });
 
   test('can generate many unique ids', () => {
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), hostOne);
     };
 
@@ -53,21 +53,21 @@ describe('[use-id]', () => {
       return null;
     });
 
-    render$();
+    $render();
     firstId = idOne;
     secondId = idTwo;
-    render$();
+    $render();
     expect(idOne).not.toBe(idTwo);
     expect(firstId).toBe(idOne);
     expect(secondId).toBe(idTwo);
-    render$();
+    $render();
     expect(idOne).not.toBe(idTwo);
     expect(firstId).toBe(idOne);
     expect(secondId).toBe(idTwo);
   });
 
   test('can support many roots app', () => {
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(AppOne(props), hostOne);
       render(AppTwo(props), hostTwo);
     };
@@ -89,14 +89,14 @@ describe('[use-id]', () => {
       return null;
     });
 
-    render$();
+    $render();
     firstId = idOne;
     secondId = idTwo;
-    render$();
+    $render();
     expect(idOne).not.toBe(idTwo);
     expect(firstId).toBe(idOne);
     expect(secondId).toBe(idTwo);
-    render$();
+    $render();
     expect(idOne).not.toBe(idTwo);
     expect(firstId).toBe(idOne);
     expect(secondId).toBe(idTwo);

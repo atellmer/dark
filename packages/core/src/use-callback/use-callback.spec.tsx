@@ -26,7 +26,7 @@ describe('[use-callback]', () => {
   test('works correctly by default', () => {
     const handlers = [];
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -38,9 +38,9 @@ describe('[use-callback]', () => {
       return null;
     });
 
-    render$();
-    render$();
-    render$();
+    $render();
+    $render();
+    $render();
     expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
   });
 
@@ -50,7 +50,7 @@ describe('[use-callback]', () => {
     };
     const handlers = [];
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -62,13 +62,13 @@ describe('[use-callback]', () => {
       return null;
     });
 
-    render$({ count: 1 });
+    $render({ count: 1 });
     expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
 
-    render$({ count: 1 });
+    $render({ count: 1 });
     expect(handlers.every(x => x && x === handlers[0])).toBeTruthy();
 
-    render$({ count: 2 });
+    $render({ count: 2 });
     expect(handlers.every(x => x && x === handlers[0])).toBeFalsy();
   });
 });

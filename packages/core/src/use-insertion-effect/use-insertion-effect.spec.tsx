@@ -32,7 +32,7 @@ describe('[use-insertion-effect]', () => {
   test('fires on mount event', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -42,10 +42,10 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     expect(mockFn).toBeCalledTimes(1);
 
-    render$();
+    $render();
     expect(mockFn).toBeCalledTimes(1);
   });
 
@@ -56,7 +56,7 @@ describe('[use-insertion-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -69,19 +69,19 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
-    render$({ x: 2 });
+    $render({ x: 2 });
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
 
-    render$({ x: 3 });
+    $render({ x: 3 });
     expect(effectFn).toBeCalledTimes(3);
     expect(dropFn).toBeCalledTimes(2);
   });
@@ -90,7 +90,7 @@ describe('[use-insertion-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -103,15 +103,15 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
-    render$();
+    $render();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
 
-    render$();
+    $render();
     expect(effectFn).toBeCalledTimes(3);
     expect(dropFn).toBeCalledTimes(2);
   });
@@ -147,7 +147,7 @@ describe('[use-insertion-effect]', () => {
     const effectFn2 = jest.fn();
     const dropFn2 = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -164,19 +164,19 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     expect(effectFn1).toBeCalledTimes(1);
     expect(effectFn2).toBeCalledTimes(1);
     expect(dropFn1).toBeCalledTimes(0);
     expect(dropFn2).toBeCalledTimes(0);
 
-    render$();
+    $render();
     expect(effectFn1).toBeCalledTimes(2);
     expect(effectFn2).toBeCalledTimes(2);
     expect(dropFn1).toBeCalledTimes(1);
     expect(dropFn2).toBeCalledTimes(1);
 
-    render$();
+    $render();
     expect(effectFn1).toBeCalledTimes(3);
     expect(effectFn2).toBeCalledTimes(3);
     expect(dropFn1).toBeCalledTimes(2);
@@ -189,7 +189,7 @@ describe('[use-insertion-effect]', () => {
     const effectFn2 = jest.fn();
     const dropFn2 = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -211,14 +211,14 @@ describe('[use-insertion-effect]', () => {
       return <Child />;
     });
 
-    render$();
+    $render();
     expect(effectFn1).toBeCalledTimes(1);
     expect(effectFn2).toBeCalledTimes(1);
     expect(dropFn1).toBeCalledTimes(0);
     expect(dropFn2).toBeCalledTimes(0);
     expect(effectFn1.mock.invocationCallOrder[0]).toBeLessThan(effectFn2.mock.invocationCallOrder[0]);
 
-    render$();
+    $render();
     expect(effectFn1).toBeCalledTimes(2);
     expect(effectFn2).toBeCalledTimes(2);
     expect(dropFn1).toBeCalledTimes(1);
@@ -226,7 +226,7 @@ describe('[use-insertion-effect]', () => {
     expect(effectFn1.mock.invocationCallOrder[1]).toBeLessThan(effectFn2.mock.invocationCallOrder[1]);
     expect(dropFn1.mock.invocationCallOrder[0]).toBeLessThan(dropFn2.mock.invocationCallOrder[0]);
 
-    render$();
+    $render();
     expect(effectFn1).toBeCalledTimes(3);
     expect(effectFn2).toBeCalledTimes(3);
     expect(dropFn1).toBeCalledTimes(2);
@@ -240,7 +240,7 @@ describe('[use-insertion-effect]', () => {
     const effectFn2 = jest.fn();
     const effectFn3 = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -260,12 +260,12 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1.mock.invocationCallOrder[0]).toBeLessThan(effectFn2.mock.invocationCallOrder[0]);
     expect(effectFn2.mock.invocationCallOrder[0]).toBeLessThan(effectFn3.mock.invocationCallOrder[0]);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1.mock.invocationCallOrder[1]).toBeLessThan(effectFn2.mock.invocationCallOrder[1]);
     expect(effectFn2.mock.invocationCallOrder[1]).toBeLessThan(effectFn3.mock.invocationCallOrder[1]);
@@ -276,7 +276,7 @@ describe('[use-insertion-effect]', () => {
     const dropFn2 = jest.fn();
     const dropFn3 = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -296,14 +296,14 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
-    render$();
+    $render();
     jest.runAllTimers();
     expect(dropFn1.mock.invocationCallOrder[0]).toBeGreaterThan(dropFn2.mock.invocationCallOrder[0]);
     expect(dropFn2.mock.invocationCallOrder[0]).toBeGreaterThan(dropFn3.mock.invocationCallOrder[0]);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(dropFn1.mock.invocationCallOrder[1]).toBeGreaterThan(dropFn2.mock.invocationCallOrder[1]);
     expect(dropFn2.mock.invocationCallOrder[1]).toBeGreaterThan(dropFn3.mock.invocationCallOrder[1]);
@@ -342,13 +342,13 @@ describe('[use-insertion-effect]', () => {
   test('can not call render #1', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
     const App = component(() => {
       useInsertionEffect(() => {
-        render$();
+        $render();
       }, []);
 
       mockFn();
@@ -356,14 +356,14 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     expect(mockFn).toBeCalledTimes(1);
   });
 
   test('can not call render #2', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -379,7 +379,7 @@ describe('[use-insertion-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     expect(mockFn).toBeCalledTimes(1);
   });
 });

@@ -13,7 +13,7 @@ import {
   unmountRoot,
   detectIsFunction,
   setRootId,
-  scope$$,
+  $$scope,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
@@ -57,8 +57,8 @@ function render(options: RenderOptions): NSElement {
 
   const callback = () => {
     setRootId(rootId);
-    const scope$ = scope$$();
-    const root = scope$.getRoot();
+    const $scope = $$scope();
+    const root = $scope.getRoot();
     const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
       element: isUpdate ? root.element : new TagNativeElement(ROOT),
@@ -66,11 +66,11 @@ function render(options: RenderOptions): NSElement {
       alt: root,
       tag: isUpdate ? EFFECT_TAG_UPDATE : EFFECT_TAG_CREATE,
     });
-    const emitter = scope$.getEmitter();
+    const emitter = $scope.getEmitter();
 
-    scope$.resetMount();
-    scope$.setWorkInProgress(fiber);
-    scope$.setNextUnitOfWork(fiber);
+    $scope.resetMount();
+    $scope.setWorkInProgress(fiber);
+    $scope.setNextUnitOfWork(fiber);
 
     emitter.on('finish', () => {
       emitter.kill();
@@ -96,7 +96,7 @@ function render(options: RenderOptions): NSElement {
 }
 
 function getRootNativeView() {
-  const fiber = scope$$().getRoot() as Fiber<TagNativeElement>;
+  const fiber = $$scope().getRoot() as Fiber<TagNativeElement>;
   const nativeView = fiber.element.getNativeView();
 
   return nativeView;

@@ -32,7 +32,7 @@ describe('[use-effect]', () => {
   test('fires on mount event', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -42,11 +42,11 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(1);
   });
@@ -58,7 +58,7 @@ describe('[use-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -71,22 +71,22 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
-    render$({ x: 2 });
+    $render({ x: 2 });
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
 
-    render$({ x: 3 });
+    $render({ x: 3 });
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(3);
     expect(dropFn).toBeCalledTimes(2);
@@ -96,7 +96,7 @@ describe('[use-effect]', () => {
     const effectFn = jest.fn();
     const dropFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -109,17 +109,17 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(1);
     expect(dropFn).toBeCalledTimes(0);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(2);
     expect(dropFn).toBeCalledTimes(1);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn).toBeCalledTimes(3);
     expect(dropFn).toBeCalledTimes(2);
@@ -160,7 +160,7 @@ describe('[use-effect]', () => {
     const effectFn2 = jest.fn();
     const dropFn2 = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -177,21 +177,21 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(1);
     expect(effectFn2).toBeCalledTimes(1);
     expect(dropFn1).toBeCalledTimes(0);
     expect(dropFn2).toBeCalledTimes(0);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(2);
     expect(effectFn2).toBeCalledTimes(2);
     expect(dropFn1).toBeCalledTimes(1);
     expect(dropFn2).toBeCalledTimes(1);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(3);
     expect(effectFn2).toBeCalledTimes(3);
@@ -205,7 +205,7 @@ describe('[use-effect]', () => {
     const effectFn2 = jest.fn();
     const dropFn2 = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -227,7 +227,7 @@ describe('[use-effect]', () => {
       return <Child />;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(1);
     expect(effectFn2).toBeCalledTimes(1);
@@ -235,7 +235,7 @@ describe('[use-effect]', () => {
     expect(dropFn2).toBeCalledTimes(0);
     expect(effectFn1.mock.invocationCallOrder[0]).toBeLessThan(effectFn2.mock.invocationCallOrder[0]);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(2);
     expect(effectFn2).toBeCalledTimes(2);
@@ -244,7 +244,7 @@ describe('[use-effect]', () => {
     expect(effectFn1.mock.invocationCallOrder[1]).toBeLessThan(effectFn2.mock.invocationCallOrder[1]);
     expect(dropFn1.mock.invocationCallOrder[0]).toBeLessThan(dropFn2.mock.invocationCallOrder[0]);
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(effectFn1).toBeCalledTimes(3);
     expect(effectFn2).toBeCalledTimes(3);
@@ -257,13 +257,13 @@ describe('[use-effect]', () => {
   test('can call render #1', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
     const App = component(() => {
       useEffect(() => {
-        render$();
+        $render();
       }, []);
 
       mockFn();
@@ -271,7 +271,7 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(2);
   });
@@ -279,7 +279,7 @@ describe('[use-effect]', () => {
   test('can call render #2', () => {
     const mockFn = jest.fn();
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -295,7 +295,7 @@ describe('[use-effect]', () => {
       return null;
     });
 
-    render$();
+    $render();
     jest.runAllTimers();
     expect(mockFn).toBeCalledTimes(2);
   });

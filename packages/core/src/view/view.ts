@@ -2,7 +2,7 @@ import { REPLACER, ATTR_KEY } from '../constants';
 import { detectIsArray, detectIsFunction } from '../helpers';
 import { type ElementKey, type DarkElement, type Instance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
-import { scope$$ } from '../scope';
+import { $$scope } from '../scope';
 import { NodeType, type ViewOptions } from './types';
 
 const $$vNode = Symbol('vNode');
@@ -133,7 +133,7 @@ function hasChildrenProp(inst: Instance): inst is TagVirtualNode | Component {
 
 function detectAreSameInstanceTypes(prevInst: Instance, nextInst: Instance, isComponentFactories = false) {
   if (process.env.NODE_ENV !== 'production') {
-    if (process.env.NODE_ENV === 'development' && scope$$().getIsHot()) {
+    if (process.env.NODE_ENV === 'development' && $$scope().getIsHot()) {
       if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
         return prevInst.displayName === nextInst.displayName;
       }

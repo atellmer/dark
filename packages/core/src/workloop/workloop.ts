@@ -26,7 +26,7 @@ import {
   createIndexKey,
   trueFn,
 } from '../helpers';
-import { type Scope, setRootId, scope$$, replaceScope } from '../scope';
+import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
 import { Fiber, getHook, Hook } from '../fiber';
 import { type ElementKey, type Instance } from '../shared';
 import { type Component, detectIsComponent } from '../component';
@@ -60,23 +60,23 @@ export type WorkLoop = (isAsync: boolean) => boolean;
 
 function workLoop(isAsync: boolean) {
   if (hasRenderError) return false;
-  const scope$ = scope$$();
-  const wipFiber = scope$.getWorkInProgress();
-  let unit = scope$.getNextUnitOfWork();
+  const $scope = $$scope();
+  const wipFiber = $scope.getWorkInProgress();
+  let unit = $scope.getNextUnitOfWork();
   let shouldYield = false;
   let hasMoreWork = Boolean(unit);
 
   try {
     while (unit && !shouldYield) {
-      unit = performUnitOfWork(unit, scope$);
-      scope$.setNextUnitOfWork(unit);
+      unit = performUnitOfWork(unit, $scope);
+      $scope.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = isAsync && platform.shouldYield();
-      if (shouldYield && platform.hasPrimaryTask()) return fork(scope$);
+      if (shouldYield && platform.hasPrimaryTask()) return fork($scope);
     }
 
     if (!unit && wipFiber) {
-      commit(scope$);
+      commit($scope);
     }
   } catch (err) {
     if (err instanceof StopWork) {
@@ -90,23 +90,23 @@ function workLoop(isAsync: boolean) {
   return hasMoreWork;
 }
 
-function performUnitOfWork(fiber: Fiber, scope$: Scope): Fiber | null {
-  const wipFiber = scope$.getWorkInProgress();
-  const isDeepWalking = scope$.getMountDeep();
-  const isStream = scope$.getIsStreamZone();
+function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
+  const wipFiber = $scope.getWorkInProgress();
+  const isDeepWalking = $scope.getMountDeep();
+  const isStream = $scope.getIsStreamZone();
   const hasChildren = isDeepWalking && hasChildrenProp(fiber.inst) && fiber.inst.children.length > 0;
 
   fiber.hook && (fiber.hook.idx = 0);
 
   if (hasChildren) {
-    const child = mountChild(fiber, scope$);
+    const child = mountChild(fiber, $scope);
 
     isStream && platform.chunk(child);
 
     return child;
   } else {
     while (fiber.parent && fiber !== wipFiber) {
-      const next = mountSibling(fiber, scope$);
+      const next = mountSibling(fiber, $scope);
 
       isStream && platform.chunk(fiber);
 
@@ -122,56 +122,56 @@ function performUnitOfWork(fiber: Fiber, scope$: Scope): Fiber | null {
   return null;
 }
 
-function mountChild(parent: Fiber, scope$: Scope) {
-  scope$.navToChild();
-  const inst$ = parent.inst;
+function mountChild(parent: Fiber, $scope: Scope) {
+  $scope.navToChild();
+  const $inst = parent.inst;
   const idx = 0;
-  const inst = hasChildrenProp(inst$) ? inst$.children[idx] : null;
-  const alt = getAlternate(parent, inst, true, scope$);
+  const inst = hasChildrenProp($inst) ? $inst.children[idx] : null;
+  const alt = getAlternate(parent, inst, true, $scope);
   const fiber = createFiber(alt, inst, idx);
 
   fiber.parent = parent;
   parent.child = fiber;
   fiber.eidx = parent.element ? 0 : parent.eidx;
 
-  share(fiber, inst, scope$);
+  share(fiber, inst, $scope);
 
   return fiber;
 }
 
-function mountSibling(left: Fiber, scope$: Scope) {
-  scope$.navToSibling();
-  const inst$ = left.parent.inst;
-  const idx = scope$.getMountIndex();
-  const inst = hasChildrenProp(inst$) && inst$.children ? inst$.children[idx] : null;
+function mountSibling(left: Fiber, $scope: Scope) {
+  $scope.navToSibling();
+  const $inst = left.parent.inst;
+  const idx = $scope.getMountIndex();
+  const inst = hasChildrenProp($inst) && $inst.children ? $inst.children[idx] : null;
   const hasSibling = Boolean(inst);
 
   if (!hasSibling) {
-    scope$.navToParent();
-    scope$.setMountDeep(false);
+    $scope.navToParent();
+    $scope.setMountDeep(false);
 
     return null;
   }
 
-  scope$.setMountDeep(true);
-  const alt = getAlternate(left, inst, false, scope$);
+  $scope.setMountDeep(true);
+  const alt = getAlternate(left, inst, false, $scope);
   const fiber = createFiber(alt, inst, idx);
 
   fiber.parent = left.parent;
   left.next = fiber;
   fiber.eidx = left.eidx + (left.element ? 1 : left.cec);
 
-  share(fiber, inst, scope$);
+  share(fiber, inst, $scope);
 
   return fiber;
 }
 
-function share(fiber: Fiber, inst: Instance, scope$: Scope) {
+function share(fiber: Fiber, inst: Instance, $scope: Scope) {
   const { alt } = fiber;
-  const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, scope$) : true;
+  const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, $scope) : true;
 
-  scope$.setCursorFiber(fiber);
-  scope$.addCandidate(fiber);
+  $scope.setCursorFiber(fiber);
+  $scope.addCandidate(fiber);
   fiber.inst = inst;
 
   if (alt && alt.mask & MASK_MOVE) {
@@ -182,8 +182,8 @@ function share(fiber: Fiber, inst: Instance, scope$: Scope) {
   fiber.hook && (fiber.hook.owner = fiber); // !
 
   if (shouldMount) {
-    fiber.inst = mount(fiber, scope$);
-    alt && reconcile(fiber, alt, scope$);
+    fiber.inst = mount(fiber, $scope);
+    alt && reconcile(fiber, alt, $scope);
     setup(fiber, alt);
   } else if (fiber.mask & MASK_MOVE) {
     fiber.tag = EFFECT_TAG_UPDATE;
@@ -198,12 +198,12 @@ function createFiber(alt: Fiber, inst: Instance, idx: number) {
   return fiber;
 }
 
-function getAlternate(fiber: Fiber, inst: Instance, fromChild: boolean, scope$: Scope) {
+function getAlternate(fiber: Fiber, inst: Instance, fromChild: boolean, $scope: Scope) {
   const key = getElementKey(inst);
 
   if (key !== null) {
     const parentId = fromChild ? fiber.id : fiber.parent.id;
-    const actions = scope$.getActionsById(parentId);
+    const actions = $scope.getActionsById(parentId);
 
     if (actions) {
       const isMove = actions.move && Boolean(actions.move[key]);
@@ -226,12 +226,12 @@ function getAlternate(fiber: Fiber, inst: Instance, fromChild: boolean, scope$: 
   return alt;
 }
 
-function reconcile(fiber: Fiber, alt: Fiber, scope$: Scope) {
+function reconcile(fiber: Fiber, alt: Fiber, $scope: Scope) {
   const { id, inst } = fiber;
   const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
 
   if (!areSameTypes) {
-    scope$.addDeletion(alt);
+    $scope.addDeletion(alt);
   } else if (hasChildrenProp(alt.inst) && hasChildrenProp(inst) && alt.cc !== 0) {
     const hasSameCount = alt.cc === inst.children.length;
     const check = hasElementFlag(inst, Flag.SKIP_SCAN_OPT) ? !hasSameCount : true;
@@ -243,7 +243,7 @@ function reconcile(fiber: Fiber, alt: Fiber, scope$: Scope) {
       let p = 0;
       let n = 0;
 
-      scope$.addActionMap(id, keyedFibersMap);
+      $scope.addActionMap(id, keyedFibersMap);
 
       for (let i = 0; i < size; i++) {
         const nextKey = nextKeys[i - n] ?? null;
@@ -253,29 +253,29 @@ function reconcile(fiber: Fiber, alt: Fiber, scope$: Scope) {
         if (nextKey !== prevKey) {
           if (nextKey !== null && !prevKeysMap[nextKey]) {
             if (prevKey !== null && !nextKeysMap[prevKey]) {
-              scope$.addReplaceAction(id, nextKey);
-              scope$.addDeletion(prevKeyFiber);
+              $scope.addReplaceAction(id, nextKey);
+              $scope.addDeletion(prevKeyFiber);
             } else {
-              scope$.addInsertAction(id, nextKey);
+              $scope.addInsertAction(id, nextKey);
               p++;
               size++;
             }
           } else if (!nextKeysMap[prevKey]) {
-            scope$.addRemoveAction(id, prevKey);
-            scope$.addDeletion(prevKeyFiber);
+            $scope.addRemoveAction(id, prevKey);
+            $scope.addDeletion(prevKeyFiber);
             flush && (prevKeyFiber.mask |= MASK_FLUSH);
             n++;
             size++;
           } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-            scope$.addMoveAction(id, nextKey);
+            $scope.addMoveAction(id, nextKey);
           }
         } else if (nextKey !== null) {
-          scope$.addStableAction(id, nextKey);
+          $scope.addStableAction(id, nextKey);
         }
       }
 
-      hasElementFlag(inst, Flag.STATIC_SLOT_OPT) && tryOptStaticSlot(fiber, alt, scope$);
-      hasElementFlag(inst, Flag.MEMO_SLOT_OPT) && tryOptMemoSlot(fiber, alt, scope$);
+      hasElementFlag(inst, Flag.STATIC_SLOT_OPT) && tryOptStaticSlot(fiber, alt, $scope);
+      hasElementFlag(inst, Flag.MEMO_SLOT_OPT) && tryOptMemoSlot(fiber, alt, $scope);
     }
   }
 }
@@ -298,9 +298,9 @@ function setup(fiber: Fiber, alt: Fiber) {
   fiber.element && fiber.increment();
 }
 
-function shouldUpdate(fiber: Fiber, inst: Instance, scope$: Scope) {
+function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   if (process.env.NODE_ENV !== 'production') {
-    if (scope$.getIsHot()) return true;
+    if ($scope.getIsHot()) return true;
   }
 
   const alt = fiber.alt;
@@ -309,7 +309,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, scope$: Scope) {
 
   if (nc.type !== pc.type || nc.shouldUpdate(pc.props, nc.props)) return true;
 
-  scope$.setMountDeep(false);
+  $scope.setMountDeep(false);
   fiber.tag = EFFECT_TAG_SKIP;
   fiber.child = alt.child;
   fiber.child.parent = fiber;
@@ -325,9 +325,9 @@ function shouldUpdate(fiber: Fiber, inst: Instance, scope$: Scope) {
   const deep = diff !== 0;
 
   if (deep) {
-    walk(fiber.child, (fiber$, skip) => {
-      fiber$.eidx += diff;
-      if (fiber$.element) return skip();
+    walk(fiber.child, ($fiber, skip) => {
+      $fiber.eidx += diff;
+      if ($fiber.element) return skip();
     });
   }
 
@@ -336,7 +336,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, scope$: Scope) {
   return false;
 }
 
-function mount(fiber: Fiber, scope$: Scope) {
+function mount(fiber: Fiber, $scope: Scope) {
   let inst = fiber.inst;
   const isComponent = detectIsComponent(inst);
   const component = inst as Component;
@@ -345,9 +345,9 @@ function mount(fiber: Fiber, scope$: Scope) {
     try {
       let result = component.type(component.props, component.ref);
 
-      if (detectIsLazy(component) && !detectIsLoaded(component) && (scope$.getIsHydrateZone() || detectIsServer())) {
-        scope$.navToParent();
-        scope$.setNextUnitOfWork(fiber.parent);
+      if (detectIsLazy(component) && !detectIsLoaded(component) && ($scope.getIsHydrateZone() || detectIsServer())) {
+        $scope.navToParent();
+        $scope.setNextUnitOfWork(fiber.parent);
         Fiber.setNextId(fiber.parent.id);
         throw new StopWork();
       }
@@ -440,15 +440,15 @@ function supportConditional(inst: Instance) {
   return detectIsFalsy(inst) ? createReplacer() : inst;
 }
 
-function commit(scope$: Scope) {
+function commit($scope: Scope) {
   if (process.env.NODE_ENV !== 'production') {
-    process.env.NODE_ENV === 'development' && scope$.setIsHot(false);
+    process.env.NODE_ENV === 'development' && $scope.setIsHot(false);
   }
 
-  const wipFiber = scope$.getWorkInProgress();
-  const deletions = scope$.getDeletions();
-  const candidates = scope$.getCandidates();
-  const isUpdateZone = scope$.getIsUpdateZone();
+  const wipFiber = $scope.getWorkInProgress();
+  const deletions = $scope.getDeletions();
+  const candidates = $scope.getCandidates();
+  const isUpdateZone = $scope.getIsUpdateZone();
   const unmounts: Array<Fiber> = [];
   const combinedMask = MASK_INSERTION_EFFECT_HOST | MASK_LAYOUT_EFFECT_HOST | MASK_ASYNC_EFFECT_HOST | MASK_PORTAL_HOST;
 
@@ -462,7 +462,7 @@ function commit(scope$: Scope) {
   }
 
   isUpdateZone && sync(wipFiber);
-  scope$.runInsertionEffects();
+  $scope.runInsertionEffects();
 
   for (const fiber of candidates) {
     fiber.tag !== EFFECT_TAG_SKIP && platform.commit(fiber);
@@ -472,15 +472,15 @@ function commit(scope$: Scope) {
 
   wipFiber.alt = null;
   platform.finishCommit(); // !
-  scope$.runLayoutEffects();
-  scope$.runAsyncEffects();
+  $scope.runLayoutEffects();
+  $scope.runAsyncEffects();
   unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));
-  flush(scope$);
+  flush($scope);
 }
 
-function flush(scope$: Scope, cancel = false) {
-  scope$.flush();
-  !cancel && scope$.getEmitter().emit('finish');
+function flush($scope: Scope, cancel = false) {
+  $scope.flush();
+  !cancel && $scope.getEmitter().emit('finish');
 }
 
 function sync(fiber: Fiber) {
@@ -491,30 +491,30 @@ function sync(fiber: Fiber) {
 
   fiber.increment(diff, true);
 
-  walk(parentFiber.child, (fiber$, skip) => {
-    if (fiber$ === fiber) {
+  walk(parentFiber.child, ($fiber, skip) => {
+    if ($fiber === fiber) {
       isRight = true;
       return skip();
     }
 
-    fiber$.element && skip();
-    isRight && (fiber$.eidx += diff);
+    $fiber.element && skip();
+    isRight && ($fiber.eidx += diff);
   });
 }
 
-function fork(scope$: Scope): false {
-  const scope$$$ = scope$.copy();
-  const wipFiber = scope$.getWorkInProgress();
+function fork($scope: Scope): false {
+  const $$scope$ = $scope.copy();
+  const wipFiber = $scope.getWorkInProgress();
   const child = wipFiber.child;
 
   child && (child.parent = null);
 
   const restore = (options: RestoreOptions) => {
     const { fiber: wipFiber, setValue, resetValue } = options;
-    const scope$ = scope$$();
+    const $scope = $$scope();
 
     detectIsFunction(setValue) && setValue();
-    detectIsFunction(resetValue) && scope$$$.addCancel(resetValue);
+    detectIsFunction(resetValue) && $$scope$.addCancel(resetValue);
 
     wipFiber.alt = new Fiber().mutate(wipFiber);
     wipFiber.tag = EFFECT_TAG_UPDATE;
@@ -525,15 +525,15 @@ function fork(scope$: Scope): false {
       wipFiber.marker = '✌️';
     }
 
-    scope$$$.setRoot(scope$.getRoot());
-    scope$$$.setWorkInProgress(wipFiber);
-    replaceScope(scope$$$);
+    $$scope$.setRoot($scope.getRoot());
+    $$scope$.setWorkInProgress(wipFiber);
+    replaceScope($$scope$);
   };
 
   wipFiber.child = wipFiber.alt.child;
   wipFiber.alt = null;
-  scope$.applyCancels();
-  flush(scope$, true);
+  $scope.applyCancels();
+  flush($scope, true);
   platform.cancelTask(restore);
 
   return false;
@@ -551,12 +551,12 @@ export type UpdateChanger = {
 } & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
 
 function createUpdate(options: CreateUpdateOptions) {
-  const { rootId, hook, isTransition, createChanger = createChanger$ } = options;
+  const { rootId, hook, isTransition, createChanger = $createChanger } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
     const fromRestore = detectIsFunction(restore);
     const { shouldUpdate, setValue, resetValue } = createChanger();
-    const scope$ = scope$$();
+    const $scope = $$scope();
     const owner = hook.owner;
     const fiber = owner.alt || owner;
 
@@ -566,7 +566,7 @@ function createUpdate(options: CreateUpdateOptions) {
     }
 
     detectIsFunction(setValue) && setValue();
-    detectIsFunction(resetValue) && isTransition && scope$.addCancel(resetValue);
+    detectIsFunction(resetValue) && isTransition && $scope.addCancel(resetValue);
 
     fiber.alt = new Fiber().mutate(fiber);
     fiber.tag = EFFECT_TAG_UPDATE;
@@ -578,24 +578,24 @@ function createUpdate(options: CreateUpdateOptions) {
       fiber.marker = '🔥';
     }
 
-    scope$.setIsUpdateZone(true);
-    scope$.resetMount();
-    scope$.setWorkInProgress(fiber);
-    scope$.setCursorFiber(fiber);
-    fiber.inst = mount(fiber, scope$);
-    scope$.setNextUnitOfWork(fiber);
+    $scope.setIsUpdateZone(true);
+    $scope.resetMount();
+    $scope.setWorkInProgress(fiber);
+    $scope.setCursorFiber(fiber);
+    fiber.inst = mount(fiber, $scope);
+    $scope.setNextUnitOfWork(fiber);
   };
 
   return callback;
 }
 
-const createChanger$ = (): UpdateChanger => ({
+const $createChanger = (): UpdateChanger => ({
   shouldUpdate: trueFn,
   setValue: null,
   resetValue: null,
 });
 
-const detectIsBusy = () => Boolean(scope$$()?.getWorkInProgress());
+const detectIsBusy = () => Boolean($$scope()?.getWorkInProgress());
 
 class StopWork extends Error {}
 

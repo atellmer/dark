@@ -291,7 +291,7 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
   const ctrls = state.getCtrls();
   const isEnter = action === Action.ENTER;
   const isLeave = action === Action.LEAVE;
-  let idx$ = 0;
+  let $idx = 0;
 
   for (const [key, idx] of space) {
     const ctrl = ctrlsMap.get(key);
@@ -299,7 +299,7 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
     const config = configurator(idx, item);
     const { trail } = config;
     const to = isLeave && !config[action] ? config.from : config[action];
-    let ctrl$ = ctrl;
+    let $ctrl = ctrl;
 
     if (isEnter) {
       const isReplaced = ctrl.getIsReplaced();
@@ -310,7 +310,7 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
           const fake = new Controller<T, I>(state);
           const fakeKey = fake.markAsFake(key);
 
-          ctrl$ = fake;
+          $ctrl = fake;
           prepare({ ctrl: fake, key: fakeKey, idx, item, configurator });
           ctrlsMap.set(fakeKey, fake);
           fakesMap.set(fakeKey, idx);
@@ -321,8 +321,8 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
       }
     }
 
-    to && withTrail(() => ctrl$.start(() => ({ to })), idx$, trail);
-    idx$++;
+    to && withTrail(() => $ctrl.start(() => ({ to })), $idx, trail);
+    $idx++;
   }
 }
 
@@ -345,7 +345,7 @@ type PrepareOptions<T extends string, I = unknown> = {
 function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
   const { ctrl, key, idx, item, configurator } = options;
   const { from, enter, config } = configurator(idx, item);
-  const configurator$: ConfiguratorFn<T> = (idx: number) => {
+  const $configurator: ConfiguratorFn<T> = (idx: number) => {
     const { enter, leave, update, trail, ...rest } = configurator(idx, item);
 
     return { ...rest };
@@ -357,7 +357,7 @@ function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
   ctrl.setFrom(from);
   ctrl.setTo(enter);
   ctrl.setSpringConfigFn(config);
-  ctrl.setConfigurator(configurator$);
+  ctrl.setConfigurator($configurator);
 }
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {

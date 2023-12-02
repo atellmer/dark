@@ -2,7 +2,7 @@ import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, error 
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
 import { MASK_ATOM_HOST } from '../constants';
-import { scope$$, getRootId } from '../scope';
+import { $$scope, getRootId } from '../scope';
 import { createUpdate } from '../workloop';
 import { useUpdate } from '../use-update';
 import { EventEmitter } from '../emitter';
@@ -77,7 +77,7 @@ class Atom<T = unknown> {
 
   __connect(fn: ShouldUpdate<T>, key: T) {
     const rootId = getRootId();
-    const fiber = scope$$().getCursorFiber();
+    const fiber = $$scope().getCursorFiber();
     const { hook } = fiber;
     const disconnect = () => this.off(hook, key);
 
@@ -96,13 +96,13 @@ class Atom<T = unknown> {
     return disconnect;
   }
 
-  __addSubject(atom$: ReadableAtom) {
+  __addSubject($atom: ReadableAtom) {
     !this.subjects && (this.subjects = new Set());
-    this.subjects.add(atom$);
+    this.subjects.add($atom);
   }
 
-  __removeSubject(atom$: ReadableAtom) {
-    return this.subjects && this.subjects.delete(atom$);
+  __removeSubject($atom: ReadableAtom) {
+    return this.subjects && this.subjects.delete($atom);
   }
 
   __getSize() {
@@ -158,22 +158,22 @@ class WritableAtom<T = unknown> extends Atom<T> {
 }
 
 class ReadableAtom<T = unknown> extends Atom<T> {
-  private deps$: Array<Atom> = [];
+  private $deps: Array<Atom> = [];
   private fn: ComputedFn<T> = null;
   private values: Array<unknown> = [];
 
-  constructor(deps$: Array<Atom>, fn: ComputedFn<T>) {
-    const values = ReadableAtom.values(deps$);
+  constructor($deps: Array<Atom>, fn: ComputedFn<T>) {
+    const values = ReadableAtom.values($deps);
 
     super(ReadableAtom.compute(fn, values));
-    this.deps$ = deps$;
+    this.$deps = $deps;
     this.fn = fn;
     this.values = values;
-    deps$.forEach(x => x.__addSubject(this));
+    $deps.forEach(x => x.__addSubject(this));
   }
 
   __notify() {
-    const values = ReadableAtom.values(this.deps$);
+    const values = ReadableAtom.values(this.$deps);
 
     if (detectAreDepsDifferent(this.values, values)) {
       super.setValue(ReadableAtom.compute(this.fn, values));
@@ -184,8 +184,8 @@ class ReadableAtom<T = unknown> extends Atom<T> {
 
   override kill() {
     super.kill();
-    this.deps$.forEach(x => x.__removeSubject(this));
-    this.deps$ = [];
+    this.$deps.forEach(x => x.__removeSubject(this));
+    this.$deps = [];
     this.fn = null;
   }
 
@@ -193,8 +193,8 @@ class ReadableAtom<T = unknown> extends Atom<T> {
     return fn(...values);
   }
 
-  private static values(deps$: Array<Atom>) {
-    return deps$.map(x => x.get());
+  private static values($deps: Array<Atom>) {
+    return $deps.map(x => x.get());
   }
 }
 
@@ -207,7 +207,7 @@ const detectIsReadableAtom = (value: unknown): value is ReadableAtom => value in
 const atom = <T>(value?: T) => new WritableAtom(value);
 
 const computed = <T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  deps$: [
+  $deps: [
     Atom<A>,
     Atom<B>?,
     Atom<C>?,
@@ -224,18 +224,18 @@ const computed = <T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
     Atom<N>?,
   ],
   fn: ComputedFn<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>,
-) => new ReadableAtom(deps$, fn) as ReadableAtom<ReturnType<typeof fn>>;
+) => new ReadableAtom($deps, fn) as ReadableAtom<ReturnType<typeof fn>>;
 
 function useAtom<T>(value?: T): WritableAtom<T> {
-  const atom$ = useMemo(() => atom<T>(value), []);
+  const $atom = useMemo(() => atom<T>(value), []);
 
-  useLayoutEffect(() => () => atom$.kill(), []);
+  useLayoutEffect(() => () => $atom.kill(), []);
 
-  return atom$;
+  return $atom;
 }
 
 function useComputed<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  deps$: [
+  $deps: [
     Atom<A>,
     Atom<B>?,
     Atom<C>?,
@@ -253,15 +253,15 @@ function useComputed<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   ],
   fn: ComputedFn<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>,
 ) {
-  const atom$ = useMemo(() => computed(deps$, fn), []);
+  const $atom = useMemo(() => computed($deps, fn), []);
 
-  useLayoutEffect(() => () => atom$.kill(), []);
+  useLayoutEffect(() => () => $atom.kill(), []);
 
-  return atom$;
+  return $atom;
 }
 
 function useStore<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  atoms$: [
+  $atoms: [
     Atom<A>,
     Atom<B>?,
     Atom<C>?,
@@ -282,12 +282,12 @@ function useStore<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   const update = () => batch(forceUpdate);
 
   useLayoutEffect(() => {
-    const offs = atoms$.map(x => x.on(update));
+    const offs = $atoms.map(x => x.on(update));
 
     return () => offs.forEach(x => x());
-  }, [...atoms$]);
+  }, [...$atoms]);
 
-  return atoms$.map(x => x.get()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
+  return $atoms.map(x => x.get()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
 }
 
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;

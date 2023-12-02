@@ -25,15 +25,15 @@ export enum TaskPriority {
 }
 
 export enum Flag {
-  SKIP_SCAN_OPT = 'skipScanOpt$',
-  MEMO_SLOT_OPT = 'memoSlotOpt$',
-  STATIC_SLOT_OPT = 'staticSlotOpt$',
+  SKIP_SCAN_OPT = '$skipScanOpt',
+  MEMO_SLOT_OPT = '$memoSlotOpt',
+  STATIC_SLOT_OPT = '$staticSlotOpt',
 }
 
 export const FLAGS = {
-  skipScanOpt$: true,
-  memoSlotOpt$: true,
-  staticSlotOpt$: true,
+  $skipScanOpt: true,
+  $memoSlotOpt: true,
+  $staticSlotOpt: true,
 };
 
 export const ATTR_BLACK_LIST = {

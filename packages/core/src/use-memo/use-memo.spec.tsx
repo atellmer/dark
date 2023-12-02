@@ -18,7 +18,7 @@ describe('[use-memo]', () => {
     const value = 1;
     let memoValue: number = null;
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(App(props), host);
     };
 
@@ -28,9 +28,9 @@ describe('[use-memo]', () => {
       return null;
     });
 
-    render$();
+    $render();
     expect(memoValue).toBe(value);
-    render$();
+    $render();
     expect(memoValue).toBe(value);
   });
 
@@ -40,7 +40,7 @@ describe('[use-memo]', () => {
     };
     const mockFn = jest.fn();
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -50,13 +50,13 @@ describe('[use-memo]', () => {
       return null;
     });
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     expect(mockFn).toBeCalledTimes(1);
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     expect(mockFn).toBeCalledTimes(1);
 
-    render$({ x: 2 });
+    $render({ x: 2 });
     expect(mockFn).toBeCalledTimes(2);
   });
 
@@ -70,7 +70,7 @@ describe('[use-memo]', () => {
       </div>
     `;
 
-    const render$ = (props: AppProps) => {
+    const $render = (props: AppProps) => {
       render(App(props), host);
     };
 
@@ -94,15 +94,15 @@ describe('[use-memo]', () => {
       return value;
     });
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     expect(host.innerHTML).toBe(content(1));
     expect(spy).toHaveBeenCalledTimes(1);
 
-    render$({ x: 1 });
+    $render({ x: 1 });
     expect(host.innerHTML).toBe(content(1));
     expect(spy).toHaveBeenCalledTimes(1);
 
-    render$({ x: 2 });
+    $render({ x: 2 });
     expect(host.innerHTML).toBe(content(2));
     expect(spy).toHaveBeenCalledTimes(2);
   });

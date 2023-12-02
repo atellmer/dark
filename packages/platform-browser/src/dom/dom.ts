@@ -27,7 +27,7 @@ import {
   collectElements,
   walk,
   dummyFn,
-  scope$$,
+  $$scope,
   applyRef,
 } from '@dark-engine/core';
 
@@ -246,7 +246,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const parentElement = parentFiber.element;
   const childNodes = parentElement.childNodes;
 
-  if (scope$$().getIsHydrateZone()) {
+  if ($$scope().getIsHydrateZone()) {
     const nativeElement = childNodes[fiber.eidx] as NativeElement;
 
     if (

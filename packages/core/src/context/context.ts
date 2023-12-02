@@ -1,7 +1,7 @@
 import type { DarkElement } from '../shared';
 import type { Fiber } from '../fiber';
 import { detectIsFunction } from '../helpers';
-import { scope$$ } from '../scope';
+import { $$scope } from '../scope';
 import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useMemo } from '../use-memo';
@@ -30,7 +30,7 @@ function createContext<T>(defaultValue: T, options?: CreateContextOptions): Cont
 function createProvider<T>(context: Context<T>, defaultValue: T, displayName: string) {
   return component<ContexProviderProps<T>>(
     ({ value = defaultValue, slot }) => {
-      const fiber = scope$$().getCursorFiber();
+      const fiber = $$scope().getCursorFiber();
 
       if (!fiber.provider) {
         const providerValue: ContextProviderValue<T> = {
@@ -78,7 +78,7 @@ function createConsumer<T>(context: Context<T>, displayName: string) {
 
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;
-  const fiber = scope$$().getCursorFiber();
+  const fiber = $$scope().getCursorFiber();
   const provider = useMemo(() => getProvider<T>(context, fiber), []);
   const value = provider ? provider.value : defaultValue;
   const update = useUpdate();

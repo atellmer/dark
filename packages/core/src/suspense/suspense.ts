@@ -6,7 +6,7 @@ import { useState } from '../use-state';
 import { useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { Fragment } from '../fragment';
-import { scope$$ } from '../scope';
+import { $$scope } from '../scope';
 import { detectIsServer } from '../platform';
 import { Shadow } from '../shadow';
 import { detectIsFiberAlive } from '../walk';
@@ -37,14 +37,14 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
       throw new Error(`[Dark]: Suspense fallback not found!`);
     }
   }
-  const scope$ = scope$$();
-  const emitter = scope$.getEmitter();
-  const { update: update$$ } = useContext(SuspenseContext);
-  const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || scope$.getIsHydrateZone());
-  const update$ = useUpdate();
+  const $scope = $$scope();
+  const emitter = $scope.getEmitter();
+  const { update: $$update } = useContext(SuspenseContext);
+  const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || $scope.getIsHydrateZone());
+  const $update = useUpdate();
   const scope = useMemo(() => ({ size: 0 }), []);
-  const fiber = scope$.getCursorFiber();
-  const update = () => (detectIsFiberAlive(fiber) ? update$() : update$$());
+  const fiber = $scope.getCursorFiber();
+  const update = () => (detectIsFiberAlive(fiber) ? $update() : $$update());
   const value = useMemo<SuspenseContextValue>(
     () => ({ isLoaded, fallback, update, reg: () => scope.size++, unreg: () => scope.size-- }),
     [],

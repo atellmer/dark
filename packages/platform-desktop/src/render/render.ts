@@ -10,7 +10,7 @@ import {
   TaskPriority,
   createReplacer,
   setRootId,
-  scope$$,
+  $$scope,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
@@ -42,8 +42,8 @@ function render(element: DarkElement) {
 
   const callback = () => {
     setRootId(0);
-    const scope$ = scope$$();
-    const root = scope$.getRoot();
+    const $scope = $$scope();
+    const root = $scope.getRoot();
     const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
       element: isUpdate ? root.element : new TagNativeElement(ROOT),
@@ -52,9 +52,9 @@ function render(element: DarkElement) {
       tag: isUpdate ? EFFECT_TAG_UPDATE : EFFECT_TAG_CREATE,
     });
 
-    scope$.resetMount();
-    scope$.setWorkInProgress(fiber);
-    scope$.setNextUnitOfWork(fiber);
+    $scope.resetMount();
+    $scope.setWorkInProgress(fiber);
+    $scope.setNextUnitOfWork(fiber);
   };
 
   platform.schedule(callback, { priority: TaskPriority.NORMAL });

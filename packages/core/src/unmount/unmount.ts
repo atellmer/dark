@@ -5,7 +5,7 @@ import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
 import { walk } from '../walk';
 import { detectIsUndefined } from '../helpers';
-import { removeScope, scope$$ } from '../scope';
+import { removeScope, $$scope } from '../scope';
 import {
   MASK_INSERTION_EFFECT_HOST,
   MASK_LAYOUT_EFFECT_HOST,
@@ -43,10 +43,10 @@ function unmountFiber(fiber: Fiber) {
 
 function unmountRoot(rootId: number, onCompleted: () => void) {
   if (detectIsUndefined(rootId)) return;
-  const scope$ = scope$$(rootId);
+  const $scope = $$scope(rootId);
 
-  unmountFiber(scope$.getRoot());
-  scope$.unsubscribeEvents();
+  unmountFiber($scope.getRoot());
+  $scope.unsubscribeEvents();
   removeScope(rootId);
   onCompleted();
 }

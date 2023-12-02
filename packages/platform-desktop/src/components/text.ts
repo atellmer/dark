@@ -16,8 +16,8 @@ const Text = forwardRef<TextProps, TextRef>(
   component(
     (props, ref) => {
       const { slot, ...rest } = props;
-      const text$ = slot as unknown as TextVirtualNode | Array<TextVirtualNode>;
-      const text = detectIsArray(text$) ? text$.reduce((acc, x) => ((acc += x.value), acc), '') : text$.value;
+      const $text = slot as unknown as TextVirtualNode | Array<TextVirtualNode>;
+      const text = detectIsArray($text) ? $text.reduce((acc, x) => ((acc += x.value), acc), '') : $text.value;
 
       return qText({ ref, text, ...rest });
     },

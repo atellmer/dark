@@ -21,7 +21,7 @@ import {
   getFiberWithElement,
   collectElements,
   walk,
-  applyRef as applyRef$,
+  applyRef as $applyRef,
 } from '@dark-engine/core';
 
 import { detectIsEvent, getEventName } from '../events';
@@ -58,7 +58,7 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
 }
 
 function applyRef(ref: Ref<NSElement>, element: TagNativeElement) {
-  applyRef$(ref, element.getNativeView());
+  $applyRef(ref, element.getNativeView());
 }
 
 function addAttributes(element: NativeElement, vNode: TagVirtualNode) {

@@ -14,7 +14,7 @@ import {
 } from '@dark-engine/core';
 
 import { dom, createTestHostNode, replacer } from '@test-utils';
-import { render as render$ } from './render';
+import { render as $render } from './render';
 
 type Item = { id: number; name: string };
 
@@ -22,7 +22,7 @@ let host: HTMLElement = null;
 let nextId = 0;
 const div = (props = {}) => View({ ...props, as: 'div' });
 const span = (props = {}) => View({ ...props, as: 'span' });
-const render = (element: any) => render$(element, host);
+const render = (element: any) => $render(element, host);
 
 const generateItems = (count: number) => {
   return Array(count)
@@ -174,7 +174,7 @@ describe('[render]', () => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
-    const render$ = () => render(App({ items }));
+    const $render = () => render(App({ items }));
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
@@ -220,7 +220,7 @@ describe('[render]', () => {
 
     test('nodes not recreated after adding', () => {
       items = generateItems(5);
-      render$();
+      $render();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const node = nodes[0];
@@ -228,7 +228,7 @@ describe('[render]', () => {
       const count = 4;
 
       addItemsToStart(count);
-      render$();
+      $render();
 
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const newNode = newNodes[count];
@@ -239,43 +239,43 @@ describe('[render]', () => {
 
     test('can insert nodes to different places', () => {
       items = generateItems(10);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       insertNodesInDifferentPlaces();
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('can remove nodes', () => {
       items = generateItems(10);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       removeItem(6);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       removeItem(5);
       removeItem(1);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       items = [];
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('nodes not recreated after removing', () => {
       items = generateItems(10);
-      render$();
+      $render();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const node = nodes[8];
       const expected = node.textContent;
 
       removeItem(6);
-      render$();
+      $render();
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
 
       expect(node).toBe(newNodes[7]);
@@ -284,16 +284,16 @@ describe('[render]', () => {
 
     test('can remove last nodes', () => {
       items = generateItems(10);
-      render$();
+      $render();
       items.pop();
       items.pop();
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('can swap nodes', () => {
       items = generateItems(10);
-      render$();
+      $render();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const nodeOne = nodes[1];
@@ -303,7 +303,7 @@ describe('[render]', () => {
       expect(nodeTwo.textContent).toBe('9');
 
       swapItems();
-      render$();
+      $render();
 
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttr}]`));
       const newNodeOne = newNodes[8];
@@ -336,7 +336,7 @@ describe('[render]', () => {
       return [div({ slot: Text('header') }), List({ items }), div({ slot: Text('footer') })];
     });
 
-    const render$ = () => render(App({ items }));
+    const $render = () => render(App({ items }));
 
     const content = (items: Array<Item>) => dom`
       <div>header</div>
@@ -368,21 +368,21 @@ describe('[render]', () => {
 
     test('can add nodes', () => {
       items = generateItems(5);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       addItemsToEnd(5);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       addItemsToStart(6);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('nodes not recreated after adding', () => {
       items = generateItems(5);
-      render$();
+      $render();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const node = nodes[0];
@@ -390,7 +390,7 @@ describe('[render]', () => {
       const count = 4;
 
       addItemsToStart(count);
-      render$();
+      $render();
 
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const newNode = newNodes[count];
@@ -401,42 +401,42 @@ describe('[render]', () => {
 
     test('can insert nodes to different places', () => {
       items = generateItems(10);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
       insertNodesInDifferentPlaces();
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('can remove nodes', () => {
       items = generateItems(10);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       removeItem(6);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       removeItem(5);
       removeItem(1);
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
 
       items = [];
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('nodes not recreated after removing', () => {
       items = generateItems(10);
-      render$();
+      $render();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const node = nodes[8];
       const expected = node.textContent;
 
       removeItem(6);
-      render$();
+      $render();
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
 
       expect(node).toBe(newNodes[7]);
@@ -445,16 +445,16 @@ describe('[render]', () => {
 
     test('can remove last nodes', () => {
       items = generateItems(10);
-      render$();
+      $render();
       items.pop();
       items.pop();
-      render$();
+      $render();
       expect(host.innerHTML).toBe(content(items));
     });
 
     test('can swap nodes', () => {
       items = generateItems(10);
-      render$();
+      $render();
 
       const nodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const nodeOne = nodes[1];
@@ -464,7 +464,7 @@ describe('[render]', () => {
       expect(nodeTwo.textContent).toBe('9');
 
       swapItems();
-      render$();
+      $render();
 
       const newNodes = Array.from(host.querySelectorAll(`[${itemAttrName}]`));
       const newNodeOne = newNodes[8];
@@ -639,13 +639,13 @@ describe('[render]', () => {
       </div>
     `;
 
-    render$(App({ name: 'Alex' }), hostOne);
-    render$(App({ name: 'Rebecka' }), hostTwo);
+    $render(App({ name: 'Alex' }), hostOne);
+    $render(App({ name: 'Rebecka' }), hostTwo);
     expect(hostOne.innerHTML).toBe(content('Alex'));
     expect(hostTwo.innerHTML).toBe(content('Rebecka'));
 
-    render$(App({ name: 'Mark' }), hostOne);
-    render$(App({ name: 'Rebecka' }), hostTwo);
+    $render(App({ name: 'Mark' }), hostOne);
+    $render(App({ name: 'Rebecka' }), hostTwo);
     expect(hostOne.innerHTML).toBe(content('Mark'));
     expect(hostTwo.innerHTML).toBe(content('Rebecka'));
   });
@@ -666,7 +666,7 @@ describe('[render]', () => {
       `;
     };
 
-    const render$ = (props = {}) => {
+    const $render = (props = {}) => {
       render(List(props));
     };
 
@@ -687,15 +687,15 @@ describe('[render]', () => {
       });
     });
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     swap();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     swap();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -714,7 +714,7 @@ describe('[render]', () => {
     `;
     };
 
-    const render$ = (props = {}) => render(List(props));
+    const $render = (props = {}) => render(List(props));
 
     const remove = () => {
       items = [];
@@ -727,16 +727,16 @@ describe('[render]', () => {
       });
     });
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     remove();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(replacer);
   });
 
   test(`conditional rendering works correctly with hook's update`, () => {
-    const content$ = (show: boolean) => dom`
+    const $content = (show: boolean) => dom`
       ${
         show
           ? `
@@ -749,8 +749,8 @@ describe('[render]', () => {
       <button>toggle</button>
     `;
     const content = (show1: boolean, show2: boolean) => dom`
-      ${content$(show1)}
-      ${content$(show2)}
+      ${$content(show1)}
+      ${$content(show2)}
     `;
 
     let setShow1: (value: boolean) => void;
@@ -890,7 +890,7 @@ describe('[render]', () => {
 
     let items = generateItems(10);
 
-    const render$ = () => render(<App items={items} />);
+    const $render = () => render(<App items={items} />);
 
     const content = (items: Array<Item>) => dom`
       ${items.map(x => `<div>${x.name}</div>`).join('')}
@@ -915,30 +915,30 @@ describe('[render]', () => {
     const Item = component<ItemProps>(({ item }) => <div>{item.name}</div>);
     const App = component<AppProps>(({ items }) => items.map(x => <Item key={x.id} item={x} />));
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -948,7 +948,7 @@ describe('[render]', () => {
 
     let items = generateItems(10);
 
-    const render$ = () => render(<App items={items} />);
+    const $render = () => render(<App items={items} />);
 
     const content = (items: Array<Item>) => dom`
       ${items.map(x => `<div>${x.name}</div>`).join('')}
@@ -979,30 +979,30 @@ describe('[render]', () => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -1029,7 +1029,7 @@ describe('[render]', () => {
         .join('')}
     `;
 
-    const render$ = () => render(<App items={items} />);
+    const $render = () => render(<App items={items} />);
 
     const prepend = (n: number) => {
       items = [...generateItems(n), ...items];
@@ -1062,30 +1062,30 @@ describe('[render]', () => {
       return items.map(x => <Item key={x.id} item={x} />);
     });
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     append(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     prepend(4);
     append(3);
     remove(9);
     remove(2);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     shuffle();
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -1095,7 +1095,7 @@ describe('[render]', () => {
 
     let items = generateItems(10);
 
-    const render$ = (props: AppProps) => render(<App {...props} />);
+    const $render = (props: AppProps) => render(<App {...props} />);
 
     const content = (items: Array<Item>, show: boolean) => dom`
       ${
@@ -1184,32 +1184,32 @@ describe('[render]', () => {
       );
     });
 
-    render$({ show: false });
+    $render({ show: false });
     expect(host.innerHTML).toBe(content(items, false));
 
-    render$({ show: true });
+    $render({ show: true });
     expect(host.innerHTML).toBe(content(items, true));
 
     prepend(2);
     updateList();
     expect(host.innerHTML).toBe(content(items, true));
 
-    render$({ show: true });
+    $render({ show: true });
     expect(host.innerHTML).toBe(content(items, true));
 
     append(2);
     updateList();
     expect(host.innerHTML).toBe(content(items, true));
 
-    render$({ show: true });
+    $render({ show: true });
     expect(host.innerHTML).toBe(content(items, true));
 
-    render$({ show: false });
+    $render({ show: false });
     shuffle();
     updateList();
     expect(host.innerHTML).toBe(content(items, false));
 
-    render$({ show: true });
+    $render({ show: true });
     remove(9);
     remove(2);
     updateList();
@@ -1219,36 +1219,36 @@ describe('[render]', () => {
     updateList();
     expect(host.innerHTML).toBe(content(items, true));
 
-    render$({ show: true });
+    $render({ show: true });
     expect(host.innerHTML).toBe(content(items, true));
 
-    render$({ show: false });
+    $render({ show: false });
     expect(host.innerHTML).toBe(content(items, false));
   });
 
   test('can move items in arrays', () => {
     type AppProps = { items: Array<Item> };
 
-    const content$ = (items: Array<Item>) => dom`
+    const $content = (items: Array<Item>) => dom`
       ${items.map(x => ` <div>${x.name}</div>`).join('')}
     `;
     const content = (items: Array<Item>) => dom`
       <div>
         <div>header 1</div>
         <div>header 2</div>
-        ${content$(items)}
-        ${content$(items)}
-        ${content$(items)}
-        ${content$(items)}
-        ${content$(items)}
-        ${content$(items)}
+        ${$content(items)}
+        ${$content(items)}
+        ${$content(items)}
+        ${$content(items)}
+        ${$content(items)}
+        ${$content(items)}
         <div>footer</div>
       </div>
     `;
 
     let items = generateItems(10);
 
-    const render$ = () => render(<App items={items} />);
+    const $render = () => render(<App items={items} />);
 
     const moveItems = (idx: number, count: number) => {
       const newItems = [...items];
@@ -1291,11 +1291,11 @@ describe('[render]', () => {
       );
     });
 
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
 
     moveItems(0, 3);
-    render$();
+    $render();
     expect(host.innerHTML).toBe(content(items));
   });
 

@@ -4,7 +4,7 @@ import { type Context, type ContextProviderValue } from '../context';
 import { detectIsComponent } from '../component';
 import { detectIsFunction } from '../helpers';
 import { type Atom } from '../atom';
-import { scope$$ } from '../scope';
+import { $$scope } from '../scope';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -51,9 +51,9 @@ class Fiber<N = NativeElement> {
 
   increment(count = 1, force = false) {
     if (!this.parent) return;
-    const scope$ = scope$$();
-    const isUpdateZone = scope$.getIsUpdateZone();
-    const wipFiber = scope$.getWorkInProgress();
+    const $scope = $$scope();
+    const isUpdateZone = $scope.getIsUpdateZone();
+    const wipFiber = $scope.getWorkInProgress();
     const stop = isUpdateZone && wipFiber.parent === this.parent;
 
     if (

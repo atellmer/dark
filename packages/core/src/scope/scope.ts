@@ -401,6 +401,6 @@ const replaceScope = (scope: Scope, id: number = rootId) => {
   Object.assign(scopes.get(id), scope);
 };
 
-const scope$$ = (id: number = rootId) => scopes.get(id);
+const $$scope = (id: number = rootId) => scopes.get(id);
 
-export { type Scope, getRootId, setRootId, removeScope, replaceScope, scope$$ };
+export { type Scope, getRootId, setRootId, removeScope, replaceScope, $$scope };

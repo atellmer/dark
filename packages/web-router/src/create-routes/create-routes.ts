@@ -26,12 +26,12 @@ class Route {
   constructor(options: RouteConstructorOptions) {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, component } = options;
     const rootPath = createRootPath(path);
-    const path$ = createPath(pathMatch, prefix, rootPath);
+    const $path = createPath(pathMatch, prefix, rootPath);
 
-    this.path = path$;
+    this.path = $path;
     this.pathMatch = pathMatch;
     this.parent = parent;
-    this.children = createRoutes(children, path$, this);
+    this.children = createRoutes(children, $path, this);
     this.level = parent ? parent.level + 1 : 0;
     this.marker = rootPath;
     this.redirectTo = detectIsString(redirectTo)
@@ -68,25 +68,25 @@ class Route {
 }
 
 function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Array<Route> {
-  const routes$: Array<Route> = [];
+  const $routes: Array<Route> = [];
 
   for (const route of routes) {
-    const route$ = new Route({ ...route, prefix, parent });
+    const $route = new Route({ ...route, prefix, parent });
 
-    routes$.push(route$, ...route$.children);
+    $routes.push($route, ...$route.children);
   }
 
   if (!parent) {
-    const map = keyBy(routes$, x => x.path, true) as Record<string, Route>;
+    const map = keyBy($routes, x => x.path, true) as Record<string, Route>;
 
-    for (const route$ of routes$) {
-      if (route$.redirectTo) {
-        route$.redirectTo.route = map[route$.redirectTo.path] || null;
+    for (const $route of $routes) {
+      if ($route.redirectTo) {
+        $route.redirectTo.route = map[$route.redirectTo.path] || null;
       }
     }
   }
 
-  return routes$;
+  return $routes;
 }
 
 function resolve(pathname: string, routes: Array<Route>): Route {
@@ -124,8 +124,8 @@ function redirect() {
 }
 
 function wildcard(pathname: string, routes: Array<Route>) {
-  return (route$: Route): Route => {
-    if (route$) return route$;
+  return ($route: Route): Route => {
+    if ($route) return $route;
     const [route] = pipe<Array<Route>>(
       (routes: Array<Route>) => routes.filter(x => x.marker === WILDCARD),
       (routes: Array<Route>) => routes.filter(x => detectIsMatchAsWildcard(pathname, x.path)) || null,
@@ -242,9 +242,9 @@ function createPathname(urlPath: string, routePath: string): string {
 }
 
 function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
-  const prefix$ = pathMatch === 'prefix' ? normalaizePathname(prefix) : '';
+  const $prefix = pathMatch === 'prefix' ? normalaizePathname(prefix) : '';
 
-  return normalaizePathname(prefix$ ? `${prefix$}${path}` : path);
+  return normalaizePathname($prefix ? `${$prefix}${path}` : path);
 }
 
 function createRootPath(path: string): string {

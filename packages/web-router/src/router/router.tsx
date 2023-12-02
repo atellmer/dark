@@ -48,7 +48,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
       const history = useMemo(() => createRouterHistory(sourceURL), []);
       const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
       const { protocol, host, pathname, search, hash } = location;
-      const { activeRoute, slot: slot$, params } = resolveRoute(pathname, routes);
+      const { activeRoute, slot: $slot, params } = resolveRoute(pathname, routes);
       const scope = useMemo(() => ({ location }), []);
       const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
       const routerContext = useMemo<ActiveRouteContextValue>(
@@ -94,7 +94,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
       return (
         <RouterHistoryContext.Provider value={historyContext}>
-          <ActiveRouteContext.Provider value={routerContext}>{slot(slot$)}</ActiveRouteContext.Provider>
+          <ActiveRouteContext.Provider value={routerContext}>{slot($slot)}</ActiveRouteContext.Provider>
         </RouterHistoryContext.Provider>
       );
     },

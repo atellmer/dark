@@ -29,13 +29,13 @@ function useShortcut(options: UseShortcutOptions, deps: Array<any> = []) {
   useEffect(() => {
     if (!ref.current) return;
     const shortcut = new QShortcut(ref.current);
-    const signal$ = signal as WidgetEventTypes;
+    const $signal = signal as WidgetEventTypes;
 
     shortcut.setKey(new QKeySequence(keySequence));
     shortcut.setEnabled(!disabled);
-    shortcut.addEventListener(signal$, callback);
+    shortcut.addEventListener($signal, callback);
 
-    return () => shortcut.removeEventListener(signal$, callback);
+    return () => shortcut.removeEventListener($signal, callback);
   }, [disabled, ...deps]);
 }
 

@@ -80,13 +80,13 @@ class RouterHistory {
   private syncHistory(action: HistoryAction, spathname: string) {
     if (!browserHistory) return;
     const stateBox = this.createStateBox();
-    const spathname$ = normalaizePathname(spathname);
+    const $spathname = normalaizePathname(spathname);
 
     switch (action) {
       case HistoryAction.PUSH:
-        return browserHistory.pushState(stateBox, '', spathname$);
+        return browserHistory.pushState(stateBox, '', $spathname);
       case HistoryAction.REPLACE:
-        return browserHistory.replaceState(stateBox, '', spathname$);
+        return browserHistory.replaceState(stateBox, '', $spathname);
     }
   }
 

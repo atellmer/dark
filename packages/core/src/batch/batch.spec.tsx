@@ -67,15 +67,15 @@ describe('[batch]', () => {
   });
 
   test('cumulates changes of an internal state correctly', () => {
-    let x$ = 0;
-    let y$ = 0;
+    let $x = 0;
+    let $y = 0;
     const spy = jest.fn();
     const App = component(() => {
       const [x, setX] = useState(0);
       const [y, setY] = useState(0);
 
-      x$ = x;
-      y$ = y;
+      $x = x;
+      $y = y;
 
       useEffect(() => {
         batch(() => {
@@ -94,20 +94,20 @@ describe('[batch]', () => {
     render(App(), host);
     jest.runAllTimers();
     expect(spy).toHaveBeenCalledTimes(2);
-    expect(x$).toBe(2);
-    expect(y$).toBe(3);
+    expect($x).toBe(2);
+    expect($y).toBe(3);
   });
 
   test('forces updates even if the state has not changed', () => {
-    let x$ = 0;
-    let y$ = 0;
+    let $x = 0;
+    let $y = 0;
     const spy = jest.fn();
     const App = component(() => {
       const [x, setX] = useState(0);
       const [y, setY] = useState(0);
 
-      x$ = x;
-      y$ = y;
+      $x = x;
+      $y = y;
 
       useEffect(() => {
         batch(() => {
@@ -124,7 +124,7 @@ describe('[batch]', () => {
     render(App(), host);
     jest.runAllTimers();
     expect(spy).toHaveBeenCalledTimes(2);
-    expect(x$).toBe(1);
-    expect(y$).toBe(0);
+    expect($x).toBe(1);
+    expect($y).toBe(0);
   });
 });

@@ -21,14 +21,14 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/first', routes$).path).toBe('/first/');
-    expect(resolve('/first/', routes$).path).toBe('/first/');
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/second/', routes$).path).toBe('/second/');
-    expect(resolve('/third', routes$).path).toBe('/third/');
-    expect(resolve('/third/', routes$).path).toBe('/third/');
+    expect(resolve('/first', $routes).path).toBe('/first/');
+    expect(resolve('/first/', $routes).path).toBe('/first/');
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/second/', $routes).path).toBe('/second/');
+    expect(resolve('/third', $routes).path).toBe('/third/');
+    expect(resolve('/third/', $routes).path).toBe('/third/');
   });
 
   test('can match incorrect routes correctly', () => {
@@ -46,15 +46,15 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$)).toBe(null);
-    expect(resolve('', routes$)).toBe(null);
-    expect(resolve('/xxx', routes$)).toBe(null);
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/second/1', routes$)).toBe(null);
-    expect(resolve('/first/1/xxx', routes$)).toBe(null);
-    expect(resolve('/some/broken/url', routes$)).toBe(null);
+    expect(resolve('/', $routes)).toBe(null);
+    expect(resolve('', $routes)).toBe(null);
+    expect(resolve('/xxx', $routes)).toBe(null);
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/second/1', $routes)).toBe(null);
+    expect(resolve('/first/1/xxx', $routes)).toBe(null);
+    expect(resolve('/some/broken/url', $routes)).toBe(null);
   });
 
   test('can match nested routes correctly', () => {
@@ -82,14 +82,14 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/first', routes$).path).toBe('/first/');
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/b', routes$).path).toBe('/second/b/');
-    expect(resolve('/second/b/some/broken/route', routes$)).toBe(null);
-    expect(resolve('/third', routes$).path).toBe('/third/');
+    expect(resolve('/first', $routes).path).toBe('/first/');
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/b', $routes).path).toBe('/second/b/');
+    expect(resolve('/second/b/some/broken/route', $routes)).toBe(null);
+    expect(resolve('/third', $routes).path).toBe('/third/');
   });
 
   test('can match deeply nested routes correctly', () => {
@@ -137,17 +137,17 @@ describe('[router/create-routes]', () => {
         component: () => null,
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/first', routes$).path).toBe('/first/');
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/third', routes$).path).toBe('/third/');
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/a/1', routes$).path).toBe('/second/a/1/');
-    expect(resolve('/second/a/2', routes$).path).toBe('/second/a/2/');
-    expect(resolve('/second/b', routes$).path).toBe('/second/b/');
-    expect(resolve('/second/b/1', routes$).path).toBe('/second/b/1/');
-    expect(resolve('/second/b/2', routes$).path).toBe('/second/b/2/');
+    expect(resolve('/first', $routes).path).toBe('/first/');
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/third', $routes).path).toBe('/third/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/a/1', $routes).path).toBe('/second/a/1/');
+    expect(resolve('/second/a/2', $routes).path).toBe('/second/a/2/');
+    expect(resolve('/second/b', $routes).path).toBe('/second/b/');
+    expect(resolve('/second/b/1', $routes).path).toBe('/second/b/1/');
+    expect(resolve('/second/b/2', $routes).path).toBe('/second/b/2/');
   });
 
   test('can work with redirects correctly', () => {
@@ -165,11 +165,11 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/first', routes$).path).toBe('/second/');
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/third', routes$).path).toBe('/third/');
+    expect(resolve('/first', $routes).path).toBe('/second/');
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/third', $routes).path).toBe('/third/');
   });
 
   test('can work with chained redirects correctly', () => {
@@ -191,12 +191,12 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/first', routes$).path).toBe('/fourth/');
-    expect(resolve('/second', routes$).path).toBe('/fourth/');
-    expect(resolve('/third', routes$).path).toBe('/fourth/');
-    expect(resolve('/fourth', routes$).path).toBe('/fourth/');
+    expect(resolve('/first', $routes).path).toBe('/fourth/');
+    expect(resolve('/second', $routes).path).toBe('/fourth/');
+    expect(resolve('/third', $routes).path).toBe('/fourth/');
+    expect(resolve('/fourth', $routes).path).toBe('/fourth/');
   });
 
   test('can work with redirects in nested routes correctly', () => {
@@ -232,11 +232,11 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/a', routes$).path).toBe('/second/c/');
-    expect(resolve('/second/b', routes$).path).toBe('/second/c/');
-    expect(resolve('/second/c', routes$).path).toBe('/second/c/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/c/');
+    expect(resolve('/second/b', $routes).path).toBe('/second/c/');
+    expect(resolve('/second/c', $routes).path).toBe('/second/c/');
   });
 
   test('can work with root redirect correctly #1', () => {
@@ -250,9 +250,9 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe('/first/');
+    expect(resolve('/', $routes).path).toBe('/first/');
   });
 
   test('can work with root redirect correctly #2', () => {
@@ -274,13 +274,13 @@ describe('[router/create-routes]', () => {
         redirectTo: '',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe(`/${ROOT}/`);
-    expect(resolve('', routes$).path).toBe(`/${ROOT}/`);
-    expect(resolve('/broken', routes$).path).toBe(`/${ROOT}/`);
-    expect(resolve('/second', routes$).path).toBe(`/second/`);
-    expect(resolve('/third', routes$).path).toBe(`/third/`);
+    expect(resolve('/', $routes).path).toBe(`/${ROOT}/`);
+    expect(resolve('', $routes).path).toBe(`/${ROOT}/`);
+    expect(resolve('/broken', $routes).path).toBe(`/${ROOT}/`);
+    expect(resolve('/second', $routes).path).toBe(`/second/`);
+    expect(resolve('/third', $routes).path).toBe(`/third/`);
   });
 
   test('can work with root redirect with full path strategy correctly', () => {
@@ -295,9 +295,9 @@ describe('[router/create-routes]', () => {
         pathMatch: 'full',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe('/first/');
+    expect(resolve('/', $routes).path).toBe('/first/');
   });
 
   test('can combine match strategies correctly', () => {
@@ -322,9 +322,9 @@ describe('[router/create-routes]', () => {
         ],
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/a', routes$).path).toBe('/second/b/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/b/');
   });
 
   test('can work with wildcard routes correctly', () => {
@@ -356,11 +356,11 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe('/first/');
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/broken/url', routes$).path).toBe('/**/');
+    expect(resolve('/', $routes).path).toBe('/first/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/broken/url', $routes).path).toBe('/**/');
   });
 
   test('can work with wildcard in nested routes correctly', () => {
@@ -396,12 +396,12 @@ describe('[router/create-routes]', () => {
         component: component(() => null),
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/broken/url', routes$).path).toBe('/second/**/');
-    expect(resolve('/second/a/broken/url', routes$).path).toBe('/second/**/');
-    expect(resolve('/broken/url', routes$).path).toBe('/**/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/broken/url', $routes).path).toBe('/second/**/');
+    expect(resolve('/second/a/broken/url', $routes).path).toBe('/second/**/');
+    expect(resolve('/broken/url', $routes).path).toBe('/**/');
   });
 
   test('can combine wildcard routes and redirects in nested routes correctly', () => {
@@ -433,12 +433,12 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/broken/url', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/a/broken/url', routes$).path).toBe('/second/a/');
-    expect(resolve('/broken/url', routes$).path).toBe('/first/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/broken/url', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/a/broken/url', $routes).path).toBe('/second/a/');
+    expect(resolve('/broken/url', $routes).path).toBe('/first/');
   });
 
   test('can combine wildcard routes and redirects in deeply nested routes correctly', () => {
@@ -484,19 +484,19 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/broken/url', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/a/broken/url', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/b/broken/url', routes$).path).toBe('/second/b/1/');
-    expect(resolve('/second/b', routes$).path).toBe('/second/b/');
-    expect(resolve('/second/b/', routes$).path).toBe('/second/b/');
-    expect(resolve('/second/b/1', routes$).path).toBe('/second/b/1/');
-    expect(resolve('/second/b/1/', routes$).path).toBe('/second/b/1/');
-    expect(resolve('/second/b/1/broken/url', routes$).path).toBe('/second/b/1/');
-    expect(resolve('/second/b/2/broken/url', routes$).path).toBe('/second/b/1/');
-    expect(resolve('/broken/url', routes$).path).toBe('/first/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/broken/url', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/a/broken/url', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/b/broken/url', $routes).path).toBe('/second/b/1/');
+    expect(resolve('/second/b', $routes).path).toBe('/second/b/');
+    expect(resolve('/second/b/', $routes).path).toBe('/second/b/');
+    expect(resolve('/second/b/1', $routes).path).toBe('/second/b/1/');
+    expect(resolve('/second/b/1/', $routes).path).toBe('/second/b/1/');
+    expect(resolve('/second/b/1/broken/url', $routes).path).toBe('/second/b/1/');
+    expect(resolve('/second/b/2/broken/url', $routes).path).toBe('/second/b/1/');
+    expect(resolve('/broken/url', $routes).path).toBe('/first/');
   });
 
   test('can work with parameters correctly', () => {
@@ -520,12 +520,12 @@ describe('[router/create-routes]', () => {
         ],
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/1/a', routes$).path).toBe('/second/:id/a/');
-    expect(resolve('/second/2/a', routes$).path).toBe('/second/:id/a/');
-    expect(resolve('/second/1/b/2', routes$).path).toBe('/second/:id/b/:id/');
-    expect(resolve('/second/100/b/2000', routes$).path).toBe('/second/:id/b/:id/');
+    expect(resolve('/second/1/a', $routes).path).toBe('/second/:id/a/');
+    expect(resolve('/second/2/a', $routes).path).toBe('/second/:id/a/');
+    expect(resolve('/second/1/b/2', $routes).path).toBe('/second/:id/b/:id/');
+    expect(resolve('/second/100/b/2000', $routes).path).toBe('/second/:id/b/:id/');
   });
 
   test('can redirect to any level correctly', () => {
@@ -568,9 +568,9 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/second/child-a/1/', routes$).path).toBe('/first/');
+    expect(resolve('/second/child-a/1/', $routes).path).toBe('/first/');
   });
 
   test('can work with flatten tree routes', () => {
@@ -608,16 +608,16 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe('/first/');
-    expect(resolve('/first', routes$).path).toBe('/first/');
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/');
-    expect(resolve('/second/a/1', routes$).path).toBe('/second/a/1/');
-    expect(resolve('/second/a/2', routes$).path).toBe('/second/a/2/');
-    expect(resolve('/second/b', routes$).path).toBe('/third/');
-    expect(resolve('/third/', routes$).path).toBe('/third/');
+    expect(resolve('/', $routes).path).toBe('/first/');
+    expect(resolve('/first', $routes).path).toBe('/first/');
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/');
+    expect(resolve('/second/a/1', $routes).path).toBe('/second/a/1/');
+    expect(resolve('/second/a/2', $routes).path).toBe('/second/a/2/');
+    expect(resolve('/second/b', $routes).path).toBe('/third/');
+    expect(resolve('/third/', $routes).path).toBe('/third/');
   });
 
   test('can work with combined tree strategies', () => {
@@ -665,16 +665,16 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe('/first/');
-    expect(resolve('/first', routes$).path).toBe('/first/');
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/second/a', routes$).path).toBe('/second/a/2/');
-    expect(resolve('/second/a/1', routes$).path).toBe('/second/a/1/');
-    expect(resolve('/second/a/2', routes$).path).toBe('/second/a/2/');
-    expect(resolve('/second/b', routes$).path).toBe('/third/');
-    expect(resolve('/third/', routes$).path).toBe('/third/');
+    expect(resolve('/', $routes).path).toBe('/first/');
+    expect(resolve('/first', $routes).path).toBe('/first/');
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/second/a', $routes).path).toBe('/second/a/2/');
+    expect(resolve('/second/a/1', $routes).path).toBe('/second/a/1/');
+    expect(resolve('/second/a/2', $routes).path).toBe('/second/a/2/');
+    expect(resolve('/second/b', $routes).path).toBe('/third/');
+    expect(resolve('/third/', $routes).path).toBe('/third/');
   });
 
   test('can work with combined roots, wildcards and parameters', () => {
@@ -718,15 +718,15 @@ describe('[router/create-routes]', () => {
         redirectTo: 'first',
       },
     ];
-    const routes$ = createRoutes(routes);
+    const $routes = createRoutes(routes);
 
-    expect(resolve('/', routes$).path).toBe(`/first/${ROOT}/`);
-    expect(resolve('/first', routes$).path).toBe(`/first/${ROOT}/`);
-    expect(resolve('/first/nested', routes$).path).toBe('/first/nested/');
-    expect(resolve('/first/666', routes$).path).toBe(`/first/:id/`);
-    expect(resolve('/first/666/broken', routes$).path).toBe(`/first/${ROOT}/`);
-    expect(resolve('/second', routes$).path).toBe('/second/');
-    expect(resolve('/third/', routes$).path).toBe('/third/');
-    expect(resolve('/broken/url', routes$).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/', $routes).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/first', $routes).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/first/nested', $routes).path).toBe('/first/nested/');
+    expect(resolve('/first/666', $routes).path).toBe(`/first/:id/`);
+    expect(resolve('/first/666/broken', $routes).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/second', $routes).path).toBe('/second/');
+    expect(resolve('/third/', $routes).path).toBe('/third/');
+    expect(resolve('/broken/url', $routes).path).toBe(`/first/${ROOT}/`);
   });
 });

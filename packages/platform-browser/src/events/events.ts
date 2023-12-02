@@ -1,4 +1,4 @@
-import { detectIsFunction, scope$$, detectIsArray } from '@dark-engine/core';
+import { detectIsFunction, $$scope, detectIsArray } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 
@@ -35,27 +35,27 @@ function delegateEvent(
   eventName: string,
   handler: (e: Event) => void | [fn: () => void, ...args: Array<any>],
 ) {
-  const scope$ = scope$$();
-  const eventsMap = scope$.getEvents();
+  const $scope = $$scope();
+  const eventsMap = $scope.getEvents();
   const handlersMap = eventsMap.get(eventName);
-  const handler$ = detectIsArray(handler) ? (e: Event) => handler[0](...handler.slice(1), e) : handler;
+  const $handler = detectIsArray(handler) ? (e: Event) => handler[0](...handler.slice(1), e) : handler;
 
   if (!handlersMap) {
     const rootHandler = (event: Event) => {
       const handler = eventsMap.get(eventName).get(event.target);
       const target = event.target as TagNativeElement;
-      let event$: SyntheticEvent<Event> = null;
+      let $event: SyntheticEvent<Event> = null;
 
       if (detectIsFunction(handler)) {
-        event$ = new SyntheticEvent({ sourceEvent: event, target });
+        $event = new SyntheticEvent({ sourceEvent: event, target });
 
-        scope$.setIsEventZone(true);
-        handler(event$);
-        scope$.setIsEventZone(false);
+        $scope.setIsEventZone(true);
+        handler($event);
+        $scope.setIsEventZone(false);
       }
 
       if (target.parentElement) {
-        const shouldPropagate = event$ ? event$.getPropagation() : true;
+        const shouldPropagate = $event ? $event.getPropagation() : true;
 
         if (shouldPropagate) {
           const constructor = event.constructor as BrowserEventConstructor;
@@ -65,11 +65,11 @@ function delegateEvent(
       }
     };
 
-    eventsMap.set(eventName, new WeakMap([[target, handler$]]));
+    eventsMap.set(eventName, new WeakMap([[target, $handler]]));
     document.addEventListener(eventName, rootHandler, true);
-    scope$.addEventUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
+    $scope.addEventUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
-    handlersMap.set(target, handler$);
+    handlersMap.set(target, $handler);
   }
 }
 

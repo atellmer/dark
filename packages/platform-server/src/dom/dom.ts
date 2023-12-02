@@ -17,7 +17,7 @@ import {
   detectIsTagVirtualNode,
   getFiberWithElement,
   detectIsPlainVirtualNode,
-  scope$$,
+  $$scope,
 } from '@dark-engine/core';
 
 import {
@@ -146,7 +146,7 @@ function chunk(fiber: Fiber<NativeElement>) {
   }
 
   chunkIds[fiber.id] = true;
-  scope$$().getEmitter().emit('chunk', chunk);
+  $$scope().getEmitter().emit('chunk', chunk);
 }
 
 const finishCommit = () => {

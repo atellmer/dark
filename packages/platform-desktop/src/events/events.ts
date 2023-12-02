@@ -1,6 +1,6 @@
 import { type QWidgetSignals, WidgetEventTypes } from '@nodegui/nodegui';
 import { type NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
-import { useMemo, scope$$ } from '@dark-engine/core';
+import { useMemo, $$scope } from '@dark-engine/core';
 
 class SyntheticEvent<T> {
   public type = '';
@@ -13,12 +13,12 @@ class SyntheticEvent<T> {
 }
 
 function createSyntheticEventHandler(eventName: string, handler: Function) {
-  const scope$ = scope$$();
+  const $scope = $$scope();
 
   return (value: NativeRawPointer<'QEvent'>) => {
-    scope$.setIsEventZone(true);
+    $scope.setIsEventZone(true);
     handler(new SyntheticEvent({ type: eventName, value }));
-    scope$.setIsEventZone(false);
+    $scope.setIsEventZone(false);
   };
 }
 
@@ -32,7 +32,7 @@ function useEvents<T>(
   >,
 ) {
   const scope = useMemo(() => ({ map }), []);
-  const map$ = useMemo(() => {
+  const $map = useMemo(() => {
     const state: typeof map = {};
 
     for (const key of Object.keys(scope.map)) {
@@ -44,7 +44,7 @@ function useEvents<T>(
 
   scope.map = map;
 
-  return map$;
+  return $map;
 }
 
 export { SyntheticEvent, createSyntheticEventHandler, detectIsEvent, useEvents };
