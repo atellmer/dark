@@ -30,7 +30,7 @@ class Scheduler {
   private channel: MessageChannel | NodeMessageChannel = null;
   private port: MessagePort | NodeMessagePort = null;
 
-  public setupPorts() {
+  setupPorts() {
     if (process.env.NODE_ENV === 'test') {
       const worker = require('node:worker_threads');
 
@@ -45,16 +45,16 @@ class Scheduler {
     this.channel.port1.onmessage = this.performWorkUntilDeadline.bind(this);
   }
 
-  public unrefPorts() {
+  unrefPorts() {
     (this.channel as NodeMessageChannel).port1.unref();
     (this.channel as NodeMessageChannel).port2.unref();
   }
 
-  public shouldYield() {
+  shouldYield() {
     return getTime() >= this.deadline;
   }
 
-  public schedule(callback: Callback, options?: ScheduleCallbackOptions) {
+  schedule(callback: Callback, options?: ScheduleCallbackOptions) {
     const {
       priority = TaskPriority.NORMAL,
       forceAsync = false,
@@ -71,7 +71,7 @@ class Scheduler {
     this.execute();
   }
 
-  public hasPrimaryTask() {
+  hasPrimaryTask() {
     if (!this.task.getIsTransition()) return false;
     const { high, normal, low } = this.getQueues();
     const hasPrimary = high.length > 0 || normal.length > 0;
@@ -104,13 +104,13 @@ class Scheduler {
     return false;
   }
 
-  public cancelTask(fn: TaskRestorer) {
-    if (this.task.getIsUnnecessary()) return this.completeTask(this.task);
+  cancelTask(fn: TaskRestorer) {
+    if (this.task.getIsUnnecessary()) return this.complete(this.task);
     this.task.setTaskRestorer(fn);
-    this.deferTransition(this.task);
+    this.defer(this.task);
   }
 
-  public completeTask(task: Task) {
+  private complete(task: Task) {
     task.pending(false);
   }
 
@@ -128,7 +128,7 @@ class Scheduler {
       const task = this.task;
 
       task.markAsPending();
-      this.deferTransition(this.task);
+      this.defer(this.task);
       this.task = null;
 
       nextTick(() => task.pending(true));
@@ -172,7 +172,7 @@ class Scheduler {
       const hasMoreWork = this.scheduledCallback(true);
 
       if (!hasMoreWork) {
-        this.completeTask(this.task);
+        this.complete(this.task);
         this.isMessageLoopRunning = false;
         this.scheduledCallback = null;
         this.task = null;
@@ -185,7 +185,7 @@ class Scheduler {
     }
   }
 
-  private deferTransition(task: Task) {
+  private defer(task: Task) {
     const { low } = this.getQueues();
 
     low.unshift(task);
@@ -228,64 +228,64 @@ class Task {
     this.forceAsync = forceAsync;
   }
 
-  public getPriority() {
+  getPriority() {
     return this.priority;
   }
 
-  public getForceAsync() {
+  getForceAsync() {
     return this.forceAsync;
   }
 
-  public setIsTransition(value: boolean) {
+  setIsTransition(value: boolean) {
     this.isTransition = value;
   }
 
-  public getIsTransition() {
+  getIsTransition() {
     return this.isTransition;
   }
 
-  public run() {
+  run() {
     this.callback(this.taskRestorer);
     this.taskRestorer = null;
   }
 
-  public pending(value: boolean) {
+  pending(value: boolean) {
     this.isTransition && this.pendingSetter && this.pendingSetter(value);
   }
 
-  public markAsPending() {
+  markAsPending() {
     this.isPending = true;
   }
 
-  public canPending() {
+  canPending() {
     return !this.isPending && detectIsFunction(this.pendingSetter);
   }
 
-  public markAsUnnecessary() {
+  markAsUnnecessary() {
     this.isUnnecessary = true;
   }
 
-  public getIsUnnecessary() {
+  getIsUnnecessary() {
     return this.isUnnecessary;
   }
 
-  public setTaskRestorer(fn: TaskRestorer) {
+  setTaskRestorer(fn: TaskRestorer) {
     this.taskRestorer = fn;
   }
 
-  public setLocationCreator(fn: LocationCreator) {
+  setLocationCreator(fn: LocationCreator) {
     this.locationCreator = fn;
   }
 
-  public createLocation() {
+  createLocation() {
     return this.locationCreator();
   }
 
-  public setPendingSetter(fn: SetPendingStatus) {
+  setPendingSetter(fn: SetPendingStatus) {
     this.pendingSetter = fn;
   }
 
-  public static detectHasSameUpdate(loc: string, tasks: Array<Task>) {
+  static detectHasSameUpdate(loc: string, tasks: Array<Task>) {
     return tasks.some(x => {
       const $loc = x.createLocation();
       const has = $loc === loc;
@@ -294,7 +294,7 @@ class Task {
     });
   }
 
-  public static detectHasChildUpdate(loc: string, tasks: Array<Task>) {
+  static detectHasChildUpdate(loc: string, tasks: Array<Task>) {
     const [$loc] = loc.split(HOOK_DELIMETER);
 
     return tasks.some(x => {
