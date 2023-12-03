@@ -33,7 +33,7 @@ class MessagePort {
   }
 
   postMessage(value: unknown) {
-    platform.raf(() => {
+    platform.spawn(() => {
       this.channel.emit('message', value);
     });
   }

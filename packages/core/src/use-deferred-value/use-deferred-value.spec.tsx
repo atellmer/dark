@@ -9,8 +9,7 @@ import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useDeferredValue } from './use-deferred-value';
 
-jest.spyOn(platform, 'raf').mockImplementation(cb => setTimeout(cb, 0));
-jest.spyOn(platform, 'caf').mockImplementation(id => clearTimeout(id));
+jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));
 
 let { host, render } = createEnv();
 
