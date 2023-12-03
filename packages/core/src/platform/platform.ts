@@ -1,38 +1,19 @@
 import { type Fiber } from '../fiber';
-import { type TaskPriority } from '../constants';
 import { type VirtualNode } from '../view';
-import { type SetPendingStatus } from '../start-transition';
+import { type Callback } from '../shared';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
   insertElement: <N>(node: N, idx: number, parent: N) => void;
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
-  schedule: (callback: () => void, options?: ScheduleCallbackOptions) => void;
-  shouldYield: () => boolean;
-  hasPrimaryTask: () => boolean;
-  cancelTask: (restore: (options: RestoreOptions) => void) => void;
+  spawn: (callback: Callback) => void;
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
   detectIsPortal: (instance: unknown) => boolean;
   unmountPortal: (fiber: Fiber) => void;
   chunk: (fiber: Fiber) => void;
-};
-
-export type RestoreOptions = {
-  fiber: Fiber;
-  setValue?: () => void;
-  resetValue?: () => void;
-};
-
-export type ScheduleCallbackOptions = {
-  priority?: TaskPriority;
-  forceAsync?: boolean;
-  isTransition?: boolean;
-  createLocation?: () => string;
-  setPendingStatus?: SetPendingStatus;
-  onCompleted?: () => void;
 };
 
 const defaultRealisation = () => {
@@ -44,10 +25,7 @@ const platform: Platform = {
   insertElement: defaultRealisation,
   raf: defaultRealisation,
   caf: defaultRealisation,
-  schedule: defaultRealisation,
-  shouldYield: defaultRealisation,
-  hasPrimaryTask: defaultRealisation,
-  cancelTask: defaultRealisation,
+  spawn: defaultRealisation,
   commit: defaultRealisation,
   finishCommit: defaultRealisation,
   detectIsDynamic: defaultRealisation,

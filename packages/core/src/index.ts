@@ -14,6 +14,7 @@ export { memo } from './memo';
 export * from './ref';
 export * from './scope';
 export * from './shared';
+export * from './scheduler';
 export { VERSION } from './constants';
 export { Guard } from './guard';
 export { Suspense } from './suspense';

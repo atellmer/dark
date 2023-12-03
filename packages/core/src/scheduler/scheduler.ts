@@ -1,21 +1,47 @@
-import { type MessagePort as NodeMessagePort, type MessageChannel as NodeMessageChannel } from 'node:worker_threads';
-import {
-  type ScheduleCallbackOptions,
-  type WorkLoop,
-  type Callback,
-  type RestoreOptions,
-  type SetPendingStatus,
-  getTime,
-  workLoop,
-  TaskPriority,
-  detectIsBusy,
-  detectIsFunction,
-  nextTick,
-  HOOK_DELIMETER,
-  ROOT,
-} from '@dark-engine/core';
+import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
+import { type SetPendingStatus } from '../start-transition';
+import { type Callback } from '../shared';
+import { type Fiber } from '../fiber';
+import { ROOT, HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
+import { getTime, detectIsFunction, nextTick } from '../helpers';
+import { EventEmitter } from '../emitter';
+import { platform } from '../platform';
 
-import { YIELD_INTERVAL } from '../constants';
+class MessageChannel extends EventEmitter<PortEvent> {
+  port1: MessagePort = null;
+  port2: MessagePort = null;
+
+  constructor() {
+    super();
+    this.port1 = new MessagePort(this);
+    this.port2 = new MessagePort(this);
+  }
+}
+
+class MessagePort {
+  channel: MessageChannel;
+  offs: Array<Callback> = [];
+
+  constructor(channel: MessageChannel) {
+    this.channel = channel;
+  }
+
+  on(event: PortEvent, callback: PortListener) {
+    const off = this.channel.on(event, callback);
+
+    this.offs.push(off);
+  }
+
+  postMessage(value: unknown) {
+    platform.raf(() => {
+      this.channel.emit('message', value);
+    });
+  }
+
+  unref() {
+    this.offs.forEach(x => x());
+  }
+}
 
 class Scheduler {
   private queue: Record<TaskPriority, Array<Task>> = {
@@ -27,27 +53,18 @@ class Scheduler {
   private task: Task = null;
   private scheduledCallback: WorkLoop = null;
   private isMessageLoopRunning = false;
-  private channel: MessageChannel | NodeMessageChannel = null;
-  private port: MessagePort | NodeMessagePort = null;
+  private channel: MessageChannel = null;
+  private port: MessagePort = null;
 
   setupPorts() {
-    if (process.env.NODE_ENV === 'test') {
-      const worker = require('node:worker_threads');
-
-      this.channel = new worker.MessageChannel() as NodeMessageChannel;
-      this.port = this.channel.port2;
-      this.channel.port1.on('message', this.performWorkUntilDeadline.bind(this));
-      return;
-    }
-
-    this.channel = new MessageChannel() as MessageChannel;
+    this.channel = new MessageChannel();
     this.port = this.channel.port2;
-    this.channel.port1.onmessage = this.performWorkUntilDeadline.bind(this);
+    this.channel.port1.on('message', this.performWorkUntilDeadline.bind(this));
   }
 
   unrefPorts() {
-    (this.channel as NodeMessageChannel).port1.unref();
-    (this.channel as NodeMessageChannel).port2.unref();
+    this.channel.port1.unref();
+    this.channel.port2.unref();
   }
 
   shouldYield() {
@@ -313,5 +330,23 @@ const scheduler = new Scheduler();
 if (process.env.NODE_ENV !== 'test') {
   scheduler.setupPorts();
 }
+
+type PortEvent = 'message';
+type PortListener = (value: unknown) => void;
+
+export type RestoreOptions = {
+  fiber: Fiber;
+  setValue?: () => void;
+  resetValue?: () => void;
+};
+
+export type ScheduleCallbackOptions = {
+  priority?: TaskPriority;
+  forceAsync?: boolean;
+  isTransition?: boolean;
+  createLocation?: () => string;
+  setPendingStatus?: SetPendingStatus;
+  onCompleted?: () => void;
+};
 
 export { scheduler };

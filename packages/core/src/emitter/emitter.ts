@@ -1,18 +1,18 @@
 import { type SubscriberWithValue } from '../shared';
 
-type EventName = 'finish' | 'chunk' | 'data';
+type EventName = 'finish' | 'chunk';
 
-class EventEmitter<T = unknown> {
-  private subscribers: Map<Partial<EventName>, Set<SubscriberWithValue<unknown>>> = new Map();
+class EventEmitter<E extends string = EventName, T = unknown> {
+  private subscribers: Map<Partial<E>, Set<SubscriberWithValue<unknown>>> = new Map();
 
-  on<T>(e: EventName, fn: SubscriberWithValue<T>) {
+  on<T>(e: E, fn: SubscriberWithValue<T>) {
     !this.subscribers.has(e) && this.subscribers.set(e, new Set());
     this.subscribers.get(e).add(fn);
 
     return () => this.subscribers.has(e) && this.subscribers.get(e).delete(fn);
   }
 
-  emit(e: EventName, data?: T) {
+  emit(e: E, data?: T) {
     this.subscribers.has(e) && this.subscribers.get(e).forEach(x => x(data));
   }
 

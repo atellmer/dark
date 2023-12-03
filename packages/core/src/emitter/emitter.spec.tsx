@@ -1,9 +1,11 @@
 /** @jsx h */
 import { EventEmitter } from './emitter';
 
+type EventName = 'data';
+
 describe('[@core/emitter]', () => {
   test('has required methods', () => {
-    const emitter = new EventEmitter();
+    const emitter = new EventEmitter<EventName>();
 
     expect(emitter.on).toBeDefined();
     expect(emitter.emit).toBeDefined();
@@ -11,7 +13,7 @@ describe('[@core/emitter]', () => {
   });
 
   test('the subscribtions work correctly', () => {
-    const emitter = new EventEmitter();
+    const emitter = new EventEmitter<EventName>();
     const spy1 = jest.fn();
     const spy2 = jest.fn();
     const off = emitter.on('data', spy1);
@@ -35,7 +37,7 @@ describe('[@core/emitter]', () => {
   });
 
   test('the kill method works correctly', () => {
-    const emitter = new EventEmitter();
+    const emitter = new EventEmitter<EventName>();
     const spy = jest.fn();
 
     emitter.on('data', spy);

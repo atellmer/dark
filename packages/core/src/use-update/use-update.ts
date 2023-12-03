@@ -1,6 +1,6 @@
-import { type ScheduleCallbackOptions, platform } from '../platform';
-import { getRootId, $$scope } from '../scope';
+import { type ScheduleCallbackOptions, scheduler } from '../scheduler';
 import { type UpdateChanger, createUpdate } from '../workloop';
+import { getRootId, $$scope } from '../scope';
 import { TaskPriority } from '../constants';
 import { addBatch } from '../batch';
 import { detectIsFunction } from '../helpers';
@@ -42,11 +42,11 @@ function useUpdate() {
     if (isBatch) {
       addBatch(
         owner,
-        () => platform.schedule(callback, callbackOptions),
+        () => scheduler.schedule(callback, callbackOptions),
         () => hasChanger && createChanger().setValue(),
       );
     } else {
-      platform.schedule(callback, callbackOptions);
+      scheduler.schedule(callback, callbackOptions);
     }
   };
 

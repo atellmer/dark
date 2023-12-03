@@ -14,11 +14,11 @@ import {
   detectIsFunction,
   setRootId,
   $$scope,
+  scheduler,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
-import { scheduleCallback, shouldYield } from '../scheduler';
 import { type NSElement } from '../registry';
 
 const APP_ID = 0;
@@ -30,12 +30,9 @@ function inject() {
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
   platform.raf = requestAnimationFrame.bind(this);
   platform.caf = cancelAnimationFrame.bind(this);
-  platform.schedule = scheduleCallback;
-  platform.shouldYield = shouldYield;
+  platform.spawn = requestAnimationFrame.bind(this);
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.hasPrimaryTask = () => false;
-  platform.cancelTask = () => {};
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
@@ -86,7 +83,7 @@ function render(options: RenderOptions): NSElement {
     });
   };
 
-  platform.schedule(callback, { priority: TaskPriority.NORMAL });
+  scheduler.schedule(callback, { priority: TaskPriority.NORMAL });
 
   if (isSubRoot) return null;
 

@@ -11,11 +11,11 @@ import {
   createReplacer,
   setRootId,
   $$scope,
+  scheduler,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
-import { scheduleCallback, shouldYield } from '../scheduler';
 
 let isInjected = false;
 
@@ -24,12 +24,9 @@ function inject() {
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
   platform.raf = setTimeout.bind(this);
   platform.caf = clearTimeout.bind(this);
-  platform.schedule = scheduleCallback;
-  platform.shouldYield = shouldYield;
+  platform.spawn = setTimeout.bind(this);
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.hasPrimaryTask = () => false;
-  platform.cancelTask = () => {};
   platform.detectIsDynamic = () => true;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
@@ -57,7 +54,7 @@ function render(element: DarkElement) {
     $scope.setNextUnitOfWork(fiber);
   };
 
-  platform.schedule(callback, { priority: TaskPriority.NORMAL });
+  scheduler.schedule(callback, { priority: TaskPriority.NORMAL });
 }
 
 globalThis._DARK_ = Fiber;

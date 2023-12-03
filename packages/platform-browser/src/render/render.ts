@@ -14,12 +14,12 @@ import {
   createReplacer,
   setRootId,
   $$scope,
+  scheduler,
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal/utils';
-import { scheduler } from '../scheduler';
 
 let isInjected = false;
 const roots = new Map<Element, number>();
@@ -29,10 +29,7 @@ function inject() {
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
   platform.raf = requestAnimationFrame.bind(window);
   platform.caf = cancelAnimationFrame.bind(window);
-  platform.schedule = scheduler.schedule.bind(scheduler);
-  platform.shouldYield = scheduler.shouldYield.bind(scheduler);
-  platform.hasPrimaryTask = scheduler.hasPrimaryTask.bind(scheduler);
-  platform.cancelTask = scheduler.cancelTask.bind(scheduler);
+  platform.spawn = requestAnimationFrame.bind(window);
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = trueFn;
@@ -85,7 +82,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
     $scope.setNextUnitOfWork(fiber);
   };
 
-  platform.schedule(callback, { priority: TaskPriority.NORMAL });
+  scheduler.schedule(callback, { priority: TaskPriority.NORMAL });
 }
 
 export { render, roots };

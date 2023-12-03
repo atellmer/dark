@@ -1,4 +1,4 @@
-import { type RestoreOptions, platform, detectIsServer } from '../platform';
+import { platform, detectIsServer } from '../platform';
 import {
   EFFECT_TAG_CREATE,
   EFFECT_TAG_UPDATE,
@@ -53,6 +53,7 @@ import {
 } from '../walk';
 import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
+import { type RestoreOptions, scheduler } from '../scheduler';
 
 let hasRenderError = false;
 
@@ -71,8 +72,8 @@ function workLoop(isAsync: boolean) {
       unit = performUnitOfWork(unit, $scope);
       $scope.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
-      shouldYield = isAsync && platform.shouldYield();
-      if (shouldYield && platform.hasPrimaryTask()) return fork($scope);
+      shouldYield = isAsync && scheduler.shouldYield();
+      if (shouldYield && scheduler.hasPrimaryTask()) return fork($scope);
     }
 
     if (!unit && wipFiber) {
@@ -534,7 +535,7 @@ function fork($scope: Scope): false {
   wipFiber.alt = null;
   $scope.applyCancels();
   flush($scope, true);
-  platform.cancelTask(restore);
+  scheduler.cancelTask(restore);
 
   return false;
 }

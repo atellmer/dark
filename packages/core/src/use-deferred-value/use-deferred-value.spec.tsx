@@ -1,23 +1,26 @@
 /** @jsx h */
-import { render } from '@dark-engine/platform-browser';
-import { scheduler } from '@dark-engine/platform-browser/scheduler';
+import { platform } from '@dark-engine/core';
+import { dom, sleep, createEnv } from '@test-utils';
 
-import { dom, sleep } from '@test-utils';
 import { h } from '../element';
+import { scheduler } from '../scheduler';
 import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useDeferredValue } from './use-deferred-value';
 
-let host: HTMLElement = null;
+jest.spyOn(platform, 'raf').mockImplementation(cb => setTimeout(cb, 0));
+jest.spyOn(platform, 'caf').mockImplementation(id => clearTimeout(id));
+
+let { host, render } = createEnv();
 
 beforeAll(() => {
-  jest.useRealTimers();
   scheduler.setupPorts();
 });
 
 beforeEach(() => {
-  host = document.createElement('div');
+  jest.useRealTimers();
+  ({ host, render } = createEnv());
 });
 
 afterAll(() => {
@@ -27,11 +30,9 @@ afterAll(() => {
 describe('[use-deferred-value]', () => {
   test('can make a deferred render', async () => {
     const spy = jest.fn();
-
     const content = (value: number) => dom`
       <div>${value}</div>
     `;
-
     const App = component(() => {
       const [value, setValue] = useState(0);
       const deferred = useDeferredValue(value);
@@ -45,9 +46,9 @@ describe('[use-deferred-value]', () => {
       return <div>{deferred}</div>;
     });
 
-    render(<App />, host);
+    render(<App />);
     expect(host.innerHTML).toBe(content(0));
-    await sleep();
+    await sleep(20);
     expect(host.innerHTML).toBe(content(1));
     expect(spy).toHaveBeenCalledTimes(3);
   });

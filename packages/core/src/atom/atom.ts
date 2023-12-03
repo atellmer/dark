@@ -6,7 +6,7 @@ import { $$scope, getRootId } from '../scope';
 import { createUpdate } from '../workloop';
 import { useUpdate } from '../use-update';
 import { EventEmitter } from '../emitter';
-import { platform } from '../platform';
+import { scheduler } from '../scheduler';
 import { useMemo } from '../use-memo';
 import { type Hook } from '../fiber';
 import { batch } from '../batch';
@@ -16,7 +16,7 @@ class Atom<T = unknown> {
   private connections1: Map<Hook, Tuple<T>>;
   private connections2: Map<T, Tuple<T>>;
   private subjects: Set<ReadableAtom>;
-  private emitter: EventEmitter<EmitterValue<T>>;
+  private emitter: EventEmitter<'data', EmitterValue<T>>;
 
   constructor(value: T) {
     this.value = value;
@@ -122,7 +122,7 @@ class Atom<T = unknown> {
       const [rootId, hook, shouldUpdate, key] = tuple;
       const fn = shouldUpdate || trueFn;
 
-      fn(prev, next, key) && platform.schedule(createUpdate({ rootId, hook }));
+      fn(prev, next, key) && scheduler.schedule(createUpdate({ rootId, hook }));
     };
 
     this.value = next;

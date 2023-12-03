@@ -16,10 +16,10 @@ import {
   $$scope,
   nextTick,
   dummyFn,
+  scheduler,
 } from '@dark-engine/core';
 
 import { createNativeElement, commit, finishCommit, chunk } from '../dom';
-import { scheduleCallback, shouldYield } from '../scheduler';
 import { TagNativeElement } from '../native-element';
 
 let isInjected = false;
@@ -29,12 +29,9 @@ function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
   platform.raf = setTimeout.bind(this);
   platform.caf = setTimeout.bind(this);
-  platform.schedule = scheduleCallback;
-  platform.shouldYield = shouldYield;
+  platform.spawn = nextTick;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.hasPrimaryTask = () => false;
-  platform.cancelTask = () => {};
   platform.detectIsDynamic = () => false;
   platform.detectIsPortal = () => false;
   platform.unmountPortal = () => {};
@@ -76,7 +73,7 @@ function scheduleRender(options: ScheduleRenderOptions) {
     });
   };
 
-  platform.schedule(callback, { priority: TaskPriority.NORMAL, forceAsync: true });
+  scheduler.schedule(callback, { priority: TaskPriority.NORMAL, forceAsync: true });
 }
 
 function renderToString(element: DarkElement): Promise<string> {

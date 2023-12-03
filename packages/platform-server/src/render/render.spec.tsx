@@ -9,18 +9,18 @@ import {
   useInsertionEffect,
   useLayoutEffect,
   useEffect,
+  scheduler,
 } from '@dark-engine/core';
 
 import { dom, sleep, replacer } from '@test-utils';
 import { renderToString, renderToStream } from './render';
-import { setupPorts, unrefPorts } from '../scheduler';
 
 beforeAll(() => {
-  setupPorts();
+  scheduler.setupPorts();
 });
 
 afterAll(() => {
-  unrefPorts();
+  scheduler.unrefPorts();
 });
 
 describe('[SSR]', () => {
