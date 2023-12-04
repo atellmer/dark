@@ -1,6 +1,6 @@
 /** @jsx h */
 import { platform } from '@dark-engine/core';
-import { dom, sleep, createEnv } from '@test-utils';
+import { dom, createEnv } from '@test-utils';
 
 import { h } from '../element';
 import { scheduler } from '../scheduler';
@@ -18,7 +18,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  jest.useRealTimers();
+  jest.useFakeTimers();
   ({ host, render } = createEnv());
 });
 
@@ -27,7 +27,7 @@ afterAll(() => {
 });
 
 describe('[use-deferred-value]', () => {
-  test('can make a deferred render', async () => {
+  test('can make a deferred render', () => {
     const spy = jest.fn();
     const content = (value: number) => dom`
       <div>${value}</div>
@@ -46,9 +46,10 @@ describe('[use-deferred-value]', () => {
     });
 
     render(<App />);
+    spy.mockReset();
     expect(host.innerHTML).toBe(content(0));
-    await sleep(20);
+    jest.advanceTimersByTime(100);
     expect(host.innerHTML).toBe(content(1));
-    expect(spy).toHaveBeenCalledTimes(3);
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });
