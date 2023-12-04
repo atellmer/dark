@@ -41,10 +41,12 @@ function useTransition<T extends string, I = unknown>(
       ctrlsMap: new Map(),
       itemsMap: new Map(),
       fakesMap: new Map(),
-      pending: null,
+      items: [],
+      queue: [],
+      hasReplaces: false,
       fromApi: false,
       inChain: false,
-      items: [],
+      pending: null,
       configurator,
     }),
     [],
@@ -114,6 +116,7 @@ function useTransition<T extends string, I = unknown>(
       const { ctrls, itemsMap } = setup({ items, getKey, configurator, state, ctrlsMap });
       const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff($items, items, getKey);
 
+      scope.hasReplaces = replaced.size > 0;
       state.setCtrls(ctrls);
       replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
 
@@ -363,14 +366,18 @@ function prepare<T extends string, I = unknown>(options: PrepareOptions<T, I>) {
 }
 
 function handleItemEnd<T extends string, I = unknown>({ key }: AnimationEventValue<T>, scope: Scope<T, I>) {
-  const { ctrlsMap, fakesMap, itemsMap } = scope;
+  const { ctrlsMap, fakesMap, itemsMap, hasReplaces, queue, fromApi } = scope;
 
   if (ctrlsMap.has(key) && ctrlsMap.get(key).detectIsFake()) {
     ctrlsMap.delete(key);
     fakesMap.delete(key);
   }
 
-  !itemsMap.has(key) && ctrlsMap.delete(key);
+  if (fromApi || hasReplaces) {
+    !itemsMap.has(key) && ctrlsMap.delete(key);
+  } else {
+    queue.push(() => !scope.itemsMap.has(key) && ctrlsMap.delete(key));
+  }
 }
 
 function handleSeriesEnd<T extends string, I = unknown>(update: () => void, state: SharedState<T>, scope: Scope<T, I>) {
@@ -378,6 +385,8 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
   const ctrls: Array<Controller<T, I>> = [];
 
   if (fromApi) return;
+  scope.queue.forEach(x => x());
+  scope.queue = [];
 
   for (const [_, ctrl] of ctrlsMap) {
     const { enter } = configurator(ctrl.getIdx(), ctrl.getItem());
@@ -397,9 +406,11 @@ type Scope<T extends string, I = unknown> = {
   ctrlsMap: Map<ElementKey, Controller<T, I>>;
   itemsMap: Map<ElementKey, I>;
   fakesMap: Map<ElementKey, number>;
-  pending: Callback;
+  queue: Array<Callback>;
+  hasReplaces: boolean;
   fromApi: boolean;
   inChain: boolean;
+  pending: Callback;
 };
 
 enum Action {
