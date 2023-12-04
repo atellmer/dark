@@ -1130,27 +1130,38 @@ render ThemeConsumer!
 Animations in Dark are based on spring physics and placed in a separate package `@dark-engine/animations`. To get the effect you want, you should experiment with its parameters. Dark supports an array of animations that run sequentially one after another, including in the opposite direction. With this technique, you can create complex effects of moving elements.
 
 ```tsx
-import { Animated, useSpring } from '@dark-engine/animations';
+import { type SpringValue, Animated, useSpring } from '@dark-engine/animations';
 ```
 
 ```tsx
 const App = component(() => {
-  const [item, api] = useSpring({
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-  });
+  const [isOpen, setIsOpen] = useState(false);
+  const [spring] = useSpring(
+    {
+      from: { opacity: 0 },
+      to: { opacity: isOpen ? 1 : 0 },
+    },
+    [isOpen],
+  );
+  const style = useStyle(styled => ({
+    root: styled`
+      width: 100px;
+      height: 100px;
+      background-color: darkcyan;
+    `,
+  }));
 
   return (
     <>
-      <button onClick={() => api.toggle()}>toggle</button>
-      <Animated item={item} style={styleFn}>
-        <h1>Hello 🥰</h1>
+      <button onClick={() => setIsOpen(x => !x)}>toggle</button>
+      <Animated spring={spring} fn={styleFn}>
+        <div style={style.root} />
       </Animated>
     </>
   );
 });
 
-const styleFn = (e: HTMLElement, v: SpringValue<'opacity'>) => e.style.setProperty('opacity', `${v.opacity}`);
+const styleFn = (e: HTMLElement, x: SpringValue<'opacity'>) => e.style.setProperty('opacity', `${x.opacity}`);
 ```
 
 <a name="code-splitting"></a>
