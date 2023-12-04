@@ -1,5 +1,6 @@
 /** @jsx h */
-import { h, component, useState, useLayoutEffect, detectIsArray } from '@dark-engine/core';
+import { h, component, useState, useLayoutEffect, detectIsArray, scheduler } from '@dark-engine/core';
+import { renderToString } from '@dark-engine/platform-server';
 import { dom, createEnv, mockPlatformRaf, getSpyLength, time, replacer } from '@test-utils';
 
 import { type SpringValue } from '../shared';
@@ -12,8 +13,13 @@ let { host, render } = createEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
+  scheduler.setupPorts();
   ({ host, render } = createEnv());
   mockPlatformRaf();
+});
+
+afterEach(() => {
+  scheduler.unrefPorts();
 });
 
 describe('[@animations/use-springs]', () => {
@@ -960,5 +966,35 @@ describe('[@animations/use-springs]', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(replacer);
     expect(api.isCanceled()).toBe(true);
+  });
+
+  test('supports SSR', async () => {
+    const content = (opacity: number) => dom`
+      <div style="opacity: ${opacity};">A</div>
+    `;
+    type SpringProps = 'opacity';
+    const App = component(() => {
+      const [springs] = useSprings<SpringProps>(1, () => ({
+        from: { opacity: 0 },
+        to: { opacity: 1 },
+      }));
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={styleFn}>
+            <div style={`opacity: ${spring.prop('opacity')};`}>A</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spy = jest.fn();
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spy(value);
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    expect(await renderToString(<App />)).toBe(content(0));
+    expect(spy).not.toHaveBeenCalled();
   });
 });

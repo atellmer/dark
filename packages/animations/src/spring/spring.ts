@@ -7,6 +7,10 @@ class Spring<T extends string = string> {
   private subscribers = new Set<SubscriberWithValue<SpringValue<T>>>();
 
   prop(key: T) {
+    return this.props[key] ? this.props[key].get() : null;
+  }
+
+  prop$(key: T) {
     return this.props[key] || null;
   }
 
