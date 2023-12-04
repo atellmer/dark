@@ -1,15 +1,15 @@
 /** @jsx h */
-import { dom, createEnv } from '@test-utils';
+import { dom, createBrowserEnv } from '@test-utils';
 
 import { h } from '../element';
 import { Fragment } from '../fragment';
 import { component } from '../component';
 import { type WritableAtom, type ReadableAtom, atom, computed, useAtom, useComputed } from './atom';
 
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  ({ host, render } = createEnv());
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[@core/atom]', () => {

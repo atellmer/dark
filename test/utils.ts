@@ -1,5 +1,6 @@
 import { platform, REPLACER } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+import { createRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
+import { renderToStream, renderToString, inject as injectServerSupport } from '@dark-engine/platform-server';
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
   const markup = strings
@@ -45,7 +46,9 @@ const replacer = createReplacerString();
 let host: HTMLElement = null;
 let root: ReturnType<typeof createRoot> = null;
 
-function createEnv() {
+function createBrowserEnv() {
+  injectBrowserSupport();
+  mockBrowserPlatform();
   root && root.unmount();
   host && host.parentElement === document.body && document.body.removeChild(host);
   host = createTestHostNode();
@@ -62,9 +65,19 @@ function createEnv() {
   };
 }
 
-function mockPlatformRaf() {
+function createServerEnv() {
+  injectServerSupport();
+
+  return {
+    renderToString,
+    renderToStream,
+  };
+}
+
+function mockBrowserPlatform() {
   jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 16));
   jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
+  jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));
 }
 
 export {
@@ -79,6 +92,7 @@ export {
   sleep,
   time,
   replacer,
-  createEnv,
-  mockPlatformRaf,
+  createBrowserEnv,
+  createServerEnv,
+  mockBrowserPlatform,
 };

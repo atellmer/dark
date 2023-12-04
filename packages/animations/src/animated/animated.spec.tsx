@@ -1,17 +1,16 @@
 /** @jsx h */
 import { h, Fragment, component, useState } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf, replacer } from '@test-utils';
+import { dom, createBrowserEnv, replacer } from '@test-utils';
 
 import { type SpringApi } from '../use-springs';
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
 import { useSpring } from '../use-spring';
 
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  ({ host, render } = createEnv());
-  mockPlatformRaf();
+  ({ host, render } = createBrowserEnv());
   jest.useFakeTimers();
 });
 

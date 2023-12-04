@@ -1,7 +1,7 @@
 /** @jsx h */
 import * as core from '@dark-engine/core';
 import { h, Fragment, component, useState } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf, replacer } from '@test-utils';
+import { dom, createBrowserEnv, replacer } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -21,12 +21,11 @@ jest.mock('@dark-engine/core', () => {
 
 jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
 
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  ({ host, render } = createEnv());
-  mockPlatformRaf();
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[@animations/use-chain]', () => {

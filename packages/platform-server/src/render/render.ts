@@ -16,25 +16,27 @@ import {
   $$scope,
   nextTick,
   dummyFn,
+  falseFn,
   scheduler,
 } from '@dark-engine/core';
 
 import { createNativeElement, commit, finishCommit, chunk } from '../dom';
 import { TagNativeElement } from '../native-element';
 
-let isInjected = false;
+const spawn = nextTick; // !
 let nextRootId = -1;
+let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
-  platform.raf = setTimeout.bind(this);
-  platform.caf = setTimeout.bind(this);
-  platform.spawn = nextTick;
+  platform.raf = dummyFn as unknown as typeof platform.raf;
+  platform.caf = dummyFn;
+  platform.spawn = spawn;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.detectIsDynamic = () => false;
-  platform.detectIsPortal = () => false;
-  platform.unmountPortal = () => {};
+  platform.detectIsDynamic = falseFn;
+  platform.detectIsPortal = falseFn;
+  platform.unmountPortal = dummyFn;
   platform.chunk = chunk;
   isInjected = true;
 }
@@ -47,9 +49,8 @@ type ScheduleRenderOptions = {
 };
 
 function scheduleRender(options: ScheduleRenderOptions) {
-  const { element, isStream = false, onCompleted, onStart = dummyFn } = options;
   !isInjected && inject();
-
+  const { element, isStream = false, onCompleted, onStart = dummyFn } = options;
   const rootId = getNextRootId();
   const callback = () => {
     setRootId(rootId);
@@ -152,4 +153,4 @@ const DOCTYPE = '<!DOCTYPE html>';
 
 const getNextRootId = () => ++nextRootId;
 
-export { renderToString, renderToStream };
+export { renderToString, renderToStream, inject };

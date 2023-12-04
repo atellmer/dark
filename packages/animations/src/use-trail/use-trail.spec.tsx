@@ -1,7 +1,7 @@
 /** @jsx h */
 
 import { h, component, useState, detectIsArray } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf } from '@test-utils';
+import { dom, createBrowserEnv } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -9,12 +9,11 @@ import { Spring } from '../spring';
 import { range } from '../utils';
 import { type TrailApi, useTrail } from './use-trail';
 
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  ({ host, render } = createEnv());
-  mockPlatformRaf();
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[@animations/use-trail]', () => {

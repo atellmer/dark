@@ -56,15 +56,17 @@ class Scheduler {
   private channel: MessageChannel = null;
   private port: MessagePort = null;
 
-  setupPorts() {
+  constructor() {
     this.channel = new MessageChannel();
     this.port = this.channel.port2;
     this.channel.port1.on('message', this.performWorkUntilDeadline.bind(this));
   }
 
-  unrefPorts() {
-    this.channel.port1.unref();
-    this.channel.port2.unref();
+  reset() {
+    this.deadline = 0;
+    this.task = null;
+    this.scheduledCallback = null;
+    this.isMessageLoopRunning = false;
   }
 
   shouldYield() {
@@ -190,9 +192,7 @@ class Scheduler {
 
       if (!hasMoreWork) {
         this.complete(this.task);
-        this.isMessageLoopRunning = false;
-        this.scheduledCallback = null;
-        this.task = null;
+        this.reset();
         this.execute();
       } else {
         this.port.postMessage(null);
@@ -325,12 +325,6 @@ class Task {
 
 const createRootLocation: LocationCreator = () => ROOT;
 
-const scheduler = new Scheduler();
-
-if (process.env.NODE_ENV !== 'test') {
-  scheduler.setupPorts();
-}
-
 type PortEvent = 'message';
 type PortListener = (value: unknown) => void;
 
@@ -348,5 +342,7 @@ export type ScheduleCallbackOptions = {
   setPendingStatus?: SetPendingStatus;
   onCompleted?: () => void;
 };
+
+const scheduler = new Scheduler();
 
 export { scheduler };

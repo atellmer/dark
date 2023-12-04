@@ -11,32 +11,37 @@ import {
   createReplacer,
   setRootId,
   $$scope,
+  dummyFn,
+  trueFn,
+  falseFn,
   scheduler,
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 
+const raf = setTimeout.bind(this);
+const caf = clearTimeout.bind(this);
+const spawn = raf;
 let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
-  platform.raf = setTimeout.bind(this);
-  platform.caf = clearTimeout.bind(this);
-  platform.spawn = setTimeout.bind(this);
+  platform.raf = raf;
+  platform.caf = caf;
+  platform.spawn = spawn;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.detectIsDynamic = () => true;
-  platform.detectIsPortal = () => false;
-  platform.unmountPortal = () => {};
-  platform.chunk = () => {};
+  platform.detectIsDynamic = trueFn;
+  platform.detectIsPortal = falseFn;
+  platform.unmountPortal = dummyFn;
+  platform.chunk = dummyFn;
   isInjected = true;
 }
 
 function render(element: DarkElement) {
   !isInjected && inject();
-
   const callback = () => {
     setRootId(0);
     const $scope = $$scope();
@@ -59,4 +64,4 @@ function render(element: DarkElement) {
 
 globalThis._DARK_ = Fiber;
 
-export { render };
+export { render, inject };

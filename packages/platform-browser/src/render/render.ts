@@ -8,12 +8,12 @@ import {
   flatten,
   detectIsUndefined,
   trueFn,
-  dummyFn,
   TagVirtualNode,
   TaskPriority,
   createReplacer,
   setRootId,
   $$scope,
+  dummyFn,
   scheduler,
 } from '@dark-engine/core';
 
@@ -21,15 +21,18 @@ import type { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal/utils';
 
-let isInjected = false;
 const roots = new Map<Element, number>();
+const raf = requestAnimationFrame.bind(window);
+const caf = cancelAnimationFrame.bind(window);
+const spawn = raf;
+let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
-  platform.raf = requestAnimationFrame.bind(window);
-  platform.caf = cancelAnimationFrame.bind(window);
-  platform.spawn = requestAnimationFrame.bind(window);
+  platform.raf = raf;
+  platform.caf = caf;
+  platform.spawn = spawn;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = trueFn;
@@ -41,7 +44,6 @@ function inject() {
 
 function render(element: DarkElement, container: TagNativeElement, hydrate = false) {
   !isInjected && inject();
-
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
       throw new Error(`[Dark]: render receives only Element as container!`);
@@ -85,4 +87,4 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL });
 }
 
-export { render, roots };
+export { render, roots, inject };

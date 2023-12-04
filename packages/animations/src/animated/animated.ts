@@ -7,6 +7,7 @@ import {
   useInsertionEffect,
   $$scope,
   walk,
+  nextTick,
 } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
@@ -26,16 +27,24 @@ const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
   scope.notify = notify;
 
   useInsertionEffect(() => {
-    const fiber = cursor.hook.owner;
+    const make = () => {
+      const fiber = cursor.hook.owner;
 
-    walk(fiber.child, (fiber, _, stop) => {
-      if (fiber.element) {
-        scope.element = fiber.element;
-        return stop();
-      }
-    });
+      walk(fiber.child, (fiber, _, stop) => {
+        if (fiber.element) {
+          scope.element = fiber.element;
+          return stop();
+        }
+      });
 
-    notify();
+      notify();
+    };
+
+    if ($$scope().getIsHydrateZone()) {
+      nextTick(make);
+    } else {
+      make();
+    }
 
     return spring.on(() => scope.notify());
   }, [spring]);

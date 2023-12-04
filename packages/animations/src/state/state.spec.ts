@@ -1,4 +1,4 @@
-import { mockPlatformRaf, getSpyLength, time } from '@test-utils';
+import { mockBrowserPlatform, getSpyLength, time } from '@test-utils';
 
 import { type ConfiguratorFn, Controller } from '../controller';
 import { SharedState } from './state';
@@ -10,7 +10,7 @@ const genKey = () => ++nextKey;
 
 beforeEach(() => {
   jest.useFakeTimers();
-  mockPlatformRaf();
+  mockBrowserPlatform();
 });
 
 function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {

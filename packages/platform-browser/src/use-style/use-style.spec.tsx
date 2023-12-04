@@ -1,13 +1,13 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
 
-import { createEnv, dom } from '@test-utils';
+import { createBrowserEnv, dom } from '@test-utils';
 import { useStyle } from './use-style';
 
-let { render, host } = createEnv();
+let { render, host } = createBrowserEnv();
 
 beforeEach(() => {
-  ({ render, host } = createEnv());
+  ({ render, host } = createBrowserEnv());
 });
 
 describe('[use-style]', () => {

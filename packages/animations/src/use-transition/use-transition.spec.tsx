@@ -1,6 +1,6 @@
 /** @jsx h */
 import { h, component, useState, useLayoutEffect } from '@dark-engine/core';
-import { dom, createEnv, mockPlatformRaf, replacer, time, getSpyLength } from '@test-utils';
+import { dom, createBrowserEnv, replacer, time, getSpyLength } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -10,12 +10,11 @@ import { type TransitionApi, type TransitionFn, useTransition } from './use-tran
 type Item<T = string | number> = { id: number; data: T };
 
 const generate = (size: number): Array<Item> => range(size).map((_, idx) => ({ id: idx, data: idx }));
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  ({ host, render } = createEnv());
-  mockPlatformRaf();
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[@animations/use-transition]', () => {

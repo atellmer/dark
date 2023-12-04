@@ -1,13 +1,13 @@
 /** @jsx h */
 import { h, Fragment, Text, Comment, component, useState } from '@dark-engine/core';
 
-import { setInputValue, dom, createEnv, replacer } from '@test-utils';
+import { setInputValue, dom, createBrowserEnv, replacer } from '@test-utils';
 import { type SyntheticEvent } from '../events';
 
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  ({ host, render } = createEnv());
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[DOM]', () => {

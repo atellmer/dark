@@ -1,13 +1,13 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
 
-import { click, createEnv } from '@test-utils';
+import { click, createBrowserEnv } from '@test-utils';
 import { SyntheticEvent } from './events';
 
-let { host, render } = createEnv();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  ({ host, render } = createEnv());
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[events]', () => {

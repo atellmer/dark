@@ -9,19 +9,10 @@ import {
   useInsertionEffect,
   useLayoutEffect,
   useEffect,
-  scheduler,
 } from '@dark-engine/core';
 
 import { dom, sleep, replacer } from '@test-utils';
 import { renderToString, renderToStream } from './render';
-
-beforeAll(() => {
-  scheduler.setupPorts();
-});
-
-afterAll(() => {
-  scheduler.unrefPorts();
-});
 
 describe('[SSR]', () => {
   test('can render text correctly', async () => {

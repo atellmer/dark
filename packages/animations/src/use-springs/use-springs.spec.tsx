@@ -1,7 +1,8 @@
 /** @jsx h */
-import { h, component, useState, useLayoutEffect, detectIsArray, scheduler } from '@dark-engine/core';
-import { renderToString } from '@dark-engine/platform-server';
-import { dom, createEnv, mockPlatformRaf, getSpyLength, time, replacer } from '@test-utils';
+import * as core from '@dark-engine/core';
+import { h, component, useState, useLayoutEffect, detectIsArray } from '@dark-engine/core';
+import { hydrateRoot } from '@dark-engine/platform-browser';
+import { dom, createBrowserEnv, createServerEnv, getSpyLength, time, replacer } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -9,17 +10,20 @@ import { Spring } from '../spring';
 import { range } from '../utils';
 import { type SpringApi, useSprings } from './use-springs';
 
-let { host, render } = createEnv();
+jest.mock('@dark-engine/core', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('@dark-engine/core'),
+  };
+});
+
+jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
+
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  scheduler.setupPorts();
-  ({ host, render } = createEnv());
-  mockPlatformRaf();
-});
-
-afterEach(() => {
-  scheduler.unrefPorts();
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[@animations/use-springs]', () => {
@@ -974,10 +978,15 @@ describe('[@animations/use-springs]', () => {
     `;
     type SpringProps = 'opacity';
     const App = component(() => {
-      const [springs] = useSprings<SpringProps>(1, () => ({
-        from: { opacity: 0 },
-        to: { opacity: 1 },
-      }));
+      const [isOpen] = useState(false);
+      const [springs] = useSprings<SpringProps>(
+        1,
+        () => ({
+          from: { opacity: isOpen ? 1 : 0 },
+          to: { opacity: isOpen ? 1 : 0 },
+        }),
+        [isOpen],
+      );
 
       return springs.map((spring, idx) => {
         return (
@@ -994,7 +1003,146 @@ describe('[@animations/use-springs]', () => {
       element.style.setProperty('opacity', `${value.opacity}`);
     };
 
-    expect(await renderToString(<App />)).toBe(content(0));
+    const { renderToString } = createServerEnv();
+    const str = await renderToString(<App />);
+
+    expect(str).toBe(content(0));
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  test('supports hydration #1', async () => {
+    const content = (opacity: number) => dom`
+      <div style="opacity: ${opacity};">A</div>
+    `;
+    type SpringProps = 'opacity';
+    let setIsOpen: (x: boolean) => void = null;
+    const App = component(() => {
+      const [isOpen, _setIsOpen] = useState(false);
+      const [springs] = useSprings<SpringProps>(
+        1,
+        () => ({
+          from: { opacity: isOpen ? 1 : 0 },
+          to: { opacity: isOpen ? 1 : 0 },
+        }),
+        [isOpen],
+      );
+
+      setIsOpen = _setIsOpen;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={styleFn}>
+            <div style={`opacity: ${spring.prop('opacity')};`}>A</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spy = jest.fn();
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spy(value);
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    const { renderToString } = createServerEnv();
+    const html = await renderToString(<App />);
+
+    expect(html).toBe(content(0));
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockClear();
+
+    const { host } = createBrowserEnv();
+
+    host.innerHTML = html;
+    hydrateRoot(host, <App />);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(0));
+    expect(spy).toHaveBeenCalledTimes(2);
+    spy.mockClear();
+
+    setIsOpen(true);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(1));
+    expect(spy).toHaveBeenCalledTimes(52);
+    spy.mockClear();
+
+    setIsOpen(false);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(0));
+    expect(spy).toHaveBeenCalledTimes(52);
+    spy.mockClear();
+
+    setIsOpen(true);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(1));
+    expect(spy).toHaveBeenCalledTimes(52);
+  });
+
+  test('supports hydration #2', async () => {
+    const content = (opacity: number) => dom`
+      <div style="opacity: ${opacity};">A</div>
+    `;
+    type SpringProps = 'opacity';
+    let setIsOpen: (x: boolean) => void = null;
+    const App = component(() => {
+      const [isOpen, _setIsOpen] = useState(true);
+      const [springs] = useSprings<SpringProps>(
+        1,
+        () => ({
+          from: { opacity: isOpen ? 1 : 0 },
+          to: { opacity: isOpen ? 1 : 0 },
+        }),
+        [isOpen],
+      );
+
+      setIsOpen = _setIsOpen;
+
+      return springs.map((spring, idx) => {
+        return (
+          <Animated key={idx} spring={spring} fn={styleFn}>
+            <div style={`opacity: ${spring.prop('opacity')};`}>A</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spy = jest.fn();
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spy(value);
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    const { renderToString } = createServerEnv();
+    const html = await renderToString(<App />);
+
+    expect(html).toBe(content(1));
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockClear();
+
+    const { host } = createBrowserEnv();
+
+    host.innerHTML = html;
+    hydrateRoot(host, <App />);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(1));
+    expect(spy).toHaveBeenCalledTimes(2);
+    spy.mockClear();
+
+    setIsOpen(false);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(0));
+    expect(spy).toHaveBeenCalledTimes(52);
+    spy.mockClear();
+
+    setIsOpen(true);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(1));
+    expect(spy).toHaveBeenCalledTimes(52);
+    spy.mockClear();
+
+    setIsOpen(false);
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(content(0));
+    expect(spy).toHaveBeenCalledTimes(52);
   });
 });

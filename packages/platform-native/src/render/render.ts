@@ -14,6 +14,9 @@ import {
   detectIsFunction,
   setRootId,
   $$scope,
+  dummyFn,
+  trueFn,
+  falseFn,
   scheduler,
 } from '@dark-engine/core';
 
@@ -22,21 +25,24 @@ import { createNativeElement, insertNativeElementByIndex, commit, finishCommit }
 import { type NSElement } from '../registry';
 
 const APP_ID = 0;
-let isInjected = false;
+const raf = requestAnimationFrame.bind(window);
+const caf = cancelAnimationFrame.bind(window);
+const spawn = raf;
 let nextRootId = APP_ID;
+let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
   platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
-  platform.raf = requestAnimationFrame.bind(this);
-  platform.caf = cancelAnimationFrame.bind(this);
-  platform.spawn = requestAnimationFrame.bind(this);
+  platform.raf = raf;
+  platform.caf = caf;
+  platform.spawn = spawn;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
-  platform.detectIsDynamic = () => true;
-  platform.detectIsPortal = () => false;
-  platform.unmountPortal = () => {};
-  platform.chunk = () => {};
+  platform.detectIsDynamic = trueFn;
+  platform.detectIsPortal = falseFn;
+  platform.unmountPortal = dummyFn;
+  platform.chunk = dummyFn;
   isInjected = true;
 }
 
@@ -48,10 +54,8 @@ type RenderOptions = {
 };
 
 function render(options: RenderOptions): NSElement {
-  const { element, rootId = APP_ID, isSubRoot = false, onCompleted } = options;
-
   !isInjected && inject();
-
+  const { element, rootId = APP_ID, isSubRoot = false, onCompleted } = options;
   const callback = () => {
     setRootId(rootId);
     const $scope = $$scope();
@@ -118,4 +122,4 @@ function run(element: DarkElement) {
   });
 }
 
-export { run, renderRoot, renderSubRoot };
+export { run, renderRoot, renderSubRoot, inject };

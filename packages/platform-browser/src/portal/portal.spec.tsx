@@ -1,16 +1,16 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
 
-import { dom, createEnv } from '@test-utils';
+import { dom, createBrowserEnv } from '@test-utils';
 import { createPortal } from './portal';
 
-let { render } = createEnv();
+let { render } = createBrowserEnv();
 let portalOne: HTMLElement = null;
 let portalTwo: HTMLElement = null;
 let portalThree: HTMLElement = null;
 
 beforeEach(() => {
-  ({ render } = createEnv());
+  ({ render } = createBrowserEnv());
   portalOne = document.createElement('div');
   portalTwo = document.createElement('div');
   portalThree = document.createElement('div');

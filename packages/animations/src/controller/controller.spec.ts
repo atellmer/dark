@@ -1,4 +1,4 @@
-import { mockPlatformRaf } from '@test-utils';
+import { mockBrowserPlatform } from '@test-utils';
 
 import { type ConfiguratorFn, Controller } from './controller';
 import { SharedState } from '../state';
@@ -8,7 +8,7 @@ const setup = <T extends string>() => new Controller<T>(new SharedState());
 
 beforeEach(() => {
   jest.useFakeTimers();
-  mockPlatformRaf();
+  mockBrowserPlatform();
 });
 
 describe('[@animations/controller]', () => {

@@ -1,29 +1,17 @@
 /** @jsx h */
-import { platform } from '@dark-engine/core';
-import { dom, createEnv } from '@test-utils';
+import { dom, createBrowserEnv } from '@test-utils';
 
 import { h } from '../element';
-import { scheduler } from '../scheduler';
 import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useDeferredValue } from './use-deferred-value';
 
-jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));
-
-let { host, render } = createEnv();
-
-beforeAll(() => {
-  scheduler.setupPorts();
-});
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  ({ host, render } = createEnv());
-});
-
-afterAll(() => {
-  scheduler.unrefPorts();
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('[use-deferred-value]', () => {
@@ -48,7 +36,7 @@ describe('[use-deferred-value]', () => {
     render(<App />);
     spy.mockReset();
     expect(host.innerHTML).toBe(content(0));
-    jest.advanceTimersByTime(100);
+    jest.advanceTimersByTime(1);
     expect(host.innerHTML).toBe(content(1));
     expect(spy).toHaveBeenCalledTimes(2);
   });
