@@ -1,5 +1,4 @@
 /** @jsx h */
-import * as core from '@dark-engine/core';
 import { h, component, useState, useLayoutEffect, detectIsArray } from '@dark-engine/core';
 import { hydrateRoot } from '@dark-engine/platform-browser';
 import { dom, createBrowserEnv, createServerEnv, getSpyLength, time, replacer } from '@test-utils';
@@ -9,15 +8,6 @@ import { Animated } from '../animated';
 import { Spring } from '../spring';
 import { range } from '../utils';
 import { type SpringApi, useSprings } from './use-springs';
-
-jest.mock('@dark-engine/core', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('@dark-engine/core'),
-  };
-});
-
-jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
 
 let { host, render } = createBrowserEnv();
 

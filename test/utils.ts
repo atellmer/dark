@@ -1,6 +1,14 @@
+import * as core from '@dark-engine/core';
 import { platform, REPLACER } from '@dark-engine/core';
 import { createRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
 import { renderToStream, renderToString, inject as injectServerSupport } from '@dark-engine/platform-server';
+
+jest.mock('@dark-engine/core', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('@dark-engine/core'),
+  };
+});
 
 const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
   const markup = strings
@@ -75,6 +83,7 @@ function createServerEnv() {
 }
 
 function mockBrowserPlatform() {
+  jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
   jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 16));
   jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
   jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));

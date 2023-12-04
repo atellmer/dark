@@ -52,6 +52,8 @@ function useTransition<T extends string, I = unknown>(
 
   scope.configurator = configurator;
 
+  useMemo(() => setup({ items, getKey, configurator, state, ctrlsMap: scope.ctrlsMap }), []);
+
   const transition = useMemo<TransitionFn<T, I>>(
     () => (render: TransitionRenderFn<T, I>) => {
       const { ctrlsMap } = scope;
@@ -109,7 +111,7 @@ function useTransition<T extends string, I = unknown>(
     const start = (items: Array<I>) => {
       const { ctrlsMap, fakesMap, items: $items } = scope;
       const configurator: TransitionConfiguratorFn<T, I> = (idx, item) => scope.configurator(idx, item);
-      const { ctrls, itemsMap } = data({ items, getKey, configurator, state, ctrlsMap });
+      const { ctrls, itemsMap } = setup({ items, getKey, configurator, state, ctrlsMap });
       const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff($items, items, getKey);
 
       state.setCtrls(ctrls);
@@ -151,13 +153,13 @@ function useTransition<T extends string, I = unknown>(
   return [transition, api];
 }
 
-type DataOptions<T extends string, I = unknown> = {
+type SetupOptions<T extends string, I = unknown> = {
   items: Array<I>;
   getKey: KeyExtractor<I>;
   state: SharedState<T>;
 } & Pick<Scope<T, I>, 'configurator' | 'ctrlsMap'>;
 
-function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
+function setup<T extends string, I = unknown>(options: SetupOptions<T, I>) {
   const { items, getKey, configurator, state, ctrlsMap } = options;
   const itemsMap = new Map<ElementKey, I>();
   const ctrls = items.map((item, idx) => {
@@ -174,7 +176,7 @@ function data<T extends string, I = unknown>(options: DataOptions<T, I>) {
 type GetControllerOptions<T extends string, I = unknown> = {
   idx: number;
   item: I;
-} & Pick<DataOptions<T, I>, 'getKey' | 'configurator' | 'state' | 'ctrlsMap'>;
+} & Pick<SetupOptions<T, I>, 'getKey' | 'configurator' | 'state' | 'ctrlsMap'>;
 
 function getController<T extends string, I = unknown>(options: GetControllerOptions<T, I>) {
   const { idx, item, getKey, configurator, state, ctrlsMap } = options;

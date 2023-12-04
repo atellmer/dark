@@ -1,6 +1,7 @@
 /** @jsx h */
 import { h, component, useState, useLayoutEffect } from '@dark-engine/core';
-import { dom, createBrowserEnv, replacer, time, getSpyLength } from '@test-utils';
+import { hydrateRoot } from '@dark-engine/platform-browser';
+import { dom, createBrowserEnv, createServerEnv, replacer, time, getSpyLength } from '@test-utils';
 
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
@@ -94,7 +95,7 @@ describe('[@animations/use-transition]', () => {
     items = generate(1);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(spy).toHaveBeenCalledTimes(56);
+    expect(spy).toHaveBeenCalledTimes(58);
     expect(spy).toHaveBeenCalledWith({ opacity: 0 });
     expect(spy).toHaveBeenCalledWith({ opacity: 0.1884 });
     expect(spy).toHaveBeenCalledWith({ opacity: 0.7749 });
@@ -159,7 +160,7 @@ describe('[@animations/use-transition]', () => {
     render(<App items={items} />);
     jest.runAllTimers();
     expect(renderSpy).toHaveBeenCalledTimes(3);
-    expect(spies[0]).toHaveBeenCalledTimes(56);
+    expect(spies[0]).toHaveBeenCalledTimes(58);
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0 });
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.1884 });
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.7749 });
@@ -545,7 +546,7 @@ describe('[@animations/use-transition]', () => {
 
     render(<App />);
     jest.runAllTimers();
-    expect(spy).toHaveBeenCalledTimes(56);
+    expect(spy).toHaveBeenCalledTimes(58);
     expect(host.innerHTML).toBe(content(true, 1));
     spy.mockClear();
 
@@ -979,5 +980,120 @@ describe('[@animations/use-transition]', () => {
     };
 
     expect(make).not.toThrow();
+  });
+
+  test('supports SSR', async () => {
+    const content = (items: Array<Item>, opacity: number) =>
+      items
+        .map(
+          x => dom`
+              <div style="opacity: ${opacity};">${x.data}</div>
+            `,
+        )
+        .join('');
+    let items: Array<Item> = null;
+    type SpringProps = 'opacity';
+    type AppProps = { items: Array<Item> };
+    const App = component<AppProps>(({ items }) => {
+      const [transition, _api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+          update: { opacity: 1 },
+        }),
+      );
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <div style={`opacity: ${spring.prop('opacity')};`}>{item.data}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spy = jest.fn();
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spy(value);
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    items = generate(3);
+
+    const { renderToString } = createServerEnv();
+    const html = await renderToString(<App items={items} />);
+
+    expect(html).toBe(content(items, 0));
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  test('supports hydration', async () => {
+    const content = (items: Array<Item>, opacity: number) =>
+      items
+        .map(
+          x => dom`
+              <div style="opacity: ${opacity};">${x.data}</div>
+            `,
+        )
+        .join('');
+    let items: Array<Item> = null;
+    type SpringProps = 'opacity';
+    type AppProps = { items: Array<Item> };
+    const App = component<AppProps>(({ items }) => {
+      const [transition, _api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+          update: { opacity: 1 },
+        }),
+      );
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <div style={`opacity: ${spring.prop('opacity')};`}>{item.data}</div>
+          </Animated>
+        );
+      });
+    });
+
+    const spy = jest.fn();
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      spy(value);
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    items = generate(3);
+
+    const { renderToString } = createServerEnv();
+    const html = await renderToString(<App items={items} />);
+
+    expect(html).toBe(content(items, 0));
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockClear();
+
+    const { host, render } = createBrowserEnv();
+
+    host.innerHTML = html;
+
+    hydrateRoot(host, <App items={items} />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe(content(items, 1));
+    expect(spy).toHaveBeenCalledTimes(174);
+    spy.mockClear();
+
+    items = generate(5);
+    render(<App items={items} />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe(content(items, 1));
+    expect(spy).toHaveBeenCalledTimes(139);
   });
 });
