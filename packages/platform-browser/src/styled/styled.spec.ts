@@ -1,4 +1,4 @@
-import { parse, StyleSheet, StyleProp, MediaExp, NestingExp } from './styled';
+import { parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp } from './styled';
 
 describe('[@platform-browser/styled]', () => {
   test('parses css correcrly #1', () => {
@@ -32,15 +32,15 @@ describe('[@platform-browser/styled]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(1);
 
-    const mediaExp = stylesheet.body[0] as MediaExp;
+    const mqe = stylesheet.body[0] as MediaQueryExp;
 
-    expect(mediaExp).toBeInstanceOf(MediaExp);
-    expect(mediaExp.value).toBe('@media (max-width: 600px)');
+    expect(mqe).toBeInstanceOf(MediaQueryExp);
+    expect(mqe.value).toBe('@media (max-width: 600px)');
 
-    const color = mediaExp.children[0] as StyleProp;
-    const backgroundColor = mediaExp.children[1] as StyleProp;
+    const color = mqe.children[0] as StyleProp;
+    const backgroundColor = mqe.children[1] as StyleProp;
 
-    expect(mediaExp.children.length).toBe(2);
+    expect(mqe.children.length).toBe(2);
     expect(color).toBeInstanceOf(StyleProp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
@@ -60,15 +60,15 @@ describe('[@platform-browser/styled]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(1);
 
-    const nestingExp = stylesheet.body[0] as NestingExp;
+    const nse = stylesheet.body[0] as NestingExp;
 
-    expect(nestingExp).toBeInstanceOf(NestingExp);
-    expect(nestingExp.value).toBe('&:hover');
+    expect(nse).toBeInstanceOf(NestingExp);
+    expect(nse.value).toBe('&:hover');
 
-    const color = nestingExp.children[0] as StyleProp;
-    const backgroundColor = nestingExp.children[1] as StyleProp;
+    const color = nse.children[0] as StyleProp;
+    const backgroundColor = nse.children[1] as StyleProp;
 
-    expect(nestingExp.children.length).toBe(2);
+    expect(nse.children.length).toBe(2);
     expect(color).toBeInstanceOf(StyleProp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
@@ -90,18 +90,18 @@ describe('[@platform-browser/styled]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(1);
 
-    const mediaExp = stylesheet.body[0] as MediaExp;
+    const mqe = stylesheet.body[0] as MediaQueryExp;
 
-    expect(mediaExp).toBeInstanceOf(MediaExp);
-    expect(mediaExp.value).toBe('@media (max-width: 600px)');
+    expect(mqe).toBeInstanceOf(MediaQueryExp);
+    expect(mqe.value).toBe('@media (max-width: 600px)');
 
-    const nestingExp = mediaExp.children[0] as NestingExp;
+    const nse = mqe.children[0] as NestingExp;
 
-    expect(nestingExp.children.length).toBe(2);
-    expect(nestingExp.value).toBe('&:hover');
+    expect(nse.children.length).toBe(2);
+    expect(nse.value).toBe('&:hover');
 
-    const color = nestingExp.children[0] as StyleProp;
-    const backgroundColor = nestingExp.children[1] as StyleProp;
+    const color = nse.children[0] as StyleProp;
+    const backgroundColor = nse.children[1] as StyleProp;
 
     expect(color).toBeInstanceOf(StyleProp);
     expect(color.name).toBe('color');
@@ -234,14 +234,14 @@ describe('[@platform-browser/styled]', () => {
     expect(stylesheet.body.length).toBe(8);
 
     {
-      const mediaExp = stylesheet.body[0] as MediaExp;
+      const mqe = stylesheet.body[0] as MediaQueryExp;
 
-      expect(mediaExp).toBeInstanceOf(MediaExp);
-      expect(mediaExp.value).toBe('@media(min-width: 400px)');
-      expect(mediaExp.children.length).toBe(4);
+      expect(mqe).toBeInstanceOf(MediaQueryExp);
+      expect(mqe.value).toBe('@media(min-width: 400px)');
+      expect(mqe.children.length).toBe(4);
 
-      const top = mediaExp.children[0] as StyleProp;
-      const left = mediaExp.children[1] as StyleProp;
+      const top = mqe.children[0] as StyleProp;
+      const left = mqe.children[1] as StyleProp;
 
       expect(top).toBeInstanceOf(StyleProp);
       expect(top.name).toBe('top');
@@ -251,13 +251,13 @@ describe('[@platform-browser/styled]', () => {
       expect(left.value).toBe('20px');
 
       {
-        const nestingExp = mediaExp.children[2] as NestingExp;
+        const nse = mqe.children[2] as NestingExp;
 
-        expect(nestingExp).toBeInstanceOf(NestingExp);
-        expect(nestingExp.value).toBe('&:hover');
+        expect(nse).toBeInstanceOf(NestingExp);
+        expect(nse.value).toBe('&:hover');
 
-        const color = nestingExp.children[0] as StyleProp;
-        const display = nestingExp.children[1] as StyleProp;
+        const color = nse.children[0] as StyleProp;
+        const display = nse.children[1] as StyleProp;
 
         expect(color).toBeInstanceOf(StyleProp);
         expect(color.name).toBe('color');
@@ -267,7 +267,7 @@ describe('[@platform-browser/styled]', () => {
         expect(display.value).toBe('block');
       }
 
-      const flex = mediaExp.children[3] as StyleProp;
+      const flex = mqe.children[3] as StyleProp;
 
       expect(flex).toBeInstanceOf(StyleProp);
       expect(flex.name).toBe('flex');
@@ -295,14 +295,14 @@ describe('[@platform-browser/styled]', () => {
     }
 
     {
-      const mediaExp = stylesheet.body[5] as MediaExp;
+      const mqe = stylesheet.body[5] as MediaQueryExp;
 
-      expect(mediaExp).toBeInstanceOf(MediaExp);
-      expect(mediaExp.value).toBe('@media(min-width: 700px)');
-      expect(mediaExp.children.length).toBe(4);
+      expect(mqe).toBeInstanceOf(MediaQueryExp);
+      expect(mqe.value).toBe('@media(min-width: 700px)');
+      expect(mqe.children.length).toBe(4);
 
-      const top = mediaExp.children[0] as StyleProp;
-      const left = mediaExp.children[1] as StyleProp;
+      const top = mqe.children[0] as StyleProp;
+      const left = mqe.children[1] as StyleProp;
 
       expect(top).toBeInstanceOf(StyleProp);
       expect(top.name).toBe('top');
@@ -312,12 +312,12 @@ describe('[@platform-browser/styled]', () => {
       expect(left.value).toBe('100px');
 
       {
-        const nestingExp = mediaExp.children[2] as NestingExp;
+        const nse = mqe.children[2] as NestingExp;
 
-        expect(nestingExp).toBeInstanceOf(NestingExp);
-        expect(nestingExp.value).toBe('&:hover');
+        expect(nse).toBeInstanceOf(NestingExp);
+        expect(nse.value).toBe('&:hover');
 
-        const color = nestingExp.children[0] as StyleProp;
+        const color = nse.children[0] as StyleProp;
 
         expect(color).toBeInstanceOf(StyleProp);
         expect(color.name).toBe('color');
@@ -325,13 +325,13 @@ describe('[@platform-browser/styled]', () => {
       }
 
       {
-        const nestingExp = mediaExp.children[3] as NestingExp;
+        const nse = mqe.children[3] as NestingExp;
 
-        expect(nestingExp).toBeInstanceOf(NestingExp);
-        expect(nestingExp.value).toBe('& div .active');
+        expect(nse).toBeInstanceOf(NestingExp);
+        expect(nse.value).toBe('& div .active');
 
-        const color = nestingExp.children[0] as StyleProp;
-        const display = nestingExp.children[1] as StyleProp;
+        const color = nse.children[0] as StyleProp;
+        const display = nse.children[1] as StyleProp;
 
         expect(color).toBeInstanceOf(StyleProp);
         expect(color.name).toBe('color');
@@ -366,13 +366,13 @@ describe('[@platform-browser/styled]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(1);
 
-    const nestingExp = stylesheet.body[0] as NestingExp;
+    const nse = stylesheet.body[0] as NestingExp;
 
-    expect(nestingExp.children.length).toBe(2);
-    expect(nestingExp.value).toBe('& * div.red > .item [selected="true"] #x:hover');
+    expect(nse.children.length).toBe(2);
+    expect(nse.value).toBe('& * div.red > .item [selected="true"] #x:hover');
 
-    const color = nestingExp.children[0] as StyleProp;
-    const backgroundColor = nestingExp.children[1] as StyleProp;
+    const color = nse.children[0] as StyleProp;
+    const backgroundColor = nse.children[1] as StyleProp;
 
     expect(color).toBeInstanceOf(StyleProp);
     expect(color.name).toBe('color');

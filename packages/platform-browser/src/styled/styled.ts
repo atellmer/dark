@@ -1,3 +1,5 @@
+import { useMemo, useInsertionEffect, detectIsUndefined } from '@dark-engine/core';
+
 class Token {
   name: string;
   value: string;
@@ -10,6 +12,10 @@ class Token {
   normalize() {
     this.value = this.value.trim();
   }
+
+  generate(x?: string): string | [string, string] {
+    return this.value;
+  }
 }
 
 class StyleProp extends Token {
@@ -17,13 +23,34 @@ class StyleProp extends Token {
     this.name = this.name.trim();
     super.normalize();
   }
+
+  override generate() {
+    return `${this.name}${PROP_VALUE_START_MARK}${this.value}${PROP_VALUE_END_MARK}`;
+  }
 }
 
 class MediaQueryExp extends Token {
   children: Array<StyleProp | NestingExp> = [];
 
   constructor() {
-    super(MEDIA_QUERY_EXP_START);
+    super(MEDIA_QUERY_EXP_MARK);
+  }
+
+  override generate(className: string) {
+    let css = `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`;
+    let nesting = '';
+
+    for (const token of this.children) {
+      if (detectIsStyleProp(token)) {
+        css += token.generate();
+      } else if (detectIsNestingExp(token)) {
+        nesting += token.generate(className);
+      }
+    }
+
+    css += `${CHILDREN_END_MARK}${CHILDREN_END_MARK}`;
+
+    return [css, nesting] as [string, string];
   }
 }
 
@@ -31,12 +58,49 @@ class NestingExp extends Token {
   children: Array<StyleProp> = [];
 
   constructor() {
-    super(NESTING_EXP_START);
+    super(NESTING_EXP_MARK);
+  }
+
+  override generate(className: string) {
+    let css = `${CLASS_NAME_MARK}${this.value.replace(NESTING_EXP_MARK, className)}${CHILDREN_START_MARK}`;
+
+    for (const token of this.children) {
+      if (detectIsStyleProp(token)) {
+        css += token.generate();
+      }
+    }
+
+    css += `${CHILDREN_END_MARK}`;
+
+    return css;
   }
 }
 
 class StyleSheet {
   body: Array<StyleProp | MediaQueryExp | NestingExp> = [];
+
+  generate(className: string) {
+    let css = `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`;
+    let nesting = '';
+    let media = '';
+
+    for (const token of this.body) {
+      if (detectIsStyleProp(token)) {
+        css += token.generate();
+      } else if (detectIsNestingExp(token)) {
+        nesting += token.generate(className);
+      } else if (detectIsMediaQueryExp(token)) {
+        const [$media, $nesting] = token.generate(className);
+
+        media += $media;
+        nesting += $nesting;
+      }
+    }
+
+    css += `${CHILDREN_END_MARK}${nesting}${media}`;
+
+    return css;
+  }
 }
 
 enum Cursor {
@@ -45,12 +109,13 @@ enum Cursor {
   MEDIA_EXP = 'MEDIA_EXP',
   NESTING_EXP = 'NESTING_EXP',
 }
-const PROP_VALUE_START = ':';
-const PROP_VALUE_END = ';';
-const MEDIA_QUERY_EXP_START = '@';
-const NESTING_EXP_START = '&';
-const CHILDREN_START = '{';
-const CHILDREN_END = '}';
+const PROP_VALUE_START_MARK = ':';
+const PROP_VALUE_END_MARK = ';';
+const MEDIA_QUERY_EXP_MARK = '@';
+const NESTING_EXP_MARK = '&';
+const CHILDREN_START_MARK = '{';
+const CHILDREN_END_MARK = '}';
+const CLASS_NAME_MARK = '.';
 
 function parse(css: string) {
   const stylesheet = new StyleSheet();
@@ -65,13 +130,13 @@ function parse(css: string) {
     const lex = css[i];
 
     switch (lex) {
-      case PROP_VALUE_START:
+      case PROP_VALUE_START_MARK:
         if (cursor === Cursor.PROP_NAME) {
           cursor = Cursor.PROP_VALUE;
           continue;
         }
         break;
-      case PROP_VALUE_END:
+      case PROP_VALUE_END_MARK:
         sp.normalize();
 
         if (!sp.name) {
@@ -87,7 +152,7 @@ function parse(css: string) {
 
         sp = null;
         continue;
-      case MEDIA_QUERY_EXP_START:
+      case MEDIA_QUERY_EXP_MARK:
         if (nse) {
           throw new Error('Illegal style nesting!');
         }
@@ -96,7 +161,7 @@ function parse(css: string) {
         mqe = new MediaQueryExp();
         stylesheet.body.push(mqe);
         continue;
-      case NESTING_EXP_START:
+      case NESTING_EXP_MARK:
         cursor = Cursor.NESTING_EXP;
         nse = new NestingExp();
 
@@ -106,13 +171,13 @@ function parse(css: string) {
           stylesheet.body.push(nse);
         }
         continue;
-      case CHILDREN_START:
+      case CHILDREN_START_MARK:
         if (mqe || nse) {
           cursor = Cursor.PROP_NAME;
           sp = new StyleProp();
         }
         continue;
-      case CHILDREN_END:
+      case CHILDREN_END_MARK:
         if (mqe || nse) {
           sp = null;
 
@@ -159,4 +224,53 @@ function parse(css: string) {
   return stylesheet;
 }
 
-export { parse, StyleSheet, StyleProp, MediaQueryExp as MediaExp, NestingExp };
+const detectIsStyleProp = (x: unknown): x is StyleProp => x instanceof StyleProp;
+
+const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof MediaQueryExp;
+
+const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
+
+function styled(strings: TemplateStringsArray, ...args: Array<string | number>): string {
+  const scope = useMemo<Scope>(() => ({ style: null }), []);
+  const className = 'test';
+  const css = useMemo(() => {
+    const css = strings.map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : '')).join('');
+    const stylesheet = parse(css);
+    const $css = stylesheet.generate(className);
+
+    console.log('stylesheet', stylesheet);
+    console.log($css);
+
+    return $css;
+  }, [...strings, ...args]);
+
+  useInsertionEffect(() => {
+    const style = document.createElement('style');
+
+    document.head.appendChild(style);
+
+    scope.style = style;
+
+    return () => style.remove();
+  }, []);
+
+  useInsertionEffect(() => {
+    scope.style.textContent = css;
+  }, [css]);
+
+  return className;
+}
+
+type Scope = {
+  style: HTMLStyleElement;
+};
+
+type StyleRecord = Record<string, string>;
+
+type Config<T extends StyleRecord> = (x: typeof styled) => T;
+
+function useStyled<T extends StyleRecord>(config: Config<T>): T {
+  return config(styled);
+}
+
+export { useStyled, parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp };
