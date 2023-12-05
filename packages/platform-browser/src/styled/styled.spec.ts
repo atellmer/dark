@@ -8,10 +8,10 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(2);
+    expect(stylesheet.body.length).toBe(2);
 
-    const color = stylesheet.children[0] as StyleProp;
-    const backgroundColor = stylesheet.children[1] as StyleProp;
+    const color = stylesheet.body[0] as StyleProp;
+    const backgroundColor = stylesheet.body[1] as StyleProp;
 
     expect(color).toBeInstanceOf(StyleProp);
     expect(color.name).toBe('color');
@@ -30,9 +30,9 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(stylesheet.body.length).toBe(1);
 
-    const mediaExp = stylesheet.children[0] as MediaExp;
+    const mediaExp = stylesheet.body[0] as MediaExp;
 
     expect(mediaExp).toBeInstanceOf(MediaExp);
     expect(mediaExp.value).toBe('@media (max-width: 600px)');
@@ -58,9 +58,9 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(stylesheet.body.length).toBe(1);
 
-    const nestingExp = stylesheet.children[0] as NestingExp;
+    const nestingExp = stylesheet.body[0] as NestingExp;
 
     expect(nestingExp).toBeInstanceOf(NestingExp);
     expect(nestingExp.value).toBe('&:hover');
@@ -88,9 +88,9 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(stylesheet.body.length).toBe(1);
 
-    const mediaExp = stylesheet.children[0] as MediaExp;
+    const mediaExp = stylesheet.body[0] as MediaExp;
 
     expect(mediaExp).toBeInstanceOf(MediaExp);
     expect(mediaExp.value).toBe('@media (max-width: 600px)');
@@ -119,11 +119,11 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(3);
+    expect(stylesheet.body.length).toBe(3);
 
-    const border = stylesheet.children[0] as StyleProp;
-    const padding = stylesheet.children[1] as StyleProp;
-    const fontSize = stylesheet.children[2] as StyleProp;
+    const border = stylesheet.body[0] as StyleProp;
+    const padding = stylesheet.body[1] as StyleProp;
+    const fontSize = stylesheet.body[2] as StyleProp;
 
     expect(border).toBeInstanceOf(StyleProp);
     expect(border.name).toBe('border');
@@ -143,10 +143,10 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(2);
+    expect(stylesheet.body.length).toBe(2);
 
-    const content = stylesheet.children[0] as StyleProp;
-    const fontFamily = stylesheet.children[1] as StyleProp;
+    const content = stylesheet.body[0] as StyleProp;
+    const fontFamily = stylesheet.body[1] as StyleProp;
 
     expect(content).toBeInstanceOf(StyleProp);
     expect(content.name).toBe('content');
@@ -163,10 +163,10 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(2);
+    expect(stylesheet.body.length).toBe(2);
 
-    const color = stylesheet.children[0] as StyleProp;
-    const backgroundColor = stylesheet.children[1] as StyleProp;
+    const color = stylesheet.body[0] as StyleProp;
+    const backgroundColor = stylesheet.body[1] as StyleProp;
 
     expect(color).toBeInstanceOf(StyleProp);
     expect(color.name).toBe('color');
@@ -183,14 +183,14 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(0);
+    expect(stylesheet.body.length).toBe(0);
   });
 
   test('parses css correcrly #8', () => {
     const stylesheet = parse(``);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(0);
+    expect(stylesheet.body.length).toBe(0);
   });
 
   test('parses css correcrly #9', () => {
@@ -231,10 +231,10 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(8);
+    expect(stylesheet.body.length).toBe(8);
 
     {
-      const mediaExp = stylesheet.children[0] as MediaExp;
+      const mediaExp = stylesheet.body[0] as MediaExp;
 
       expect(mediaExp).toBeInstanceOf(MediaExp);
       expect(mediaExp.value).toBe('@media(min-width: 400px)');
@@ -275,10 +275,10 @@ describe('[@platform-browser/styled]', () => {
     }
 
     {
-      const width = stylesheet.children[1] as StyleProp;
-      const height = stylesheet.children[2] as StyleProp;
-      const backgroundImage = stylesheet.children[3] as StyleProp;
-      const fontSize = stylesheet.children[4] as StyleProp;
+      const width = stylesheet.body[1] as StyleProp;
+      const height = stylesheet.body[2] as StyleProp;
+      const backgroundImage = stylesheet.body[3] as StyleProp;
+      const fontSize = stylesheet.body[4] as StyleProp;
 
       expect(width).toBeInstanceOf(StyleProp);
       expect(width.name).toBe('width');
@@ -295,7 +295,7 @@ describe('[@platform-browser/styled]', () => {
     }
 
     {
-      const mediaExp = stylesheet.children[5] as MediaExp;
+      const mediaExp = stylesheet.body[5] as MediaExp;
 
       expect(mediaExp).toBeInstanceOf(MediaExp);
       expect(mediaExp.value).toBe('@media(min-width: 700px)');
@@ -343,8 +343,8 @@ describe('[@platform-browser/styled]', () => {
     }
 
     {
-      const transition = stylesheet.children[6] as StyleProp;
-      const transform = stylesheet.children[7] as StyleProp;
+      const transition = stylesheet.body[6] as StyleProp;
+      const transform = stylesheet.body[7] as StyleProp;
 
       expect(transition).toBeInstanceOf(StyleProp);
       expect(transition.name).toBe('transition');
@@ -364,9 +364,9 @@ describe('[@platform-browser/styled]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(stylesheet.body.length).toBe(1);
 
-    const nestingExp = stylesheet.children[0] as NestingExp;
+    const nestingExp = stylesheet.body[0] as NestingExp;
 
     expect(nestingExp.children.length).toBe(2);
     expect(nestingExp.value).toBe('& * div.red > .item [selected="true"] #x:hover');

@@ -12,10 +12,6 @@ class Token {
   }
 }
 
-class StyleSheet {
-  children: Array<StyleProp | MediaExp | NestingExp> = [];
-}
-
 class StyleProp extends Token {
   override normalize() {
     this.name = this.name.trim();
@@ -23,11 +19,11 @@ class StyleProp extends Token {
   }
 }
 
-class MediaExp extends Token {
+class MediaQueryExp extends Token {
   children: Array<StyleProp | NestingExp> = [];
 
   constructor() {
-    super(MEDIA_EXP_START);
+    super(MEDIA_QUERY_EXP_START);
   }
 }
 
@@ -39,6 +35,10 @@ class NestingExp extends Token {
   }
 }
 
+class StyleSheet {
+  body: Array<StyleProp | MediaQueryExp | NestingExp> = [];
+}
+
 enum Cursor {
   PROP_NAME = 'PROP_NAME',
   PROP_VALUE = 'PROP_VALUE',
@@ -47,7 +47,7 @@ enum Cursor {
 }
 const PROP_VALUE_START = ':';
 const PROP_VALUE_END = ';';
-const MEDIA_EXP_START = '@';
+const MEDIA_QUERY_EXP_START = '@';
 const NESTING_EXP_START = '&';
 const CHILDREN_START = '{';
 const CHILDREN_END = '}';
@@ -55,9 +55,9 @@ const CHILDREN_END = '}';
 function parse(css: string) {
   const stylesheet = new StyleSheet();
   let cursor: Cursor = null;
-  let prop: StyleProp = null;
-  let media: MediaExp = null;
-  let nest: NestingExp = null;
+  let sp: StyleProp = null;
+  let mqe: MediaQueryExp = null;
+  let nse: NestingExp = null;
 
   //console.log(css);
 
@@ -72,93 +72,91 @@ function parse(css: string) {
         }
         break;
       case PROP_VALUE_END:
-        prop.normalize();
+        sp.normalize();
 
-        if (!prop.name) {
+        if (!sp.name) {
           throw new Error('Incorrect style property name!');
         }
 
-        if (media || nest) {
-          media && !nest && media.children.push(prop);
-          nest && nest.children.push(prop);
+        if (mqe || nse) {
+          mqe && !nse && mqe.children.push(sp);
+          nse && nse.children.push(sp);
         } else {
-          stylesheet.children.push(prop);
+          stylesheet.body.push(sp);
         }
 
-        prop = null;
+        sp = null;
         continue;
-      case MEDIA_EXP_START:
-        if (nest) {
+      case MEDIA_QUERY_EXP_START:
+        if (nse) {
           throw new Error('Illegal style nesting!');
         }
 
         cursor = Cursor.MEDIA_EXP;
-        media = new MediaExp();
-        stylesheet.children.push(media);
+        mqe = new MediaQueryExp();
+        stylesheet.body.push(mqe);
         continue;
       case NESTING_EXP_START:
         cursor = Cursor.NESTING_EXP;
-        nest = new NestingExp();
+        nse = new NestingExp();
 
-        if (media) {
-          media.children.push(nest);
+        if (mqe) {
+          mqe.children.push(nse);
         } else {
-          stylesheet.children.push(nest);
+          stylesheet.body.push(nse);
         }
         continue;
       case CHILDREN_START:
-        if (media || nest) {
+        if (mqe || nse) {
           cursor = Cursor.PROP_NAME;
-          prop = new StyleProp();
+          sp = new StyleProp();
         }
         continue;
       case CHILDREN_END:
-        if (media || nest) {
-          prop = null;
+        if (mqe || nse) {
+          sp = null;
 
-          if (media) {
-            media.normalize();
+          if (mqe) {
+            mqe.normalize();
 
-            if (!nest) {
-              media = null;
+            if (!nse) {
+              mqe = null;
             }
           }
 
-          if (nest) {
-            nest.normalize();
-            nest = null;
+          if (nse) {
+            nse.normalize();
+            nse = null;
           }
         }
         continue;
       default:
-        if (!prop) {
+        if (!sp) {
           cursor = Cursor.PROP_NAME;
-          prop = new StyleProp();
+          sp = new StyleProp();
         }
         break;
     }
 
     switch (cursor) {
       case Cursor.PROP_NAME:
-        prop.name += lex;
+        sp.name += lex;
         break;
       case Cursor.PROP_VALUE:
-        prop.value += lex;
+        sp.value += lex;
         break;
       case Cursor.MEDIA_EXP:
-        media.value += lex;
+        mqe.value += lex;
         break;
       case Cursor.NESTING_EXP:
-        nest.value += lex;
+        nse.value += lex;
         break;
       default:
         throw new Error(`Unexpected cursor: ${cursor}`);
     }
   }
 
-  console.log('root', stylesheet);
-
   return stylesheet;
 }
 
-export { parse, StyleSheet, StyleProp, MediaExp, NestingExp };
+export { parse, StyleSheet, StyleProp, MediaQueryExp as MediaExp, NestingExp };
