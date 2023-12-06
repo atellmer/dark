@@ -12,12 +12,12 @@ import {
   StyleExp,
   MediaQueryExp,
   NestingExp,
-  DynamicExp,
+  FunctionExp,
   detectIsStyleSheet,
   detectIsStyleExp,
   detectIsMediaQueryExp,
   detectIsNestingExp,
-  detectIsDynamicExp,
+  detectIsFunctionExp,
 } from '../tokens';
 
 function hasReplacerMark(x: string) {
@@ -45,18 +45,18 @@ function parse(css: string) {
     buffer += lex;
 
     if (buffer.length >= REPLACER_MARK.length && hasReplacerMark(buffer)) {
-      const dne = new DynamicExp(++count);
+      const fne = new FunctionExp(++count);
 
-      dne.parent = parent;
-      dne.markAsDynamic();
+      fne.parent = parent;
+      fne.markAsDynamic();
 
       if (detectIsStyleExp(last) && !last.value) {
-        dne.style = last;
+        fne.style = last;
         last.normalize();
         last.isDynamic = true;
-        parent.children[parent.children.length - 1] = dne;
+        parent.children[parent.children.length - 1] = fne;
       } else {
-        parent.children.push(dne);
+        parent.children.push(fne);
       }
 
       buffer = buffer.slice(0, -REPLACER_MARK.length);
@@ -111,7 +111,7 @@ function parse(css: string) {
             throw new Error('Incorrect style!');
           }
 
-          if (detectIsDynamicExp(token)) {
+          if (detectIsFunctionExp(token)) {
             buffer = '';
             continue;
           }

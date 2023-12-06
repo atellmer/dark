@@ -50,14 +50,14 @@ class NestingExp<P extends object = {}> extends Token {
     for (const token of this.children) {
       const se = token as unknown as StyleExp;
       const mqe = token as unknown as MediaQueryExp;
-      const dne = token as unknown as DynamicExp;
+      const fne = token as unknown as FunctionExp;
 
       if (detectIsStyleExp(token)) {
         styles += se.generate();
       } else if (detectIsMediaQueryExp(token)) {
         styles += mqe.generate(className, props, fns);
-      } else if (detectIsDynamicExp(token)) {
-        styles += dne.generate(props, fns);
+      } else if (detectIsFunctionExp(token)) {
+        styles += fne.generate(props, fns);
       }
     }
 
@@ -81,14 +81,14 @@ class MediaQueryExp<P extends object = {}> extends Token {
     for (const token of this.children) {
       const se = token as unknown as StyleExp;
       const nse = token as unknown as NestingExp;
-      const dne = token as unknown as DynamicExp;
+      const fne = token as unknown as FunctionExp;
 
       if (detectIsStyleExp(token)) {
         styles += se.generate();
       } else if (detectIsNestingExp(token)) {
         nesting += nse.generate(className, props, fns);
-      } else if (detectIsDynamicExp(token)) {
-        styles += dne.generate(props, fns);
+      } else if (detectIsFunctionExp(token)) {
+        styles += fne.generate(props, fns);
       }
     }
 
@@ -98,7 +98,7 @@ class MediaQueryExp<P extends object = {}> extends Token {
   }
 }
 
-class DynamicExp<P extends object = {}> extends Token {
+class FunctionExp<P extends object = {}> extends Token {
   name = REPLACER_MARK;
   style: StyleExp = null;
 
@@ -135,7 +135,7 @@ class StyleSheet<P extends object = {}> {
       const se = token as unknown as StyleExp;
       const nse = token as unknown as NestingExp;
       const mqe = token as unknown as MediaQueryExp;
-      const dne = token as unknown as DynamicExp;
+      const fne = token as unknown as FunctionExp;
 
       if (detectIsStyleExp(token)) {
         styles += se.generate();
@@ -143,8 +143,8 @@ class StyleSheet<P extends object = {}> {
         nesting += nse.generate(className, props, fns);
       } else if (detectIsMediaQueryExp(token)) {
         media += mqe.generate(className, props, fns);
-      } else if (detectIsDynamicExp(token)) {
-        styles += dne.generate(props, fns);
+      } else if (detectIsFunctionExp(token)) {
+        styles += fne.generate(props, fns);
       }
     }
 
@@ -156,7 +156,7 @@ class StyleSheet<P extends object = {}> {
 
 export type Parent = StyleSheet | NestingExp | MediaQueryExp;
 
-export type Children = Array<StyleExp | NestingExp | MediaQueryExp | DynamicExp>;
+export type Children = Array<StyleExp | NestingExp | MediaQueryExp | FunctionExp>;
 
 const detectIsToken = (x: unknown): x is Token => x instanceof Token;
 
@@ -166,7 +166,7 @@ const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof M
 
 const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
 
-const detectIsDynamicExp = (x: unknown): x is DynamicExp => x instanceof DynamicExp;
+const detectIsFunctionExp = (x: unknown): x is FunctionExp => x instanceof FunctionExp;
 
 const detectIsStyleSheet = (x: unknown): x is StyleSheet => x instanceof StyleSheet;
 
@@ -175,10 +175,10 @@ export {
   StyleExp,
   MediaQueryExp,
   NestingExp,
-  DynamicExp,
+  FunctionExp,
   detectIsStyleSheet,
   detectIsStyleExp,
   detectIsMediaQueryExp,
   detectIsNestingExp,
-  detectIsDynamicExp,
+  detectIsFunctionExp,
 };

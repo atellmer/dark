@@ -2,24 +2,25 @@ import {
   type ComponentFactory,
   type TagVirtualNodeFactory,
   type Callback,
-  component,
   View,
+  component,
   useMemo,
   detectIsString,
   detectIsFunction,
   detectIsUndefined,
   detectIsTextBased,
   useInsertionEffect,
+  detectIsServer,
 } from '@dark-engine/core';
 
 import { REPLACER_MARK } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 
-const styles = new Map<string, string>();
-let target: HTMLStyleElement = null;
-let nextId = -1;
+let styles = new Map<string, string>();
+let tag: HTMLStyleElement = null;
 let updates: Array<Callback> = [];
+let nextId = -1;
 
 function createStyledComponent<P extends object>(factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
@@ -33,7 +34,7 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
 
     if (!styles.has(key)) {
       styles.set(key, className);
-      updates.push(() => injectStyles(target, css));
+      updates.push(() => inject(css, tag));
     }
 
     const $factory = component<P>(props => {
@@ -48,7 +49,7 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
 
           if (!styles.has(key)) {
             styles.set(key, className);
-            updates.push(() => injectStyles(target, css));
+            updates.push(() => inject(css, tag));
           }
 
           classes.push(className);
@@ -59,9 +60,9 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
       const $$className = $className ? `${className} ${$className}` : className;
 
       useInsertionEffect(() => {
-        if (!target) {
-          target = document.createElement('style');
-          target.setAttribute('dark-styled', 'true');
+        if (!tag) {
+          tag = document.createElement('style');
+          tag.setAttribute('dark-styled', 'true');
         }
 
         if (updates.length > 0) {
@@ -69,6 +70,11 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
           updates = [];
         }
       }, [updates.length]);
+
+      if (detectIsServer()) {
+        styles = new Map();
+        updates = [];
+      }
 
       return factory({ ...props, class: $$className });
     });
@@ -83,7 +89,7 @@ function styled<P extends object>(tag: string | ComponentFactory) {
     : createStyledComponent<P>(tag);
 }
 
-function injectStyles(target: HTMLStyleElement, css: string) {
+function inject(css: string, target: HTMLStyleElement) {
   !target.parentElement && document.head.appendChild(target);
   target.textContent = `${target.textContent}${css}`;
 }
