@@ -25,7 +25,7 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
     const fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
     const joined = join(strings, args);
     const parsed = parse(joined);
-    const [$static, $dynamic] = sliceStyleSheet(parsed);
+    const [$static, $dynamics] = sliceStyleSheet(parsed);
     const key = $static.generate(REPLACER_MARK);
     const className = styles.has(key) ? styles.get(key) : genClassName();
     const css = key.replaceAll(REPLACER_MARK, className);
@@ -38,16 +38,22 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
     const $factory = component<P>(props => {
       const values = Object.keys(props).map(key => props[key]);
       const $className = useMemo(() => {
-        const key = $dynamic.generate(REPLACER_MARK, props, fns);
-        const className = styles.has(key) ? styles.get(key) : genClassName();
-        const css = key.replaceAll(REPLACER_MARK, className);
+        const classes: Array<string> = [];
 
-        if (!styles.has(key)) {
-          styles.set(key, className);
-          updates.push(() => injectStyles(target, css));
+        for (const style of $dynamics) {
+          const key = style.generate(REPLACER_MARK, props, fns);
+          const className = styles.has(key) ? styles.get(key) : genClassName();
+          const css = key.replaceAll(REPLACER_MARK, className);
+
+          if (!styles.has(key)) {
+            styles.set(key, className);
+            updates.push(() => injectStyles(target, css));
+          }
+
+          classes.push(className);
         }
 
-        return className;
+        return classes.join(' ');
       }, [...values]);
       const $$className = $className ? `${className} ${$className}` : className;
 
@@ -82,15 +88,22 @@ function genClassName() {
   return `dk-${++nextId}`;
 }
 
-function sliceStyleSheet(source: StyleSheet) {
+function sliceStyleSheet(source: StyleSheet): [StyleSheet, Array<StyleSheet>] {
   const $static = new StyleSheet();
-  const $dynamic = new StyleSheet();
+  const $dynamics: Array<StyleSheet> = [];
 
   for (const token of source.children) {
-    token.isDynamic ? $dynamic.children.push(token) : $static.children.push(token);
+    if (token.isDynamic) {
+      const style = new StyleSheet();
+
+      style.children.push(token);
+      $dynamics.push(style);
+    } else {
+      $static.children.push(token);
+    }
   }
 
-  return [$static, $dynamic];
+  return [$static, $dynamics];
 }
 
 function join<P>(strings: TemplateStringsArray, args: Args<P>) {
