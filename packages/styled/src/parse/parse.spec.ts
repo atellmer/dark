@@ -1,4 +1,5 @@
-import { parse, StyleSheet, StyleExp, MediaQueryExp, NestingExp } from './parse';
+import { StyleSheet, StyleExp, MediaQueryExp, NestingExp } from '../tokens';
+import { parse } from './parse';
 
 describe('[@styled/parse]', () => {
   test('parses css correcrly #1', () => {
