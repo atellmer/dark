@@ -7,6 +7,7 @@ import {
   useMemo,
   detectIsString,
   detectIsFunction,
+  detectIsUndefined,
   detectIsTextBased,
   useInsertionEffect,
 } from '@dark-engine/core';
@@ -58,7 +59,10 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
       const $$className = $className ? `${className} ${$className}` : className;
 
       useInsertionEffect(() => {
-        !target && (target = document.createElement('style'));
+        if (!target) {
+          target = document.createElement('style');
+          target.setAttribute('dark-styled', 'true');
+        }
 
         if (updates.length > 0) {
           updates.forEach(x => x());
@@ -122,6 +126,14 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
   return joined;
 }
 
+function css(strings: TemplateStringsArray, ...args: Args<any>) {
+  return strings
+    .map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : ''))
+    .join('')
+    .replace(/([:;])\s*/gm, '$1')
+    .trim();
+}
+
 type TextBased = string | number;
 
 type ArgFn<P> = (p: P) => TextBased | false;
@@ -130,4 +142,4 @@ type DynamicArgs<P> = Array<ArgFn<P>>;
 
 type Args<P> = Array<TextBased | ArgFn<P>>;
 
-export { styled };
+export { styled, css };
