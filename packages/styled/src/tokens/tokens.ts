@@ -7,7 +7,7 @@ import {
   NESTING_MARK,
   SELF_MARK,
   CLASS_NAME_MARK,
-  REPLACER_MARK,
+  FUNCTION_MARK,
 } from '../constants';
 
 abstract class Token {
@@ -99,7 +99,7 @@ class MediaQueryExp<P extends object = {}> extends Token {
 }
 
 class FunctionExp<P extends object = {}> extends Token {
-  name = REPLACER_MARK;
+  name = FUNCTION_MARK;
   style: StyleExp = null;
 
   constructor(value: number) {

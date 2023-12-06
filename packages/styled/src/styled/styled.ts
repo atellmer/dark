@@ -13,7 +13,7 @@ import {
   detectIsServer,
 } from '@dark-engine/core';
 
-import { REPLACER_MARK } from '../constants';
+import { FUNCTION_MARK } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 
@@ -28,9 +28,9 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
     const joined = join(strings, args);
     const parsed = parse(joined);
     const [$static, $dynamics] = sliceStyleSheet(parsed);
-    const key = $static.generate(REPLACER_MARK);
+    const key = $static.generate(FUNCTION_MARK);
     const className = styles.has(key) ? styles.get(key) : genClassName();
-    const css = key.replaceAll(REPLACER_MARK, className);
+    const css = key.replaceAll(FUNCTION_MARK, className);
 
     if (!styles.has(key)) {
       styles.set(key, className);
@@ -43,9 +43,9 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
         const classes: Array<string> = [];
 
         for (const style of $dynamics) {
-          const key = style.generate(REPLACER_MARK, props, fns);
+          const key = style.generate(FUNCTION_MARK, props, fns);
           const className = styles.has(key) ? styles.get(key) : genClassName();
-          const css = key.replaceAll(REPLACER_MARK, className);
+          const css = key.replaceAll(FUNCTION_MARK, className);
 
           if (!styles.has(key)) {
             styles.set(key, className);
@@ -123,7 +123,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
     joined += strings[i];
 
     if (detectIsFunction(args[i])) {
-      joined += REPLACER_MARK;
+      joined += FUNCTION_MARK;
     } else if (detectIsTextBased(args[i])) {
       joined += args[i];
     }

@@ -4,7 +4,7 @@ import {
   PROP_VALUE_START_MARK,
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
-  REPLACER_MARK,
+  FUNCTION_MARK,
 } from '../constants';
 import {
   type Children,
@@ -20,17 +20,6 @@ import {
   detectIsFunctionExp,
 } from '../tokens';
 
-function hasReplacerMark(x: string) {
-  const length = REPLACER_MARK.length;
-  const part = x.slice(-length);
-
-  for (let i = 0; i < length; i++) {
-    if (part[i] !== REPLACER_MARK[i]) return false;
-  }
-
-  return true;
-}
-
 function parse(css: string) {
   const stylesheet = new StyleSheet();
   const stack: Array<NestingExp | MediaQueryExp> = [];
@@ -44,7 +33,7 @@ function parse(css: string) {
 
     buffer += lex;
 
-    if (buffer.length >= REPLACER_MARK.length && hasReplacerMark(buffer)) {
+    if (buffer.length >= FUNCTION_MARK.length && hasFunctionMark(buffer)) {
       const fne = new FunctionExp(++count);
 
       fne.parent = parent;
@@ -59,7 +48,7 @@ function parse(css: string) {
         parent.children.push(fne);
       }
 
-      buffer = buffer.slice(0, -REPLACER_MARK.length);
+      buffer = buffer.slice(0, -FUNCTION_MARK.length);
       continue;
     }
 
@@ -127,6 +116,17 @@ function parse(css: string) {
   }
 
   return stylesheet;
+}
+
+function hasFunctionMark(x: string) {
+  const length = FUNCTION_MARK.length;
+  const part = x.slice(-length);
+
+  for (let i = 0; i < length; i++) {
+    if (part[i] !== FUNCTION_MARK[i]) return false;
+  }
+
+  return true;
 }
 
 function detectIsPropName(name: string, idx: number, css: string, children: Children) {
