@@ -7,4 +7,4 @@ export const MEDIA_QUERY_MARK = '@';
 export const NESTING_MARK = '>';
 export const SELF_MARK = '&';
 export const CLASS_NAME_MARK = '.';
-export const FN_INSERTION_MARK = '[#]';
+export const REPLACER_MARK = '[#]';

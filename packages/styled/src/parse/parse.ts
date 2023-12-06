@@ -4,7 +4,7 @@ import {
   PROP_VALUE_START_MARK,
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
-  FN_INSERTION_MARK,
+  REPLACER_MARK,
 } from '../constants';
 import {
   type Children,
@@ -20,12 +20,12 @@ import {
   detectIsDynamicExp,
 } from '../tokens';
 
-function hasInsertionMark(x: string) {
-  const length = FN_INSERTION_MARK.length;
+function hasReplacerMark(x: string) {
+  const length = REPLACER_MARK.length;
   const part = x.slice(-length);
 
   for (let i = 0; i < length; i++) {
-    if (part[i] !== FN_INSERTION_MARK[i]) return false;
+    if (part[i] !== REPLACER_MARK[i]) return false;
   }
 
   return true;
@@ -44,7 +44,7 @@ function parse(css: string) {
 
     buffer += lex;
 
-    if (buffer.length >= FN_INSERTION_MARK.length && hasInsertionMark(buffer)) {
+    if (buffer.length >= REPLACER_MARK.length && hasReplacerMark(buffer)) {
       const dne = new DynamicExp(++count);
 
       dne.parent = parent;
@@ -59,7 +59,7 @@ function parse(css: string) {
         parent.children.push(dne);
       }
 
-      buffer = buffer.slice(0, -FN_INSERTION_MARK.length);
+      buffer = buffer.slice(0, -REPLACER_MARK.length);
       continue;
     }
 
