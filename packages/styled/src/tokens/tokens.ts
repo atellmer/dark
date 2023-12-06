@@ -22,6 +22,12 @@ abstract class Token {
   abstract generate(className?: string): string;
 }
 
+class StyleExp extends Token {
+  override generate() {
+    return `${this.name}${PROP_VALUE_START_MARK}${this.value}${PROP_VALUE_END_MARK}`;
+  }
+}
+
 class NestingExp extends Token {
   name = NESTING_MARK;
   children: Children = [];
@@ -43,12 +49,6 @@ class NestingExp extends Token {
     styles += `${CHILDREN_END_MARK}`;
 
     return styles;
-  }
-}
-
-class StyleExp extends Token {
-  override generate() {
-    return `${this.name}${PROP_VALUE_START_MARK}${this.value}${PROP_VALUE_END_MARK}`;
   }
 }
 

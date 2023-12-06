@@ -3,16 +3,16 @@ import { parse } from './parse';
 
 describe('[@styled/parse]', () => {
   test('parses css correcrly #1', () => {
-    const stylesheet = parse(`
+    const style = parse(`
       color: red;
       background-color: blue;
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(2);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(2);
 
-    const color = stylesheet.children[0] as StyleExp;
-    const backgroundColor = stylesheet.children[1] as StyleExp;
+    const color = style.children[0] as StyleExp;
+    const backgroundColor = style.children[1] as StyleExp;
 
     expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
@@ -23,17 +23,17 @@ describe('[@styled/parse]', () => {
   });
 
   test('parses css correcrly #2', () => {
-    const stylesheet = parse(`
+    const style = parse(`
       @media (max-width: 600px) {
         color: red;
         background-color: blue;
       }
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(1);
 
-    const mqe = stylesheet.children[0] as MediaQueryExp;
+    const mqe = style.children[0] as MediaQueryExp;
 
     expect(mqe).toBeInstanceOf(MediaQueryExp);
     expect(mqe.value).toBe('@media (max-width: 600px)');
@@ -51,17 +51,17 @@ describe('[@styled/parse]', () => {
   });
 
   test('parses css correcrly #3', () => {
-    const stylesheet = parse(`
+    const style = parse(`
       &:hover {
         color: red;
         background-color: blue;
       }
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(1);
 
-    const nse = stylesheet.children[0] as NestingExp;
+    const nse = style.children[0] as NestingExp;
 
     expect(nse).toBeInstanceOf(NestingExp);
     expect(nse.value).toBe('&:hover');
@@ -79,7 +79,7 @@ describe('[@styled/parse]', () => {
   });
 
   test('parses css correcrly #4', () => {
-    const stylesheet = parse(`
+    const style = parse(`
       @media (max-width: 600px) {
         &:hover {
           color: red;
@@ -88,10 +88,10 @@ describe('[@styled/parse]', () => {
       }
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(1);
 
-    const mqe = stylesheet.children[0] as MediaQueryExp;
+    const mqe = style.children[0] as MediaQueryExp;
 
     expect(mqe).toBeInstanceOf(MediaQueryExp);
     expect(mqe.value).toBe('@media (max-width: 600px)');
@@ -113,18 +113,18 @@ describe('[@styled/parse]', () => {
   });
 
   test('parses css correcrly #5', () => {
-    const stylesheet = parse(`
+    const style = parse(`
       border: 1px solid black;
       padding: 10px 20px;
       font-size: 16px;
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(3);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(3);
 
-    const border = stylesheet.children[0] as StyleExp;
-    const padding = stylesheet.children[1] as StyleExp;
-    const fontSize = stylesheet.children[2] as StyleExp;
+    const border = style.children[0] as StyleExp;
+    const padding = style.children[1] as StyleExp;
+    const fontSize = style.children[2] as StyleExp;
 
     expect(border).toBeInstanceOf(StyleExp);
     expect(border.name).toBe('border');
@@ -137,17 +137,17 @@ describe('[@styled/parse]', () => {
     expect(fontSize.value).toBe('16px');
   });
 
-  test('parses css correcrly #5', () => {
-    const stylesheet = parse(`
+  test('parses css correcrly #6', () => {
+    const style = parse(`
       content: "Hello, world";
       font-family: "Arial", sans-serif;
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(2);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(2);
 
-    const content = stylesheet.children[0] as StyleExp;
-    const fontFamily = stylesheet.children[1] as StyleExp;
+    const content = style.children[0] as StyleExp;
+    const fontFamily = style.children[1] as StyleExp;
 
     expect(content).toBeInstanceOf(StyleExp);
     expect(content.name).toBe('content');
@@ -157,17 +157,17 @@ describe('[@styled/parse]', () => {
     expect(fontFamily.value).toBe('"Arial", sans-serif');
   });
 
-  test('parses css correcrly #6', () => {
-    const stylesheet = parse(`
+  test('parses css correcrly #7', () => {
+    const style = parse(`
       color : red ;
       background-color : blue ;
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(2);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(2);
 
-    const color = stylesheet.children[0] as StyleExp;
-    const backgroundColor = stylesheet.children[1] as StyleExp;
+    const color = style.children[0] as StyleExp;
+    const backgroundColor = style.children[1] as StyleExp;
 
     expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
@@ -177,25 +177,25 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #7', () => {
-    const stylesheet = parse(`
+  test('parses css correcrly #8', () => {
+    const style = parse(`
       color
       background-color
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(0);
-  });
-
-  test('parses css correcrly #8', () => {
-    const stylesheet = parse(``);
-
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(0);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(0);
   });
 
   test('parses css correcrly #9', () => {
-    const stylesheet = parse(`
+    const style = parse(``);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(0);
+  });
+
+  test('parses css correcrly #10', () => {
+    const style = parse(`
       @media(min-width: 400px) {
         top: 10px;
         left: 20px;
@@ -210,7 +210,7 @@ describe('[@styled/parse]', () => {
 
       width: 100%;
       height: 100%;
-      background-image: url('https://www.xxx.com/cat.jpg');
+      background-image: url('https://www.cats.com/cat.jpg');
       font-size: 16px;
 
       @media(min-width: 700px) {
@@ -231,11 +231,11 @@ describe('[@styled/parse]', () => {
       transform: translate(10%, 20%, 0) scale(45deg);
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(8);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(8);
 
     {
-      const mqe = stylesheet.children[0] as MediaQueryExp;
+      const mqe = style.children[0] as MediaQueryExp;
 
       expect(mqe).toBeInstanceOf(MediaQueryExp);
       expect(mqe.value).toBe('@media(min-width: 400px)');
@@ -276,10 +276,10 @@ describe('[@styled/parse]', () => {
     }
 
     {
-      const width = stylesheet.children[1] as StyleExp;
-      const height = stylesheet.children[2] as StyleExp;
-      const backgroundImage = stylesheet.children[3] as StyleExp;
-      const fontSize = stylesheet.children[4] as StyleExp;
+      const width = style.children[1] as StyleExp;
+      const height = style.children[2] as StyleExp;
+      const backgroundImage = style.children[3] as StyleExp;
+      const fontSize = style.children[4] as StyleExp;
 
       expect(width).toBeInstanceOf(StyleExp);
       expect(width.name).toBe('width');
@@ -296,7 +296,7 @@ describe('[@styled/parse]', () => {
     }
 
     {
-      const mqe = stylesheet.children[5] as MediaQueryExp;
+      const mqe = style.children[5] as MediaQueryExp;
 
       expect(mqe).toBeInstanceOf(MediaQueryExp);
       expect(mqe.value).toBe('@media(min-width: 700px)');
@@ -344,8 +344,8 @@ describe('[@styled/parse]', () => {
     }
 
     {
-      const transition = stylesheet.children[6] as StyleExp;
-      const transform = stylesheet.children[7] as StyleExp;
+      const transition = style.children[6] as StyleExp;
+      const transform = style.children[7] as StyleExp;
 
       expect(transition).toBeInstanceOf(StyleExp);
       expect(transition.name).toBe('transition');
@@ -356,18 +356,18 @@ describe('[@styled/parse]', () => {
     }
   });
 
-  test('parses css correcrly #10', () => {
-    const stylesheet = parse(`
+  test('parses css correcrly #11', () => {
+    const style = parse(`
       & * div.red > .item [selected="true"] #x:hover {
         color: red;
         background-color: blue;
       }
     `);
 
-    expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.children.length).toBe(1);
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(1);
 
-    const nse = stylesheet.children[0] as NestingExp;
+    const nse = style.children[0] as NestingExp;
 
     expect(nse.children.length).toBe(2);
     expect(nse.value).toBe('& * div.red > .item [selected="true"] #x:hover');
@@ -381,5 +381,127 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
+  });
+
+  test('parses css correcrly #12', () => {
+    const style = parse(`
+      :root {
+        --color: red;
+      }
+      
+      color: var(--color);
+    `);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(2);
+
+    {
+      const nse = style.children[0] as NestingExp;
+
+      expect(nse.children.length).toBe(1);
+      expect(nse.value).toBe(':root');
+
+      const colorVar = nse.children[0] as StyleExp;
+
+      expect(colorVar).toBeInstanceOf(StyleExp);
+      expect(colorVar.name).toBe('--color');
+      expect(colorVar.value).toBe('red');
+    }
+
+    const color = style.children[1] as StyleExp;
+
+    expect(color).toBeInstanceOf(StyleExp);
+    expect(color.name).toBe('color');
+    expect(color.value).toBe('var(--color)');
+  });
+
+  test('parses css correcrly #13', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+
+          & span {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('parses css correcrly #14', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+
+          @media(max-width: 600px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('parses css correcrly #15', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @media(max-width: 600px) {
+          color: purple;
+
+          @media(max-width: 400px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('parses css correcrly #16', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+        }
+
+        @media(max-width: 600px) {
+          color: purple;
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('parses css correcrly #17', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @media(max-width: 600px) {
+          color: purple;
+
+          & span {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
   });
 });
