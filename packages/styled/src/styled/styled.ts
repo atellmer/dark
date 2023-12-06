@@ -85,7 +85,7 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
 
 function styled<P extends object>(tag: string | ComponentFactory) {
   return detectIsString(tag)
-    ? createStyledComponent<P>((props: P) => View({ ...props, as: tag }))
+    ? createStyledComponent<P>((props: P) => View({ as: tag, ...props }))
     : createStyledComponent<P>(tag);
 }
 
