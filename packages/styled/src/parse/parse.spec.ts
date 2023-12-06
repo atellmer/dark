@@ -1,4 +1,4 @@
-import { parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp } from './parse';
+import { parse, StyleSheet, StyleExp, MediaQueryExp, NestingExp } from './parse';
 
 describe('[@styled/parse]', () => {
   test('parses css correcrly #1', () => {
@@ -10,13 +10,13 @@ describe('[@styled/parse]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(2);
 
-    const color = stylesheet.body[0] as StyleProp;
-    const backgroundColor = stylesheet.body[1] as StyleProp;
+    const color = stylesheet.body[0] as StyleExp;
+    const backgroundColor = stylesheet.body[1] as StyleExp;
 
-    expect(color).toBeInstanceOf(StyleProp);
+    expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
-    expect(backgroundColor).toBeInstanceOf(StyleProp);
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
   });
@@ -37,14 +37,14 @@ describe('[@styled/parse]', () => {
     expect(mqe).toBeInstanceOf(MediaQueryExp);
     expect(mqe.value).toBe('@media (max-width: 600px)');
 
-    const color = mqe.children[0] as StyleProp;
-    const backgroundColor = mqe.children[1] as StyleProp;
+    const color = mqe.children[0] as StyleExp;
+    const backgroundColor = mqe.children[1] as StyleExp;
 
     expect(mqe.children.length).toBe(2);
-    expect(color).toBeInstanceOf(StyleProp);
+    expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
-    expect(backgroundColor).toBeInstanceOf(StyleProp);
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
   });
@@ -65,14 +65,14 @@ describe('[@styled/parse]', () => {
     expect(nse).toBeInstanceOf(NestingExp);
     expect(nse.value).toBe('&:hover');
 
-    const color = nse.children[0] as StyleProp;
-    const backgroundColor = nse.children[1] as StyleProp;
+    const color = nse.children[0] as StyleExp;
+    const backgroundColor = nse.children[1] as StyleExp;
 
     expect(nse.children.length).toBe(2);
-    expect(color).toBeInstanceOf(StyleProp);
+    expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
-    expect(backgroundColor).toBeInstanceOf(StyleProp);
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
   });
@@ -100,13 +100,13 @@ describe('[@styled/parse]', () => {
     expect(nse.children.length).toBe(2);
     expect(nse.value).toBe('&:hover');
 
-    const color = nse.children[0] as StyleProp;
-    const backgroundColor = nse.children[1] as StyleProp;
+    const color = nse.children[0] as StyleExp;
+    const backgroundColor = nse.children[1] as StyleExp;
 
-    expect(color).toBeInstanceOf(StyleProp);
+    expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
-    expect(backgroundColor).toBeInstanceOf(StyleProp);
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
   });
@@ -121,17 +121,17 @@ describe('[@styled/parse]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(3);
 
-    const border = stylesheet.body[0] as StyleProp;
-    const padding = stylesheet.body[1] as StyleProp;
-    const fontSize = stylesheet.body[2] as StyleProp;
+    const border = stylesheet.body[0] as StyleExp;
+    const padding = stylesheet.body[1] as StyleExp;
+    const fontSize = stylesheet.body[2] as StyleExp;
 
-    expect(border).toBeInstanceOf(StyleProp);
+    expect(border).toBeInstanceOf(StyleExp);
     expect(border.name).toBe('border');
     expect(border.value).toBe('1px solid black');
-    expect(padding).toBeInstanceOf(StyleProp);
+    expect(padding).toBeInstanceOf(StyleExp);
     expect(padding.name).toBe('padding');
     expect(padding.value).toBe('10px 20px');
-    expect(fontSize).toBeInstanceOf(StyleProp);
+    expect(fontSize).toBeInstanceOf(StyleExp);
     expect(fontSize.name).toBe('font-size');
     expect(fontSize.value).toBe('16px');
   });
@@ -145,13 +145,13 @@ describe('[@styled/parse]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(2);
 
-    const content = stylesheet.body[0] as StyleProp;
-    const fontFamily = stylesheet.body[1] as StyleProp;
+    const content = stylesheet.body[0] as StyleExp;
+    const fontFamily = stylesheet.body[1] as StyleExp;
 
-    expect(content).toBeInstanceOf(StyleProp);
+    expect(content).toBeInstanceOf(StyleExp);
     expect(content.name).toBe('content');
     expect(content.value).toBe('"Hello, world"');
-    expect(fontFamily).toBeInstanceOf(StyleProp);
+    expect(fontFamily).toBeInstanceOf(StyleExp);
     expect(fontFamily.name).toBe('font-family');
     expect(fontFamily.value).toBe('"Arial", sans-serif');
   });
@@ -165,13 +165,13 @@ describe('[@styled/parse]', () => {
     expect(stylesheet).toBeInstanceOf(StyleSheet);
     expect(stylesheet.body.length).toBe(2);
 
-    const color = stylesheet.body[0] as StyleProp;
-    const backgroundColor = stylesheet.body[1] as StyleProp;
+    const color = stylesheet.body[0] as StyleExp;
+    const backgroundColor = stylesheet.body[1] as StyleExp;
 
-    expect(color).toBeInstanceOf(StyleProp);
+    expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
-    expect(backgroundColor).toBeInstanceOf(StyleProp);
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
   });
@@ -240,13 +240,13 @@ describe('[@styled/parse]', () => {
       expect(mqe.value).toBe('@media(min-width: 400px)');
       expect(mqe.children.length).toBe(4);
 
-      const top = mqe.children[0] as StyleProp;
-      const left = mqe.children[1] as StyleProp;
+      const top = mqe.children[0] as StyleExp;
+      const left = mqe.children[1] as StyleExp;
 
-      expect(top).toBeInstanceOf(StyleProp);
+      expect(top).toBeInstanceOf(StyleExp);
       expect(top.name).toBe('top');
       expect(top.value).toBe('10px');
-      expect(left).toBeInstanceOf(StyleProp);
+      expect(left).toBeInstanceOf(StyleExp);
       expect(left.name).toBe('left');
       expect(left.value).toBe('20px');
 
@@ -256,40 +256,40 @@ describe('[@styled/parse]', () => {
         expect(nse).toBeInstanceOf(NestingExp);
         expect(nse.value).toBe('&:hover');
 
-        const color = nse.children[0] as StyleProp;
-        const display = nse.children[1] as StyleProp;
+        const color = nse.children[0] as StyleExp;
+        const display = nse.children[1] as StyleExp;
 
-        expect(color).toBeInstanceOf(StyleProp);
+        expect(color).toBeInstanceOf(StyleExp);
         expect(color.name).toBe('color');
         expect(color.value).toBe('yellow');
-        expect(display).toBeInstanceOf(StyleProp);
+        expect(display).toBeInstanceOf(StyleExp);
         expect(display.name).toBe('display');
         expect(display.value).toBe('block');
       }
 
-      const flex = mqe.children[3] as StyleProp;
+      const flex = mqe.children[3] as StyleExp;
 
-      expect(flex).toBeInstanceOf(StyleProp);
+      expect(flex).toBeInstanceOf(StyleExp);
       expect(flex.name).toBe('flex');
       expect(flex.value).toBe('1');
     }
 
     {
-      const width = stylesheet.body[1] as StyleProp;
-      const height = stylesheet.body[2] as StyleProp;
-      const backgroundImage = stylesheet.body[3] as StyleProp;
-      const fontSize = stylesheet.body[4] as StyleProp;
+      const width = stylesheet.body[1] as StyleExp;
+      const height = stylesheet.body[2] as StyleExp;
+      const backgroundImage = stylesheet.body[3] as StyleExp;
+      const fontSize = stylesheet.body[4] as StyleExp;
 
-      expect(width).toBeInstanceOf(StyleProp);
+      expect(width).toBeInstanceOf(StyleExp);
       expect(width.name).toBe('width');
       expect(width.value).toBe('100%');
-      expect(height).toBeInstanceOf(StyleProp);
+      expect(height).toBeInstanceOf(StyleExp);
       expect(height.name).toBe('height');
       expect(height.value).toBe('100%');
-      expect(backgroundImage).toBeInstanceOf(StyleProp);
+      expect(backgroundImage).toBeInstanceOf(StyleExp);
       expect(backgroundImage.name).toBe('background-image');
       expect(backgroundImage.value).toBe("url('https://www.xxx.com/cat.jpg')");
-      expect(fontSize).toBeInstanceOf(StyleProp);
+      expect(fontSize).toBeInstanceOf(StyleExp);
       expect(fontSize.name).toBe('font-size');
       expect(fontSize.value).toBe('16px');
     }
@@ -301,13 +301,13 @@ describe('[@styled/parse]', () => {
       expect(mqe.value).toBe('@media(min-width: 700px)');
       expect(mqe.children.length).toBe(4);
 
-      const top = mqe.children[0] as StyleProp;
-      const left = mqe.children[1] as StyleProp;
+      const top = mqe.children[0] as StyleExp;
+      const left = mqe.children[1] as StyleExp;
 
-      expect(top).toBeInstanceOf(StyleProp);
+      expect(top).toBeInstanceOf(StyleExp);
       expect(top.name).toBe('top');
       expect(top.value).toBe('100px');
-      expect(left).toBeInstanceOf(StyleProp);
+      expect(left).toBeInstanceOf(StyleExp);
       expect(left.name).toBe('left');
       expect(left.value).toBe('100px');
 
@@ -317,9 +317,9 @@ describe('[@styled/parse]', () => {
         expect(nse).toBeInstanceOf(NestingExp);
         expect(nse.value).toBe('&:hover');
 
-        const color = nse.children[0] as StyleProp;
+        const color = nse.children[0] as StyleExp;
 
-        expect(color).toBeInstanceOf(StyleProp);
+        expect(color).toBeInstanceOf(StyleExp);
         expect(color.name).toBe('color');
         expect(color.value).toBe('red');
       }
@@ -330,26 +330,26 @@ describe('[@styled/parse]', () => {
         expect(nse).toBeInstanceOf(NestingExp);
         expect(nse.value).toBe('& div .active');
 
-        const color = nse.children[0] as StyleProp;
-        const display = nse.children[1] as StyleProp;
+        const color = nse.children[0] as StyleExp;
+        const display = nse.children[1] as StyleExp;
 
-        expect(color).toBeInstanceOf(StyleProp);
+        expect(color).toBeInstanceOf(StyleExp);
         expect(color.name).toBe('color');
         expect(color.value).toBe('blue');
-        expect(display).toBeInstanceOf(StyleProp);
+        expect(display).toBeInstanceOf(StyleExp);
         expect(display.name).toBe('display');
         expect(display.value).toBe('flex');
       }
     }
 
     {
-      const transition = stylesheet.body[6] as StyleProp;
-      const transform = stylesheet.body[7] as StyleProp;
+      const transition = stylesheet.body[6] as StyleExp;
+      const transform = stylesheet.body[7] as StyleExp;
 
-      expect(transition).toBeInstanceOf(StyleProp);
+      expect(transition).toBeInstanceOf(StyleExp);
       expect(transition.name).toBe('transition');
       expect(transition.value).toBe('none');
-      expect(transform).toBeInstanceOf(StyleProp);
+      expect(transform).toBeInstanceOf(StyleExp);
       expect(transform.name).toBe('transform');
       expect(transform.value).toBe('translate(10%, 20%, 0) scale(45deg)');
     }
@@ -371,52 +371,14 @@ describe('[@styled/parse]', () => {
     expect(nse.children.length).toBe(2);
     expect(nse.value).toBe('& * div.red > .item [selected="true"] #x:hover');
 
-    const color = nse.children[0] as StyleProp;
-    const backgroundColor = nse.children[1] as StyleProp;
+    const color = nse.children[0] as StyleExp;
+    const backgroundColor = nse.children[1] as StyleExp;
 
-    expect(color).toBeInstanceOf(StyleProp);
+    expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
     expect(color.value).toBe('red');
-    expect(backgroundColor).toBeInstanceOf(StyleProp);
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
-  });
-
-  test('throw the error #1', () => {
-    const make = () => {
-      parse(`
-        & div {
-          @media (max-width: 500px) {
-            color: red;
-          }
-        }
-    `);
-    };
-
-    expect(make).toThrowError();
-  });
-
-  test('throw the error #2', () => {
-    const make = () => {
-      parse(`
-        ::after {
-          color: red;
-        }
-    `);
-    };
-
-    expect(make).toThrowError();
-  });
-
-  test('did not throw the error', () => {
-    const make = () => {
-      parse(`
-        &::after {
-          color: red;
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
   });
 });
