@@ -31,7 +31,6 @@
     "app"
   ],
   "devDependencies": {
-    "@types/requestidlecallback": "^0.3.1",
     "shelljs": "^0.8.5",
     "ts-loader": "9.4.2",
     "typescript": "4.9.4",

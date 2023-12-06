@@ -71,6 +71,12 @@
       "@dark-engine/animations/*": [
         "./packages/animations/src/*"
       ],
+      "@dark-engine/styled": [
+        "./packages/styled/src/index"
+      ],
+      "@dark-engine/styled/*": [
+        "./packages/styled/src/*"
+      ],
       "@test-utils": [
         "./test/utils"
       ]

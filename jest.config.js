@@ -27,6 +27,7 @@ module.exports = {
     '^@dark-engine/web-router(.*)$': '<rootDir>/packages/web-router/src$1',
     '^@dark-engine/native-navigation(.*)$': '<rootDir>/packages/native-navigation/src$1',
     '^@dark-engine/animations(.*)$': '<rootDir>/packages/animations/src$1',
+    '^@dark-engine/styled(.*)$': '<rootDir>/packages/styled/src$1',
     '^@test-utils$': '<rootDir>/test/utils',
   },
   setupFiles: ['./test/setup.ts'],

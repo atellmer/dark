@@ -11,6 +11,7 @@ const alias = {
   '@dark-engine/web-router': resolve(__dirname, './packages/web-router/src'),
   '@dark-engine/native-navigation': resolve(__dirname, './packages/native-navigation/src'),
   '@dark-engine/animations': resolve(__dirname, './packages/animations/src'),
+  '@dark-engine/styled': resolve(__dirname, './packages/styled/src'),
 };
 
 export { alias };

@@ -1,5 +1,3 @@
-import { useMemo, useInsertionEffect, detectIsUndefined } from '@dark-engine/core';
-
 class Token {
   name: string;
   value: string;
@@ -230,47 +228,4 @@ const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof M
 
 const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
 
-function styled(strings: TemplateStringsArray, ...args: Array<string | number>): string {
-  const scope = useMemo<Scope>(() => ({ style: null }), []);
-  const className = 'test';
-  const css = useMemo(() => {
-    const css = strings.map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : '')).join('');
-    const stylesheet = parse(css);
-    const $css = stylesheet.generate(className);
-
-    console.log('stylesheet', stylesheet);
-    console.log($css);
-
-    return $css;
-  }, [...strings, ...args]);
-
-  useInsertionEffect(() => {
-    const style = document.createElement('style');
-
-    document.head.appendChild(style);
-
-    scope.style = style;
-
-    return () => style.remove();
-  }, []);
-
-  useInsertionEffect(() => {
-    scope.style.textContent = css;
-  }, [css]);
-
-  return className;
-}
-
-type Scope = {
-  style: HTMLStyleElement;
-};
-
-type StyleRecord = Record<string, string>;
-
-type Config<T extends StyleRecord> = (x: typeof styled) => T;
-
-function useStyled<T extends StyleRecord>(config: Config<T>): T {
-  return config(styled);
-}
-
-export { useStyled, parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp };
+export { parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp };

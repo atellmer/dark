@@ -13,6 +13,22 @@ Spring based animations for Dark
 - Includes trails and transitions support
 - Animation sequences
 
+## Installation
+npm:
+```
+npm install @dark-engine/animations
+```
+
+yarn:
+```
+yarn add @dark-engine/animations
+```
+
+CDN:
+```html
+<script src="https://unpkg.com/@dark-engine/animations/dist/umd/dark-animations.production.min.js"></script>
+```
+
 ## Usage
 
 ```tsx

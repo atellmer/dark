@@ -1,6 +1,6 @@
-import { parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp } from './styled';
+import { parse, StyleSheet, StyleProp, MediaQueryExp, NestingExp } from './parse';
 
-describe('[@platform-browser/styled]', () => {
+describe('[@styled/parse]', () => {
   test('parses css correcrly #1', () => {
     const stylesheet = parse(`
       color: red;
