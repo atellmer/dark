@@ -289,7 +289,7 @@ describe('[@styled/parse]', () => {
       expect(height.value).toBe('100%');
       expect(backgroundImage).toBeInstanceOf(StyleExp);
       expect(backgroundImage.name).toBe('background-image');
-      expect(backgroundImage.value).toBe("url('https://www.xxx.com/cat.jpg')");
+      expect(backgroundImage.value).toBe("url('https://www.cats.com/cat.jpg')");
       expect(fontSize).toBeInstanceOf(StyleExp);
       expect(fontSize.name).toBe('font-size');
       expect(fontSize.value).toBe('16px');

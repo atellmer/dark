@@ -4,6 +4,7 @@ import {
   PROP_VALUE_START_MARK,
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
+  FN_INSERTION_MARK,
 } from '../constants';
 import {
   type Children,
@@ -11,22 +12,56 @@ import {
   StyleExp,
   MediaQueryExp,
   NestingExp,
+  DynamicExp,
   detectIsStyleSheet,
   detectIsStyleExp,
   detectIsMediaQueryExp,
   detectIsNestingExp,
+  detectIsDynamicExp,
 } from '../tokens';
+
+function hasInsertionMark(x: string) {
+  const length = FN_INSERTION_MARK.length;
+  const part = x.slice(-length);
+
+  for (let i = 0; i < length; i++) {
+    if (part[i] !== FN_INSERTION_MARK[i]) return false;
+  }
+
+  return true;
+}
 
 function parse(css: string) {
   const stylesheet = new StyleSheet();
   const stack: Array<NestingExp | MediaQueryExp> = [];
   let buffer = '';
+  let count = -1;
 
   for (let i = 0; i < css.length; i++) {
     const lex = css[i];
     const parent = stack[stack.length - 1] || stylesheet;
+    const last = parent.children[parent.children.length - 1];
 
     buffer += lex;
+
+    if (buffer.length >= FN_INSERTION_MARK.length && hasInsertionMark(buffer)) {
+      const dne = new DynamicExp(++count);
+
+      dne.parent = parent;
+      dne.markAsDynamic();
+
+      if (detectIsStyleExp(last) && !last.value) {
+        dne.style = last;
+        last.normalize();
+        last.isDynamic = true;
+        parent.children[parent.children.length - 1] = dne;
+      } else {
+        parent.children.push(dne);
+      }
+
+      buffer = buffer.slice(0, -FN_INSERTION_MARK.length);
+      continue;
+    }
 
     switch (lex) {
       case CHILDREN_START_MARK:
@@ -74,6 +109,11 @@ function parse(css: string) {
 
           if (!token) {
             throw new Error('Incorrect style!');
+          }
+
+          if (detectIsDynamicExp(token)) {
+            buffer = '';
+            continue;
           }
 
           token.value = normalizeBuffer(buffer);
