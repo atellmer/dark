@@ -12,6 +12,7 @@ import {
 abstract class Token {
   name = '';
   value = '';
+  parent: Parent;
 
   normalize() {
     this.name = this.name.trim();
@@ -23,7 +24,7 @@ abstract class Token {
 
 class NestingExp extends Token {
   name = NESTING_MARK;
-  children: Array<StyleExp> = [];
+  children: Children = [];
 
   override generate(className: string) {
     let styles = `${this.value.replace(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
@@ -53,7 +54,7 @@ class StyleExp extends Token {
 
 class MediaQueryExp extends Token {
   name = MEDIA_QUERY_MARK;
-  children: Array<StyleExp | NestingExp> = [];
+  children: Children = [];
 
   override generate(className: string) {
     let styles = `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`;
@@ -77,20 +78,24 @@ class MediaQueryExp extends Token {
 }
 
 class StyleSheet {
-  body: Array<StyleExp | MediaQueryExp | NestingExp> = [];
+  children: Children = [];
 
   generate(className: string) {
     let styles = `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`;
     let nesting = '';
     let media = '';
 
-    for (const token of this.body) {
+    for (const token of this.children) {
+      const se = token as unknown as StyleExp;
+      const nse = token as unknown as NestingExp;
+      const mqe = token as unknown as MediaQueryExp;
+
       if (detectIsStyleExp(token)) {
-        styles += token.generate();
+        styles += se.generate();
       } else if (detectIsNestingExp(token)) {
-        nesting += token.generate(className);
+        nesting += nse.generate(className);
       } else if (detectIsMediaQueryExp(token)) {
-        media += token.generate(className);
+        media += mqe.generate(className);
       }
     }
 
@@ -100,7 +105,11 @@ class StyleSheet {
   }
 }
 
-export type Tokens = Array<StyleExp | NestingExp | MediaQueryExp>;
+export type Parent = StyleSheet | NestingExp | MediaQueryExp;
+
+export type Children = Array<StyleExp | NestingExp | MediaQueryExp>;
+
+const detectIsStyleSheet = (x: unknown): x is StyleSheet => x instanceof StyleSheet;
 
 const detectIsStyleExp = (x: unknown): x is StyleExp => x instanceof StyleExp;
 
@@ -108,4 +117,13 @@ const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof M
 
 const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
 
-export { StyleSheet, StyleExp, MediaQueryExp, NestingExp };
+export {
+  StyleSheet,
+  StyleExp,
+  MediaQueryExp,
+  NestingExp,
+  detectIsStyleSheet,
+  detectIsStyleExp,
+  detectIsMediaQueryExp,
+  detectIsNestingExp,
+};

@@ -9,10 +9,10 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(2);
+    expect(stylesheet.children.length).toBe(2);
 
-    const color = stylesheet.body[0] as StyleExp;
-    const backgroundColor = stylesheet.body[1] as StyleExp;
+    const color = stylesheet.children[0] as StyleExp;
+    const backgroundColor = stylesheet.children[1] as StyleExp;
 
     expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
@@ -31,9 +31,9 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(1);
+    expect(stylesheet.children.length).toBe(1);
 
-    const mqe = stylesheet.body[0] as MediaQueryExp;
+    const mqe = stylesheet.children[0] as MediaQueryExp;
 
     expect(mqe).toBeInstanceOf(MediaQueryExp);
     expect(mqe.value).toBe('@media (max-width: 600px)');
@@ -59,9 +59,9 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(1);
+    expect(stylesheet.children.length).toBe(1);
 
-    const nse = stylesheet.body[0] as NestingExp;
+    const nse = stylesheet.children[0] as NestingExp;
 
     expect(nse).toBeInstanceOf(NestingExp);
     expect(nse.value).toBe('&:hover');
@@ -89,9 +89,9 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(1);
+    expect(stylesheet.children.length).toBe(1);
 
-    const mqe = stylesheet.body[0] as MediaQueryExp;
+    const mqe = stylesheet.children[0] as MediaQueryExp;
 
     expect(mqe).toBeInstanceOf(MediaQueryExp);
     expect(mqe.value).toBe('@media (max-width: 600px)');
@@ -120,11 +120,11 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(3);
+    expect(stylesheet.children.length).toBe(3);
 
-    const border = stylesheet.body[0] as StyleExp;
-    const padding = stylesheet.body[1] as StyleExp;
-    const fontSize = stylesheet.body[2] as StyleExp;
+    const border = stylesheet.children[0] as StyleExp;
+    const padding = stylesheet.children[1] as StyleExp;
+    const fontSize = stylesheet.children[2] as StyleExp;
 
     expect(border).toBeInstanceOf(StyleExp);
     expect(border.name).toBe('border');
@@ -144,10 +144,10 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(2);
+    expect(stylesheet.children.length).toBe(2);
 
-    const content = stylesheet.body[0] as StyleExp;
-    const fontFamily = stylesheet.body[1] as StyleExp;
+    const content = stylesheet.children[0] as StyleExp;
+    const fontFamily = stylesheet.children[1] as StyleExp;
 
     expect(content).toBeInstanceOf(StyleExp);
     expect(content.name).toBe('content');
@@ -164,10 +164,10 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(2);
+    expect(stylesheet.children.length).toBe(2);
 
-    const color = stylesheet.body[0] as StyleExp;
-    const backgroundColor = stylesheet.body[1] as StyleExp;
+    const color = stylesheet.children[0] as StyleExp;
+    const backgroundColor = stylesheet.children[1] as StyleExp;
 
     expect(color).toBeInstanceOf(StyleExp);
     expect(color.name).toBe('color');
@@ -184,14 +184,14 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(0);
+    expect(stylesheet.children.length).toBe(0);
   });
 
   test('parses css correcrly #8', () => {
     const stylesheet = parse(``);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(0);
+    expect(stylesheet.children.length).toBe(0);
   });
 
   test('parses css correcrly #9', () => {
@@ -232,10 +232,10 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(8);
+    expect(stylesheet.children.length).toBe(8);
 
     {
-      const mqe = stylesheet.body[0] as MediaQueryExp;
+      const mqe = stylesheet.children[0] as MediaQueryExp;
 
       expect(mqe).toBeInstanceOf(MediaQueryExp);
       expect(mqe.value).toBe('@media(min-width: 400px)');
@@ -276,10 +276,10 @@ describe('[@styled/parse]', () => {
     }
 
     {
-      const width = stylesheet.body[1] as StyleExp;
-      const height = stylesheet.body[2] as StyleExp;
-      const backgroundImage = stylesheet.body[3] as StyleExp;
-      const fontSize = stylesheet.body[4] as StyleExp;
+      const width = stylesheet.children[1] as StyleExp;
+      const height = stylesheet.children[2] as StyleExp;
+      const backgroundImage = stylesheet.children[3] as StyleExp;
+      const fontSize = stylesheet.children[4] as StyleExp;
 
       expect(width).toBeInstanceOf(StyleExp);
       expect(width.name).toBe('width');
@@ -296,7 +296,7 @@ describe('[@styled/parse]', () => {
     }
 
     {
-      const mqe = stylesheet.body[5] as MediaQueryExp;
+      const mqe = stylesheet.children[5] as MediaQueryExp;
 
       expect(mqe).toBeInstanceOf(MediaQueryExp);
       expect(mqe.value).toBe('@media(min-width: 700px)');
@@ -344,8 +344,8 @@ describe('[@styled/parse]', () => {
     }
 
     {
-      const transition = stylesheet.body[6] as StyleExp;
-      const transform = stylesheet.body[7] as StyleExp;
+      const transition = stylesheet.children[6] as StyleExp;
+      const transform = stylesheet.children[7] as StyleExp;
 
       expect(transition).toBeInstanceOf(StyleExp);
       expect(transition.name).toBe('transition');
@@ -365,9 +365,9 @@ describe('[@styled/parse]', () => {
     `);
 
     expect(stylesheet).toBeInstanceOf(StyleSheet);
-    expect(stylesheet.body.length).toBe(1);
+    expect(stylesheet.children.length).toBe(1);
 
-    const nse = stylesheet.body[0] as NestingExp;
+    const nse = stylesheet.children[0] as NestingExp;
 
     expect(nse.children.length).toBe(2);
     expect(nse.value).toBe('& * div.red > .item [selected="true"] #x:hover');

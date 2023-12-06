@@ -1,4 +1,3 @@
-import { type Tokens, StyleSheet, StyleExp, MediaQueryExp, NestingExp } from '../tokens';
 import {
   CHILDREN_START_MARK,
   CHILDREN_END_MARK,
@@ -6,69 +5,78 @@ import {
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
 } from '../constants';
+import {
+  type Children,
+  StyleSheet,
+  StyleExp,
+  MediaQueryExp,
+  NestingExp,
+  detectIsStyleSheet,
+  detectIsStyleExp,
+  detectIsMediaQueryExp,
+  detectIsNestingExp,
+} from '../tokens';
 
 function parse(css: string) {
   const stylesheet = new StyleSheet();
-  const stack: Array<Tokens> = [];
-  let lastNesting: NestingExp | MediaQueryExp = null;
+  const stack: Array<NestingExp | MediaQueryExp> = [];
   let buffer = '';
 
   for (let i = 0; i < css.length; i++) {
     const lex = css[i];
-    const children = stack[stack.length - 1] || stylesheet.body;
+    const parent = stack[stack.length - 1] || stylesheet;
 
     buffer += lex;
 
     switch (lex) {
       case CHILDREN_START_MARK:
-        buffer = normalizeBuffer(buffer);
-        const token = detectIsMediaQuery(buffer) ? new MediaQueryExp() : new NestingExp();
+        const token = detectHasMediaQueryMark(buffer) ? new MediaQueryExp() : new NestingExp();
+        const canNest = detectIsMediaQueryExp(token)
+          ? detectIsStyleSheet(parent)
+          : detectIsNestingExp(token)
+          ? detectIsStyleSheet(parent) || detectIsMediaQueryExp(parent)
+          : false;
 
-        if (
-          (detectIsMediaQueryExp(token) && detectIsMediaQueryExp(lastNesting)) ||
-          (detectIsNestingExp(token) && detectIsNestingExp(lastNesting))
-        ) {
+        if (!canNest) {
           throw new Error('Illegal style nesting!');
         }
 
-        token.value = buffer;
+        token.value = normalizeBuffer(buffer);
         token.normalize();
+        token.parent = parent;
 
         if (!token.value) {
           throw new Error('Empty style nesting!');
         }
 
-        children.push(token);
-        stack.push(token.children);
-        lastNesting = token;
+        parent.children.push(token);
+        stack.push(token);
         buffer = '';
         break;
       case CHILDREN_END_MARK:
         stack.pop();
-        lastNesting = null;
         buffer = '';
         break;
       case PROP_VALUE_START_MARK:
         {
-          if (!detectIsPropName(buffer, i, css, children)) continue;
+          if (!detectIsPropName(buffer, i, css, parent.children)) continue;
           const token = new StyleExp();
 
-          buffer = normalizeBuffer(buffer);
-          token.name = buffer;
-          children.push(token);
+          token.name = normalizeBuffer(buffer);
+          token.parent = parent;
+          parent.children.push(token);
         }
         buffer = '';
         break;
       case PROP_VALUE_END_MARK:
         {
-          const token = children[children.length - 1];
+          const token = parent.children[parent.children.length - 1];
 
           if (!token) {
             throw new Error('Incorrect style!');
           }
 
-          buffer = normalizeBuffer(buffer);
-          token.value = buffer;
+          token.value = normalizeBuffer(buffer);
           token.normalize();
         }
         buffer = '';
@@ -81,9 +89,9 @@ function parse(css: string) {
   return stylesheet;
 }
 
-function detectIsPropName(name: string, idx: number, css: string, children: Tokens) {
+function detectIsPropName(name: string, idx: number, css: string, children: Children) {
   const last = children[children.length - 1];
-  if (detectIsMediaQuery(name)) return false;
+  if (detectHasMediaQueryMark(name)) return false;
   if (detectIsStyleExp(last) && !last.value) return false;
 
   for (let i = idx; i < css.length; i++) {
@@ -96,14 +104,8 @@ function detectIsPropName(name: string, idx: number, css: string, children: Toke
   return true;
 }
 
-const detectIsMediaQuery = (x: string) => x.trim().startsWith(MEDIA_QUERY_MARK);
+const detectHasMediaQueryMark = (x: string) => x.trim().startsWith(MEDIA_QUERY_MARK);
 
 const normalizeBuffer = (x: string) => x.substring(0, x.length - 1);
-
-const detectIsStyleExp = (x: unknown): x is StyleExp => x instanceof StyleExp;
-
-const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof MediaQueryExp;
-
-const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
 
 export { parse };
