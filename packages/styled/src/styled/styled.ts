@@ -21,13 +21,12 @@ import { hash } from '../hash';
 
 let styles = new Map<string, [string, string]>();
 let tag: HTMLStyleElement = null;
-type StyledProps = { as?: string; className?: string };
 
 function createStyledComponent<P extends StyledProps, R extends unknown>(
   factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
 ) {
-  return (strings: TemplateStringsArray, ...args: Args<P>) => {
-    type $ComponentFactory = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
+  let transformProps: TransformProps<P> = x => x;
+  const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
     let isParsed = false;
     let updates: Array<string> = [];
     let fns: Array<Function> = [];
@@ -66,12 +65,20 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           updates = [];
         }
 
-        return factory({ ...props, ref, class: $$$className });
+        return factory({ ...transformProps(props), ref, class: $$$className });
       }),
     );
 
-    return $factory as $ComponentFactory;
+    return $factory as StyledComponentFactory<P, R>;
   };
+
+  fn.attrs = (t: TransformProps<P>) => {
+    transformProps = detectIsFunction(t) ? t : transformProps;
+
+    return fn;
+  };
+
+  return fn;
 }
 
 function styled<P extends object, R = unknown>(tag: string | ComponentFactory) {
@@ -141,6 +148,17 @@ function css(strings: TemplateStringsArray, ...args: Args<any>) {
     .replace(/([:;])\s*/gm, '$1')
     .trim();
 }
+
+type StyledProps = { as?: string; className?: string };
+
+type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
+
+type TransformProps<P> = (p: P) => any;
+
+type Fn<P, R> = {
+  (strings: TemplateStringsArray, ...args: Args<P>): StyledComponentFactory<P, R>;
+  attrs: (t: TransformProps<P>) => Fn<P, R>;
+};
 
 type TextBased = string | number;
 

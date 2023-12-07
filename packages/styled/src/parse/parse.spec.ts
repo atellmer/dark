@@ -2,7 +2,7 @@ import { StyleSheet, StyleExp, MediaQueryExp, NestingExp } from '../tokens';
 import { parse } from './parse';
 
 describe('[@styled/parse]', () => {
-  test('parses css correcrly #1', () => {
+  test('parses css correctly #1', () => {
     const style = parse(`
       color: red;
       background-color: blue;
@@ -22,7 +22,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #2', () => {
+  test('parses css correctly #2', () => {
     const style = parse(`
       @media (max-width: 600px) {
         color: red;
@@ -50,7 +50,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #3', () => {
+  test('parses css correctly #3', () => {
     const style = parse(`
       &:hover {
         color: red;
@@ -78,7 +78,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #4', () => {
+  test('parses css correctly #4', () => {
     const style = parse(`
       @media (max-width: 600px) {
         &:hover {
@@ -112,7 +112,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #5', () => {
+  test('parses css correctly #5', () => {
     const style = parse(`
       border: 1px solid black;
       padding: 10px 20px;
@@ -137,7 +137,7 @@ describe('[@styled/parse]', () => {
     expect(fontSize.value).toBe('16px');
   });
 
-  test('parses css correcrly #6', () => {
+  test('parses css correctly #6', () => {
     const style = parse(`
       content: "Hello, world";
       font-family: "Arial", sans-serif;
@@ -157,7 +157,7 @@ describe('[@styled/parse]', () => {
     expect(fontFamily.value).toBe('"Arial", sans-serif');
   });
 
-  test('parses css correcrly #7', () => {
+  test('parses css correctly #7', () => {
     const style = parse(`
       color : red ;
       background-color : blue ;
@@ -177,7 +177,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #8', () => {
+  test('parses css correctly #8', () => {
     const style = parse(`
       color
       background-color
@@ -187,14 +187,14 @@ describe('[@styled/parse]', () => {
     expect(style.children.length).toBe(0);
   });
 
-  test('parses css correcrly #9', () => {
+  test('parses css correctly #9', () => {
     const style = parse(``);
 
     expect(style).toBeInstanceOf(StyleSheet);
     expect(style.children.length).toBe(0);
   });
 
-  test('parses css correcrly #10', () => {
+  test('parses css correctly #10', () => {
     const style = parse(`
       @media(min-width: 400px) {
         top: 10px;
@@ -356,7 +356,7 @@ describe('[@styled/parse]', () => {
     }
   });
 
-  test('parses css correcrly #11', () => {
+  test('parses css correctly #11', () => {
     const style = parse(`
       & * div.red > .item [selected="true"] #x:hover {
         color: red;
@@ -383,7 +383,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correcrly #12', () => {
+  test('parses css correctly #12', () => {
     const style = parse(`
       :root {
         --color: red;
@@ -415,7 +415,7 @@ describe('[@styled/parse]', () => {
     expect(color.value).toBe('var(--color)');
   });
 
-  test('parses css correcrly #13', () => {
+  test('parses css correctly #13', () => {
     const make = () => {
       parse(`
         color: green;
@@ -433,7 +433,7 @@ describe('[@styled/parse]', () => {
     expect(make).toThrowError();
   });
 
-  test('parses css correcrly #14', () => {
+  test('parses css correctly #14', () => {
     const make = () => {
       parse(`
         color: green;
@@ -451,7 +451,7 @@ describe('[@styled/parse]', () => {
     expect(make).toThrowError();
   });
 
-  test('parses css correcrly #15', () => {
+  test('parses css correctly #15', () => {
     const make = () => {
       parse(`
         color: green;
@@ -469,7 +469,7 @@ describe('[@styled/parse]', () => {
     expect(make).toThrowError();
   });
 
-  test('parses css correcrly #16', () => {
+  test('parses css correctly #16', () => {
     const make = () => {
       parse(`
         color: green;
@@ -487,7 +487,7 @@ describe('[@styled/parse]', () => {
     expect(make).not.toThrowError();
   });
 
-  test('parses css correcrly #17', () => {
+  test('parses css correctly #17', () => {
     const make = () => {
       parse(`
         color: green;
