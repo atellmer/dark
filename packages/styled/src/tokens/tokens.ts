@@ -45,7 +45,7 @@ class NestingExp<P extends object = {}> extends Token {
     const className = args[0] as string;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
-    let styles = `${this.value.replace(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
+    let styles = `${this.value.replaceAll(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
 
     for (const token of this.children) {
       const se = token as unknown as StyleExp;

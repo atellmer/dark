@@ -21,12 +21,13 @@ import { hash } from '../hash';
 
 let styles = new Map<string, [string, string]>();
 let tag: HTMLStyleElement = null;
+type StyledProps = { as?: string; className?: string };
 
-function createStyledComponent<P extends object, R extends unknown>(
+function createStyledComponent<P extends StyledProps, R extends unknown>(
   factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
 ) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
-    type $ComponentFactory = ComponentFactory<P & StandardComponentProps & { as?: string }, R>;
+    type $ComponentFactory = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
     let isParsed = false;
     let updates: Array<string> = [];
     let fns: Array<Function> = [];
@@ -47,6 +48,7 @@ function createStyledComponent<P extends object, R extends unknown>(
           return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
         }, [...values]);
         const $$className = $className ? `${className} ${$className}` : className;
+        const $$$className = props.className ? `${props.className} ${$$className}` : $$className;
 
         useInsertionEffect(() => {
           if (!tag) {
@@ -64,7 +66,7 @@ function createStyledComponent<P extends object, R extends unknown>(
           updates = [];
         }
 
-        return factory({ ...props, ref, class: $$className });
+        return factory({ ...props, ref, class: $$$className });
       }),
     );
 
