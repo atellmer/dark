@@ -10,6 +10,7 @@ import {
   detectIsTextBased,
   useInsertionEffect,
   detectIsServer,
+  forwardRef,
 } from '@dark-engine/core';
 
 import { FUNCTION_MARK } from '../constants';
@@ -20,46 +21,50 @@ let styles = new Map<string, string>();
 let tag: HTMLStyleElement = null;
 let nextId = -1;
 
-function createStyledComponent<P extends object>(factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
+function createStyledComponent<P extends object, R extends unknown>(
+  factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
+) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
     let updates: Array<string> = [];
     const fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
     const [$static, $dynamics] = slice(parse(join(strings, args)));
     const className = generate($static, updates);
-    const $factory = component<P>(props => {
-      const values = Object.keys(props).map(key => props[key]);
-      const $className = useMemo(() => {
-        return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
-      }, [...values]);
-      const $$className = $className ? `${className} ${$className}` : className;
+    const $factory = forwardRef<P, R>(
+      component((props, ref) => {
+        const values = Object.keys(props).map(key => props[key]);
+        const $className = useMemo(() => {
+          return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
+        }, [...values]);
+        const $$className = $className ? `${className} ${$className}` : className;
 
-      useInsertionEffect(() => {
-        if (!tag) {
-          tag = document.createElement('style');
-          tag.setAttribute('dark-styled', 'true');
-          document.head.appendChild(tag);
+        useInsertionEffect(() => {
+          if (!tag) {
+            tag = document.createElement('style');
+            tag.setAttribute('dark-styled', 'true');
+            document.head.appendChild(tag);
+          }
+
+          updates.forEach(x => inject(x));
+          updates = [];
+        }, [updates.length]);
+
+        if (detectIsServer()) {
+          styles = new Map();
+          updates = [];
         }
 
-        updates.forEach(x => inject(x));
-        updates = [];
-      }, [updates.length]);
-
-      if (detectIsServer()) {
-        styles = new Map();
-        updates = [];
-      }
-
-      return factory({ ...props, class: $$className });
-    });
+        return factory({ ...props, ref, class: $$className });
+      }),
+    );
 
     return $factory;
   };
 }
 
-function styled<P extends object>(tag: string | ComponentFactory) {
-  return detectIsString(tag)
-    ? createStyledComponent<P>((props: P) => View({ as: tag, ...props }))
-    : createStyledComponent<P>(tag);
+function styled<P extends object, R = unknown>(tag: string | ComponentFactory) {
+  const node = detectIsString(tag) ? (props: P) => View({ as: tag, ...props }) : tag;
+
+  return createStyledComponent<P, R>(node);
 }
 
 function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
