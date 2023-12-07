@@ -1,7 +1,6 @@
 import {
   type ComponentFactory,
   type TagVirtualNodeFactory,
-  type Callback,
   View,
   component,
   useMemo,
@@ -19,43 +18,18 @@ import { StyleSheet } from '../tokens';
 
 let styles = new Map<string, string>();
 let tag: HTMLStyleElement = null;
-let updates: Array<Callback> = [];
+let updates: Array<string> = [];
 let nextId = -1;
 
 function createStyledComponent<P extends object>(factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
     const fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
-    const joined = join(strings, args);
-    const parsed = parse(joined);
-    const [$static, $dynamics] = sliceStyleSheet(parsed);
-    const key = $static.generate(FUNCTION_MARK);
-    const className = styles.has(key) ? styles.get(key) : genClassName();
-    const css = key.replaceAll(FUNCTION_MARK, className);
-
-    if (!styles.has(key)) {
-      styles.set(key, className);
-      updates.push(() => inject(css, tag));
-    }
-
+    const [$static, $dynamics] = slice(parse(join(strings, args)));
+    const className = generate($static);
     const $factory = component<P>(props => {
       const values = Object.keys(props).map(key => props[key]);
       const $className = useMemo(() => {
-        const classes: Array<string> = [];
-
-        for (const style of $dynamics) {
-          const key = style.generate(FUNCTION_MARK, props, fns);
-          const className = styles.has(key) ? styles.get(key) : genClassName();
-          const css = key.replaceAll(FUNCTION_MARK, className);
-
-          if (!styles.has(key)) {
-            styles.set(key, className);
-            updates.push(() => inject(css, tag));
-          }
-
-          classes.push(className);
-        }
-
-        return classes.join(' ');
+        return $dynamics.map(x => generate(x, props, fns)).join(' ');
       }, [...values]);
       const $$className = $className ? `${className} ${$className}` : className;
 
@@ -63,13 +37,14 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
         if (!tag) {
           tag = document.createElement('style');
           tag.setAttribute('dark-styled', 'true');
+          document.head.appendChild(tag);
         }
 
         if (updates.length > 0) {
-          updates.forEach(x => x());
+          updates.forEach(x => inject(x));
           updates = [];
         }
-      }, [updates.length]);
+      }, [$className]);
 
       if (detectIsServer()) {
         styles = new Map();
@@ -89,16 +64,28 @@ function styled<P extends object>(tag: string | ComponentFactory) {
     : createStyledComponent<P>(tag);
 }
 
-function inject(css: string, target: HTMLStyleElement) {
-  !target.parentElement && document.head.appendChild(target);
-  target.textContent = `${target.textContent}${css}`;
+function generate<P extends object>(stylesheet: StyleSheet, props?: P, fns?: Array<Function>) {
+  const key = stylesheet.generate(FUNCTION_MARK, props, fns);
+  const className = styles.has(key) ? styles.get(key) : genClassName();
+  const css = key.replaceAll(FUNCTION_MARK, className);
+
+  if (!styles.has(key)) {
+    styles.set(key, className);
+    updates.push(css);
+  }
+
+  return className;
+}
+
+function inject(css: string) {
+  tag.textContent = `${tag.textContent}${css}`;
 }
 
 function genClassName() {
   return `dk-${++nextId}`;
 }
 
-function sliceStyleSheet(source: StyleSheet): [StyleSheet, Array<StyleSheet>] {
+function slice(source: StyleSheet): [StyleSheet, Array<StyleSheet>] {
   const $static = new StyleSheet();
   const $dynamics: Array<StyleSheet> = [];
 
