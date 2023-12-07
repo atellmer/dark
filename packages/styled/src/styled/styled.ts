@@ -1,6 +1,7 @@
 import {
   type ComponentFactory,
   type TagVirtualNodeFactory,
+  type StandardComponentProps,
   View,
   component,
   useMemo,
@@ -25,6 +26,7 @@ function createStyledComponent<P extends object, R extends unknown>(
   factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
 ) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
+    type $ComponentFactory = ComponentFactory<P & StandardComponentProps & { as?: string }, R>;
     let isParsed = false;
     let updates: Array<string> = [];
     let fns: Array<Function> = [];
@@ -66,7 +68,7 @@ function createStyledComponent<P extends object, R extends unknown>(
       }),
     );
 
-    return $factory;
+    return $factory as $ComponentFactory;
   };
 }
 
