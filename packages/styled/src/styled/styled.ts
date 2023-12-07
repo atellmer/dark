@@ -16,10 +16,10 @@ import {
 import { FUNCTION_MARK } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
+import { hash } from '../hash';
 
-let styles = new Map<string, string>();
+let styles = new Map<string, [string, string]>();
 let tag: HTMLStyleElement = null;
-let nextId = -1;
 
 function createStyledComponent<P extends object, R extends unknown>(
   factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
@@ -76,12 +76,13 @@ function styled<P extends object, R = unknown>(tag: string | ComponentFactory) {
 
 function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
   const key = stylesheet.generate(FUNCTION_MARK, props, fns);
-  const className = styles.has(key) ? styles.get(key) : genClassName();
-  const css = key.replaceAll(FUNCTION_MARK, className);
+  const style = styles.get(key);
+  const className = style ? style[0] : genClassName(key);
+  const css = style ? style[1] : key.replaceAll(FUNCTION_MARK, className);
 
-  if (!styles.has(key)) {
+  if (!style) {
     updates.push(css);
-    styles.set(key, className);
+    styles.set(key, [className, css]);
   }
 
   return className;
@@ -91,8 +92,8 @@ function inject(css: string) {
   tag.textContent = `${tag.textContent}${css}`;
 }
 
-function genClassName() {
-  return `dk-${++nextId}`;
+function genClassName(key: string) {
+  return `dk-${hash(key)}`;
 }
 
 function slice(source: StyleSheet): [StyleSheet, Array<StyleSheet>] {
