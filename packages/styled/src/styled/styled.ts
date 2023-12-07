@@ -18,18 +18,18 @@ import { StyleSheet } from '../tokens';
 
 let styles = new Map<string, string>();
 let tag: HTMLStyleElement = null;
-let updates: Array<string> = [];
 let nextId = -1;
 
 function createStyledComponent<P extends object>(factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
+    let updates: Array<string> = [];
     const fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
     const [$static, $dynamics] = slice(parse(join(strings, args)));
-    const className = generate($static);
+    const className = generate($static, updates);
     const $factory = component<P>(props => {
       const values = Object.keys(props).map(key => props[key]);
       const $className = useMemo(() => {
-        return $dynamics.map(x => generate(x, props, fns)).join(' ');
+        return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
       }, [...values]);
       const $$className = $className ? `${className} ${$className}` : className;
 
@@ -40,11 +40,9 @@ function createStyledComponent<P extends object>(factory: ComponentFactory | ((p
           document.head.appendChild(tag);
         }
 
-        if (updates.length > 0) {
-          updates.forEach(x => inject(x));
-          updates = [];
-        }
-      }, [$className]);
+        updates.forEach(x => inject(x));
+        updates = [];
+      }, [updates.length]);
 
       if (detectIsServer()) {
         styles = new Map();
@@ -64,14 +62,14 @@ function styled<P extends object>(tag: string | ComponentFactory) {
     : createStyledComponent<P>(tag);
 }
 
-function generate<P extends object>(stylesheet: StyleSheet, props?: P, fns?: Array<Function>) {
+function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
   const key = stylesheet.generate(FUNCTION_MARK, props, fns);
   const className = styles.has(key) ? styles.get(key) : genClassName();
   const css = key.replaceAll(FUNCTION_MARK, className);
 
   if (!styles.has(key)) {
-    styles.set(key, className);
     updates.push(css);
+    styles.set(key, className);
   }
 
   return className;
