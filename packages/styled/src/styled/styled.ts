@@ -25,12 +25,21 @@ function createStyledComponent<P extends object, R extends unknown>(
   factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
 ) {
   return (strings: TemplateStringsArray, ...args: Args<P>) => {
+    let isParsed = false;
     let updates: Array<string> = [];
-    const fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
-    const [$static, $dynamics] = slice(parse(join(strings, args)));
-    const className = generate($static, updates);
+    let fns: Array<Function> = [];
+    let $static: StyleSheet = null;
+    let $dynamics: Array<StyleSheet> = [];
+    let className = '';
     const $factory = forwardRef<P, R>(
       component((props, ref) => {
+        if (!isParsed) {
+          fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
+          [$static, $dynamics] = slice(parse(join(strings, args)));
+          className = generate($static, updates);
+          isParsed = true;
+        }
+
         const values = Object.keys(props).map(key => props[key]);
         const $className = useMemo(() => {
           return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
@@ -62,9 +71,7 @@ function createStyledComponent<P extends object, R extends unknown>(
 }
 
 function styled<P extends object, R = unknown>(tag: string | ComponentFactory) {
-  const node = detectIsString(tag) ? (props: P) => View({ as: tag, ...props }) : tag;
-
-  return createStyledComponent<P, R>(node);
+  return createStyledComponent<P, R>(detectIsString(tag) ? (props: P) => View({ as: tag, ...props }) : tag);
 }
 
 function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
