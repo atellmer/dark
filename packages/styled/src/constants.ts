@@ -8,3 +8,7 @@ export const NESTING_MARK = '>';
 export const SELF_MARK = '&';
 export const CLASS_NAME_MARK = '.';
 export const FUNCTION_MARK = '[f]';
+export const SINGLE_LINE_COMMENT_START_MARK = '//';
+export const SINGLE_LINE_COMMENT_END_MARK = '\n';
+export const MULTI_LINE_COMMENT_START_MARK = '/*';
+export const MULTI_LINE_COMMENT_END_MARK = '*/';

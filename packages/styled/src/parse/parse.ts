@@ -5,6 +5,10 @@ import {
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
   FUNCTION_MARK,
+  SINGLE_LINE_COMMENT_START_MARK,
+  SINGLE_LINE_COMMENT_END_MARK,
+  MULTI_LINE_COMMENT_START_MARK,
+  MULTI_LINE_COMMENT_END_MARK,
 } from '../constants';
 import {
   type Children,
@@ -24,17 +28,35 @@ function parse(css: string) {
   const stylesheet = new StyleSheet();
   const stack: Array<NestingExp | MediaQueryExp> = [];
   let buffer = '';
-  let count = -1;
+  let fnIdx = -1;
+  let isSingleLineComment = false;
+  let isMultiLineComment = false;
 
   for (let i = 0; i < css.length; i++) {
-    const lex = css[i];
+    const char = css[i];
     const parent = stack[stack.length - 1] || stylesheet;
     const last = parent.children[parent.children.length - 1];
 
-    buffer += lex;
+    buffer += char;
 
-    if (buffer.length >= FUNCTION_MARK.length && hasFunctionMark(buffer)) {
-      const fne = new FunctionExp(++count);
+    if (!isSingleLineComment && detectHasSingleLineCommentStartMark(buffer)) {
+      isSingleLineComment = true;
+    } else if (isSingleLineComment && detectHasSingleLineCommentEndMark(buffer)) {
+      isSingleLineComment = false;
+      buffer = '';
+    }
+
+    if (!isMultiLineComment && detectHasMultiLineCommentStartMark(buffer)) {
+      isMultiLineComment = true;
+    } else if (isMultiLineComment && detectHasMultiLineCommentEndMark(buffer)) {
+      isMultiLineComment = false;
+      buffer = '';
+    }
+
+    if (isSingleLineComment || isMultiLineComment) continue;
+
+    if (detectHasFunctionMark(buffer)) {
+      const fne = new FunctionExp(++fnIdx);
 
       fne.parent = parent;
       fne.markAsDynamic();
@@ -52,7 +74,7 @@ function parse(css: string) {
       continue;
     }
 
-    switch (lex) {
+    switch (char) {
       case CHILDREN_START_MARK:
         const token = detectHasMediaQueryMark(buffer) ? new MediaQueryExp() : new NestingExp();
         const canNest = detectIsMediaQueryExp(token)
@@ -118,17 +140,6 @@ function parse(css: string) {
   return stylesheet;
 }
 
-function hasFunctionMark(x: string) {
-  const length = FUNCTION_MARK.length;
-  const part = x.slice(-length);
-
-  for (let i = 0; i < length; i++) {
-    if (part[i] !== FUNCTION_MARK[i]) return false;
-  }
-
-  return true;
-}
-
 function detectIsPropName(name: string, idx: number, css: string, children: Children) {
   const last = children[children.length - 1];
   if (detectHasMediaQueryMark(name)) return false;
@@ -144,7 +155,17 @@ function detectIsPropName(name: string, idx: number, css: string, children: Chil
   return true;
 }
 
+const detectHasSingleLineCommentStartMark = (x: string) => x.trim().startsWith(SINGLE_LINE_COMMENT_START_MARK);
+
+const detectHasSingleLineCommentEndMark = (x: string) => x.endsWith(SINGLE_LINE_COMMENT_END_MARK);
+
+const detectHasMultiLineCommentStartMark = (x: string) => x.trim().startsWith(MULTI_LINE_COMMENT_START_MARK);
+
+const detectHasMultiLineCommentEndMark = (x: string) => x.endsWith(MULTI_LINE_COMMENT_END_MARK);
+
 const detectHasMediaQueryMark = (x: string) => x.trim().startsWith(MEDIA_QUERY_MARK);
+
+const detectHasFunctionMark = (x: string) => x.endsWith(FUNCTION_MARK);
 
 const normalizeBuffer = (x: string) => x.substring(0, x.length - 1);
 
