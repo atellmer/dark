@@ -14,10 +14,12 @@ import {
   forwardRef,
 } from '@dark-engine/core';
 
+import { type DefaultTheme } from '../';
 import { FUNCTION_MARK } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 import { hash } from '../hash';
+import { useThemeContext } from '../context';
 
 let styles = new Map<string, [string, string]>();
 let tag: HTMLStyleElement = null;
@@ -43,9 +45,12 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
         }
 
         const values = Object.keys(props).map(key => props[key]);
+        const context = useThemeContext();
         const $className = useMemo(() => {
-          return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
-        }, [...values]);
+          const $props = { ...props, theme: context.theme };
+
+          return $dynamics.map(x => generate(x, updates, $props, fns)).join(' ');
+        }, [...values, context.theme]);
         const $$className = $className ? `${className} ${$className}` : className;
         const $$$className = getClassName(props);
         const $$$$className = $$$className ? `${$$$className} ${$$className}` : $$className;
@@ -83,7 +88,9 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
 }
 
 function styled<P extends object, R = unknown>(tag: string | ComponentFactory<P, R>) {
-  return createStyledComponent<P, R>(detectIsString(tag) ? (props: P) => View({ as: tag, ...props }) : tag);
+  const factory = detectIsString(tag) ? (props: P) => View({ as: tag, ...props }) : tag;
+
+  return createStyledComponent<P, R>(factory);
 }
 
 const getClassName = (props: StyledProps) => props.class || props.className;
@@ -152,20 +159,22 @@ function css(strings: TemplateStringsArray, ...args: Args<any>) {
     .trim();
 }
 
-type StyledProps<P = unknown, R = unknown> = {
-  as?: string | ComponentFactory<P, R>;
-  className?: string;
+type StyledProps = {
+  as?: string;
   class?: string;
+  className?: string;
 };
 
-type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps<P, R>, R>;
+type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
 
 type TransformProps<P> = (p: P) => any;
 
 type Fn<P, R> = {
-  (strings: TemplateStringsArray, ...args: Args<P>): StyledComponentFactory<P, R>;
+  (strings: TemplateStringsArray, ...args: Args<P & ThemeProps>): StyledComponentFactory<P, R>;
   attrs: (t: TransformProps<P>) => Fn<P, R>;
 };
+
+type ThemeProps = { theme: DefaultTheme };
 
 type TextBased = string | number;
 
