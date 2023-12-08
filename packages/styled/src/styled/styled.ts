@@ -23,7 +23,7 @@ let styles = new Map<string, [string, string]>();
 let tag: HTMLStyleElement = null;
 
 function createStyledComponent<P extends StyledProps, R extends unknown>(
-  factory: ComponentFactory | ((props: P) => TagVirtualNodeFactory),
+  factory: ComponentFactory<P, R> | ((props: P) => TagVirtualNodeFactory),
 ) {
   let transformProps: TransformProps<P> = x => x;
   const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
@@ -47,7 +47,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           return $dynamics.map(x => generate(x, updates, props, fns)).join(' ');
         }, [...values]);
         const $$className = $className ? `${className} ${$className}` : className;
-        const $$$className = props.className ? `${props.className} ${$$className}` : $$className;
+        const $$$className = getClassName(props);
+        const $$$$className = $$$className ? `${$$$className} ${$$className}` : $$className;
 
         useInsertionEffect(() => {
           if (!tag) {
@@ -65,7 +66,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           updates = [];
         }
 
-        return factory({ ...transformProps(props), ref, class: $$$className });
+        return factory({ ...transformProps(props), ref, class: $$$$className });
       }),
     );
 
@@ -81,9 +82,11 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
   return fn;
 }
 
-function styled<P extends object, R = unknown>(tag: string | ComponentFactory) {
+function styled<P extends object, R = unknown>(tag: string | ComponentFactory<P, R>) {
   return createStyledComponent<P, R>(detectIsString(tag) ? (props: P) => View({ as: tag, ...props }) : tag);
 }
+
+const getClassName = (props: StyledProps) => props.class || props.className;
 
 function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
   const key = stylesheet.generate(FUNCTION_MARK, props, fns);
@@ -149,7 +152,7 @@ function css(strings: TemplateStringsArray, ...args: Args<any>) {
     .trim();
 }
 
-type StyledProps = { as?: string; className?: string };
+type StyledProps = { as?: string; className?: string; class?: string };
 
 type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
 
