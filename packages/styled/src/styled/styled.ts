@@ -59,7 +59,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
 
           updates.forEach(x => inject(x));
           updates = [];
-        }, [updates.length]);
+        }, [updates.join('')]);
 
         if (detectIsServer()) {
           styles = new Map();
@@ -152,9 +152,13 @@ function css(strings: TemplateStringsArray, ...args: Args<any>) {
     .trim();
 }
 
-type StyledProps = { as?: string; className?: string; class?: string };
+type StyledProps<P = unknown, R = unknown> = {
+  as?: string | ComponentFactory<P, R>;
+  className?: string;
+  class?: string;
+};
 
-type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
+type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps<P, R>, R>;
 
 type TransformProps<P> = (p: P) => any;
 
