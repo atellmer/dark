@@ -45,15 +45,11 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
         }
 
         const values = Object.keys(props).map(key => props[key]);
-        const context = useThemeContext();
-        const $className = useMemo(() => {
-          const $props = { ...props, theme: context.theme };
-
-          return $dynamics.map(x => generate(x, updates, $props, fns)).join(' ');
-        }, [...values, context.theme]);
-        const $$className = $className ? `${className} ${$className}` : className;
-        const $$$className = getClassName(props);
-        const $$$$className = $$$className ? `${$$$className} ${$$className}` : $$className;
+        const { theme } = useThemeContext();
+        const classNames = useMemo(() => {
+          return $dynamics.map(x => generate(x, updates, { ...props, theme }, fns)).join(' ');
+        }, [...values, theme]);
+        const $className = [getClassNameFrom(props), className, classNames].filter(Boolean).join(' ');
 
         useInsertionEffect(() => {
           if (!tag) {
@@ -71,7 +67,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           updates = [];
         }
 
-        return factory({ ...transformProps(props), ref, class: $$$$className });
+        return factory({ ...transformProps(props), ref, class: $className });
       }),
     );
 
@@ -93,7 +89,7 @@ function styled<P extends object, R = unknown>(tag: string | ComponentFactory<P,
   return createStyledComponent<P, R>(factory);
 }
 
-const getClassName = (props: StyledProps) => props.class || props.className;
+const getClassNameFrom = (props: StyledProps) => props.class || props.className;
 
 function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
   const key = stylesheet.generate(FUNCTION_MARK, props, fns);

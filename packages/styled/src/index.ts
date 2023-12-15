@@ -1,4 +1,4 @@
-export { ThemeProvider } from './context';
+export { ThemeProvider, useTheme } from './context';
 export { parse } from './parse';
 export * from './styled';
 

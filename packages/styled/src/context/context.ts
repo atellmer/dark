@@ -1,7 +1,9 @@
 import { type DarkElement, createContext, useContext, useMemo, component } from '@dark-engine/core';
 
-export type ThemeContextValue<T extends object = {}> = {
-  theme: T;
+import { type DefaultTheme } from '../';
+
+export type ThemeContextValue = {
+  theme: DefaultTheme;
 };
 
 const ThemeContext = createContext<ThemeContextValue>({ theme: null }, { displayName: 'Theme' });
@@ -12,8 +14,14 @@ function useThemeContext() {
   return value;
 }
 
-type ThemeProviderProps<T extends object = {}> = {
-  theme: T;
+function useTheme() {
+  const { theme } = useThemeContext();
+
+  return theme;
+}
+
+type ThemeProviderProps = {
+  theme: DefaultTheme;
   slot: DarkElement;
 };
 
@@ -23,4 +31,4 @@ const ThemeProvider = component<ThemeProviderProps>(({ theme, slot }) => {
   return ThemeContext.Provider({ value, slot });
 });
 
-export { ThemeProvider, useThemeContext };
+export { ThemeProvider, useThemeContext, useTheme };
