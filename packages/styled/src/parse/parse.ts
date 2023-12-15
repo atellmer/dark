@@ -63,6 +63,7 @@ function parse(css: string) {
 
       if (detectIsStyleExp(last) && !last.value) {
         fne.style = last;
+        fne.name = buffer.trim();
         last.normalize();
         last.isDynamic = true;
         parent.children[parent.children.length - 1] = fne;
@@ -70,7 +71,7 @@ function parse(css: string) {
         parent.children.push(fne);
       }
 
-      buffer = buffer.slice(0, -FUNCTION_MARK.length);
+      buffer = '';
       continue;
     }
 

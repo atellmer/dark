@@ -114,7 +114,7 @@ class FunctionExp<P extends object = {}> extends Token {
     const style = this.style;
 
     if (style) {
-      style.value = value;
+      style.value = this.name.replace(FUNCTION_MARK, value);
 
       return style.generate();
     }
