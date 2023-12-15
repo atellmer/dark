@@ -15,7 +15,7 @@ import {
 } from '@dark-engine/core';
 
 import { type DefaultTheme } from '../';
-import { FUNCTION_MARK } from '../constants';
+import { FUNCTION_MARK, CLASS_NAME_MARK } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 import { hash } from '../hash';
@@ -23,27 +23,19 @@ import { useThemeContext } from '../context';
 
 let styles = new Map<string, [string, string]>();
 let tag: HTMLStyleElement = null;
+const $$styled = Symbol('styled');
 
 function createStyledComponent<P extends StyledProps, R extends unknown>(
   factory: ComponentFactory<P, R> | ((props: P) => TagVirtualNodeFactory),
 ) {
   let $transformProps: TransformProps<P> = transformProps;
+  let updates: Array<string> = [];
   const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
-    let isParsed = false;
-    let updates: Array<string> = [];
-    let fns: Array<Function> = [];
-    let $static: StyleSheet = null;
-    let $dynamics: Array<StyleSheet> = [];
-    let className = '';
+    const fns = args.filter(x => detectIsFunction(x) && !detectIsStyledComponentFactory(x)) as DynamicArgs<P>;
+    const [$static, $dynamics] = slice(parse(join(strings, args)));
+    const className = generate($static, updates);
     const $factory = forwardRef<P, R>(
       component((props, ref) => {
-        if (!isParsed) {
-          fns = args.filter(x => detectIsFunction(x)) as DynamicArgs<P>;
-          [$static, $dynamics] = slice(parse(join(strings, args)));
-          className = generate($static, updates);
-          isParsed = true;
-        }
-
         const values = Object.keys(props).map(key => props[key]);
         const { theme } = useThemeContext();
         const classNames = useMemo(() => {
@@ -70,6 +62,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
         return factory({ ...$transformProps(props), ref, class: $className });
       }),
     );
+
+    $factory[$$styled] = { className };
 
     return $factory as StyledComponentFactory<P, R>;
   };
@@ -150,7 +144,12 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
   for (let i = 0; i < strings.length; i++) {
     joined += strings[i];
 
-    if (detectIsFunction(args[i])) {
+    if (detectIsStyledComponentFactory(args[i])) {
+      const factory = args[i] as unknown as StyledComponentFactory<P, unknown>;
+      const { className } = factory[$$styled];
+
+      joined += `${CLASS_NAME_MARK}${className}`;
+    } else if (detectIsFunction(args[i])) {
       joined += FUNCTION_MARK;
     } else if (detectIsTextBased(args[i])) {
       joined += args[i];
@@ -168,13 +167,20 @@ function css(strings: TemplateStringsArray, ...args: Args<any>) {
     .trim();
 }
 
+const detectIsStyledComponentFactory = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
+  detectIsFunction(x) && Boolean(x[$$styled]);
+
 type StyledProps = {
   as?: string;
   class?: string;
   className?: string;
 };
 
-type StyledComponentFactory<P, R> = ComponentFactory<P & StandardComponentProps & StyledProps, R>;
+type StyledComponentFactory<P, R> = {
+  [$$styled]: {
+    className: string;
+  };
+} & ComponentFactory<P & StandardComponentProps & StyledProps, R>;
 
 type TransformProps<P> = (p: P) => any;
 
@@ -191,6 +197,6 @@ type ArgFn<P> = (p: P) => TextBased | false;
 
 type DynamicArgs<P> = Array<ArgFn<P>>;
 
-type Args<P> = Array<TextBased | ArgFn<P>>;
+type Args<P> = Array<TextBased | ArgFn<P> | Function>;
 
 export { styled, css };
