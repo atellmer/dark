@@ -27,7 +27,7 @@ let tag: HTMLStyleElement = null;
 function createStyledComponent<P extends StyledProps, R extends unknown>(
   factory: ComponentFactory<P, R> | ((props: P) => TagVirtualNodeFactory),
 ) {
-  let transformProps: TransformProps<P> = x => x;
+  let $transformProps: TransformProps<P> = transformProps;
   const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
     let isParsed = false;
     let updates: Array<string> = [];
@@ -67,7 +67,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           updates = [];
         }
 
-        return factory({ ...transformProps(props), ref, class: $className });
+        return factory({ ...$transformProps(props), ref, class: $className });
       }),
     );
 
@@ -75,7 +75,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
   };
 
   fn.attrs = (t: TransformProps<P>) => {
-    transformProps = detectIsFunction(t) ? t : transformProps;
+    $transformProps = detectIsFunction(t) ? x => transformProps(t(x)) : $transformProps;
 
     return fn;
   };
@@ -90,6 +90,19 @@ function styled<P extends object, R = unknown>(tag: string | ComponentFactory<P,
 }
 
 const getClassNameFrom = (props: StyledProps) => props.class || props.className;
+
+function transformProps<P extends object>(props: P) {
+  const $props = {} as P;
+  const keys = Object.keys(props);
+
+  for (const key of keys) {
+    if (!key.startsWith('$')) {
+      $props[key] = props[key];
+    }
+  }
+
+  return $props;
+}
 
 function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
   const key = stylesheet.generate(FUNCTION_MARK, props, fns);
