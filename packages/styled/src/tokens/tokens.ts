@@ -27,8 +27,8 @@ abstract class Token {
   }
 
   abstract generate(): string;
-  abstract generate(className: string): string;
   abstract generate(props: object, args: Array<Function>): string;
+  abstract generate(className: string | null, props: object, args: Array<Function>): string;
 }
 
 class StyleExp extends Token {
@@ -42,7 +42,7 @@ class NestingExp<P extends object = {}> extends Token {
   children: Children = [];
 
   override generate(...args: Array<unknown>) {
-    const className = args[0] as string;
+    const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
     let styles = `${this.value.replaceAll(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
@@ -72,10 +72,12 @@ class MediaQueryExp<P extends object = {}> extends Token {
   children: Children = [];
 
   override generate(...args: Array<unknown>) {
-    const className = args[0] as string;
+    const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
-    let styles = `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`;
+    let styles = className
+      ? `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`
+      : `${this.value}${CHILDREN_START_MARK}`;
     let nesting = '';
 
     for (const token of this.children) {
@@ -92,7 +94,11 @@ class MediaQueryExp<P extends object = {}> extends Token {
       }
     }
 
-    styles += `${CHILDREN_END_MARK}${nesting}${CHILDREN_END_MARK}`;
+    if (className) {
+      styles += `${CHILDREN_END_MARK}${nesting}${CHILDREN_END_MARK}`;
+    } else {
+      styles += `${nesting}${CHILDREN_END_MARK}`;
+    }
 
     return styles;
   }
@@ -126,8 +132,8 @@ class FunctionExp<P extends object = {}> extends Token {
 class StyleSheet<P extends object = {}> {
   children: Children = [];
 
-  generate(className: string, props?: P, fns?: Array<Function>) {
-    let styles = `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`;
+  generate(className: string | null, props?: P, fns?: Array<Function>) {
+    let styles = className ? `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}` : '';
     let nesting = '';
     let media = '';
 
@@ -148,7 +154,11 @@ class StyleSheet<P extends object = {}> {
       }
     }
 
-    styles += `${CHILDREN_END_MARK}${nesting}${media}`;
+    if (className) {
+      styles += `${CHILDREN_END_MARK}${nesting}${media}`;
+    } else {
+      styles += `${nesting}${media}`;
+    }
 
     return styles;
   }

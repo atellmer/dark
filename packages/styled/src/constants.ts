@@ -1,4 +1,5 @@
 export const VERSION = '0.25.1';
+export const STYLED_ATTR = 'dark-styled';
 export const CHILDREN_START_MARK = '{';
 export const CHILDREN_END_MARK = '}';
 export const PROP_VALUE_START_MARK = ':';

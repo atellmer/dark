@@ -9,13 +9,13 @@ import {
   detectIsFunction,
   detectIsUndefined,
   detectIsTextBased,
-  useInsertionEffect,
   detectIsServer,
+  useInsertionEffect,
   forwardRef,
 } from '@dark-engine/core';
 
 import { type DefaultTheme } from '../';
-import { FUNCTION_MARK, CLASS_NAME_MARK } from '../constants';
+import { FUNCTION_MARK, CLASS_NAME_MARK, STYLED_ATTR } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 import { hash } from '../hash';
@@ -31,26 +31,28 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
   let $transformProps: TransformProps<P> = transformProps;
   let updates: Array<string> = [];
   const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
-    const fns = args.filter(x => detectIsFunction(x) && !detectIsStyledComponentFactory(x)) as DynamicArgs<P>;
+    const fns = args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
     const [$static, $dynamics] = slice(parse(join(strings, args)));
-    const className = generate($static, updates);
+    const className = generate({ stylesheet: $static, updates });
     const $factory = forwardRef<P, R>(
       component((props, ref) => {
-        const values = Object.keys(props).map(key => props[key]);
         const { theme } = useThemeContext();
+        const values = Object.keys(props).map(key => props[key]);
         const classNames = useMemo(() => {
-          return $dynamics.map(x => generate(x, updates, { ...props, theme }, fns)).join(' ');
+          const $props = { ...props, theme };
+
+          return $dynamics.map(x => generate({ stylesheet: x, props: $props, updates, fns })).join(' ');
         }, [...values, theme]);
         const $className = [getClassNameFrom(props), className, classNames].filter(Boolean).join(' ');
 
         useInsertionEffect(() => {
           if (!tag) {
             tag = document.createElement('style');
-            tag.setAttribute('dark-styled', 'true');
+            tag.setAttribute(STYLED_ATTR, 'true');
             document.head.appendChild(tag);
           }
 
-          updates.forEach(x => inject(x));
+          updates.forEach(x => inject(x, tag));
           updates = [];
         }, [updates.join('')]);
 
@@ -98,7 +100,15 @@ function transformProps<P extends object>(props: P) {
   return $props;
 }
 
-function generate<P extends object>(stylesheet: StyleSheet, updates: Array<string>, props?: P, fns?: Array<Function>) {
+type GenerateOptions<P extends object> = {
+  stylesheet: StyleSheet;
+  updates: Array<string>;
+  props?: P;
+  fns?: Array<Function>;
+};
+
+function generate<P extends object>(options: GenerateOptions<P>) {
+  const { stylesheet, updates, props, fns } = options;
   const key = stylesheet.generate(FUNCTION_MARK, props, fns);
   const style = styles.get(key);
   const className = style ? style[0] : genClassName(key);
@@ -112,7 +122,7 @@ function generate<P extends object>(stylesheet: StyleSheet, updates: Array<strin
   return className;
 }
 
-function inject(css: string) {
+function inject(css: string, tag: HTMLStyleElement) {
   tag.textContent = `${tag.textContent}${css}`;
 }
 
@@ -144,7 +154,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
   for (let i = 0; i < strings.length; i++) {
     joined += strings[i];
 
-    if (detectIsStyledComponentFactory(args[i])) {
+    if (detectIsStyled(args[i])) {
       const factory = args[i] as unknown as StyledComponentFactory<P, unknown>;
       const { className } = factory[$$styled];
 
@@ -167,7 +177,7 @@ function css(strings: TemplateStringsArray, ...args: Args<any>) {
     .trim();
 }
 
-const detectIsStyledComponentFactory = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
+const detectIsStyled = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
   detectIsFunction(x) && Boolean(x[$$styled]);
 
 type StyledProps = {
@@ -195,8 +205,8 @@ type TextBased = string | number;
 
 type ArgFn<P> = (p: P) => TextBased | false;
 
-type DynamicArgs<P> = Array<ArgFn<P>>;
+export type DynamicArgs<P> = Array<ArgFn<P>>;
 
-type Args<P> = Array<TextBased | ArgFn<P> | Function>;
+export type Args<P> = Array<TextBased | ArgFn<P> | Function>;
 
-export { styled, css };
+export { styled, css, slice, join, detectIsStyled };
