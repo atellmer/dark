@@ -33,7 +33,14 @@ import {
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { SVG_TAG_NAMES, VOID_TAG_NAMES, ATTR_STYLE, ATTR_CLASS, ATTR_CLASS_NAME } from '../constants';
+import {
+  SVG_TAG_NAMES,
+  VOID_TAG_NAMES,
+  ATTR_STYLE,
+  ATTR_CLASS,
+  ATTR_CLASS_NAME,
+  EXCLUDE_ATTR_MARK,
+} from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -93,6 +100,8 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
   for (const attrName of attrNames) {
     const attrValue = node.attrs[attrName];
 
+    if (attrName[0] === EXCLUDE_ATTR_MARK) continue;
+
     if (attrName === ATTR_REF) {
       applyRef(attrValue, element);
       continue;
@@ -130,6 +139,8 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
   for (const attrName of attrNames) {
     const prevAttrValue = prevNode.attrs[attrName];
     const nextAttrValue = nextNode.attrs[attrName];
+
+    if (attrName[0] === EXCLUDE_ATTR_MARK) continue;
 
     if (attrName === ATTR_REF) {
       applyRef(prevAttrValue, element);
