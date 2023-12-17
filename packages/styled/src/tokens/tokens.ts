@@ -27,13 +27,12 @@ abstract class Token {
     detectIsToken(this.parent) && !this.parent.isDynamic && this.parent.markAsDynamic();
   }
 
-  abstract generate(): string;
-  abstract generate(props: object, args: Array<Function>): string;
-  abstract generate(className: string | null, props: object, args: Array<Function>): string;
+  abstract generate(): string | Tuple;
+  abstract generate(className: string | null, props: object, args: Array<Function>): string | Tuple;
 }
 
 class StyleExp extends Token {
-  override generate() {
+  override generate(): string {
     return `${this.name}${PROP_VALUE_START_MARK}${this.value}${PROP_VALUE_END_MARK}`;
   }
 }
@@ -42,7 +41,7 @@ class NestingExp<P extends object = {}> extends Token {
   name = NESTING_MARK;
   children: Children = [];
 
-  override generate(...args: Array<unknown>) {
+  override generate(...args: Array<unknown>): string {
     const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
@@ -61,7 +60,9 @@ class NestingExp<P extends object = {}> extends Token {
       } else if (detectIsContainerQueryExp(token)) {
         styles += cqe.generate(className, props, fns);
       } else if (detectIsFunctionExp(token)) {
-        styles += fne.generate(props, fns);
+        const [$styles] = fne.generate(className, props, fns);
+
+        styles += $styles;
       }
     }
 
@@ -75,7 +76,7 @@ class MediaQueryExp<P extends object = {}> extends Token {
   name = MEDIA_QUERY_MARK;
   children: Children = [];
 
-  override generate(...args: Array<unknown>) {
+  override generate(...args: Array<unknown>): string {
     const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
@@ -94,7 +95,10 @@ class MediaQueryExp<P extends object = {}> extends Token {
       } else if (detectIsNestingExp(token)) {
         nesting += nse.generate(className, props, fns);
       } else if (detectIsFunctionExp(token)) {
-        styles += fne.generate(props, fns);
+        const [$styles, $nesting] = fne.generate(className, props, fns);
+
+        styles += $styles;
+        nesting += $nesting;
       }
     }
 
@@ -112,7 +116,7 @@ class ContainerQueryExp<P extends object = {}> extends Token {
   name = CONTAINER_QUERY_MARK;
   children: Children = [];
 
-  override generate(...args: Array<unknown>) {
+  override generate(...args: Array<unknown>): string {
     const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
@@ -131,7 +135,10 @@ class ContainerQueryExp<P extends object = {}> extends Token {
       } else if (detectIsNestingExp(token)) {
         nesting += nse.generate(className, props, fns);
       } else if (detectIsFunctionExp(token)) {
-        styles += fne.generate(props, fns);
+        const [$styles, $nesting] = fne.generate(className, props, fns);
+
+        styles += $styles;
+        nesting += $nesting;
       }
     }
 
@@ -154,19 +161,41 @@ class FunctionExp<P extends object = {}> extends Token {
     this.value = String(value);
   }
 
-  generate(...args: Array<unknown>): string {
-    const props = args[0] as P;
-    const fns = args[1] as Array<Function>;
+  generate(...args: Array<unknown>): Tuple {
+    const className = args[0] as string | null;
+    const props = args[1] as P;
+    const fns = args[2] as Array<Function>;
     const value = fns[this.value](props);
-    const style = this.style;
+    const styleExp = this.style;
+    let styles = '';
+    let nesting = '';
+    let media = '';
+    let container = '';
 
-    if (style) {
-      style.value = this.name.replace(FUNCTION_MARK, value);
+    if (detectIsStyleSheet(value)) {
+      for (const token of value.children) {
+        const se = token as unknown as StyleExp;
+        const nse = token as unknown as NestingExp;
+        const mqe = token as unknown as MediaQueryExp;
+        const cqe = token as unknown as ContainerQueryExp;
 
-      return style.generate();
+        if (detectIsStyleExp(token)) {
+          styles += se.generate();
+        } else if (detectIsNestingExp(token)) {
+          nesting += nse.generate(className, props, fns);
+        } else if (detectIsMediaQueryExp(token)) {
+          media += mqe.generate(className, props, fns);
+        } else if (detectIsContainerQueryExp(token)) {
+          container += cqe.generate(className, props, fns);
+        }
+      }
+    } else if (styleExp) {
+      styleExp.value = this.name.replace(FUNCTION_MARK, value);
+
+      styles += styleExp.generate();
     }
 
-    return value;
+    return [styles, nesting, media, container];
   }
 }
 
@@ -195,7 +224,12 @@ class StyleSheet<P extends object = {}> {
       } else if (detectIsContainerQueryExp(token)) {
         container += cqe.generate(className, props, fns);
       } else if (detectIsFunctionExp(token)) {
-        styles += fne.generate(props, fns);
+        const [$styles, $nesting, $media, $container] = fne.generate(className, props, fns);
+
+        styles += $styles;
+        nesting += $nesting;
+        media += $media;
+        container += $container;
       }
     }
 
@@ -208,6 +242,8 @@ class StyleSheet<P extends object = {}> {
     return styles;
   }
 }
+
+type Tuple = [string, string, string, string];
 
 export type Parent = StyleSheet | NestingExp | MediaQueryExp;
 

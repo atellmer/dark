@@ -14,7 +14,7 @@ function phash(h: number, x: string) {
 
 function hash(x: string) {
   const source = phash(SEED, x);
-  const hash = String(source)
+  const hash = String(Math.abs(source))
     .slice(0, SIZE)
     .split('')
     .map(x => map[x])

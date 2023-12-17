@@ -7,7 +7,6 @@ import {
   useMemo,
   detectIsString,
   detectIsFunction,
-  detectIsUndefined,
   detectIsTextBased,
   detectIsServer,
   useInsertionEffect,
@@ -175,11 +174,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 }
 
 function css(strings: TemplateStringsArray, ...args: Args<any>) {
-  return strings
-    .map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : ''))
-    .join('')
-    .replace(/([:;])\s*/gm, '$1')
-    .trim();
+  return parse(join(strings, args));
 }
 
 const detectIsStyled = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
