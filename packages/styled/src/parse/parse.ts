@@ -4,6 +4,7 @@ import {
   PROP_VALUE_START_MARK,
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
+  CONTAINER_QUERY_MARK,
   FUNCTION_MARK,
   SINGLE_LINE_COMMENT_START_MARK,
   SINGLE_LINE_COMMENT_END_MARK,
@@ -15,11 +16,13 @@ import {
   StyleSheet,
   StyleExp,
   MediaQueryExp,
+  ContainerQueryExp,
   NestingExp,
   FunctionExp,
   detectIsStyleSheet,
   detectIsStyleExp,
   detectIsMediaQueryExp,
+  detectIsContainerQueryExp,
   detectIsNestingExp,
   detectIsFunctionExp,
 } from '../tokens';
@@ -77,12 +80,17 @@ function parse(css: string) {
 
     switch (char) {
       case CHILDREN_START_MARK:
-        const token = detectHasMediaQueryMark(buffer) ? new MediaQueryExp() : new NestingExp();
-        const canNest = detectIsMediaQueryExp(token)
-          ? detectIsStyleSheet(parent)
-          : detectIsNestingExp(token)
-          ? detectIsStyleSheet(parent) || detectIsMediaQueryExp(parent)
-          : false;
+        const token = detectHasMediaQueryMark(buffer)
+          ? new MediaQueryExp()
+          : detectHasContainerQueryMark(buffer)
+          ? new ContainerQueryExp()
+          : new NestingExp();
+        const canNest =
+          detectIsMediaQueryExp(token) || detectIsContainerQueryExp(token)
+            ? detectIsStyleSheet(parent)
+            : detectIsNestingExp(token)
+            ? detectIsStyleSheet(parent) || detectIsMediaQueryExp(parent) || detectIsContainerQueryExp(parent)
+            : false;
 
         if (!canNest) {
           throw new Error('Illegal style nesting!');
@@ -143,7 +151,7 @@ function parse(css: string) {
 
 function detectIsPropName(name: string, idx: number, css: string, children: Children) {
   const last = children[children.length - 1];
-  if (detectHasMediaQueryMark(name)) return false;
+  if (detectHasMediaQueryMark(name) || detectHasContainerQueryMark(name)) return false;
   if (detectIsStyleExp(last) && !last.value) return false;
 
   for (let i = idx; i < css.length; i++) {
@@ -165,6 +173,8 @@ const detectHasMultiLineCommentStartMark = (x: string) => x.trim().startsWith(MU
 const detectHasMultiLineCommentEndMark = (x: string) => x.endsWith(MULTI_LINE_COMMENT_END_MARK);
 
 const detectHasMediaQueryMark = (x: string) => x.trim().startsWith(MEDIA_QUERY_MARK);
+
+const detectHasContainerQueryMark = (x: string) => x.trim().startsWith(CONTAINER_QUERY_MARK);
 
 const detectHasFunctionMark = (x: string) => x.endsWith(FUNCTION_MARK);
 

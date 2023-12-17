@@ -4,6 +4,7 @@ import {
   PROP_VALUE_START_MARK,
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
+  CONTAINER_QUERY_MARK,
   NESTING_MARK,
   SELF_MARK,
   CLASS_NAME_MARK,
@@ -50,12 +51,15 @@ class NestingExp<P extends object = {}> extends Token {
     for (const token of this.children) {
       const se = token as unknown as StyleExp;
       const mqe = token as unknown as MediaQueryExp;
+      const cqe = token as unknown as ContainerQueryExp;
       const fne = token as unknown as FunctionExp;
 
       if (detectIsStyleExp(token)) {
         styles += se.generate();
       } else if (detectIsMediaQueryExp(token)) {
         styles += mqe.generate(className, props, fns);
+      } else if (detectIsContainerQueryExp(token)) {
+        styles += cqe.generate(className, props, fns);
       } else if (detectIsFunctionExp(token)) {
         styles += fne.generate(props, fns);
       }
@@ -69,6 +73,43 @@ class NestingExp<P extends object = {}> extends Token {
 
 class MediaQueryExp<P extends object = {}> extends Token {
   name = MEDIA_QUERY_MARK;
+  children: Children = [];
+
+  override generate(...args: Array<unknown>) {
+    const className = args[0] as string | null;
+    const props = args[1] as P;
+    const fns = args[2] as Array<Function>;
+    let styles = className
+      ? `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`
+      : `${this.value}${CHILDREN_START_MARK}`;
+    let nesting = '';
+
+    for (const token of this.children) {
+      const se = token as unknown as StyleExp;
+      const nse = token as unknown as NestingExp;
+      const fne = token as unknown as FunctionExp;
+
+      if (detectIsStyleExp(token)) {
+        styles += se.generate();
+      } else if (detectIsNestingExp(token)) {
+        nesting += nse.generate(className, props, fns);
+      } else if (detectIsFunctionExp(token)) {
+        styles += fne.generate(props, fns);
+      }
+    }
+
+    if (className) {
+      styles += `${CHILDREN_END_MARK}${nesting}${CHILDREN_END_MARK}`;
+    } else {
+      styles += `${nesting}${CHILDREN_END_MARK}`;
+    }
+
+    return styles;
+  }
+}
+
+class ContainerQueryExp<P extends object = {}> extends Token {
+  name = CONTAINER_QUERY_MARK;
   children: Children = [];
 
   override generate(...args: Array<unknown>) {
@@ -136,11 +177,13 @@ class StyleSheet<P extends object = {}> {
     let styles = className ? `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}` : '';
     let nesting = '';
     let media = '';
+    let container = '';
 
     for (const token of this.children) {
       const se = token as unknown as StyleExp;
       const nse = token as unknown as NestingExp;
       const mqe = token as unknown as MediaQueryExp;
+      const cqe = token as unknown as ContainerQueryExp;
       const fne = token as unknown as FunctionExp;
 
       if (detectIsStyleExp(token)) {
@@ -149,15 +192,17 @@ class StyleSheet<P extends object = {}> {
         nesting += nse.generate(className, props, fns);
       } else if (detectIsMediaQueryExp(token)) {
         media += mqe.generate(className, props, fns);
+      } else if (detectIsContainerQueryExp(token)) {
+        container += cqe.generate(className, props, fns);
       } else if (detectIsFunctionExp(token)) {
         styles += fne.generate(props, fns);
       }
     }
 
     if (className) {
-      styles += `${CHILDREN_END_MARK}${nesting}${media}`;
+      styles += `${CHILDREN_END_MARK}${nesting}${media}${container}`;
     } else {
-      styles += `${nesting}${media}`;
+      styles += `${nesting}${media}${container}`;
     }
 
     return styles;
@@ -174,6 +219,8 @@ const detectIsStyleExp = (x: unknown): x is StyleExp => x instanceof StyleExp;
 
 const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof MediaQueryExp;
 
+const detectIsContainerQueryExp = (x: unknown): x is ContainerQueryExp => x instanceof ContainerQueryExp;
+
 const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
 
 const detectIsFunctionExp = (x: unknown): x is FunctionExp => x instanceof FunctionExp;
@@ -184,11 +231,13 @@ export {
   StyleSheet,
   StyleExp,
   MediaQueryExp,
+  ContainerQueryExp,
   NestingExp,
   FunctionExp,
   detectIsStyleSheet,
   detectIsStyleExp,
   detectIsMediaQueryExp,
+  detectIsContainerQueryExp,
   detectIsNestingExp,
   detectIsFunctionExp,
 };

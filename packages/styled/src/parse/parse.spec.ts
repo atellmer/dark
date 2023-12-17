@@ -1,4 +1,4 @@
-import { StyleSheet, StyleExp, MediaQueryExp, NestingExp } from '../tokens';
+import { StyleSheet, StyleExp, MediaQueryExp, ContainerQueryExp, NestingExp } from '../tokens';
 import { parse } from './parse';
 
 describe('[@styled/parse]', () => {
@@ -114,6 +114,48 @@ describe('[@styled/parse]', () => {
 
   test('parses css correctly #5', () => {
     const style = parse(`
+      container-type: inline-size;
+      container-name: sidebar;
+
+      @container sidebar (min-width: 600px) {
+        & span {
+          font-size: 2em;
+        }
+      }
+    `);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(3);
+
+    const containerType = style.children[0] as StyleExp;
+    const containerName = style.children[1] as StyleExp;
+
+    expect(containerType).toBeInstanceOf(StyleExp);
+    expect(containerType.name).toBe('container-type');
+    expect(containerType.value).toBe('inline-size');
+    expect(containerName).toBeInstanceOf(StyleExp);
+    expect(containerName.name).toBe('container-name');
+    expect(containerName.value).toBe('sidebar');
+
+    const cqe = style.children[2] as ContainerQueryExp;
+
+    expect(cqe).toBeInstanceOf(ContainerQueryExp);
+    expect(cqe.value).toBe('@container sidebar (min-width: 600px)');
+
+    const nse = cqe.children[0] as NestingExp;
+
+    expect(nse.children.length).toBe(1);
+    expect(nse.value).toBe('& span');
+
+    const fontSize = nse.children[0] as StyleExp;
+
+    expect(fontSize).toBeInstanceOf(StyleExp);
+    expect(fontSize.name).toBe('font-size');
+    expect(fontSize.value).toBe('2em');
+  });
+
+  test('parses css correctly #6', () => {
+    const style = parse(`
       border: 1px solid black;
       padding: 10px 20px;
       font-size: 16px;
@@ -137,7 +179,7 @@ describe('[@styled/parse]', () => {
     expect(fontSize.value).toBe('16px');
   });
 
-  test('parses css correctly #6', () => {
+  test('parses css correctly #7', () => {
     const style = parse(`
       content: "Hello, world";
       font-family: "Arial", sans-serif;
@@ -157,7 +199,7 @@ describe('[@styled/parse]', () => {
     expect(fontFamily.value).toBe('"Arial", sans-serif');
   });
 
-  test('parses css correctly #7', () => {
+  test('parses css correctly #8', () => {
     const style = parse(`
       color : red ;
       background-color : blue ;
@@ -177,7 +219,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #8', () => {
+  test('parses css correctly #9', () => {
     const style = parse(`
       color
       background-color
@@ -187,14 +229,14 @@ describe('[@styled/parse]', () => {
     expect(style.children.length).toBe(0);
   });
 
-  test('parses css correctly #9', () => {
+  test('parses css correctly #10', () => {
     const style = parse(``);
 
     expect(style).toBeInstanceOf(StyleSheet);
     expect(style.children.length).toBe(0);
   });
 
-  test('parses css correctly #10', () => {
+  test('parses css correctly #11', () => {
     const style = parse(`
       @media(min-width: 400px) {
         top: 10px;
@@ -356,7 +398,7 @@ describe('[@styled/parse]', () => {
     }
   });
 
-  test('parses css correctly #11', () => {
+  test('parses css correctly #12', () => {
     const style = parse(`
       & * div.red > .item [selected="true"] #x:hover {
         color: red;
@@ -383,7 +425,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #12', () => {
+  test('parses css correctly #13', () => {
     const style = parse(`
       :root {
         --color: red;
@@ -415,7 +457,7 @@ describe('[@styled/parse]', () => {
     expect(color.value).toBe('var(--color)');
   });
 
-  test('parses css correctly #13', () => {
+  test('parses css correctly #14', () => {
     const make = () => {
       parse(`
         color: green;
@@ -433,7 +475,7 @@ describe('[@styled/parse]', () => {
     expect(make).toThrowError();
   });
 
-  test('parses css correctly #14', () => {
+  test('parses css correctly #15', () => {
     const make = () => {
       parse(`
         color: green;
@@ -451,7 +493,25 @@ describe('[@styled/parse]', () => {
     expect(make).toThrowError();
   });
 
-  test('parses css correctly #15', () => {
+  test('parses css correctly #16', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+
+          @container(max-width: 600px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('parses css correctly #17', () => {
     const make = () => {
       parse(`
         color: green;
@@ -469,7 +529,25 @@ describe('[@styled/parse]', () => {
     expect(make).toThrowError();
   });
 
-  test('parses css correctly #16', () => {
+  test('parses css correctly #18', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @container(max-width: 600px) {
+          color: purple;
+
+          @container(max-width: 400px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('parses css correctly #19', () => {
     const make = () => {
       parse(`
         color: green;
@@ -487,12 +565,48 @@ describe('[@styled/parse]', () => {
     expect(make).not.toThrowError();
   });
 
-  test('parses css correctly #17', () => {
+  test('parses css correctly #20', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+        }
+
+        @container(max-width: 600px) {
+          color: purple;
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('parses css correctly #21', () => {
     const make = () => {
       parse(`
         color: green;
 
         @media(max-width: 600px) {
+          color: purple;
+
+          & span {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('parses css correctly #22', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @container(max-width: 600px) {
           color: purple;
 
           & span {
