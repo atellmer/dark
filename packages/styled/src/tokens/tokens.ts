@@ -48,22 +48,9 @@ class NestingExp<P extends object = {}> extends Token {
     let styles = `${this.value.replaceAll(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
 
     for (const token of this.children) {
-      const se = token as unknown as StyleExp;
-      const mqe = token as unknown as MediaQueryExp;
-      const cqe = token as unknown as ContainerQueryExp;
-      const fne = token as unknown as FunctionExp;
+      const [$styles] = generate({ token, className, props, fns });
 
-      if (detectIsStyleExp(token)) {
-        styles += se.generate();
-      } else if (detectIsMediaQueryExp(token)) {
-        styles += mqe.generate(className, props, fns);
-      } else if (detectIsContainerQueryExp(token)) {
-        styles += cqe.generate(className, props, fns);
-      } else if (detectIsFunctionExp(token)) {
-        const [$styles] = fne.generate(className, props, fns);
-
-        styles += $styles;
-      }
+      styles += $styles;
     }
 
     styles += `${CHILDREN_END_MARK}`;
@@ -86,20 +73,10 @@ class MediaQueryExp<P extends object = {}> extends Token {
     let nesting = '';
 
     for (const token of this.children) {
-      const se = token as unknown as StyleExp;
-      const nse = token as unknown as NestingExp;
-      const fne = token as unknown as FunctionExp;
+      const [$styles, $nesting] = generate({ token, className, props, fns });
 
-      if (detectIsStyleExp(token)) {
-        styles += se.generate();
-      } else if (detectIsNestingExp(token)) {
-        nesting += nse.generate(className, props, fns);
-      } else if (detectIsFunctionExp(token)) {
-        const [$styles, $nesting] = fne.generate(className, props, fns);
-
-        styles += $styles;
-        nesting += $nesting;
-      }
+      styles += $styles;
+      nesting += $nesting;
     }
 
     if (className) {
@@ -126,20 +103,10 @@ class ContainerQueryExp<P extends object = {}> extends Token {
     let nesting = '';
 
     for (const token of this.children) {
-      const se = token as unknown as StyleExp;
-      const nse = token as unknown as NestingExp;
-      const fne = token as unknown as FunctionExp;
+      const [$styles, $nesting] = generate({ token, className, props, fns });
 
-      if (detectIsStyleExp(token)) {
-        styles += se.generate();
-      } else if (detectIsNestingExp(token)) {
-        nesting += nse.generate(className, props, fns);
-      } else if (detectIsFunctionExp(token)) {
-        const [$styles, $nesting] = fne.generate(className, props, fns);
-
-        styles += $styles;
-        nesting += $nesting;
-      }
+      styles += $styles;
+      nesting += $nesting;
     }
 
     if (className) {
@@ -174,20 +141,12 @@ class FunctionExp<P extends object = {}> extends Token {
 
     if (detectIsStyleSheet(value)) {
       for (const token of value.children) {
-        const se = token as unknown as StyleExp;
-        const nse = token as unknown as NestingExp;
-        const mqe = token as unknown as MediaQueryExp;
-        const cqe = token as unknown as ContainerQueryExp;
+        const [$styles, $nesting, $media, $container] = generate({ token, className, props, fns });
 
-        if (detectIsStyleExp(token)) {
-          styles += se.generate();
-        } else if (detectIsNestingExp(token)) {
-          nesting += nse.generate(className, props, fns);
-        } else if (detectIsMediaQueryExp(token)) {
-          media += mqe.generate(className, props, fns);
-        } else if (detectIsContainerQueryExp(token)) {
-          container += cqe.generate(className, props, fns);
-        }
+        styles += $styles;
+        nesting += $nesting;
+        media += $media;
+        container += $container;
       }
     } else if (styleExp) {
       styleExp.value = this.name.replace(FUNCTION_MARK, value);
@@ -209,28 +168,12 @@ class StyleSheet<P extends object = {}> {
     let container = '';
 
     for (const token of this.children) {
-      const se = token as unknown as StyleExp;
-      const nse = token as unknown as NestingExp;
-      const mqe = token as unknown as MediaQueryExp;
-      const cqe = token as unknown as ContainerQueryExp;
-      const fne = token as unknown as FunctionExp;
+      const [$styles, $nesting, $media, $container] = generate({ token, className, props, fns });
 
-      if (detectIsStyleExp(token)) {
-        styles += se.generate();
-      } else if (detectIsNestingExp(token)) {
-        nesting += nse.generate(className, props, fns);
-      } else if (detectIsMediaQueryExp(token)) {
-        media += mqe.generate(className, props, fns);
-      } else if (detectIsContainerQueryExp(token)) {
-        container += cqe.generate(className, props, fns);
-      } else if (detectIsFunctionExp(token)) {
-        const [$styles, $nesting, $media, $container] = fne.generate(className, props, fns);
-
-        styles += $styles;
-        nesting += $nesting;
-        media += $media;
-        container += $container;
-      }
+      styles += $styles;
+      nesting += $nesting;
+      media += $media;
+      container += $container;
     }
 
     if (className) {
@@ -241,6 +184,45 @@ class StyleSheet<P extends object = {}> {
 
     return styles;
   }
+}
+
+type GenerateProps<P extends object> = {
+  token: Token;
+  className: string | null;
+  props?: P;
+  fns?: Array<Function>;
+};
+
+function generate<P extends object = {}>(options: GenerateProps<P>): Tuple {
+  const { token, className, props, fns } = options;
+  let styles = '';
+  let nesting = '';
+  let media = '';
+  let container = '';
+  const se = token as unknown as StyleExp;
+  const nse = token as unknown as NestingExp;
+  const mqe = token as unknown as MediaQueryExp;
+  const cqe = token as unknown as ContainerQueryExp;
+  const fne = token as unknown as FunctionExp;
+
+  if (detectIsStyleExp(token)) {
+    styles += se.generate();
+  } else if (detectIsNestingExp(token)) {
+    nesting += nse.generate(className, props, fns);
+  } else if (detectIsMediaQueryExp(token)) {
+    media += mqe.generate(className, props, fns);
+  } else if (detectIsContainerQueryExp(token)) {
+    container += cqe.generate(className, props, fns);
+  } else if (detectIsFunctionExp(token)) {
+    const [$styles, $nesting, $media, $container] = fne.generate(className, props, fns);
+
+    styles += $styles;
+    nesting += $nesting;
+    media += $media;
+    container += $container;
+  }
+
+  return [styles, nesting, media, container];
 }
 
 type Tuple = [string, string, string, string];
