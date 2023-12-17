@@ -227,9 +227,9 @@ function generate<P extends object = {}>(options: GenerateProps<P>): Tuple {
 
 type Tuple = [string, string, string, string];
 
-export type Parent = StyleSheet | NestingExp | MediaQueryExp;
+export type Parent = StyleSheet | Token;
 
-export type Children = Array<StyleExp | NestingExp | MediaQueryExp | FunctionExp>;
+export type Children = Array<Token>;
 
 const detectIsToken = (x: unknown): x is Token => x instanceof Token;
 

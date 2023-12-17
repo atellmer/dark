@@ -25,7 +25,7 @@ import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 import { hash } from '../hash';
 import { useThemeContext } from '../context';
-import { uniq } from '../utils';
+import { uniq, mapProps } from '../utils';
 
 let styles = new Map<string, [string, string]>();
 let styleTag: HTMLStyleElement = null;
@@ -45,7 +45,6 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
       component((props, ref) => {
         const { as: $factory, ...rest } = props;
         const { theme } = useThemeContext();
-        const values = Object.keys(props).map(key => props[key]);
         const isReplace = detectIsFunction($factory) && detectIsString(tagName);
         const $props = (isReplace ? rest : props) as unknown as P;
         const $$factory = isReplace ? $factory : factory;
@@ -56,7 +55,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           return uniq([...getClassNamesFrom(props), className, ...dynamicNames].filter(Boolean)).join(
             CLASS_NAME_DELIMETER_MARK,
           );
-        }, [...values, theme]);
+        }, [...mapProps(props), theme]);
 
         useInsertionEffect(() => {
           if (!styleTag) {
@@ -209,4 +208,4 @@ export type DynamicArgs<P> = Array<ArgFn<P>>;
 
 export type Args<P> = Array<TextBased | ArgFn<P> | Function>;
 
-export { styled, css, slice, join, detectIsStyled };
+export { styled, css, join, detectIsStyled };

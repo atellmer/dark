@@ -12,4 +12,6 @@ const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
   return arr;
 };
 
-export { uniq };
+const mapProps = <T extends object>(props: T) => Object.keys(props).map(key => props[key]);
+
+export { uniq, mapProps };
