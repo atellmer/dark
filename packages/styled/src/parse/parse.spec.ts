@@ -696,4 +696,79 @@ describe('[@styled/parse]', () => {
     expect(transformTo.name).toBe('transform');
     expect(transformTo.value).toBe('translateX(100%)');
   });
+
+  test('parses a valid css with a single line comment correctly', () => {
+    const style = parse(`
+      font-size: 2rem; // this is a single line comment
+      color: #fff;
+    `);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(2);
+
+    const fontSize = style.children[0] as StyleExp;
+    const color = style.children[1] as StyleExp;
+
+    expect(fontSize).toBeInstanceOf(StyleExp);
+    expect(fontSize.name).toBe('font-size');
+    expect(fontSize.value).toBe('2rem');
+    expect(color).toBeInstanceOf(StyleExp);
+    expect(color.name).toBe('color');
+    expect(color.value).toBe('#fff');
+  });
+
+  test('parses a valid css with a milti line comment correctly', () => {
+    const style = parse(`
+      /* this is a multi
+      line comment */
+      font-size: 2rem;
+      color: #fff;
+    `);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(2);
+
+    const fontSize = style.children[0] as StyleExp;
+    const color = style.children[1] as StyleExp;
+
+    expect(fontSize).toBeInstanceOf(StyleExp);
+    expect(fontSize.name).toBe('font-size');
+    expect(fontSize.value).toBe('2rem');
+    expect(color).toBeInstanceOf(StyleExp);
+    expect(color.name).toBe('color');
+    expect(color.value).toBe('#fff');
+  });
+
+  test('parses a valid css with a lot of comments correctly', () => {
+    const style = parse(`
+      /* this is a multi
+      line comment */
+      font-size: 2rem; // this is a single line comment
+      // this is an another single line comment
+      color: #fff;
+      /*
+        this is an another multi
+        line
+        comment
+      */
+      background-color: blue;
+    `);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(3);
+
+    const fontSize = style.children[0] as StyleExp;
+    const color = style.children[1] as StyleExp;
+    const backgroundColor = style.children[2] as StyleExp;
+
+    expect(fontSize).toBeInstanceOf(StyleExp);
+    expect(fontSize.name).toBe('font-size');
+    expect(fontSize.value).toBe('2rem');
+    expect(color).toBeInstanceOf(StyleExp);
+    expect(color.name).toBe('color');
+    expect(color.value).toBe('#fff');
+    expect(backgroundColor).toBeInstanceOf(StyleExp);
+    expect(backgroundColor.name).toBe('background-color');
+    expect(backgroundColor.value).toBe('blue');
+  });
 });

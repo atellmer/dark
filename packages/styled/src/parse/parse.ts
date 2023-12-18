@@ -163,10 +163,10 @@ function detectIsPropName(name: string, idx: number, css: string, children: Chil
   if (detectIsStyleExp(last) && !last.value) return false;
 
   for (let i = idx; i < css.length; i++) {
-    const lex = css[i];
+    const char = css[i];
 
-    if (lex === CHILDREN_START_MARK) return false;
-    if (lex === PROP_VALUE_END_MARK) return true;
+    if (char === CHILDREN_START_MARK) return false;
+    if (char === PROP_VALUE_END_MARK) return true;
   }
 
   return true;
