@@ -14,13 +14,7 @@ import {
 } from '@dark-engine/core';
 
 import { type DefaultTheme } from '../';
-import {
-  CLASS_NAME_PREFIX,
-  FUNCTION_MARK,
-  CLASS_NAME_MARK,
-  STYLED_ATTR,
-  CLASS_NAME_DELIMETER_MARK,
-} from '../constants';
+import { CLASS_NAME_PREFIX, FUNCTION_MARK, CLASS_NAME_MARK, STYLED_ATTR, CLASS_NAME_DELIMETER } from '../constants';
 import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 import { hash } from '../hash';
@@ -161,8 +155,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
 
-const getClassNamesFrom = (props: StyledProps) =>
-  (props.class || props.className || '').split(CLASS_NAME_DELIMETER_MARK);
+const getClassNamesFrom = (props: StyledProps) => (props.class || props.className || '').split(CLASS_NAME_DELIMETER);
 
 const inject = (css: string, tag: HTMLStyleElement) => (tag.textContent = `${tag.textContent}${css}`);
 

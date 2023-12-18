@@ -1,4 +1,4 @@
-import { CLASS_NAME_DELIMETER_MARK } from '../constants';
+import { CLASS_NAME_DELIMETER } from '../constants';
 
 const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
   const arr: Array<T> = [];
@@ -16,6 +16,6 @@ const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
 
 const mapProps = <T extends object>(props: T) => Object.keys(props).map(key => props[key]);
 
-const mergeClassNames = (classNames: Array<string>) => uniq(classNames.filter(Boolean)).join(CLASS_NAME_DELIMETER_MARK);
+const mergeClassNames = (classNames: Array<string>) => uniq(classNames.filter(Boolean)).join(CLASS_NAME_DELIMETER);
 
 export { uniq, mapProps, mergeClassNames };

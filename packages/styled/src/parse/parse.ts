@@ -104,7 +104,7 @@ function parse<P extends object>(css: string) {
           throw new Error('Illegal style nesting!');
         }
 
-        token.value = normalizeBuffer(buffer);
+        token.value = normalize(buffer);
         token.normalize();
         token.parent = parent;
 
@@ -125,7 +125,7 @@ function parse<P extends object>(css: string) {
           if (!detectIsPropName(buffer, i, css, parent.children)) continue;
           const token = new StyleExp();
 
-          token.name = normalizeBuffer(buffer);
+          token.name = normalize(buffer);
           token.parent = parent;
           parent.children.push(token);
         }
@@ -144,7 +144,7 @@ function parse<P extends object>(css: string) {
             continue;
           }
 
-          token.value = normalizeBuffer(buffer);
+          token.value = normalize(buffer);
           token.normalize();
         }
         buffer = '';
@@ -188,6 +188,6 @@ const detectHasKeyframesMark = (x: string) => x.trim().startsWith(KEYFRAMES_MARK
 
 const detectHasFunctionMark = (x: string) => x.endsWith(FUNCTION_MARK);
 
-const normalizeBuffer = (x: string) => x.substring(0, x.length - 1);
+const normalize = (x: string) => x.substring(0, x.length - 1);
 
 export { parse };

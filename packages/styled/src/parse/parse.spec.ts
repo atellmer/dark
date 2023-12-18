@@ -439,7 +439,7 @@ describe('[@styled/parse]', () => {
 
       width: 100%;
       height: 100%;
-      background-image: url('https://www.cats.com/cat.jpg');
+      background-image: url('https://www.cats.com/cat.jpg'); // some comment
       font-size: 16px;
 
       @media(min-width: 700px) {
