@@ -7,6 +7,7 @@ export const PROP_VALUE_START_MARK = ':';
 export const PROP_VALUE_END_MARK = ';';
 export const MEDIA_QUERY_MARK = '@media';
 export const CONTAINER_QUERY_MARK = '@container';
+export const KEYFRAMES_MARK = '@keyframes';
 export const NESTING_MARK = '>';
 export const SELF_MARK = '&';
 export const CLASS_NAME_MARK = '.';

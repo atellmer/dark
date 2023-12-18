@@ -5,6 +5,7 @@ import {
   PROP_VALUE_END_MARK,
   MEDIA_QUERY_MARK,
   CONTAINER_QUERY_MARK,
+  KEYFRAMES_MARK,
   FUNCTION_MARK,
   SINGLE_LINE_COMMENT_START_MARK,
   SINGLE_LINE_COMMENT_END_MARK,
@@ -17,12 +18,14 @@ import {
   StyleExp,
   MediaQueryExp,
   ContainerQueryExp,
+  KeyframesExp,
   NestingExp,
   FunctionExp,
   detectIsStyleSheet,
   detectIsStyleExp,
   detectIsMediaQueryExp,
   detectIsContainerQueryExp,
+  detectIsKeyframesExp,
   detectIsNestingExp,
   detectIsFunctionExp,
 } from '../tokens';
@@ -84,12 +87,17 @@ function parse(css: string) {
           ? new MediaQueryExp()
           : detectHasContainerQueryMark(buffer)
           ? new ContainerQueryExp()
+          : detectHasKeyframesMark(buffer)
+          ? new KeyframesExp()
           : new NestingExp();
         const canNest =
-          detectIsMediaQueryExp(token) || detectIsContainerQueryExp(token)
+          detectIsMediaQueryExp(token) || detectIsContainerQueryExp(token) || detectIsKeyframesExp(token)
             ? detectIsStyleSheet(parent)
             : detectIsNestingExp(token)
-            ? detectIsStyleSheet(parent) || detectIsMediaQueryExp(parent) || detectIsContainerQueryExp(parent)
+            ? detectIsStyleSheet(parent) ||
+              detectIsMediaQueryExp(parent) ||
+              detectIsContainerQueryExp(parent) ||
+              detectIsKeyframesExp(parent)
             : false;
 
         if (!canNest) {
@@ -175,6 +183,8 @@ const detectHasMultiLineCommentEndMark = (x: string) => x.endsWith(MULTI_LINE_CO
 const detectHasMediaQueryMark = (x: string) => x.trim().startsWith(MEDIA_QUERY_MARK);
 
 const detectHasContainerQueryMark = (x: string) => x.trim().startsWith(CONTAINER_QUERY_MARK);
+
+const detectHasKeyframesMark = (x: string) => x.trim().startsWith(KEYFRAMES_MARK);
 
 const detectHasFunctionMark = (x: string) => x.endsWith(FUNCTION_MARK);
 

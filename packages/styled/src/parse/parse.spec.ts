@@ -1,8 +1,194 @@
-import { StyleSheet, StyleExp, MediaQueryExp, ContainerQueryExp, NestingExp } from '../tokens';
+import { StyleSheet, StyleExp, MediaQueryExp, ContainerQueryExp, KeyframesExp, NestingExp } from '../tokens';
 import { parse } from './parse';
 
 describe('[@styled/parse]', () => {
-  test('parses css correctly #1', () => {
+  test('throws errors with illegal nesting #1', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+
+          & span {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('throws errors with illegal nesting #2', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+
+          @media(max-width: 600px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('throws errors with illegal nesting #3', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+
+          @container(max-width: 600px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('throws errors with illegal nesting #4', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @media(max-width: 600px) {
+          color: purple;
+
+          @media(max-width: 400px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('throws errors with illegal nesting #5', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @container(max-width: 600px) {
+          color: purple;
+
+          @container(max-width: 400px) {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('throws errors with illegal nesting #6', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @media(max-width: 600px) {
+          color: purple;
+
+          @keyframes slidein {
+            from {
+              color: red;
+            }
+
+            to {
+              color: yellow;
+            }
+          }
+        }
+    `);
+    };
+
+    expect(make).toThrowError();
+  });
+
+  test('does not throw errors with legal nesting #1', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+        }
+
+        @media(max-width: 600px) {
+          color: purple;
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('does not throw errors with legal nesting #2', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        & span {
+          color: purple;
+        }
+
+        @container(max-width: 600px) {
+          color: purple;
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('does not throw errors with legal nesting #3', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @media(max-width: 600px) {
+          color: purple;
+
+          & span {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('does not throw errors with legal nesting #4', () => {
+    const make = () => {
+      parse(`
+        color: green;
+
+        @container(max-width: 600px) {
+          color: purple;
+
+          & span {
+            color: red;
+          }
+        }
+    `);
+    };
+
+    expect(make).not.toThrowError();
+  });
+
+  test('parses a simple valid css correctly', () => {
     const style = parse(`
       color: red;
       background-color: blue;
@@ -22,7 +208,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #2', () => {
+  test('parses a valid css with a media query correctly', () => {
     const style = parse(`
       @media (max-width: 600px) {
         color: red;
@@ -50,7 +236,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #3', () => {
+  test('parses a valid css with a pseudo class correctly', () => {
     const style = parse(`
       &:hover {
         color: red;
@@ -78,7 +264,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #4', () => {
+  test('parses a valid css with a media query and pseudo class correctly', () => {
     const style = parse(`
       @media (max-width: 600px) {
         &:hover {
@@ -112,7 +298,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #5', () => {
+  test('parses a valid css with a container at-rule correctly', () => {
     const style = parse(`
       container-type: inline-size;
       container-name: sidebar;
@@ -154,7 +340,7 @@ describe('[@styled/parse]', () => {
     expect(fontSize.value).toBe('2em');
   });
 
-  test('parses css correctly #6', () => {
+  test('parses complex style properties correctly', () => {
     const style = parse(`
       border: 1px solid black;
       padding: 10px 20px;
@@ -179,7 +365,7 @@ describe('[@styled/parse]', () => {
     expect(fontSize.value).toBe('16px');
   });
 
-  test('parses css correctly #7', () => {
+  test('parses style properties with quotes correctly', () => {
     const style = parse(`
       content: "Hello, world";
       font-family: "Arial", sans-serif;
@@ -199,10 +385,11 @@ describe('[@styled/parse]', () => {
     expect(fontFamily.value).toBe('"Arial", sans-serif');
   });
 
-  test('parses css correctly #8', () => {
+  test('parses style properties with spaces correctly', () => {
     const style = parse(`
-      color : red ;
-      background-color : blue ;
+         color   : red ;
+      background-color :     
+           blue ;
     `);
 
     expect(style).toBeInstanceOf(StyleSheet);
@@ -219,7 +406,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #9', () => {
+  test('parses an invalid css correctly', () => {
     const style = parse(`
       color
       background-color
@@ -229,14 +416,14 @@ describe('[@styled/parse]', () => {
     expect(style.children.length).toBe(0);
   });
 
-  test('parses css correctly #10', () => {
+  test('parses an empty css correctly', () => {
     const style = parse(``);
 
     expect(style).toBeInstanceOf(StyleSheet);
     expect(style.children.length).toBe(0);
   });
 
-  test('parses css correctly #11', () => {
+  test('parses a complex css correctly', () => {
     const style = parse(`
       @media(min-width: 400px) {
         top: 10px;
@@ -398,7 +585,7 @@ describe('[@styled/parse]', () => {
     }
   });
 
-  test('parses css correctly #12', () => {
+  test('parses a css with a complex selector correctly', () => {
     const style = parse(`
       & * div.red > .item [selected="true"] #x:hover {
         color: red;
@@ -425,7 +612,7 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor.value).toBe('blue');
   });
 
-  test('parses css correctly #13', () => {
+  test('parses a css with variables correctly', () => {
     const style = parse(`
       :root {
         --color: red;
@@ -457,165 +644,56 @@ describe('[@styled/parse]', () => {
     expect(color.value).toBe('var(--color)');
   });
 
-  test('parses css correctly #14', () => {
-    const make = () => {
-      parse(`
-        color: green;
+  test('parses a valid css with keyframes correctly', () => {
+    const style = parse(`
+      animation-name: slidein;
+      animation-duration: 3s;
 
-        & span {
-          color: purple;
-
-          & span {
-            color: red;
-          }
+      @keyframes slidein {
+        from {
+          transform: translateX(0%);
         }
+    
+        to {
+          transform: translateX(100%);
+        }
+      }
     `);
-    };
 
-    expect(make).toThrowError();
-  });
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(3);
 
-  test('parses css correctly #15', () => {
-    const make = () => {
-      parse(`
-        color: green;
+    const animationName = style.children[0] as StyleExp;
+    const animationDuration = style.children[1] as StyleExp;
 
-        & span {
-          color: purple;
+    expect(animationName).toBeInstanceOf(StyleExp);
+    expect(animationName.name).toBe('animation-name');
+    expect(animationName.value).toBe('slidein');
+    expect(animationDuration).toBeInstanceOf(StyleExp);
+    expect(animationDuration.name).toBe('animation-duration');
+    expect(animationDuration.value).toBe('3s');
 
-          @media(max-width: 600px) {
-            color: red;
-          }
-        }
-    `);
-    };
+    const ke = style.children[2] as KeyframesExp;
 
-    expect(make).toThrowError();
-  });
+    expect(ke).toBeInstanceOf(KeyframesExp);
+    expect(ke.value).toBe('@keyframes slidein');
 
-  test('parses css correctly #16', () => {
-    const make = () => {
-      parse(`
-        color: green;
+    const from = ke.children[0] as NestingExp;
+    const to = ke.children[1] as NestingExp;
 
-        & span {
-          color: purple;
+    expect(from.children.length).toBe(1);
+    expect(from.value).toBe('from');
+    expect(to.children.length).toBe(1);
+    expect(to.value).toBe('to');
 
-          @container(max-width: 600px) {
-            color: red;
-          }
-        }
-    `);
-    };
+    const transformFrom = from.children[0] as StyleExp;
+    const transformTo = to.children[0] as StyleExp;
 
-    expect(make).toThrowError();
-  });
-
-  test('parses css correctly #17', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @media(max-width: 600px) {
-          color: purple;
-
-          @media(max-width: 400px) {
-            color: red;
-          }
-        }
-    `);
-    };
-
-    expect(make).toThrowError();
-  });
-
-  test('parses css correctly #18', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @container(max-width: 600px) {
-          color: purple;
-
-          @container(max-width: 400px) {
-            color: red;
-          }
-        }
-    `);
-    };
-
-    expect(make).toThrowError();
-  });
-
-  test('parses css correctly #19', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-        }
-
-        @media(max-width: 600px) {
-          color: purple;
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
-  });
-
-  test('parses css correctly #20', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-        }
-
-        @container(max-width: 600px) {
-          color: purple;
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
-  });
-
-  test('parses css correctly #21', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @media(max-width: 600px) {
-          color: purple;
-
-          & span {
-            color: red;
-          }
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
-  });
-
-  test('parses css correctly #22', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @container(max-width: 600px) {
-          color: purple;
-
-          & span {
-            color: red;
-          }
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
+    expect(transformFrom).toBeInstanceOf(StyleExp);
+    expect(transformFrom.name).toBe('transform');
+    expect(transformFrom.value).toBe('translateX(0%)');
+    expect(transformTo).toBeInstanceOf(StyleExp);
+    expect(transformTo.name).toBe('transform');
+    expect(transformTo.value).toBe('translateX(100%)');
   });
 });
