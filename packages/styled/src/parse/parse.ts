@@ -30,8 +30,8 @@ import {
   detectIsFunctionExp,
 } from '../tokens';
 
-function parse(css: string) {
-  const stylesheet = new StyleSheet();
+function parse<P extends object>(css: string) {
+  const stylesheet = new StyleSheet<P>();
   const stack: Array<NestingExp | MediaQueryExp> = [];
   let buffer = '';
   let fnIdx = -1;

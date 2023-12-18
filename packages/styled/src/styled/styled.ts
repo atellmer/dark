@@ -25,11 +25,17 @@ import { parse } from '../parse';
 import { StyleSheet } from '../tokens';
 import { hash } from '../hash';
 import { useThemeContext } from '../context';
-import { uniq, mapProps } from '../utils';
+import { mapProps, mergeClassNames } from '../utils';
 
 let styles = new Map<string, [string, string]>();
 let styleTag: HTMLStyleElement = null;
 const $$styled = Symbol('styled');
+
+function styled<P extends object, R = unknown>(tagName: string | ComponentFactory<P, R>) {
+  const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
+
+  return createStyledComponent<P, R>(factory, tagName);
+}
 
 function createStyledComponent<P extends StyledProps, R extends unknown>(
   factory: ComponentFactory<P, R> | ((props: P) => TagVirtualNodeFactory),
@@ -38,23 +44,24 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
   let transformProps: TransformProps<P> = x => x;
   let updates: Array<string> = [];
   const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
-    const fns = args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
-    const [$static, $dynamics] = slice(parse(join(strings, args)));
-    const className = generate({ stylesheet: $static, updates });
-    const $factory = forwardRef<P, R>(
+    const fns = filterArgs<P>(args);
+    const [stylesheet, stylesheets] = slice<P>(css(strings, ...args));
+    const className = generate({ stylesheet, updates });
+    const styled = forwardRef<P, R>(
       component((props, ref) => {
-        const { as: $factory, ...rest } = props;
+        const { as: component, ...rest } = props;
         const { theme } = useThemeContext();
-        const isReplace = detectIsFunction($factory) && detectIsString(tagName);
-        const $props = (isReplace ? rest : props) as unknown as P;
-        const $$factory = isReplace ? $factory : factory;
+        const withReplace = detectIsFunction(component) && detectIsString(tagName);
+        const $props = (withReplace ? rest : props) as unknown as P;
+        const $factory = withReplace ? component : factory;
         const $className = useMemo(() => {
-          const $props = { ...props, theme };
-          const dynamicNames = $dynamics.map(x => generate({ stylesheet: x, props: $props, updates, fns }));
+          const classNames = [
+            ...getClassNamesFrom(props),
+            className,
+            ...stylesheets.map(stylesheet => generate({ stylesheet, props: { ...props, theme }, updates, fns })),
+          ];
 
-          return uniq([...getClassNamesFrom(props), className, ...dynamicNames].filter(Boolean)).join(
-            CLASS_NAME_DELIMETER_MARK,
-          );
+          return mergeClassNames(classNames);
         }, [...mapProps(props), theme]);
 
         useInsertionEffect(() => {
@@ -73,13 +80,13 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           updates = [];
         }
 
-        return $$factory({ ...transformProps($props), ref, class: $className });
+        return $factory({ ...transformProps($props), ref, class: $className });
       }),
     );
 
-    $factory[$$styled] = { className };
+    styled[$$styled] = { className };
 
-    return $factory as StyledComponentFactory<P, R>;
+    return styled as StyledComponentFactory<P, R>;
   };
 
   fn.attrs = (t: TransformProps<P>) => {
@@ -91,20 +98,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
   return fn;
 }
 
-function styled<P extends object, R = unknown>(tagName: string | ComponentFactory<P, R>) {
-  const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
-
-  return createStyledComponent<P, R>(factory, tagName);
-}
-
-const getClassNamesFrom = (props: StyledProps) => {
-  const className = props.class || props.className || '';
-
-  return className.split(CLASS_NAME_DELIMETER_MARK);
-};
-
 type GenerateOptions<P extends object> = {
-  stylesheet: StyleSheet;
+  stylesheet: StyleSheet<P>;
   updates: Array<string>;
   props?: P;
   fns?: Array<Function>;
@@ -125,30 +120,22 @@ function generate<P extends object>(options: GenerateOptions<P>) {
   return className;
 }
 
-function inject(css: string, tag: HTMLStyleElement) {
-  tag.textContent = `${tag.textContent}${css}`;
-}
-
-function genClassName(key: string) {
-  return `${CLASS_NAME_PREFIX}-${hash(key)}`;
-}
-
-function slice(source: StyleSheet): [StyleSheet, Array<StyleSheet>] {
-  const $static = new StyleSheet();
-  const $dynamics: Array<StyleSheet> = [];
+function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<StyleSheet<P>>] {
+  const stylesheet = new StyleSheet<P>();
+  const stylesheets: Array<StyleSheet> = [];
 
   for (const token of source.children) {
     if (token.isDynamic) {
-      const style = new StyleSheet();
+      const style = new StyleSheet<P>();
 
       style.children.push(token);
-      $dynamics.push(style);
+      stylesheets.push(style);
     } else {
-      $static.children.push(token);
+      stylesheet.children.push(token);
     }
   }
 
-  return [$static, $dynamics];
+  return [stylesheet, stylesheets];
 }
 
 function join<P>(strings: TemplateStringsArray, args: Args<P>) {
@@ -172,12 +159,20 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
   return joined;
 }
 
-function css(strings: TemplateStringsArray, ...args: Args<any>) {
-  return parse(join(strings, args));
-}
+const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
+
+const getClassNamesFrom = (props: StyledProps) =>
+  (props.class || props.className || '').split(CLASS_NAME_DELIMETER_MARK);
+
+const inject = (css: string, tag: HTMLStyleElement) => (tag.textContent = `${tag.textContent}${css}`);
+
+const genClassName = (key: string) => `${CLASS_NAME_PREFIX}-${hash(key)}`;
 
 const detectIsStyled = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
   detectIsFunction(x) && Boolean(x[$$styled]);
+
+const filterArgs = <P>(args: Args<unknown>) =>
+  args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
 
 type StyledProps = {
   as?: string | ComponentFactory;
@@ -204,8 +199,8 @@ type TextBased = string | number;
 
 type ArgFn<P> = (p: P) => TextBased | false;
 
-export type DynamicArgs<P> = Array<ArgFn<P>>;
+type DynamicArgs<P> = Array<ArgFn<P>>;
 
 export type Args<P> = Array<TextBased | ArgFn<P> | Function>;
 
-export { styled, css, join, detectIsStyled };
+export { styled, css, filterArgs };
