@@ -84,7 +84,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
       }),
     );
 
-    styled[$$styled] = { className };
+    styled[$$styled] = className;
 
     return styled as StyledComponentFactory<P, R>;
   };
@@ -146,7 +146,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 
     if (detectIsStyled(args[i])) {
       const factory = args[i] as unknown as StyledComponentFactory<P, unknown>;
-      const { className } = factory[$$styled];
+      const className = factory[$$styled];
 
       joined += `${CLASS_NAME_MARK}${className}`;
     } else if (detectIsFunction(args[i])) {
@@ -181,9 +181,7 @@ type StyledProps = {
 };
 
 type StyledComponentFactory<P, R> = {
-  [$$styled]: {
-    className: string;
-  };
+  [$$styled]: string;
 } & ComponentFactory<P & StandardComponentProps & StyledProps, R>;
 
 type TransformProps<P> = (p: P) => any;
