@@ -4,19 +4,25 @@ import {
   type StandardComponentProps,
   View,
   component,
+  forwardRef,
   useMemo,
   detectIsString,
   detectIsFunction,
   detectIsTextBased,
   detectIsServer,
   useInsertionEffect,
-  forwardRef,
 } from '@dark-engine/core';
 
-import { CLASS_NAME_PREFIX, FUNCTION_MARK, CLASS_NAME_MARK, STYLED_ATTR, CLASS_NAME_DELIMETER } from '../constants';
+import {
+  CLASS_NAME_PREFIX,
+  FUNCTION_MARK,
+  CLASS_NAME_MARK,
+  STYLED_COMPONENTS_ATTR,
+  CLASS_NAME_DELIMETER,
+} from '../constants';
 import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
+import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append } from '../utils';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
-import { mapProps, mergeClassNames } from '../utils';
 import { useThemeContext } from '../context';
 import { type TextBased } from '../shared';
 import { type DefaultTheme } from '../';
@@ -62,9 +68,15 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
 
         useInsertionEffect(() => {
           if (!styleTag) {
-            styleTag = document.createElement('style');
-            styleTag.setAttribute(STYLED_ATTR, 'true');
-            document.head.appendChild(styleTag);
+            const tag = getTag();
+
+            if (tag) {
+              styleTag = tag; // after hydration
+              updates = [];
+              return;
+            } else {
+              styleTag = createTag();
+            }
           }
 
           updates.forEach(x => inject(x, styleTag));
@@ -184,6 +196,17 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 
   return joined;
 }
+
+function createTag() {
+  const tag = createStyleElement();
+
+  setAttr(tag, STYLED_COMPONENTS_ATTR, 'true');
+  append(document.head, tag);
+
+  return tag;
+}
+
+const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
 

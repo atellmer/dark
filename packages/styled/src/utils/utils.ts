@@ -18,4 +18,12 @@ const mapProps = <T extends object>(props: T) => Object.keys(props).map(key => p
 
 const mergeClassNames = (classNames: Array<string>) => uniq(classNames.filter(Boolean)).join(CLASS_NAME_DELIMETER);
 
-export { uniq, mapProps, mergeClassNames };
+const getElement = (selector: string) => document.querySelector(selector);
+
+const createStyleElement = () => document.createElement('style');
+
+const setAttr = (element: Element, attrName: string, attrValue: string) => element.setAttribute(attrName, attrValue);
+
+const append = (parent: Element, element: Element) => parent.appendChild(element);
+
+export { uniq, mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append };
