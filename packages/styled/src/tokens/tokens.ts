@@ -12,6 +12,8 @@ import {
   FUNCTION_MARK,
 } from '../constants';
 
+import { detectIsKeyframes } from '../keyframes';
+
 abstract class Token {
   name = '';
   value = '';
@@ -175,9 +177,14 @@ class FunctionExp<P extends object = {}> extends Token {
         keyframes += $keyframes;
       }
     } else if (styleExp) {
-      styleExp.value = this.name.replace(FUNCTION_MARK, value);
-
-      styles += styleExp.generate();
+      if (detectIsKeyframes(value)) {
+        styleExp.value = replace(this.name, value.getName());
+        styles += styleExp.generate();
+        keyframes += value.getToken().generate(props, fns);
+      } else {
+        styleExp.value = replace(this.name, value);
+        styles += styleExp.generate();
+      }
     }
 
     return [styles, nesting, media, container, keyframes];
@@ -280,6 +287,8 @@ const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof Nesting
 const detectIsFunctionExp = (x: unknown): x is FunctionExp => x instanceof FunctionExp;
 
 const detectIsStyleSheet = (x: unknown): x is StyleSheet => x instanceof StyleSheet;
+
+const replace = (target: string, x: string) => target.replace(FUNCTION_MARK, x);
 
 export {
   StyleSheet,

@@ -189,7 +189,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
       joined += `${CLASS_NAME_MARK}${arg[$$styled]}`;
     } else if (detectIsKeyframes(arg)) {
       joined += arg.getName();
-      keyframes += arg.getValue();
+      keyframes += arg.getToken().generate();
     } else if (detectIsFunction(arg)) {
       joined += FUNCTION_MARK;
     } else if (detectIsTextBased(arg)) {

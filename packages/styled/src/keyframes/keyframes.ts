@@ -2,6 +2,7 @@ import { detectIsTextBased } from '@dark-engine/core';
 
 import { type TextBased } from '../shared';
 import { hash } from '../hash';
+import { parse } from '../parse';
 import {
   KEYFRAMES_MARK,
   FUNCTION_MARK,
@@ -9,23 +10,25 @@ import {
   CHILDREN_END_MARK,
   ANIMATION_NAME_PREFIX,
 } from '../constants';
+import { type KeyframesExp } from '../tokens';
 
 class Keyframes {
-  constructor(private name: string, private value: string) {}
+  constructor(private name: string, private token: KeyframesExp) {}
 
   getName() {
     return this.name;
   }
 
-  getValue() {
-    return this.value;
+  getToken() {
+    return this.token;
   }
 }
 
 function keyframes(strings: TemplateStringsArray, ...args: Array<TextBased>) {
   const joined = join(pad(strings), args);
   const name = genAnimationName(joined);
-  const keyframes = new Keyframes(name, joined.replace(FUNCTION_MARK, name));
+  const [token] = parse(joined.replace(FUNCTION_MARK, name)).children;
+  const keyframes = new Keyframes(name, token as KeyframesExp);
 
   return keyframes;
 }
