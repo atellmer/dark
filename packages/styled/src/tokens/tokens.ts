@@ -184,10 +184,17 @@ class FunctionExp<P extends object = {}> extends Token {
   }
 }
 
+type GenerateOptions<P extends object> = {
+  className?: string;
+  props?: P;
+  fns?: Array<Function>;
+};
+
 class StyleSheet<P extends object = {}> {
   children: Children = [];
 
-  generate(className: string = null, props?: P, fns?: Array<Function>) {
+  generate(options: GenerateOptions<P>) {
+    const { className = null, props, fns } = options;
     let styles = className ? `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}` : '';
     let nesting = '';
     let media = '';
@@ -228,25 +235,19 @@ function generate<P extends object = {}>(options: GenerateProps<P>): Tuple {
   let media = '';
   let container = '';
   let keyframes = '';
-  const se = token as unknown as StyleExp;
-  const nse = token as unknown as NestingExp;
-  const mqe = token as unknown as MediaQueryExp;
-  const cqe = token as unknown as ContainerQueryExp;
-  const ke = token as unknown as KeyframesExp;
-  const fne = token as unknown as FunctionExp;
 
   if (detectIsStyleExp(token)) {
-    styles += se.generate();
+    styles += token.generate();
   } else if (detectIsNestingExp(token)) {
-    nesting += nse.generate(className, props, fns);
+    nesting += token.generate(className, props, fns);
   } else if (detectIsMediaQueryExp(token)) {
-    media += mqe.generate(className, props, fns);
+    media += token.generate(className, props, fns);
   } else if (detectIsContainerQueryExp(token)) {
-    container += cqe.generate(className, props, fns);
+    container += token.generate(className, props, fns);
   } else if (detectIsKeyframesExp(token)) {
-    keyframes += ke.generate(props, fns);
+    keyframes += token.generate(props, fns);
   } else if (detectIsFunctionExp(token)) {
-    const [$styles, $nesting, $media, $container, $keyframes] = fne.generate(className, props, fns);
+    const [$styles, $nesting, $media, $container, $keyframes] = token.generate(className, props, fns);
 
     styles += $styles;
     nesting += $nesting;

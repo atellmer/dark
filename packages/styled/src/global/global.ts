@@ -1,8 +1,9 @@
 import { component, useInsertionEffect, forwardRef } from '@dark-engine/core';
 
+import { type Args } from '../styled';
 import { STYLED_ATTR } from '../constants';
 import { useThemeContext } from '../context';
-import { type Args, css, filterArgs } from '../styled';
+import { css, filterArgs } from '../styled';
 import { mapProps } from '../utils';
 
 function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...args: Args<P>) {
@@ -34,7 +35,7 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
       }, []);
 
       useInsertionEffect(() => {
-        const css = style.generate(null, { ...props, theme }, fns);
+        const css = style.generate({ props: { ...props, theme }, fns });
 
         inject(css, tag);
       }, [...mapProps(props), theme]);

@@ -14,12 +14,14 @@ import {
 } from '@dark-engine/core';
 
 import { type DefaultTheme } from '../';
+import { type TextBased } from '../shared';
 import { CLASS_NAME_PREFIX, FUNCTION_MARK, CLASS_NAME_MARK, STYLED_ATTR, CLASS_NAME_DELIMETER } from '../constants';
+import { mapProps, mergeClassNames } from '../utils';
 import { parse } from '../parse';
-import { StyleSheet } from '../tokens';
+import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
 import { hash } from '../hash';
 import { useThemeContext } from '../context';
-import { mapProps, mergeClassNames } from '../utils';
+import { type Keyframes, detectIsKeyframes } from '../keyframes';
 
 let styles = new Map<string, [string, string]>();
 let styleTag: HTMLStyleElement = null;
@@ -100,8 +102,9 @@ type GenerateOptions<P extends object> = {
 };
 
 function generate<P extends object>(options: GenerateOptions<P>) {
-  const { stylesheet, updates, props, fns } = options;
-  const key = stylesheet.generate(FUNCTION_MARK, props, fns);
+  const { stylesheet: $stylesheet, updates, props, fns } = options;
+  const [stylesheet, keyframes] = split($stylesheet);
+  const key = stylesheet.generate({ className: FUNCTION_MARK, props, fns });
   const style = styles.get(key);
   const className = style ? style[0] : genClassName(key);
   const css = style ? style[1] : key.replaceAll(FUNCTION_MARK, className);
@@ -111,7 +114,31 @@ function generate<P extends object>(options: GenerateOptions<P>) {
     styles.set(key, [className, css]);
   }
 
+  for (const token of keyframes) {
+    const css = token.generate();
+
+    if (!styles.has(css)) {
+      updates.push(css);
+      styles.set(css, [token.value, css]);
+    }
+  }
+
   return className;
+}
+
+function split<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<KeyframesExp<P>>] {
+  const stylesheet = new StyleSheet<P>();
+  const keyframes: Array<KeyframesExp<P>> = [];
+
+  for (const token of source.children) {
+    if (detectIsKeyframesExp(token)) {
+      keyframes.push(token);
+    } else {
+      stylesheet.children.push(token);
+    }
+  }
+
+  return [stylesheet, keyframes];
 }
 
 function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<StyleSheet<P>>] {
@@ -134,21 +161,26 @@ function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<S
 
 function join<P>(strings: TemplateStringsArray, args: Args<P>) {
   let joined = '';
+  let keyframes = '';
 
   for (let i = 0; i < strings.length; i++) {
+    const arg = args[i];
+
     joined += strings[i];
 
-    if (detectIsStyled(args[i])) {
-      const factory = args[i] as unknown as StyledComponentFactory<P, unknown>;
-      const className = factory[$$styled];
-
-      joined += `${CLASS_NAME_MARK}${className}`;
-    } else if (detectIsFunction(args[i])) {
+    if (detectIsStyled(arg)) {
+      joined += `${CLASS_NAME_MARK}${arg[$$styled]}`;
+    } else if (detectIsKeyframes(arg)) {
+      joined += arg.getName();
+      keyframes += arg.getValue();
+    } else if (detectIsFunction(arg)) {
       joined += FUNCTION_MARK;
-    } else if (detectIsTextBased(args[i])) {
-      joined += args[i];
+    } else if (detectIsTextBased(arg)) {
+      joined += arg;
     }
   }
+
+  joined += keyframes;
 
   return joined;
 }
@@ -186,12 +218,10 @@ type Fn<P, R> = {
 
 type ThemeProps = { theme: DefaultTheme };
 
-type TextBased = string | number;
-
-type ArgFn<P> = (p: P) => TextBased | false;
-
 type DynamicArgs<P> = Array<ArgFn<P>>;
 
-export type Args<P> = Array<TextBased | ArgFn<P> | Function>;
+type ArgFn<P> = Function | ((p: P) => TextBased | false);
+
+export type Args<P> = Array<TextBased | ArgFn<P> | Keyframes>;
 
 export { styled, css, filterArgs };
