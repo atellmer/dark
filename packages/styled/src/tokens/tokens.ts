@@ -50,14 +50,16 @@ class NestingExp<P extends object = {}> extends Token {
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
     let styles = `${this.value.replaceAll(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
+    let keyframes = '';
 
     for (const token of this.children) {
-      const [$styles] = generate({ token, className, props, fns });
+      const [$styles, _, __, ___, $keyframes] = generate({ token, className, props, fns });
 
       styles += $styles;
+      keyframes += $keyframes;
     }
 
-    styles += `${CHILDREN_END_MARK}`;
+    styles += `${CHILDREN_END_MARK}${keyframes}`;
 
     return styles;
   }
@@ -148,6 +150,7 @@ class KeyframesExp<P extends object = {}> extends Token {
 class FunctionExp<P extends object = {}> extends Token {
   name = FUNCTION_MARK;
   style: StyleExp = null;
+  end = '';
 
   constructor(value: number) {
     super();
@@ -178,11 +181,11 @@ class FunctionExp<P extends object = {}> extends Token {
       }
     } else if (styleExp) {
       if (detectIsKeyframes(value)) {
-        styleExp.value = replace(this.name, value.getName());
+        styleExp.value = replace(this.name, value.getName()) + this.end;
         styles += styleExp.generate();
         keyframes += value.getToken().generate(props, fns);
       } else {
-        styleExp.value = replace(this.name, value);
+        styleExp.value = replace(this.name, value) + this.end;
         styles += styleExp.generate();
       }
     }

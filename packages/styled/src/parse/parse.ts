@@ -140,6 +140,7 @@ function parse<P extends object>(css: string) {
           }
 
           if (detectIsFunctionExp(token)) {
+            token.end += normalize(buffer);
             buffer = '';
             continue;
           }
