@@ -1,15 +1,16 @@
-import { component, forwardRef, useInsertionEffect, useId, useMemo, detectIsServer } from '@dark-engine/core';
+import { component, forwardRef, useInsertionEffect, useMemo, useId, detectIsServer } from '@dark-engine/core';
 
 import { type Args } from '../styled';
 import { STYLED_GLOBAL_ATTR } from '../constants';
 import { useTheme } from '../theme';
 import { useManager } from '../manager';
-import { css, filterArgs } from '../styled';
+import { css, inject, filterArgs } from '../styled';
 import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
 
+const styles = new Map<string, string>();
+let tag: HTMLStyleElement = null;
+
 function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...args: Args<P>) {
-  let isInjected = false;
-  let tag: HTMLStyleElement = null;
   const fns = filterArgs<P>(args);
   const style = css<P>(strings, ...args);
   const factory = forwardRef<P, unknown>(
@@ -17,32 +18,31 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
       const theme = useTheme();
       const id = useId();
       const css = useMemo(() => style.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
+      const key = `${id}-${css}`;
 
       useInsertionEffect(() => {
-        if (isInjected) {
-          throw new Error('Illegal use of the same global style!');
-        } else {
-          tag = getTag(id) || createTag(id); // after hydration
-          isInjected = true;
+        if (!tag) {
+          tag = getTag() || createTag(); // after hydration
         }
 
-        return () => {
-          if (isInjected) {
-            tag.remove();
-            tag = null;
-            isInjected = false;
-          }
-        };
-      }, []);
+        if (!styles.has(key)) {
+          styles.set(key, css);
+          inject(css, tag);
+        }
+      }, [key]);
 
       useInsertionEffect(() => {
-        inject(css, tag);
-      }, [css]);
+        return () => {
+          styles.delete(key);
+          tag.textContent = '';
+          styles.forEach(css => inject(css, tag));
+        };
+      }, []);
 
       if (detectIsServer()) {
         const manager = useManager(); // special case of hook using, should be last in order
 
-        manager.collectGlobalStyle(id, css); // ssr
+        manager.collectGlobalStyle(css); // ssr
       }
 
       return null;
@@ -52,17 +52,15 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
   return factory;
 }
 
-function createTag(id: string) {
+function createTag() {
   const tag = createStyleElement();
 
-  setAttr(tag, STYLED_GLOBAL_ATTR, id);
+  setAttr(tag, STYLED_GLOBAL_ATTR, 'true');
   append(document.head, tag);
 
   return tag;
 }
 
-const getTag = (id: string) => getElement(`[${STYLED_GLOBAL_ATTR}="${id}"]`) as HTMLStyleElement;
-
-const inject = (css: string, tag: HTMLStyleElement) => (tag.textContent = css);
+const getTag = () => getElement(`[${STYLED_GLOBAL_ATTR}="true"]`) as HTMLStyleElement;
 
 export { createGlobalStyle };

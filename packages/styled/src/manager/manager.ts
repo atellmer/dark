@@ -10,8 +10,8 @@ enum STYLE_LEVEL {
 class Manager {
   private styles = createStyles();
 
-  collectGlobalStyle(id: string, css: string) {
-    this.styles[STYLE_LEVEL.GLOBAL].set(id, css);
+  collectGlobalStyle(css: string) {
+    this.styles[STYLE_LEVEL.GLOBAL].add(css);
   }
 
   collectComponentStyle(css: string) {
@@ -28,7 +28,7 @@ class Manager {
 }
 
 const createStyles = () => ({
-  [STYLE_LEVEL.GLOBAL]: new Map<string, string>(),
+  [STYLE_LEVEL.GLOBAL]: new Set<string>(),
   [STYLE_LEVEL.COMPONENT]: new Set<string>(),
 });
 
@@ -57,20 +57,21 @@ class ServerStyleSheet {
   getStyleTags() {
     const styles = this.manager.getStyles();
     const tags: Array<string> = [];
-    const tag = `<${STYLE_TAG} ${STYLED_COMPONENTS_ATTR}="true">${FUNCTION_MARK}</${STYLE_TAG}>`;
-    let css = '';
+    const tag1 = `<${STYLE_TAG} ${STYLED_GLOBAL_ATTR}="true">${FUNCTION_MARK}</${STYLE_TAG}>`;
+    const tag2 = `<${STYLE_TAG} ${STYLED_COMPONENTS_ATTR}="true">${FUNCTION_MARK}</${STYLE_TAG}>`;
+    let css1 = '';
+    let css2 = '';
 
-    for (const [id, css] of styles[STYLE_LEVEL.GLOBAL]) {
-      const tag = `<${STYLE_TAG} ${STYLED_GLOBAL_ATTR}="${id}">${css}</${STYLE_TAG}>`;
-
-      tags.push(tag);
+    for (const $css of styles[STYLE_LEVEL.GLOBAL]) {
+      css1 += $css;
     }
 
     for (const $css of styles[STYLE_LEVEL.COMPONENT]) {
-      css += $css;
+      css2 += $css;
     }
 
-    css && tags.push(tag.replace(FUNCTION_MARK, css));
+    css1 && tags.push(tag1.replace(FUNCTION_MARK, css1));
+    css2 && tags.push(tag2.replace(FUNCTION_MARK, css2));
 
     return tags;
   }

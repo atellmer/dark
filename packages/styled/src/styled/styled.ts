@@ -31,7 +31,7 @@ import { parse } from '../parse';
 import { hash } from '../hash';
 
 let styles = new Map<string, [string, string]>();
-let styleTag: HTMLStyleElement = null;
+let tag: HTMLStyleElement = null;
 const $$styled = Symbol('styled');
 
 function styled<P extends object, R = unknown>(tagName: string | ComponentFactory<P, R>) {
@@ -69,19 +69,19 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
         const joined = updates.join('');
 
         useInsertionEffect(() => {
-          if (!styleTag) {
-            const tag = getTag();
+          if (!tag) {
+            const $tag = getTag();
 
-            if (tag) {
-              styleTag = tag; // after hydration
+            if ($tag) {
+              tag = $tag; // after hydration
               updates = [];
               return;
             } else {
-              styleTag = createTag();
+              tag = createTag();
             }
           }
 
-          updates.forEach(x => inject(x, styleTag));
+          updates.forEach(x => inject(x, tag));
           updates = [];
         }, [joined]);
 
@@ -252,4 +252,4 @@ type ArgFn<P> = Function | ((p: P) => TextBased | false);
 
 export type Args<P> = Array<TextBased | ArgFn<P> | Keyframes>;
 
-export { styled, css, filterArgs };
+export { styled, css, inject, filterArgs };
