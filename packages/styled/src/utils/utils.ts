@@ -1,4 +1,4 @@
-import { CLASS_NAME_DELIMETER } from '../constants';
+import { STYLE_TAG, CLASS_NAME_DELIMETER } from '../constants';
 
 const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
   const arr: Array<T> = [];
@@ -20,7 +20,7 @@ const mergeClassNames = (classNames: Array<string>) => uniq(classNames.filter(Bo
 
 const getElement = (selector: string) => document.querySelector(selector);
 
-const createStyleElement = () => document.createElement('style');
+const createStyleElement = () => document.createElement(STYLE_TAG);
 
 const setAttr = (element: Element, attrName: string, attrValue: string) => element.setAttribute(attrName, attrValue);
 

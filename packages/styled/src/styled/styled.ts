@@ -23,7 +23,8 @@ import {
 import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
 import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append } from '../utils';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
-import { useThemeContext } from '../context';
+import { useTheme } from '../theme';
+import { useManager } from '../manager';
 import { type TextBased } from '../shared';
 import { type DefaultTheme } from '../';
 import { parse } from '../parse';
@@ -52,7 +53,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
     const styled = forwardRef<P, R>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
-        const { theme } = useThemeContext();
+        const theme = useTheme();
+        const manager = useManager();
         const withReplace = detectIsFunction(component) && detectIsString(tagName);
         const $props = (withReplace ? rest : props) as unknown as P;
         const $factory = withReplace ? component : factory;
@@ -65,6 +67,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
 
           return mergeClassNames(classNames);
         }, [...mapProps(props), theme]);
+        const joined = updates.join('');
 
         useInsertionEffect(() => {
           if (!styleTag) {
@@ -81,9 +84,10 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
 
           updates.forEach(x => inject(x, styleTag));
           updates = [];
-        }, [updates.join('')]);
+        }, [joined]);
 
         if (detectIsServer()) {
+          manager.collectComponentStyle(joined); // ssr
           styles = new Map();
           updates = [];
         }

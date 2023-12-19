@@ -1,8 +1,9 @@
-import { component, forwardRef, useInsertionEffect, useId } from '@dark-engine/core';
+import { component, forwardRef, useInsertionEffect, useId, useMemo, detectIsServer } from '@dark-engine/core';
 
 import { type Args } from '../styled';
 import { STYLED_GLOBAL_ATTR } from '../constants';
-import { useThemeContext } from '../context';
+import { useTheme } from '../theme';
+import { useManager } from '../manager';
 import { css, filterArgs } from '../styled';
 import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
 
@@ -13,8 +14,10 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
   const style = css<P>(strings, ...args);
   const factory = forwardRef<P, unknown>(
     component(props => {
-      const { theme } = useThemeContext();
+      const theme = useTheme();
+      const manager = useManager();
       const id = useId();
+      const css = useMemo(() => style.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
 
       useInsertionEffect(() => {
         if (isInjected) {
@@ -34,10 +37,12 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
       }, []);
 
       useInsertionEffect(() => {
-        const css = style.generate({ props: { ...props, theme }, fns });
-
         inject(css, tag);
-      }, [...mapProps(props), theme]);
+      }, [css]);
+
+      if (detectIsServer()) {
+        manager.collectGlobalStyle(id, css); // ssr
+      }
 
       return null;
     }),

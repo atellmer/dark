@@ -1,4 +1,5 @@
 export const VERSION = '0.25.1';
+export const STYLE_TAG = 'style';
 export const STYLED_COMPONENTS_ATTR = 'dark-styled-components';
 export const STYLED_GLOBAL_ATTR = 'dark-styled-global';
 export const CLASS_NAME_PREFIX = 'dk';
