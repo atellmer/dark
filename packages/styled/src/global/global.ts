@@ -15,7 +15,6 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
   const factory = forwardRef<P, unknown>(
     component(props => {
       const theme = useTheme();
-      const manager = useManager();
       const id = useId();
       const css = useMemo(() => style.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
 
@@ -41,6 +40,8 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
       }, [css]);
 
       if (detectIsServer()) {
+        const manager = useManager(); // special case of hook using, should be last in order
+
         manager.collectGlobalStyle(id, css); // ssr
       }
 

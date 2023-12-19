@@ -54,7 +54,6 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
         const theme = useTheme();
-        const manager = useManager();
         const withReplace = detectIsFunction(component) && detectIsString(tagName);
         const $props = (withReplace ? rest : props) as unknown as P;
         const $factory = withReplace ? component : factory;
@@ -87,6 +86,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
         }, [joined]);
 
         if (detectIsServer()) {
+          const manager = useManager(); // special case of hook using, should be last in order
+
           manager.collectComponentStyle(joined); // ssr
           styles = new Map();
           updates = [];

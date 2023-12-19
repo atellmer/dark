@@ -1,4 +1,4 @@
-import { type DarkElement, createContext, useContext, useMemo, component } from '@dark-engine/core';
+import { type DarkElement, createContext, useContext, component } from '@dark-engine/core';
 
 import { type DefaultTheme } from '../';
 
