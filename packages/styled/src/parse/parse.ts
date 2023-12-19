@@ -62,19 +62,26 @@ function parse<P extends object>(css: string) {
     if (isSingleLineComment || isMultiLineComment) continue;
 
     if (detectHasFunctionMark(buffer)) {
-      const fne = new FunctionExp(++fnIdx);
+      const token = new FunctionExp();
 
-      fne.parent = parent;
-      fne.markAsDynamic();
+      if (detectIsFunctionExp(last) && !last.getIsSealed() && last.style) {
+        last.add(++fnIdx);
+        buffer = '';
+        continue;
+      }
+
+      token.add(++fnIdx);
+      token.parent = parent;
+      token.markAsDynamic();
 
       if (detectIsStyleExp(last) && !last.value) {
-        fne.style = last;
-        fne.name = buffer.trim();
+        token.style = last;
+        token.name = buffer.trim();
         last.normalize();
         last.isDynamic = true;
-        parent.children[parent.children.length - 1] = fne;
+        parent.children[parent.children.length - 1] = token;
       } else {
-        parent.children.push(fne);
+        parent.children.push(token);
       }
 
       buffer = '';
@@ -83,38 +90,40 @@ function parse<P extends object>(css: string) {
 
     switch (char) {
       case CHILDREN_START_MARK:
-        const token = detectHasMediaQueryMark(buffer)
-          ? new MediaQueryExp()
-          : detectHasContainerQueryMark(buffer)
-          ? new ContainerQueryExp()
-          : detectHasKeyframesMark(buffer)
-          ? new KeyframesExp()
-          : new NestingExp();
-        const canNest =
-          detectIsMediaQueryExp(token) || detectIsContainerQueryExp(token) || detectIsKeyframesExp(token)
-            ? detectIsStyleSheet(parent)
-            : detectIsNestingExp(token)
-            ? detectIsStyleSheet(parent) ||
-              detectIsMediaQueryExp(parent) ||
-              detectIsContainerQueryExp(parent) ||
-              detectIsKeyframesExp(parent)
-            : false;
+        {
+          const token = detectHasMediaQueryMark(buffer)
+            ? new MediaQueryExp()
+            : detectHasContainerQueryMark(buffer)
+            ? new ContainerQueryExp()
+            : detectHasKeyframesMark(buffer)
+            ? new KeyframesExp()
+            : new NestingExp();
+          const canNest =
+            detectIsMediaQueryExp(token) || detectIsContainerQueryExp(token) || detectIsKeyframesExp(token)
+              ? detectIsStyleSheet(parent)
+              : detectIsNestingExp(token)
+              ? detectIsStyleSheet(parent) ||
+                detectIsMediaQueryExp(parent) ||
+                detectIsContainerQueryExp(parent) ||
+                detectIsKeyframesExp(parent)
+              : false;
 
-        if (!canNest) {
-          throw new Error('Illegal style nesting!');
+          if (!canNest) {
+            throw new Error('Illegal style nesting!');
+          }
+
+          token.value = normalize(buffer);
+          token.normalize();
+          token.parent = parent;
+
+          if (!token.value) {
+            throw new Error('Empty style nesting!');
+          }
+
+          parent.children.push(token);
+          stack.push(token);
+          buffer = '';
         }
-
-        token.value = normalize(buffer);
-        token.normalize();
-        token.parent = parent;
-
-        if (!token.value) {
-          throw new Error('Empty style nesting!');
-        }
-
-        parent.children.push(token);
-        stack.push(token);
-        buffer = '';
         break;
       case CHILDREN_END_MARK:
         stack.pop();
@@ -132,22 +141,19 @@ function parse<P extends object>(css: string) {
         buffer = '';
         break;
       case PROP_VALUE_END_MARK:
-        {
-          const token = parent.children[parent.children.length - 1];
-
-          if (!token) {
-            throw new Error('Incorrect style!');
-          }
-
-          if (detectIsFunctionExp(token)) {
-            token.end += normalize(buffer);
-            buffer = '';
-            continue;
-          }
-
-          token.value = normalize(buffer);
-          token.normalize();
+        if (!last) {
+          throw new Error('Incorrect style!');
         }
+
+        if (detectIsFunctionExp(last)) {
+          last.seal(normalize(buffer));
+          buffer = '';
+          continue;
+        }
+
+        last.value = normalize(buffer);
+        last.normalize();
+
         buffer = '';
         break;
       default:

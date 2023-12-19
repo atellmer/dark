@@ -10,6 +10,7 @@ import {
   SELF_MARK,
   CLASS_NAME_MARK,
   FUNCTION_MARK,
+  BLANK_SPACE,
 } from '../constants';
 
 import { detectIsKeyframes } from '../keyframes';
@@ -149,20 +150,31 @@ class KeyframesExp<P extends object = {}> extends Token {
 
 class FunctionExp<P extends object = {}> extends Token {
   name = FUNCTION_MARK;
+  args: Array<number> = [];
   style: StyleExp = null;
-  end = '';
+  private end = '';
+  private isSealed = false;
 
-  constructor(value: number) {
-    super();
-    this.value = String(value);
+  add(idx: number) {
+    this.args.push(idx);
+  }
+
+  seal(end: string) {
+    this.isSealed = true;
+    this.end = end;
+  }
+
+  getIsSealed() {
+    return this.isSealed;
   }
 
   generate(...args: Array<unknown>): Tuple {
     const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
-    const value = fns[this.value](props);
     const styleExp = this.style;
+    const [idx, ...rest] = this.args;
+    const value = fns[idx](props);
     let styles = '';
     let nesting = '';
     let media = '';
@@ -180,12 +192,14 @@ class FunctionExp<P extends object = {}> extends Token {
         keyframes += $keyframes;
       }
     } else if (styleExp) {
+      const end = rest.reduce((acc, x) => (acc += BLANK_SPACE + fns[x](props)), '') + this.end;
+
       if (detectIsKeyframes(value)) {
-        styleExp.value = replace(this.name, value.getName()) + this.end;
+        styleExp.value = replace(this.name, value.getName()) + end;
         styles += styleExp.generate();
         keyframes += value.getToken().generate(props, fns);
       } else {
-        styleExp.value = replace(this.name, value) + this.end;
+        styleExp.value = replace(this.name, value) + end;
         styles += styleExp.generate();
       }
     }
