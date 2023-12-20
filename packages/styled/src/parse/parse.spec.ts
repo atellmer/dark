@@ -1,4 +1,13 @@
-import { StyleSheet, StyleExp, MediaQueryExp, ContainerQueryExp, KeyframesExp, NestingExp } from '../tokens';
+import {
+  StyleSheet,
+  StyleExp,
+  MediaQueryExp,
+  ContainerQueryExp,
+  KeyframesExp,
+  NestingExp,
+  FunctionExp,
+} from '../tokens';
+import { FUNCTION_MARK } from '../constants';
 import { parse } from './parse';
 
 describe('[@styled/parse]', () => {
@@ -770,5 +779,36 @@ describe('[@styled/parse]', () => {
     expect(backgroundColor).toBeInstanceOf(StyleExp);
     expect(backgroundColor.name).toBe('background-color');
     expect(backgroundColor.value).toBe('blue');
+  });
+
+  test('parses a css with function marks correctly', () => {
+    const style = parse(`
+      ${FUNCTION_MARK}
+      border: ${FUNCTION_MARK} ${FUNCTION_MARK} red;
+      color: black;
+    `);
+
+    expect(style).toBeInstanceOf(StyleSheet);
+    expect(style.children.length).toBe(3);
+
+    const fne1 = style.children[0] as FunctionExp;
+    const fne2 = style.children[1] as FunctionExp;
+    const color = style.children[2] as StyleExp;
+
+    expect(fne1).toBeInstanceOf(FunctionExp);
+    expect(fne1.args).toEqual([0]);
+    expect(fne1.getIsSealed()).toBe(false);
+    expect(fne1.style).toBe(null);
+    expect(fne1.getEnd()).toBe('');
+    expect(fne2).toBeInstanceOf(FunctionExp);
+    expect(fne2.args).toEqual([1, 2]);
+    expect(fne2.getIsSealed()).toBe(true);
+    expect(fne2.getEnd()).toBe(' red');
+    expect(fne2.style).toBeInstanceOf(StyleExp);
+    expect(fne2.style.name).toBe('border');
+    expect(fne2.style.value).toBe('');
+    expect(color).toBeInstanceOf(StyleExp);
+    expect(color.name).toBe('color');
+    expect(color.value).toBe('black');
   });
 });

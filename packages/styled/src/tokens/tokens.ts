@@ -168,6 +168,10 @@ class FunctionExp<P extends object = {}> extends Token {
     return this.isSealed;
   }
 
+  getEnd() {
+    return this.end;
+  }
+
   generate(...args: Array<unknown>): Tuple {
     const className = args[0] as string | null;
     const props = args[1] as P;
