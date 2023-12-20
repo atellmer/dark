@@ -1,8 +1,8 @@
 import {
-  CHILDREN_START_MARK,
-  CHILDREN_END_MARK,
-  PROP_VALUE_START_MARK,
-  PROP_VALUE_END_MARK,
+  OPENING_CURLY_BRACE_MARK,
+  CLOSING_CURLY_BRACE_MARK,
+  COLON_MARK,
+  SEMICOLON_MARK,
   MEDIA_QUERY_MARK,
   CONTAINER_QUERY_MARK,
   KEYFRAMES_MARK,
@@ -11,6 +11,9 @@ import {
   SINGLE_LINE_COMMENT_END_MARK,
   MULTI_LINE_COMMENT_START_MARK,
   MULTI_LINE_COMMENT_END_MARK,
+  OPENING_PARENTHESIS_MARK,
+  CLOSING_PARENTHESIS_MARK,
+  URL_FN_MARK,
 } from '../constants';
 import {
   type Children,
@@ -34,9 +37,12 @@ function parse<P extends object>(css: string) {
   const stylesheet = new StyleSheet<P>();
   const stack: Array<NestingExp | MediaQueryExp> = [];
   let buffer = '';
+  let end = '';
   let fnIdx = -1;
   let isSingleLineComment = false;
   let isMultiLineComment = false;
+  let isPropValue = false;
+  let isUrl = false;
 
   for (let i = 0; i < css.length; i++) {
     const char = css[i];
@@ -46,7 +52,7 @@ function parse<P extends object>(css: string) {
     buffer += char;
 
     if (!isSingleLineComment && detectHasSingleLineCommentStartMark(buffer)) {
-      isSingleLineComment = true;
+      isSingleLineComment = !isUrl;
     } else if (isSingleLineComment && detectHasSingleLineCommentEndMark(buffer)) {
       isSingleLineComment = false;
       buffer = '';
@@ -54,6 +60,7 @@ function parse<P extends object>(css: string) {
 
     if (!isMultiLineComment && detectHasMultiLineCommentStartMark(buffer)) {
       isMultiLineComment = true;
+      end = detectIsStyleExp(last) ? createEnd(buffer) : '';
     } else if (isMultiLineComment && detectHasMultiLineCommentEndMark(buffer)) {
       isMultiLineComment = false;
       buffer = '';
@@ -89,7 +96,7 @@ function parse<P extends object>(css: string) {
     }
 
     switch (char) {
-      case CHILDREN_START_MARK:
+      case OPENING_CURLY_BRACE_MARK:
         {
           const token = detectHasMediaQueryMark(buffer)
             ? new MediaQueryExp()
@@ -112,7 +119,7 @@ function parse<P extends object>(css: string) {
             throw new Error('Illegal style nesting!');
           }
 
-          token.value = normalize(buffer);
+          token.value = sub(buffer);
           token.normalize();
           token.parent = parent;
 
@@ -125,36 +132,47 @@ function parse<P extends object>(css: string) {
           buffer = '';
         }
         break;
-      case CHILDREN_END_MARK:
+      case CLOSING_CURLY_BRACE_MARK:
         stack.pop();
         buffer = '';
         break;
-      case PROP_VALUE_START_MARK:
+      case COLON_MARK:
         {
           if (!detectIsPropName(buffer, i, css, parent.children)) continue;
           const token = new StyleExp();
 
-          token.name = normalize(buffer);
+          token.name = sub(buffer);
           token.parent = parent;
           parent.children.push(token);
         }
         buffer = '';
+        isPropValue = true;
         break;
-      case PROP_VALUE_END_MARK:
+      case SEMICOLON_MARK:
         if (!last) {
           throw new Error('Incorrect style!');
         }
 
         if (detectIsFunctionExp(last)) {
-          last.seal(normalize(buffer));
+          last.seal(sub(buffer));
           buffer = '';
           continue;
         }
 
-        last.value = normalize(buffer);
+        last.value = end || sub(buffer);
         last.normalize();
 
         buffer = '';
+        end = '';
+        isPropValue = false;
+        break;
+      case OPENING_PARENTHESIS_MARK:
+        if (isPropValue && detectHasUrlFnMark(buffer)) {
+          isUrl = true;
+        }
+        break;
+      case CLOSING_PARENTHESIS_MARK:
+        isUrl = false;
         break;
       default:
         break;
@@ -172,20 +190,24 @@ function detectIsPropName(name: string, idx: number, css: string, children: Chil
   for (let i = idx; i < css.length; i++) {
     const char = css[i];
 
-    if (char === CHILDREN_START_MARK) return false;
-    if (char === PROP_VALUE_END_MARK) return true;
+    if (char === OPENING_CURLY_BRACE_MARK) return false;
+    if (char === SEMICOLON_MARK) return true;
   }
 
   return true;
 }
 
-const detectHasSingleLineCommentStartMark = (x: string) => x.trim().startsWith(SINGLE_LINE_COMMENT_START_MARK);
+const detectHasSingleLineCommentStartMark = (x: string) => x.endsWith(SINGLE_LINE_COMMENT_START_MARK);
 
 const detectHasSingleLineCommentEndMark = (x: string) => x.endsWith(SINGLE_LINE_COMMENT_END_MARK);
 
-const detectHasMultiLineCommentStartMark = (x: string) => x.trim().startsWith(MULTI_LINE_COMMENT_START_MARK);
+const detectHasMultiLineCommentStartMark = (x: string) => x.endsWith(MULTI_LINE_COMMENT_START_MARK);
 
 const detectHasMultiLineCommentEndMark = (x: string) => x.endsWith(MULTI_LINE_COMMENT_END_MARK);
+
+const detectHasFunctionMark = (x: string) => x.endsWith(FUNCTION_MARK);
+
+const detectHasUrlFnMark = (x: string) => x.endsWith(URL_FN_MARK + OPENING_PARENTHESIS_MARK);
 
 const detectHasMediaQueryMark = (x: string) => x.trim().startsWith(MEDIA_QUERY_MARK);
 
@@ -193,8 +215,8 @@ const detectHasContainerQueryMark = (x: string) => x.trim().startsWith(CONTAINER
 
 const detectHasKeyframesMark = (x: string) => x.trim().startsWith(KEYFRAMES_MARK);
 
-const detectHasFunctionMark = (x: string) => x.endsWith(FUNCTION_MARK);
+const sub = (x: string) => x.substring(0, x.length - 1);
 
-const normalize = (x: string) => x.substring(0, x.length - 1);
+const createEnd = (x: string) => x.replace(MULTI_LINE_COMMENT_START_MARK, '').trim();
 
 export { parse };

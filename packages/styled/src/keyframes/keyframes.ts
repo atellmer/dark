@@ -6,8 +6,8 @@ import { parse } from '../parse';
 import {
   KEYFRAMES_MARK,
   FUNCTION_MARK,
-  CHILDREN_START_MARK,
-  CHILDREN_END_MARK,
+  OPENING_CURLY_BRACE_MARK,
+  CLOSING_CURLY_BRACE_MARK,
   ANIMATION_NAME_PREFIX,
 } from '../constants';
 import { type KeyframesExp } from '../tokens';
@@ -34,8 +34,8 @@ function keyframes(strings: TemplateStringsArray, ...args: Array<TextBased>) {
 }
 
 function pad(source: TemplateStringsArray) {
-  const start = `${KEYFRAMES_MARK} ${FUNCTION_MARK} ${CHILDREN_START_MARK}`;
-  const end = CHILDREN_END_MARK;
+  const start = `${KEYFRAMES_MARK} ${FUNCTION_MARK} ${OPENING_CURLY_BRACE_MARK}`;
+  const end = CLOSING_CURLY_BRACE_MARK;
   const strings: Array<string> = [];
 
   for (let i = 0; i < source.length; i++) {

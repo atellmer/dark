@@ -13,13 +13,7 @@ import {
   useInsertionEffect,
 } from '@dark-engine/core';
 
-import {
-  CLASS_NAME_PREFIX,
-  FUNCTION_MARK,
-  CLASS_NAME_MARK,
-  STYLED_COMPONENTS_ATTR,
-  CLASS_NAME_DELIMETER,
-} from '../constants';
+import { CLASS_NAME_PREFIX, FUNCTION_MARK, DOT_MARK, STYLED_COMPONENTS_ATTR, BLANK_SPACE } from '../constants';
 import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
 import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append } from '../utils';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
@@ -186,7 +180,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
     joined += strings[i];
 
     if (detectIsStyled(arg)) {
-      joined += `${CLASS_NAME_MARK}${arg[$$styled]}`;
+      joined += `${DOT_MARK}${arg[$$styled]}`;
     } else if (detectIsKeyframes(arg)) {
       joined += arg.getName();
       keyframes += arg.getToken().generate();
@@ -215,7 +209,7 @@ const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLSty
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
 
-const getClassNamesFrom = (props: StyledProps) => (props.class || props.className || '').split(CLASS_NAME_DELIMETER);
+const getClassNamesFrom = (props: StyledProps) => (props.class || props.className || '').split(BLANK_SPACE);
 
 const inject = (css: string, tag: HTMLStyleElement) => (tag.textContent = `${tag.textContent}${css}`);
 

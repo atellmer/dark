@@ -745,7 +745,7 @@ describe('[@styled/parse]', () => {
       line comment */
       font-size: 2rem; // this is a single line comment
       // this is an another single line comment
-      color: #fff;
+      color: /*comment*/ #fff /*comment*/;
       /*
         this is an another multi
         line

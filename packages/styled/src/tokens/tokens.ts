@@ -1,14 +1,14 @@
 import {
-  CHILDREN_START_MARK,
-  CHILDREN_END_MARK,
-  PROP_VALUE_START_MARK,
-  PROP_VALUE_END_MARK,
+  OPENING_CURLY_BRACE_MARK,
+  CLOSING_CURLY_BRACE_MARK,
+  COLON_MARK,
+  SEMICOLON_MARK,
   MEDIA_QUERY_MARK,
   CONTAINER_QUERY_MARK,
   KEYFRAMES_MARK,
   NESTING_MARK,
   SELF_MARK,
-  CLASS_NAME_MARK,
+  DOT_MARK,
   FUNCTION_MARK,
   BLANK_SPACE,
 } from '../constants';
@@ -38,7 +38,7 @@ abstract class Token {
 
 class StyleExp extends Token {
   override generate(): string {
-    return `${this.name}${PROP_VALUE_START_MARK}${this.value}${PROP_VALUE_END_MARK}`;
+    return `${this.name}${COLON_MARK}${this.value}${SEMICOLON_MARK}`;
   }
 }
 
@@ -50,7 +50,7 @@ class NestingExp<P extends object = {}> extends Token {
     const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
-    let styles = `${this.value.replaceAll(SELF_MARK, `${CLASS_NAME_MARK}${className}`)}${CHILDREN_START_MARK}`;
+    let styles = `${this.value.replaceAll(SELF_MARK, `${DOT_MARK}${className}`)}${OPENING_CURLY_BRACE_MARK}`;
     let keyframes = '';
 
     for (const token of this.children) {
@@ -60,7 +60,7 @@ class NestingExp<P extends object = {}> extends Token {
       keyframes += $keyframes;
     }
 
-    styles += `${CHILDREN_END_MARK}${keyframes}`;
+    styles += `${CLOSING_CURLY_BRACE_MARK}${keyframes}`;
 
     return styles;
   }
@@ -75,8 +75,8 @@ class MediaQueryExp<P extends object = {}> extends Token {
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
     let styles = className
-      ? `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`
-      : `${this.value}${CHILDREN_START_MARK}`;
+      ? `${this.value}${OPENING_CURLY_BRACE_MARK}${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}`
+      : `${this.value}${OPENING_CURLY_BRACE_MARK}`;
     let nesting = '';
 
     for (const token of this.children) {
@@ -87,9 +87,9 @@ class MediaQueryExp<P extends object = {}> extends Token {
     }
 
     if (className) {
-      styles += `${CHILDREN_END_MARK}${nesting}${CHILDREN_END_MARK}`;
+      styles += `${CLOSING_CURLY_BRACE_MARK}${nesting}${CLOSING_CURLY_BRACE_MARK}`;
     } else {
-      styles += `${nesting}${CHILDREN_END_MARK}`;
+      styles += `${nesting}${CLOSING_CURLY_BRACE_MARK}`;
     }
 
     return styles;
@@ -105,8 +105,8 @@ class ContainerQueryExp<P extends object = {}> extends Token {
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
     let styles = className
-      ? `${this.value}${CHILDREN_START_MARK}${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}`
-      : `${this.value}${CHILDREN_START_MARK}`;
+      ? `${this.value}${OPENING_CURLY_BRACE_MARK}${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}`
+      : `${this.value}${OPENING_CURLY_BRACE_MARK}`;
     let nesting = '';
 
     for (const token of this.children) {
@@ -117,9 +117,9 @@ class ContainerQueryExp<P extends object = {}> extends Token {
     }
 
     if (className) {
-      styles += `${CHILDREN_END_MARK}${nesting}${CHILDREN_END_MARK}`;
+      styles += `${CLOSING_CURLY_BRACE_MARK}${nesting}${CLOSING_CURLY_BRACE_MARK}`;
     } else {
-      styles += `${nesting}${CHILDREN_END_MARK}`;
+      styles += `${nesting}${CLOSING_CURLY_BRACE_MARK}`;
     }
 
     return styles;
@@ -133,7 +133,7 @@ class KeyframesExp<P extends object = {}> extends Token {
   override generate(...args: Array<unknown>): string {
     const props = args[0] as P;
     const fns = args[1] as Array<Function>;
-    let keyframes = `${this.value}${CHILDREN_START_MARK}`;
+    let keyframes = `${this.value}${OPENING_CURLY_BRACE_MARK}`;
 
     for (const token of this.children) {
       const [$styles, $nesting] = generate({ token, props, fns });
@@ -142,7 +142,7 @@ class KeyframesExp<P extends object = {}> extends Token {
       keyframes += $nesting;
     }
 
-    keyframes += `${CHILDREN_END_MARK}`;
+    keyframes += `${CLOSING_CURLY_BRACE_MARK}`;
 
     return keyframes;
   }
@@ -219,7 +219,7 @@ class StyleSheet<P extends object = {}> {
 
   generate(options: GenerateOptions<P>) {
     const { className = null, props, fns } = options;
-    let styles = className ? `${CLASS_NAME_MARK}${className}${CHILDREN_START_MARK}` : '';
+    let styles = className ? `${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}` : '';
     let nesting = '';
     let media = '';
     let container = '';
@@ -236,7 +236,7 @@ class StyleSheet<P extends object = {}> {
     }
 
     if (className) {
-      styles += `${CHILDREN_END_MARK}${nesting}${media}${container}${keyframes}`;
+      styles += `${CLOSING_CURLY_BRACE_MARK}${nesting}${media}${container}${keyframes}`;
     } else {
       styles += `${nesting}${media}${container}${keyframes}`;
     }
