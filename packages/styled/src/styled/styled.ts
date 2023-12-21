@@ -2,6 +2,8 @@ import {
   type ComponentFactory,
   type TagVirtualNodeFactory,
   type StandardComponentProps,
+  type Component,
+  type VirtualNode,
   View,
   component,
   forwardRef,
@@ -85,6 +87,10 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           manager.collectComponentStyle(joined); // ssr
           styles = new Map();
           updates = [];
+        }
+
+        if (detectIsFunction(props.slot)) {
+          props.slot = props.slot((x: string) => `${className}_${x}`);
         }
 
         return $factory({ ...transformProps($props), ref, class: $className });
@@ -221,10 +227,15 @@ const detectIsStyled = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
 const filterArgs = <P>(args: Args<unknown>) =>
   args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
 
+type ClassNameFn = (className: string) => string;
+
+type StyledElement = Component | VirtualNode | Array<Component | VirtualNode>;
+
 type StyledProps = {
   as?: string | ComponentFactory;
   class?: string;
   className?: string;
+  slot?: ((fn: ClassNameFn) => StyledElement) | StyledElement;
 };
 
 type StyledComponentFactory<P, R> = {
