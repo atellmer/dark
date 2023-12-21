@@ -26,9 +26,11 @@ import { type DefaultTheme } from '../';
 import { parse } from '../parse';
 import { hash } from '../hash';
 
-let styles = new Map<string, [string, string]>();
+let styles: Map<string, [string, string]> = null;
 let tag: HTMLStyleElement = null;
 const $$styled = Symbol('styled');
+
+setupGlobal();
 
 function styled<P extends object, R = unknown>(tagName: string | ComponentFactory<P, R>) {
   const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
@@ -89,8 +91,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           updates = [];
         }
 
-        if (detectIsFunction(props.slot)) {
-          props.slot = props.slot((x: string) => `${className}_${x}`);
+        if (detectIsFunction($props.slot)) {
+          $props.slot = $props.slot((x: string) => `${className}_${x}`);
         }
 
         return $factory({ ...transformProps($props), ref, class: $className });
@@ -211,6 +213,11 @@ function createTag() {
   return tag;
 }
 
+function setupGlobal() {
+  styles = new Map();
+  tag = null;
+}
+
 const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
@@ -229,7 +236,7 @@ const filterArgs = <P>(args: Args<unknown>) =>
 
 type ClassNameFn = (className: string) => string;
 
-type StyledElement = Component | VirtualNode | Array<Component | VirtualNode>;
+type StyledElement = Component | VirtualNode | string | Array<Component | VirtualNode | string>;
 
 type StyledProps = {
   as?: string | ComponentFactory;
@@ -257,4 +264,4 @@ type ArgFn<P> = Function | ((p: P) => TextBased | false);
 
 export type Args<P> = Array<TextBased | ArgFn<P> | Keyframes>;
 
-export { styled, css, inject, filterArgs };
+export { setupGlobal, styled, css, inject, filterArgs, detectIsStyled };
