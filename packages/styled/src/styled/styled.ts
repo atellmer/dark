@@ -42,14 +42,10 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   let transformProps: TransformProps<P> = x => x;
   let updates: Array<string> = [];
   const isExtending = detectIsStyled(factory);
-  const parent = factory as StyledComponentFactory<P>;
-  const parentStyles = parent[$$styled]?.styles || null;
-  const parentArgs = parent[$$styled]?.args || null;
-  const parentFactory = parent[$$styled]?.factory || null;
-  const parentUpdates = parent[$$styled]?.updates || [];
+  const config = isExtending ? getExtendingConfig(factory as StyledComponentFactory<P>) : null;
   const fn: Fn<P> = (styles: TemplateStringsArray, ...args: Args<P>) => {
-    const $styles = isExtending ? mergeTemplates(parentStyles, styles) : styles;
-    const $args = isExtending ? [...parentArgs, ...args] : args;
+    const $styles = isExtending ? mergeTemplates(config.styles, styles) : styles;
+    const $args = isExtending ? [...config.args, ...args] : args;
     const fns = filterArgs<P>($args);
     const [stylesheet, stylesheets] = slice<P>(css($styles, ...$args));
     const className = generate({ stylesheet, updates });
@@ -59,7 +55,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         const theme = useTheme();
         const withReplace = detectIsFunction(component);
         const $props = (withReplace ? rest : props) as unknown as P;
-        const $factory = withReplace ? component : isExtending ? parentFactory : factory;
+        const $factory = withReplace ? component : isExtending ? config.factory : factory;
         const $className = useMemo(() => {
           const classNames = [
             ...getClassNamesFrom(props),
@@ -84,8 +80,11 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
             }
           }
 
-          parentUpdates.forEach(x => inject(x, tag));
-          parentUpdates.splice(0, parentUpdates.length);
+          if (config) {
+            config.updates.forEach(x => inject(x, tag));
+            config.updates.splice(0, config.updates.length);
+          }
+
           updates.forEach(x => inject(x, tag));
           updates = [];
         }, [joined]);
@@ -106,7 +105,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
       }),
     ) as StyledComponentFactory<P>;
 
-    styled[$$styled] = { className, updates, styles: $styles, args: $args, factory: parentFactory || factory };
+    styled[$$styled] = { className, updates, styles: $styles, args: $args, factory: config?.factory || factory };
 
     return styled;
   };
@@ -118,6 +117,13 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   };
 
   return fn;
+}
+
+function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>) {
+  const { className, ...rest } = factory[$$styled];
+  const config: ExtendingConfig<P> = rest;
+
+  return config;
 }
 
 type GenerateOptions<P extends object> = {
@@ -253,14 +259,17 @@ type StyledProps = {
   slot?: ((fn: ClassNameFn) => StyledElement) | StyledElement;
 };
 
+type ExtendingConfig<P extends object = {}> = {
+  styles: TemplateStringsArray;
+  args: Args<P>;
+  factory: Factory<P>;
+  updates: Array<string>;
+};
+
 type StyledComponentFactory<P extends object = {}> = {
   [$$styled]: {
     className: string;
-    styles: TemplateStringsArray;
-    args: Args<P>;
-    factory: Factory<P>;
-    updates: Array<string>;
-  };
+  } & ExtendingConfig<P>;
 } & ComponentFactory<P & StandardComponentProps & StyledProps>;
 
 type TransformProps<P> = (p: P) => any;
