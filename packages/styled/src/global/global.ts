@@ -7,17 +7,17 @@ import { useManager } from '../manager';
 import { css, inject, filterArgs } from '../styled';
 import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
 
-const styles = new Map<string, string>();
+const stylesMap = new Map<string, string>();
 let tag: HTMLStyleElement = null;
 
 function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...args: Args<P>) {
   const fns = filterArgs<P>(args);
-  const style = css<P>(strings, ...args);
+  const sheet = css<P>(strings, ...args);
   const factory = forwardRef<P, unknown>(
     component(props => {
       const theme = useTheme();
       const id = useId();
-      const css = useMemo(() => style.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
+      const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
       const key = `${id}-${css}`;
 
       useInsertionEffect(() => {
@@ -25,17 +25,17 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
           tag = getTag() || createTag(); // after hydration
         }
 
-        if (!styles.has(key)) {
-          styles.set(key, css);
+        if (!stylesMap.has(key)) {
+          stylesMap.set(key, css);
           inject(css, tag);
         }
       }, [key]);
 
       useInsertionEffect(() => {
         return () => {
-          styles.delete(key);
+          stylesMap.delete(key);
           tag.textContent = '';
-          styles.forEach(css => inject(css, tag));
+          stylesMap.forEach(css => inject(css, tag));
         };
       }, []);
 

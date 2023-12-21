@@ -15,46 +15,51 @@ import {
   useInsertionEffect,
 } from '@dark-engine/core';
 
+import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates } from '../utils';
 import { CLASS_NAME_PREFIX, FUNCTION_MARK, DOT_MARK, STYLED_COMPONENTS_ATTR, BLANK_SPACE } from '../constants';
 import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
-import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append } from '../utils';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
-import { useTheme } from '../theme';
-import { useManager } from '../manager';
 import { type TextBased } from '../shared';
 import { type DefaultTheme } from '../';
+import { useManager } from '../manager';
+import { useTheme } from '../theme';
 import { parse } from '../parse';
 import { hash } from '../hash';
 
-let styles: Map<string, [string, string]> = null;
+let stylesMap: Map<string, [string, string]> = null;
 let tag: HTMLStyleElement = null;
 const $$styled = Symbol('styled');
 
 setupGlobal();
 
-function styled<P extends object, R = unknown>(tagName: string | ComponentFactory<P, R>) {
+function styled<P extends object, P1 extends object = {}>(tagName: string | ComponentFactory<P>) {
   const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
 
-  return createStyledComponent<P, R>(factory, tagName);
+  return createStyledComponent<P & P1>(factory as Factory<P & P1>);
 }
 
-function createStyledComponent<P extends StyledProps, R extends unknown>(
-  factory: ComponentFactory<P, R> | ((props: P) => TagVirtualNodeFactory),
-  tagName: string | ComponentFactory<P, R>,
-) {
+function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   let transformProps: TransformProps<P> = x => x;
   let updates: Array<string> = [];
-  const fn: Fn<P, R> = (strings: TemplateStringsArray, ...args: Args<P>) => {
-    const fns = filterArgs<P>(args);
-    const [stylesheet, stylesheets] = slice<P>(css(strings, ...args));
+  const isExtending = detectIsStyled(factory);
+  const parent = factory as StyledComponentFactory<P>;
+  const parentStyles = parent[$$styled]?.styles || null;
+  const parentArgs = parent[$$styled]?.args || null;
+  const parentFactory = parent[$$styled]?.factory || null;
+  const parentUpdates = parent[$$styled]?.updates || [];
+  const fn: Fn<P> = (styles: TemplateStringsArray, ...args: Args<P>) => {
+    const $styles = isExtending ? mergeTemplates(parentStyles, styles) : styles;
+    const $args = isExtending ? [...parentArgs, ...args] : args;
+    const fns = filterArgs<P>($args);
+    const [stylesheet, stylesheets] = slice<P>(css($styles, ...$args));
     const className = generate({ stylesheet, updates });
-    const styled = forwardRef<P, R>(
+    const styled = forwardRef<P, unknown>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
         const theme = useTheme();
-        const withReplace = detectIsFunction(component) && detectIsString(tagName);
+        const withReplace = detectIsFunction(component);
         const $props = (withReplace ? rest : props) as unknown as P;
-        const $factory = withReplace ? component : factory;
+        const $factory = withReplace ? component : isExtending ? parentFactory : factory;
         const $className = useMemo(() => {
           const classNames = [
             ...getClassNamesFrom(props),
@@ -79,6 +84,8 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
             }
           }
 
+          parentUpdates.forEach(x => inject(x, tag));
+          parentUpdates.splice(0, parentUpdates.length);
           updates.forEach(x => inject(x, tag));
           updates = [];
         }, [joined]);
@@ -87,7 +94,7 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
           const manager = useManager(); // special case of hook using, should be last in order
 
           manager.collectComponentStyle(joined); // ssr
-          styles = new Map();
+          stylesMap = new Map();
           updates = [];
         }
 
@@ -97,11 +104,11 @@ function createStyledComponent<P extends StyledProps, R extends unknown>(
 
         return $factory({ ...transformProps($props), ref, class: $className });
       }),
-    );
+    ) as StyledComponentFactory<P>;
 
-    styled[$$styled] = className;
+    styled[$$styled] = { className, updates, styles: $styles, args: $args, factory: parentFactory || factory };
 
-    return styled as StyledComponentFactory<P, R>;
+    return styled;
   };
 
   fn.attrs = (t: TransformProps<P>) => {
@@ -124,21 +131,21 @@ function generate<P extends object>(options: GenerateOptions<P>) {
   const { stylesheet: $stylesheet, updates, props, fns } = options;
   const [stylesheet, keyframes] = split($stylesheet);
   const key = stylesheet.generate({ className: FUNCTION_MARK, props, fns });
-  const style = styles.get(key);
+  const style = stylesMap.get(key);
   const className = style ? style[0] : genClassName(key);
   const css = style ? style[1] : key.replaceAll(FUNCTION_MARK, className);
 
   if (!style) {
     updates.push(css);
-    styles.set(key, [className, css]);
+    stylesMap.set(key, [className, css]);
   }
 
   for (const token of keyframes) {
     const css = token.generate();
 
-    if (!styles.has(css)) {
+    if (!stylesMap.has(css)) {
       updates.push(css);
-      styles.set(css, [token.value, css]);
+      stylesMap.set(css, [token.value, css]);
     }
   }
 
@@ -188,7 +195,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
     joined += strings[i];
 
     if (detectIsStyled(arg)) {
-      joined += `${DOT_MARK}${arg[$$styled]}`;
+      joined += `${DOT_MARK}${arg[$$styled].className}`;
     } else if (detectIsKeyframes(arg)) {
       joined += arg.getName();
       keyframes += arg.getToken().generate();
@@ -214,7 +221,7 @@ function createTag() {
 }
 
 function setupGlobal() {
-  styles = new Map();
+  stylesMap = new Map();
   tag = null;
 }
 
@@ -228,11 +235,12 @@ const inject = (css: string, tag: HTMLStyleElement) => (tag.textContent = `${tag
 
 const genClassName = (key: string) => `${CLASS_NAME_PREFIX}-${hash(key)}`;
 
-const detectIsStyled = <P, R>(x: unknown): x is StyledComponentFactory<P, R> =>
-  detectIsFunction(x) && Boolean(x[$$styled]);
+const detectIsStyled = (x: unknown): x is StyledComponentFactory => detectIsFunction(x) && Boolean(x[$$styled]);
 
 const filterArgs = <P>(args: Args<unknown>) =>
   args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
+
+type Factory<P extends object> = ComponentFactory<P> | ((props: P) => TagVirtualNodeFactory);
 
 type ClassNameFn = (className: string) => string;
 
@@ -245,15 +253,21 @@ type StyledProps = {
   slot?: ((fn: ClassNameFn) => StyledElement) | StyledElement;
 };
 
-type StyledComponentFactory<P, R> = {
-  [$$styled]: string;
-} & ComponentFactory<P & StandardComponentProps & StyledProps, R>;
+type StyledComponentFactory<P extends object = {}> = {
+  [$$styled]: {
+    className: string;
+    styles: TemplateStringsArray;
+    args: Args<P>;
+    factory: Factory<P>;
+    updates: Array<string>;
+  };
+} & ComponentFactory<P & StandardComponentProps & StyledProps>;
 
 type TransformProps<P> = (p: P) => any;
 
-type Fn<P, R> = {
-  (strings: TemplateStringsArray, ...args: Args<P & ThemeProps>): StyledComponentFactory<P, R>;
-  attrs: (t: TransformProps<P>) => Fn<P, R>;
+type Fn<P extends object> = {
+  (strings: TemplateStringsArray, ...args: Args<P & ThemeProps>): StyledComponentFactory<P>;
+  attrs: (t: TransformProps<P>) => Fn<P>;
 };
 
 type ThemeProps = { theme: DefaultTheme };

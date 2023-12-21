@@ -448,23 +448,26 @@ describe('[@styled/styled]', () => {
   });
 
   test('can extends styles correctly', () => {
-    const ButtonBase = styled('button')`
+    const Button = styled('button')`
       width: 100%;
       background-color: #11ed74;
+      font-size: 1.5rem;
     `;
-    const NormalButton = styled(ButtonBase)`
+    const SmallButton = styled(Button)`
       font-size: 1rem;
     `;
-    const BigButton = styled(ButtonBase)`
+    const BigButton = styled(Button)`
       font-size: 2rem;
     `;
 
-    render(<NormalButton>Click</NormalButton>);
+    render(<SmallButton>Click</SmallButton>);
     jest.runAllTimers();
 
-    expect(host.innerHTML).toBe('<button class="dk-fedjjc dk-eifded">Click</button>');
+    expect(host.innerHTML).toBe('<button class="dk-caeefb">Click</button>');
     expect(document.head.innerHTML).toBe(
-      style('.dk-fedjjc{font-size:1rem;}.dk-eifded{width:100%;background-color:#11ed74;}'),
+      style(
+        '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}',
+      ),
     );
 
     render(<BigButton>Click</BigButton>);
@@ -473,9 +476,11 @@ describe('[@styled/styled]', () => {
     // console.log(host.innerHTML);
     // console.log(document.head.innerHTML);
 
-    expect(host.innerHTML).toBe('<button class="dk-cffbgh dk-eifded">Click</button>');
+    expect(host.innerHTML).toBe('<button class="dk-hfgadd">Click</button>');
     expect(document.head.innerHTML).toBe(
-      style('.dk-fedjjc{font-size:1rem;}.dk-eifded{width:100%;background-color:#11ed74;}.dk-cffbgh{font-size:2rem;}'),
+      style(
+        '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}.dk-hfgadd{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:2rem;}',
+      ),
     );
   });
 });

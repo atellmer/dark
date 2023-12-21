@@ -26,4 +26,24 @@ const setAttr = (element: Element, attrName: string, attrValue: string) => eleme
 
 const append = (parent: Element, element: Element) => parent.appendChild(element);
 
-export { uniq, mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append };
+const mergeTemplates = (t1: TemplateStringsArray, t2: TemplateStringsArray) => {
+  const [first] = t2;
+  const $t1 = [...t1];
+  const $t2: Array<string> = [];
+  let result: Omit<TemplateStringsArray, 'raw'> = null;
+
+  for (let i = 0; i < t2.length; i++) {
+    if (i > 0) {
+      $t2.push(t2[i]);
+    }
+  }
+
+  $t1[$t1.length - 1] = $t1[$t1.length - 1] + first;
+  result = [...$t1, ...$t2];
+
+  Object.assign(result, { raw: result });
+
+  return result as TemplateStringsArray;
+};
+
+export { uniq, mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates };
