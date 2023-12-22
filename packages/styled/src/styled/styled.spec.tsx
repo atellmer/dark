@@ -7,8 +7,8 @@ let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  setupGlobal();
   ({ host, render } = createBrowserEnv());
+  setupGlobal();
 });
 
 afterEach(() => {

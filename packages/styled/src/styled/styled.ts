@@ -90,6 +90,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         }, [joined]);
 
         if (detectIsServer()) {
+          // ssr
           const manager = useManager(); // special case of hook using, should be last in order
 
           if (config) {
@@ -97,7 +98,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
             config.updates = [];
           }
 
-          manager.collectComponentStyle(joined); // ssr
+          manager.collectComponentStyle(joined);
           stylesMap = new Map();
           updates = [];
         }
@@ -122,6 +123,11 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   };
 
   return fn;
+}
+
+function setupGlobal() {
+  stylesMap = new Map();
+  tag = null;
 }
 
 function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>) {
@@ -229,11 +235,6 @@ function createTag() {
   append(document.head, tag);
 
   return tag;
-}
-
-function setupGlobal() {
-  stylesMap = new Map();
-  tag = null;
 }
 
 function inject(css: string, tag: HTMLStyleElement, check = false) {

@@ -17,8 +17,8 @@ type ThemeProps = {
 
 beforeEach(() => {
   jest.useFakeTimers();
-  setupGlobal();
   ({ host, render } = createBrowserEnv());
+  setupGlobal();
 });
 
 afterEach(() => {

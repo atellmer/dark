@@ -7,8 +7,10 @@ import { useManager } from '../manager';
 import { css, inject, filterArgs } from '../styled';
 import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
 
-const stylesMap = new Map<string, string>();
+let stylesMap: Map<string, string> = null;
 let tag: HTMLStyleElement = null;
+
+setupGlobal();
 
 function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...args: Args<P>) {
   const fns = filterArgs<P>(args);
@@ -18,24 +20,20 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
       const theme = useTheme();
       const id = useId();
       const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
-      const key = `${id}-${css}`;
 
       useInsertionEffect(() => {
         if (!tag) {
           tag = getTag() || createTag(); // after hydration
         }
 
-        if (!stylesMap.has(key)) {
-          stylesMap.set(key, css);
-          inject(css, tag);
-        }
-      }, [key]);
+        stylesMap.set(id, css);
+        reinject(tag, stylesMap);
+      }, [css]);
 
       useInsertionEffect(() => {
         return () => {
-          stylesMap.delete(key);
-          tag.textContent = '';
-          stylesMap.forEach(css => inject(css, tag));
+          stylesMap.delete(id);
+          reinject(tag, stylesMap);
         };
       }, []);
 
@@ -52,6 +50,11 @@ function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...a
   return factory;
 }
 
+function setupGlobal() {
+  stylesMap = new Map();
+  tag = null;
+}
+
 function createTag() {
   const tag = createStyleElement();
 
@@ -63,4 +66,9 @@ function createTag() {
 
 const getTag = () => getElement(`[${STYLED_GLOBAL_ATTR}="true"]`) as HTMLStyleElement;
 
-export { createGlobalStyle };
+const reinject = (tag: HTMLStyleElement, stylesMap: Map<string, string>) => {
+  tag.textContent = '';
+  stylesMap.forEach(css => inject(css, tag));
+};
+
+export { setupGlobal, createGlobalStyle };
