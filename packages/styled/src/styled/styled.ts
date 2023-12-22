@@ -19,10 +19,9 @@ import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, app
 import { CLASS_NAME_PREFIX, FUNCTION_MARK, DOT_MARK, STYLED_COMPONENTS_ATTR, BLANK_SPACE } from '../constants';
 import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
+import { type ThemeProps, useTheme } from '../theme';
 import { type TextBased } from '../shared';
-import { type DefaultTheme } from '../';
 import { useManager } from '../manager';
-import { useTheme } from '../theme';
 import { parse } from '../parse';
 import { hash } from '../hash';
 
@@ -231,7 +230,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 function createTag() {
   const tag = createStyleElement();
 
-  setAttr(tag, STYLED_COMPONENTS_ATTR, 'true');
+  setAttr(tag, STYLED_COMPONENTS_ATTR, String(true));
   append(document.head, tag);
 
   return tag;
@@ -284,11 +283,9 @@ type StyledComponentFactory<P extends object = {}> = {
 type TransformProps<P> = (p: P) => any;
 
 type Fn<P extends object> = {
-  (strings: TemplateStringsArray, ...args: Args<P & ThemeProps>): StyledComponentFactory<P>;
+  (style: TemplateStringsArray, ...args: Args<P & ThemeProps>): StyledComponentFactory<P>;
   attrs: (t: TransformProps<P>) => Fn<P>;
 };
-
-type ThemeProps = { theme: DefaultTheme };
 
 type DynamicArgs<P> = Array<ArgFn<P>>;
 

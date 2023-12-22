@@ -2,7 +2,7 @@ import { component, forwardRef, useInsertionEffect, useMemo, useId, detectIsServ
 
 import { type Args } from '../styled';
 import { STYLED_GLOBAL_ATTR } from '../constants';
-import { useTheme } from '../theme';
+import { type ThemeProps, useTheme } from '../theme';
 import { useManager } from '../manager';
 import { css, inject, filterArgs } from '../styled';
 import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
@@ -12,9 +12,9 @@ let tag: HTMLStyleElement = null;
 
 setupGlobal();
 
-function createGlobalStyle<P extends object>(strings: TemplateStringsArray, ...args: Args<P>) {
+function createGlobalStyle<P extends object = {}>(style: TemplateStringsArray, ...args: Args<P & ThemeProps>) {
   const fns = filterArgs<P>(args);
-  const sheet = css<P>(strings, ...args);
+  const sheet = css<P>(style, ...args);
   const factory = forwardRef<P, unknown>(
     component(props => {
       const theme = useTheme();
@@ -58,7 +58,7 @@ function setupGlobal() {
 function createTag() {
   const tag = createStyleElement();
 
-  setAttr(tag, STYLED_GLOBAL_ATTR, 'true');
+  setAttr(tag, STYLED_GLOBAL_ATTR, String(true));
   append(document.head, tag);
 
   return tag;

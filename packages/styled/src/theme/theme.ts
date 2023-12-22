@@ -7,6 +7,8 @@ import { type DefaultTheme } from '../';
 //   export interface DefaultTheme extends Theme {}
 // }
 
+export type ThemeProps = { theme: DefaultTheme };
+
 export type ThemeContextValue = DefaultTheme;
 
 const ThemeContext = createContext<ThemeContextValue>(null, { displayName: 'Theme' });

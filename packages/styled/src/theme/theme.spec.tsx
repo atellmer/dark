@@ -1,8 +1,14 @@
 import { h, component, Guard } from '@dark-engine/core';
-import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
+import {
+  createBrowserEnv,
+  replacer,
+  wrapWithStyledTag as style,
+  wrapWithGlobalStyledTag as globalStyle,
+} from '@test-utils';
 
-import { ThemeProvider, useTheme } from './theme';
+import { createGlobalStyle } from '../global';
 import { setupGlobal, styled } from '../styled';
+import { ThemeProvider, useTheme } from './theme';
 
 let { host, render } = createBrowserEnv();
 
@@ -69,6 +75,33 @@ describe('[@styled/theme]', () => {
         '.dk-igjghg{width:100px;height:100px;}.dk-efcefj{background-color:white;}.dk-baacag{color:black;}.dk-hhjdef{background-color:black;}.dk-gjgeac{color:white;}',
       ),
     );
+  });
+
+  test('works with theme and global styles correctly', () => {
+    const GlobalStyle = createGlobalStyle<{}>`
+      body {
+        background-color: ${(p: ThemeProps) => p.theme.backgroundColor};
+        color: ${(p: ThemeProps) => p.theme.color};
+      }
+    `;
+    type AppProps = {
+      theme: Theme;
+    };
+    const App = component<AppProps>(({ theme }) => {
+      return (
+        <ThemeProvider theme={theme}>
+          <Guard>
+            <GlobalStyle />
+          </Guard>
+        </ThemeProvider>
+      );
+    });
+
+    render(<App theme={{ backgroundColor: 'white', color: 'black' }} />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe(replacer);
+    expect(document.head.innerHTML).toBe(globalStyle('body{background-color:white;color:black;}'));
   });
 
   test('useTheme works correctly', () => {
