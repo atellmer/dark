@@ -81,7 +81,11 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           }
 
           if (config) {
-            config.updates.forEach(x => inject(x, tag));
+            config.updates.forEach(x => {
+              if (tag.textContent.indexOf(x) === -1) {
+                inject(x, tag);
+              }
+            });
             config.updates.splice(0, config.updates.length);
           }
 

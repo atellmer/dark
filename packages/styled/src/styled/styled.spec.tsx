@@ -1,4 +1,4 @@
-import { h } from '@dark-engine/core';
+import { h, Fragment, component } from '@dark-engine/core';
 import { createBrowserEnv } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';
@@ -447,7 +447,7 @@ describe('[@styled/styled]', () => {
     expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
   });
 
-  test('can extends styles correctly', () => {
+  test('can extend styles correctly', () => {
     const Button = styled('button')`
       width: 100%;
       background-color: #11ed74;
@@ -473,13 +473,255 @@ describe('[@styled/styled]', () => {
     render(<BigButton>Click</BigButton>);
     jest.runAllTimers();
 
-    // console.log(host.innerHTML);
-    // console.log(document.head.innerHTML);
-
     expect(host.innerHTML).toBe('<button class="dk-hfgadd">Click</button>');
     expect(document.head.innerHTML).toBe(
       style(
         '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}.dk-hfgadd{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:2rem;}',
+      ),
+    );
+  });
+
+  test('can replace an instance with an another tag correctly', () => {
+    const Button = styled('button')`
+      width: 100%;
+      background-color: #11ed74;
+      font-size: 1.5rem;
+    `;
+    const props = { href: 'www.example.com' };
+
+    render(
+      <Button {...props} as='a'>
+        Click
+      </Button>,
+    );
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<a href="www.example.com" class="dk-bgehcj">Click</a>');
+    expect(document.head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
+  });
+
+  test('can replace an instance with an another component correctly', () => {
+    const Button = styled('button')`
+      width: 100%;
+      background-color: #11ed74;
+      font-size: 1.5rem;
+    `;
+    const Item = component(({ slot, ...rest }) => (
+      <div {...rest}>
+        <span>{slot}</span>
+      </div>
+    ));
+
+    render(<Button as={Item}>Click</Button>);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<div class="dk-bgehcj"><span>Click</span></div>');
+    expect(document.head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
+  });
+
+  test('can replace an instance with an another styled component correctly', () => {
+    const Button = styled('button')`
+      width: 100%;
+      background-color: #11ed74;
+      font-size: 1.5rem;
+    `;
+    const StyledItem = styled('div')`
+      border: 2px solid purple;
+    `;
+
+    render(<Button as={StyledItem}>Click</Button>);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<div class="dk-bgehcj dk-bfdfeb">Click</div>');
+    expect(document.head.innerHTML).toBe(
+      style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-bfdfeb{border:2px solid purple;}'),
+    );
+  });
+
+  test('can replace an instance with an another extended styled component correctly', () => {
+    const Button = styled('button')`
+      width: 100%;
+      background-color: #11ed74;
+      font-size: 1.5rem;
+    `;
+    const BorderedButton = styled(Button)`
+      border: 2px solid purple;
+    `;
+
+    render(<Button as={BorderedButton}>Click</Button>);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<button class="dk-bgehcj dk-ihjajd">Click</button>');
+    expect(document.head.innerHTML).toBe(
+      style(
+        '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-ihjajd{width:100%;background-color:#11ed74;font-size:1.5rem;border:2px solid purple;}',
+      ),
+    );
+  });
+
+  test('can replace an instance with whatever correctly', () => {
+    const Button = styled('button')`
+      width: 100%;
+      background-color: #11ed74;
+      font-size: 1.5rem;
+    `;
+    const BorderedButton = styled(Button)`
+      border: 2px solid pink;
+    `;
+    const BigBorderedButton = styled(BorderedButton)`
+      font-size: 2rem;
+    `;
+    const AnotherBorderedButton = styled('button')`
+      border: 2px solid yellow;
+    `;
+    const StyledItem = styled('main')`
+      border: 2px solid purple;
+    `;
+    const Item = component(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
+
+    render(
+      <>
+        <Button as='a'>Click</Button>
+        <Button as={BorderedButton}>Click</Button>
+        <Button as={BigBorderedButton}>Click</Button>
+        <Button as={AnotherBorderedButton}>Click</Button>
+        <Button as={StyledItem}>Click</Button>
+        <Button as={Item}>Click</Button>
+        <Button>Click</Button>
+      </>,
+    );
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe(
+      '<a class="dk-bgehcj">Click</a><button class="dk-bgehcj dk-gbfaed">Click</button><button class="dk-bgehcj dk-cgddii">Click</button><button class="dk-bgehcj dk-bgcgba">Click</button><main class="dk-bgehcj dk-bfdfeb">Click</main><div class="dk-bgehcj">Click</div><button class="dk-bgehcj">Click</button>',
+    );
+    expect(document.head.innerHTML).toBe(
+      style(
+        '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-gbfaed{width:100%;background-color:#11ed74;font-size:1.5rem;border:2px solid pink;}.dk-cgddii{width:100%;background-color:#11ed74;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-bgcgba{border:2px solid yellow;}.dk-bfdfeb{border:2px solid purple;}',
+      ),
+    );
+  });
+
+  test('can replace an instance with whatever and dynamic correctly #1', () => {
+    type ButtonProps = {
+      $backgroundColor: string;
+    };
+    const Button = styled<ButtonProps>('button')`
+      width: 100%;
+      background-color: ${p => p.$backgroundColor};
+      font-size: 1.5rem;
+    `;
+    const BorderedButton = styled(Button)`
+      border: 2px solid pink;
+    `;
+    const BigBorderedButton = styled(BorderedButton)`
+      font-size: 2rem;
+    `;
+    const AnotherBorderedButton = styled('button')`
+      border: 2px solid yellow;
+    `;
+    const StyledItem = styled('main')`
+      border: 2px solid purple;
+    `;
+    const Item = component(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
+
+    render(
+      <>
+        <Button as='a' $backgroundColor='red'>
+          Click
+        </Button>
+        <Button as={BorderedButton} $backgroundColor='yellow'>
+          Click
+        </Button>
+        <Button as={BigBorderedButton} $backgroundColor='green'>
+          Click
+        </Button>
+        <Button as={AnotherBorderedButton} $backgroundColor='orange'>
+          Click
+        </Button>
+        <Button as={StyledItem} $backgroundColor='purple'>
+          Click
+        </Button>
+        <Button as={Item} $backgroundColor='pink'>
+          Click
+        </Button>
+        <Button $backgroundColor='blue'>Click</Button>
+      </>,
+    );
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe(
+      '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
+    );
+    expect(document.head.innerHTML).toBe(
+      style(
+        '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-bhbbdd{background-color:green;}.dk-bgdgjb{background-color:orange;}.dk-jdcdef{background-color:purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-bgcgba{border:2px solid yellow;}.dk-bfdfeb{border:2px solid purple;}',
+      ),
+    );
+  });
+
+  test('can replace an instance with whatever and dynamic correctly #2', () => {
+    type ButtonProps = {
+      $backgroundColor: string;
+    };
+    const Button = styled<ButtonProps>('button')`
+      width: 100%;
+      background-color: ${p => p.$backgroundColor};
+      font-size: 1.5rem;
+    `;
+    const BorderedButton = styled(Button)`
+      border: 2px solid pink;
+    `;
+    type BigBorderedButtonProps = {
+      $borderColor: string;
+    };
+    const BigBorderedButton = styled<ButtonProps, BigBorderedButtonProps>(BorderedButton)`
+      font-size: 2rem;
+      border-color: ${p => p.$borderColor};
+    `;
+    const AnotherBorderedButton = styled('button')`
+      border: 2px solid yellow;
+    `;
+    const StyledItem = styled('main')`
+      border: 2px solid purple;
+    `;
+    const Item = component(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
+    const props = { $borderColor: 'aliceblue' };
+
+    render(
+      <>
+        <Button as='a' $backgroundColor='red'>
+          Click
+        </Button>
+        <Button as={BorderedButton} $backgroundColor='yellow'>
+          Click
+        </Button>
+        <Button as={BigBorderedButton} $backgroundColor='green' {...props}>
+          Click
+        </Button>
+        <Button as={AnotherBorderedButton} $backgroundColor='orange'>
+          Click
+        </Button>
+        <Button as={StyledItem} $backgroundColor='purple'>
+          Click
+        </Button>
+        <Button as={Item} $backgroundColor='pink'>
+          Click
+        </Button>
+        <Button $backgroundColor='blue'>Click</Button>
+      </>,
+    );
+    jest.runAllTimers();
+
+    // console.log(host.innerHTML);
+    // console.log(document.head.innerHTML);
+
+    expect(host.innerHTML).toBe(
+      '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj dk-cbbfgc">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
+    );
+    expect(document.head.innerHTML).toBe(
+      style(
+        '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-bhbbdd{background-color:green;}.dk-bgdgjb{background-color:orange;}.dk-jdcdef{background-color:purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-cbbfgc{border-color:aliceblue;}.dk-bgcgba{border:2px solid yellow;}.dk-bfdfeb{border:2px solid purple;}',
       ),
     );
   });
