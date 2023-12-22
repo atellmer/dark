@@ -24,8 +24,8 @@ class Keyframes {
   }
 }
 
-function keyframes(strings: TemplateStringsArray, ...args: Array<TextBased>) {
-  const joined = join(pad(strings), args);
+function keyframes(source: TemplateStringsArray, ...args: Array<TextBased>) {
+  const joined = join(pad(source), args);
   const name = genAnimationName(joined);
   const [token] = parse(joined.replace(FUNCTION_MARK, name)).children;
   const keyframes = new Keyframes(name, token as KeyframesRule);
@@ -54,11 +54,11 @@ function pad(source: TemplateStringsArray) {
   return strings;
 }
 
-function join(strings: Array<string>, args: Array<TextBased>) {
+function join(source: Array<string>, args: Array<TextBased>) {
   let joined = '';
 
-  for (let i = 0; i < strings.length; i++) {
-    joined += strings[i];
+  for (let i = 0; i < source.length; i++) {
+    joined += source[i];
 
     if (detectIsTextBased(args[i])) {
       joined += args[i];

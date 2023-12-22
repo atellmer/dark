@@ -463,9 +463,7 @@ describe('[@styled/styled]', () => {
 
     expect(host.innerHTML).toBe('<button class="dk-caeefb">Click</button>');
     expect(document.head.innerHTML).toBe(
-      style(
-        '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}',
-      ),
+      style('.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}'),
     );
 
     render(<BigButton>Click</BigButton>);
@@ -474,7 +472,7 @@ describe('[@styled/styled]', () => {
     expect(host.innerHTML).toBe('<button class="dk-hfgadd">Click</button>');
     expect(document.head.innerHTML).toBe(
       style(
-        '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}.dk-hfgadd{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:2rem;}',
+        '.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}.dk-hfgadd{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:2rem;}',
       ),
     );
   });
@@ -653,7 +651,7 @@ describe('[@styled/styled]', () => {
     );
     expect(document.head.innerHTML).toBe(
       style(
-        '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-bhbbdd{background-color:green;}.dk-bgdgjb{background-color:orange;}.dk-jdcdef{background-color:purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-bgcgba{border:2px solid yellow;}.dk-bfdfeb{border:2px solid purple;}',
+        '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-bhbbdd{background-color:green;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-bgdgjb{background-color:orange;}.dk-bgcgba{border:2px solid yellow;}.dk-jdcdef{background-color:purple;}.dk-bfdfeb{border:2px solid purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}',
       ),
     );
   });
@@ -716,7 +714,7 @@ describe('[@styled/styled]', () => {
     );
     expect(document.head.innerHTML).toBe(
       style(
-        '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-bhbbdd{background-color:green;}.dk-bgdgjb{background-color:orange;}.dk-jdcdef{background-color:purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-cbbfgc{border-color:aliceblue;}.dk-bgcgba{border:2px solid yellow;}.dk-bfdfeb{border:2px solid purple;}',
+        '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-bhbbdd{background-color:green;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-cbbfgc{border-color:aliceblue;}.dk-bgdgjb{background-color:orange;}.dk-bgcgba{border:2px solid yellow;}.dk-jdcdef{background-color:purple;}.dk-bfdfeb{border:2px solid purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}',
       ),
     );
   });

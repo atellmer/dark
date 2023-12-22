@@ -25,7 +25,8 @@ import { useManager } from '../manager';
 import { parse } from '../parse';
 import { hash } from '../hash';
 
-let stylesMap: Map<string, [string, string]> = null;
+let cache: Map<string, [string, string]> = null;
+let injections: Set<string> = null;
 let tag: HTMLStyleElement = null;
 const $$styled = Symbol('styled');
 
@@ -39,15 +40,14 @@ function styled<P extends object, P1 extends object = {}>(tagName: string | Comp
 
 function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   let transformProps: TransformProps<P> = x => x;
-  let cache = new Set<string>();
   const isExtending = detectIsStyled(factory);
   const config = isExtending ? getExtendingConfig(factory as StyledComponentFactory<P>) : null;
-  const fn: Fn<P> = (styles: TemplateStringsArray, ...args: Args<P>) => {
-    const $styles = isExtending ? mergeTemplates(config.styles, styles) : styles;
+  const fn: Fn<P> = (source: TemplateStringsArray, ...args: Args<P>) => {
+    const $source = isExtending ? mergeTemplates(config.source, source) : source;
     const $args = isExtending ? [...config.args, ...args] : args;
     const fns = filterArgs<P>($args);
-    const [sheet, sheets] = slice<P>(css($styles, ...$args));
-    const className = generate({ sheet: sheet, cache });
+    const [sheet, sheets] = slice<P>(css($source, ...$args));
+    const [baseName, base] = generate({ sheet });
     const styled = forwardRef<P, unknown>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
@@ -55,16 +55,21 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         const withReplace = detectIsFunction(component);
         const $props = (withReplace ? rest : props) as unknown as P;
         const $factory = withReplace ? component : isExtending ? config.factory : factory;
-        const $className = useMemo(() => {
-          const classNames = [
-            ...getClassNamesFrom(props),
-            className,
-            ...sheets.map(sheet => generate({ sheet, props: { ...props, theme }, cache, fns })),
-          ];
+        const [className, styles] = useMemo(() => {
+          const names: Array<string> = [];
+          const styles: Array<string> = [base];
 
-          return mergeClassNames(classNames);
+          for (const sheet of sheets) {
+            const [className, css] = generate({ sheet, props: { ...props, theme }, fns });
+
+            names.push(className);
+            styles.push(css);
+          }
+
+          const className = mergeClassNames([...getClassNamesFrom(props), baseName, ...names]);
+
+          return [className, styles];
         }, [...mapProps(props), theme]);
-        const css = createStyles(cache);
 
         useInsertionEffect(() => {
           if (!tag) {
@@ -72,39 +77,41 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
 
             if ($tag) {
               tag = $tag; // after hydration
-              cache = new Set();
               return;
             } else {
               tag = createTag();
             }
           }
 
-          if (config) {
-            config.cache.forEach(x => inject(x, tag, true));
-            config.cache = new Set();
+          for (const css of styles) {
+            if (!injections.has(css)) {
+              inject(css, tag);
+              injections.add(css);
+            }
           }
-
-          cache.forEach(x => inject(x, tag));
-          cache = new Set();
-        }, [css]);
+        }, [...styles]);
 
         if (detectIsServer()) {
           const manager = useManager(); // special case of hook using, should be last in order
 
-          config && manager.collectComponentStyle(createStyles(config.cache));
-          manager.collectComponentStyle(css);
+          styles.forEach(css => manager.collectComponentStyle(css));
           manager.reset(setupGlobal);
         }
 
         if (detectIsFunction($props.slot)) {
-          $props.slot = $props.slot((x: string) => `${className}_${x}`);
+          $props.slot = $props.slot((x: string) => `${baseName}_${x}`);
         }
 
-        return $factory({ ...transformProps($props), ref, class: $className });
+        return $factory({ ...transformProps($props), ref, class: className });
       }),
     ) as StyledComponentFactory<P>;
 
-    styled[$$styled] = { className, cache, styles: $styles, args: $args, factory: config?.factory || factory };
+    styled[$$styled] = {
+      className: baseName,
+      source: $source,
+      args: $args,
+      factory: config?.factory || factory,
+    };
 
     return styled;
   };
@@ -119,7 +126,8 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
 }
 
 function setupGlobal() {
-  stylesMap = new Map();
+  cache = new Map();
+  injections = new Set();
   tag = null;
 }
 
@@ -132,34 +140,30 @@ function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>
 
 type GenerateOptions<P extends object> = {
   sheet: StyleSheet<P>;
-  cache: Set<string>;
   props?: P;
   fns?: Array<Function>;
 };
 
-function generate<P extends object>(options: GenerateOptions<P>) {
-  const { sheet: $sheet, cache, props, fns } = options;
-  const [stylesheet, keyframes] = split($sheet);
-  const key = stylesheet.generate({ className: FUNCTION_MARK, props, fns });
-  const style = stylesMap.get(key);
-  const className = style ? style[0] : genClassName(key);
-  const css = style ? style[1] : key.replaceAll(FUNCTION_MARK, className);
+function generate<P extends object>(options: GenerateOptions<P>): [string, string] {
+  const { sheet: $sheet, props, fns } = options;
+  const [sheet, keyframes] = split($sheet);
+  const key = sheet.generate({ className: FUNCTION_MARK, props, fns });
+  const item = cache.get(key);
+  const className = item ? item[0] : genClassName(key);
+  const css = item ? item[1] : key.replaceAll(FUNCTION_MARK, className);
+  let $css = '';
 
-  if (!style) {
-    cache.add(css);
-    stylesMap.set(key, [className, css]);
-  }
+  $css += css;
+  cache.set(key, [className, css]);
 
   for (const token of keyframes) {
     const css = token.generate();
 
-    if (!stylesMap.has(css)) {
-      cache.add(css);
-      stylesMap.set(css, [token.value, css]);
-    }
+    $css += css;
+    cache.set(css, [token.value, css]);
   }
 
-  return className;
+  return [className, $css];
 }
 
 function split<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<KeyframesRule<P>>] {
@@ -235,7 +239,7 @@ function inject(css: string, tag: HTMLStyleElement, check = false) {
   tag.textContent = `${tag.textContent}${css}`;
 }
 
-const createStyles = (x: Set<string>) => Array.from(x).join('');
+const joinStyles = (x: Array<string>) => x.join('');
 
 const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
 
@@ -264,10 +268,9 @@ type StyledProps = {
 };
 
 type ExtendingConfig<P extends object = {}> = {
-  styles: TemplateStringsArray;
+  source: TemplateStringsArray;
   args: Args<P>;
   factory: Factory<P>;
-  cache: Set<string>;
 };
 
 type StyledComponentFactory<P extends object = {}> = {

@@ -12,9 +12,9 @@ let tag: HTMLStyleElement = null;
 
 setupGlobal();
 
-function createGlobalStyle<P extends object = {}>(style: TemplateStringsArray, ...args: Args<P & ThemeProps>) {
+function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, ...args: Args<P & ThemeProps>) {
   const fns = filterArgs<P>(args);
-  const sheet = css<P>(style, ...args);
+  const sheet = css<P>(source, ...args);
   const factory = forwardRef<P, unknown>(
     component(props => {
       const theme = useTheme();
