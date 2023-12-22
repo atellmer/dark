@@ -7,7 +7,7 @@ import { useManager } from '../manager';
 import { css, inject, filterArgs } from '../styled';
 import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
 
-let stylesMap: Map<string, string> = null;
+let cache: Map<string, string> = null;
 let tag: HTMLStyleElement = null;
 
 setupGlobal();
@@ -26,14 +26,14 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
           tag = getTag() || createTag(); // after hydration
         }
 
-        stylesMap.set(id, css);
-        reinject(tag, stylesMap);
+        cache.set(id, css);
+        reinject(tag, cache);
       }, [css]);
 
       useInsertionEffect(() => {
         return () => {
-          stylesMap.delete(id);
-          reinject(tag, stylesMap);
+          cache.delete(id);
+          reinject(tag, cache);
         };
       }, []);
 
@@ -52,7 +52,7 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
 }
 
 function setupGlobal() {
-  stylesMap = new Map();
+  cache = new Map();
   tag = null;
 }
 
