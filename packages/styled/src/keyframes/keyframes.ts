@@ -10,10 +10,10 @@ import {
   CLOSING_CURLY_BRACE_MARK,
   ANIMATION_NAME_PREFIX,
 } from '../constants';
-import { type KeyframesExp } from '../tokens';
+import { type KeyframesRule } from '../tokens';
 
 class Keyframes {
-  constructor(private name: string, private token: KeyframesExp) {}
+  constructor(private name: string, private token: KeyframesRule) {}
 
   getName() {
     return this.name;
@@ -28,7 +28,7 @@ function keyframes(strings: TemplateStringsArray, ...args: Array<TextBased>) {
   const joined = join(pad(strings), args);
   const name = genAnimationName(joined);
   const [token] = parse(joined.replace(FUNCTION_MARK, name)).children;
-  const keyframes = new Keyframes(name, token as KeyframesExp);
+  const keyframes = new Keyframes(name, token as KeyframesRule);
 
   return keyframes;
 }

@@ -17,7 +17,7 @@ import {
 
 import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates } from '../utils';
 import { CLASS_NAME_PREFIX, FUNCTION_MARK, DOT_MARK, STYLED_COMPONENTS_ATTR, BLANK_SPACE } from '../constants';
-import { type KeyframesExp, StyleSheet, detectIsKeyframesExp } from '../tokens';
+import { type KeyframesRule, StyleSheet, detectIsKeyframesRule } from '../tokens';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
 import { type ThemeProps, useTheme } from '../theme';
 import { type TextBased } from '../shared';
@@ -46,8 +46,8 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
     const $styles = isExtending ? mergeTemplates(config.styles, styles) : styles;
     const $args = isExtending ? [...config.args, ...args] : args;
     const fns = filterArgs<P>($args);
-    const [stylesheet, stylesheets] = slice<P>(css($styles, ...$args));
-    const className = generate({ stylesheet, updates });
+    const [sheet, sheets] = slice<P>(css($styles, ...$args));
+    const className = generate({ sheet: sheet, updates });
     const styled = forwardRef<P, unknown>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
@@ -59,7 +59,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           const classNames = [
             ...getClassNamesFrom(props),
             className,
-            ...stylesheets.map(stylesheet => generate({ stylesheet, props: { ...props, theme }, updates, fns })),
+            ...sheets.map(sheet => generate({ sheet, props: { ...props, theme }, updates, fns })),
           ];
 
           return mergeClassNames(classNames);
@@ -137,15 +137,15 @@ function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>
 }
 
 type GenerateOptions<P extends object> = {
-  stylesheet: StyleSheet<P>;
+  sheet: StyleSheet<P>;
   updates: Array<string>;
   props?: P;
   fns?: Array<Function>;
 };
 
 function generate<P extends object>(options: GenerateOptions<P>) {
-  const { stylesheet: $stylesheet, updates, props, fns } = options;
-  const [stylesheet, keyframes] = split($stylesheet);
+  const { sheet: $sheet, updates, props, fns } = options;
+  const [stylesheet, keyframes] = split($sheet);
   const key = stylesheet.generate({ className: FUNCTION_MARK, props, fns });
   const style = stylesMap.get(key);
   const className = style ? style[0] : genClassName(key);
@@ -168,37 +168,37 @@ function generate<P extends object>(options: GenerateOptions<P>) {
   return className;
 }
 
-function split<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<KeyframesExp<P>>] {
-  const stylesheet = new StyleSheet<P>();
-  const keyframes: Array<KeyframesExp<P>> = [];
+function split<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<KeyframesRule<P>>] {
+  const sheet = new StyleSheet<P>();
+  const keyframes: Array<KeyframesRule<P>> = [];
 
   for (const token of source.children) {
-    if (detectIsKeyframesExp(token)) {
+    if (detectIsKeyframesRule(token)) {
       keyframes.push(token);
     } else {
-      stylesheet.children.push(token);
+      sheet.children.push(token);
     }
   }
 
-  return [stylesheet, keyframes];
+  return [sheet, keyframes];
 }
 
 function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<StyleSheet<P>>] {
-  const stylesheet = new StyleSheet<P>();
-  const stylesheets: Array<StyleSheet> = [];
+  const sheet = new StyleSheet<P>();
+  const sheets: Array<StyleSheet> = [];
 
   for (const token of source.children) {
     if (token.isDynamic) {
       const style = new StyleSheet<P>();
 
       style.children.push(token);
-      stylesheets.push(style);
+      sheets.push(style);
     } else {
-      stylesheet.children.push(token);
+      sheet.children.push(token);
     }
   }
 
-  return [stylesheet, stylesheets];
+  return [sheet, sheets];
 }
 
 function join<P>(strings: TemplateStringsArray, args: Args<P>) {

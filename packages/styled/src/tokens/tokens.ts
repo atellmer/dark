@@ -36,13 +36,13 @@ abstract class Token {
   abstract generate(className: string | null, props: object, args: Array<Function>): string | Tuple;
 }
 
-class StyleExp extends Token {
+class StyleRule extends Token {
   override generate(): string {
     return `${this.name}${COLON_MARK}${this.value}${SEMICOLON_MARK}`;
   }
 }
 
-class NestingExp<P extends object = {}> extends Token {
+class NestingRule<P extends object = {}> extends Token {
   name = NESTING_MARK;
   children: Children = [];
 
@@ -66,7 +66,7 @@ class NestingExp<P extends object = {}> extends Token {
   }
 }
 
-class MediaQueryExp<P extends object = {}> extends Token {
+class MediaQueryRule<P extends object = {}> extends Token {
   name = MEDIA_QUERY_MARK;
   children: Children = [];
 
@@ -96,7 +96,7 @@ class MediaQueryExp<P extends object = {}> extends Token {
   }
 }
 
-class ContainerQueryExp<P extends object = {}> extends Token {
+class ContainerQueryRule<P extends object = {}> extends Token {
   name = CONTAINER_QUERY_MARK;
   children: Children = [];
 
@@ -126,7 +126,7 @@ class ContainerQueryExp<P extends object = {}> extends Token {
   }
 }
 
-class KeyframesExp<P extends object = {}> extends Token {
+class KeyframesRule<P extends object = {}> extends Token {
   name = KEYFRAMES_MARK;
   children: Children = [];
 
@@ -148,10 +148,10 @@ class KeyframesExp<P extends object = {}> extends Token {
   }
 }
 
-class FunctionExp<P extends object = {}> extends Token {
+class FunctionRule<P extends object = {}> extends Token {
   name = FUNCTION_MARK;
   args: Array<number> = [];
-  style: StyleExp = null;
+  style: StyleRule = null;
   private end = '';
   private isSealed = false;
 
@@ -264,17 +264,17 @@ function generate<P extends object = {}>(options: GenerateProps<P>): Tuple {
   let container = '';
   let keyframes = '';
 
-  if (detectIsStyleExp(token)) {
+  if (detectIsStyleRule(token)) {
     styles += token.generate();
-  } else if (detectIsNestingExp(token)) {
+  } else if (detectIsNestingRule(token)) {
     nesting += token.generate(className, props, fns);
-  } else if (detectIsMediaQueryExp(token)) {
+  } else if (detectIsMediaQueryRule(token)) {
     media += token.generate(className, props, fns);
-  } else if (detectIsContainerQueryExp(token)) {
+  } else if (detectIsContainerQueryRule(token)) {
     container += token.generate(className, props, fns);
-  } else if (detectIsKeyframesExp(token)) {
+  } else if (detectIsKeyframesRule(token)) {
     keyframes += token.generate(props, fns);
-  } else if (detectIsFunctionExp(token)) {
+  } else if (detectIsFunctionRule(token)) {
     const [$styles, $nesting, $media, $container, $keyframes] = token.generate(className, props, fns);
 
     styles += $styles;
@@ -295,17 +295,17 @@ export type Children = Array<Token>;
 
 const detectIsToken = (x: unknown): x is Token => x instanceof Token;
 
-const detectIsStyleExp = (x: unknown): x is StyleExp => x instanceof StyleExp;
+const detectIsStyleRule = (x: unknown): x is StyleRule => x instanceof StyleRule;
 
-const detectIsMediaQueryExp = (x: unknown): x is MediaQueryExp => x instanceof MediaQueryExp;
+const detectIsMediaQueryRule = (x: unknown): x is MediaQueryRule => x instanceof MediaQueryRule;
 
-const detectIsContainerQueryExp = (x: unknown): x is ContainerQueryExp => x instanceof ContainerQueryExp;
+const detectIsContainerQueryRule = (x: unknown): x is ContainerQueryRule => x instanceof ContainerQueryRule;
 
-const detectIsKeyframesExp = (x: unknown): x is KeyframesExp => x instanceof KeyframesExp;
+const detectIsKeyframesRule = (x: unknown): x is KeyframesRule => x instanceof KeyframesRule;
 
-const detectIsNestingExp = (x: unknown): x is NestingExp => x instanceof NestingExp;
+const detectIsNestingRule = (x: unknown): x is NestingRule => x instanceof NestingRule;
 
-const detectIsFunctionExp = (x: unknown): x is FunctionExp => x instanceof FunctionExp;
+const detectIsFunctionRule = (x: unknown): x is FunctionRule => x instanceof FunctionRule;
 
 const detectIsStyleSheet = (x: unknown): x is StyleSheet => x instanceof StyleSheet;
 
@@ -313,17 +313,17 @@ const replace = (target: string, x: string) => target.replace(FUNCTION_MARK, x);
 
 export {
   StyleSheet,
-  StyleExp,
-  MediaQueryExp,
-  ContainerQueryExp,
-  KeyframesExp,
-  NestingExp,
-  FunctionExp,
+  StyleRule,
+  MediaQueryRule,
+  ContainerQueryRule,
+  KeyframesRule,
+  NestingRule,
+  FunctionRule,
   detectIsStyleSheet,
-  detectIsStyleExp,
-  detectIsMediaQueryExp,
-  detectIsContainerQueryExp,
-  detectIsKeyframesExp,
-  detectIsNestingExp,
-  detectIsFunctionExp,
+  detectIsStyleRule,
+  detectIsMediaQueryRule,
+  detectIsContainerQueryRule,
+  detectIsKeyframesRule,
+  detectIsNestingRule,
+  detectIsFunctionRule,
 };

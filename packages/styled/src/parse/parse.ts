@@ -18,24 +18,24 @@ import {
 import {
   type Children,
   StyleSheet,
-  StyleExp,
-  MediaQueryExp,
-  ContainerQueryExp,
-  KeyframesExp,
-  NestingExp,
-  FunctionExp,
+  StyleRule,
+  MediaQueryRule,
+  ContainerQueryRule,
+  KeyframesRule,
+  NestingRule,
+  FunctionRule,
   detectIsStyleSheet,
-  detectIsStyleExp,
-  detectIsMediaQueryExp,
-  detectIsContainerQueryExp,
-  detectIsKeyframesExp,
-  detectIsNestingExp,
-  detectIsFunctionExp,
+  detectIsStyleRule,
+  detectIsMediaQueryRule,
+  detectIsContainerQueryRule,
+  detectIsKeyframesRule,
+  detectIsNestingRule,
+  detectIsFunctionRule,
 } from '../tokens';
 
 function parse<P extends object>(css: string) {
   const stylesheet = new StyleSheet<P>();
-  const stack: Array<NestingExp | MediaQueryExp> = [];
+  const stack: Array<NestingRule | MediaQueryRule> = [];
   let buffer = '';
   let end = '';
   let fnIdx = -1;
@@ -60,7 +60,7 @@ function parse<P extends object>(css: string) {
 
     if (!isMultiLineComment && detectHasMultiLineCommentStartMark(buffer)) {
       isMultiLineComment = true;
-      end = detectIsStyleExp(last) ? createEnd(buffer) : '';
+      end = detectIsStyleRule(last) ? createEnd(buffer) : '';
     } else if (isMultiLineComment && detectHasMultiLineCommentEndMark(buffer)) {
       isMultiLineComment = false;
       buffer = '';
@@ -69,9 +69,9 @@ function parse<P extends object>(css: string) {
     if (isSingleLineComment || isMultiLineComment) continue;
 
     if (detectHasFunctionMark(buffer)) {
-      const token = new FunctionExp();
+      const token = new FunctionRule();
 
-      if (detectIsFunctionExp(last) && !last.getIsSealed() && last.style) {
+      if (detectIsFunctionRule(last) && !last.getIsSealed() && last.style) {
         last.add(++fnIdx);
         buffer = '';
         continue;
@@ -81,7 +81,7 @@ function parse<P extends object>(css: string) {
       token.parent = parent;
       token.markAsDynamic();
 
-      if (detectIsStyleExp(last) && !last.value) {
+      if (detectIsStyleRule(last) && !last.value) {
         token.style = last;
         token.name = buffer.trim();
         last.normalize();
@@ -99,20 +99,20 @@ function parse<P extends object>(css: string) {
       case OPENING_CURLY_BRACE_MARK:
         {
           const token = detectHasMediaQueryMark(buffer)
-            ? new MediaQueryExp()
+            ? new MediaQueryRule()
             : detectHasContainerQueryMark(buffer)
-            ? new ContainerQueryExp()
+            ? new ContainerQueryRule()
             : detectHasKeyframesMark(buffer)
-            ? new KeyframesExp()
-            : new NestingExp();
+            ? new KeyframesRule()
+            : new NestingRule();
           const canNest =
-            detectIsMediaQueryExp(token) || detectIsContainerQueryExp(token) || detectIsKeyframesExp(token)
+            detectIsMediaQueryRule(token) || detectIsContainerQueryRule(token) || detectIsKeyframesRule(token)
               ? detectIsStyleSheet(parent)
-              : detectIsNestingExp(token)
+              : detectIsNestingRule(token)
               ? detectIsStyleSheet(parent) ||
-                detectIsMediaQueryExp(parent) ||
-                detectIsContainerQueryExp(parent) ||
-                detectIsKeyframesExp(parent)
+                detectIsMediaQueryRule(parent) ||
+                detectIsContainerQueryRule(parent) ||
+                detectIsKeyframesRule(parent)
               : false;
 
           if (!canNest) {
@@ -139,7 +139,7 @@ function parse<P extends object>(css: string) {
       case COLON_MARK:
         {
           if (!detectIsPropName(buffer, i, css, parent.children)) continue;
-          const token = new StyleExp();
+          const token = new StyleRule();
 
           token.name = sub(buffer);
           token.parent = parent;
@@ -153,7 +153,7 @@ function parse<P extends object>(css: string) {
           throw new Error('Incorrect style!');
         }
 
-        if (detectIsFunctionExp(last)) {
+        if (detectIsFunctionRule(last)) {
           last.seal(sub(buffer));
           buffer = '';
           continue;
@@ -185,7 +185,7 @@ function parse<P extends object>(css: string) {
 function detectIsPropName(name: string, idx: number, css: string, children: Children) {
   const last = children[children.length - 1];
   if (detectHasMediaQueryMark(name) || detectHasContainerQueryMark(name)) return false;
-  if (detectIsStyleExp(last) && !last.value) return false;
+  if (detectIsStyleRule(last) && !last.value) return false;
 
   for (let i = idx; i < css.length; i++) {
     const char = css[i];
