@@ -39,7 +39,7 @@ function styled<P extends object, P1 extends object = {}>(tagName: string | Comp
 
 function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   let transformProps: TransformProps<P> = x => x;
-  let updates: Array<string> = [];
+  let cache = new Set<string>();
   const isExtending = detectIsStyled(factory);
   const config = isExtending ? getExtendingConfig(factory as StyledComponentFactory<P>) : null;
   const fn: Fn<P> = (styles: TemplateStringsArray, ...args: Args<P>) => {
@@ -47,7 +47,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
     const $args = isExtending ? [...config.args, ...args] : args;
     const fns = filterArgs<P>($args);
     const [sheet, sheets] = slice<P>(css($styles, ...$args));
-    const className = generate({ sheet: sheet, updates });
+    const className = generate({ sheet: sheet, cache });
     const styled = forwardRef<P, unknown>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
@@ -59,12 +59,12 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           const classNames = [
             ...getClassNamesFrom(props),
             className,
-            ...sheets.map(sheet => generate({ sheet, props: { ...props, theme }, updates, fns })),
+            ...sheets.map(sheet => generate({ sheet, props: { ...props, theme }, cache, fns })),
           ];
 
           return mergeClassNames(classNames);
         }, [...mapProps(props), theme]);
-        const joined = updates.join('');
+        const css = createStyles(cache);
 
         useInsertionEffect(() => {
           if (!tag) {
@@ -72,7 +72,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
 
             if ($tag) {
               tag = $tag; // after hydration
-              updates = [];
+              cache = new Set();
               return;
             } else {
               tag = createTag();
@@ -80,19 +80,19 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           }
 
           if (config) {
-            config.updates.forEach(x => inject(x, tag, true));
-            config.updates = [];
+            config.cache.forEach(x => inject(x, tag, true));
+            config.cache = new Set();
           }
 
-          updates.forEach(x => inject(x, tag));
-          updates = [];
-        }, [joined]);
+          cache.forEach(x => inject(x, tag));
+          cache = new Set();
+        }, [css]);
 
         if (detectIsServer()) {
           const manager = useManager(); // special case of hook using, should be last in order
 
-          config && manager.collectComponentStyle(config.updates.join(''));
-          manager.collectComponentStyle(joined);
+          config && manager.collectComponentStyle(createStyles(config.cache));
+          manager.collectComponentStyle(css);
           manager.reset(setupGlobal);
         }
 
@@ -104,7 +104,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
       }),
     ) as StyledComponentFactory<P>;
 
-    styled[$$styled] = { className, updates, styles: $styles, args: $args, factory: config?.factory || factory };
+    styled[$$styled] = { className, cache, styles: $styles, args: $args, factory: config?.factory || factory };
 
     return styled;
   };
@@ -132,13 +132,13 @@ function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>
 
 type GenerateOptions<P extends object> = {
   sheet: StyleSheet<P>;
-  updates: Array<string>;
+  cache: Set<string>;
   props?: P;
   fns?: Array<Function>;
 };
 
 function generate<P extends object>(options: GenerateOptions<P>) {
-  const { sheet: $sheet, updates, props, fns } = options;
+  const { sheet: $sheet, cache, props, fns } = options;
   const [stylesheet, keyframes] = split($sheet);
   const key = stylesheet.generate({ className: FUNCTION_MARK, props, fns });
   const style = stylesMap.get(key);
@@ -146,7 +146,7 @@ function generate<P extends object>(options: GenerateOptions<P>) {
   const css = style ? style[1] : key.replaceAll(FUNCTION_MARK, className);
 
   if (!style) {
-    updates.push(css);
+    cache.add(css);
     stylesMap.set(key, [className, css]);
   }
 
@@ -154,7 +154,7 @@ function generate<P extends object>(options: GenerateOptions<P>) {
     const css = token.generate();
 
     if (!stylesMap.has(css)) {
-      updates.push(css);
+      cache.add(css);
       stylesMap.set(css, [token.value, css]);
     }
   }
@@ -235,6 +235,8 @@ function inject(css: string, tag: HTMLStyleElement, check = false) {
   tag.textContent = `${tag.textContent}${css}`;
 }
 
+const createStyles = (x: Set<string>) => Array.from(x).join('');
+
 const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
@@ -265,7 +267,7 @@ type ExtendingConfig<P extends object = {}> = {
   styles: TemplateStringsArray;
   args: Args<P>;
   factory: Factory<P>;
-  updates: Array<string>;
+  cache: Set<string>;
 };
 
 type StyledComponentFactory<P extends object = {}> = {

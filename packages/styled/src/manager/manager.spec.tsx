@@ -7,7 +7,7 @@ import {
 } from '@test-utils';
 
 import { setupGlobal as setupGlobal1, createGlobalStyle } from '../global';
-import { setupGlobal as setupGlobal2, styled } from '../styled';
+import { setupGlobal as setupGlobal2, styled, css } from '../styled';
 import { ServerStyleSheet } from './manager';
 
 let { renderToString } = createServerEnv();
@@ -38,10 +38,15 @@ describe('[@styled/manager]', () => {
     const Box = styled('div')`
       width: 100px;
       height: 100px;
-      background-color: blueviolet;
+
+      ${() => css`
+        background-color: blueviolet;
+      `}
     `;
     const RedBox = styled(Box)`
-      background-color: red;
+      ${() => css`
+        background-color: red;
+      `}
     `;
 
     const App = component(() => {
@@ -64,14 +69,14 @@ describe('[@styled/manager]', () => {
       sheet.seal();
 
       expect(content).toBe(
-        `${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-bhchaj">SSR</div><div class="dk-dhfaea">!!!</div>`,
+        `${replacer}<div class="dk-igjghg dk-fcgdjf">Hello</div><div class="dk-igjghg dk-fcgdjf dk-bejacb">SSR</div><div class="dk-igjghg dk-fcgdjf">!!!</div>`,
       );
       expect(tags).toEqual([
         globalStyle(
           '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;}',
         ),
         style(
-          `.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}.dk-bhchaj{width:100px;height:100px;background-color:blueviolet;background-color:red;}`,
+          '.dk-igjghg{width:100px;height:100px;}.dk-fcgdjf{background-color:blueviolet;}.dk-bejacb{background-color:red;}',
         ),
       ]);
     }
@@ -85,14 +90,14 @@ describe('[@styled/manager]', () => {
       sheet.seal();
 
       expect(content).toBe(
-        `${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-bhchaj">SSR</div><div class="dk-dhfaea">!!!</div>`,
+        `${replacer}<div class="dk-igjghg dk-fcgdjf">Hello</div><div class="dk-igjghg dk-fcgdjf dk-bejacb">SSR</div><div class="dk-igjghg dk-fcgdjf">!!!</div>`,
       );
       expect(tags).toEqual([
         globalStyle(
           '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;}',
         ),
         style(
-          `.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}.dk-bhchaj{width:100px;height:100px;background-color:blueviolet;background-color:red;}`,
+          '.dk-igjghg{width:100px;height:100px;}.dk-fcgdjf{background-color:blueviolet;}.dk-bejacb{background-color:red;}',
         ),
       ]);
     }
@@ -106,14 +111,14 @@ describe('[@styled/manager]', () => {
       sheet.seal();
 
       expect(content).toBe(
-        `${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-bhchaj">SSR</div><div class="dk-dhfaea">!!!</div>`,
+        `${replacer}<div class="dk-igjghg dk-fcgdjf">Hello</div><div class="dk-igjghg dk-fcgdjf dk-bejacb">SSR</div><div class="dk-igjghg dk-fcgdjf">!!!</div>`,
       );
       expect(tags).toEqual([
         globalStyle(
           '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;}',
         ),
         style(
-          `.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}.dk-bhchaj{width:100px;height:100px;background-color:blueviolet;background-color:red;}`,
+          '.dk-igjghg{width:100px;height:100px;}.dk-fcgdjf{background-color:blueviolet;}.dk-bejacb{background-color:red;}',
         ),
       ]);
     }
