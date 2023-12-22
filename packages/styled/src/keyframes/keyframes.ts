@@ -72,4 +72,4 @@ const genAnimationName = (key: string) => `${ANIMATION_NAME_PREFIX}-${hash(key)}
 
 const detectIsKeyframes = (x: unknown): x is Keyframes => x instanceof Keyframes;
 
-export { type Keyframes, keyframes, detectIsKeyframes };
+export { Keyframes, keyframes, detectIsKeyframes };

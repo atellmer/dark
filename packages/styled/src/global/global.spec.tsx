@@ -142,9 +142,6 @@ describe('[@styled/global]', () => {
     render(<GlobalStyle $backgroundColor='white' />);
     jest.runAllTimers();
 
-    console.log(host.innerHTML);
-    console.log(document.head.innerHTML);
-
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
