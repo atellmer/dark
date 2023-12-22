@@ -4,18 +4,6 @@ import { type Fiber } from '../fiber';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 
-type Actions = Record<
-  number,
-  {
-    map: Record<ElementKey, Fiber>;
-    replace: Record<ElementKey, true>;
-    insert: Record<ElementKey, true>;
-    remove: Record<ElementKey, true>;
-    move: Record<ElementKey, true>;
-    stable: Record<ElementKey, true>;
-  }
->;
-
 class Scope {
   private root: Fiber = null;
   private wip: Fiber = null;
@@ -50,11 +38,11 @@ class Scope {
     this.actions = {};
   }
 
-  public getActionsById(id: number) {
+  getActionsById(id: number) {
     return this.actions[id];
   }
 
-  public addActionMap(id: number, map: Record<ElementKey, Fiber>) {
+  addActionMap(id: number, map: Record<ElementKey, Fiber>) {
     this.actions[id] = {
       map,
       replace: null,
@@ -65,32 +53,32 @@ class Scope {
     };
   }
 
-  public addReplaceAction(id: number, nextKey: ElementKey) {
+  addReplaceAction(id: number, nextKey: ElementKey) {
     !this.actions[id].replace && (this.actions[id].replace = {});
     this.actions[id].replace[nextKey] = true;
   }
 
-  public addInsertAction(id: number, nextKey: ElementKey) {
+  addInsertAction(id: number, nextKey: ElementKey) {
     !this.actions[id].insert && (this.actions[id].insert = {});
     this.actions[id].insert[nextKey] = true;
   }
 
-  public addRemoveAction(id: number, prevKey: ElementKey) {
+  addRemoveAction(id: number, prevKey: ElementKey) {
     !this.actions[id].remove && (this.actions[id].remove = {});
     this.actions[id].remove[prevKey] = true;
   }
 
-  public addMoveAction(id: number, nextKey: ElementKey) {
+  addMoveAction(id: number, nextKey: ElementKey) {
     !this.actions[id].move && (this.actions[id].move = {});
     this.actions[id].move[nextKey] = true;
   }
 
-  public addStableAction(id: number, nextKey: ElementKey) {
+  addStableAction(id: number, nextKey: ElementKey) {
     !this.actions[id].stable && (this.actions[id].stable = {});
     this.actions[id].stable[nextKey] = true;
   }
 
-  public copy() {
+  copy() {
     const scope = new Scope();
 
     scope.root = null;
@@ -114,99 +102,99 @@ class Scope {
     return scope;
   }
 
-  public getRoot() {
+  getRoot() {
     return this.root;
   }
 
-  public setRoot(fiber: Fiber) {
+  setRoot(fiber: Fiber) {
     this.root = fiber;
   }
 
-  public getWorkInProgress() {
+  getWorkInProgress() {
     return this.wip;
   }
 
-  public setWorkInProgress(fiber: Fiber) {
+  setWorkInProgress(fiber: Fiber) {
     this.wip = fiber;
   }
 
-  public getNextUnitOfWork() {
+  getNextUnitOfWork() {
     return this.unit;
   }
 
-  public setNextUnitOfWork(fiber: Fiber) {
+  setNextUnitOfWork(fiber: Fiber) {
     this.unit = fiber;
   }
 
-  public getCursorFiber() {
+  getCursorFiber() {
     return this.cursor;
   }
 
-  public setCursorFiber(fiber: Fiber) {
+  setCursorFiber(fiber: Fiber) {
     this.cursor = fiber;
   }
 
-  public navToChild() {
+  navToChild() {
     this.mountLevel = this.mountLevel + 1;
     this.mountNav[this.mountLevel] = 0;
   }
 
-  public navToSibling() {
+  navToSibling() {
     this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] + 1;
   }
 
-  public navToParent() {
+  navToParent() {
     this.mountLevel = this.mountLevel - 1;
   }
 
-  public getMountIndex() {
+  getMountIndex() {
     return this.mountNav[this.mountLevel];
   }
 
-  public getMountDeep() {
+  getMountDeep() {
     return this.mountDeep;
   }
 
-  public setMountDeep(value: boolean) {
+  setMountDeep(value: boolean) {
     this.mountDeep = value;
   }
 
-  public resetMount() {
+  resetMount() {
     this.mountLevel = 0;
     this.mountNav = {};
     this.mountDeep = true;
   }
 
-  public getEvents() {
+  getEvents() {
     return this.events;
   }
 
-  public addEventUnsubscriber(fn: Callback) {
+  addEventUnsubscriber(fn: Callback) {
     this.unsubs.add(fn);
   }
 
-  public unsubscribeEvents() {
+  unsubscribeEvents() {
     this.unsubs.forEach(x => x());
     this.unsubs = new Set();
   }
 
-  public getCandidates() {
+  getCandidates() {
     return this.candidates;
   }
 
-  public addCandidate(fiber: Fiber) {
+  addCandidate(fiber: Fiber) {
     this.candidates.add(fiber);
   }
 
-  public resetCandidates() {
+  resetCandidates() {
     this.candidates = new Set();
   }
 
-  public getDeletions() {
+  getDeletions() {
     return this.deletions;
   }
 
-  public hasDeletion(fiber: Fiber) {
+  hasDeletion(fiber: Fiber) {
     let nextFiber = fiber;
 
     while (nextFiber) {
@@ -217,153 +205,153 @@ class Scope {
     return false;
   }
 
-  public addDeletion(fiber: Fiber) {
+  addDeletion(fiber: Fiber) {
     !this.hasDeletion(fiber) && this.deletions.add(fiber);
   }
 
-  public resetDeletions() {
+  resetDeletions() {
     this.deletions = new Set();
   }
 
-  public addAsyncEffect(fn: Callback) {
+  addAsyncEffect(fn: Callback) {
     this.asyncEffects.add(fn);
   }
 
-  public resetAsyncEffects() {
+  resetAsyncEffects() {
     this.asyncEffects = new Set();
   }
 
-  public runAsyncEffects() {
+  runAsyncEffects() {
     if (!this.isDynamic) return;
     const effects = this.asyncEffects;
     effects.size > 0 && setTimeout(() => effects.forEach(fn => fn()));
   }
 
-  public addLayoutEffect(fn: Callback) {
+  addLayoutEffect(fn: Callback) {
     this.layoutEffects.add(fn);
   }
 
-  public resetLayoutEffects() {
+  resetLayoutEffects() {
     this.layoutEffects = new Set();
   }
 
-  public runLayoutEffects() {
+  runLayoutEffects() {
     if (!this.isDynamic) return;
     this.setIsLayoutEffectsZone(true);
     this.layoutEffects.forEach(fn => fn());
     this.setIsLayoutEffectsZone(false);
   }
 
-  public addInsertionEffect(fn: Callback) {
+  addInsertionEffect(fn: Callback) {
     this.insertionEffects.add(fn);
   }
 
-  public resetInsertionEffects() {
+  resetInsertionEffects() {
     this.insertionEffects = new Set();
   }
 
-  public runInsertionEffects() {
+  runInsertionEffects() {
     if (!this.isDynamic) return;
     this.setIsInsertionEffectsZone(true);
     this.insertionEffects.forEach(fn => fn());
     this.setIsInsertionEffectsZone(false);
   }
 
-  public addCancel(fn: Callback) {
+  addCancel(fn: Callback) {
     this.cancels.push(fn);
   }
 
-  public applyCancels() {
+  applyCancels() {
     for (let i = this.cancels.length - 1; i >= 0; i--) {
       this.cancels[i]();
     }
   }
 
-  public resetCancels() {
+  resetCancels() {
     this.cancels = [];
   }
 
-  public getIsLayoutEffectsZone() {
+  getIsLayoutEffectsZone() {
     return this.isLayoutEffectsZone;
   }
 
-  public setIsLayoutEffectsZone(value: boolean) {
+  setIsLayoutEffectsZone(value: boolean) {
     this.isLayoutEffectsZone = value;
   }
 
-  public getIsInsertionEffectsZone() {
+  getIsInsertionEffectsZone() {
     return this.isInsertionEffectsZone;
   }
 
-  public setIsInsertionEffectsZone(value: boolean) {
+  setIsInsertionEffectsZone(value: boolean) {
     this.isInsertionEffectsZone = value;
   }
 
-  public getIsUpdateZone() {
+  getIsUpdateZone() {
     return this.isUpdateZone;
   }
 
-  public setIsUpdateZone(value: boolean) {
+  setIsUpdateZone(value: boolean) {
     this.isUpdateZone = value;
   }
 
-  public getIsBatchZone() {
+  getIsBatchZone() {
     return this.isBatchZone;
   }
 
-  public setIsBatchZone(value: boolean) {
+  setIsBatchZone(value: boolean) {
     this.isBatchZone = value;
   }
 
-  public getIsHydrateZone() {
+  getIsHydrateZone() {
     return this.isHydrateZone;
   }
 
-  public setIsHydrateZone(value: boolean) {
+  setIsHydrateZone(value: boolean) {
     this.isHydrateZone = value;
   }
 
-  public getIsStreamZone() {
+  getIsStreamZone() {
     return this.isStreamZone;
   }
 
-  public setIsStreamZone(value: boolean) {
+  setIsStreamZone(value: boolean) {
     this.isStreamZone = value;
   }
 
-  public getIsTransitionZone() {
+  getIsTransitionZone() {
     return this.isTransitionZone;
   }
 
-  public setIsTransitionZone(value: boolean) {
+  setIsTransitionZone(value: boolean) {
     this.isTransitionZone = value;
   }
 
-  public getIsEventZone() {
+  getIsEventZone() {
     return this.isEventZone;
   }
 
-  public setIsEventZone(value: boolean) {
+  setIsEventZone(value: boolean) {
     this.isEventZone = value;
   }
 
-  public getIsHot() {
+  getIsHot() {
     return this.isHot;
   }
 
-  public setIsHot(value: boolean) {
+  setIsHot(value: boolean) {
     this.isHot = value;
   }
 
-  public getPendingStatusSetter() {
+  getPendingStatusSetter() {
     return this.setPendingStatus;
   }
 
-  public setPendingStatusSetter(fn: SetPendingStatus) {
+  setPendingStatusSetter(fn: SetPendingStatus) {
     this.setPendingStatus = fn;
   }
 
-  public flush() {
+  flush() {
     !this.isUpdateZone && this.setRoot(this.wip); // !
     this.setWorkInProgress(null);
     this.setNextUnitOfWork(null);
@@ -380,10 +368,22 @@ class Scope {
     this.resetActions();
   }
 
-  public getEmitter() {
+  getEmitter() {
     return this.emitter;
   }
 }
+
+type Actions = Record<
+  number,
+  {
+    map: Record<ElementKey, Fiber>;
+    replace: Record<ElementKey, true>;
+    insert: Record<ElementKey, true>;
+    remove: Record<ElementKey, true>;
+    move: Record<ElementKey, true>;
+    stable: Record<ElementKey, true>;
+  }
+>;
 
 let rootId: number = null;
 const scopes = new Map<number, Scope>();

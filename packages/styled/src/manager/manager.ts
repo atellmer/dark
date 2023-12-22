@@ -1,4 +1,11 @@
-import { type DarkElement, type Component, createContext, useContext, component } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type Component,
+  type Callback,
+  createContext,
+  useContext,
+  component,
+} from '@dark-engine/core';
 
 import { STYLE_TAG, STYLED_GLOBAL_ATTR, STYLED_COMPONENTS_ATTR, FUNCTION_MARK } from '../constants';
 
@@ -9,6 +16,7 @@ enum STYLE_LEVEL {
 
 class Manager {
   private styles = createStyles();
+  private resets = new Set<Callback>();
 
   collectGlobalStyle(css: string) {
     this.styles[STYLE_LEVEL.GLOBAL].add(css);
@@ -22,8 +30,14 @@ class Manager {
     return this.styles;
   }
 
+  reset(fn: Callback) {
+    this.resets.add(fn);
+  }
+
   seal() {
     this.styles = createStyles();
+    this.resets.forEach(x => x());
+    this.resets = new Set();
   }
 }
 

@@ -89,17 +89,11 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         }, [joined]);
 
         if (detectIsServer()) {
-          // ssr
           const manager = useManager(); // special case of hook using, should be last in order
 
-          if (config) {
-            manager.collectComponentStyle(config.updates.join(''));
-            config.updates = [];
-          }
-
+          config && manager.collectComponentStyle(config.updates.join(''));
           manager.collectComponentStyle(joined);
-          stylesMap = new Map();
-          updates = [];
+          manager.reset(setupGlobal);
         }
 
         if (detectIsFunction($props.slot)) {

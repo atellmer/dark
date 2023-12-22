@@ -40,7 +40,8 @@ function createGlobalStyle<P extends object = {}>(style: TemplateStringsArray, .
       if (detectIsServer()) {
         const manager = useManager(); // special case of hook using, should be last in order
 
-        manager.collectGlobalStyle(css); // ssr
+        manager.collectGlobalStyle(css);
+        manager.reset(setupGlobal);
       }
 
       return null;
