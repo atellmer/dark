@@ -244,12 +244,9 @@ function createTag() {
   return tag;
 }
 
-function inject(css: string, tag: HTMLStyleElement, check = false) {
-  if (check && tag.textContent.indexOf(css) !== -1) return;
+function inject(css: string, tag: HTMLStyleElement) {
   tag.textContent = `${tag.textContent}${css}`;
 }
-
-const joinStyles = (x: Array<string>) => x.join('');
 
 const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
 

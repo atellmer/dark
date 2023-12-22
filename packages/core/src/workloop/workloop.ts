@@ -507,9 +507,7 @@ function fork($scope: Scope): false {
   const $$scope$ = $scope.copy();
   const wipFiber = $scope.getWorkInProgress();
   const child = wipFiber.child;
-
   child && (child.parent = null);
-
   const restore = (options: RestoreOptions) => {
     const { fiber: wipFiber, setValue, resetValue } = options;
     const $scope = $$scope();
