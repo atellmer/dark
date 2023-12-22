@@ -1,5 +1,5 @@
 import { type ComponentFactory, component } from '../component';
-import { detectIsFunction, detectIsUndefined } from '../helpers';
+import { detectIsFunction, detectIsUndefined } from '../utils';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';

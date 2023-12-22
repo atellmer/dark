@@ -1,4 +1,4 @@
-import { detectIsFunction } from '../helpers';
+import { detectIsFunction } from '../utils';
 import { type UpdateOptions, useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';

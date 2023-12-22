@@ -1,4 +1,4 @@
-import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, error } from '../helpers';
+import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, error } from '../utils';
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
 import { MASK_ATOM_HOST } from '../constants';

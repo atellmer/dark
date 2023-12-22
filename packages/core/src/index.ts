@@ -8,7 +8,7 @@ export * from './workloop';
 export * from './atom';
 export { Fragment } from './fragment';
 export * from './platform';
-export * from './helpers';
+export * from './utils';
 export { lazy } from './lazy';
 export { memo } from './memo';
 export * from './ref';

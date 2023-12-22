@@ -1,5 +1,5 @@
 import { REPLACER, ATTR_KEY } from '../constants';
-import { detectIsArray, detectIsFunction } from '../helpers';
+import { detectIsArray, detectIsFunction } from '../utils';
 import { type ElementKey, type DarkElement, type Instance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
 import { $$scope } from '../scope';

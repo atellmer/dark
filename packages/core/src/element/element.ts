@@ -1,4 +1,4 @@
-import { detectIsString, detectIsFunction } from '../helpers';
+import { detectIsString, detectIsFunction } from '../utils';
 import { type TagVirtualNodeFactory, type ViewOptions, View } from '../view';
 import { type ComponentFactory } from '../component';
 

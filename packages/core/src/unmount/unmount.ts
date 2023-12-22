@@ -4,7 +4,7 @@ import { dropEffects } from '../use-effect';
 import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
 import { walk } from '../walk';
-import { detectIsUndefined } from '../helpers';
+import { detectIsUndefined } from '../utils';
 import { removeScope, $$scope } from '../scope';
 import {
   MASK_INSERTION_EFFECT_HOST,

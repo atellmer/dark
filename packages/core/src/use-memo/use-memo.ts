@@ -1,7 +1,7 @@
 import { type VirtualNodeFactory, detectIsVirtualNodeFactory } from '../view';
 import { type Component, detectIsComponent, component } from '../component';
 import { type Hook, type HookValue } from '../fiber';
-import { detectAreDepsDifferent } from '../helpers';
+import { detectAreDepsDifferent } from '../utils';
 import { $$scope } from '../scope';
 import { memo } from '../memo';
 

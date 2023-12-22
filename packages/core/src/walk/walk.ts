@@ -17,7 +17,7 @@ import { type Scope } from '../scope';
 import { type Component } from '../component';
 import { detectIsMemo } from '../memo/utils';
 import { type Instance, type ElementKey } from '../shared';
-import { createIndexKey } from '../helpers';
+import { createIndexKey } from '../utils';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
   let shouldDeep = true;

@@ -1,4 +1,4 @@
-import { detectIsObject, detectIsNull, detectIsFunction } from '../helpers';
+import { detectIsObject, detectIsNull, detectIsFunction } from '../utils';
 import type { Component, ComponentFactory } from '../component';
 import type { RefProps, KeyProps, FlagProps } from '../shared';
 import { useMemo } from '../use-memo';

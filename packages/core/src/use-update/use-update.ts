@@ -3,7 +3,7 @@ import { type UpdateChanger, createUpdate } from '../workloop';
 import { getRootId, $$scope } from '../scope';
 import { TaskPriority } from '../constants';
 import { addBatch } from '../batch';
-import { detectIsFunction } from '../helpers';
+import { detectIsFunction } from '../utils';
 import { createHookLocation } from '../walk';
 
 export type UpdateOptions = UpdateChanger;

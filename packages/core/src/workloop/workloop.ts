@@ -25,7 +25,7 @@ import {
   detectIsTextBased,
   createIndexKey,
   trueFn,
-} from '../helpers';
+} from '../utils';
 import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
 import { Fiber, getHook, Hook } from '../fiber';
 import { type ElementKey, type Instance } from '../shared';

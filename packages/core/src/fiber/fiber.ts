@@ -2,7 +2,7 @@ import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponen
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { type Context, type ContextProviderValue } from '../context';
 import { detectIsComponent } from '../component';
-import { detectIsFunction } from '../helpers';
+import { detectIsFunction } from '../utils';
 import { type Atom } from '../atom';
 import { $$scope } from '../scope';
 

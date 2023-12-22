@@ -1,6 +1,6 @@
 import type { DarkElement } from '../shared';
 import type { Fiber } from '../fiber';
-import { detectIsFunction } from '../helpers';
+import { detectIsFunction } from '../utils';
 import { $$scope } from '../scope';
 import { component } from '../component';
 import { useEffect } from '../use-effect';

@@ -3,7 +3,7 @@ import { type SetPendingStatus } from '../start-transition';
 import { type Callback } from '../shared';
 import { type Fiber } from '../fiber';
 import { ROOT, HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
-import { getTime, detectIsFunction, nextTick } from '../helpers';
+import { getTime, detectIsFunction, nextTick } from '../utils';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 

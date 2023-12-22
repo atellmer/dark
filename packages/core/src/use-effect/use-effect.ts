@@ -1,4 +1,4 @@
-import { detectIsFunction } from '../helpers';
+import { detectIsFunction } from '../utils';
 import { MASK_INSERTION_EFFECT_HOST, MASK_LAYOUT_EFFECT_HOST, MASK_ASYNC_EFFECT_HOST } from '../constants';
 import { $$scope } from '../scope';
 import { useMemo } from '../use-memo';

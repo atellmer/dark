@@ -1,6 +1,6 @@
 import { type ElementKey, type Instance } from '../shared';
 import { ATTR_KEY } from '../constants';
-import { error } from '../helpers';
+import { error } from '../utils';
 import { type Ref } from '../ref';
 import type {
   CreateElement,
