@@ -81,12 +81,8 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           }
 
           if (config) {
-            config.updates.forEach(x => {
-              if (tag.textContent.indexOf(x) === -1) {
-                inject(x, tag);
-              }
-            });
-            config.updates.splice(0, config.updates.length);
+            config.updates.forEach(x => inject(x, tag, true));
+            config.updates = [];
           }
 
           updates.forEach(x => inject(x, tag));
@@ -95,6 +91,11 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
 
         if (detectIsServer()) {
           const manager = useManager(); // special case of hook using, should be last in order
+
+          if (config) {
+            manager.collectComponentStyle(config.updates.join(''));
+            config.updates = [];
+          }
 
           manager.collectComponentStyle(joined); // ssr
           stylesMap = new Map();
@@ -235,13 +236,16 @@ function setupGlobal() {
   tag = null;
 }
 
+function inject(css: string, tag: HTMLStyleElement, check = false) {
+  if (check && tag.textContent.indexOf(css) !== -1) return;
+  tag.textContent = `${tag.textContent}${css}`;
+}
+
 const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
 
 const getClassNamesFrom = (props: StyledProps) => (props.class || props.className || '').split(BLANK_SPACE);
-
-const inject = (css: string, tag: HTMLStyleElement) => (tag.textContent = `${tag.textContent}${css}`);
 
 const genClassName = (key: string) => `${CLASS_NAME_PREFIX}-${hash(key)}`;
 

@@ -89,6 +89,8 @@ function mockBrowserPlatform() {
   jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));
 }
 
+const wrapWithStyledTag = (x: string) => `<style dark-styled-components="true">${x}</style>`;
+
 export {
   dom,
   waitNextTick,
@@ -104,4 +106,5 @@ export {
   createBrowserEnv,
   createServerEnv,
   mockBrowserPlatform,
+  wrapWithStyledTag,
 };

@@ -2,6 +2,11 @@ import { type DarkElement, createContext, useContext, component } from '@dark-en
 
 import { type DefaultTheme } from '../';
 
+// styled.d.ts
+// declare module '@dark-engine/styled' {
+//   export interface DefaultTheme extends Theme {}
+// }
+
 export type ThemeContextValue = DefaultTheme;
 
 const ThemeContext = createContext<ThemeContextValue>(null, { displayName: 'Theme' });

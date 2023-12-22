@@ -1,11 +1,9 @@
 import { h, Fragment, component } from '@dark-engine/core';
-import { createBrowserEnv } from '@test-utils';
+import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';
 
 let { host, render } = createBrowserEnv();
-
-const style = (x: string) => `<style dark-styled-components="true">${x}</style>`;
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -712,9 +710,6 @@ describe('[@styled/styled]', () => {
       </>,
     );
     jest.runAllTimers();
-
-    // console.log(host.innerHTML);
-    // console.log(document.head.innerHTML);
 
     expect(host.innerHTML).toBe(
       '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj dk-cbbfgc">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
