@@ -591,13 +591,10 @@ describe('[render]', () => {
 
   test('can work with JSX', () => {
     type AppProps = { dynamic: boolean };
-
     const text = 'I am dynamic tag';
-
-    const CustomItem = component(({ slot }) => {
+    const CustomItem = component<{ slot: DarkElement }>(({ slot }) => {
       return <span>{slot}</span>;
     });
-
     const App = component<AppProps>(({ dynamic }) => {
       const Tag = dynamic ? CustomItem : 'div';
 

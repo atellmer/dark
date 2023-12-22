@@ -28,7 +28,7 @@ function injectStyle(className: string, css: string) {
   return () => document.head.removeChild(styleElement);
 }
 
-function createStyledComponent<P>(tag: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
+function createStyledComponent<P extends object>(tag: ComponentFactory | ((props: P) => TagVirtualNodeFactory)) {
   return (literals: TemplateStringsArray, ...args: Array<(p: P) => string | false>) => {
     const staticArgs = args.filter(x => typeof x !== 'function');
     const dynamicArgs = args.filter(x => typeof x === 'function');
@@ -71,17 +71,23 @@ function createStyledComponent<P>(tag: ComponentFactory | ((props: P) => TagVirt
   };
 }
 
-function styled<P>(component: ComponentFactory<P>) {
+function styled<P extends object>(component: ComponentFactory<P>) {
   return createStyledComponent<P>(component);
 }
 
 const div = (props: any) => View({ ...props, as: 'div' });
-styled.div = function anonymous<P>(literals: TemplateStringsArray, ...args: Array<(p: P) => string | false>) {
+styled.div = function anonymous<P extends object>(
+  literals: TemplateStringsArray,
+  ...args: Array<(p: P) => string | false>
+) {
   return createStyledComponent<P>(div)(literals, ...args);
 };
 
 const input = (props: any) => View({ ...props, void: true, as: 'input' });
-styled.input = function anonymous<P>(literals: TemplateStringsArray, ...args: Array<(p: P) => string | false>) {
+styled.input = function anonymous<P extends object>(
+  literals: TemplateStringsArray,
+  ...args: Array<(p: P) => string | false>
+) {
   return createStyledComponent<P>(input)(literals, ...args);
 };
 

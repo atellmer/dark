@@ -10,7 +10,7 @@ import { detectIsFiberAlive } from '../walk';
 
 const factoriesMap: Map<Function, ComponentFactory> = new Map();
 
-function lazy<P, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () => void) {
+function lazy<P extends object, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () => void) {
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
@@ -53,7 +53,7 @@ function fetchModule(module: () => Promise<LazyModule>) {
   });
 }
 
-export type LazyModule<P = unknown> = {
+export type LazyModule<P extends object = {}> = {
   default: ComponentFactory<P>;
 };
 

@@ -3,6 +3,11 @@ import { type DarkElement, createContext, useContext, component } from '@dark-en
 import { type DefaultTheme } from '../';
 
 // styled.d.ts
+// type Theme = {
+//   color1: string;
+//   color2: string;
+//   color3: string;
+// };
 // declare module '@dark-engine/styled' {
 //   export interface DefaultTheme extends Theme {}
 // }

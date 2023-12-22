@@ -18,7 +18,7 @@ type Theme = {
 };
 
 type ThemeProps = {
-  theme: Theme;
+  theme?: Theme;
 };
 
 beforeEach(() => {
@@ -78,7 +78,7 @@ describe('[@styled/theme]', () => {
   });
 
   test('works with theme and global styles correctly', () => {
-    const GlobalStyle = createGlobalStyle<{}>`
+    const GlobalStyle = createGlobalStyle`
       body {
         background-color: ${(p: ThemeProps) => p.theme.backgroundColor};
         color: ${(p: ThemeProps) => p.theme.color};

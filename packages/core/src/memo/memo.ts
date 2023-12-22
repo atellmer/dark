@@ -18,7 +18,7 @@ const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   return false;
 };
 
-function memo<P, R = unknown>(
+function memo<P extends object, R = unknown>(
   factory: ComponentFactory<P, R>,
   shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
 ) {

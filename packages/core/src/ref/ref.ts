@@ -4,7 +4,7 @@ import type { RefProps, KeyProps, FlagProps } from '../shared';
 import { useMemo } from '../use-memo';
 import type { MutableRef, Ref } from './types';
 
-function forwardRef<P, R>(
+function forwardRef<P extends object, R>(
   component: ComponentFactory<P, R>,
 ): ComponentFactory<P & RefProps<R> & KeyProps & FlagProps, R> {
   type Props = P & RefProps<R>;

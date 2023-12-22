@@ -39,10 +39,10 @@ class Component<P extends StandardComponentProps = any, R = any> {
   }
 }
 
-function component<P, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions = {}) {
+function component<P extends object, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions = {}) {
   const { token: $token, displayName } = options;
-  type P1 = P & StandardComponentProps;
-  const factory: ComponentFactoryWithPossiblyInject<P1, R> = (props = {} as P1, ref?: Ref<R>) => {
+  type Props = P & StandardComponentProps;
+  const factory: ComponentFactoryWithPossiblyInject<Props, R> = (props = {} as Props, ref?: Ref<R>) => {
     const { token = $token, shouldUpdate } = factory[$$inject] || defaultInject;
 
     if (props.ref) {
@@ -57,15 +57,15 @@ function component<P, R = unknown>(type: CreateElement<P, R>, options: Component
     return new Component(type, token, props, ref, shouldUpdate, displayName);
   };
 
-  return factory as ComponentFactory<P1, R>;
+  return factory as ComponentFactory<Props, R>;
 }
 
 const defaultInject: ComponentInject = {};
 
-const detectIsComponent = (inst: unknown): inst is Component => inst instanceof Component;
+const detectIsComponent = (x: unknown): x is Component => x instanceof Component;
 
-const getComponentKey = (inst: Component): ElementKey => inst.props[ATTR_KEY] ?? null;
+const getComponentKey = (x: Component): ElementKey => x.props[ATTR_KEY] ?? null;
 
-const hasComponentFlag = (instance: Component, flag: string) => Boolean(instance.props[flag]);
+const hasComponentFlag = (inst: Component, flag: string) => Boolean(inst.props[flag]);
 
 export { Component, component, $$inject, detectIsComponent, getComponentKey, hasComponentFlag };

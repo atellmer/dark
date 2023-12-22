@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, component } from '@dark-engine/core';
+import { type DarkElement, h, component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { createTestHostNode, createReplacerString } from '@test-utils';
@@ -121,7 +121,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -178,11 +178,11 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
-            component: component(({ slot }) => <a>{slot}</a>),
+            component: component<{ slot: DarkElement }>(({ slot }) => <a>{slot}</a>),
             children: [
               {
                 path: '1',
@@ -196,7 +196,7 @@ describe('[router/rendering]', () => {
           },
           {
             path: 'b',
-            component: component(({ slot }) => <b>{slot}</b>),
+            component: component<{ slot: DarkElement }>(({ slot }) => <b>{slot}</b>),
             children: [
               {
                 path: '1',
@@ -346,7 +346,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -506,7 +506,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: '/second/a',
@@ -545,7 +545,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -600,7 +600,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -659,7 +659,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -714,7 +714,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -722,7 +722,7 @@ describe('[router/rendering]', () => {
           },
           {
             path: 'b',
-            component: component(({ slot }) => <b>{slot}</b>),
+            component: component<{ slot: DarkElement }>(({ slot }) => <b>{slot}</b>),
             children: [
               {
                 path: '1',
@@ -804,7 +804,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second/:id',
-        component: component(({ slot }) => <second>{slot}</second>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second>{slot}</second>),
         children: [
           {
             path: 'a',
@@ -924,7 +924,7 @@ describe('[router/rendering]', () => {
       },
       {
         path: 'second/a',
-        component: component(({ slot }) => <second:a>{slot}</second:a>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <second:a>{slot}</second:a>),
         children: [
           {
             path: '1',
@@ -1003,7 +1003,7 @@ describe('[router/rendering]', () => {
     const routes: Routes = [
       {
         path: 'first',
-        component: component(({ slot }) => <first>{slot}</first>),
+        component: component<{ slot: DarkElement }>(({ slot }) => <first>{slot}</first>),
         children: [
           {
             path: 'nested',

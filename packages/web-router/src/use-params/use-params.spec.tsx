@@ -1,5 +1,5 @@
 /** @jsx h */
-import { h, component } from '@dark-engine/core';
+import { type DarkElement, h, component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { createTestHostNode, createReplacerString } from '@test-utils';
@@ -43,7 +43,7 @@ describe('[router/use-params]', () => {
       },
       {
         path: 'second/:x1',
-        component: component(({ slot }) => {
+        component: component<{ slot: DarkElement }>(({ slot }) => {
           const params = useParams();
 
           return (

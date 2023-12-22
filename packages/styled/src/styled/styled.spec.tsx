@@ -1,4 +1,4 @@
-import { h, Fragment, component } from '@dark-engine/core';
+import { type DarkElement, h, Fragment, component } from '@dark-engine/core';
 import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';
@@ -502,7 +502,7 @@ describe('[@styled/styled]', () => {
       background-color: #11ed74;
       font-size: 1.5rem;
     `;
-    const Item = component(({ slot, ...rest }) => (
+    const Item = component<{ slot: DarkElement }>(({ slot, ...rest }) => (
       <div {...rest}>
         <span>{slot}</span>
       </div>
@@ -573,7 +573,7 @@ describe('[@styled/styled]', () => {
     const StyledItem = styled('main')`
       border: 2px solid purple;
     `;
-    const Item = component(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
+    const Item = component<{ slot: DarkElement }>(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
 
     render(
       <>
@@ -619,7 +619,7 @@ describe('[@styled/styled]', () => {
     const StyledItem = styled('main')`
       border: 2px solid purple;
     `;
-    const Item = component(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
+    const Item = component<{ slot: DarkElement }>(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
 
     render(
       <>
@@ -681,7 +681,7 @@ describe('[@styled/styled]', () => {
     const StyledItem = styled('main')`
       border: 2px solid purple;
     `;
-    const Item = component(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
+    const Item = component<{ slot: DarkElement }>(({ slot, ...rest }) => <div {...rest}>{slot}</div>);
     const props = { $borderColor: 'aliceblue' };
 
     render(
