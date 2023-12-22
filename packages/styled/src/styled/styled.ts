@@ -56,19 +56,21 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         const $props = (withReplace ? rest : props) as unknown as P;
         const $factory = withReplace ? component : isExtending ? config.factory : factory;
         const [className, styles] = useMemo(() => {
-          const names: Array<string> = [];
-          const styles: Array<string> = [base];
+          const [names, styles] = sheets.reduce(
+            (acc, sheet) => {
+              const [className, css] = generate({ sheet, props: { ...props, theme }, fns });
+              const [names, styles] = acc;
 
-          for (const sheet of sheets) {
-            const [className, css] = generate({ sheet, props: { ...props, theme }, fns });
+              names.push(className);
+              styles.push(css);
 
-            names.push(className);
-            styles.push(css);
-          }
-
+              return acc;
+            },
+            [[], [base]] as [Array<string>, Array<string>],
+          );
           const className = mergeClassNames([...getClassNamesFrom(props), baseName, ...names]);
 
-          return [className, styles];
+          return [className, filter(styles)] as [string, Array<string>];
         }, [...mapProps(props), theme]);
 
         useInsertionEffect(() => {
@@ -83,12 +85,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
             }
           }
 
-          for (const css of styles) {
-            if (!injections.has(css)) {
-              inject(css, tag);
-              injections.add(css);
-            }
-          }
+          styles.forEach(css => inject(css, tag));
         }, [...styles]);
 
         if (detectIsServer()) {
@@ -123,6 +120,19 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   };
 
   return fn;
+}
+
+function filter(styles: Array<string>) {
+  const $styles: Array<string> = [];
+
+  for (const css of styles) {
+    if (!injections.has(css)) {
+      $styles.push(css);
+      injections.add(css);
+    }
+  }
+
+  return $styles;
 }
 
 function setupGlobal() {
