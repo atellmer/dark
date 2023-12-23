@@ -32,19 +32,20 @@ const $$styled = Symbol('styled');
 
 setupGlobal();
 
-function styled<P extends object, P1 extends object = {}>(tagName: string | ComponentFactory<P>) {
+function styled<P extends object, T extends object = {}>(tagName: string | ComponentFactory<P>) {
   const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
 
-  return createStyledComponent<P & P1>(factory as Factory<P & P1>);
+  return createStyledComponent<P & T>(factory as Factory<P & T>);
 }
 
 function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
-  let transformProps: TransformProps<P> = x => x;
+  let transform: TransformFn<P> = x => x;
   const isExtending = detectIsStyled(factory);
   const config = isExtending ? getExtendingConfig(factory as StyledComponentFactory<P>) : null;
   const fn = <T extends P>(source: TemplateStringsArray, ...args: Args<T & ThemeProps>) => {
     const $source = isExtending ? mergeTemplates(config.source, source) : source;
     const $args = isExtending ? [...config.args, ...args] : args;
+    const $transform = isExtending ? (p: T) => transform(config.transform(p)) : transform;
     const fns = filterArgs<T>($args);
     const [sheet, sheets] = slice<T>(css($source, ...$args));
     const [baseName, base] = generate({ sheet });
@@ -99,7 +100,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           $props.slot = $props.slot((x: string) => `${baseName}_${x}`);
         }
 
-        return $factory({ ...transformProps($props), ref, class: className });
+        return $factory({ ...$transform($props), ref, class: className });
       }),
     ) as StyledComponentFactory<T>;
 
@@ -108,13 +109,14 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
       source: $source,
       args: $args,
       factory: (config?.factory || factory) as Factory<T>,
+      transform: config ? p => transform(config.transform(p)) : transform,
     };
 
     return styled;
   };
 
-  fn.attrs = (t: TransformProps<P>) => {
-    transformProps = detectIsFunction(t) ? t : transformProps;
+  fn.attrs = (t: TransformFn<P>) => {
+    transform = detectIsFunction(t) ? t : transform;
 
     return fn;
   };
@@ -278,6 +280,7 @@ type ExtendingConfig<P extends object = {}> = {
   source: TemplateStringsArray;
   args: Args<P>;
   factory: Factory<P>;
+  transform: (x: P) => P;
 };
 
 type StyledComponentFactory<P extends object = {}> = {
@@ -286,7 +289,7 @@ type StyledComponentFactory<P extends object = {}> = {
   } & ExtendingConfig<P>;
 } & ComponentFactory<P & StandardComponentProps & StyledProps>;
 
-type TransformProps<P> = (p: P) => any;
+type TransformFn<P> = (p: P) => any;
 
 type DynamicArgs<P> = Array<ArgFn<P>>;
 

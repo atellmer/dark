@@ -432,19 +432,6 @@ describe('[@styled/styled]', () => {
     );
   });
 
-  test('renders a styled component with an attribute config correctly', () => {
-    const Input = styled('input').attrs(p => ({ ...p, type: 'text' }))`
-      width: 100%;
-      border: 1px solid aliceblue;
-    `;
-
-    render(<Input />);
-    jest.runAllTimers();
-
-    expect(host.innerHTML).toBe('<input type="text" class="dk-bjgffe">');
-    expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
-  });
-
   test('can extend styles correctly', () => {
     const Button = styled('button')`
       width: 100%;
@@ -474,6 +461,52 @@ describe('[@styled/styled]', () => {
       style(
         '.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}.dk-hfgadd{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:2rem;}',
       ),
+    );
+  });
+
+  test('renders a styled component with an attribute config correctly', () => {
+    const Input = styled('input').attrs(p => ({ ...p, type: 'text' }))`
+      width: 100%;
+      border: 1px solid aliceblue;
+    `;
+
+    render(<Input />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<input type="text" class="dk-bjgffe">');
+    expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
+  });
+
+  test('renders a styled component with extended attribute config correctly #1', () => {
+    const Input = styled('input').attrs(p => ({ ...p, type: 'text' }))`
+      width: 100%;
+      border: 1px solid aliceblue;
+    `;
+    const PasswordInput = styled(Input).attrs(p => ({ ...p, type: 'password' }))``;
+
+    render(<PasswordInput />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<input type="password" class="dk-bjgffe">');
+    expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
+  });
+
+  test('renders a styled component with extended attribute config correctly #2', () => {
+    const Input = styled('input').attrs(p => ({ ...p, type: 'text' }))`
+      width: 100%;
+      border: 1px solid aliceblue;
+    `;
+    const PasswordInput = styled(Input).attrs(p => ({ ...p, type: 'password' }))``;
+    const GreenPasswordInput = styled(PasswordInput).attrs(p => ({ ...p, 'data-color': 'green' }))`
+      border-color: green;
+    `;
+
+    render(<GreenPasswordInput />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<input type="password" data-color="green" class="dk-ccfddd">');
+    expect(document.head.innerHTML).toBe(
+      style('.dk-ccfddd{width:100%;border:1px solid aliceblue;border-color:green;}'),
     );
   });
 
@@ -715,6 +748,74 @@ describe('[@styled/styled]', () => {
     expect(document.head.innerHTML).toBe(
       style(
         '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-bhbbdd{background-color:green;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-cbbfgc{border-color:aliceblue;}.dk-bgdgjb{background-color:orange;}.dk-bgcgba{border:2px solid yellow;}.dk-jdcdef{background-color:purple;}.dk-bfdfeb{border:2px solid purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}',
+      ),
+    );
+  });
+
+  test('contains tag factories', () => {
+    expect(typeof styled.div).toBe('function');
+    expect(typeof styled.span).toBe('function');
+    expect(typeof styled.button).toBe('function');
+    expect(typeof styled.form).toBe('function');
+    expect(typeof styled.header).toBe('function');
+    expect(typeof styled.footer).toBe('function');
+    expect(typeof styled.table).toBe('function');
+
+    const Box = styled.div`
+      width: 100px;
+      height: 100px;
+      background-color: #11ed74;
+    `;
+
+    render(<Box />);
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe('<div class="dk-ccaacd"></div>');
+    expect(document.head.innerHTML).toBe(style('.dk-ccaacd{width:100px;height:100px;background-color:#11ed74;}'));
+  });
+
+  test('passes the render props function into slot', () => {
+    const Root = styled.main`
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: 50px minmax(50px, 1fr) 50px;
+      height: 100vh;
+
+      &_header {
+        background-color: deepskyblue;
+        border: 1px solid #fff;
+      }
+
+      &_body {
+        background-color: limegreen;
+        border: 1px solid #fff;
+      }
+
+      &_footer {
+        background-color: salmon;
+        border: 1px solid #fff;
+      }
+    `;
+
+    render(
+      <Root>
+        {fn => (
+          <>
+            <div class={fn('header')} />
+            <div class={fn('body')} />
+            <div class={fn('footer')} />
+          </>
+        )}
+      </Root>,
+    );
+    jest.runAllTimers();
+
+    expect(host.innerHTML).toBe(
+      '<main class="dk-ifejde"><div class="dk-ifejde_header"></div><div class="dk-ifejde_body"></div><div class="dk-ifejde_footer"></div></main>',
+    );
+    expect(document.head.innerHTML).toBe(
+      style(
+        '.dk-ifejde{display:grid;grid-template-columns:1fr;grid-template-rows:50px minmax(50px, 1fr) 50px;height:100vh;}.dk-ifejde_header{background-color:deepskyblue;border:1px solid #fff;}.dk-ifejde_body{background-color:limegreen;border:1px solid #fff;}.dk-ifejde_footer{background-color:salmon;border:1px solid #fff;}',
       ),
     );
   });
