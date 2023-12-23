@@ -5,7 +5,7 @@ import type { QElement, WidgetProps } from '../shared';
 import { createSetterName, detectIsContainer } from '../utils';
 import { createSyntheticEventHandler } from '../events';
 import { getElementFactory } from '../registry';
-import { ATTR_TEXT } from '../constants';
+import { TEXT_ATTR } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -145,11 +145,11 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
       }
     }
 
-    this.setAttribute(ATTR_TEXT, text);
+    this.setAttribute(TEXT_ATTR, text);
   }
 
   public getText() {
-    return this.getAttribute(ATTR_TEXT) as string;
+    return this.getAttribute(TEXT_ATTR) as string;
   }
 
   public addEventListener(eventName: string, handler: Function) {

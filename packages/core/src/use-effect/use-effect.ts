@@ -1,5 +1,5 @@
 import { detectIsFunction } from '../utils';
-import { MASK_INSERTION_EFFECT_HOST, MASK_LAYOUT_EFFECT_HOST, MASK_ASYNC_EFFECT_HOST } from '../constants';
+import { INSERTION_EFFECT_HOST_MASK, LAYOUT_EFFECT_HOST_MASK, ASYNC_EFFECT_HOST_MASK } from '../constants';
 import { $$scope } from '../scope';
 import { useMemo } from '../use-memo';
 import { type Hook, type HookValue } from '../fiber';
@@ -22,9 +22,9 @@ function createEffect(token: Symbol, type: EffectType) {
     const isLayoutEffect = type === EffectType.LAYOUT;
     const isAsyncEffect = type === EffectType.ASYNC;
 
-    isInsertionEffect && fiber.markHost(MASK_INSERTION_EFFECT_HOST);
-    isLayoutEffect && fiber.markHost(MASK_LAYOUT_EFFECT_HOST);
-    isAsyncEffect && fiber.markHost(MASK_ASYNC_EFFECT_HOST);
+    isInsertionEffect && fiber.markHost(INSERTION_EFFECT_HOST_MASK);
+    isLayoutEffect && fiber.markHost(LAYOUT_EFFECT_HOST_MASK);
+    isAsyncEffect && fiber.markHost(ASYNC_EFFECT_HOST_MASK);
 
     useMemo(() => {
       const runEffect = () => (scope.cleanup = effect());

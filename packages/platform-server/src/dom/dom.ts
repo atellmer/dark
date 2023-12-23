@@ -5,12 +5,12 @@ import {
   type TextVirtualNode,
   type CommentVirtualNode,
   ROOT,
-  ATTR_REF,
+  REF_ATTR,
   ATTR_BLACK_LIST,
-  EFFECT_TAG_CREATE,
-  EFFECT_TAG_UPDATE,
-  EFFECT_TAG_DELETE,
-  EFFECT_TAG_SKIP,
+  CREATE_EFFECT_TAG,
+  UPDATE_EFFECT_TAG,
+  DELETE_EFFECT_TAG,
+  SKIP_EFFECT_TAG,
   detectIsFunction,
   detectIsUndefined,
   NodeType,
@@ -64,7 +64,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
   for (const attrName of attrNames) {
     const attrValue = vNode.attrs[attrName];
 
-    if (attrName === ATTR_REF || detectIsFunction(attrValue)) {
+    if (attrName === REF_ATTR || detectIsFunction(attrValue)) {
       continue;
     } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       const stop = patchProperties({
@@ -117,10 +117,10 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 }
 
 const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
-  [EFFECT_TAG_CREATE]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
-  [EFFECT_TAG_UPDATE]: () => {},
-  [EFFECT_TAG_DELETE]: () => {},
-  [EFFECT_TAG_SKIP]: () => {},
+  [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
+  [UPDATE_EFFECT_TAG]: () => {},
+  [DELETE_EFFECT_TAG]: () => {},
+  [SKIP_EFFECT_TAG]: () => {},
 };
 
 function commit(fiber: Fiber<NativeElement>) {

@@ -2,23 +2,23 @@ export const VERSION = '0.25.1';
 export const ROOT = 'dark:root';
 export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';
-export const ATTR_KEY = 'key';
-export const ATTR_REF = 'ref';
-export const EFFECT_TAG_CREATE = 'C';
-export const EFFECT_TAG_UPDATE = 'U';
-export const EFFECT_TAG_DELETE = 'D';
-export const EFFECT_TAG_SKIP = 'S';
-export const MASK_INSERTION_EFFECT_HOST = 1;
-export const MASK_LAYOUT_EFFECT_HOST = 2;
-export const MASK_ASYNC_EFFECT_HOST = 4;
-export const MASK_ATOM_HOST = 8;
-export const MASK_PORTAL_HOST = 16;
-export const MASK_SHADOW = 32;
-export const MASK_FLUSH = 64;
-export const MASK_MOVE = 128;
+export const KEY_ATTR = 'key';
+export const REF_ATTR = 'ref';
+export const CREATE_EFFECT_TAG = 'C';
+export const UPDATE_EFFECT_TAG = 'U';
+export const DELETE_EFFECT_TAG = 'D';
+export const SKIP_EFFECT_TAG = 'S';
+export const INSERTION_EFFECT_HOST_MASK = 1;
+export const LAYOUT_EFFECT_HOST_MASK = 2;
+export const ASYNC_EFFECT_HOST_MASK = 4;
+export const ATOM_HOST_MASK = 8;
+export const PORTAL_HOST_MASK = 16;
+export const SHADOW_MASK = 32;
+export const FLUSH_MASK = 64;
+export const MOVE_MASK = 128;
+export const HOOK_DELIMETER = ':';
 export const RESTART_TIMEOUT = 10;
 export const YIELD_INTERVAL = 6;
-export const HOOK_DELIMETER = ':';
 
 export enum TaskPriority {
   HIGH = 2,
@@ -39,8 +39,8 @@ export const FLAGS = {
 };
 
 export const ATTR_BLACK_LIST = {
-  [ATTR_KEY]: true,
-  [ATTR_REF]: true,
+  [KEY_ATTR]: true,
+  [REF_ATTR]: true,
   [Flag.SKIP_SCAN_OPT]: true,
   [Flag.MEMO_SLOT_OPT]: true,
   [Flag.STATIC_SLOT_OPT]: true,

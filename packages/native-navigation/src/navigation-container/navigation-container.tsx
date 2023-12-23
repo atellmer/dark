@@ -24,7 +24,7 @@ import {
   NavigationHistory,
   HistoryAction,
 } from '../history';
-import { SLASH, TransitionName } from '../constants';
+import { SLASH_MARK, TransitionName } from '../constants';
 import { normalizePathname } from '../utils';
 
 type NavigationContainerProps = {
@@ -46,7 +46,7 @@ export type RenderActionBarOptions = {
 
 const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
   component(
-    ({ slot, defaultPathname = SLASH, renderActionBar, onNavigate }, ref) => {
+    ({ slot, defaultPathname = SLASH_MARK, renderActionBar, onNavigate }, ref) => {
       const frameRef = useRef<Frame>(null);
       const pageRef = useRef<Page>(null);
       const [pathname, setPathname] = useState(normalizePathname(defaultPathname));

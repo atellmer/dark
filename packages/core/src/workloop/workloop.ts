@@ -1,17 +1,17 @@
 import { platform, detectIsServer } from '../platform';
 import {
-  EFFECT_TAG_CREATE,
-  EFFECT_TAG_UPDATE,
-  EFFECT_TAG_DELETE,
-  EFFECT_TAG_SKIP,
-  MASK_INSERTION_EFFECT_HOST,
-  MASK_LAYOUT_EFFECT_HOST,
-  MASK_ASYNC_EFFECT_HOST,
-  MASK_ATOM_HOST,
-  MASK_PORTAL_HOST,
-  MASK_MOVE,
-  MASK_FLUSH,
-  MASK_SHADOW,
+  CREATE_EFFECT_TAG,
+  UPDATE_EFFECT_TAG,
+  DELETE_EFFECT_TAG,
+  SKIP_EFFECT_TAG,
+  INSERTION_EFFECT_HOST_MASK,
+  LAYOUT_EFFECT_HOST_MASK,
+  ASYNC_EFFECT_HOST_MASK,
+  ATOM_HOST_MASK,
+  PORTAL_HOST_MASK,
+  MOVE_MASK,
+  FLUSH_MASK,
+  SHADOW_MASK,
   RESTART_TIMEOUT,
   Flag,
 } from '../constants';
@@ -175,9 +175,9 @@ function share(fiber: Fiber, inst: Instance, $scope: Scope) {
   $scope.addCandidate(fiber);
   fiber.inst = inst;
 
-  if (alt && alt.mask & MASK_MOVE) {
-    fiber.mask |= MASK_MOVE;
-    alt.mask &= ~MASK_MOVE;
+  if (alt && alt.mask & MOVE_MASK) {
+    fiber.mask |= MOVE_MASK;
+    alt.mask &= ~MOVE_MASK;
   }
 
   fiber.hook && (fiber.hook.owner = fiber); // !
@@ -186,8 +186,8 @@ function share(fiber: Fiber, inst: Instance, $scope: Scope) {
     fiber.inst = mount(fiber, $scope);
     alt && reconcile(fiber, alt, $scope);
     setup(fiber, alt);
-  } else if (fiber.mask & MASK_MOVE) {
-    fiber.tag = EFFECT_TAG_UPDATE;
+  } else if (fiber.mask & MOVE_MASK) {
+    fiber.tag = UPDATE_EFFECT_TAG;
   }
 }
 
@@ -213,7 +213,7 @@ function getAlternate(fiber: Fiber, inst: Instance, fromChild: boolean, $scope: 
       if (isMove || isStable) {
         const alt = actions.map[key];
 
-        isMove && (alt.mask |= MASK_MOVE);
+        isMove && (alt.mask |= MOVE_MASK);
 
         return alt;
       }
@@ -264,7 +264,7 @@ function reconcile(fiber: Fiber, alt: Fiber, $scope: Scope) {
           } else if (!nextKeysMap[prevKey]) {
             $scope.addRemoveAction(id, prevKey);
             $scope.addDeletion(prevKeyFiber);
-            flush && (prevKeyFiber.mask |= MASK_FLUSH);
+            flush && (prevKeyFiber.mask |= FLUSH_MASK);
             n++;
             size++;
           } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
@@ -285,15 +285,15 @@ function setup(fiber: Fiber, alt: Fiber) {
   const inst = fiber.inst;
   let isUpdate = false;
 
-  fiber.parent.tag === EFFECT_TAG_CREATE && (fiber.tag = fiber.parent.tag);
-  fiber.parent.mask & MASK_SHADOW && !fiber.parent.element && !detectIsReplacer(inst) && (fiber.mask |= MASK_SHADOW);
+  fiber.parent.tag === CREATE_EFFECT_TAG && (fiber.tag = fiber.parent.tag);
+  fiber.parent.mask & SHADOW_MASK && !fiber.parent.element && !detectIsReplacer(inst) && (fiber.mask |= SHADOW_MASK);
   isUpdate =
     alt &&
-    fiber.tag !== EFFECT_TAG_CREATE &&
+    fiber.tag !== CREATE_EFFECT_TAG &&
     detectAreSameInstanceTypes(alt.inst, inst) &&
     getElementKey(alt.inst) === getElementKey(inst);
   isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
-  fiber.tag = isUpdate ? EFFECT_TAG_UPDATE : EFFECT_TAG_CREATE;
+  fiber.tag = isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG;
   hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
   fiber.element && fiber.increment();
@@ -311,7 +311,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   if (nc.type !== pc.type || nc.shouldUpdate(pc.props, nc.props)) return true;
 
   $scope.setMountDeep(false);
-  fiber.tag = EFFECT_TAG_SKIP;
+  fiber.tag = SKIP_EFFECT_TAG;
   fiber.child = alt.child;
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
@@ -360,7 +360,7 @@ function mount(fiber: Fiber, $scope: Scope) {
       }
 
       component.children = result as Array<Instance>;
-      platform.detectIsPortal(inst) && fiber.markHost(MASK_PORTAL_HOST);
+      platform.detectIsPortal(inst) && fiber.markHost(PORTAL_HOST_MASK);
     } catch (err) {
       if (err instanceof StopWork) {
         throw err;
@@ -451,14 +451,14 @@ function commit($scope: Scope) {
   const candidates = $scope.getCandidates();
   const isUpdateZone = $scope.getIsUpdateZone();
   const unmounts: Array<Fiber> = [];
-  const combinedMask = MASK_INSERTION_EFFECT_HOST | MASK_LAYOUT_EFFECT_HOST | MASK_ASYNC_EFFECT_HOST | MASK_PORTAL_HOST;
+  const combinedMask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | PORTAL_HOST_MASK;
 
   // !
   for (const fiber of deletions) {
-    const withNextTick = fiber.mask & MASK_ATOM_HOST && !(fiber.mask & combinedMask);
+    const withNextTick = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & combinedMask);
 
     withNextTick ? unmounts.push(fiber) : unmountFiber(fiber);
-    fiber.tag = EFFECT_TAG_DELETE;
+    fiber.tag = DELETE_EFFECT_TAG;
     platform.commit(fiber);
   }
 
@@ -466,7 +466,7 @@ function commit($scope: Scope) {
   $scope.runInsertionEffects();
 
   for (const fiber of candidates) {
-    fiber.tag !== EFFECT_TAG_SKIP && platform.commit(fiber);
+    fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
     fiber.alt = null;
     hasChildrenProp(fiber.inst) && (fiber.inst.children = null);
   }
@@ -516,7 +516,7 @@ function fork($scope: Scope): false {
     detectIsFunction(resetValue) && $$scope$.addCancel(resetValue);
 
     wipFiber.alt = new Fiber().mutate(wipFiber);
-    wipFiber.tag = EFFECT_TAG_UPDATE;
+    wipFiber.tag = UPDATE_EFFECT_TAG;
     wipFiber.child = child;
     child && (child.parent = wipFiber);
 
@@ -568,7 +568,7 @@ function createUpdate(options: CreateUpdateOptions) {
     detectIsFunction(resetValue) && isTransition && $scope.addCancel(resetValue);
 
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.tag = EFFECT_TAG_UPDATE;
+    fiber.tag = UPDATE_EFFECT_TAG;
     fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;

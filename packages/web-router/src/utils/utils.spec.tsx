@@ -1,5 +1,5 @@
 /** @jsx h */
-import { PARAMETER } from '../constants';
+import { PARAMETER_MARK } from '../constants';
 import { parseURL, normalaizePathname, detectIsParam, getParamName, sort, splitPath, cm } from './utils';
 
 describe('[router/utils]', () => {
@@ -93,14 +93,14 @@ describe('[router/utils]', () => {
   });
 
   test('detectIsParam works correctly', () => {
-    expect(detectIsParam(`${PARAMETER}id`)).toBe(true);
-    expect(detectIsParam(`/${PARAMETER}id`)).toBe(false);
+    expect(detectIsParam(`${PARAMETER_MARK}id`)).toBe(true);
+    expect(detectIsParam(`/${PARAMETER_MARK}id`)).toBe(false);
     expect(detectIsParam('id')).toBe(false);
   });
 
   test('getParamName works correctly', () => {
-    expect(getParamName(`${PARAMETER}id`)).toBe('id');
-    expect(getParamName(`/${PARAMETER}id`)).toBe(null);
+    expect(getParamName(`${PARAMETER_MARK}id`)).toBe('id');
+    expect(getParamName(`/${PARAMETER_MARK}id`)).toBe(null);
     expect(getParamName('id')).toBe(null);
   });
 

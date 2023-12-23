@@ -1,11 +1,22 @@
-import { keyBy } from '@dark-engine/core';
-
-import { VOID_TAG_NAMES } from '../constants';
-
-const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
+const voidTagNames = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
 
 function detectIsVoidElement(tagName: string) {
-  return Boolean(voidTagNamesMap[tagName]);
+  return voidTagNames.has(tagName);
 }
 
 export { detectIsVoidElement };

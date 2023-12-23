@@ -3,7 +3,7 @@ import { NodeType, ROOT, detectIsNumber, detectIsFunction, detectIsObject } from
 
 import { createSyntheticEventHandler } from '../events';
 import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } from '../registry';
-import { ANDROID, IOS, ATTR_TEXT } from '../constants';
+import { ANDROID, IOS, TEXT_ATTR } from '../constants';
 
 class NativeElement {
   public type: NodeType;
@@ -140,11 +140,11 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
       }
     }
 
-    this.setAttribute(ATTR_TEXT, text);
+    this.setAttribute(TEXT_ATTR, text);
   }
 
   public getText() {
-    return this.getAttribute(ATTR_TEXT) as string;
+    return this.getAttribute(TEXT_ATTR) as string;
   }
 
   dispatchEvent(eventName: string) {

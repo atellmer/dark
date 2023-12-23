@@ -1,21 +1,21 @@
-import { SLASH } from '../constants';
+import { SLASH_MARK } from '../constants';
 
 const createPathname = (name: string, prefix: string) => {
   return normalizePathname(`${prefix}${name}`);
 };
 
 function normalizePathname(pathname: string) {
-  const normal = prependSlash(pathname.split(SLASH).filter(Boolean).join(SLASH) + SLASH);
+  const normal = prependSlash(pathname.split(SLASH_MARK).filter(Boolean).join(SLASH_MARK) + SLASH_MARK);
 
   return normal;
 }
 
 function prependSlash(pathname: string) {
-  return pathname.startsWith(SLASH) ? pathname : SLASH + pathname;
+  return pathname.startsWith(SLASH_MARK) ? pathname : SLASH_MARK + pathname;
 }
 
 function getSegments(pathname: string, prefix: string) {
-  const segments = pathname.replace(prefix, '').split(SLASH).filter(Boolean);
+  const segments = pathname.replace(prefix, '').split(SLASH_MARK).filter(Boolean);
 
   return segments;
 }

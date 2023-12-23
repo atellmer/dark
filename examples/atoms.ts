@@ -47,7 +47,7 @@ const createApi = () => {
 };
 
 const { api, ctrls, abort } = createApi();
-const postId$ = atom(null);
+const postId$ = atom<number>(null);
 const post$ = atom<Post>(null);
 const comments$ = atom<Array<Comment>>([]);
 

@@ -1,6 +1,6 @@
 import { type DarkElement, type ComponentFactory, type SlotProps, keyBy, detectIsString } from '@dark-engine/core';
 
-import { SLASH, WILDCARD, ROOT } from '../constants';
+import { SLASH_MARK, WILDCARD_MARK, ROOT_MARK } from '../constants';
 import { pipe, splitPath, normalaizePathname, detectIsParam, getParamName, sort } from '../utils';
 import { CurrentPathContext } from '../context';
 import type { Routes, RouteDescriptor, PathMatchStrategy, Params } from './types';
@@ -48,7 +48,7 @@ class Route {
   }
 
   public getPath() {
-    return this.path.replaceAll(ROOT + SLASH, '');
+    return this.path.replaceAll(ROOT_MARK + SLASH_MARK, '');
   }
 
   public render(): DarkElement {
@@ -67,7 +67,7 @@ class Route {
   }
 }
 
-function createRoutes(routes: Routes, prefix = SLASH, parent: Route = null): Array<Route> {
+function createRoutes(routes: Routes, prefix = SLASH_MARK, parent: Route = null): Array<Route> {
   const $routes: Array<Route> = [];
 
   for (const route of routes) {
@@ -127,7 +127,7 @@ function wildcard(pathname: string, routes: Array<Route>) {
   return ($route: Route): Route => {
     if ($route) return $route;
     const [route] = pipe<Array<Route>>(
-      (routes: Array<Route>) => routes.filter(x => x.marker === WILDCARD),
+      (routes: Array<Route>) => routes.filter(x => x.marker === WILDCARD_MARK),
       (routes: Array<Route>) => routes.filter(x => detectIsMatchAsWildcard(pathname, x.path)) || null,
       (routes: Array<Route>) => sort('desc', routes, x => x.level),
     )(routes);
@@ -138,7 +138,7 @@ function wildcard(pathname: string, routes: Array<Route>) {
 
 function root() {
   return (route: Route): Route => {
-    const root = route?.children.find(x => x.marker === ROOT) || route;
+    const root = route?.children.find(x => x.marker === ROOT_MARK) || route;
 
     return pick(root);
   };
@@ -204,8 +204,8 @@ function createMatcher(options: CreateMatcherOptions) {
 
     for (let i = 0; i < space(sUrlPath, sRoutePath).length; i++) {
       const segment = sRoutePath[i];
-      const isRoot = segment === ROOT;
-      const isWildcard = segment === WILDCARD;
+      const isRoot = segment === ROOT_MARK;
+      const isWildcard = segment === WILDCARD_MARK;
       const isParam = detectIsParam(segment);
 
       if (segment !== sUrlPath[i] && !skip({ isRoot, isWildcard, isParam })) return false;
@@ -232,10 +232,10 @@ function createPathname(urlPath: string, routePath: string): string {
     }
   }
 
-  let newPathname = normalaizePathname(parts.join(SLASH));
+  let newPathname = normalaizePathname(parts.join(SLASH_MARK));
 
-  if (newPathname[0] !== SLASH) {
-    newPathname = SLASH + newPathname;
+  if (newPathname[0] !== SLASH_MARK) {
+    newPathname = SLASH_MARK + newPathname;
   }
 
   return newPathname;
@@ -248,7 +248,7 @@ function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string):
 }
 
 function createRootPath(path: string): string {
-  return path === SLASH || path === '' ? ROOT : path;
+  return path === SLASH_MARK || path === '' ? ROOT_MARK : path;
 }
 
 const getParamsMap = (pathname: string, route: Route): Params => {

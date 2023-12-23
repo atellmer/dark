@@ -3,7 +3,7 @@ import { component } from '@dark-engine/core';
 
 import { Routes } from './types';
 import { createRoutes, resolve } from './create-routes';
-import { ROOT } from '../constants';
+import { ROOT_MARK } from '../constants';
 
 describe('[router/create-routes]', () => {
   test('can match simple routes correctly', () => {
@@ -276,9 +276,9 @@ describe('[router/create-routes]', () => {
     ];
     const $routes = createRoutes(routes);
 
-    expect(resolve('/', $routes).path).toBe(`/${ROOT}/`);
-    expect(resolve('', $routes).path).toBe(`/${ROOT}/`);
-    expect(resolve('/broken', $routes).path).toBe(`/${ROOT}/`);
+    expect(resolve('/', $routes).path).toBe(`/${ROOT_MARK}/`);
+    expect(resolve('', $routes).path).toBe(`/${ROOT_MARK}/`);
+    expect(resolve('/broken', $routes).path).toBe(`/${ROOT_MARK}/`);
     expect(resolve('/second', $routes).path).toBe(`/second/`);
     expect(resolve('/third', $routes).path).toBe(`/third/`);
   });
@@ -720,13 +720,13 @@ describe('[router/create-routes]', () => {
     ];
     const $routes = createRoutes(routes);
 
-    expect(resolve('/', $routes).path).toBe(`/first/${ROOT}/`);
-    expect(resolve('/first', $routes).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/', $routes).path).toBe(`/first/${ROOT_MARK}/`);
+    expect(resolve('/first', $routes).path).toBe(`/first/${ROOT_MARK}/`);
     expect(resolve('/first/nested', $routes).path).toBe('/first/nested/');
     expect(resolve('/first/666', $routes).path).toBe(`/first/:id/`);
-    expect(resolve('/first/666/broken', $routes).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/first/666/broken', $routes).path).toBe(`/first/${ROOT_MARK}/`);
     expect(resolve('/second', $routes).path).toBe('/second/');
     expect(resolve('/third/', $routes).path).toBe('/third/');
-    expect(resolve('/broken/url', $routes).path).toBe(`/first/${ROOT}/`);
+    expect(resolve('/broken/url', $routes).path).toBe(`/first/${ROOT_MARK}/`);
   });
 });

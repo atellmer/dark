@@ -6,13 +6,13 @@ import {
   type CommentVirtualNode,
   type PlainVirtualNode,
   type Ref,
-  ATTR_REF,
+  REF_ATTR,
   ATTR_BLACK_LIST,
-  EFFECT_TAG_CREATE,
-  EFFECT_TAG_UPDATE,
-  EFFECT_TAG_DELETE,
-  EFFECT_TAG_SKIP,
-  MASK_MOVE,
+  CREATE_EFFECT_TAG,
+  UPDATE_EFFECT_TAG,
+  DELETE_EFFECT_TAG,
+  SKIP_EFFECT_TAG,
+  MOVE_MASK,
   detectIsFunction,
   detectIsUndefined,
   NodeType,
@@ -69,7 +69,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
   for (const attrName of attrNames) {
     const attrValue = vNode.attrs[attrName];
 
-    if (attrName === ATTR_REF) {
+    if (attrName === REF_ATTR) {
       applyRef(attrValue, tagElement);
       continue;
     }
@@ -91,7 +91,7 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
     const prevAttrValue = vNode.attrs[attrName];
     const nextAttrValue = nextVNode.attrs[attrName];
 
-    if (attrName === ATTR_REF) {
+    if (attrName === REF_ATTR) {
       applyRef(prevAttrValue, tagElement);
       continue;
     }
@@ -173,17 +173,17 @@ function move(fiber: Fiber<NativeElement>) {
 }
 
 const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
-  [EFFECT_TAG_CREATE]: (fiber: Fiber<NativeElement>) => {
+  [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
     if (!fiber.element) return;
     commitCreation(fiber);
   },
-  [EFFECT_TAG_UPDATE]: (fiber: Fiber<NativeElement>) => {
-    fiber.mask & MASK_MOVE && (move(fiber), (fiber.mask &= ~MASK_MOVE));
+  [UPDATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
+    fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
     if (!fiber.element) return;
     commitUpdate(fiber);
   },
-  [EFFECT_TAG_DELETE]: commitDeletion,
-  [EFFECT_TAG_SKIP]: () => {},
+  [DELETE_EFFECT_TAG]: commitDeletion,
+  [SKIP_EFFECT_TAG]: () => {},
 };
 
 function commit(fiber: Fiber<NativeElement>) {

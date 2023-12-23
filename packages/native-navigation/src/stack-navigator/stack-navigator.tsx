@@ -25,7 +25,7 @@ import {
   useImperativeHandle,
 } from '@dark-engine/core';
 
-import { SLASH, TransitionName } from '../constants';
+import { SLASH_MARK, TransitionName } from '../constants';
 import { createPathname, getSegments, detectIsVisited } from '../utils';
 import { useNavigationContext, type Transition } from '../navigation-container';
 import { type ParamsObject } from '../history';
@@ -162,7 +162,7 @@ type ScreenNavigatorContextValue = {
 };
 
 const ScreenNavigatorContext = createContext<ScreenNavigatorContextValue>({
-  prefix: SLASH,
+  prefix: SLASH_MARK,
   parentPrefix: '',
   initialParams: {},
 });

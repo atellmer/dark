@@ -1,4 +1,4 @@
-import { SLASH, PARAMETER, PROTOCOL_MARK, HASH_MARK, SEARCH_MARK } from '../constants';
+import { SLASH_MARK, PARAMETER_MARK, PROTOCOL_MARK, HASH_MARK, SEARCH_MARK } from '../constants';
 
 function pipe<T>(...fns: Array<Function>): (...args: Array<any>) => T {
   const [fn, ...rest] = fns;
@@ -24,14 +24,14 @@ function parseURL(url: string) {
   }
 
   const splitted = body.split('');
-  const idx = splitted.findIndex(x => x === SLASH);
+  const idx = splitted.findIndex(x => x === SLASH_MARK);
 
   if (idx !== -1) {
     host = splitted.filter((_, idx1) => idx1 < idx).join('');
     pathname = splitted.filter((_, idx1) => idx1 >= idx).join('');
   } else {
     host = body;
-    pathname = pathname || SLASH;
+    pathname = pathname || SLASH_MARK;
   }
 
   if (pathname.indexOf(SEARCH_MARK) !== -1) {
@@ -59,17 +59,17 @@ const createSearch = (value: string) => (value ? `${SEARCH_MARK}${value}` : '');
 
 const createHash = (value: string) => (value ? `${HASH_MARK}${value}` : '');
 
-const detectIsParam = (value: string) => value && value.startsWith(PARAMETER);
+const detectIsParam = (value: string) => value && value.startsWith(PARAMETER_MARK);
 
 const getParamName = (value: string) => (detectIsParam(value) ? value.slice(1, value.length) : null);
 
 const split = (value: string, token: string) => value.split(token).filter(Boolean);
 
-const splitPath = (path: string) => split(path, SLASH);
+const splitPath = (path: string) => split(path, SLASH_MARK);
 
-const addSlashToStart = (path: string) => (path.startsWith(SLASH) ? path : SLASH + path);
+const addSlashToStart = (path: string) => (path.startsWith(SLASH_MARK) ? path : SLASH_MARK + path);
 
-const addSlashToEnd = (path: string) => (path.endsWith(SLASH) ? path : path + SLASH);
+const addSlashToEnd = (path: string) => (path.endsWith(SLASH_MARK) ? path : path + SLASH_MARK);
 
 function normalaizePathname(spath: string) {
   const { pathname, search, hash } = parseURL(addSlashToStart(spath));

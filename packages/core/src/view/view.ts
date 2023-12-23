@@ -1,4 +1,4 @@
-import { REPLACER, ATTR_KEY } from '../constants';
+import { REPLACER, KEY_ATTR } from '../constants';
 import { detectIsArray, detectIsFunction } from '../utils';
 import { type ElementKey, type DarkElement, type Instance } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
@@ -57,7 +57,7 @@ function View(options: ViewOptions) {
 
   factory[$$vNode] = true;
   factory[ATTR_TYPE] = options.as;
-  factory[ATTR_KEY] = options.key;
+  factory[KEY_ATTR] = options.key;
 
   return factory;
 }
@@ -80,11 +80,11 @@ const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFac
   detectIsFunction(factory) && factory[$$vNode] === true;
 
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): ElementKey | null =>
-  vNode.attrs ? vNode.attrs[ATTR_KEY] ?? null : null;
+  vNode.attrs ? vNode.attrs[KEY_ATTR] ?? null : null;
 
 const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs && vNode.attrs[flag]);
 
-const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): ElementKey | null => factory[ATTR_KEY] ?? null;
+const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): ElementKey | null => factory[KEY_ATTR] ?? null;
 
 const hasVirtualNodeFactoryFlag = (factory: VirtualNodeFactory, flag: string) => Boolean(factory[flag]);
 

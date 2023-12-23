@@ -12,7 +12,7 @@ import {
   nextTick,
 } from '@dark-engine/core';
 
-import { SLASH, PROTOCOL_MARK } from '../constants';
+import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
 import { normalaizePathname } from '../utils';
 import { createRouterHistory } from '../history';
 import { type RouterLocation, createRouterLocation } from '../location';
@@ -39,7 +39,7 @@ export type RouterRef = {
 
 const Router = forwardRef<RouterProps, RouterRef>(
   component(
-    ({ url, baseURL = SLASH, routes: sourceRoutes, slot }, ref) => {
+    ({ url, baseURL = SLASH_MARK, routes: sourceRoutes, slot }, ref) => {
       if (useActiveRouteContext()) {
         throw new Error('[web-router]: Parent active route context detected!');
       }

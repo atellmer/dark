@@ -1,5 +1,5 @@
 import { type ElementKey, type Instance } from '../shared';
-import { ATTR_KEY } from '../constants';
+import { KEY_ATTR } from '../constants';
 import { error } from '../utils';
 import { type Ref } from '../ref';
 import type {
@@ -64,7 +64,7 @@ const defaultInject: ComponentInject = {};
 
 const detectIsComponent = (x: unknown): x is Component => x instanceof Component;
 
-const getComponentKey = (x: Component): ElementKey => x.props[ATTR_KEY] ?? null;
+const getComponentKey = (x: Component): ElementKey => x.props[KEY_ATTR] ?? null;
 
 const hasComponentFlag = (inst: Component, flag: string) => Boolean(inst.props[flag]);
 

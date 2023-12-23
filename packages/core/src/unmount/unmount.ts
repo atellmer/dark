@@ -7,15 +7,15 @@ import { walk } from '../walk';
 import { detectIsUndefined } from '../utils';
 import { removeScope, $$scope } from '../scope';
 import {
-  MASK_INSERTION_EFFECT_HOST,
-  MASK_LAYOUT_EFFECT_HOST,
-  MASK_ASYNC_EFFECT_HOST,
-  MASK_ATOM_HOST,
-  MASK_PORTAL_HOST,
+  INSERTION_EFFECT_HOST_MASK,
+  LAYOUT_EFFECT_HOST_MASK,
+  ASYNC_EFFECT_HOST_MASK,
+  ATOM_HOST_MASK,
+  PORTAL_HOST_MASK,
 } from '../constants';
 
 const combinedMask =
-  MASK_INSERTION_EFFECT_HOST | MASK_LAYOUT_EFFECT_HOST | MASK_ASYNC_EFFECT_HOST | MASK_ATOM_HOST | MASK_PORTAL_HOST;
+  INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | ATOM_HOST_MASK | PORTAL_HOST_MASK;
 
 const shouldUnmountFiber = (fiber: Fiber) => fiber.mask & combinedMask;
 
@@ -25,9 +25,9 @@ function unmountFiber(fiber: Fiber) {
     if (!shouldUnmountFiber(fiber)) return skip();
 
     if (fiber.hook && fiber.hook.values.length > 0) {
-      fiber.mask & MASK_INSERTION_EFFECT_HOST && dropInsertionEffects(fiber.hook);
-      fiber.mask & MASK_LAYOUT_EFFECT_HOST && dropLayoutEffects(fiber.hook);
-      fiber.mask & MASK_ASYNC_EFFECT_HOST && dropEffects(fiber.hook);
+      fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects(fiber.hook);
+      fiber.mask & LAYOUT_EFFECT_HOST_MASK && dropLayoutEffects(fiber.hook);
+      fiber.mask & ASYNC_EFFECT_HOST_MASK && dropEffects(fiber.hook);
     }
 
     if (fiber.atoms) {
@@ -37,7 +37,7 @@ function unmountFiber(fiber: Fiber) {
       fiber.atoms = null;
     }
 
-    fiber.mask & MASK_PORTAL_HOST && platform.unmountPortal(fiber);
+    fiber.mask & PORTAL_HOST_MASK && platform.unmountPortal(fiber);
   });
 }
 

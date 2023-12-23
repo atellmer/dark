@@ -1,7 +1,7 @@
 import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, error } from '../utils';
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
-import { MASK_ATOM_HOST } from '../constants';
+import { ATOM_HOST_MASK } from '../constants';
 import { $$scope, getRootId } from '../scope';
 import { createUpdate } from '../workloop';
 import { useUpdate } from '../use-update';
@@ -83,7 +83,7 @@ class Atom<T = unknown> {
 
     !fiber.atoms && (fiber.atoms = new Map());
     fiber.atoms.set(this, disconnect);
-    fiber.markHost(MASK_ATOM_HOST);
+    fiber.markHost(ATOM_HOST_MASK);
 
     if (detectIsEmpty(key)) {
       !this.connections1 && (this.connections1 = new Map());
@@ -198,11 +198,11 @@ class ReadableAtom<T = unknown> extends Atom<T> {
   }
 }
 
-const detectIsAtom = (value: unknown): value is Atom => value instanceof Atom;
+const detectIsAtom = (x: unknown): x is Atom => x instanceof Atom;
 
-const detectIsWritableAtom = (value: unknown): value is WritableAtom => value instanceof WritableAtom;
+const detectIsWritableAtom = (x: unknown): x is WritableAtom => x instanceof WritableAtom;
 
-const detectIsReadableAtom = (value: unknown): value is ReadableAtom => value instanceof ReadableAtom;
+const detectIsReadableAtom = (x: unknown): x is ReadableAtom => x instanceof ReadableAtom;
 
 const atom = <T>(value?: T) => new WritableAtom(value);
 

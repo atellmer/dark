@@ -4,7 +4,7 @@ import {
   type Callback,
   ROOT,
   Fiber,
-  EFFECT_TAG_CREATE,
+  CREATE_EFFECT_TAG,
   TaskPriority,
   platform,
   flatten,
@@ -58,7 +58,7 @@ function scheduleRender(options: ScheduleRenderOptions) {
     const fiber = new Fiber().mutate({
       element: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      tag: EFFECT_TAG_CREATE,
+      tag: CREATE_EFFECT_TAG,
     });
     const emitter = $scope.getEmitter();
 

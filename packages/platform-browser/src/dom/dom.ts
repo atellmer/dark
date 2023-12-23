@@ -6,15 +6,15 @@ import {
   type CommentVirtualNode,
   type PlainVirtualNode,
   type Callback,
-  ATTR_REF,
+  REF_ATTR,
   ATTR_BLACK_LIST,
-  EFFECT_TAG_CREATE,
-  EFFECT_TAG_UPDATE,
-  EFFECT_TAG_DELETE,
-  EFFECT_TAG_SKIP,
-  MASK_MOVE,
-  MASK_FLUSH,
-  MASK_SHADOW,
+  CREATE_EFFECT_TAG,
+  UPDATE_EFFECT_TAG,
+  DELETE_EFFECT_TAG,
+  SKIP_EFFECT_TAG,
+  MOVE_MASK,
+  FLUSH_MASK,
+  SHADOW_MASK,
   detectIsUndefined,
   detectIsBoolean,
   detectIsObject,
@@ -32,7 +32,7 @@ import {
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { ATTR_STYLE, ATTR_CLASS, ATTR_CLASS_NAME, EXCLUDE_ATTR_MARK } from '../constants';
+import { STYLE_ATTR, CLASS_ATTR, CLASS_NAME_ATTR, EXCLUDE_ATTR_MARK } from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -168,17 +168,17 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
 
     if (attrName[0] === EXCLUDE_ATTR_MARK) continue;
 
-    if (attrName === ATTR_REF) {
+    if (attrName === REF_ATTR) {
       applyRef(attrValue, element);
       continue;
     }
 
-    if (attrName === ATTR_CLASS || attrName === ATTR_CLASS_NAME) {
-      toggleAttribute(tagElement, ATTR_CLASS, attrValue);
+    if (attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) {
+      toggleAttribute(tagElement, CLASS_ATTR, attrValue);
       continue;
     }
 
-    if (attrName === ATTR_STYLE && attrValue && detectIsObject(attrValue)) {
+    if (attrName === STYLE_ATTR && attrValue && detectIsObject(attrValue)) {
       setObjectStyle(tagElement, attrValue);
       continue;
     }
@@ -208,17 +208,17 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
 
     if (attrName[0] === EXCLUDE_ATTR_MARK) continue;
 
-    if (attrName === ATTR_REF) {
+    if (attrName === REF_ATTR) {
       applyRef(prevAttrValue, element);
       continue;
     }
 
-    if ((attrName === ATTR_CLASS || attrName === ATTR_CLASS_NAME) && prevAttrValue !== nextAttrValue) {
-      toggleAttribute(tagElement, ATTR_CLASS, nextAttrValue);
+    if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && prevAttrValue !== nextAttrValue) {
+      toggleAttribute(tagElement, CLASS_ATTR, nextAttrValue);
       continue;
     }
 
-    if (attrName === ATTR_STYLE && nextAttrValue && prevAttrValue !== nextAttrValue && detectIsObject(nextAttrValue)) {
+    if (attrName === STYLE_ATTR && nextAttrValue && prevAttrValue !== nextAttrValue && detectIsObject(nextAttrValue)) {
       setObjectStyle(tagElement, nextAttrValue);
       continue;
     }
@@ -336,7 +336,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (!(fiber.mask & MASK_SHADOW)) {
+    if (!(fiber.mask & SHADOW_MASK)) {
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
         !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
           appendNativeElement(fiber.element, parentElement);
@@ -362,14 +362,14 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  if (fiber.mask & MASK_FLUSH) {
+  if (fiber.mask & FLUSH_MASK) {
     parentFiber.element.innerHTML && (parentFiber.element.innerHTML = '');
     return;
   }
 
   walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
-      !(fiber.mask & MASK_SHADOW) &&
+      !(fiber.mask & SHADOW_MASK) &&
         !detectIsPortal(fiber.inst) &&
         removeNativeElement(fiber.element, parentFiber.element);
       return skip();
@@ -402,19 +402,19 @@ function move(fiber: Fiber<NativeElement>) {
 }
 
 const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
-  [EFFECT_TAG_CREATE]: (fiber: Fiber<NativeElement>) => {
+  [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
     if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitCreation(fiber);
   },
-  [EFFECT_TAG_UPDATE]: (fiber: Fiber<NativeElement>) => {
-    fiber.mask & MASK_MOVE && (move(fiber), (fiber.mask &= ~MASK_MOVE));
+  [UPDATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
+    fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
     if (!fiber.element || detectIsPortal(fiber.inst)) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },
-  [EFFECT_TAG_DELETE]: commitDeletion,
-  [EFFECT_TAG_SKIP]: dummyFn,
+  [DELETE_EFFECT_TAG]: commitDeletion,
+  [SKIP_EFFECT_TAG]: dummyFn,
 };
 
 function commit(fiber: Fiber<NativeElement>) {
