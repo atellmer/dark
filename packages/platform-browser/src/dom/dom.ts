@@ -18,7 +18,6 @@ import {
   detectIsUndefined,
   detectIsBoolean,
   detectIsObject,
-  keyBy,
   NodeType,
   detectIsTagVirtualNode,
   detectIsTextVirtualNode,
@@ -33,14 +32,7 @@ import {
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import {
-  SVG_TAG_NAMES,
-  VOID_TAG_NAMES,
-  ATTR_STYLE,
-  ATTR_CLASS,
-  ATTR_CLASS_NAME,
-  EXCLUDE_ATTR_MARK,
-} from '../constants';
+import { ATTR_STYLE, ATTR_CLASS, ATTR_CLASS_NAME, EXCLUDE_ATTR_MARK } from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -53,8 +45,82 @@ import type {
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
-const svgTagNamesMap = keyBy(SVG_TAG_NAMES.split(','), x => x);
-const voidTagNamesMap = keyBy(VOID_TAG_NAMES.split(','), x => x);
+const svgTagNames = new Set([
+  'svg',
+  'animate',
+  'animateMotion',
+  'animateTransform',
+  'circle',
+  'clipPath',
+  'defs',
+  'desc',
+  'ellipse',
+  'feBlend',
+  'feColorMatrix',
+  'feComponentTransfer',
+  'feComposite',
+  'feConvolveMatrix',
+  'feDiffuseLighting',
+  'feDisplacementMap',
+  'feDistantLight',
+  'feDropShadow',
+  'feFlood',
+  'feFuncA',
+  'feFuncB',
+  'feFuncG',
+  'feFuncR',
+  'feGaussianBlur',
+  'feImage',
+  'feMerge',
+  'feMergeNode',
+  'feMorphology',
+  'feOffset',
+  'fePointLight',
+  'feSpecularLighting',
+  'feSpotLight',
+  'feTile',
+  'feTurbulence',
+  'filter',
+  'foreignObject',
+  'g',
+  'image',
+  'line',
+  'linearGradient',
+  'marker',
+  'mask',
+  'metadata',
+  'mpath',
+  'path',
+  'pattern',
+  'polygon',
+  'polyline',
+  'radialGradient',
+  'rect',
+  'stop',
+  'switch',
+  'symbol',
+  'text',
+  'textPath',
+  'tspan',
+  'use',
+  'view',
+]);
+const voidTagNames = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
 
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
@@ -77,12 +143,12 @@ function createNativeElement(node: VirtualNode): NativeElement {
   return createNativeElementMap[node.type](node);
 }
 
-function detectIsSvgElement(tagName: string) {
-  return Boolean(svgTagNamesMap[tagName]);
+function detectIsSvgElement(name: string) {
+  return svgTagNames.has(name);
 }
 
-function detectIsVoidElement(tagName: string) {
-  return Boolean(voidTagNamesMap[tagName]);
+function detectIsVoidElement(name: string) {
+  return voidTagNames.has(name);
 }
 
 function setObjectStyle(element: TagNativeElement, style: object) {
