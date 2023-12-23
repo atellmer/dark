@@ -261,7 +261,7 @@ function useComputed<T, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
 }
 
 function useStore<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  atom$s: [
+  atoms$: [
     Atom<A>,
     Atom<B>?,
     Atom<C>?,
@@ -282,12 +282,12 @@ function useStore<A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   const update = () => batch(forceUpdate);
 
   useLayoutEffect(() => {
-    const offs = atom$s.map(x => x.on(update));
+    const offs = atoms$.map(x => x.on(update));
 
     return () => offs.forEach(x => x());
-  }, [...atom$s]);
+  }, [...atoms$]);
 
-  return atom$s.map(x => x.get()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
+  return atoms$.map(x => x.get()) as [A, B, C, D, E, F, G, H, I, J, K, L, M, N];
 }
 
 type ShouldUpdate<T> = (p: T, n: T, key?: T) => boolean;

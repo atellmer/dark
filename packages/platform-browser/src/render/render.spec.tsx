@@ -3,7 +3,6 @@ import {
   h,
   Fragment,
   component,
-  View,
   Text,
   useState,
   memo,
@@ -15,13 +14,12 @@ import {
 
 import { dom, createTestHostNode, replacer } from '@test-utils';
 import { render as $render } from './render';
+import { div, span } from '../factory';
 
 type Item = { id: number; name: string };
 
 let host: HTMLElement = null;
 let nextId = 0;
-const div = (props = {}) => View({ ...props, as: 'div' });
-const span = (props = {}) => View({ ...props, as: 'span' });
 const render = (element: any) => $render(element, host);
 
 const generateItems = (count: number) => {
@@ -41,7 +39,7 @@ afterEach(() => {
   nextId = 0;
 });
 
-describe('[render]', () => {
+describe('[@platform-browser/render]', () => {
   test('doesn not throw error', () => {
     const App = component(() => null);
 
@@ -1225,7 +1223,6 @@ describe('[render]', () => {
 
   test('can move items in arrays', () => {
     type AppProps = { items: Array<Item> };
-
     const $content = (items: Array<Item>) => dom`
       ${items.map(x => ` <div>${x.name}</div>`).join('')}
     `;
@@ -1297,8 +1294,6 @@ describe('[render]', () => {
   });
 
   test('can render falsy items with container correctly #1', () => {
-    type ContainerProps = { slot: DarkElement };
-
     const content = () => dom`
       <main>
         <div>header</div>
@@ -1307,7 +1302,7 @@ describe('[render]', () => {
       </main>
     `;
 
-    const Container = component<ContainerProps>(({ slot }) => <main>{slot}</main>);
+    const Container = component<{ slot: DarkElement }>(({ slot }) => <main>{slot}</main>);
 
     const App = component(() => {
       return (
@@ -1324,8 +1319,6 @@ describe('[render]', () => {
   });
 
   test('can render falsy items with container correctly #2', () => {
-    type ContainerProps = { slot: DarkElement };
-
     const content = () => dom`
       <main>
         ${replacer}
@@ -1334,7 +1327,7 @@ describe('[render]', () => {
       </main>
     `;
 
-    const Container = component<ContainerProps>(({ slot }) => <main>{slot}</main>);
+    const Container = component<{ slot: DarkElement }>(({ slot }) => <main>{slot}</main>);
 
     const App = component(() => {
       return (
@@ -1344,6 +1337,19 @@ describe('[render]', () => {
           <div>footer</div>
         </Container>
       );
+    });
+
+    render(<App />);
+    expect(host.innerHTML).toBe(content());
+  });
+
+  test('does not render $ attributes', () => {
+    const content = () => dom`
+      <div color="red"></div>
+    `;
+
+    const App = component(() => {
+      return <div color='red' $color='yellow' />;
     });
 
     render(<App />);

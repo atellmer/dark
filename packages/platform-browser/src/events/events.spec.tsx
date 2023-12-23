@@ -10,7 +10,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[events]', () => {
+describe('[@platform-browser/events]', () => {
   test('can pass synthetic event', () => {
     let event: SyntheticEvent<MouseEvent> = null;
     const App = component(() => {

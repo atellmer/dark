@@ -6,4 +6,3 @@ export const ATTR_STYLE = 'style';
 export const ATTR_CLASS = 'class';
 export const ATTR_CLASS_NAME = 'className';
 export const EXCLUDE_ATTR_MARK = '$';
-export const YIELD_INTERVAL = 6;

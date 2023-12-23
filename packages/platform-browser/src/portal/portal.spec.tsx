@@ -16,7 +16,7 @@ beforeEach(() => {
   portalThree = document.createElement('div');
 });
 
-describe('[createPortal]', () => {
+describe('[@platform-browser/portal]', () => {
   test('renders correctly', () => {
     const value = 'hello from portal';
     const content = (value: string) => dom`

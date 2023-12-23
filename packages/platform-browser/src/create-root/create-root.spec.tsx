@@ -11,7 +11,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[create-root]', () => {
+describe('[@platform-browser/create-root]', () => {
   test('has methods', () => {
     const App = component(() => null);
     const root = createRoot(host);
