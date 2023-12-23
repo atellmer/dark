@@ -21,21 +21,21 @@ export const RESTART_TIMEOUT = 10;
 export const YIELD_INTERVAL = 6;
 
 export enum TaskPriority {
-  HIGH = 2,
-  NORMAL = 1,
   LOW = 0,
+  NORMAL = 1,
+  HIGH = 2,
 }
 
 export enum Flag {
-  SKIP_SCAN_OPT = '$skipScanOpt',
-  MEMO_SLOT_OPT = '$memoSlotOpt',
-  STATIC_SLOT_OPT = '$staticSlotOpt',
+  SKIP_SCAN_OPT = '__skipScanOpt',
+  MEMO_SLOT_OPT = '__memoSlotOpt',
+  STATIC_SLOT_OPT = '__staticSlotOpt',
 }
 
 export const FLAGS = {
-  $skipScanOpt: true,
-  $memoSlotOpt: true,
-  $staticSlotOpt: true,
+  __skipScanOpt: true,
+  __memoSlotOpt: true,
+  __staticSlotOpt: true,
 };
 
 export const ATTR_BLACK_LIST = {
