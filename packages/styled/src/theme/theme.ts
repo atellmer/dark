@@ -18,9 +18,7 @@ export type ThemeContextValue = DefaultTheme;
 
 const ThemeContext = createContext<ThemeContextValue>(null, { displayName: 'Theme' });
 
-function useTheme() {
-  return useContext(ThemeContext);
-}
+const useTheme = () => useContext(ThemeContext);
 
 type ThemeProviderProps = {
   theme: DefaultTheme;

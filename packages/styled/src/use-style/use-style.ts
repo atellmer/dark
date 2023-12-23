@@ -1,12 +1,15 @@
 import { useMemo, detectIsUndefined } from '@dark-engine/core';
 
-function styled(strings: TemplateStringsArray, ...args: Array<string | number>): Record<string, string> {
+import { type TextBased } from '../shared';
+import { SEMICOLON_MARK } from '../constants';
+
+function styled(source: TemplateStringsArray, ...args: Array<TextBased>): Record<string, string> {
   const style = useMemo(() => {
     const style: Record<string, string> = {};
-    const items = strings
+    const items = source
       .map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : ''))
       .join('')
-      .split(';');
+      .split(SEMICOLON_MARK);
 
     for (const item of items) {
       const [key, value] = item.split(/:(?!\/\/)/);
@@ -16,7 +19,7 @@ function styled(strings: TemplateStringsArray, ...args: Array<string | number>):
     }
 
     return style;
-  }, [strings, ...args]);
+  }, [source, ...args]);
 
   return style;
 }
@@ -25,8 +28,6 @@ type StyleRecord = Record<string, Record<string, string>>;
 
 type Config<T extends StyleRecord> = (x: typeof styled) => T;
 
-function useStyle<T extends StyleRecord>(config: Config<T>) {
-  return config(styled);
-}
+const useStyle = <T extends StyleRecord>(config: Config<T>) => config(styled);
 
 export { useStyle };

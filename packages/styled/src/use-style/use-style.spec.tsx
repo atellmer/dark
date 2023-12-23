@@ -10,8 +10,8 @@ beforeEach(() => {
   ({ render, host } = createBrowserEnv());
 });
 
-describe('[use-style]', () => {
-  test('useStyle transform the string style to object', () => {
+describe('[@styled/use-style]', () => {
+  test('transforms the string style to the object correctly', () => {
     let style: { root: object; button: object };
     const App = component(() => {
       style = useStyle(styled => ({
@@ -37,7 +37,7 @@ describe('[use-style]', () => {
     expect(style.button).toEqual({ color: 'pink' });
   });
 
-  test('useStyle renders styles correctly', () => {
+  test('renders styles correctly', () => {
     type AppProps = { color: string };
     const content = (color: string) => dom`
       <div style="position: absolute; transform: translate(10px, 10px); text-transform: uppercase; background-image: url(https://images.com/1);">

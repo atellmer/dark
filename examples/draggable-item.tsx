@@ -9,7 +9,8 @@ import {
   TaskPriority,
   type DarkElement,
 } from '@dark-engine/core';
-import { createRoot, useStyle } from '@dark-engine/platform-browser';
+import { createRoot } from '@dark-engine/platform-browser';
+import { useStyle } from '@dark-engine/styled';
 
 type ID = string | number;
 

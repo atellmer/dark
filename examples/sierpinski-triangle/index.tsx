@@ -9,7 +9,8 @@ import {
   DarkElement,
   startTransition,
 } from '@dark-engine/core';
-import { render, useStyle } from '@dark-engine/platform-browser';
+import { render } from '@dark-engine/platform-browser';
+import { useStyle } from '@dark-engine/styled';
 
 const domElement = document.getElementById('root');
 
