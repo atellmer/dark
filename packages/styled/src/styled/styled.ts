@@ -53,9 +53,9 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
       component((props, ref) => {
         const { as: component, ...rest } = props;
         const theme = useTheme();
-        const withReplace = detectIsFunction(component);
-        const $props = (withReplace ? rest : props) as unknown as T;
-        const $factory = withReplace ? component : isExtending ? config.factory : factory;
+        const isSwap = detectIsFunction(component);
+        const $props = (isSwap ? rest : props) as unknown as T;
+        const $factory = isSwap ? component : isExtending ? config.factory : factory;
         const [className, styles] = useMemo(() => {
           const [names, styles] = sheets.reduce(
             (acc, sheet) => {
