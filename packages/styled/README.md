@@ -10,10 +10,12 @@ Styled components for Dark.
 - Accommodation of global styles
 - Styles dictated by component properties
 - Reusable fragments
-- CSS Animations via keyframes
+- CSS nesting
 - Theming
+- Animations
 - SSR
 - Minification
+- No deps
 
 ## Usage
 ```tsx
