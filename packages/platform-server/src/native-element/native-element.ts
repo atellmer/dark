@@ -1,43 +1,47 @@
 import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
+
 import { detectIsVoidElement } from '../utils';
+import { CLASS_ATTR, CLASS_NAME_ATTR } from '../constants';
 
 class NativeElement {
-  public type: NodeType;
-  public parentElement: TagNativeElement = null;
+  type: NodeType;
+  parentElement: TagNativeElement = null;
 
   constructor(type: NodeType) {
     this.type = type;
   }
 
-  public renderToString(isRoot?: boolean) {
+  renderToString(isRoot?: boolean) {
     return this.type as string;
   }
 
-  public renderToChunk(start?: boolean, close?: boolean) {
+  renderToChunk(start?: boolean, close?: boolean) {
     return this.type as string;
   }
 }
 
 class TagNativeElement extends NativeElement {
-  public name: string = null;
-  public attrs: Record<string, AttributeValue> = {};
-  public children: Array<NativeElement> = [];
+  name: string = null;
+  attrs: Record<string, AttributeValue> = {};
+  children: Array<NativeElement> = [];
 
   constructor(name: string) {
     super(NodeType.TAG);
     this.name = name;
   }
 
-  public appendChild(element: NativeElement) {
+  appendChild(element: NativeElement) {
     element.parentElement = this;
     this.children.push(element);
   }
 
-  public setAttribute(name: string, value: AttributeValue) {
-    this.attrs[name] = detectIsString(value) ? escape(value) : value;
+  setAttribute(name: string, value: AttributeValue) {
+    const $name = name === CLASS_NAME_ATTR ? CLASS_ATTR : name;
+
+    this.attrs[$name] = detectIsString(value) ? escape(value) : value;
   }
 
-  public override renderToString(isRoot: boolean): string {
+  override renderToString(isRoot: boolean): string {
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
 
@@ -49,7 +53,7 @@ class TagNativeElement extends NativeElement {
     return value;
   }
 
-  public override renderToChunk(start: boolean, close?: boolean): string {
+  override renderToChunk(start: boolean, close?: boolean): string {
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
 
@@ -71,11 +75,11 @@ class TextNativeElement extends NativeElement {
     this.value = escape(text);
   }
 
-  public override renderToString(): string {
+  override renderToString(): string {
     return this.value;
   }
 
-  public override renderToChunk(): string {
+  override renderToChunk(): string {
     return this.value;
   }
 }
@@ -88,11 +92,11 @@ class CommentNativeElement extends NativeElement {
     this.value = `<!--${escape(text)}-->`;
   }
 
-  public override renderToString(): string {
+  override renderToString(): string {
     return this.value;
   }
 
-  public override renderToChunk(): string {
+  override renderToChunk(): string {
     return this.value;
   }
 }

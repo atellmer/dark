@@ -6,21 +6,21 @@ import { NSViewFlag, getElementFactory, type NSElement, type NSElementMeta } fro
 import { ANDROID, IOS, TEXT_ATTR } from '../constants';
 
 class NativeElement {
-  public type: NodeType;
-  public parentElement: TagNativeElement = null;
+  type: NodeType;
+  parentElement: TagNativeElement = null;
 
   constructor(type: NodeType) {
     this.type = type;
   }
 
-  public getText(): string {
+  getText(): string {
     return this.type;
   }
 }
 class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
-  public name: string = null;
-  public attrs: Record<string, AttributeValue> = {};
-  public children: Array<NativeElement> = [];
+  name: string = null;
+  attrs: Record<string, AttributeValue> = {};
+  children: Array<NativeElement> = [];
   private nativeView: T;
   private meta: NSElementMeta;
   private eventListeners: Map<string, (e: EventData) => void> = new Map();
@@ -35,7 +35,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     this.meta = meta;
   }
 
-  public getNativeView(): T {
+  getNativeView(): T {
     if (this.name === ROOT) {
       const tag = this.children[0] as TagNativeElement;
 
@@ -45,11 +45,11 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     return this.nativeView;
   }
 
-  public getMeta(): NSElementMeta {
+  getMeta(): NSElementMeta {
     return this.meta;
   }
 
-  public appendChild(element: NativeElement) {
+  appendChild(element: NativeElement) {
     element.parentElement = this;
     this.children.push(element);
 
@@ -102,11 +102,11 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     }
   }
 
-  public getAttribute(name: string): AttributeValue {
+  getAttribute(name: string): AttributeValue {
     return this.attrs[name];
   }
 
-  public setAttribute(name: string, value: AttributeValue) {
+  setAttribute(name: string, value: AttributeValue) {
     if (!this.nativeView[INITIAL_ATTR_VALUE]) {
       this.nativeView[INITIAL_ATTR_VALUE] = {};
     }
@@ -125,13 +125,13 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     }
   }
 
-  public removeAttribute(name: string) {
+  removeAttribute(name: string) {
     this.nativeView[name] = this.nativeView[INITIAL_ATTR_VALUE][name];
     delete this.nativeView[INITIAL_ATTR_VALUE][name];
     delete this.attrs[name];
   }
 
-  public updateText() {
+  updateText() {
     let text = '';
 
     for (const child of this.children) {
@@ -143,7 +143,7 @@ class TagNativeElement<T extends NSElement = NSElement> extends NativeElement {
     this.setAttribute(TEXT_ATTR, text);
   }
 
-  public getText() {
+  getText() {
     return this.getAttribute(TEXT_ATTR) as string;
   }
 
@@ -187,7 +187,7 @@ class TextNativeElement extends NativeElement {
     }
   }
 
-  public getText() {
+  getText() {
     return this._value;
   }
 }
@@ -208,7 +208,7 @@ class CommentNativeElement extends NativeElement {
     this._value = value;
   }
 
-  public getText() {
+  getText() {
     return this._value;
   }
 }

@@ -100,7 +100,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           $props.slot = $props.slot((x: string) => `${baseName}_${x}`);
         }
 
-        return $factory({ ...$transform($props), ref, class: className });
+        return $factory({ ...$transform($props), ref, className });
       }),
     ) as StyledComponentFactory<T>;
 
@@ -273,6 +273,7 @@ type StyledProps = {
   as?: string | ComponentFactory;
   class?: string;
   className?: string;
+  style?: string | Record<string, string>;
   slot?: ((fn: ClassNameFn) => StyledElement) | StyledElement;
 };
 

@@ -8,21 +8,21 @@ import { getElementFactory } from '../registry';
 import { TEXT_ATTR } from '../constants';
 
 class NativeElement {
-  public type: NodeType;
-  public parentElement: TagNativeElement = null;
+  type: NodeType;
+  parentElement: TagNativeElement = null;
 
   constructor(type: NodeType) {
     this.type = type;
   }
 
-  public getText(): string {
+  getText(): string {
     return this.type;
   }
 }
 class TagNativeElement<T extends QElement = QElement> extends NativeElement {
-  public name: string = null;
-  public attrs: Record<string, AttributeValue> = {};
-  public children: Array<NativeElement> = [];
+  name: string = null;
+  attrs: Record<string, AttributeValue> = {};
+  children: Array<NativeElement> = [];
   private nativeView: T;
   private eventListeners: Map<string, (e: any) => void> = new Map();
 
@@ -32,7 +32,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     this.nativeView = getElementFactory(name).create() as T;
   }
 
-  public getNativeView(): T {
+  getNativeView(): T {
     if (this.name === ROOT) {
       const tag = this.children[0] as TagNativeElement;
 
@@ -42,7 +42,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     return this.nativeView;
   }
 
-  public appendChild(element: NativeElement) {
+  appendChild(element: NativeElement) {
     element.parentElement = this;
     this.children.push(element);
 
@@ -56,7 +56,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     }
   }
 
-  public insertBefore(element: NativeElement, siblingElement: NativeElement) {
+  insertBefore(element: NativeElement, siblingElement: NativeElement) {
     if (!siblingElement) {
       return this.appendChild(element);
     }
@@ -86,7 +86,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     }
   }
 
-  public removeChild(element: NativeElement) {
+  removeChild(element: NativeElement) {
     const idx = this.children.findIndex(node => node === element);
 
     if (idx !== -1) {
@@ -104,11 +104,11 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     }
   }
 
-  public getAttribute(name: string): AttributeValue {
+  getAttribute(name: string): AttributeValue {
     return this.attrs[name];
   }
 
-  public setAttribute(name: string, value: AttributeValue) {
+  setAttribute(name: string, value: AttributeValue) {
     const setterName = createSetterName(name);
 
     defaultAttrSetter(this, name, value);
@@ -124,7 +124,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     this.attrs[name] = value;
   }
 
-  public removeAttribute(name: string) {
+  removeAttribute(name: string) {
     const setterName = createSetterName(name);
 
     if (!detectIsFunction(this.nativeView[setterName])) return;
@@ -136,7 +136,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     delete this.attrs[name];
   }
 
-  public updateText() {
+  updateText() {
     let text = '';
 
     for (const child of this.children) {
@@ -148,11 +148,11 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     this.setAttribute(TEXT_ATTR, text);
   }
 
-  public getText() {
+  getText() {
     return this.getAttribute(TEXT_ATTR) as string;
   }
 
-  public addEventListener(eventName: string, handler: Function) {
+  addEventListener(eventName: string, handler: Function) {
     const syntheticHandler = createSyntheticEventHandler(eventName, handler);
 
     this.removeEventListener(eventName);
@@ -160,7 +160,7 @@ class TagNativeElement<T extends QElement = QElement> extends NativeElement {
     this.nativeView.addEventListener(eventName as WidgetEventTypes, syntheticHandler);
   }
 
-  public removeEventListener(eventName: string) {
+  removeEventListener(eventName: string) {
     const handler = this.eventListeners.get(eventName);
 
     this.eventListeners.delete(eventName);
@@ -188,7 +188,7 @@ class TextNativeElement extends NativeElement {
     }
   }
 
-  public getText() {
+  getText() {
     return this._value;
   }
 }
@@ -209,7 +209,7 @@ class CommentNativeElement extends NativeElement {
     this._value = value;
   }
 
-  public getText() {
+  getText() {
     return this._value;
   }
 }
