@@ -102,7 +102,7 @@ return (
 
 ## Working with dynamic styles
 
-To transmit dynamic data, it is recommended to use props names that begin with $, if these properties should not end up in the attributes of the DOM node.
+To transmit dynamic data, it is recommended to use props names that begin with `$`, if these properties should not end up in the attributes of the DOM node.
 
 ```tsx
 const Box = styled.div<{ $color: string }>`
@@ -116,7 +116,7 @@ const Box = styled.div<{ $color: string }>`
 <Box $color='blue' />
 ```
 
-If you need to dynamically generate something more than just a style property value, then you need to always use a special css function that converts the style string to the AST.
+If you need to dynamically generate something more than just a style property value, then you need to always use a special `css` function that converts the style string to the AST.
 
 ```tsx
 const Box = styled.div<{ $color: string }>`
@@ -131,7 +131,7 @@ const Box = styled.div<{ $color: string }>`
 
 ## Extending styles
 
-To reuse already written styles, you can wrap a ready-made styled component in a styled function. In this case, a new component will be created that will combine all the styles of the parent component with its own styles, which will take precedence.
+To reuse already written styles, you can wrap a ready-made styled component in a `styled` function. In this case, a new component will be created that will combine all the styles of the parent component with its own styles, which will take precedence.
 
 ```tsx
 const Button = styled.button`
@@ -152,7 +152,7 @@ const TomatoButton = styled(Button)`
 <TomatoButton>Tomato button</TomatoButton>
 ```
 
-You can also style any arbitrary component using this approach. The only requirement is that it passes a class or className prop to the desired DOM node.
+You can also style any arbitrary component using this approach. The only requirement is that it passes a class or `className` prop to the desired DOM node.
 
 ```tsx
 type SomeButtonProps = {
@@ -373,7 +373,7 @@ const Root = styled.main`
 
 ## Animations
 
-The styled fully supports CSS animations. To create an animation you need to use the special keyframes function.
+The styled fully supports CSS animations. To create an animation you need to use the special `keyframes` function.
 
 ```tsx
 const rotate = keyframes`
@@ -424,7 +424,7 @@ const Colored = styled.div<{ $from: string; $to: string }>`
 
 ## Global styles
 
-Typically, styled components are auto-scoped to a local CSS class, providing isolation from other components. However, with createGlobalStyle, this restriction is lifted, enabling the application of CSS resets or foundational stylesheets.
+Typically, styled components are auto-scoped to a local CSS class, providing isolation from other components. However, with `createGlobalStyle`, this restriction is lifted, enabling the application of CSS resets or base stylesheets.
 
 ```tsx
 const GlobalStyle = createGlobalStyle<{ $whiteColor?: boolean }>`
@@ -483,7 +483,7 @@ const style = useStyle(styled => ({
 
 ## Server Side Rendering
 
-The styled facilitates server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a ServerStyleSheet can be created and a provider can be added to your component tree, which accepts styles through a context API.
+The styled facilitates server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a context API.
 
 ```tsx
 const sheet = new ServerStyleSheet();
