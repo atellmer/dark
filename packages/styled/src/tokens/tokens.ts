@@ -221,7 +221,7 @@ type GenerateOptions<P extends object> = {
 class StyleSheet<P extends object = {}> {
   children: Children = [];
 
-  generate(options: GenerateOptions<P>) {
+  generate(options: GenerateOptions<P> = {}) {
     const { className = null, props, fns } = options;
     let styles = className ? `${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}` : '';
     let nesting = '';

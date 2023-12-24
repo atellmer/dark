@@ -17,7 +17,7 @@ import {
 
 import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates } from '../utils';
 import { CLASS_NAME_PREFIX, FUNCTION_MARK, DOT_MARK, STYLED_COMPONENTS_ATTR, BLANK_SPACE } from '../constants';
-import { type KeyframesRule, StyleSheet, detectIsKeyframesRule } from '../tokens';
+import { type KeyframesRule, StyleSheet, detectIsStyleSheet, detectIsKeyframesRule } from '../tokens';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
 import { type ThemeProps, useTheme } from '../theme';
 import { type TextBased } from '../shared';
@@ -222,6 +222,8 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 
     if (detectIsStyled(arg)) {
       joined += `${DOT_MARK}${arg[$$styled].className}`;
+    } else if (detectIsStyleSheet(arg)) {
+      joined += arg.generate();
     } else if (detectIsKeyframes(arg)) {
       joined += arg.getName();
       keyframes += arg.getToken().generate();
@@ -296,7 +298,7 @@ type DynamicArgs<P> = Array<ArgFn<P>>;
 
 type ArgFn<P> = Function | ((p: P) => TextBased | false);
 
-export type Args<P> = Array<TextBased | ArgFn<P> | Keyframes>;
+export type Args<P> = Array<TextBased | ArgFn<P> | StyleSheet | Keyframes>;
 
 styled.a = styled('a');
 styled.abbr = styled('abbr');

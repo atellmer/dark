@@ -9,9 +9,11 @@ Styled components for Dark.
 - Encapsulated scope
 - Accommodation of global styles
 - Styles dictated by component properties
+- Reusable fragments
 - CSS Animations via keyframes
 - Theming
 - SSR
+- Minification
 
 ## Usage
 ```tsx
@@ -126,6 +128,22 @@ const Box = styled.div<{ $color: string }>`
   ${p => css`
     background-color: ${p.$color};
   `}
+`;
+```
+
+## Reusable CSS fragments
+
+Fragments make coding easier and prevent style elements from being repeated.
+
+```tsx
+const square = (size: number) => css`
+  width: ${size}px;
+  height: ${size}px;
+`;
+
+const Box = styled.div`
+  ${square(100)}
+  background-color: blue;
 `;
 ```
 
