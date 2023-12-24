@@ -77,7 +77,7 @@ import {
 
 ## Getting Started
 
-The Styled uses tagged template literals to describe styles and create a final styled component that can be rendered like a regular Dark component, which can be nested with children and passed props. Under the hood, styled parses the style string into a simple AST in one pass, which is then transformed into final CSS and inserted into the DOM. At the same time, styles are divided into static and dynamic (based on props) for greater fragmentation of reused CSS classes. CSS classes are generated based on a fast non-cryptographic hash function and attached to DOM nodes.
+The styled uses tagged template literals to describe styles and create a final styled component that can be rendered like a regular Dark component, which can be nested with children and passed props. Under the hood, styled parses the style string into a simple AST in one pass, which is then transformed into final CSS and inserted into the DOM. At the same time, styles are divided into static and dynamic (based on props) for greater fragmentation of reused CSS classes. CSS classes are generated based on a fast non-cryptographic hash function and attached to DOM nodes.
 
 ```tsx
 const Title = styled.h1`
@@ -200,7 +200,7 @@ const Button = styled.button`
 <Button as={SomeButton}>Button with .btn class</Button>
 ```
 
-## Configuration of default attributes via attr function
+## Configuration of default attributes via `attr` function
 
 ```tsx
 type TextFieldProps = {
@@ -218,7 +218,7 @@ const PasswordField = styled(TextField).attrs(p => ({ ...p, type: 'password' }))
 <PasswordField value={value} onInput={handleInput} />
 ```
 
-## Nesting
+## Style nesting
 
 To describe nested style expressions, you need to use the `&` symbol, which, after parsing and generating classes, is replaced with the name of the class of this style.
 
@@ -373,7 +373,7 @@ const Root = styled.main`
 
 ## Animations
 
-The Styled fully supports CSS animations. To create an animation you need to use the special keyframes function.
+The styled fully supports CSS animations. To create an animation you need to use the special keyframes function.
 
 ```tsx
 const rotate = keyframes`
@@ -437,7 +437,7 @@ const GlobalStyle = createGlobalStyle<{ $whiteColor?: boolean }>`
 ```
 ## Theming
 
-The Styled offers complete theming support by exporting a `<ThemeProvider>` wrapper component. This component supplies a theme to all its child components through the context API. Consequently, all styled-components in the render tree, regardless of their depth, can access the provided theme.
+The styled offers complete theming support by exporting a `<ThemeProvider>` wrapper component. This component supplies a theme to all its child components through the context API. Consequently, all styled-components in the render tree, regardless of their depth, can access the provided theme.
 
 ```tsx
 type Theme = {
@@ -465,9 +465,25 @@ const App = component(() => {
 });
 ```
 
+The library also provides a `useTheme` hook to access the current theme.
+
+## Setting inline styles via `useStyle` hook
+
+```tsx
+const style = useStyle(styled => ({
+  root: styled`
+    width: 100px;
+    height: 100px;
+    background-color: darkcyan;
+  `,
+}));
+
+<div style={style.root}></div>
+```
+
 ## Server Side Rendering
 
-The Styled facilitates server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a ServerStyleSheet can be created and a provider can be added to your component tree, which accepts styles through a context API.
+The styled facilitates server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a ServerStyleSheet can be created and a provider can be added to your component tree, which accepts styles through a context API.
 
 ```tsx
 const sheet = new ServerStyleSheet();
