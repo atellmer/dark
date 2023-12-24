@@ -48,7 +48,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
     const $transform = isExtending ? (p: T) => transform(config.transform(p)) : transform;
     const fns = filterArgs<T>($args);
     const [sheet, sheets] = slice<T>(css($source, ...$args));
-    const [baseName, base] = generate({ sheet });
+    const [baseName, baseStyle, baseKeyframes] = generate({ sheet, cache });
     const styled = forwardRef<T, unknown>(
       component((props, ref) => {
         const { as: component, ...rest } = props;
@@ -56,22 +56,27 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         const isSwap = detectIsFunction(component);
         const $props = (isSwap ? rest : props) as unknown as T;
         const $factory = isSwap ? component : isExtending ? config.factory : factory;
-        const [className, styles] = useMemo(() => {
-          const [names, styles] = sheets.reduce(
+        const [className, styles, keyframes] = useMemo(() => {
+          const [names, styles, keyframes] = sheets.reduce(
             (acc, sheet) => {
-              const [className, css] = generate({ sheet, props: { ...props, theme }, fns });
-              const [names, styles] = acc;
+              const [className, style, keyframes] = generate({ sheet, cache, props: { ...props, theme }, fns });
+              const [names, styles, keyframesList] = acc;
 
               names.push(className);
-              styles.push(css);
+              styles.push(style);
+              keyframesList.push(keyframes);
 
               return acc;
             },
-            [[], [base]] as [Array<string>, Array<string>],
+            [[], [baseStyle], [baseKeyframes]] as [Array<string>, Array<string>, Array<string>],
           );
           const className = mergeClassNames([...getClassNamesFrom(props), baseName, ...names]);
 
-          return [className, filter(styles)] as [string, Array<string>];
+          return [className, filter(styles, injections), filter(keyframes, injections)] as [
+            string,
+            Array<string>,
+            Array<string>,
+          ];
         }, [...mapProps(props), theme]);
 
         useInsertionEffect(() => {
@@ -87,7 +92,8 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           }
 
           styles.forEach(css => inject(css, tag));
-        }, [...styles]);
+          keyframes.forEach(css => inject(css, tag));
+        }, [...styles, ...keyframes]);
 
         if (detectIsServer()) {
           const manager = useManager(); // special case of hook using, should be last in order
@@ -124,7 +130,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
   return fn;
 }
 
-function filter(styles: Array<string>) {
+function filter(styles: Array<string>, injections: Set<string>) {
   const $styles: Array<string> = [];
 
   for (const css of styles) {
@@ -152,45 +158,44 @@ function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>
 
 type GenerateOptions<P extends object> = {
   sheet: StyleSheet<P>;
+  cache: Map<string, [string, string]>;
   props?: P;
   fns?: Array<Function>;
 };
 
-function generate<P extends object>(options: GenerateOptions<P>): [string, string] {
-  const { sheet: $sheet, props, fns } = options;
-  const [sheet, keyframes] = split($sheet);
+function generate<P extends object>(options: GenerateOptions<P>): [string, string, string] {
+  const { sheet: $sheet, cache, props, fns } = options;
+  const [sheet, rules] = split($sheet);
   const key = sheet.generate({ className: FUNCTION_MARK, props, fns });
   const item = cache.get(key);
   const className = item ? item[0] : genClassName(key);
   const css = item ? item[1] : key.replaceAll(FUNCTION_MARK, className);
-  let $css = '';
+  let style = '';
+  let keyframes = '';
 
-  $css += css;
+  style += css;
   cache.set(key, [className, css]);
 
-  for (const token of keyframes) {
-    const css = token.generate();
-
-    $css += css;
-    cache.set(css, [token.value, css]);
+  for (const rule of rules) {
+    keyframes += rule.generate();
   }
 
-  return [className, $css];
+  return [className, style, keyframes];
 }
 
 function split<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<KeyframesRule<P>>] {
   const sheet = new StyleSheet<P>();
-  const keyframes: Array<KeyframesRule<P>> = [];
+  const rules: Array<KeyframesRule<P>> = [];
 
   for (const token of source.children) {
     if (detectIsKeyframesRule(token)) {
-      keyframes.push(token);
+      rules.push(token);
     } else {
       sheet.children.push(token);
     }
   }
 
-  return [sheet, keyframes];
+  return [sheet, rules];
 }
 
 function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<StyleSheet<P>>] {

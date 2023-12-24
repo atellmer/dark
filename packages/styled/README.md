@@ -503,7 +503,7 @@ const style = useStyle(styled => ({
 
 ## Server Side Rendering
 
-The styled facilitates server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a context API.
+The styled supports server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a context API.
 
 ```tsx
 const sheet = new ServerStyleSheet();
