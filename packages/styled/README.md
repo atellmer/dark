@@ -68,7 +68,6 @@ CDN:
 ## API
 ```tsx
 import {
-  ServerStyleSheet,
   ThemeProvider,
   createGlobalStyle,
   keyframes,
@@ -77,6 +76,7 @@ import {
   styled,
   css,
 } from '@dark-engine/styled';
+import { ServerStyleSheet } from '@dark-engine/styled/server';
 ```
 
 ## Getting started
@@ -505,20 +505,36 @@ const style = useStyle(styled => ({
 
 The styled supports server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a context API.
 
+### Render to string
+
 ```tsx
 const sheet = new ServerStyleSheet();
 try {
   const app = await renderToString(sheet.collectStyles(<App />));
   const styleTags = sheet.getStyleTags();
   const mark = '{{%styles%}}' // somewhere in your <head></head>
-  const page = `
-    <!DOCTYPE html>
-    ${app}
-  `.replace(mark, styleTags.join(''));
-  // sending page to client here
+  const page = `<!DOCTYPE html>${app}`.replace(mark, styleTags.join(''));
+
+  res.statusCode = 200;
+  res.send(page);
 } catch (error) {
   console.error(error);
 } finally {
+  sheet.seal();
+}
+```
+
+### Render to stream
+
+```tsx
+const sheet = new ServerStyleSheet();
+try {
+  const stream = sheet.interleaveWithStream(renderToStream(sheet.collectStyles(<App />)));
+
+  res.statusCode = 200;
+  stream.pipe(res);
+} catch(error) {
+  console.error(error);
   sheet.seal();
 }
 ```

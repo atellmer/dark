@@ -1,3 +1,5 @@
+import { detectIsUndefined } from '@dark-engine/core';
+
 import { STYLE_TAG, BLANK_SPACE } from '../constants';
 
 const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
@@ -20,11 +22,15 @@ const mergeClassNames = (classNames: Array<string>) => uniq(classNames.filter(Bo
 
 const getElement = (selector: string) => document.querySelector(selector);
 
+const getElements = (selector: string) => Array.from(document.querySelectorAll(selector));
+
 const createStyleElement = () => document.createElement(STYLE_TAG);
 
 const setAttr = (element: Element, attrName: string, attrValue: string) => element.setAttribute(attrName, attrValue);
 
 const append = (parent: Element, element: Element) => parent.appendChild(element);
+
+const insertBefore = (parent: Element, element: Element, sibling: Element) => parent.insertBefore(element, sibling);
 
 const mergeTemplates = (t1: TemplateStringsArray, t2: TemplateStringsArray) => {
   const [first] = t2;
@@ -46,4 +52,18 @@ const mergeTemplates = (t1: TemplateStringsArray, t2: TemplateStringsArray) => {
   return result as TemplateStringsArray;
 };
 
-export { uniq, mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates };
+const detectIsBrowser = () => !detectIsUndefined(window);
+
+export {
+  uniq,
+  mapProps,
+  mergeClassNames,
+  getElement,
+  getElements,
+  createStyleElement,
+  setAttr,
+  append,
+  insertBefore,
+  mergeTemplates,
+  detectIsBrowser,
+};

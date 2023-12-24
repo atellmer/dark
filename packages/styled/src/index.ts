@@ -1,6 +1,5 @@
 export { ThemeProvider, useTheme } from './theme';
 export { createGlobalStyle } from './global';
-export { ServerStyleSheet } from './manager';
 export { keyframes } from './keyframes';
 export { styled, css } from './styled';
 export { useStyle } from './use-style';

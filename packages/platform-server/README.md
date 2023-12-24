@@ -56,10 +56,7 @@ server.use(express.static(join(__dirname, '../client/static')));
 server.get('/', async (req, res) => {
   const content = Page({ title: 'SSR test', slot: App() });
   const app = await renderToString(content);
-  const page = `
-    <!DOCTYPE html>
-    ${app}
-  `;
+  const page = `<!DOCTYPE html>${app}`;
 
   res.statusCode = 200;
   res.send(page);

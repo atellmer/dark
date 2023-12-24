@@ -15,25 +15,48 @@ import {
   useInsertionEffect,
 } from '@dark-engine/core';
 
-import { mapProps, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates } from '../utils';
-import { CLASS_NAME_PREFIX, FUNCTION_MARK, DOT_MARK, STYLED_COMPONENTS_ATTR, BLANK_SPACE } from '../constants';
+import {
+  detectIsBrowser,
+  mapProps,
+  mergeClassNames,
+  getElement,
+  getElements,
+  createStyleElement,
+  setAttr,
+  append,
+  mergeTemplates,
+} from '../utils';
+import {
+  CLASS_NAME_PREFIX,
+  FUNCTION_MARK,
+  DOT_MARK,
+  STYLED_ATTR,
+  COMPONENTS_ATTR_VALUE,
+  INTERLEAVE_COMPONENTS_ATTR_VALUE,
+  BLANK_SPACE,
+} from '../constants';
 import { type KeyframesRule, StyleSheet, detectIsStyleSheet, detectIsKeyframesRule } from '../tokens';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
 import { type ThemeProps, useTheme } from '../theme';
 import { type TextBased } from '../shared';
-import { useManager } from '../manager';
+import { useManager } from '../server/manager';
 import { parse } from '../parse';
 import { hash } from '../hash';
 
 let cache: Map<string, [string, string]> = null;
 let injections: Set<string> = null;
 let tag: HTMLStyleElement = null;
+let isLoaded = false;
 const $$styled = Symbol('styled');
 
 setupGlobal();
-
 function styled<P extends object, T extends object = {}>(tagName: string | ComponentFactory<P>) {
   const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
+
+  if (!isLoaded && detectIsBrowser()) {
+    reuse(getInterleavedElements(), createTag);
+    isLoaded = true;
+  }
 
   return createStyledComponent<P & T>(factory as Factory<P & T>);
 }
@@ -147,6 +170,7 @@ function setupGlobal() {
   cache = new Map();
   injections = new Set();
   tag = null;
+  isLoaded = false;
 }
 
 function getExtendingConfig<P extends object>(factory: StyledComponentFactory<P>) {
@@ -247,7 +271,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
 function createTag() {
   const tag = createStyleElement();
 
-  setAttr(tag, STYLED_COMPONENTS_ATTR, String(true));
+  setAttr(tag, STYLED_ATTR, COMPONENTS_ATTR_VALUE);
   append(document.head, tag);
 
   return tag;
@@ -257,7 +281,24 @@ function inject(css: string, tag: HTMLStyleElement) {
   tag.textContent = `${tag.textContent}${css}`;
 }
 
-const getTag = () => getElement(`[${STYLED_COMPONENTS_ATTR}="true"]`) as HTMLStyleElement;
+function reuse(elements: Array<HTMLStyleElement>, createTag: () => HTMLStyleElement) {
+  if (elements.length === 0) return;
+  const tag = createTag();
+  let content = '';
+
+  for (const element of elements) {
+    content += element.textContent;
+    element.remove();
+  }
+
+  tag.textContent = content;
+}
+
+function getInterleavedElements() {
+  return getElements(`[${STYLED_ATTR}="${INTERLEAVE_COMPONENTS_ATTR_VALUE}"]`) as Array<HTMLStyleElement>;
+}
+
+const getTag = () => getElement(`[${STYLED_ATTR}="${COMPONENTS_ATTR_VALUE}"]`) as HTMLStyleElement;
 
 const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
 
@@ -468,4 +509,4 @@ styled.tspan = styled('tspan');
 styled.use = styled('use');
 styled.view = styled('view');
 
-export { setupGlobal, styled, css, inject, filterArgs, detectIsStyled };
+export { setupGlobal, styled, css, inject, reuse, getTag, filterArgs, detectIsStyled };

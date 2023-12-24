@@ -1,18 +1,32 @@
 import { component, forwardRef, useInsertionEffect, useMemo, useId, detectIsServer } from '@dark-engine/core';
 
-import { type Args } from '../styled';
-import { STYLED_GLOBAL_ATTR } from '../constants';
+import {
+  detectIsBrowser,
+  mapProps,
+  getElement,
+  insertBefore,
+  getElements,
+  createStyleElement,
+  setAttr,
+  append,
+} from '../utils';
+import { STYLED_ATTR, GLOBAL_ATTR_VALUE, INTERLEAVE_GLOBAL_ATTR_VALUE } from '../constants';
+import { css, inject, reuse, getTag as getStyleTag, filterArgs } from '../styled';
 import { type ThemeProps, useTheme } from '../theme';
-import { useManager } from '../manager';
-import { css, inject, filterArgs } from '../styled';
-import { mapProps, getElement, createStyleElement, setAttr, append } from '../utils';
+import { useManager } from '../server/manager';
+import { type Args } from '../styled';
 
 let cache: Map<string, string> = null;
 let tag: HTMLStyleElement = null;
+let isLoaded = false;
 
 setupGlobal();
 
 function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, ...args: Args<P & ThemeProps>) {
+  if (!isLoaded && detectIsBrowser()) {
+    reuse(getInterleavedElements(), createTag);
+    isLoaded = true;
+  }
   const fns = filterArgs<P>(args);
   const sheet = css<P>(source, ...args);
   const factory = forwardRef<P, unknown>(
@@ -54,18 +68,29 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
 function setupGlobal() {
   cache = new Map();
   tag = null;
+  isLoaded = false;
 }
 
 function createTag() {
-  const tag = createStyleElement();
+  const tag1 = createStyleElement();
+  const tag2 = getStyleTag();
 
-  setAttr(tag, STYLED_GLOBAL_ATTR, String(true));
-  append(document.head, tag);
+  setAttr(tag1, STYLED_ATTR, GLOBAL_ATTR_VALUE);
 
-  return tag;
+  if (tag2) {
+    insertBefore(document.head, tag1, tag2);
+  } else {
+    append(document.head, tag1);
+  }
+
+  return tag1;
 }
 
-const getTag = () => getElement(`[${STYLED_GLOBAL_ATTR}="true"]`) as HTMLStyleElement;
+function getInterleavedElements() {
+  return getElements(`[${STYLED_ATTR}="${INTERLEAVE_GLOBAL_ATTR_VALUE}"]`) as Array<HTMLStyleElement>;
+}
+
+const getTag = () => getElement(`[${STYLED_ATTR}="${GLOBAL_ATTR_VALUE}"]`) as HTMLStyleElement;
 
 const reinject = (tag: HTMLStyleElement, stylesMap: Map<string, string>) => {
   tag.textContent = '';

@@ -3,7 +3,7 @@ import { platform, REPLACER } from '@dark-engine/core';
 import { createRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
 import { renderToStream, renderToString, inject as injectServerSupport } from '@dark-engine/platform-server';
 
-import { STYLED_GLOBAL_ATTR, STYLED_COMPONENTS_ATTR } from '@dark-engine/styled/constants';
+import { STYLED_ATTR, GLOBAL_ATTR_VALUE, COMPONENTS_ATTR_VALUE } from '@dark-engine/styled/constants';
 
 jest.mock('@dark-engine/core', () => {
   return {
@@ -91,9 +91,9 @@ function mockBrowserPlatform() {
   jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));
 }
 
-const wrapWithGlobalStyledTag = (x: string) => `<style ${STYLED_GLOBAL_ATTR}="true">${x}</style>`;
+const wrapWithGlobalStyledTag = (x: string) => `<style ${STYLED_ATTR}="${GLOBAL_ATTR_VALUE}">${x}</style>`;
 
-const wrapWithStyledTag = (x: string) => `<style ${STYLED_COMPONENTS_ATTR}="true">${x}</style>`;
+const wrapWithStyledTag = (x: string) => `<style ${STYLED_ATTR}="${COMPONENTS_ATTR_VALUE}">${x}</style>`;
 
 export {
   dom,
