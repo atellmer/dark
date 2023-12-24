@@ -75,9 +75,9 @@ import {
 } from '@dark-engine/styled';
 ```
 
-## Getting Started
+## Getting started
 
-The styled uses tagged template literals to describe styles and create a final styled component that can be rendered like a regular Dark component, which can be nested with children and passed props. Under the hood, styled parses the style string into a simple AST in one pass, which is then transformed into final CSS and inserted into the DOM. At the same time, styles are divided into static and dynamic (based on props) for greater fragmentation of reused CSS classes. CSS classes are generated based on a fast non-cryptographic hash function and attached to DOM nodes.
+The styled uses tagged template literals to describe styles and create a final styled component that can be rendered like a regular Dark component, which can be nested with children and passed props. Under the hood, styled parses the style string into the simple abstract syntax tree (AST) in one pass, which is then transformed into final CSS and inserted into the DOM. At the same time, styles are divided into static and dynamic (based on props) for greater fragmentation of reused CSS classes. CSS classes are generated based on a fast non-cryptographic hash function and attached to DOM nodes.
 
 ```tsx
 const Title = styled.h1`
@@ -116,7 +116,7 @@ const Box = styled.div<{ $color: string }>`
 <Box $color='blue' />
 ```
 
-If you need to dynamically generate something more than just a style property value, then you need to always use a special css function that converts the style string to an AST.
+If you need to dynamically generate something more than just a style property value, then you need to always use a special css function that converts the style string to the AST.
 
 ```tsx
 const Box = styled.div<{ $color: string }>`
@@ -129,7 +129,7 @@ const Box = styled.div<{ $color: string }>`
 `;
 ```
 
-## Extending Styles
+## Extending styles
 
 To reuse already written styles, you can wrap a ready-made styled component in a styled function. In this case, a new component will be created that will combine all the styles of the parent component with its own styles, which will take precedence.
 
