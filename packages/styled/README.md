@@ -218,7 +218,7 @@ const Button = styled.button`
 <Button as={SomeButton}>Button with .btn class</Button>
 ```
 
-## Configuration of default attributes via `attr` function
+## Configuration of default attributes via `attrs` function
 
 ```tsx
 type TextFieldProps = {
@@ -277,7 +277,7 @@ const Thing = styled.div`
 </>
 ```
 
-## Media queriers and container queries
+## Media and Container queries
 
 The lib allows you to write nested media query and container query expressions as if you were using a CSS preprocessor. Under the hood, expressions are transformed into global expressions in which classes with styles are placed.
 
