@@ -3,7 +3,6 @@
     "target": "ES2021",
     "moduleResolution": "node",
     "module": "esnext",
-    "outDir": "./lib/",
     "sourceMap": true,
     "noImplicitAny": false,
     "removeComments": true,
@@ -33,6 +32,15 @@
       "@dark-engine/web-router": [
         "../../../packages/web-router/src/index"
       ],
+      "@dark-engine/animations": [
+        "../../../packages/animations/src/index"
+      ],
+      "@dark-engine/styled": [
+        "../../../packages/styled/src/index"
+      ],
+      "@dark-engine/styled/server": [
+        "../../../packages/styled/src/server/index"
+      ]
     }
   }
 }

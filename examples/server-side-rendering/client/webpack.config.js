@@ -9,6 +9,8 @@ const config = {
       '@dark-engine/core': resolve(__dirname, '../../../packages/core/src'),
       '@dark-engine/platform-browser': resolve(__dirname, '../../../packages/platform-browser/src'),
       '@dark-engine/web-router': resolve(__dirname, '../../../packages/web-router/src'),
+      '@dark-engine/animations': resolve(__dirname, '../../../packages/animations/src'),
+      '@dark-engine/styled': resolve(__dirname, '../../../packages/styled/src'),
     },
   },
   entry: resolve(__dirname, './index.tsx'),

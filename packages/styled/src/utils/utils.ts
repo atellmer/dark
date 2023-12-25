@@ -1,5 +1,3 @@
-import { detectIsUndefined } from '@dark-engine/core';
-
 import { STYLE_TAG, BLANK_SPACE } from '../constants';
 
 const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
@@ -52,7 +50,7 @@ const mergeTemplates = (t1: TemplateStringsArray, t2: TemplateStringsArray) => {
   return result as TemplateStringsArray;
 };
 
-const detectIsBrowser = () => !detectIsUndefined(window);
+const detectIsBrowser = () => typeof window !== 'undefined';
 
 export {
   uniq,

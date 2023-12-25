@@ -159,7 +159,7 @@ function setObjectStyle(element: TagNativeElement, style: object) {
   }
 }
 
-function addAttributes(element: NativeElement, node: TagVirtualNode) {
+function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZone: boolean) {
   const attrNames = Object.keys(node.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -185,7 +185,7 @@ function addAttributes(element: NativeElement, node: TagVirtualNode) {
 
     if (detectIsEvent(attrName)) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
-    } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
+    } else if (!isHydrateZone && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       const stop = patchProperties({
         tagName: node.name,
         element: tagElement,
@@ -322,8 +322,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
   const parentElement = parentFiber.element;
   const childNodes = parentElement.childNodes;
+  const isHydrateZone = $$scope().getIsHydrateZone();
 
-  if ($$scope().getIsHydrateZone()) {
+  if (isHydrateZone) {
     const nativeElement = childNodes[fiber.eidx] as NativeElement;
 
     if (
@@ -346,7 +347,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
   }
 
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydrateZone);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {

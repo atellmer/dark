@@ -20,7 +20,7 @@ class ServerStyleSheet {
     return ManagerProvider({ manager: this.manager, slot: app });
   }
 
-  getStyleTags() {
+  getStyleTags(): Array<string> {
     const styles = this.manager.getStyles();
     const tags: Array<string> = [];
     const tag1 = `<${STYLE_TAG} ${STYLED_ATTR}="${GLOBAL_ATTR_VALUE}">${FUNCTION_MARK}</${STYLE_TAG}>`;
@@ -42,7 +42,7 @@ class ServerStyleSheet {
     return tags;
   }
 
-  interleaveWithStream(readable: Readable) {
+  interleaveWithStream(readable: Readable): Transform {
     const { manager } = this;
     const $seal = this.seal.bind(this);
     const writable = new Writable({ write() {} });
@@ -97,4 +97,4 @@ class ServerStyleSheet {
   }
 }
 
-export { ServerStyleSheet };
+export { type Transform, ServerStyleSheet };
