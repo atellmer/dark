@@ -416,6 +416,8 @@ const Rotate = styled.div`
   padding: 2rem 1rem;
   font-size: 2rem;
 `;
+
+<Rotate>🍉</Rotate>
 ```
 
 If you want to generate animation based on props, you can represent the animation as a function.
@@ -442,8 +444,8 @@ const Colored = styled.div<{ $from: string; $to: string }>`
   font-size: 2rem;
 `;
 
-<Colored $from='yellow' $to='red'>🍉</Colored>
-<Colored $from='green' $to='blue'>🍉</Colored>
+<Colored $from='yellow' $to='red'>🍊</Colored>
+<Colored $from='green' $to='blue'>🍋</Colored>
 ```
 
 ## Global styles
@@ -451,13 +453,14 @@ const Colored = styled.div<{ $from: string; $to: string }>`
 Typically, styled components are auto-scoped to a local CSS class, providing isolation from other components. However, with `createGlobalStyle`, this restriction is lifted, enabling the application of CSS resets or base stylesheets.
 
 ```tsx
-const GlobalStyle = createGlobalStyle<{ $whiteColor?: boolean }>`
+const GlobalStyle = createGlobalStyle<{ $light?: boolean }>`
   body {
-    background-color: ${props => (props.$whiteColor ? 'white' : 'black')};
+    background-color: ${p => (p.$light ? 'white' : 'black')};
+    color: ${p => (p.$light ? 'black' : 'white')};
   }
 `;
 
-<GlobalStyle $whiteColor />
+<GlobalStyle $light />
 ```
 ## Theming
 
