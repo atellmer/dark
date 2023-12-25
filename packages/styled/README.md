@@ -172,7 +172,7 @@ const TomatoButton = styled(Button)`
 <TomatoButton>Tomato button</TomatoButton>
 ```
 
-You can also style any arbitrary component using this approach. The only requirement is that it passes a class or `className` prop to the desired DOM node.
+You can also style any arbitrary component using this approach. The only requirement is that it passes a `class` or `className` prop to the desired DOM node.
 
 ```tsx
 type SomeButtonProps = {

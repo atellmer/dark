@@ -122,6 +122,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           const manager = useManager(); // special case of hook using, should be last in order
 
           styles.forEach(css => manager.collectComponentStyle(css));
+          keyframes.forEach(css => manager.collectComponentStyle(css));
           manager.reset(setupGlobal);
         }
 
