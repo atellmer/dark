@@ -4,7 +4,7 @@ Styled components 💅 for Dark.
 
 [More about Dark](https://github.com/atellmer/dark)
 
-## Особенности
+## Features
 - 📚 Comprehensive CSS support
 - 🎁 Encapsulated scope
 - 🎉 Accommodation of global styles
@@ -461,7 +461,7 @@ const GlobalStyle = createGlobalStyle<{ $whiteColor?: boolean }>`
 ```
 ## Theming
 
-The styled offers complete theming support by exporting a `<ThemeProvider>` wrapper component. This component supplies a theme to all its child components through the context API. Consequently, all styled-components in the render tree, regardless of their depth, can access the provided theme.
+The styled offers complete theming support by exporting a `<ThemeProvider>` wrapper component. This component supplies a theme to all its child components through the context API. Consequently, all styled components in the render tree, regardless of their depth, can access the provided theme.
 
 ```tsx
 type Theme = {
