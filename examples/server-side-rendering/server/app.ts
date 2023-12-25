@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import express from 'express';
 import compression from 'compression';
 
-import { bootstrap } from '../client/bootstrap/app.server';
+import { bootstrap } from './bootstrap';
 
 const PORT = 3000;
 const app = express();

@@ -2,8 +2,8 @@ import { h } from '@dark-engine/core';
 import { renderToStream } from '@dark-engine/platform-server';
 import { ServerStyleSheet } from '@dark-engine/styled/server';
 
-import { App, type AppProps } from '../components/app';
-import { Page } from '../components/page';
+import { type AppProps, App } from '../client/components/app';
+import { Page } from '../client/components/page';
 
 type BootstrapOptions = {
   title: string;

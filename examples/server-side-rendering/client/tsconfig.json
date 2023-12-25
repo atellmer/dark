@@ -37,9 +37,6 @@
       ],
       "@dark-engine/styled": [
         "../../../packages/styled/src/index"
-      ],
-      "@dark-engine/styled/server": [
-        "../../../packages/styled/src/server/index"
       ]
     }
   }

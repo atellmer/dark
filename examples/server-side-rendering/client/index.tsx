@@ -1,3 +1,3 @@
-import { bootstrap } from './bootstrap/app.client';
+import { bootstrap } from './bootstrap';
 
-bootstrap(true);
+bootstrap();
