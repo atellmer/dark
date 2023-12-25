@@ -1,6 +1,6 @@
-# @dark-engine/styled 🌖
+# @dark-engine/styled 💅
 
-Styled components 💅 for Dark.
+Styled components for Dark 🌖
 
 [More about Dark](https://github.com/atellmer/dark)
 
