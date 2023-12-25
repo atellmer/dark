@@ -68,6 +68,9 @@ CDN:
 ## API
 ```tsx
 import {
+  type StyledComponentFactory,
+  type StyleSheet,
+  type Keyframes,
   ThemeProvider,
   createGlobalStyle,
   keyframes,

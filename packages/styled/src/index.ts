@@ -1,7 +1,8 @@
+export { type StyledComponentFactory, styled, css } from './styled';
+export { type Keyframes, keyframes } from './keyframes';
 export { ThemeProvider, useTheme } from './theme';
 export { createGlobalStyle } from './global';
-export { keyframes } from './keyframes';
-export { styled, css } from './styled';
+export { type StyleSheet } from './tokens';
 export { useStyle } from './use-style';
 
 declare module '@dark-engine/styled' {

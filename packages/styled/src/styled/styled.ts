@@ -333,12 +333,6 @@ type ExtendingConfig<P extends object = {}> = {
   transform: (x: P) => P;
 };
 
-type StyledComponentFactory<P extends object = {}> = {
-  [$$styled]: {
-    className: string;
-  } & ExtendingConfig<P>;
-} & ComponentFactory<P & StandardComponentProps & StyledProps>;
-
 type TransformFn<P> = (p: P) => any;
 
 type DynamicArgs<P> = Array<ArgFn<P>>;
@@ -346,6 +340,12 @@ type DynamicArgs<P> = Array<ArgFn<P>>;
 type ArgFn<P> = Function | ((p: P) => TextBased | false);
 
 export type Args<P> = Array<TextBased | ArgFn<P> | StyleSheet | Keyframes>;
+
+export type StyledComponentFactory<P extends object = {}> = {
+  [$$styled]: {
+    className: string;
+  } & ExtendingConfig<P>;
+} & ComponentFactory<P & StandardComponentProps & StyledProps>;
 
 styled.a = styled('a');
 styled.abbr = styled('abbr');
