@@ -172,7 +172,6 @@ function share(fiber: Fiber, inst: Instance, $scope: Scope) {
   const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, $scope) : true;
 
   $scope.setCursorFiber(fiber);
-  $scope.addCandidate(fiber);
   fiber.inst = inst;
 
   if (alt && alt.mask & MOVE_MASK) {
@@ -189,6 +188,8 @@ function share(fiber: Fiber, inst: Instance, $scope: Scope) {
   } else if (fiber.mask & MOVE_MASK) {
     fiber.tag = UPDATE_EFFECT_TAG;
   }
+
+  $scope.addCandidate(fiber); // !
 }
 
 function createFiber(alt: Fiber, inst: Instance, idx: number) {
