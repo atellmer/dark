@@ -1,21 +1,22 @@
 # @dark-engine/styled 🌖
 
-Styled components for Dark.
+Styled components 💅 for Dark.
 
 [More about Dark](https://github.com/atellmer/dark)
 
-## Features
-- Comprehensive CSS support
-- Encapsulated scope
-- Accommodation of global styles
-- Styles dictated by component properties
-- Reusable fragments
-- CSS nesting
-- Theming
-- Animations
-- SSR
-- Minification
-- No deps
+## Особенности
+- 📚 Comprehensive CSS support
+- 🎁 Encapsulated scope
+- 🎉 Accommodation of global styles
+- 📝 Styles dictated by component properties
+- 🔁 Reusable fragments
+- 🛒 CSS nesting
+- 🎨 Theming
+- 💃 Animations
+- 💻 SSR
+- 🗜️ Minification
+- 🚫 No deps
+- 📦 Small size
 
 ## Usage
 ```tsx
@@ -82,7 +83,7 @@ import {
 import { ServerStyleSheet } from '@dark-engine/styled/server';
 ```
 
-## Getting started
+## Getting Started
 
 The styled uses tagged template literals to describe styles and create a final styled component that can be rendered like a regular Dark component, which can be nested with children and passed props. Under the hood, styled parses the style string into the simple abstract syntax tree (AST) in one pass, which is then transformed into final CSS and inserted into the DOM. At the same time, styles are divided into static and dynamic (based on props) for greater fragmentation of reused CSS classes. CSS classes are generated based on a fast non-cryptographic hash function and attached to DOM nodes.
 
