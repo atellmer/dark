@@ -9,7 +9,6 @@ import {
   INTERLEAVE_GLOBAL_ATTR_VALUE,
   INTERLEAVE_COMPONENTS_ATTR_VALUE,
   FUNCTION_MARK,
-  DOCTYPE,
 } from '../constants';
 import { STYLE_LEVEL, Manager, ManagerProvider } from './manager';
 
@@ -48,8 +47,8 @@ class ServerStyleSheet {
     const writable = new Writable({ write() {} });
     const transform = new Transform({
       encoding: 'utf-8',
-      read() {},
       transform(chunk: Buffer, _, callback) {
+        const pattern = /(<\/.*?>)/;
         const data = chunk.toString();
         const styles = manager.getStyles();
         const set1 = styles[STYLE_LEVEL.GLOBAL];
@@ -60,7 +59,7 @@ class ServerStyleSheet {
         let css2 = '';
         let content = '';
 
-        if (data !== DOCTYPE) {
+        if (pattern.test(data)) {
           for (const style of set1) {
             css1 += style;
             set1.delete(style);
@@ -73,7 +72,7 @@ class ServerStyleSheet {
 
           css1 && (content += tag1.replace(FUNCTION_MARK, css1));
           css2 && (content += tag2.replace(FUNCTION_MARK, css2));
-          content += data;
+          content = data.replace(pattern, `$1${content}`);
           this.push(content);
         } else {
           this.push(chunk);
@@ -97,4 +96,4 @@ class ServerStyleSheet {
   }
 }
 
-export { type Transform, ServerStyleSheet };
+export { ServerStyleSheet };

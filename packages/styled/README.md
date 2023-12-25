@@ -516,9 +516,9 @@ The styled supports server-side rendering, complemented by stylesheet rehydratio
 const sheet = new ServerStyleSheet();
 try {
   const app = await renderToString(sheet.collectStyles(<App />));
-  const styleTags = sheet.getStyleTags();
+  const tags = sheet.getStyleTags();
   const mark = '{{%styles%}}' // somewhere in your <head></head>
-  const page = `<!DOCTYPE html>${app}`.replace(mark, styleTags.join(''));
+  const page = `<!DOCTYPE html>${app}`.replace(mark, tags.join(''));
 
   res.statusCode = 200;
   res.send(page);
@@ -533,15 +533,10 @@ try {
 
 ```tsx
 const sheet = new ServerStyleSheet();
-try {
-  const stream = sheet.interleaveWithStream(renderToStream(sheet.collectStyles(<App />)));
+const stream = sheet.interleaveWithStream(renderToStream(sheet.collectStyles(<App />)));
 
-  res.statusCode = 200;
-  stream.pipe(res);
-} catch(error) {
-  console.error(error);
-  sheet.seal();
-}
+res.statusCode = 200;
+stream.pipe(res);
 ```
 
 # LICENSE

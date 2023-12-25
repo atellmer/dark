@@ -22,6 +22,7 @@ import {
 
 import { createNativeElement, commit, finishCommit, chunk } from '../dom';
 import { TagNativeElement } from '../native-element';
+import { DOCTYPE } from '../constants';
 
 const spawn = nextTick; // !
 let nextRootId = -1;
@@ -149,7 +150,6 @@ function addScripts(scripts: Array<string>) {
 }
 
 const PREPEND_SCRIPTS_CHUNK = '</body>';
-const DOCTYPE = '<!DOCTYPE html>';
 
 const getNextRootId = () => ++nextRootId;
 

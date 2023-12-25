@@ -1,4 +1,5 @@
 import { type DarkElement, h, Fragment, component } from '@dark-engine/core';
+import { DOCTYPE } from '@dark-engine/platform-server/constants';
 import {
   createServerEnv,
   replacer,
@@ -8,7 +9,6 @@ import {
 
 import { setupGlobal as setupGlobal1, createGlobalStyle } from '../global';
 import { setupGlobal as setupGlobal2, styled, css } from '../styled';
-import { DOCTYPE } from '../constants';
 import { ServerStyleSheet } from './sheet';
 
 let { renderToString, renderToStream } = createServerEnv();
@@ -141,7 +141,7 @@ describe('[@styled/server]', () => {
         stream.on('end', () => {
           resolve(null);
           expect(data).toBe(
-            `${DOCTYPE}<style dark-styled="interleave-global">body{font-family:Arial;}</style><style dark-styled="interleave-components">.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}</style><html><head><title>App</title></head><body><div id="root">${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-dhfaea">SSR</div><div class="dk-dhfaea">!!!</div></div><script src="./build.js" defer></script></body></html>`,
+            `${DOCTYPE}<html><head><title>App</title><style dark-styled="interleave-global">body{font-family:Arial;}</style><style dark-styled="interleave-components">.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}</style></head><body><div id="root">${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-dhfaea">SSR</div><div class="dk-dhfaea">!!!</div></div><script src="./build.js" defer></script></body></html>`,
           );
         });
       });
