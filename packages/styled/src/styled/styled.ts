@@ -127,7 +127,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
         }
 
         if (detectIsFunction($props.slot)) {
-          $props.slot = $props.slot((x: string) => `${baseName}_${x}`);
+          $props.slot = $props.slot((x: string) => `${className}_${x}`);
         }
 
         return $factory({ ...$transform($props), ref, className });
