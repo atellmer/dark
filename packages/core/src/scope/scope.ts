@@ -21,6 +21,7 @@ class Scope {
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
   private insertionEffects: Set<Callback> = new Set();
+  private defers: Array<() => Promise<unknown>> = [];
   private setPendingStatus: SetPendingStatus = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
@@ -96,6 +97,7 @@ class Scope {
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.insertionEffects = new Set([...this.insertionEffects]);
+    scope.defers = [...this.defers];
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
 
@@ -184,6 +186,10 @@ class Scope {
 
   addCandidate(fiber: Fiber) {
     this.candidates.add(fiber);
+  }
+
+  removeCandidate(fiber: Fiber) {
+    this.candidates.delete(fiber);
   }
 
   resetCandidates() {
@@ -370,6 +376,18 @@ class Scope {
 
   getEmitter() {
     return this.emitter;
+  }
+
+  defer(fn: () => Promise<unknown>) {
+    this.defers.push(fn);
+  }
+
+  getDefers() {
+    return this.defers;
+  }
+
+  resetDefers() {
+    this.defers = [];
   }
 }
 

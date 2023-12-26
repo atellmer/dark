@@ -3,33 +3,44 @@ import { detectIsFunction, detectIsUndefined } from '../utils';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
-import { useUpdate } from '../use-update';
+import { detectIsServer } from '../platform';
 import { $$scope } from '../scope';
-import { $$lazy, $$loaded } from './utils';
+import { useUpdate } from '../use-update';
 import { detectIsFiberAlive } from '../walk';
 
-const factoriesMap: Map<Function, ComponentFactory> = new Map();
+const $$lazy = Symbol('lazy');
+const factories = new Map<Function, ComponentFactory>();
 
 function lazy<P extends object, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () => void) {
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
         const { isLoaded, fallback, update: $$update, reg, unreg } = useContext(SuspenseContext);
+        const $scope = $$scope();
         const $update = useUpdate();
-        const factory = factoriesMap.get(module);
-        const fiber = $$scope().getCursorFiber();
+        const fiber = $scope.getCursorFiber();
+        const factory = factories.get(module);
         const update = () => (detectIsFiberAlive(fiber) ? $update() : $$update());
 
         if (detectIsUndefined(factory)) {
-          reg();
-          factoriesMap.set(module, null);
-          fetchModule(module).then(component => {
+          const isServer = detectIsServer();
+          const isHydrateZone = $scope.getIsHydrateZone();
+          const fn = async () => {
+            const component = await load(module);
+
             unreg();
-            type[$$loaded] = true;
-            factoriesMap.set(module, component);
-            !$$scope().getIsHydrateZone() && update();
+            factories.set(module, component);
             detectIsFunction(done) && done();
-          });
+          };
+
+          reg();
+          factories.set(module, null);
+
+          if (isServer || isHydrateZone) {
+            $scope.defer(fn);
+          } else {
+            fn().then(update);
+          }
         }
 
         return factory ? factory(props, ref) : isLoaded ? fallback : null;
@@ -39,7 +50,7 @@ function lazy<P extends object, R = unknown>(module: () => Promise<LazyModule<P>
   );
 }
 
-function fetchModule(module: () => Promise<LazyModule>) {
+function load(module: () => Promise<LazyModule>) {
   return new Promise<ComponentFactory>(resolve => {
     module().then(module => {
       if (process.env.NODE_ENV !== 'production') {
@@ -57,4 +68,4 @@ export type LazyModule<P extends object = {}> = {
   default: ComponentFactory<P>;
 };
 
-export { lazy, fetchModule };
+export { lazy };

@@ -1,4 +1,4 @@
-import { platform, detectIsServer } from '../platform';
+import { platform } from '../platform';
 import {
   CREATE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,
@@ -12,7 +12,6 @@ import {
   MOVE_MASK,
   FLUSH_MASK,
   SHADOW_MASK,
-  RESTART_TIMEOUT,
   Flag,
 } from '../constants';
 import {
@@ -42,7 +41,6 @@ import {
   detectAreSameInstanceTypes,
 } from '../view';
 import { detectIsMemo } from '../memo/utils';
-import { detectIsLazy, detectIsLoaded } from '../lazy/utils';
 import {
   walk,
   getFiberWithElement,
@@ -55,11 +53,13 @@ import { unmountFiber } from '../unmount';
 import { Fragment, detectIsFragment } from '../fragment';
 import { type RestoreOptions, scheduler } from '../scheduler';
 
+let hasPendingPromise = false;
 let hasRenderError = false;
 
 export type WorkLoop = (isAsync: boolean) => boolean;
 
 function workLoop(isAsync: boolean) {
+  if (hasPendingPromise) return true;
   if (hasRenderError) return false;
   const $scope = $$scope();
   const wipFiber = $scope.getWorkInProgress();
@@ -80,8 +80,8 @@ function workLoop(isAsync: boolean) {
       commit($scope);
     }
   } catch (err) {
-    if (err instanceof StopWork) {
-      !isAsync && setTimeout(() => workLoop(false), RESTART_TIMEOUT);
+    if (err instanceof Promise) {
+      pending(err, $scope).then(() => !isAsync && workLoop(false));
     } else {
       hasRenderError = true;
       throw err;
@@ -89,6 +89,25 @@ function workLoop(isAsync: boolean) {
   }
 
   return hasMoreWork;
+}
+
+function pending(promise: Promise<unknown>, $scope: Scope) {
+  return new Promise(resolve => {
+    hasPendingPromise = true;
+    promise.finally(() => {
+      const unit = $scope.getNextUnitOfWork();
+
+      hasPendingPromise = false;
+      $scope.resetDefers();
+
+      walk(unit.child, (fiber, skip) => {
+        if (fiber.parent !== unit) return skip();
+        $scope.removeCandidate(fiber);
+      });
+
+      resolve(null);
+    });
+  });
 }
 
 function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
@@ -346,12 +365,16 @@ function mount(fiber: Fiber, $scope: Scope) {
   if (isComponent) {
     try {
       let result = component.type(component.props, component.ref);
+      const defers = $scope.getDefers();
 
-      if (detectIsLazy(component) && !detectIsLoaded(component) && ($scope.getIsHydrateZone() || detectIsServer())) {
+      if (defers.length > 0) {
+        const promise = Promise.all(defers.map(x => x()));
+
         $scope.navToParent();
         $scope.setNextUnitOfWork(fiber.parent);
         Fiber.setNextId(fiber.parent.id);
-        throw new StopWork();
+
+        throw promise;
       }
 
       if (detectIsArray(result)) {
@@ -363,10 +386,7 @@ function mount(fiber: Fiber, $scope: Scope) {
       component.children = result as Array<Instance>;
       platform.detectIsPortal(inst) && fiber.markHost(PORTAL_HOST_MASK);
     } catch (err) {
-      if (err instanceof StopWork) {
-        throw err;
-      }
-
+      if (err instanceof Promise) throw err;
       component.children = [];
       fiber.setError(err);
       error(err);
@@ -596,7 +616,5 @@ const $createChanger = (): UpdateChanger => ({
 });
 
 const detectIsBusy = () => Boolean($$scope()?.getWorkInProgress());
-
-class StopWork extends Error {}
 
 export { Fiber, workLoop, createUpdate, detectIsBusy };

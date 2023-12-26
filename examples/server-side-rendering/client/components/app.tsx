@@ -93,8 +93,7 @@ const GlobalStyle = createGlobalStyle`
     font-size: 14px;
   }
 
-  html,
-  body {
+  html, body {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -206,8 +205,7 @@ const GlobalStyle = createGlobalStyle`
     animation: spHydro 0.6s infinite linear;
   }
 
-  .sp-hydrogen:before,
-  .sp-hydrogen:after {
+  .sp-hydrogen:before, .sp-hydrogen:after {
     content: '';
     position: absolute;
     width: 10px;
