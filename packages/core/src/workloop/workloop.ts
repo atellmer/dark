@@ -81,7 +81,11 @@ function workLoop(isAsync: boolean) {
     }
   } catch (err) {
     if (err instanceof Promise) {
-      pending(err, $scope).then(() => !isAsync && workLoop(false));
+      hasPendingPromise = true;
+      err.finally(() => {
+        hasPendingPromise = false;
+        !isAsync && workLoop(false);
+      });
     } else {
       hasRenderError = true;
       throw err;
@@ -89,25 +93,6 @@ function workLoop(isAsync: boolean) {
   }
 
   return hasMoreWork;
-}
-
-function pending(promise: Promise<unknown>, $scope: Scope) {
-  return new Promise(resolve => {
-    hasPendingPromise = true;
-    promise.finally(() => {
-      const unit = $scope.getNextUnitOfWork();
-
-      hasPendingPromise = false;
-      $scope.resetDefers();
-
-      walk(unit.child, (fiber, skip) => {
-        if (fiber.parent !== unit) return skip();
-        $scope.removeCandidate(fiber);
-      });
-
-      resolve(null);
-    });
-  });
 }
 
 function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
@@ -154,7 +139,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
   parent.child = fiber;
   fiber.eidx = parent.element ? 0 : parent.eidx;
 
-  share(fiber, inst, $scope);
+  share(fiber, parent, inst, $scope);
 
   return fiber;
 }
@@ -181,12 +166,12 @@ function mountSibling(left: Fiber, $scope: Scope) {
   left.next = fiber;
   fiber.eidx = left.eidx + (left.element ? 1 : left.cec);
 
-  share(fiber, inst, $scope);
+  share(fiber, left, inst, $scope);
 
   return fiber;
 }
 
-function share(fiber: Fiber, inst: Instance, $scope: Scope) {
+function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
   const { alt } = fiber;
   const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, $scope) : true;
 
@@ -201,7 +186,7 @@ function share(fiber: Fiber, inst: Instance, $scope: Scope) {
   fiber.hook && (fiber.hook.owner = fiber); // !
 
   if (shouldMount) {
-    fiber.inst = mount(fiber, $scope);
+    fiber.inst = mount(fiber, prev, $scope);
     alt && reconcile(fiber, alt, $scope);
     setup(fiber, alt);
   } else if (fiber.mask & MOVE_MASK) {
@@ -357,7 +342,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   return false;
 }
 
-function mount(fiber: Fiber, $scope: Scope) {
+function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   let inst = fiber.inst;
   const isComponent = detectIsComponent(inst);
   const component = inst as Component;
@@ -370,9 +355,10 @@ function mount(fiber: Fiber, $scope: Scope) {
       if (defers.length > 0) {
         const promise = Promise.all(defers.map(x => x()));
 
-        $scope.navToParent();
-        $scope.setNextUnitOfWork(fiber.parent);
-        Fiber.setNextId(fiber.parent.id);
+        $scope.resetDefers();
+        $scope.navToPrev();
+        $scope.setNextUnitOfWork(prev);
+        Fiber.setNextId(prev.id);
 
         throw promise;
       }
@@ -602,7 +588,7 @@ function createUpdate(options: CreateUpdateOptions) {
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
     $scope.setCursorFiber(fiber);
-    fiber.inst = mount(fiber, $scope);
+    fiber.inst = mount(fiber, null, $scope);
     $scope.setNextUnitOfWork(fiber);
   };
 

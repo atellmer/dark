@@ -149,6 +149,18 @@ class Scope {
     this.mountLevel = this.mountLevel - 1;
   }
 
+  navToPrev() {
+    const idx = this.getMountIndex();
+
+    if (idx === 0) {
+      this.navToParent();
+      this.setMountDeep(true);
+    } else {
+      this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] - 1;
+      this.setMountDeep(false);
+    }
+  }
+
   getMountIndex() {
     return this.mountNav[this.mountLevel];
   }
@@ -186,10 +198,6 @@ class Scope {
 
   addCandidate(fiber: Fiber) {
     this.candidates.add(fiber);
-  }
-
-  removeCandidate(fiber: Fiber) {
-    this.candidates.delete(fiber);
   }
 
   resetCandidates() {
