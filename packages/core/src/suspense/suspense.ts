@@ -11,17 +11,18 @@ import { Shadow } from '../shadow';
 import { dummyFn } from '../utils';
 
 type SuspenseProps = {
-  name: string;
   fallback: DarkElement;
 } & Required<SlotProps>;
 
 type SuspenseContextValue = {
+  isLoaded: boolean;
+  fallback: DarkElement;
   loading: (x: boolean) => void;
 };
 
-const SuspenseContext = createContext<SuspenseContextValue>({ loading: dummyFn });
+const SuspenseContext = createContext<SuspenseContextValue>({ loading: dummyFn, fallback: null, isLoaded: false });
 
-const Suspense = component<SuspenseProps>(({ name, fallback, slot }) => {
+const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   if (process.env.NODE_ENV !== 'production') {
     if (!fallback) {
       throw new Error(`[Dark]: Suspense fallback not found!`);
@@ -32,7 +33,7 @@ const Suspense = component<SuspenseProps>(({ name, fallback, slot }) => {
   const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || $scope.getIsHydrateZone());
   const scope = useMemo(() => ({ size: 0 }), []);
   const loading = (x: boolean) => (x ? scope.size++ : scope.size--);
-  const value = useMemo<SuspenseContextValue>(() => ({ loading }), []);
+  const value = useMemo<SuspenseContextValue>(() => ({ fallback, isLoaded, loading }), []);
   const content = [
     Shadow({ key: CONTENT, isVisible: isLoaded, slot }),
     isLoaded ? null : Fragment({ key: FALLBACK, slot: fallback }),
@@ -44,6 +45,9 @@ const Suspense = component<SuspenseProps>(({ name, fallback, slot }) => {
 
     return off;
   }, []);
+
+  value.isLoaded = isLoaded;
+  value.fallback = fallback;
 
   return SuspenseContext.Provider({ value, slot: content });
 });
