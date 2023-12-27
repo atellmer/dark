@@ -26,10 +26,10 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done?: () => v
           const isServer = detectIsServer();
           const isHydrateZone = $scope.getIsHydrateZone();
           const make = async () => {
-            const component = await load<P>(module);
+            const factory = await load(module);
 
             off();
-            factories.set(module, component);
+            factories.set(module, factory);
             detectIsFunction(done) && done();
           };
 
@@ -51,7 +51,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done?: () => v
 }
 
 function load<P extends object>(module: ModuleFn<P>) {
-  return new Promise<ComponentFactory>(resolve => {
+  return new Promise<ComponentFactory<P>>(resolve => {
     module().then(module => {
       if (process.env.NODE_ENV !== 'production') {
         if (!module.default) {
