@@ -2,7 +2,7 @@
 import { dom, replacer, createBrowserEnv, nextTick } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component';
-import { type LazyModule, lazy } from '../lazy';
+import { type Module, lazy } from '../lazy';
 import { Suspense } from './suspense';
 import { Fragment } from '../fragment';
 
@@ -22,7 +22,7 @@ describe('[@core/suspense]', () => {
       return new Promise(resolve => {
         const Lazy = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy</div>) });
               }, 10);
@@ -60,7 +60,7 @@ describe('[@core/suspense]', () => {
       return new Promise(resolve => {
         const Lazy = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy</div>) });
               }, 10);
@@ -110,7 +110,7 @@ describe('[@core/suspense]', () => {
       return new Promise(resolve => {
         const Lazy1 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy 1</div>) });
               }, 10);
@@ -122,7 +122,7 @@ describe('[@core/suspense]', () => {
         );
         const Lazy2 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy 2</div>) });
               }, 20);
@@ -169,7 +169,7 @@ describe('[@core/suspense]', () => {
       return new Promise(resolve => {
         const Lazy1 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({
                   default: component(() => (
@@ -188,7 +188,7 @@ describe('[@core/suspense]', () => {
         );
         const Lazy2 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy 2</div>) });
               }, 20);
@@ -239,7 +239,7 @@ describe('[@core/suspense]', () => {
       return new Promise(resolve => {
         const Lazy1 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({
                   default: component(() => (
@@ -260,7 +260,7 @@ describe('[@core/suspense]', () => {
         );
         const Lazy2 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({
                   default: component(() => (
@@ -333,7 +333,7 @@ describe('[@core/suspense]', () => {
       return new Promise(resolve => {
         const Lazy1 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({
                   default: component(() => (
@@ -354,7 +354,7 @@ describe('[@core/suspense]', () => {
         );
         const Lazy2 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({
                   default: component(() => (
@@ -372,7 +372,7 @@ describe('[@core/suspense]', () => {
         );
         const Lazy3 = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({
                   default: component(() => (

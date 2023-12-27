@@ -11,11 +11,11 @@ import { detectIsFiberAlive } from '../walk';
 const $$lazy = Symbol('lazy');
 const factories = new Map<Function, ComponentFactory>();
 
-function lazy<P extends object, R = unknown>(module: () => Promise<LazyModule<P>>, done?: () => void) {
+function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done?: () => void) {
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
-        const { isLoaded, fallback, update: $$update, reg, unreg } = useContext(SuspenseContext);
+        const { update: $$update, on, off } = useContext(SuspenseContext);
         const $scope = $$scope();
         const $update = useUpdate();
         const fiber = $scope.getCursorFiber();
@@ -25,32 +25,32 @@ function lazy<P extends object, R = unknown>(module: () => Promise<LazyModule<P>
         if (detectIsUndefined(factory)) {
           const isServer = detectIsServer();
           const isHydrateZone = $scope.getIsHydrateZone();
-          const fn = async () => {
-            const component = await load(module);
+          const make = async () => {
+            const component = await load<P>(module);
 
-            unreg();
+            off();
             factories.set(module, component);
             detectIsFunction(done) && done();
           };
 
-          reg();
+          on();
           factories.set(module, null);
 
           if (isServer || isHydrateZone) {
-            $scope.defer(fn);
+            $scope.defer(make);
           } else {
-            fn().then(update);
+            make().then(update);
           }
         }
 
-        return factory ? factory(props, ref) : isLoaded ? fallback : null;
+        return factory ? factory(props, ref) : null;
       },
       { token: $$lazy },
     ),
   );
 }
 
-function load(module: () => Promise<LazyModule>) {
+function load<P extends object>(module: ModuleFn<P>) {
   return new Promise<ComponentFactory>(resolve => {
     module().then(module => {
       if (process.env.NODE_ENV !== 'production') {
@@ -64,8 +64,8 @@ function load(module: () => Promise<LazyModule>) {
   });
 }
 
-export type LazyModule<P extends object = {}> = {
-  default: ComponentFactory<P>;
-};
+type ModuleFn<P extends object> = () => Promise<Module<P>>;
+
+export type Module<P extends object = {}> = { default: ComponentFactory<P> };
 
 export { lazy };

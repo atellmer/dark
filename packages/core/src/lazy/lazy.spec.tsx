@@ -2,7 +2,7 @@
 import { dom, createBrowserEnv, createServerEnv, nextTick, replacer } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component';
-import { type LazyModule, lazy } from './lazy';
+import { type Module, lazy } from './lazy';
 import { platform } from '../platform';
 
 beforeEach(() => {
@@ -19,7 +19,7 @@ describe('[@core/lazy]', () => {
       return new Promise(resolve => {
         const Lazy = lazy(
           () =>
-            new Promise<LazyModule>(resolve => {
+            new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy</div>) });
               });
@@ -49,7 +49,7 @@ describe('[@core/lazy]', () => {
     `;
     const Lazy = lazy(
       () =>
-        new Promise<LazyModule>(resolve => {
+        new Promise<Module>(resolve => {
           setTimeout(() => {
             resolve({ default: component(() => <div>lazy</div>) });
           });

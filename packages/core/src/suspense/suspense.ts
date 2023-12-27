@@ -1,4 +1,4 @@
-import type { DarkElement, SlotProps } from '../shared';
+import type { DarkElement, SlotProps, Callback } from '../shared';
 import { component } from '../component';
 import { createContext, useContext } from '../context';
 import { useMemo } from '../use-memo';
@@ -10,25 +10,22 @@ import { $$scope } from '../scope';
 import { detectIsServer } from '../platform';
 import { Shadow } from '../shadow';
 import { detectIsFiberAlive } from '../walk';
+import { dummyFn } from '../utils';
 
 type SuspenseProps = {
   fallback: DarkElement;
 } & Required<SlotProps>;
 
 type SuspenseContextValue = {
-  isLoaded: boolean;
-  fallback: DarkElement;
-  update: () => void;
-  reg: () => void;
-  unreg: () => void;
+  update: Callback;
+  on: Callback;
+  off: Callback;
 };
 
 const SuspenseContext = createContext<SuspenseContextValue>({
-  isLoaded: false,
-  fallback: null,
-  update: () => {},
-  reg: () => {},
-  unreg: () => {},
+  update: dummyFn,
+  on: dummyFn,
+  off: dummyFn,
 });
 
 const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
@@ -45,24 +42,20 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   const scope = useMemo(() => ({ size: 0 }), []);
   const fiber = $scope.getCursorFiber();
   const update = () => (detectIsFiberAlive(fiber) ? $update() : $$update());
-  const value = useMemo<SuspenseContextValue>(
-    () => ({ isLoaded, fallback, update, reg: () => scope.size++, unreg: () => scope.size-- }),
-    [],
-  );
-
-  value.update = update;
-  value.isLoaded = isLoaded;
-  value.fallback = fallback;
+  const value = useMemo<SuspenseContextValue>(() => ({ update, on: () => scope.size++, off: () => scope.size-- }), []);
+  const content = [
+    Shadow({ key: CONTENT, isVisible: isLoaded, slot }),
+    isLoaded ? null : Fragment({ key: FALLBACK, slot: fallback }),
+  ].filter(Boolean);
 
   useLayoutEffect(() => {
-    const off = emitter.on('finish', () => !isLoaded && scope.size === 0 && setIsLoaded(true));
+    const fn = () => scope.size === 0 && setIsLoaded(true);
+    const off = emitter.on('finish', fn);
 
     return off;
   }, []);
 
-  const content = isLoaded
-    ? [Shadow({ key: CONTENT, isVisible: true, slot })]
-    : [Shadow({ key: CONTENT, isVisible: false, slot }), Fragment({ key: FALLBACK, slot: fallback })];
+  value.update = update;
 
   return SuspenseContext.Provider({ value, slot: content });
 });
