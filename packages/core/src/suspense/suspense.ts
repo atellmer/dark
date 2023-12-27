@@ -1,34 +1,27 @@
-import type { DarkElement, SlotProps, Callback } from '../shared';
+import type { DarkElement, SlotProps } from '../shared';
 import { component } from '../component';
-import { createContext, useContext } from '../context';
+import { createContext } from '../context';
 import { useMemo } from '../use-memo';
 import { useState } from '../use-state';
-import { useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { Fragment } from '../fragment';
 import { $$scope } from '../scope';
 import { detectIsServer } from '../platform';
 import { Shadow } from '../shadow';
-import { detectIsFiberAlive } from '../walk';
 import { dummyFn } from '../utils';
 
 type SuspenseProps = {
+  name: string;
   fallback: DarkElement;
 } & Required<SlotProps>;
 
 type SuspenseContextValue = {
-  update: Callback;
-  on: Callback;
-  off: Callback;
+  loading: (x: boolean) => void;
 };
 
-const SuspenseContext = createContext<SuspenseContextValue>({
-  update: dummyFn,
-  on: dummyFn,
-  off: dummyFn,
-});
+const SuspenseContext = createContext<SuspenseContextValue>({ loading: dummyFn });
 
-const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
+const Suspense = component<SuspenseProps>(({ name, fallback, slot }) => {
   if (process.env.NODE_ENV !== 'production') {
     if (!fallback) {
       throw new Error(`[Dark]: Suspense fallback not found!`);
@@ -36,13 +29,10 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   }
   const $scope = $$scope();
   const emitter = $scope.getEmitter();
-  const { update: $$update } = useContext(SuspenseContext);
   const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || $scope.getIsHydrateZone());
-  const $update = useUpdate();
   const scope = useMemo(() => ({ size: 0 }), []);
-  const fiber = $scope.getCursorFiber();
-  const update = () => (detectIsFiberAlive(fiber) ? $update() : $$update());
-  const value = useMemo<SuspenseContextValue>(() => ({ update, on: () => scope.size++, off: () => scope.size-- }), []);
+  const loading = (x: boolean) => (x ? scope.size++ : scope.size--);
+  const value = useMemo<SuspenseContextValue>(() => ({ loading }), []);
   const content = [
     Shadow({ key: CONTENT, isVisible: isLoaded, slot }),
     isLoaded ? null : Fragment({ key: FALLBACK, slot: fallback }),
@@ -54,8 +44,6 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
 
     return off;
   }, []);
-
-  value.update = update;
 
   return SuspenseContext.Provider({ value, slot: content });
 });

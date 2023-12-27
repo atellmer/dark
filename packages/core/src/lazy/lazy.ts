@@ -1,45 +1,40 @@
 import { type ComponentFactory, component } from '../component';
-import { detectIsFunction, detectIsUndefined } from '../utils';
+import { detectIsUndefined, dummyFn } from '../utils';
 import { useContext } from '../context';
 import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
 import { detectIsServer } from '../platform';
 import { $$scope } from '../scope';
 import { useUpdate } from '../use-update';
-import { detectIsFiberAlive } from '../walk';
 
 const $$lazy = Symbol('lazy');
 const factories = new Map<Function, ComponentFactory>();
 
-function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done?: () => void) {
+function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => void = dummyFn) {
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
-        const { update: $$update, on, off } = useContext(SuspenseContext);
+        const { loading } = useContext(SuspenseContext);
         const $scope = $$scope();
-        const $update = useUpdate();
-        const fiber = $scope.getCursorFiber();
+        const update = useUpdate();
         const factory = factories.get(module);
-        const update = () => (detectIsFiberAlive(fiber) ? $update() : $$update());
 
         if (detectIsUndefined(factory)) {
           const isServer = detectIsServer();
           const isHydrateZone = $scope.getIsHydrateZone();
           const make = async () => {
-            const factory = await load(module);
-
-            off();
-            factories.set(module, factory);
-            detectIsFunction(done) && done();
+            factories.set(module, await load(module));
+            loading(false);
+            done();
           };
 
-          on();
+          loading(true);
           factories.set(module, null);
 
           if (isServer || isHydrateZone) {
             $scope.defer(make);
           } else {
-            make().then(update);
+            make().then(() => update());
           }
         }
 
