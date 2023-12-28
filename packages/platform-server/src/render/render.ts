@@ -2,9 +2,12 @@ import { Readable } from 'node:stream';
 import {
   type DarkElement,
   type Callback,
+  type AppStateItem,
   ROOT,
   Fiber,
   CREATE_EFFECT_TAG,
+  APP_STATE_ATTR,
+  APP_STATE,
   TaskPriority,
   platform,
   flatten,
@@ -85,7 +88,7 @@ function renderToString(element: DarkElement): Promise<string> {
       const { element: nativeElement } = $$scope().getRoot() as Fiber<TagNativeElement>;
       const content = nativeElement.renderToString(true);
 
-      resolve(content);
+      resolve(withState(content));
       unmountRoot(rootId, () => {});
     };
 
@@ -111,6 +114,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
       content = '';
     }
 
+    stream.push(withState());
     stream.push(null);
     unmountRoot(rootId, () => {});
   };
@@ -147,6 +151,27 @@ function addScripts(scripts: Array<string>) {
   });
 
   return content;
+}
+
+function withState(content = '') {
+  const $scope = $$scope();
+  const state = $scope.getAppState();
+  const record: Record<string, AppStateItem> = {};
+
+  if (state.size === 0) return content;
+
+  for (const [key, value] of state) {
+    record[key] = value;
+  }
+
+  const $content = `
+    ${content}
+    <script ${APP_STATE_ATTR}="true">
+      globalThis[${APP_STATE}] = ${JSON.stringify(record)};
+    </script>
+  `;
+
+  return $content;
 }
 
 const PREPEND_SCRIPTS_CHUNK = '</body>';

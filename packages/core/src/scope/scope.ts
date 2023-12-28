@@ -1,4 +1,4 @@
-import type { Callback, ElementKey, AppState, AppStateData } from '../shared';
+import type { Callback, ElementKey, AppState, AppStateItem } from '../shared';
 import { type SetPendingStatus } from '../start-transition';
 import { type Fiber } from '../fiber';
 import { EventEmitter } from '../emitter';
@@ -400,12 +400,16 @@ class Scope {
     this.defers = [];
   }
 
-  setAppStateData(key: string, data: AppStateData) {
+  setAppStateData(key: string, data: AppStateItem) {
     this.state.set(key, data);
   }
 
   getAppStateData(key: string) {
     return this.state.get(key);
+  }
+
+  removeAppStateData(key: string) {
+    return this.state.delete(key);
   }
 
   getAppState() {

@@ -1,10 +1,9 @@
 import { useLayoutEffect } from '../use-layout-effect';
-import { type AppStateData, type AppState } from '../shared';
+import { type AppStateItem } from '../shared';
 import { detectIsServer } from '../platform';
 import { useEffect } from '../use-effect';
 import { useSuspense } from '../suspense';
 import { useUpdate } from '../use-update';
-import { APP_STATE } from '../constants';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
 import { useId } from '../use-id';
@@ -27,7 +26,7 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
         $update();
       }
       let data: T = null;
-      const cache = $scope.getAppStateData(id) as AppStateData<T>;
+      const cache = $scope.getAppStateData(id) as AppStateItem<T>;
 
       if (cache && !cache[1]) {
         data = cache[0] as T;
@@ -54,28 +53,27 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
   };
 
   useEffect(() => {
-    if (isHydrateZone) {
-      const appState = globalThis[APP_STATE] as AppState;
-      if (!appState) throw new Error('[Dark]: can not read app state from the server!');
-      const [data, error] = appState.get(id);
-
-      state.isFetching = false;
-      state.isLoaded = true;
-      state.data = data as T;
-      state.error = error;
-    } else {
-      make();
-    }
+    !isHydrateZone && make();
   }, [...deps]);
 
   useEffect(() => () => unregister(id), []);
 
   if (isServer) {
-    if (!state.isLoaded) {
-      $scope.defer(make);
-    }
+    !state.isLoaded && $scope.defer(make);
   } else {
-    firstTime() && register(id);
+    if (isHydrateZone) {
+      const $state = $scope.getAppStateData(id);
+      if (!$state) throw new Error('[Dark]: can not read app state from the server!');
+      const [data, error] = $state;
+
+      state.isFetching = false;
+      state.isLoaded = true;
+      state.data = data as T;
+      state.error = error;
+      $scope.removeAppStateData(id);
+    } else {
+      firstTime() && register(id);
+    }
   }
 
   const value: Resource<T> = {
