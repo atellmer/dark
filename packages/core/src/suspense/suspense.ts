@@ -15,11 +15,15 @@ type SuspenseProps = {
 } & Required<SlotProps>;
 
 type ContextValue = {
+  isLoaded: boolean;
+  fallback: DarkElement;
   register: (id: string) => void;
   unregister: (id: string) => void;
 };
 
 const SuspenseContext = createContext<ContextValue>({
+  isLoaded: false,
+  fallback: null,
   register: dummyFn,
   unregister: dummyFn,
 });
@@ -32,21 +36,20 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   }
   const $scope = $$scope();
   const emitter = $scope.getEmitter();
-  const [isFetching, setIsFetching] = useState(false);
-  const [isVisible, setIsVisible] = useState(() => detectIsServer() || $scope.getIsHydrateZone());
-  const scope = useMemo<Scope>(() => ({ store: new Set(), isFetching, isVisible }), []);
-  const value = useMemo<ContextValue>(() => ({ register: null, unregister: null }), []);
+  const [isLoaded, setIsLoaded] = useState(() => detectIsServer() || $scope.getIsHydrateZone());
+  const scope = useMemo<Scope>(() => ({ store: new Set(), isLoaded }), []);
+  const value = useMemo<ContextValue>(() => ({ isLoaded, fallback, register: null, unregister: null }), []);
   const content = [
-    Shadow({ key: CONTENT, isVisible, slot }),
-    detectHasFallback(isFetching, isVisible) ? Fragment({ key: FALLBACK, slot: fallback }) : null,
+    Shadow({ key: CONTENT, isVisible: isLoaded, slot }),
+    isLoaded ? null : Fragment({ key: FALLBACK, slot: fallback }),
   ].filter(Boolean);
 
   useLayoutEffect(() => {
     const off = emitter.on('finish', () => {
-      const { store, isVisible } = scope;
+      const { store, isLoaded } = scope;
 
-      if (store.size === 0 && !isVisible) {
-        setIsVisible(true);
+      if (store.size === 0 && !isLoaded) {
+        setIsLoaded(true);
         off();
       }
     });
@@ -54,37 +57,21 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
     return off;
   }, []);
 
-  const register = (id: string) => {
-    const { store, isVisible } = scope;
-
-    store.add(id);
-    isVisible && setIsFetching(true);
-  };
-
-  const unregister = (id: string) => {
-    const { store, isFetching } = scope;
-
-    store.delete(id);
-    store.size === 0 && isFetching && setIsFetching(false);
-  };
-
-  scope.isFetching = isFetching;
-  scope.isVisible = isVisible;
-  value.register = register;
-  value.unregister = unregister;
+  scope.isLoaded = isLoaded;
+  value.isLoaded = isLoaded;
+  value.fallback = fallback;
+  value.register = (id: string) => scope.store.add(id);
+  value.unregister = (id: string) => scope.store.delete(id);
 
   return SuspenseContext.Provider({ value, slot: content });
 });
 
 type Scope = {
   store: Set<string>;
-  isFetching: boolean;
-  isVisible: boolean;
+  isLoaded: boolean;
 };
 
 const CONTENT = 1;
 const FALLBACK = 2;
-
-const detectHasFallback = (isFetching: boolean, isVisible: boolean) => isFetching || !isVisible;
 
 export { SuspenseContext, Suspense };

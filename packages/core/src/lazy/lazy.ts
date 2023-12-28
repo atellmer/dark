@@ -16,7 +16,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
-        const { register, unregister } = useContext(SuspenseContext);
+        const { isLoaded, fallback, register, unregister } = useContext(SuspenseContext);
         const $scope = $$scope();
         const update = useUpdate();
         const id = useId();
@@ -43,7 +43,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
 
         useLayoutEffect(() => () => unregister(id), []);
 
-        return factory ? factory(props, ref) : null;
+        return factory ? factory(props, ref) : isLoaded ? fallback : null;
       },
       { token: $$lazy },
     ),
