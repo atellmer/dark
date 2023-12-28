@@ -5,6 +5,7 @@ import { useSuspense } from '../suspense';
 import { useEvent } from '../use-event';
 import { useMemo } from '../use-memo';
 import { useId } from '../use-id';
+import { error } from '../utils';
 
 enum Type {
   LOADING_START,
@@ -50,10 +51,11 @@ function useResource<T>(fn: () => Promise<T>, deps: Array<any> = []) {
         if (!mounted()) return;
         unregister(id);
         dispatch({ type: Type.LOADING_END, payload: data });
-      } catch (error) {
+      } catch (err) {
+        error(err);
         if (!mounted()) return;
         unregister(id);
-        dispatch({ type: Type.ERROR, payload: String(error) });
+        dispatch({ type: Type.ERROR, payload: String(err) });
       }
     })();
   });
