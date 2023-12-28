@@ -1,11 +1,13 @@
 import { type ComponentFactory, component } from '../component';
+import { useLayoutEffect } from '../use-layout-effect';
 import { detectIsUndefined, dummyFn } from '../utils';
-import { useContext } from '../context';
-import { forwardRef } from '../ref';
 import { SuspenseContext } from '../suspense';
 import { detectIsServer } from '../platform';
-import { $$scope } from '../scope';
 import { useUpdate } from '../use-update';
+import { useContext } from '../context';
+import { forwardRef } from '../ref';
+import { $$scope } from '../scope';
+import { useId } from '../use-id';
 
 const $$lazy = Symbol('lazy');
 const factories = new Map<Function, ComponentFactory>();
@@ -14,9 +16,10 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
-        const { isLoaded, fallback, loading } = useContext(SuspenseContext);
+        const { register, unregister } = useContext(SuspenseContext);
         const $scope = $$scope();
         const update = useUpdate();
+        const id = useId();
         const factory = factories.get(module);
 
         if (detectIsUndefined(factory)) {
@@ -24,11 +27,11 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
           const isHydrateZone = $scope.getIsHydrateZone();
           const make = async () => {
             factories.set(module, await load(module));
-            loading(false);
+            unregister(id);
             done();
           };
 
-          loading(true);
+          register(id);
           factories.set(module, null);
 
           if (isServer || isHydrateZone) {
@@ -38,7 +41,9 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
           }
         }
 
-        return factory ? factory(props, ref) : isLoaded ? fallback : null;
+        useLayoutEffect(() => () => unregister(id), []);
+
+        return factory ? factory(props, ref) : null;
       },
       { token: $$lazy },
     ),
