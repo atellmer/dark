@@ -40,3 +40,7 @@ export type FlagProps = Partial<Record<keyof typeof FLAGS, boolean>>;
 export type Callback = () => void;
 
 export type TimerId = number | NodeJS.Timeout;
+
+export type AppStateData<T = unknown> = [T, string];
+
+export type AppState = Map<string, AppStateData>;

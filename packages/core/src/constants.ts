@@ -18,6 +18,7 @@ export const FLUSH_MASK = 64;
 export const MOVE_MASK = 128;
 export const HOOK_DELIMETER = ':';
 export const YIELD_INTERVAL = 6;
+export const APP_STATE = '__DARK_APP_STATE__';
 
 export enum TaskPriority {
   LOW = 0,

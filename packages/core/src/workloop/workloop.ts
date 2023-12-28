@@ -489,6 +489,7 @@ function commit($scope: Scope) {
 function flush($scope: Scope, cancel = false) {
   $scope.flush();
   !cancel && $scope.getEmitter().emit('finish');
+  $scope.runAfterCommit(); // !
 }
 
 function sync(fiber: Fiber) {

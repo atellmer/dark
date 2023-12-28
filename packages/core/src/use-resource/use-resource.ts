@@ -1,8 +1,10 @@
 import { useLayoutEffect } from '../use-layout-effect';
+import { type AppStateData, type AppState } from '../shared';
 import { detectIsServer } from '../platform';
 import { useEffect } from '../use-effect';
 import { useSuspense } from '../suspense';
 import { useUpdate } from '../use-update';
+import { APP_STATE } from '../constants';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
 import { useId } from '../use-id';
@@ -24,19 +26,27 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
         state.isFetching = true;
         $update();
       }
+      let data: T = null;
+      const cache = $scope.getAppStateData(id) as AppStateData<T>;
 
-      const data = await fetch();
+      if (cache && !cache[1]) {
+        data = cache[0] as T;
+      } else {
+        data = await fetch();
+      }
 
       unregister(id);
       state.data = data;
       state.isFetching = false;
       state.error = null;
+      $scope.setAppStateData(id, [data, null]);
       return data;
     } catch (err) {
       error(err);
       unregister(id);
       state.isFetching = false;
       state.error = String(err);
+      $scope.setAppStateData(id, [null, String(err)]);
     } finally {
       state.isLoaded = true;
       $update();
@@ -45,11 +55,14 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
 
   useEffect(() => {
     if (isHydrateZone) {
+      const appState = globalThis[APP_STATE] as AppState;
+      if (!appState) throw new Error('[Dark]: can not read app state from the server!');
+      const [data, error] = appState.get(id);
+
       state.isFetching = false;
       state.isLoaded = true;
-      // take it from the global variable
-      state.data = null;
-      state.error = null;
+      state.data = data as T;
+      state.error = error;
     } else {
       make();
     }

@@ -1,4 +1,4 @@
-import type { Callback, ElementKey } from '../shared';
+import type { Callback, ElementKey, AppState, AppStateData } from '../shared';
 import { type SetPendingStatus } from '../start-transition';
 import { type Fiber } from '../fiber';
 import { EventEmitter } from '../emitter';
@@ -21,6 +21,7 @@ class Scope {
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
   private insertionEffects: Set<Callback> = new Set();
+  private state: AppState = new Map();
   private defers: Array<() => Promise<unknown>> = [];
   private setPendingStatus: SetPendingStatus = null;
   private isLayoutEffectsZone = false;
@@ -97,6 +98,7 @@ class Scope {
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.insertionEffects = new Set([...this.insertionEffects]);
+    scope.state = new Map([...this.state]);
     scope.defers = [...this.defers];
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
@@ -396,6 +398,22 @@ class Scope {
 
   resetDefers() {
     this.defers = [];
+  }
+
+  setAppStateData(key: string, data: AppStateData) {
+    this.state.set(key, data);
+  }
+
+  getAppStateData(key: string) {
+    return this.state.get(key);
+  }
+
+  getAppState() {
+    return this.state;
+  }
+
+  runAfterCommit() {
+    this.state = new Map();
   }
 }
 
