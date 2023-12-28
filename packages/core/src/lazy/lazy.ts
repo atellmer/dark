@@ -1,10 +1,9 @@
 import { type ComponentFactory, component } from '../component';
-import { useLayoutEffect } from '../use-layout-effect';
 import { detectIsUndefined, dummyFn } from '../utils';
-import { SuspenseContext } from '../suspense';
 import { detectIsServer } from '../platform';
+import { useSuspense } from '../suspense';
 import { useUpdate } from '../use-update';
-import { useContext } from '../context';
+import { useEffect } from '../use-effect';
 import { forwardRef } from '../ref';
 import { $$scope } from '../scope';
 import { useId } from '../use-id';
@@ -16,7 +15,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
   return forwardRef(
     component<P, R>(
       function type(props, ref) {
-        const { isLoaded, fallback, register, unregister } = useContext(SuspenseContext);
+        const { isLoaded, fallback, register, unregister } = useSuspense();
         const $scope = $$scope();
         const update = useUpdate();
         const id = useId();
@@ -41,7 +40,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
           }
         }
 
-        useLayoutEffect(() => () => unregister(id), []);
+        useEffect(() => () => unregister(id), []);
 
         return factory ? factory(props, ref) : isLoaded ? fallback : null;
       },

@@ -370,7 +370,9 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 
   walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
-      !detectIsPortal(fiber.inst) && removeNativeElement(fiber.element, parentFiber.element);
+      !detectIsPortal(fiber.inst) &&
+        canRemoveNativeElement(fiber.element, parentFiber.element) &&
+        removeNativeElement(fiber.element, parentFiber.element);
       return skip();
     }
   });
@@ -416,10 +418,6 @@ const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
   [SKIP_EFFECT_TAG]: dummyFn,
 };
 
-function commit(fiber: Fiber<NativeElement>) {
-  commitMap[fiber.tag](fiber);
-}
-
 function finishCommit() {
   moves.forEach(x => x());
   patches.forEach(x => x());
@@ -427,23 +425,22 @@ function finishCommit() {
   patches = [];
 }
 
-function setTrackUpdate(fn: typeof trackUpdate) {
-  trackUpdate = fn;
-}
+const commit = (fiber: Fiber<NativeElement>) => commitMap[fiber.tag](fiber);
+
+const setTrackUpdate = (fn: typeof trackUpdate) => (trackUpdate = fn);
 
 const appendNativeElement = (element: NativeNode, parent: NativeNode) => parent.appendChild(element);
 
-const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: TagNativeElement) => {
+const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: TagNativeElement) =>
   parent.insertBefore(element, sibling);
-};
 
-const insertNativeElementByIndex = (element: NativeNode, idx: number, parent: TagNativeElement) => {
+const insertNativeElementByIndex = (element: NativeNode, idx: number, parent: TagNativeElement) =>
   parent.insertBefore(element, parent.childNodes[idx]);
-};
 
-const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) => {
+const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) =>
   parent.replaceChild(element, candidate);
-};
+
+const canRemoveNativeElement = (element: NativeNode, parent: NativeNode) => element.parentElement === parent;
 
 const removeNativeElement = (element: NativeNode, parent: TagNativeElement) => parent.removeChild(element);
 

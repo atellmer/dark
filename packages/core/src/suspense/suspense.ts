@@ -1,7 +1,7 @@
 import type { DarkElement, SlotProps } from '../shared';
 import { useLayoutEffect } from '../use-layout-effect';
 import { detectIsServer } from '../platform';
-import { createContext } from '../context';
+import { createContext, useContext } from '../context';
 import { component } from '../component';
 import { useState } from '../use-state';
 import { Fragment } from '../fragment';
@@ -74,4 +74,6 @@ type Scope = {
 const CONTENT = 1;
 const FALLBACK = 2;
 
-export { SuspenseContext, Suspense };
+const useSuspense = () => useContext(SuspenseContext);
+
+export { Suspense, useSuspense };
