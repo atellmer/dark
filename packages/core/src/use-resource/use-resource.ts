@@ -1,72 +1,78 @@
 import { useLayoutEffect } from '../use-layout-effect';
-import { useReducer } from '../use-reducer';
+import { detectIsServer } from '../platform';
 import { useEffect } from '../use-effect';
 import { useSuspense } from '../suspense';
-import { useEvent } from '../use-event';
+import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
+import { $$scope } from '../scope';
 import { useId } from '../use-id';
 import { error } from '../utils';
 
-enum Type {
-  LOADING_START,
-  LOADING_END,
-  ERROR,
-}
-
-type State<T> = {
-  loading: boolean;
-  data: T;
-  error: string;
-};
-
-type Action<T> = {
-  type: Type;
-  payload?: T | string;
-};
-
-function reducer<T>(state: State<T>, action: Action<T>): State<T> {
-  switch (action.type) {
-    case Type.LOADING_START:
-      return { ...state, loading: true };
-    case Type.LOADING_END:
-      return { ...state, error: null, loading: false, data: action.payload as T };
-    case Type.ERROR:
-      return { ...state, loading: false, error: action.payload as string };
-    default:
-      throw new Error();
-  }
-}
-
-function useResource<T>(fn: () => Promise<T>, deps: Array<any> = []) {
-  const [state, dispatch] = useReducer(reducer, { loading: true, data: null, error: null });
+function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
+  const state = useMemo<State<T>>(() => ({ isFetching: true, isLoaded: false, data: null, error: null }), []);
   const { register, unregister } = useSuspense();
   const [mounted, firstTime] = useMounted();
+  const update = useUpdate();
+  const $update = () => !isServer && mounted() && update();
   const id = useId();
-  const fetch = useEvent(() => {
-    (async () => {
-      try {
-        !firstTime() && dispatch({ type: Type.LOADING_START });
-        const data = await fn();
-
-        if (!mounted()) return;
-        unregister(id);
-        dispatch({ type: Type.LOADING_END, payload: data });
-      } catch (err) {
-        error(err);
-        if (!mounted()) return;
-        unregister(id);
-        dispatch({ type: Type.ERROR, payload: String(err) });
+  const $scope = $$scope();
+  const isServer = detectIsServer();
+  const isHydrateZone = $scope.getIsHydrateZone();
+  const make = async () => {
+    try {
+      if (!firstTime()) {
+        state.isFetching = true;
+        $update();
       }
-    })();
-  });
 
-  useEffect(() => fetch(), [...deps]);
+      const data = await fetch();
+
+      unregister(id);
+      state.data = data;
+      state.isFetching = false;
+      state.error = null;
+      return data;
+    } catch (err) {
+      error(err);
+      unregister(id);
+      state.isFetching = false;
+      state.error = String(err);
+    } finally {
+      state.isLoaded = true;
+      $update();
+    }
+  };
+
+  useEffect(() => {
+    if (isHydrateZone) {
+      state.isFetching = false;
+      state.isLoaded = true;
+      // take it from the global variable
+      state.data = null;
+      state.error = null;
+    } else {
+      make();
+    }
+  }, [...deps]);
 
   useEffect(() => () => unregister(id), []);
 
-  firstTime() && register(id);
+  if (isServer) {
+    if (!state.isLoaded) {
+      $scope.defer(make);
+    }
+  } else {
+    firstTime() && register(id);
+  }
 
-  return { ...(state as State<T>), refetch: fetch };
+  const value: Resource<T> = {
+    loading: state.isFetching,
+    data: state.data,
+    error: state.error,
+    refetch: make,
+  };
+
+  return value;
 }
 
 function useMounted() {
@@ -80,5 +86,21 @@ function useMounted() {
 
   return [() => scope.isMounted, () => isFirstTime] as [() => boolean, () => boolean];
 }
+
+type State<T> = {
+  isFetching: boolean;
+  isLoaded: boolean;
+  data: T;
+  error: string;
+};
+
+type Resource<T> = {
+  loading: boolean;
+  data: T;
+  error: string;
+  refetch: FetchFn<T>;
+};
+
+type FetchFn<T> = () => Promise<T>;
 
 export { useResource };
