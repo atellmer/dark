@@ -41,6 +41,6 @@ export type Callback = () => void;
 
 export type TimerId = number | NodeJS.Timeout;
 
-export type AppStateItem<T = unknown> = [T, string];
+export type AppResource<T = unknown> = [T, string];
 
-export type AppState = Map<string, AppStateItem>;
+export type AppResources = Map<string, AppResource>;

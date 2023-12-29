@@ -1,5 +1,5 @@
 import { useLayoutEffect } from '../use-layout-effect';
-import { type AppStateItem } from '../shared';
+import { type AppResource } from '../shared';
 import { detectIsServer } from '../platform';
 import { useEffect } from '../use-effect';
 import { useSuspense } from '../suspense';
@@ -26,7 +26,7 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
         $update();
       }
       let data: T = null;
-      const cache = $scope.getAppStateData(id) as AppStateItem<T>;
+      const cache = $scope.getResource(id) as AppResource<T>;
 
       if (cache && !cache[1]) {
         data = cache[0] as T;
@@ -38,14 +38,14 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
       state.data = data;
       state.isFetching = false;
       state.error = null;
-      $scope.setAppStateData(id, [data, null]);
+      $scope.setResource(id, [data, null]);
       return data;
     } catch (err) {
       error(err);
       unregister(id);
       state.isFetching = false;
       state.error = String(err);
-      $scope.setAppStateData(id, [null, String(err)]);
+      $scope.setResource(id, [null, String(err)]);
     } finally {
       state.isLoaded = true;
       $update();
@@ -62,7 +62,7 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
     !state.isLoaded && $scope.defer(make);
   } else {
     if (isHydrateZone) {
-      const $state = $scope.getAppStateData(id);
+      const $state = $scope.getResource(id);
       if (!$state) throw new Error('[Dark]: can not read app state from the server!');
       const [data, error] = $state;
 
@@ -70,7 +70,7 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
       state.isLoaded = true;
       state.data = data as T;
       state.error = error;
-      $scope.removeAppStateData(id);
+      $scope.removeResource(id);
     } else {
       firstTime() && register(id);
     }

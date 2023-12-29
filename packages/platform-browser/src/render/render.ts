@@ -1,5 +1,6 @@
 import {
   type DarkElement,
+  type Callback,
   ROOT,
   Fiber,
   CREATE_EFFECT_TAG,
@@ -7,6 +8,7 @@ import {
   platform,
   flatten,
   detectIsUndefined,
+  detectIsFunction,
   trueFn,
   TagVirtualNode,
   TaskPriority,
@@ -17,9 +19,9 @@ import {
   scheduler,
 } from '@dark-engine/core';
 
-import type { TagNativeElement } from '../native-element';
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal/utils';
+import type { TagNativeElement } from '../native-element';
 
 const roots = new Map<Element, number>();
 const raf = requestAnimationFrame.bind(window);
@@ -42,7 +44,7 @@ function inject() {
   isInjected = true;
 }
 
-function render(element: DarkElement, container: TagNativeElement, hydrate = false) {
+function render(element: DarkElement, container: TagNativeElement, hydrate?: Callback) {
   !isInjected && inject();
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
@@ -51,12 +53,13 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
   }
 
   const isMounted = !detectIsUndefined(roots.get(container));
+  const isHydrate = detectIsFunction(hydrate);
   let rootId: number = null;
 
   if (!isMounted) {
     rootId = roots.size;
     roots.set(container, rootId);
-    !hydrate && (container.innerHTML = '');
+    !isHydrate && (container.innerHTML = '');
   } else {
     rootId = roots.get(container);
   }
@@ -80,8 +83,9 @@ function render(element: DarkElement, container: TagNativeElement, hydrate = fal
 
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setIsHydrateZone(hydrate);
+    $scope.setIsHydrateZone(isHydrate);
     $scope.setNextUnitOfWork(fiber);
+    isHydrate && hydrate();
   };
 
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL });

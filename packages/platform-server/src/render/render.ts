@@ -2,12 +2,11 @@ import { Readable } from 'node:stream';
 import {
   type DarkElement,
   type Callback,
-  type AppStateItem,
+  type AppResource,
   ROOT,
   Fiber,
   CREATE_EFFECT_TAG,
   APP_STATE_ATTR,
-  APP_STATE,
   TaskPriority,
   platform,
   flatten,
@@ -146,30 +145,20 @@ function addScripts(scripts: Array<string>) {
   if (scripts.length === 0) return '';
   let content = '';
 
-  scripts.forEach(script => {
-    content += `<script src="${script}" defer></script>`;
-  });
+  scripts.forEach(script => (content += `<script src="${script}" defer></script>`));
 
   return content;
 }
 
 function withState(content = '') {
   const $scope = $$scope();
-  const state = $scope.getAppState();
-  const record: Record<string, AppStateItem> = {};
+  const state = $scope.getResources();
+  const resources: Record<string, AppResource> = {};
 
   if (state.size === 0) return content;
+  state.forEach((value, key) => (resources[key] = value));
 
-  for (const [key, value] of state) {
-    record[key] = value;
-  }
-
-  const $content = `
-    ${content}
-    <script ${APP_STATE_ATTR}="true">
-      globalThis[${APP_STATE}] = ${JSON.stringify(record)};
-    </script>
-  `;
+  const $content = `${content}<script ${APP_STATE_ATTR}="true">${JSON.stringify(resources)};</script>`;
 
   return $content;
 }

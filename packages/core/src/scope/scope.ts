@@ -1,4 +1,4 @@
-import type { Callback, ElementKey, AppState, AppStateItem } from '../shared';
+import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
 import { type SetPendingStatus } from '../start-transition';
 import { type Fiber } from '../fiber';
 import { EventEmitter } from '../emitter';
@@ -21,7 +21,7 @@ class Scope {
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
   private insertionEffects: Set<Callback> = new Set();
-  private state: AppState = new Map();
+  private resources: AppResources = new Map();
   private defers: Array<() => Promise<unknown>> = [];
   private setPendingStatus: SetPendingStatus = null;
   private isLayoutEffectsZone = false;
@@ -98,7 +98,7 @@ class Scope {
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.insertionEffects = new Set([...this.insertionEffects]);
-    scope.state = new Map([...this.state]);
+    scope.resources = new Map([...this.resources]);
     scope.defers = [...this.defers];
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
@@ -400,24 +400,24 @@ class Scope {
     this.defers = [];
   }
 
-  setAppStateData(key: string, data: AppStateItem) {
-    this.state.set(key, data);
+  getResource(key: string) {
+    return this.resources.get(key);
   }
 
-  getAppStateData(key: string) {
-    return this.state.get(key);
+  setResource(key: string, res: AppResource) {
+    this.resources.set(key, res);
   }
 
-  removeAppStateData(key: string) {
-    return this.state.delete(key);
+  removeResource(key: string) {
+    return this.resources.delete(key);
   }
 
-  getAppState() {
-    return this.state;
+  getResources() {
+    return this.resources;
   }
 
   runAfterCommit() {
-    this.state = new Map();
+    this.resources = new Map();
   }
 }
 
