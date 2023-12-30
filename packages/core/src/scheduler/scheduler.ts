@@ -190,12 +190,16 @@ class Scheduler {
       this.deadline = getTime() + YIELD_INTERVAL;
       const hasMoreWork = this.scheduledCallback(true);
 
-      if (!hasMoreWork) {
-        this.complete(this.task);
-        this.reset();
-        this.execute();
-      } else {
+      if (hasMoreWork) {
         this.port.postMessage(null);
+      } else {
+        if (hasMoreWork === null) {
+          setTimeout(() => this.port.postMessage(null)); // has promise
+        } else {
+          this.complete(this.task);
+          this.reset();
+          this.execute();
+        }
       }
     } else {
       this.isMessageLoopRunning = false;

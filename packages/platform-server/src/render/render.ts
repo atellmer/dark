@@ -157,8 +157,8 @@ function withState(content = '') {
 
   if (state.size === 0) return content;
   state.forEach((value, key) => (resources[key] = value));
-
-  const $content = `${content}<script ${APP_STATE_ATTR}="true">${JSON.stringify(resources)};</script>`;
+  const encoded = Buffer.from(JSON.stringify(resources)).toString('base64');
+  const $content = `${content}<script ${APP_STATE_ATTR}="true">"${encoded}"</script>`;
 
   return $content;
 }

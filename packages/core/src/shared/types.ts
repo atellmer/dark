@@ -43,4 +43,4 @@ export type TimerId = number | NodeJS.Timeout;
 
 export type AppResource<T = unknown> = [T, string];
 
-export type AppResources = Map<string, AppResource>;
+export type AppResources = Map<number, AppResource>;

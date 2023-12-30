@@ -16,11 +16,11 @@ function hydrate() {
   const element = document.querySelector(`[${APP_STATE_ATTR}]`);
   if (!element) return;
   try {
-    const resources = JSON.parse(element.textContent) as Record<string, AppResource>;
+    const resources = parse(element.textContent) as Record<string, AppResource>;
     const $scope = $$scope();
 
     for (const key of Object.keys(resources)) {
-      $scope.setResource(key, resources[key]);
+      $scope.setResource(Number(key), resources[key]);
     }
 
     element.remove();
@@ -28,5 +28,7 @@ function hydrate() {
     throw Error('[Dark]: can not hydrate app state from the server!');
   }
 }
+
+const parse = (x: string) => JSON.parse(window.atob(x.replaceAll('"', '')));
 
 export { hydrateRoot };

@@ -1,8 +1,8 @@
 import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
 import { type SetPendingStatus } from '../start-transition';
-import { type Fiber } from '../fiber';
+import { platform, detectIsServer } from '../platform';
 import { EventEmitter } from '../emitter';
-import { platform } from '../platform';
+import { type Fiber } from '../fiber';
 
 class Scope {
   private root: Fiber = null;
@@ -21,6 +21,7 @@ class Scope {
   private asyncEffects: Set<Callback> = new Set();
   private layoutEffects: Set<Callback> = new Set();
   private insertionEffects: Set<Callback> = new Set();
+  private resourceId = 0;
   private resources: AppResources = new Map();
   private defers: Array<() => Promise<unknown>> = [];
   private setPendingStatus: SetPendingStatus = null;
@@ -34,6 +35,7 @@ class Scope {
   private isEventZone = false;
   private isHot = false;
   private isDynamic = platform.detectIsDynamic();
+  private isServer = detectIsServer();
   private emitter = new EventEmitter();
 
   private resetActions() {
@@ -400,24 +402,33 @@ class Scope {
     this.defers = [];
   }
 
-  getResource(key: string) {
-    return this.resources.get(key);
+  getResource(id: number) {
+    return this.resources.get(id);
   }
 
-  setResource(key: string, res: AppResource) {
-    this.resources.set(key, res);
-  }
-
-  removeResource(key: string) {
-    return this.resources.delete(key);
+  setResource(id: number, res: AppResource) {
+    this.resources.set(id, res);
   }
 
   getResources() {
     return this.resources;
   }
 
+  getResourceId() {
+    return this.resourceId;
+  }
+
+  setResourceId(id: number) {
+    this.resourceId = id;
+  }
+
+  getNextResourceId() {
+    return ++this.resourceId;
+  }
+
   runAfterCommit() {
     this.resources = new Map();
+    this.isServer && (this.resourceId = 0);
   }
 }
 

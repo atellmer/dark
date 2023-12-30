@@ -1,4 +1,4 @@
-import { platform } from '../platform';
+import { platform, detectIsServer } from '../platform';
 import {
   CREATE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,
@@ -26,9 +26,9 @@ import {
   trueFn,
 } from '../utils';
 import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
-import { Fiber, getHook, Hook } from '../fiber';
-import { type ElementKey, type Instance } from '../shared';
 import { type Component, detectIsComponent } from '../component';
+import { type ElementKey, type Instance } from '../shared';
+import { Fiber, getHook, Hook } from '../fiber';
 import {
   Text,
   detectIsVirtualNode,
@@ -49,17 +49,17 @@ import {
   tryOptStaticSlot,
   tryOptMemoSlot,
 } from '../walk';
-import { unmountFiber } from '../unmount';
-import { Fragment, detectIsFragment } from '../fragment';
 import { type RestoreOptions, scheduler } from '../scheduler';
+import { Fragment, detectIsFragment } from '../fragment';
+import { unmountFiber } from '../unmount';
 
 let hasPendingPromise = false;
 let hasRenderError = false;
 
 export type WorkLoop = (isAsync: boolean) => boolean;
 
-function workLoop(isAsync: boolean) {
-  if (hasPendingPromise) return true;
+function workLoop(isAsync: boolean): boolean | null {
+  if (hasPendingPromise) return null;
   if (hasRenderError) return false;
   const $scope = $$scope();
   const wipFiber = $scope.getWorkInProgress();
@@ -349,12 +349,14 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
   if (isComponent) {
     try {
+      const id = $scope.getResourceId();
       let result = component.type(component.props, component.ref);
       const defers = $scope.getDefers();
 
       if (defers.length > 0) {
         const promise = Promise.all(defers.map(x => x()));
 
+        $scope.setResourceId(id);
         $scope.resetDefers();
         $scope.navToPrev();
         $scope.setNextUnitOfWork(prev);
