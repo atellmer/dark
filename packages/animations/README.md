@@ -136,7 +136,8 @@ What's going on here?
 - The following describes a set of default styles that creates a red square. You may also notice that the opacity and transform properties are passed into the style. This is necessary in order to set default values during the first render and remove a possible flash of styles.
 - The `Animated` component is then called, taking a spring object and a function describing how it should change styles during the animation process.
 
-[video-1]
+https://github.com/atellmer/dark/assets/16635118/5c08c9d1-181a-4a29-aef5-c4a39ff132f3
+
 
 ## useSprings
 
@@ -172,7 +173,7 @@ const d = (isOpen: boolean, idx: number) => (idx % 2 ? (isOpen ? 1 : 0) : isOpen
 const styleFn = (e: HTMLElement, x: SpringValue<'opacity'>) => {e.style.setProperty('opacity', `${x.opacity}`);
 ```
 
-[video-2]
+https://github.com/atellmer/dark/assets/16635118/2ced738d-574f-4b58-9528-df8860f4f9fe
 
 # LICENSE
 
