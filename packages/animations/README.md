@@ -133,8 +133,8 @@ const styleFn = (e: HTMLElement, x: SpringValue<'opacity' | 'scale'>) => {
 
 What's going on here?
 - First, the animation hook is called, to which a config is passed with the from and to parameters, which change depending on the flag in the state.
-- The following describes a set of default styles that creates a red square with sides of 100 pixels. You may also notice that the opacity and transform properties are passed into the style. This is necessary in order to set default values during the first render and remove a possible flash of styles.
-- The Animated component is then called, taking a spring object and a function describing how it should change styles during the animation process.
+- The following describes a set of default styles that creates a red square. You may also notice that the opacity and transform properties are passed into the style. This is necessary in order to set default values during the first render and remove a possible flash of styles.
+- The `Animated` component is then called, taking a spring object and a function describing how it should change styles during the animation process.
 
 [video-1]
 
@@ -143,25 +143,6 @@ What's going on here?
 A generalized version of `useSpring` takes as input the number of elements that need to be animated, as well as a function that creates a config depending on the index of the element. Needed for creating complex animations where elements are processed taking into account the position and other parameters of other elements. Example: drag-n-drop lists.
 
 ```tsx
-type EmojiProps = {
-  value: string;
-  spring: Spring<'opacity'>;
-};
-
-const Emoji = component<EmojiProps>(({ value, spring }) => {
-  const style = useStyle(styled => ({
-    root: styled`
-      position: absolute;
-      top: 0;
-      left: 0;
-      font-size: 10rem;
-      opacity: ${spring.prop('opacity')};
-    `,
-  }));
-
-  return <div style={style.root}>{value}</div>;
-});
-
 const App = component(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [springs] = useSprings(
@@ -173,14 +154,13 @@ const App = component(() => {
     }),
     [isOpen],
   );
-  const values = { 0: '😊', 1: '🤪' };
 
   return (
     <>
-      <div style='position: relative' onClick={() => setIsOpen(x => !x)}>
+      <div class='container' onClick={() => setIsOpen(x => !x)}>
         {springs.map((spring, idx) => (
           <Animated spring={spring} fn={styleFn}>
-            <Emoji value={values[idx]} spring={spring} />
+            <div class='emoji'>{idx % 2 ? '🤪' : '😊'}</div>
           </Animated>
         ))}
       </div>
@@ -188,13 +168,11 @@ const App = component(() => {
   );
 });
 
-const d = (isOpen: boolean, idx: number) => (isOpen ? (idx % 2 ? 1 : 0) : idx % 2 ? 0 : 1);
+const d = (isOpen: boolean, idx: number) => (idx % 2 ? (isOpen ? 1 : 0) : isOpen ? 0 : 1);
 const styleFn = (e: HTMLElement, x: SpringValue<'opacity'>) => {e.style.setProperty('opacity', `${x.opacity}`);
 ```
 
 [video-2]
-
-
 
 # LICENSE
 
