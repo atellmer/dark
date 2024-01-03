@@ -130,7 +130,7 @@ What's going on here?
 - The `Animated` component is taking a spring object and a function describing how it should change styles during the animation process.
 - When the state changes, physical parameters are calculated and styles are applied 1 time per 1 frame until the parameters reach the value `from` or `to` depending on the flag.
 
-[Link to this example](https://github.com/atellmer/dark/tree/master/examples/spring-toast)
+[spring-toast example](https://github.com/atellmer/dark/tree/master/examples/spring-toast)
 
 https://github.com/atellmer/dark/assets/16635118/42b400a0-fa35-4440-b23b-35d27531591d
 
@@ -162,7 +162,7 @@ return (
 )
 ```
 
-[Link to this example](https://github.com/atellmer/dark/tree/master/examples/spring-draggable-list)
+[spring-draggable-list example](https://github.com/atellmer/dark/tree/master/examples/spring-draggable-list)
 
 https://github.com/atellmer/dark/assets/16635118/453b9249-9667-4e80-b456-a48fdf2a8334
 
@@ -192,7 +192,7 @@ return (
 );
 ```
 
-[Link to this example](https://github.com/atellmer/dark/tree/master/examples/spring-snake)
+[spring-snake example](https://github.com/atellmer/dark/tree/master/examples/spring-snake)
 
 https://github.com/atellmer/dark/assets/16635118/1342931b-004e-4b7b-9faf-6adf251abc35
 
@@ -227,7 +227,8 @@ return (
 )
 ```
 
-[Link to this example](https://github.com/atellmer/dark/tree/master/examples/spring-slider)
+[spring-slider example](https://github.com/atellmer/dark/tree/master/examples/spring-slider)
+[spring-masonry-grid example](https://github.com/atellmer/dark/tree/master/examples/spring-slider)
 
 https://github.com/atellmer/dark/assets/16635118/dc1019d2-512d-4d7a-99c0-48c52c08270b
 
@@ -278,7 +279,7 @@ return (
 );
 ```
 
-[Link to this example](https://github.com/atellmer/dark/tree/master/examples/spring-menu)
+[(spring-menu example)](https://github.com/atellmer/dark/tree/master/examples/spring-menu)
 
 https://github.com/atellmer/dark/assets/16635118/c1d3e472-dc0b-4861-8b05-3cbf9ef71f2c
 
