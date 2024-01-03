@@ -228,6 +228,7 @@ return (
 ```
 
 [spring-slider example](https://github.com/atellmer/dark/tree/master/examples/spring-slider)
+
 [spring-masonry-grid example](https://github.com/atellmer/dark/tree/master/examples/spring-slider)
 
 https://github.com/atellmer/dark/assets/16635118/dc1019d2-512d-4d7a-99c0-48c52c08270b
