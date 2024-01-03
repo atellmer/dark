@@ -13,7 +13,7 @@ Spring based animations for Dark
 - 🎊 Includes trails and transitions support
 - 🪅 Animation sequences
 - 🚫 No deps
-- 📦 Small size
+- 📦 Small size (5 kB gzipped)
 
 ## Installation
 npm:

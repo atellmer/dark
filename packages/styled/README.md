@@ -16,7 +16,7 @@ Styled components for Dark 🌖
 - 💻 SSR
 - 🗜️ Minification
 - 🚫 No deps
-- 📦 Small size
+- 📦 Small size (6 kB gzipped)
 
 ## Usage
 ```tsx
