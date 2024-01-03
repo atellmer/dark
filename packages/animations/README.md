@@ -202,7 +202,7 @@ A hook that animates any manipulations with the tree: adding, moving, replacing 
 
 ```tsx
 const [items, setItems] = useState(['A']);
-const [transition] = useTransition<SpringProps, string>(
+const [transition] = useTransition(
   items,
   x => x,
   () => ({
