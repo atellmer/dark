@@ -3,7 +3,7 @@ import { createRoot } from '@dark-engine/platform-browser';
 import { type SpringValue, Animated, useTransition, useSpring, useChain, preset } from '@dark-engine/animations';
 
 type SpringProps = 'size' | 'green' | 'blue';
-type TrabsitionProps = 'opacity' | 'scale';
+type TransitionProps = 'opacity' | 'scale';
 
 const App = component(() => {
   const [isOpen, setIsOpen] = useState<boolean>(null);
@@ -15,7 +15,7 @@ const App = component(() => {
     },
     [isOpen],
   );
-  const [transition, transitionApi] = useTransition<TrabsitionProps, typeof data[0]>(
+  const [transition, transitionApi] = useTransition<TransitionProps, typeof data[0]>(
     isOpen ? data : [],
     x => x.name,
     () => ({
@@ -58,7 +58,7 @@ const springStyleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>)
   setProp('background-color', `rgb(255, ${green}, ${blue})`);
 };
 
-const transitionStyleFn = (item: DataItem) => (element: HTMLDivElement, value: SpringValue<TrabsitionProps>) => {
+const transitionStyleFn = (item: DataItem) => (element: HTMLDivElement, value: SpringValue<TransitionProps>) => {
   const { opacity, scale } = value;
   const setProp = setPropOf(element);
 
