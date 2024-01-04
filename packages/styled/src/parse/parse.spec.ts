@@ -10,7 +10,7 @@ import {
 import { FUNCTION_MARK } from '../constants';
 import { parse } from './parse';
 
-describe('[@styled/parse]', () => {
+describe('@styled/parse', () => {
   test('throws errors with illegal nesting #1', () => {
     const make = () => {
       parse(`

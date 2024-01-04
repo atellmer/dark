@@ -13,7 +13,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@core/suspense]', () => {
+describe('@core/suspense', () => {
   test('shows fallback correctly', async () => {
     const make = () => {
       const content1 = () => dom`${replacer}<div>loading...</div>`;

@@ -9,7 +9,7 @@ const config: Omit<SpringConfig, 'fix'> = {
   precision: 2,
 };
 
-describe('[@animations/stepper]', () => {
+describe('@animations/stepper', () => {
   test('calculates spring motion correctly', () => {
     const dest = 1;
     let pos = 0;

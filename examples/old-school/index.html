@@ -28,32 +28,21 @@
   <!-- deps end -->
   <script>
     // export from global variables
-    const { View, Text, component, useState } = DarkCore;
-    const { render } = DarkPlatformBrowser;
+    const { Text, component, useState } = DarkCore;
+    const { createRoot, div, input } = DarkPlatformBrowser;
 
     // start coding...
-    const div = props => View({ ...props, as: 'div' });
-    const input = props => View({ ...props, void: true, as: 'input' });
-
-    // App component
     const App = component(() => {
-      const [value, setValue] = useState('xxx');
-
-      const handleInput = e => setValue(e.target.value);
+      const [value, setValue] = useState('world!');
 
       return [
-        div({
-          slot: Text(`Hello: ${value}`),
-        }),
-        input({
-          value,
-          onInput: handleInput,
-        }),
+        div({ slot: Text(`Hello ${value}`)}),
+        input({ value, onInput: e => setValue(e.target.value) }),
       ];
     });
 
     // render app
-    render(App(), document.getElementById('root'));
+    createRoot(document.getElementById('root')).render(App());
   </script>
 </body>
 </html>

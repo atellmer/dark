@@ -1,6 +1,6 @@
 import { preset } from './preset';
 
-describe('[@animations/preset]', () => {
+describe('@animations/preset', () => {
   test('works correctly', () => {
     expect(typeof preset).toBe('function');
     expect(preset('no-wobble')).toEqual({ tension: 170, friction: 26 });

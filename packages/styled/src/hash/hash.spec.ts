@@ -1,6 +1,6 @@
 import { hash } from './hash';
 
-describe('[@styled/hash]', () => {
+describe('@styled/hash', () => {
   test('works correctly', () => {
     expect(hash('random string 12345')).toBe('fcfagg');
     expect(hash('random string 12345')).toBe('fcfagg');

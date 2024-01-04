@@ -12,7 +12,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@core/atom]', () => {
+describe('@core/atom', () => {
   test('the writable atom has required public methods', () => {
     const atom$ = atom(0);
 

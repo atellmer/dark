@@ -14,7 +14,7 @@ beforeEach(() => {
   jest.useFakeTimers();
 });
 
-describe('[@animations/animated]', () => {
+describe('@animations/animated', () => {
   test('can animate the value', () => {
     const content = (scale: number) => dom`
       <div style="transform: scale(${scale});"></div>

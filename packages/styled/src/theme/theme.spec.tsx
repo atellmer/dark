@@ -31,7 +31,7 @@ afterEach(() => {
   document.head.innerHTML = '';
 });
 
-describe('[@styled/theme]', () => {
+describe('@styled/theme', () => {
   test('works with theme correctly', () => {
     const Box = styled('div')`
       width: 100px;

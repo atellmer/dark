@@ -2,7 +2,7 @@ import { time, fix, illegal, range, uniq } from './utils';
 
 jest.spyOn(performance, 'now').mockImplementation(() => 12345);
 
-describe('[@animations/utils]', () => {
+describe('@animations/utils', () => {
   test('the time function works correctly', () => {
     expect(typeof time).toBe('function');
     expect(time()).toBe(12345);

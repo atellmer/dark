@@ -9,7 +9,7 @@ beforeEach(() => {
   jest.useRealTimers();
 });
 
-describe('[@core/lazy]', () => {
+describe('@core/lazy', () => {
   test('renders a component in the browser correctly', async () => {
     const { host, render } = createBrowserEnv();
     const content = () => dom`

@@ -15,7 +15,7 @@ afterEach(() => {
   document.head.innerHTML = '';
 });
 
-describe('[@styled/styled]', () => {
+describe('@styled/styled', () => {
   test('creates a simple styled component correctly', () => {
     const Layout = styled('div')`
       background-color: aqua;

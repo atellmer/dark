@@ -16,7 +16,7 @@ afterEach(() => {
   document.head.innerHTML = '';
 });
 
-describe('[@styled/global]', () => {
+describe('@styled/global', () => {
   test('can create global styles correctly', () => {
     const GlobalStyle = createGlobalStyle`
       *, *::after, *::before {

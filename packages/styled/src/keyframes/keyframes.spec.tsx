@@ -16,7 +16,7 @@ afterEach(() => {
   document.head.innerHTML = '';
 });
 
-describe('[@styled/keyframes]', () => {
+describe('@styled/keyframes', () => {
   test('creates a keyframes instance', () => {
     const spin = keyframes`
       from {

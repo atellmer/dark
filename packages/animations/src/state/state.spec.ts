@@ -45,7 +45,7 @@ function setup<T extends string>(configurator: ConfiguratorFn<T>, size = 4) {
 
 const toValue = <T extends string>(ctrl: Controller<T>) => ctrl.getSpring().value();
 
-describe('[@animations/state]', () => {
+describe('@animations/state', () => {
   test('has required methods', () => {
     const state = new SharedState();
 

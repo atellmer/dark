@@ -20,7 +20,7 @@ beforeEach(() => {
   setupGlobal2();
 });
 
-describe('[@styled/server]', () => {
+describe('@styled/server', () => {
   test('renders to string on the server correctly', async () => {
     const GlobalStyle = createGlobalStyle`
       *, *::after, *::before {

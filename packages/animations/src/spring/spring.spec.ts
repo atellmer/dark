@@ -2,7 +2,7 @@ import { WritableAtom } from '@dark-engine/core';
 
 import { Spring } from './spring';
 
-describe('[@animations/spring]', () => {
+describe('@animations/spring', () => {
   test('has required methods', () => {
     const spring = new Spring();
 

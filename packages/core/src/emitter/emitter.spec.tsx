@@ -3,7 +3,7 @@ import { EventEmitter } from './emitter';
 
 type EventName = 'data';
 
-describe('[@core/emitter]', () => {
+describe('@core/emitter', () => {
   test('has required methods', () => {
     const emitter = new EventEmitter<EventName>();
 

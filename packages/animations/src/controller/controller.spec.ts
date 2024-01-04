@@ -11,7 +11,7 @@ beforeEach(() => {
   mockBrowserPlatform();
 });
 
-describe('[@animations/controller]', () => {
+describe('@animations/controller', () => {
   test('has required methods', () => {
     const ctrl = setup();
 

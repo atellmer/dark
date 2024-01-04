@@ -8,7 +8,7 @@ import {
   FunctionRule,
 } from './tokens';
 
-describe('[@styled/tokens]', () => {
+describe('@styled/tokens', () => {
   test('The StyleRule generates a style correctly', () => {
     const style = new StyleRule();
 

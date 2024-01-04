@@ -9,7 +9,7 @@ import {
   mergeTemplates,
 } from './utils';
 
-describe('[@styled/utils]', () => {
+describe('@styled/utils', () => {
   test('the uniq function works correctly', () => {
     expect(typeof uniq).toBe('function');
     expect(uniq([], x => x)).toEqual([]);

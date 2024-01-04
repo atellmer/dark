@@ -1,43 +1,47 @@
 /** @jsx h */
-import { dom, createBrowserEnv } from '@test-utils';
+import { createBrowserEnv } from '@test-utils';
 
 import { h } from '../element';
 import { component } from '../component';
-import { useEffect } from '../use-effect';
 import { useState } from '../use-state';
 import { useDeferredValue } from './use-deferred-value';
 
-let { host, render } = createBrowserEnv();
+let { render } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  ({ host, render } = createBrowserEnv());
+  ({ render } = createBrowserEnv());
 });
 
-describe('[use-deferred-value]', () => {
+describe('@core/use-deferred-value', () => {
   test('can make a deferred render', () => {
     const spy = jest.fn();
-    const content = (value: number) => dom`
-      <div>${value}</div>
-    `;
+    let setValue: (x: number) => void = null;
     const App = component(() => {
-      const [value, setValue] = useState(0);
+      const [value, _setValue] = useState(0);
       const deferred = useDeferredValue(value);
 
-      useEffect(() => {
-        setValue(1);
-      }, []);
+      setValue = _setValue;
+      spy([value, deferred]);
 
-      spy();
-
-      return <div>{deferred}</div>;
+      return null;
     });
 
     render(<App />);
-    spy.mockReset();
-    expect(host.innerHTML).toBe(content(0));
-    jest.advanceTimersByTime(1);
-    expect(host.innerHTML).toBe(content(1));
-    expect(spy).toHaveBeenCalledTimes(2);
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith([0, 0]);
+
+    setValue(1);
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledTimes(3);
+    expect(spy).toHaveBeenCalledWith([1, 0]);
+    expect(spy).toHaveBeenLastCalledWith([1, 1]);
+
+    setValue(2);
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledTimes(5);
+    expect(spy).toHaveBeenCalledWith([2, 1]);
+    expect(spy).toHaveBeenLastCalledWith([2, 2]);
   });
 });
