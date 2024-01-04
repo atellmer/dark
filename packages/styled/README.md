@@ -12,7 +12,7 @@ Styled components for Dark 🌖
 - 🔁 Reusable fragments
 - 🛒 CSS nesting
 - 🎨 Theming
-- 💃 Animations
+- 💃 CSS Animations
 - 💻 SSR
 - 🗜️ Minification
 - 🚫 No deps
@@ -44,7 +44,7 @@ const Button = styled.button<{ $primary?: boolean }>`
   `}
 `;
 
-<Button>Default</Button>
+<Button>Normal</Button>
 <Button $primary>Primary</Button>
 ```
 
@@ -86,15 +86,15 @@ import { ServerStyleSheet } from '@dark-engine/styled/server';
 The styled uses tagged template literals to describe styles and create a final styled component that can be rendered like a regular Dark component, which can be nested with children and passed props. Under the hood, styled parses the style string into the simple abstract syntax tree (AST) in one pass, which is then transformed into final CSS and inserted into the DOM. At the same time, styles are divided into static and dynamic (based on props) for greater fragmentation of reused CSS classes. CSS classes are generated based on a fast non-cryptographic hash function and attached to DOM nodes.
 
 ```tsx
+const Layout = styled.section`
+  padding: 4em;
+  background: papayawhip;
+`;
+
 const Title = styled.h1`
   font-size: 1.5em;
   text-align: center;
   color: #BF4F74;
-`;
-
-const Layout = styled.section`
-  padding: 4em;
-  background: papayawhip;
 `;
 
 return (
@@ -104,6 +104,11 @@ return (
     </Title>
   </Layout>
 );
+
+// in the DOM
+<section class="dk-bgjhff">
+  <h1 class="dk-bbigce">Hello World!</h1>
+</section>
 ```
 
 ## Working with dynamic styles

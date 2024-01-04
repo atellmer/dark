@@ -8,10 +8,10 @@ Spring based animations for Dark
 - 🎉 Smooth natural animations with max FPS based on spring physics
 - ⏱️ No durations and curves, only physic parameters
 - 🔄 No rerenders
-- 🧭 Can use for web, native and desktop
+- 🛸 Can use for web, native and desktop
 - 💻 SSR
 - 🎊 Includes trails and transitions support
-- 🪅 Animation sequences
+- 🎢 Animation sequences
 - 🚫 No deps
 - 📦 Small size (5 kB gzipped)
 
@@ -42,8 +42,8 @@ const App = component(() => {
   const [isOpen, setIsOpen] = useState(false);
   const [spring] = useSpring(
     {
-      from: { opacity: isOpen ? 1 : 0 },
-      to: { opacity: isOpen ? 1 : 0 },
+      from: { opacity: val(isOpen) },
+      to: { opacity: val(isOpen) },
     },
     [isOpen],
   );
@@ -58,23 +58,14 @@ const App = component(() => {
   );
 });
 
+const val = (isOpen: boolean) => isOpen ? 1 : 0;
 const styleFn = (e: HTMLElement, x: SpringValue<'opacity'>) => e.style.setProperty('opacity', `${x.opacity}`);
-```
-
-## Installation
-npm:
-```
-npm install @dark-engine/animations
-```
-
-yarn:
-```
-yarn add @dark-engine/animations
 ```
 
 ## API
 ```tsx
 import {
+  type Spring,
   type SpringValue,
   Animated,
   useSpring,
@@ -87,22 +78,20 @@ import {
 ```
 
 ## Getting Started
-In the Dark library, animations are grounded in the principles of spring physics. To achieve the desired effect, it’s necessary to fine-tune parameters such as mass, tension, and friction. The animation comes to life using an appropriate hook. The transmission of property values is facilitated through a special `Animated` component, which serves as a conduit between the hook and the animated element. The entire process unfolds via a subscription, eliminating the need for component rerenders. This approach ensures a seamless and efficient animation experience.
 
+In the library, animations are grounded in the principles of spring physics. To achieve the desired effect, it’s necessary to fine-tune parameters such as mass, tension, and friction. The animation comes to life using an appropriate hook. The transmission of property values is facilitated through a special `Animated` component, which serves as a conduit between the hook and the animated element. The entire process unfolds via a subscription, eliminating the need for component rerenders. This approach ensures a seamless and efficient animation experience.
 
 ## useSpring
 
 A hook that allows you to animate multiple values at once.
 
 ```tsx
-type SpringProps = 'opacity' | 'scale';
-
 const App = component(() => {
   const [isOpen, setIsOpen] = useState(false);
-  const [spring] = useSpring<SpringProps>(
+  const [spring] = useSpring(
     {
-      from: { opacity: d(isOpen), scale: d(isOpen) },
-      to: { opacity: d(isOpen), scale: d(isOpen) },
+      from: { opacity: val(isOpen), scale: val(isOpen) },
+      to: { opacity: val(isOpen), scale: val(isOpen) },
       config: key => ({ tension: key === 'scale' ? 200 : isOpen ? 100 : 400, precision: 4 }),
     },
     [isOpen],
@@ -118,8 +107,8 @@ const App = component(() => {
   );
 });
 
-const d = (isOpen: boolean) => (isOpen ? 1 : 0);
-const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+const val = (isOpen: boolean) => (isOpen ? 1 : 0);
+const styleFn = (element: HTMLDivElement, value: SpringValue<'opacity' | 'scale'>) => {
   element.style.setProperty('opacity', `${value.opacity}`);
   element.style.setProperty('transform', `scale(${value.scale}) translate(-50%, -50%)`);
 };
@@ -136,7 +125,7 @@ https://github.com/atellmer/dark/assets/16635118/42b400a0-fa35-4440-b23b-35d2753
 
 ## useSprings
 
-A generalized version of `useSpring` takes as input the number of elements that need to be animated, as well as a function that creates a config depending on the index of the element. Needed for creating complex animations where elements are processed taking into account the position and other parameters of other elements. Example: drag-n-drop lists.
+A generalized version of `useSpring` takes as input the number of elements that need to be animated, as well as a function that creates a config depending on the index of the element. Needed for creating complex animations where elements are processed taking into account the position and other parameters of other elements.
 
 ```tsx
 const [springs, api] = useSprings(4, idx => createConfig(idx));
@@ -180,6 +169,7 @@ const [springs, api] = useTrail(size, () => ({
 ...
 
 return (
+  ...
   <>
     {springs.map((spring, idx) => {
       return (
@@ -198,7 +188,7 @@ https://github.com/atellmer/dark/assets/16635118/1342931b-004e-4b7b-9faf-6adf251
 
 ## useTransition
 
-A hook that animates any manipulations with the tree: adding, moving, replacing and deleting nodes. It works on the basis of an array of data, each element of which has a unique key, which allows you to compare diff elements. Returns a special `transition function` within which it manages the keys.
+A hook that animates any manipulations with the tree: adding, moving, replacing and deleting nodes. It works on the basis of an array of data, each element of which has a unique key, which allows you to compare diff elements. Returns a special `transition` function within which it manages the keys.
 
 ```tsx
 const [items, setItems] = useState(['A']);
@@ -215,6 +205,7 @@ const [transition] = useTransition(
 ...
 
 return (
+  ...
   <Container>
     {transition(({ spring, item }) => {
       return (
@@ -280,7 +271,7 @@ return (
 );
 ```
 
-[(spring-menu example)](https://github.com/atellmer/dark/tree/master/examples/spring-menu)
+[spring-menu example](https://github.com/atellmer/dark/tree/master/examples/spring-menu)
 
 https://github.com/atellmer/dark/assets/16635118/c1d3e472-dc0b-4861-8b05-3cbf9ef71f2c
 
