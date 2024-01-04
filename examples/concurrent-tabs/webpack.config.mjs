@@ -5,7 +5,7 @@ import { alias } from '../../webpack.alias.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = {
-  mode: 'production',
+  mode: 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -21,6 +21,7 @@ const config = {
     static: join(__dirname, './'),
     compress: false,
     port: 9000,
+    historyApiFallback: true,
   },
   module: {
     rules: [
@@ -37,7 +38,6 @@ const config = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env': JSON.stringify(process.env),
-      'process.env.NODE_ENV': JSON.stringify('production'),
     }),
   ],
 };

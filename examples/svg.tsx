@@ -1,5 +1,6 @@
-import { h, component, Fragment } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import { h, component } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
+import { styled } from '@dark-engine/styled';
 
 type IconProps = {
   size: number;
@@ -22,22 +23,19 @@ const PeaceIcon = component<IconProps>(({ size }) => {
 
 const App = component(() => {
   return (
-    <>
-      <style>
-        {`.container {
-            display: flex;
-            width: 100%;
-            height: 100vh;
-            justify-content: center;
-            align-items: center;
-            color: #E91E63;
-          }`}
-      </style>
-      <div class='container'>
-        <PeaceIcon size={256} />
-      </div>
-    </>
+    <Container>
+      <PeaceIcon size={256} />
+    </Container>
   );
 });
 
-render(<App />, document.getElementById('root'));
+const Container = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  color: #e91e63;
+`;
+
+createRoot(document.getElementById('root')).render(<App />);

@@ -1,4 +1,9 @@
 import {
+  type DarkElement,
+  type MutableRef,
+  type Ref,
+  type Component,
+  type StandardComponentProps,
   h,
   Fragment,
   component,
@@ -7,11 +12,6 @@ import {
   useMemo,
   useState,
   useRef,
-  type DarkElement,
-  type MutableRef,
-  type Ref,
-  type Component,
-  type StandardComponentProps,
 } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 

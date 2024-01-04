@@ -1,18 +1,5 @@
-import {
-  h,
-  type DarkElement,
-  type Component,
-  Fragment,
-  component,
-  memo,
-  useState,
-  useEffect,
-  useMemo,
-  useDeferredValue,
-  startTransition,
-  useTransition,
-} from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import { h, type DarkElement, Fragment, component, memo, useState, useTransition } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const AboutTab = component(() => {
   return <p>Welcome to my profile!</p>;
@@ -55,13 +42,12 @@ const ContactTab = component(() => {
 });
 
 type TabButtonProps = {
-  name: string;
   slot: DarkElement;
   isActive: boolean;
   onClick: () => void;
 };
 
-const TabButton = component<TabButtonProps>(({ name, slot, isActive, onClick }) => {
+const TabButton = component<TabButtonProps>(({ slot, isActive, onClick }) => {
   const [isPending, startTransition] = useTransition();
 
   const handleClick = () => {
@@ -82,19 +68,17 @@ const TabButton = component<TabButtonProps>(({ name, slot, isActive, onClick }) 
 const App = component(() => {
   const [tab, setTab] = useState('about');
 
-  const selectTab = (nextTab: string) => {
-    setTab(nextTab);
-  };
+  const selectTab = (nextTab: string) => setTab(nextTab);
 
   return (
     <>
-      <TabButton name='about' isActive={tab === 'about'} onClick={() => selectTab('about')}>
+      <TabButton isActive={tab === 'about'} onClick={() => selectTab('about')}>
         About
       </TabButton>
-      <TabButton name='posts' isActive={tab === 'posts'} onClick={() => selectTab('posts')}>
+      <TabButton isActive={tab === 'posts'} onClick={() => selectTab('posts')}>
         Posts (slow)
       </TabButton>
-      <TabButton name='contact' isActive={tab === 'contact'} onClick={() => selectTab('contact')}>
+      <TabButton isActive={tab === 'contact'} onClick={() => selectTab('contact')}>
         Contact
       </TabButton>
       <hr />
@@ -105,4 +89,4 @@ const App = component(() => {
   );
 });
 
-render(<App />, document.getElementById('root'));
+createRoot(document.getElementById('root')).render(<App />);

@@ -1,5 +1,5 @@
 import { h, Fragment, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import { type SyntheticEvent, render } from '@dark-engine/platform-browser';
 
 function generateProducts() {
   const products: Array<string> = [];
@@ -12,7 +12,7 @@ function generateProducts() {
 
 const dummyProducts = generateProducts();
 
-function filterProducts(filterTerm) {
+function filterProducts(filterTerm: string) {
   if (!filterTerm) {
     return dummyProducts;
   }
@@ -60,7 +60,7 @@ const App = component(() => {
   const deferredName = useDeferredValue(name);
   const isStale = name !== deferredName;
 
-  const handleInput = e => setName(e.target.value);
+  const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setName(e.target.value);
 
   return (
     <div>
