@@ -236,7 +236,7 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(2));
   });
 
-  test('can cancel the same updates', async () => {
+  test('cancels the transition after the same updates', async () => {
     const size = 20;
     const content = (marker: string) => dom`
       <div>${marker}:${Array(size)
@@ -297,5 +297,65 @@ describe('@core/start-transition', () => {
 
     await sleep(200);
     expect(host.innerHTML).toBe(content('d'));
+  });
+
+  test.only('cancels the transition after child updates', async () => {
+    const size = 20;
+    const content = (marker1: string, marker2: string) => dom`
+      <div>${marker1}:${marker2}:${Array(size)
+      .fill(null)
+      .map(() => replacer)
+      .join('')}
+      </div>
+    `;
+    let setMarker1: (x: string) => void = null;
+    let setMarker2: (x: string) => void = null;
+    const Slow = memo(
+      component<{ marker: string }>(({ marker }) => {
+        const [$marker, _setMarker] = useState('[a]');
+        const items = [];
+
+        setMarker2 = _setMarker;
+
+        for (let i = 0; i < size; i++) {
+          items.push(<SlowItem key={i} />);
+        }
+
+        return (
+          <div>
+            {marker}:{$marker}:{items}
+          </div>
+        );
+      }),
+    );
+    const SlowItem = component(() => {
+      const startTime = getTime();
+
+      while (getTime() - startTime < 1) {
+        //
+      }
+
+      return null;
+    });
+    const App = component(() => {
+      const [marker, _setMarker] = useState('a');
+
+      setMarker1 = _setMarker;
+
+      return <Slow marker={marker} />;
+    });
+
+    render(<App />);
+    expect(host.innerHTML).toBe(content('a', '[a]'));
+
+    startTransition(() => setMarker1('b'));
+    expect(host.innerHTML).toBe(content('a', '[a]'));
+
+    await sleep(1);
+    expect(host.innerHTML).toBe(content('a', '[a]'));
+
+    setMarker2('[b]');
+    await sleep(100);
+    expect(host.innerHTML).toBe(content('a', '[b]'));
   });
 });

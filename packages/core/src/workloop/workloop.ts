@@ -1,4 +1,4 @@
-import { platform, detectIsServer } from '../platform';
+import { platform } from '../platform';
 import {
   CREATE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,

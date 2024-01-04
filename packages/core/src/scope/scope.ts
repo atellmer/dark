@@ -100,8 +100,6 @@ class Scope {
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.insertionEffects = new Set([...this.insertionEffects]);
-    scope.resources = new Map([...this.resources]);
-    scope.defers = [...this.defers];
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
 
