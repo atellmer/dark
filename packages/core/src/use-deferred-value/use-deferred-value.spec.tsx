@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('@core/use-deferred-value', () => {
-  test('can make a deferred render', () => {
+  test('can make a deferred state update', () => {
     const spy = jest.fn();
     let setValue: (x: number) => void = null;
     const App = component(() => {

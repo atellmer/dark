@@ -100,7 +100,7 @@ class Scheduler {
       const loc = this.task.createLocation();
 
       if (hasPrimary) {
-        const has = Task.detectHasChildUpdate(loc, [...high, ...normal]);
+        const has = Task.detectHasRelatedUpdate(loc, high, true) || Task.detectHasRelatedUpdate(loc, normal, true);
 
         if (has) {
           this.task.markAsUnnecessary();
@@ -110,7 +110,7 @@ class Scheduler {
       }
 
       if (hasLow) {
-        const has = Task.detectHasSameUpdate(loc, low);
+        const has = Task.detectHasRelatedUpdate(loc, low);
 
         if (has) {
           this.task.markAsUnnecessary();
@@ -306,21 +306,12 @@ class Task {
     this.pendingSetter = fn;
   }
 
-  static detectHasSameUpdate(loc: string, tasks: Array<Task>) {
-    return tasks.some(x => {
-      const $loc = x.createLocation();
-      const has = $loc === loc;
-
-      return has;
-    });
-  }
-
-  static detectHasChildUpdate(loc: string, tasks: Array<Task>) {
+  static detectHasRelatedUpdate(loc: string, tasks: Array<Task>, deep = false) {
     const [$loc] = loc.split(HOOK_DELIMETER);
 
     return tasks.some(x => {
       const $$loc = x.createLocation();
-      const has = $$loc.length > loc.length && $$loc.indexOf($loc) !== -1;
+      const has = $$loc === loc || (deep && $$loc.length > loc.length && $$loc.indexOf($loc) !== -1);
 
       return has;
     });
