@@ -136,6 +136,13 @@ class Scheduler {
   private put(task: Task) {
     const queue = this.queue[task.getPriority()];
 
+    if (task.getIsTransition()) {
+      const loc = task.createLocation();
+      const tasks = queue.filter(x => x.createLocation() !== loc);
+
+      queue.splice(0, queue.length, ...tasks);
+    }
+
     queue.push(task);
   }
 
