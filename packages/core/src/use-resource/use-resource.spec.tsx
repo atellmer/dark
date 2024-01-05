@@ -19,11 +19,11 @@ beforeEach(() => {
 });
 
 const fetchData = async (x: number) => {
-  await sleep(10);
+  await sleep(5);
   return x * 10;
 };
 const fetchError = async () => {
-  await sleep(10);
+  await sleep(5);
   throw new Error('oops!');
 };
 

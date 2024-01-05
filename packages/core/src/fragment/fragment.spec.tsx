@@ -1,15 +1,14 @@
 /** @jsx h */
-import { render } from '@dark-engine/platform-browser';
+import { createBrowserEnv, dom } from '@test-utils';
 
-import { dom } from '@test-utils';
 import { h } from '../element';
 import { component } from '../component';
 import { Fragment } from './fragment';
 
-let host: HTMLElement = null;
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = document.createElement('div');
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('@core/fragment', () => {
@@ -29,7 +28,7 @@ describe('@core/fragment', () => {
       );
     });
 
-    render(App(), host);
+    render(<App />);
     expect(host.innerHTML).toBe(content());
   });
 });
