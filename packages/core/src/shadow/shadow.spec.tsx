@@ -2,6 +2,7 @@
 import { createBrowserEnv, dom } from '@test-utils';
 
 import { h } from '../element';
+import { Fragment } from '../fragment';
 import { component } from '../component';
 import { Shadow } from './shadow';
 
@@ -26,13 +27,24 @@ describe('@core/shadow', () => {
           `
       }
     `;
+    const spy = jest.fn();
+    const Child = component(() => {
+      spy();
+      return (
+        <>
+          <div>1</div>
+          <div>2</div>
+          <div>3</div>
+        </>
+      );
+    });
     const App = component<{ isInserted?: boolean }>(({ isInserted }) => {
       return (
         <div>
           <Shadow isInserted={isInserted}>
-            <div>1</div>
-            <div>2</div>
-            <div>3</div>
+            <>
+              <Child />
+            </>
           </Shadow>
         </div>
       );
@@ -40,6 +52,7 @@ describe('@core/shadow', () => {
 
     render(<App />);
     expect(host.innerHTML).toBe(content());
+    expect(spy).toHaveBeenCalled();
 
     render(<App isInserted />);
     expect(host.innerHTML).toBe(content(true));
