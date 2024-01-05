@@ -42,7 +42,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await sleep(100);
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
   });
 
@@ -60,7 +60,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await sleep(100);
     expect(spy).toHaveBeenCalledWith([false, null, 'Error: oops!']);
   });
 
@@ -78,7 +78,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await sleep(100);
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
     spy.mockClear();
 
@@ -87,7 +87,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([true, 10, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await sleep(100);
     expect(spy).toHaveBeenCalledWith([false, 20, null]);
     spy.mockClear();
 
@@ -96,7 +96,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([true, 20, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await sleep(100);
     expect(spy).toHaveBeenCalledWith([false, 30, null]);
   });
 
@@ -141,7 +141,7 @@ describe('@core/use-resource', () => {
     render(<App />);
     expect(host.innerHTML).toBe(content(true, null));
 
-    await sleep(50);
+    await sleep(100);
     expect(host.innerHTML).toBe(content(false, 10));
   });
 

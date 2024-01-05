@@ -40,7 +40,7 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   const scope = useMemo<Scope>(() => ({ store: new Set(), isLoaded }), []);
   const value = useMemo<ContextValue>(() => ({ isLoaded, fallback, register: null, unregister: null }), []);
   const content = [
-    Shadow({ key: CONTENT, isVisible: isLoaded, slot }),
+    Shadow({ key: CONTENT, isInserted: isLoaded, slot }),
     isLoaded ? null : Fragment({ key: FALLBACK, slot: fallback }),
   ].filter(Boolean);
 

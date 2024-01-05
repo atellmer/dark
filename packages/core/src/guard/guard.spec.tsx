@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 describe('@core/guard', () => {
-  test('can render children correctly', () => {
+  test('skips renders correctly', () => {
     const spy = jest.fn();
     const Child = component(() => {
       spy();
