@@ -5,15 +5,16 @@ The isomorphic Dark router designed for rendering universal web applications tha
 [More about Dark](https://github.com/atellmer/dark)
 
 ## Features
-- Nested routes
-- Lazy loading
-- Redirects
-- Wildcards a.k.a Fallbacks
-- Combination wildcards and redirects
-- Parameters
-- Hooks
-- SSR first class support
-- No deps other than Dark
+- 🌳 Nested routes
+- 🍩 Lazy loading
+- ↪️ Redirects
+- 🌠 Wildcards a.k.a Fallbacks
+- 🔄 Combination wildcards and redirects
+- 🔢 Parameters
+- 🪝 Hooks
+- 💻 SSR first class support
+- 🚫 No deps
+- 📦 Small size (4 kB gzipped)
 
 ## Installation
 
@@ -64,7 +65,7 @@ const App = component(() => {
               <RouterLink to='/first-component'>first-component</RouterLink>
               <RouterLink to='/second-component'>second-component</RouterLink>
             </header>
-            <main>{slot}</main> {/*<-- route content will be placed here*/}
+            <main>{slot}</main> {/*<-- a route content will be placed here*/}
           </>
         );
       }}
@@ -137,7 +138,7 @@ const routes: Routes = [
 const routes: Routes = [
   {
     path: 'first-component',
-    component: FirstComponent, // This component receives children routes as slot
+    component: FirstComponent, // The component receives children routes as slot
     children: [
       {
         path: 'child-a', 
