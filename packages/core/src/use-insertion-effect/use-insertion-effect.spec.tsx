@@ -16,7 +16,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-insertion-effect]', () => {
+describe('@core/use-insertion-effect', () => {
   test('runs sync', () => {
     const effectFn = jest.fn();
     const App = component(() => {

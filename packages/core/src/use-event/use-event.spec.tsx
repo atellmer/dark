@@ -9,7 +9,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-event]', () => {
+describe('@core/use-event', () => {
   test('works correctly', () => {
     const handlers: Array<() => number> = [];
 

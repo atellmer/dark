@@ -10,7 +10,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[memo]', () => {
+describe('@core/memo', () => {
   test('works correctly by default', () => {
     const mockFn = jest.fn();
 

@@ -28,7 +28,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@animations/use-chain]', () => {
+describe('@animations/use-chain', () => {
   test('can run animations in the sequence via events', () => {
     const content = (isOpen: boolean, opacity1: number, opacity2: number, opacity3: number, opacity4: number) => dom`
       <div style="opacity: ${opacity1};">A</div>

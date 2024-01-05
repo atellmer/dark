@@ -21,7 +21,7 @@ afterAll(() => {
   jest.useRealTimers();
 });
 
-describe('[batch]', () => {
+describe('@core/batch', () => {
   test('component renders many times after several updates without batch', () => {
     const spy = jest.fn();
     const App = component(() => {

@@ -1,7 +1,7 @@
 /** @jsx h */
 import { createRouterHistory } from './history';
 
-describe('[router/history]', () => {
+describe('@web-router/history', () => {
   test('throws error when incorrect initialization occurs', () => {
     expect(() => createRouterHistory(null)).toThrowError();
   });

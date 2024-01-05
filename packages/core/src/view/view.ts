@@ -1,9 +1,8 @@
-import { REPLACER, KEY_ATTR } from '../constants';
-import { detectIsArray, detectIsFunction } from '../utils';
-import { type ElementKey, type DarkElement, type Instance } from '../shared';
+import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
+import { detectIsArray, detectIsFunction } from '../utils';
+import { REPLACER, KEY_ATTR } from '../constants';
 import { $$scope } from '../scope';
-import { NodeType, type ViewOptions } from './types';
 
 const $$vNode = Symbol('vNode');
 const ATTR_TYPE = 'type';
@@ -167,8 +166,25 @@ function detectAreSameComponentTypesWithSameKeys(prevInst: Instance | null, next
 type TextSource = string | number;
 
 export type VirtualNodeFactory = () => VirtualNode;
+
 export type TagVirtualNodeFactory = () => TagVirtualNode;
+
 export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
+
+export type ViewOptions = {
+  as: string;
+  _void?: boolean;
+  [prop: string]: any;
+} & Partial<SlotProps> &
+  RefProps &
+  KeyProps &
+  FlagProps;
+
+export enum NodeType {
+  TAG = 'TAG',
+  TEXT = 'TEXT',
+  COMMENT = 'COMMENT',
+}
 
 export {
   View,

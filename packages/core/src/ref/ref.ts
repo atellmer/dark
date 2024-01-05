@@ -2,7 +2,6 @@ import { detectIsObject, detectIsNull, detectIsFunction } from '../utils';
 import type { Component, ComponentFactory } from '../component';
 import type { RefProps, KeyProps, FlagProps } from '../shared';
 import { useMemo } from '../use-memo';
-import type { MutableRef, Ref } from './types';
 
 function forwardRef<P extends object, R>(
   component: ComponentFactory<P, R>,
@@ -42,5 +41,13 @@ function useRef<T>(initialValue: T = null): MutableRef<T> {
 
   return ref;
 }
+
+export type MutableRef<T = unknown> = {
+  current: T;
+};
+
+export type FunctionRef<T = unknown> = (ref: T) => void;
+
+export type Ref<T = unknown> = MutableRef<T> | FunctionRef<T>;
 
 export { forwardRef, detectIsMutableRef, applyRef, useRef };

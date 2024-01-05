@@ -1,7 +1,7 @@
 /** @jsx h */
 import { createRouterLocation } from './location';
 
-describe('[router/location]', () => {
+describe('@web-router/location', () => {
   test('throws error when incorrect initialization occurs', () => {
     expect(() => createRouterLocation(null)).toThrowError();
   });

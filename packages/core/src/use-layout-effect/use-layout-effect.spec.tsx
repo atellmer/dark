@@ -12,7 +12,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-layout-effect]', () => {
+describe('@core/use-layout-effect', () => {
   test('runs sync', () => {
     const effectFn = jest.fn();
     const App = component(() => {

@@ -21,7 +21,7 @@ afterAll(() => {
   host = null;
 });
 
-describe('[router/rendering]', () => {
+describe('@web-router/router', () => {
   test('can render simple routes correctly', () => {
     const routes: Routes = [
       {

@@ -18,7 +18,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@animations/use-transition]', () => {
+describe('@animations/use-transition', () => {
   test('returns the transition function and the api', () => {
     type SpringProps = 'opacity';
     let transition: TransitionFn<SpringProps, Item> = null;

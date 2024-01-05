@@ -16,7 +16,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@animations/use-springs]', () => {
+describe('@animations/use-springs', () => {
   test('returns the springs and the api', () => {
     type SpringProps = 'scale';
     let springs: Array<Spring<SpringProps>> = null;

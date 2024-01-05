@@ -10,7 +10,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-callback]', () => {
+describe('@core/use-callback', () => {
   test('returns function', () => {
     let handler: () => void;
     const App = component(() => {

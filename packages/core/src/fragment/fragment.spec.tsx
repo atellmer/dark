@@ -12,7 +12,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[Fragment]', () => {
+describe('@core/fragment', () => {
   test('can render children correctly', () => {
     const content = () => dom`
       <div>1</div>

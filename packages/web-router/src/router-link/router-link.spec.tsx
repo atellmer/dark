@@ -20,7 +20,7 @@ afterAll(() => {
   host = null;
 });
 
-describe('[router/router-link]', () => {
+describe('@web-router/router-link', () => {
   test('can navigate by routes correctly', () => {
     const content = (active: string, value: string) => dom`
       <header>

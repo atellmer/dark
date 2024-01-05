@@ -12,7 +12,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-state]', () => {
+describe('@core/use-state', () => {
   test('works correctly by default', () => {
     const content = (count: number) => dom`
       <div>${count}</div>

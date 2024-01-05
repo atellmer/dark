@@ -11,7 +11,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-update]', () => {
+describe('@core/use-update', () => {
   test('can make update', () => {
     const mockFn = jest.fn();
     let update: () => void = null;

@@ -20,7 +20,7 @@ afterAll(() => {
   host = null;
 });
 
-describe('[router/use-location]', () => {
+describe('@web-router/use-location', () => {
   test('hook works correctly', () => {
     let history: RouterHistory = null;
     let location: RouterLocation = null;

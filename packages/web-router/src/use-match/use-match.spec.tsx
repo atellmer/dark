@@ -19,7 +19,7 @@ afterAll(() => {
   host = null;
 });
 
-describe('[router/use-match]', () => {
+describe('@web-router/use-match', () => {
   test('hook works correctly', () => {
     let history: RouterHistory = null;
     let match: Match = null;

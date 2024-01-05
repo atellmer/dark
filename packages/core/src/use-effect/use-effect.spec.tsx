@@ -14,7 +14,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-effect]', () => {
+describe('@core/use-effect', () => {
   test('runs async', () => {
     const effectFn = jest.fn();
     const App = component(() => {

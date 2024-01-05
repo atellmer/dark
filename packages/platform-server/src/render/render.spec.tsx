@@ -14,7 +14,7 @@ import {
 import { dom, sleep, replacer } from '@test-utils';
 import { renderToString, renderToStream } from './render';
 
-describe('[SSR]', () => {
+describe('@platform-server/render', () => {
   test('can render text correctly', async () => {
     expect(await renderToString(<>hello</>)).toBe('hello');
     expect(await renderToString(Text('world'))).toBe('world');

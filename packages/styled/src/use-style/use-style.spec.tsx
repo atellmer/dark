@@ -10,8 +10,8 @@ beforeEach(() => {
   ({ render, host } = createBrowserEnv());
 });
 
-describe('[@styled/use-style]', () => {
-  test('transforms the string style to the object correctly', () => {
+describe('@styled/use-style', () => {
+  test('transforms a string style to an object correctly', () => {
     let style: { root: object; button: object };
     const App = component(() => {
       style = useStyle(styled => ({

@@ -14,7 +14,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-reducer]', () => {
+describe('@core/use-reducer', () => {
   test('can update state with render', () => {
     type State = { count: number };
     type Action = { type: string };

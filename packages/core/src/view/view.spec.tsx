@@ -1,7 +1,7 @@
 /** @jsx h */
 import { View, Text, Comment, TagVirtualNode, TextVirtualNode, CommentVirtualNode } from './view';
 
-describe('[View, Text, Comment]', () => {
+describe('@core/view', () => {
   test('View creates the factory', () => {
     const factory = View({ as: 'div' });
 

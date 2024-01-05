@@ -16,7 +16,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@animations/use-trail]', () => {
+describe('@animations/use-trail', () => {
   test('returns springs and an api', () => {
     type SpringProps = 'scale';
     let springs: Array<Spring<SpringProps>> = null;

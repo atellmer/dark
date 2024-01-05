@@ -39,7 +39,7 @@ afterEach(() => {
   nextId = 0;
 });
 
-describe('[@platform-browser/render]', () => {
+describe('@platform-browser/render', () => {
   test('doesn not throw error', () => {
     const App = component(() => null);
 

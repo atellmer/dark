@@ -20,7 +20,7 @@ afterAll(() => {
   host = null;
 });
 
-describe('[router/use-params]', () => {
+describe('@web-router/use-params', () => {
   test('hook works correctly', () => {
     let history: RouterHistory = null;
 

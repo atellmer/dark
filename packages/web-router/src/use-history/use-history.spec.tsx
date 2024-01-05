@@ -18,7 +18,7 @@ afterAll(() => {
   host = null;
 });
 
-describe('[router/use-history]', () => {
+describe('@web-router/use-history', () => {
   test('hook works correctly', () => {
     let history: RouterHistory = null;
 

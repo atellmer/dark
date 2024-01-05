@@ -20,7 +20,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[context]', () => {
+describe('@core/context', () => {
   test('is created correctly', () => {
     const ThemeContext = createContext<Theme>('light');
 

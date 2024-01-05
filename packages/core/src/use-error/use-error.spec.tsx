@@ -15,7 +15,7 @@ beforeEach(() => {
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
-describe('[use-error]', () => {
+describe('@core/use-error', () => {
   test('catches error correctly', () => {
     const content = () => dom`
       <div>child</div>

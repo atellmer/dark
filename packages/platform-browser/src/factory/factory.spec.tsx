@@ -3,7 +3,7 @@ import { detectIsVirtualNodeFactory, TagVirtualNode } from '@dark-engine/core';
 
 import { factory } from './factory';
 
-describe('[@platform-browser/factory]', () => {
+describe('@platform-browser/factory', () => {
   test('can create factory', () => {
     const div = factory('div');
 

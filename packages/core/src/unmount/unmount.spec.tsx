@@ -15,7 +15,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[unmount]', () => {
+describe('@core/unmount', () => {
   test('clears all effects correctly', () => {
     const dropFn = jest.fn();
 

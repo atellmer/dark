@@ -12,7 +12,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[@platform-browser/hydrate-root]', () => {
+describe('@platform-browser/hydrate-root', () => {
   test('has methods', () => {
     const App = component(() => {
       return null;

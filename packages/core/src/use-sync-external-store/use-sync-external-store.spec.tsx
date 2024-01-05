@@ -34,7 +34,7 @@ function createStore<T>(initialState: T) {
   return { getState, setState, subscribe };
 }
 
-describe('[use-sync-external-store]', () => {
+describe('@core/use-sync-external-store', () => {
   test('works correctly', () => {
     const store = createStore(0);
     let state: number;

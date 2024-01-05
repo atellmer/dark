@@ -5,7 +5,7 @@ import { Routes } from './types';
 import { createRoutes, resolve } from './create-routes';
 import { ROOT_MARK } from '../constants';
 
-describe('[router/create-routes]', () => {
+describe('@web-router/create-routes', () => {
   test('can match simple routes correctly', () => {
     const routes: Routes = [
       {

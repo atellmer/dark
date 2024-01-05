@@ -13,7 +13,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-imperative-handle]', () => {
+describe('@core/use-imperative-handle', () => {
   test('mutates ref object correctly', () => {
     const mockFn = jest.fn();
 

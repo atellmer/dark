@@ -13,7 +13,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[use-memo]', () => {
+describe('@core/use-memo', () => {
   test('returns correct value', () => {
     const value = 1;
     let memoValue: number = null;

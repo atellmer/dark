@@ -1,12 +1,11 @@
-import type { DarkElement } from '../shared';
+import type { DarkElement, Subscribe, SubscriberWithValue, SlotProps, KeyProps } from '../shared';
+import { type ComponentFactory, component } from '../component';
 import type { Fiber } from '../fiber';
 import { detectIsFunction } from '../utils';
 import { $$scope } from '../scope';
-import { component } from '../component';
 import { useEffect } from '../use-effect';
 import { useMemo } from '../use-memo';
 import { useUpdate } from '../use-update';
-import type { Context, ContexProviderProps, ContextProviderValue } from './types';
 
 type CreateContextOptions = {
   displayName?: string;
@@ -114,5 +113,23 @@ function getProvider<T>(context: Context<T>, fiber: Fiber): ContextProviderValue
 
   return null;
 }
+
+type ContexProviderProps<T> = {
+  value: T;
+} & SlotProps &
+  KeyProps;
+
+export type Context<T = unknown> = {
+  Provider: ComponentFactory<ContexProviderProps<T>>;
+  Consumer: ComponentFactory<SlotProps<(value: T) => DarkElement>>;
+  displayName?: string;
+  defaultValue: T;
+};
+
+export type ContextProviderValue<T = unknown> = {
+  value: T;
+  subscribers: Set<(value: T) => void>;
+  subscribe: Subscribe<SubscriberWithValue<T>>;
+};
 
 export { createContext, useContext };

@@ -9,7 +9,7 @@ import {
 } from './tokens';
 
 describe('@styled/tokens', () => {
-  test('The StyleRule generates a style correctly', () => {
+  test('the StyleRule generates a style correctly', () => {
     const style = new StyleRule();
 
     style.name = 'background-color';
@@ -18,7 +18,7 @@ describe('@styled/tokens', () => {
     expect(style.generate()).toBe('background-color:red;');
   });
 
-  test('The NestingRule generates styles correctly', () => {
+  test('the NestingRule generates styles correctly', () => {
     const nr = new NestingRule();
     const style1 = new StyleRule();
     const style2 = new StyleRule();
@@ -34,7 +34,7 @@ describe('@styled/tokens', () => {
     expect(nr.generate('test')).toBe('.test span{background-color:white;color:black;}');
   });
 
-  test('The MediaQueryRule generates styles correctly', () => {
+  test('the MediaQueryRule generates styles correctly', () => {
     const mqr = new MediaQueryRule();
     const style = new StyleRule();
 
@@ -47,7 +47,7 @@ describe('@styled/tokens', () => {
     expect(mqr.generate('test')).toBe('@media (max-width: 600px){.test{background-color:red;}}');
   });
 
-  test('The ContainerQueryRule generates styles correctly', () => {
+  test('the ContainerQueryRule generates styles correctly', () => {
     const cqr = new ContainerQueryRule();
     const style = new StyleRule();
 
@@ -60,7 +60,7 @@ describe('@styled/tokens', () => {
     expect(cqr.generate('test')).toBe('@container abc (max-width: 600px){.test{background-color:red;}}');
   });
 
-  test('The KeyframesRule generates styles correctly', () => {
+  test('the KeyframesRule generates styles correctly', () => {
     const kr = new KeyframesRule();
     const from = new NestingRule();
     const to = new NestingRule();
@@ -84,7 +84,7 @@ describe('@styled/tokens', () => {
     expect(kr.generate()).toBe('@keyframes spin{from{background-color:red;}to{background-color:yellow;}}');
   });
 
-  test('The FunctionRule generates styles correctly', () => {
+  test('the FunctionRule generates styles correctly', () => {
     type Props = { color: string };
     const fr = new FunctionRule();
     const style = new StyleRule();
@@ -99,13 +99,13 @@ describe('@styled/tokens', () => {
     expect(styles).toBe('background-color:red;');
   });
 
-  test('The StyleSheet generates an empty class without children', () => {
+  test('the StyleSheet generates an empty class without children', () => {
     const sheet = new StyleSheet();
 
     expect(sheet.generate({ className: 'test' })).toBe('.test{}');
   });
 
-  test('The StyleSheet generates styles correctly', () => {
+  test('the StyleSheet generates styles correctly', () => {
     const sheet = new StyleSheet();
     const style1 = new StyleRule();
     const style2 = new StyleRule();

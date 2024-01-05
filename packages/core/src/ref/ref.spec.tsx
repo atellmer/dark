@@ -3,8 +3,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { h } from '../element';
 import { component } from '../component';
-import { forwardRef, useRef } from './ref';
-import { MutableRef } from './types';
+import { type MutableRef, forwardRef, useRef } from './ref';
 
 let host: HTMLElement = null;
 
@@ -12,7 +11,7 @@ beforeEach(() => {
   host = document.createElement('div');
 });
 
-describe('[ref]', () => {
+describe('@core/ref', () => {
   test('component ref is not available without forwarding', () => {
     let ref: MutableRef = null;
 

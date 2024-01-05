@@ -12,7 +12,7 @@ beforeEach(() => {
   hostTwo = document.createElement('div');
 });
 
-describe('[use-id]', () => {
+describe('@core/use-id', () => {
   test('can generate stable id', () => {
     const $render = (props = {}) => {
       render(App(props), hostOne);

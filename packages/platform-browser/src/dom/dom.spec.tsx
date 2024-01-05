@@ -10,7 +10,7 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe('[@platform-browser/dom]', () => {
+describe('@platform-browser/dom', () => {
   test('can render text correctly', () => {
     const content = 'hello';
 
