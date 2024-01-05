@@ -14,6 +14,7 @@ function hydrateRoot(container: TagNativeElement, element: DarkElement) {
 
 function hydrate() {
   const element = document.querySelector(`[${APP_STATE_ATTR}]`);
+
   if (!element) return;
   try {
     const resources = parse(element.textContent) as Record<string, AppResource>;

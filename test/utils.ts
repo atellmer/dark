@@ -1,6 +1,6 @@
 import * as core from '@dark-engine/core';
-import { platform, REPLACER } from '@dark-engine/core';
-import { createRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
+import { type DarkElement, platform, REPLACER } from '@dark-engine/core';
+import { createRoot, hydrateRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
 import { renderToStream, renderToString, inject as injectServerSupport } from '@dark-engine/platform-server';
 
 import { STYLED_ATTR, GLOBAL_ATTR_VALUE, COMPONENTS_ATTR_VALUE } from '@dark-engine/styled/constants';
@@ -54,23 +54,50 @@ const time = () => Date.now();
 const replacer = createReplacerString();
 
 let host: HTMLElement = null;
-let root: ReturnType<typeof createRoot> = null;
+let unmount: Function = null;
 
 function createBrowserEnv() {
   injectBrowserSupport();
   mockBrowserPlatform();
-  root && root.unmount();
+  unmount && unmount();
   host && host.parentElement === document.body && document.body.removeChild(host);
   host = createTestHostNode();
-  root = createRoot(host);
+  const root = createRoot(host);
+
+  unmount = root.unmount;
   const render = root.render;
 
   document.body.appendChild(host);
 
   return {
     host,
-    root,
+    unmount,
     render,
+    addEventListener,
+  };
+}
+
+function createBrowserHydrateEnv(html: string) {
+  injectBrowserSupport();
+  mockBrowserPlatform();
+  unmount && unmount();
+  host && host.remove();
+  host = createTestHostNode();
+  let $unmount = () => {};
+  const hydrate = (app: DarkElement) => {
+    const root = hydrateRoot(host, app);
+
+    $unmount = root.unmount;
+  };
+
+  unmount = () => $unmount();
+  host.innerHTML = html;
+  document.body.appendChild(host);
+
+  return {
+    host,
+    unmount,
+    hydrate,
     addEventListener,
   };
 }
@@ -108,6 +135,7 @@ export {
   time,
   replacer,
   createBrowserEnv,
+  createBrowserHydrateEnv,
   createServerEnv,
   mockBrowserPlatform,
   wrapWithGlobalStyledTag,
