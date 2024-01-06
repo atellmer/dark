@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@dark-engine/core": "*",
-    "@dark-engine/platform-browser": "*"
+    "@dark-engine/platform-browser": "*",
+    "@dark-engine/styled": "*"
   }
 }
