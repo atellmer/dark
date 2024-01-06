@@ -1,5 +1,5 @@
 {
-  "name": "dark-typescript-app",
+  "name": "dark-browser-app",
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
