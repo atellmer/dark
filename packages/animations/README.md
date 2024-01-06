@@ -81,7 +81,7 @@ import {
 
 In the library, animations are grounded in the principles of spring physics. To achieve the desired effect, it’s necessary to fine-tune parameters such as mass, tension, and friction. The animation comes to life using an appropriate hook. The transmission of property values is facilitated through a special `Animated` component, which serves as a conduit between the hook and the animated element. The entire process unfolds via a subscription, eliminating the need for component rerenders. This approach ensures a seamless and efficient animation experience.
 
-## useSpring
+## `useSpring`
 
 A hook that allows you to animate multiple values at once.
 
@@ -123,7 +123,7 @@ What's going on here?
 
 https://github.com/atellmer/dark/assets/16635118/42b400a0-fa35-4440-b23b-35d27531591d
 
-## useSprings
+## `useSprings`
 
 A generalized version of `useSpring` takes as input the number of elements that need to be animated, as well as a function that creates a config depending on the index of the element. Needed for creating complex animations where elements are processed taking into account the position and other parameters of other elements.
 
@@ -155,7 +155,7 @@ return (
 
 https://github.com/atellmer/dark/assets/16635118/453b9249-9667-4e80-b456-a48fdf2a8334
 
-## useTrail
+## `useTrail`
 
 The hook is also based on `useSprings`, but with minor changes that allow you to apply animations with a slight delay relative to other animated elements. In this case, the delay is not based on timeout, but on events. Can be useful for creating synchronously moving components.
 
@@ -186,7 +186,7 @@ return (
 
 https://github.com/atellmer/dark/assets/16635118/1342931b-004e-4b7b-9faf-6adf251abc35
 
-## useTransition
+## `useTransition`
 
 A hook that animates any manipulations with the tree: adding, moving, replacing and deleting nodes. It works on the basis of an array of data, each element of which has a unique key, which allows you to compare diff elements. Returns a special `transition` function within which it manages the keys.
 
@@ -227,7 +227,7 @@ https://github.com/atellmer/dark/assets/16635118/dc1019d2-512d-4d7a-99c0-48c52c0
 https://github.com/atellmer/dark/assets/16635118/2584d8e0-d44e-4575-9d3d-cc2a62a96692
 
 
-## useChain
+## `useChain`
 
 Allows you to create chains of heterogeneous animations (springs, trails, transitions), which are launched in a certain sequence. Can be used to create complex animations of the appearance or disappearance of interface elements.
 
