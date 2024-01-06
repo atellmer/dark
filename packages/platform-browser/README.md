@@ -80,11 +80,11 @@ root.unmount();
 
 Dark employs the standard DOM event system, with event names written in camelCase. Event handlers are functions passed to event attributes, which receive a synthetic event encapsulating a native event.
 
-### Synthetic Events
+#### Synthetic Events
 
 Synthetic events are utilized to emulate the behavior of `stopPropagation`. This emulation is necessary due to Dark's performance-optimized approach of delegating native events to the document element, rather than the originating element.
 
-### Event Delegation
+#### Event Delegation
 
 For instance, when subscribing to a button click event, the event is monitored across the entire document, not solely on the button. This is a key aspect of Dark's event handling mechanism.
 

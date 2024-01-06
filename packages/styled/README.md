@@ -5,6 +5,7 @@ Styled components for Dark 🌖
 [More about Dark](https://github.com/atellmer/dark)
 
 ## Features
+
 - 📚 Comprehensive CSS support
 - 🎁 Encapsulated scope
 - 🎉 Accommodation of global styles
@@ -19,6 +20,7 @@ Styled components for Dark 🌖
 - 📦 Small size (6 kB gzipped)
 
 ## Usage
+
 ```tsx
 const Button = styled.button<{ $primary?: boolean }>`
   display: inline-block;
@@ -33,6 +35,7 @@ const Button = styled.button<{ $primary?: boolean }>`
   &:hover {
     background-color: var(--hover-color);
   }
+
   &:active {
     background-color: var(--color);
   }
@@ -49,6 +52,7 @@ const Button = styled.button<{ $primary?: boolean }>`
 ```
 
 ## Installation
+
 npm:
 ```
 npm install @dark-engine/styled
@@ -65,6 +69,7 @@ CDN:
 ```
 
 ## API
+
 ```tsx
 import {
   type StyledComponentFactory,
@@ -353,6 +358,7 @@ const Icon = styled.svg<{ viewBox: string }>`
     fill: blueviolet;
   }
 `;
+
 <Link href='#'>
   <Icon viewBox='0 0 20 20'>
     <path d='M10 15h8c1 0 2-1 2-2V3c0-1-1-2-2-2H2C1 1 0 2 0 3v10c0 1 1 2 2 2h4v4l4-4zM5 7h2v2H5V7zm4 0h2v2H9V7zm4 0h2v2h-2V7z' />
