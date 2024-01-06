@@ -215,15 +215,12 @@ describe('@core/use-resource', () => {
         </div>
       );
     });
-    const { host, hydrate, unmount } = createBrowserHydrateEnv(content('a', 10, 20));
+    const { host, hydrate } = createBrowserHydrateEnv(content('a', 10, 20));
 
     hydrate(<App />);
     expect(host.innerHTML).toBe(content('a', 10, 20, true));
 
     setMarker('b');
     expect(host.innerHTML).toBe(content('b', 10, 20, true));
-
-    unmount();
-    host.remove();
   });
 });
