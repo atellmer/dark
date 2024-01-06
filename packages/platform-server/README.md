@@ -50,7 +50,7 @@ app/
 ├─ tsconfig.json
 ```
 
-### Rendering to string
+## Rendering to string
 
 The method renders app to string async to unblock main thread of Node.js
 
@@ -104,7 +104,7 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />);
 ```
 
-### Rendering to stream
+## Rendering to stream
 
 Dark can render to readable streams, i.e. give chunks of data as quickly as possible when starting rendering. This method works better for some Lighthouse metrics.
 
