@@ -4,10 +4,11 @@ Dark renderer for Node.js.
 
 [More about Dark](https://github.com/atellmer/dark)
 
-A normal Dark application runs in the browser, rendering pages in the DOM in response to user actions. You can also render on the server by creating static application pages that are later loaded on the client. This means that the app typically renders faster, allowing users to preview the layout of the app before it becomes fully interactive.
-The basic principle: on the server, the component code is rendered into a string, which the server returns in response to a request in the form of a file to which the assembled build of the front-end code is connected. The user receives a rendered page with content instantly, while Dark performs a hydration process, i.e. reuses DOM nodes already created on the server, hangs event handlers, and also performs all relying effects.
+A standard Dark application operates in the browser, rendering pages within the DOM in response to user interactions. Alternatively, server-side rendering can be employed to generate static application pages that are subsequently loaded on the client. This typically results in faster rendering, enabling users to preview the app layout prior to it becoming fully interactive.
 
-You can also render through Node.js API into html files directly then save them to give away next without hydration. In this case you will get a static site generation.
+The fundamental principle involves rendering the component code into a string on the server, which is then returned as a file in response to a request, with the assembled front-end code build attached. The user instantly receives a rendered page with content, while Dark executes a hydration process. This involves reusing DOM nodes initially created on the server, attaching event handlers, and executing all dependent effects.
+
+Additionally, rendering can be performed directly into HTML files via the Node.js API, which can then be saved for subsequent distribution without hydration. This approach results in static site generation.
 
 ## Installation
 
