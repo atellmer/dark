@@ -86,7 +86,7 @@ Synthetic events are utilized to emulate the behavior of `stopPropagation`. This
 
 #### Event Delegation
 
-For instance, when subscribing to a button click event, the event is monitored across the entire document, not solely on the button. This is a key aspect of Dark's event handling mechanism.
+For instance, when subscribing to a button click event, the event is monitored across the entire document, not on the button. This is a key aspect of Dark's event handling mechanism.
 
 ```tsx
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
