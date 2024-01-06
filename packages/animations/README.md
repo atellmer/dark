@@ -83,7 +83,7 @@ In the library, animations are grounded in the principles of spring physics. To 
 
 ## `useSpring`
 
-A hook that allows you to animate multiple values at once.
+The hook that allows you to animate multiple values at once.
 
 ```tsx
 const App = component(() => {
@@ -188,7 +188,7 @@ https://github.com/atellmer/dark/assets/16635118/1342931b-004e-4b7b-9faf-6adf251
 
 ## `useTransition`
 
-A hook that animates any manipulations with the tree: adding, moving, replacing and deleting nodes. It works on the basis of an array of data, each element of which has a unique key, which allows you to compare diff elements. Returns a special `transition` function within which it manages the keys.
+The hook that animates any manipulations with the tree: adding, moving, replacing and deleting nodes. It works on the basis of an array of data, each element of which has a unique key, which allows you to compare diff elements. Returns a special `transition` function within which it manages the keys.
 
 ```tsx
 const [items, setItems] = useState(['A']);
