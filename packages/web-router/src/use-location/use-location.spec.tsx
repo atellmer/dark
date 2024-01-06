@@ -1,8 +1,7 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
 
-import { createTestHostNode } from '@test-utils';
+import { createBrowserEnv, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { useHistory } from '../use-history';
@@ -10,14 +9,14 @@ import { RouterHistory } from '../history';
 import { RouterLocation } from '../location';
 import { useLocation } from './use-location';
 
-let host: HTMLElement = null;
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = createTestHostNode();
+  ({ host, render } = createBrowserEnv());
 });
 
-afterAll(() => {
-  host = null;
+afterEach(() => {
+  resetBrowserHistory();
 });
 
 describe('@web-router/use-location', () => {
@@ -49,9 +48,7 @@ describe('@web-router/use-location', () => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(location).toBeInstanceOf(RouterLocation);
     expect(location.pathname).toBe('/');
     expect(location.key).toBeTruthy;
@@ -61,8 +58,6 @@ describe('@web-router/use-location', () => {
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(location).toBeInstanceOf(RouterLocation);
     expect(location.pathname).toBe('/second/');
-    expect(location.key).toBeTruthy;
-
-    root.unmount();
+    expect(location.key).toBeTruthy();
   });
 });

@@ -1,22 +1,21 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
 
-import { createTestHostNode } from '@test-utils';
+import { createBrowserEnv, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { useHistory } from '../use-history';
 import { RouterHistory } from '../history';
 import { useMatch, type Match } from './use-match';
 
-let host: HTMLElement = null;
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = createTestHostNode();
+  ({ host, render } = createBrowserEnv());
 });
 
-afterAll(() => {
-  host = null;
+afterEach(() => {
+  resetBrowserHistory();
 });
 
 describe('@web-router/use-match', () => {
@@ -48,9 +47,7 @@ describe('@web-router/use-match', () => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(match).toBeTruthy();
     expect(match.path).toBe('/');
     expect(match.url).toBe('/');
@@ -61,7 +58,5 @@ describe('@web-router/use-match', () => {
     expect(match).toBeTruthy();
     expect(match.path).toBe('/second/:id/');
     expect(match.url).toBe('/second/10/');
-
-    root.unmount();
   });
 });

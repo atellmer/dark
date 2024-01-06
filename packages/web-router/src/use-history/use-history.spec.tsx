@@ -1,25 +1,24 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
 
-import { createTestHostNode } from '@test-utils';
+import { createBrowserEnv, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { useHistory } from './use-history';
 import { RouterHistory } from '../history';
 
-let host: HTMLElement = null;
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = createTestHostNode();
+  ({ host, render } = createBrowserEnv());
 });
 
-afterAll(() => {
-  host = null;
+afterEach(() => {
+  resetBrowserHistory();
 });
 
 describe('@web-router/use-history', () => {
-  test('hook works correctly', () => {
+  test('works correctly', () => {
     let history: RouterHistory = null;
 
     const routes: Routes = [
@@ -41,15 +40,11 @@ describe('@web-router/use-history', () => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(history).toBeInstanceOf(RouterHistory);
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/second');
     expect(host.innerHTML).toBe(`<div>second</div>`);
-
-    root.unmount();
   });
 });

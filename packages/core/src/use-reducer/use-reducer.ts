@@ -17,12 +17,12 @@ function useReducer<R extends Reducer>(
   return [state, dispatch];
 }
 
-type Reducer<S = any, A = any> = (prevState: S, action: A) => S;
-
 type ReducerState<R extends Reducer> = R extends Reducer<infer S, any> ? S : never;
 
 type ReducerAction<R extends Reducer> = R extends Reducer<any, infer A> ? A : never;
 
-type Dispatch<A> = (value: A) => void;
+export type Reducer<S = any, A = any> = (prevState: S, action: A) => S;
+
+export type Dispatch<A> = (value: A) => void;
 
 export { useReducer };

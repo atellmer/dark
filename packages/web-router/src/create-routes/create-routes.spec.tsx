@@ -1,9 +1,14 @@
 /** @jsx h */
 import { component } from '@dark-engine/core';
+import { resetBrowserHistory } from '@test-utils';
 
 import { Routes } from './types';
 import { createRoutes, resolve } from './create-routes';
 import { ROOT_MARK } from '../constants';
+
+afterEach(() => {
+  resetBrowserHistory();
+});
 
 describe('@web-router/create-routes', () => {
   test('can match simple routes correctly', () => {

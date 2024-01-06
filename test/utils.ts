@@ -122,6 +122,8 @@ const wrapWithGlobalStyledTag = (x: string) => `<style ${STYLED_ATTR}="${GLOBAL_
 
 const wrapWithStyledTag = (x: string) => `<style ${STYLED_ATTR}="${COMPONENTS_ATTR_VALUE}">${x}</style>`;
 
+const resetBrowserHistory = () => globalThis.history.replaceState(null, null, '/');
+
 export {
   dom,
   nextTick,
@@ -140,4 +142,5 @@ export {
   mockBrowserPlatform,
   wrapWithGlobalStyledTag,
   wrapWithStyledTag,
+  resetBrowserHistory,
 };

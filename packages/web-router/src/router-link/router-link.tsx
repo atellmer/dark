@@ -4,6 +4,7 @@ import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { useHistory } from '../use-history';
 import { useLocation } from '../use-location';
 import { normalaizePathname, cm, parseURL } from '../utils';
+import { SLASH_MARK } from '../constants';
 
 export type RoutreLinkProps = {
   to: string;
@@ -43,8 +44,11 @@ const RouterLink = component<RoutreLinkProps>(
 
 function detectIsActiveLink(pathname: string, hash: string, to: string): boolean {
   const { pathname: $to, hash: $hash } = parseURL(to);
+  const $pathname = normalaizePathname(pathname);
 
-  return normalaizePathname(pathname).indexOf($to) !== -1 && hash === $hash;
+  if ($to === SLASH_MARK) return $pathname === SLASH_MARK;
+
+  return $pathname.indexOf($to) !== -1 && hash === $hash;
 }
 
 export { RouterLink };

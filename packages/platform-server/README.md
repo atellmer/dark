@@ -11,14 +11,19 @@ You can also render through Node.js API into html files directly then save them 
 
 ## Installation
 
+from template:
+```
+npx degit github:atellmer/dark/templates/server my-app
+```
+
 npm:
 ```
-npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
+npm install @dark-engine/platform-server
 ```
 
 yarn:
 ```
-yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
+yarn add @dark-engine/platform-server
 ```
 
 ## API

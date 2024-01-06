@@ -1,23 +1,21 @@
 /** @jsx h */
 import { type DarkElement, h, component } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
 
-import { createTestHostNode, createReplacerString } from '@test-utils';
+import { createBrowserEnv, replacer, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { useHistory } from '../use-history';
 import { RouterHistory } from '../history';
 import { useParams } from './use-params';
 
-let host: HTMLElement = null;
-const replacer = createReplacerString();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = createTestHostNode();
+  ({ host, render } = createBrowserEnv());
 });
 
-afterAll(() => {
-  host = null;
+afterEach(() => {
+  resetBrowserHistory();
 });
 
 describe('@web-router/use-params', () => {
@@ -74,9 +72,7 @@ describe('@web-router/use-params', () => {
       return <Router routes={routes}>{slot => slot}</Router>;
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/first/1');
@@ -87,7 +83,5 @@ describe('@web-router/use-params', () => {
 
     history.push('/second/2/a/3');
     expect(host.innerHTML).toBe(`<div>second: 2<div>a: 2|3</div></div>`);
-
-    root.unmount();
   });
 });

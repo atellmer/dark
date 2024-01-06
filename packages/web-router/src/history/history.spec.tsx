@@ -1,5 +1,11 @@
 /** @jsx h */
+import { resetBrowserHistory } from '@test-utils';
+
 import { createRouterHistory } from './history';
+
+afterEach(() => {
+  resetBrowserHistory();
+});
 
 describe('@web-router/history', () => {
   test('throws error when incorrect initialization occurs', () => {

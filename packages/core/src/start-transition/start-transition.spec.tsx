@@ -299,7 +299,7 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content('d'));
   });
 
-  test.only('cancels the transition after child updates', async () => {
+  test('cancels the transition after child updates', async () => {
     const size = 20;
     const content = (marker1: string, marker2: string) => dom`
       <div>${marker1}:${marker2}:${Array(size)

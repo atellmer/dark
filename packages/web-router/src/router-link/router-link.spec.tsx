@@ -1,23 +1,20 @@
 /** @jsx h */
 import { h, Fragment, component } from '@dark-engine/core';
-import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
+import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
-import { createTestHostNode, createReplacerString, click, dom } from '@test-utils';
+import { createBrowserEnv, replacer, click, dom, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
 import { RouterLink } from './router-link';
 
-let host: HTMLElement = null;
-const replacer = createReplacerString();
+let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  host?.parentElement === document.body && document.body.removeChild(host);
-  host = createTestHostNode();
-  document.body.appendChild(host);
+  ({ host, render } = createBrowserEnv());
 });
 
-afterAll(() => {
-  host = null;
+afterEach(() => {
+  resetBrowserHistory();
 });
 
 describe('@web-router/router-link', () => {
@@ -65,9 +62,7 @@ describe('@web-router/router-link', () => {
       );
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(host.innerHTML).toBe(content('', replacer));
 
     const link1 = host.querySelector('a[href="/first"]');
@@ -85,8 +80,6 @@ describe('@web-router/router-link', () => {
 
     click(link3);
     expect(host.innerHTML).toBe(content('/third', `<div>third</div>`));
-
-    root.unmount();
   });
 
   test('can work with custom classes correctly', () => {
@@ -111,12 +104,8 @@ describe('@web-router/router-link', () => {
       );
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(host.innerHTML).toBe(`<a href="/" class="my-link custom-active-link">first</a>`);
-
-    root.unmount();
   });
 
   test('prevent default click event', () => {
@@ -147,14 +136,10 @@ describe('@web-router/router-link', () => {
       );
     });
 
-    const root = createRoot(host);
-
-    root.render(<App />);
+    render(<App />);
     expect(host.innerHTML).toBe(`<a href="/" class="router-link-active">first</a>`);
 
     click(host.querySelector('a'));
     expect(defaultPrevented).toBe(true);
-
-    root.unmount();
   });
 });
