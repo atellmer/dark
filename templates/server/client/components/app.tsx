@@ -60,7 +60,7 @@ const App = component<AppProps>(({ url }) => {
 });
 
 const GlobalStyle = createGlobalStyle`
-  * {
+  *, *::after, *::before {
     box-sizing: border-box;
   }
 
