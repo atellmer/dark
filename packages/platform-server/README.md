@@ -10,10 +10,12 @@ The basic principle: on the server, the component code is rendered into a string
 You can also render through Node.js API into html files directly then save them to give away next without hydration. In this case you will get a static site generation.
 
 ## Installation
+
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
+
 yarn:
 ```
 yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
@@ -42,7 +44,7 @@ app/
 ├─ tsconfig.json
 ```
 
-### renderToString
+### Rendering to string
 
 The method renders app to string async to unblock main thread of Node.js
 
@@ -53,8 +55,8 @@ import { Page, App } from '../client/app';
 
 server.use(express.static(join(__dirname, '../client/static')));
 
-server.get('/', async (req, res) => {
-  const content = Page({ title: 'SSR test', slot: App() });
+server.get('*', async (req, res) => {
+  const content = Page({ title: 'Awesome App', slot: App() });
   const app = await renderToString(content);
   const page = `<!DOCTYPE html>${app}`;
 
@@ -96,28 +98,28 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />);
 ```
 
-### renderToStream
+### Rendering to stream
 
 Dark can render to readable streams, i.e. give chunks of data as quickly as possible when starting rendering. This method works better for some Lighthouse metrics.
 
 ```tsx
 import { renderToStream } from '@dark-engine/platform-server';
 
-server.get('/', (req, res) => {
-  const content = Page({ title: 'SSR test', slot: App() });
+server.get('*', (req, res) => {
+  const content = Page({ title: 'Awesome App', slot: App() });
   const stream = renderToStream(content);
 
   res.statusCode = 200;
   stream.pipe(res);
 });
 ```
-Working example of app is in examples folder called server-side-rendering.
+Please see code examples in the `/examples` directory.
 
 ## Lazy modules
 
-Dark is written in such a way that it has full support for asynchronous lazy code modules in the rendering process on the server. If Dark encounters a lazy module that is not yet cached, it aborts rendering and waits for the module to be loaded and cached, then resumes rendering where it left off. In subsequent rendering, all modules will be taken from the cache.
+Dark is designed to fully support asynchronous lazy code modules during the server-side rendering process. When Dark encounters a lazy module that isn’t yet cached, it halts the rendering process and waits for the module to load and cache before resuming from where it left off. In subsequent renderings, all modules are retrieved from the cache.
 
-As a result, all lazy modules will be fully loaded and the user will receive all the content. If the rendering takes place on the client, the lazy module will be processed through the Suspense component showing the spinner or skeleton.
+This ensures that all lazy modules are fully loaded and the user receives the complete content. If the rendering occurs on the client-side, the lazy module is handled through the Suspense component, which displays a spinner or skeleton screen during loading.
 
 # LICENSE
 
