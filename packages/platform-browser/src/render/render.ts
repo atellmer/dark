@@ -20,7 +20,7 @@ import {
 } from '@dark-engine/core';
 
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
-import { detectIsPortal, unmountPortal } from '../portal/utils';
+import { detectIsPortal, unmountPortal } from '../portal';
 import type { TagNativeElement } from '../native-element';
 
 const roots = new Map<Element, number>();

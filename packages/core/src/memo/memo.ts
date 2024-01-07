@@ -4,9 +4,11 @@ import {
   type ShouldUpdate,
   type ComponentInject,
   $$inject,
+  detectIsComponent,
 } from '../component';
 import type { SlotProps, RefProps } from '../shared';
-import { $$memo } from './utils';
+
+const $$memo = Symbol('memo');
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
   const keys = Object.keys(nextProps);
@@ -32,4 +34,6 @@ function memo<P extends object, R = unknown>(
   return factory as ComponentFactory<P1, R>;
 }
 
-export { memo };
+const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;
+
+export { memo, detectIsMemo };

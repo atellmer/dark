@@ -1,16 +1,7 @@
-import { type ElementKey, type Instance } from '../shared';
+import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, FlagProps } from '../shared';
 import { KEY_ATTR } from '../constants';
 import { error } from '../utils';
 import { type Ref } from '../ref';
-import type {
-  CreateElement,
-  ComponentFactory,
-  ComponentOptions,
-  ShouldUpdate,
-  StandardComponentProps,
-  ComponentInject,
-  ComponentFactoryWithPossiblyInject,
-} from './types';
 
 const $$inject = Symbol('inject');
 class Component<P extends StandardComponentProps = any, R = any> {
@@ -67,5 +58,28 @@ const detectIsComponent = (x: unknown): x is Component => x instanceof Component
 const getComponentKey = (x: Component): ElementKey => x.props[KEY_ATTR] ?? null;
 
 const hasComponentFlag = (inst: Component, flag: string) => Boolean(inst.props[flag]);
+
+type ComponentOptions = Readonly<{
+  displayName?: string;
+  token?: Symbol;
+}>;
+
+type ComponentFactoryWithPossiblyInject<P extends object = {}, R = unknown> = {
+  (props?: P, ref?: Ref<R>): Component<P, R>;
+  [$$inject]?: ComponentInject<P>;
+};
+
+type CreateElement<P extends StandardComponentProps, R = unknown> = (props: P, ref?: Ref<R>) => DarkElement;
+
+export type ComponentInject<P extends object = {}> = Readonly<{
+  token?: Symbol;
+  shouldUpdate?: ShouldUpdate<P>;
+}>;
+
+export type ShouldUpdate<P> = (prevProps: P, nextProps: P) => boolean;
+
+export type StandardComponentProps = KeyProps & RefProps & FlagProps;
+
+export type ComponentFactory<P extends object = {}, R = unknown> = (props?: P, ref?: Ref<R>) => Component<P, R>;
 
 export { Component, component, $$inject, detectIsComponent, getComponentKey, hasComponentFlag };

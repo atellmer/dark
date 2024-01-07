@@ -5,7 +5,8 @@ import { useLayoutEffect } from '../use-layout-effect';
 import { $$scope } from '../scope';
 import { collectElements, getFiberWithElement } from '../walk';
 import { platform, detectIsServer } from '../platform';
-import { $$shadow } from './utils';
+
+const $$shadow = Symbol('shadow');
 
 type ShadowProps = {
   isInserted: boolean;

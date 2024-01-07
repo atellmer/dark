@@ -3,10 +3,8 @@ import { INSERTION_EFFECT_HOST_MASK, LAYOUT_EFFECT_HOST_MASK, ASYNC_EFFECT_HOST_
 import { $$scope } from '../scope';
 import { useMemo } from '../use-memo';
 import { type Hook, type HookValue } from '../fiber';
-import { type Effect, type DropEffect, EffectType } from './types';
 
 const $$useEffect = Symbol('use-effect');
-const { useEffect, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
 
 type UseEffectValue = {
   token: Symbol;
@@ -50,5 +48,17 @@ function createEffect(token: Symbol, type: EffectType) {
     dropEffects,
   };
 }
+
+export type DropEffect = void | (() => void);
+
+export type Effect = () => DropEffect;
+
+export enum EffectType {
+  ASYNC = 'ASYNC',
+  LAYOUT = 'LAYOUT',
+  INSERTION = 'INSERTION',
+}
+
+const { useEffect, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
 
 export { useEffect, dropEffects, createEffect };

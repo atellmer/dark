@@ -40,7 +40,7 @@ import {
   createReplacer,
   detectAreSameInstanceTypes,
 } from '../view';
-import { detectIsMemo } from '../memo/utils';
+import { detectIsMemo } from '../memo';
 import {
   walk,
   getFiberWithElement,

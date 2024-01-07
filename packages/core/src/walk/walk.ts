@@ -15,7 +15,7 @@ import { platform } from '../platform';
 import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
 import { type Scope } from '../scope';
 import { type Component } from '../component';
-import { detectIsMemo } from '../memo/utils';
+import { detectIsMemo } from '../memo';
 import { type Instance, type ElementKey } from '../shared';
 import { createIndexKey } from '../utils';
 
