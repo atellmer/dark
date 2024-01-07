@@ -6,6 +6,16 @@ Dark navigation for NativeScript platform.
 <br>
 [More about NativeScript](https://nativescript.org/)
 
+## Features
+- 📚 Stack navigation
+- 📂 Tab navigation
+- 🪟 Modal navigation
+- 🌳 Nested screens
+- 🔢 Parameters
+- 💃 Animated transitions
+- 📈 Hooks
+- 🚫 No deps
+
 ## Installation
 npm:
 ```

@@ -253,28 +253,28 @@ const List = component(({ items }) => {
 You can put components into themself to get recursion if you want. But every recursion must have return condition for out. In other case we will have infinity loop. Recursive rendering might be useful for tree building or something else.
 
 ```tsx
-const RecursiveItem = component<RecursiveItemProps>(({ level, currentLevel = 0 }) => {
-  if (currentLevel === level) return null;
+const Item = component(({ level, current = 0 }) => {
+  if (current === level) return null;
 
   return (
-    <div style={`margin-left: ${currentLevel === 0 ? '0' : '10px'}`}>
-      <div>level: {currentLevel + 1}</div>
-      <RecursiveItem level={level} currentLevel={currentLevel + 1} />
+    <div style={`margin-left: ${current === 0 ? '0' : '10px'}`}>
+      <div>level: {current + 1}</div>
+      <Item level={level} current={current + 1} />
     </div>
   );
 });
 
 const App = component(() => {
-  return <RecursiveItem level={5} />;
+  return <Item level={5} />;
 });
 ```
 
 ```
- level: 1
+level: 1
   level: 2
-   level: 3
-    level: 4
-     level: 5
+    level: 3
+      level: 4
+        level: 5
 ```
 
 ## Hooks
@@ -345,17 +345,15 @@ const App = component(() => {
 Simply starts the component rerender.
 
 ```tsx
-const App = component(() => {
-  const update = useUpdate();
+const update = useUpdate();
 
-  console.log('render');
+console.log('render');
 
-  return (
-    <>
-      <button onClick={() => update()}>update</button>
-    </>
-  );
-});
+return (
+  <>
+    <button onClick={() => update()}>update</button>
+  </>
+);
 ```
 
 ## Effects
@@ -367,24 +365,22 @@ Side effects are useful actions that take place outside of the interface renderi
 Executed asynchronously, after rendering.
 
 ```tsx
-const App = component(() => {
-  const [albums, setAlbums] = useState<Array<Album>>([]);
+const [albums, setAlbums] = useState<Array<Album>>([]);
 
-  useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/albums')
-      .then(x => x.json())
-      .then(x => x.slice(0, 10))
-      .then(x => setAlbums(x));
-  }, []);
+useEffect(() => {
+  fetch('https://jsonplaceholder.typicode.com/albums')
+    .then(x => x.json())
+    .then(x => x.slice(0, 10))
+    .then(x => setAlbums(x));
+}, []);
 
-  if (albums.length === 0) return <div>loading...</div>;
+if (albums.length === 0) return <div>loading...</div>;
 
-  return (
-    <ul>
-      {albums.map(x => <li key={x.id}>{x.title}</li>)}
-    </ul>
-  );
-});
+return (
+  <ul>
+    {albums.map(x => <li key={x.id}>{x.title}</li>)}
+  </ul>
+);
 ```
 
 The second argument to this hook is an array of dependencies that tells it when to restart. This parameter is optional, then the effect will be restarted on every render.
@@ -392,13 +388,13 @@ The second argument to this hook is an array of dependencies that tells it when 
 Also this hook can return a reset function:
 
 ```tsx
- useEffect(() => {
-    const timerId = setTimeout(() => {
-      console.log('hey!');
-    }, 1000);
+useEffect(() => {
+  const timerId = setTimeout(() => {
+    console.log('hey!');
+  }, 1000);
 
-    return () => clearTimeout(timerId);
-  }, []);
+  return () => clearTimeout(timerId);
+}, []);
 ```
 
 #### `useLayoutEffect`
@@ -415,7 +411,7 @@ useLayoutEffect(() => {
 
 #### `useInsertionEffect`
 
-The signature is identical to useEffect, but it fires synchronously before all DOM mutations. Use this to inject styles into the DOM before reading layout in useLayoutEffect. This hook does not have access to refs and cannot call render. Useful for css-in-js libraries.
+The signature is identical to useEffect, but it fires synchronously before all DOM mutations. Use this to inject styles into the DOM before reading layout in `useLayoutEffect`. This hook does not have access to refs and cannot call render. Useful for css-in-js libraries.
 
 ```tsx
 useInsertionEffect(() => {
@@ -435,12 +431,10 @@ The hook for memoization of heavy calculations or heavy pieces of the interface:
 const memoizedOne = useMemo(() => Math.random(), []);
 const memoizedTwo = useMemo(() => <div>{Math.random()}</div>, []);
 
-return (
-  <>
-    {memoizedOne}
-    {memoizedTwo}
-  </>
-);
+<>
+  {memoizedOne}
+  {memoizedTwo}
+</>
 ```
 
 #### `useCallback`
@@ -448,11 +442,9 @@ return (
 Suitable for memoizing handler functions descending down the component tree:
 
 ```tsx
- const handleClick = useCallback(() => setCount(count + 1), [count]);
+const handleClick = useCallback(() => setCount(count + 1), [count]);
 
- return (
-    <button onClick={handleClick}>add</button>
-  );
+<button onClick={handleClick}>add</button>
 ```
 
 #### `useEvent`
@@ -462,18 +454,15 @@ Similar to `useCallback` but has no dependencies. Ensures the return of the same
 ```tsx
 const handleClick = useEvent(() => setCount(count + 1));
 
-return (
-  <button onClick={handleClick}>add</button>
-);
+<button onClick={handleClick}>add</button>
 ```
 
 ### `memo`
 
 ```tsx
-const MemoComponent = memo(component(() => {
-  console.log('MemoComponent render!');
-
-  return <div>I'm memo</div>;
+const Memo = memo(component(() => {
+  console.log('Memo render!');
+  return <div>I'm Memo</div>;
 }));
 
 const App = component(() => {
@@ -485,8 +474,7 @@ const App = component(() => {
 
   return (
     <>
-      <div>app</div>
-      <MemoComponent />
+      <Memo />
     </>
   );
 });
@@ -497,7 +485,7 @@ root.render(<App />);
 ```
 ```
 App render!
-MemoComponent render!
+Memo render!
 App render!
 App render!
 App render!
@@ -507,7 +495,7 @@ App render!
 As the second argument, it takes a function that answers the question of when to re-render the component:
 
 ```tsx
-const MemoComponent = memo(Component, (prevProps, nextProps) => prevProps.color !== nextProps.color);
+const Memo = memo(Component, (prevProps, nextProps) => prevProps.color !== nextProps.color);
 ```
 
 #### `Guard`
@@ -561,7 +549,7 @@ const Child = forwardRef<{}, ChildRef>(
       [],
     );
 
-    return <div>I'm child</div>;
+    return <div>I'm Child</div>;
   }),
 );
 
@@ -583,16 +571,16 @@ When you get an error, you can log it and show an alternate user interface.
 #### `useError`
 
 ```tsx
-type BrokenComponentProps = {
+type BrokenProps = {
   hasError: boolean;
 };
 
-const BrokenComponent = component<BrokenComponentProps>(({ hasError }) => {
+const Broken = component<BrokenProps>(({ hasError }) => {
   if (hasError) {
     throw new Error('oh no!');
   }
 
-  return <div>BrokenComponent</div>;
+  return <div>Hello!</div>;
 });
 
 const App = component(() => {
@@ -600,19 +588,14 @@ const App = component(() => {
   const error = useError();
 
   useEffect(() => {
-    setTimeout(() => {
-      setHasError(true);
-    }, 5000);
+    setTimeout(() => setHasError(true), 3000);
   }, []);
 
-  if (error) {
-    return <div>Something went wrong!</div>;
-  }
+  if (error) return <div>Something went wrong! 🫢</div>;
 
   return (
     <>
-      <div>Text 1</div>
-      <BrokenComponent hasError={hasError} />
+      <Broken hasError={hasError} />
     </>
   );
 });
@@ -626,28 +609,23 @@ The context might be useful when you need to synchronize state between deeply ne
 
 ```tsx
 type Theme = 'light' | 'dark';
-
 const ThemeContext = createContext<Theme>('light');
-
 const useTheme = () => useContext(ThemeContext);
 
-const Consumer = component(() => {
+const CurrentTheme = component(() => {
   const theme = useTheme();
-
-  console.log('render consumer!');
 
   return <div style='font-size: 20vw;'>{theme === 'light' ? '☀️' : '🌙'}</div>;
 });
 
 const App = component(() => {
   const [theme, setTheme] = useState<Theme>('light');
-
   const handleToggle = () => setTheme(x => (x === 'dark' ? 'light' : 'dark'));
 
   return (
     <ThemeContext.Provider value={theme}>
-      <Consumer />
-      <button onClick={handleToggle}>Toggle theme: {theme}</button>
+      <CurrentTheme />
+      <button onClick={handleToggle}>Toggle: {theme}</button>
     </ThemeContext.Provider>
   );
 });
@@ -770,24 +748,24 @@ const [a, b, c, d] = useStore([a$, b$, c$, d$]);
 If you have separated modules, you might want to lazy load them when needed. In this case you can use code splitting. To use components lazy loading, you need to wrap dynamic imports of component in a special function - `lazy`. You will also need a `Suspense` component that will show a loader or skeleton until the module is loaded.
 
 ```tsx
-const NewPage = lazy(() => import('./new-page'));
+const Page = lazy(() => import('./page'));
 
 const App = component(() => {
   const [isNewPage, setIsNewPage] = useState(false);
 
   return (
     <>
-      <button onClick={() => setIsNewPage(x => !x)}>Toggle</button>
+      <button onClick={() => setIsNewPage(x => !x)}>toggle</button>
       {isNewPage && (
         <Suspense fallback={<div>Loading...</div>}>
-          <NewPage />
+          <Page />
         </Suspense>
       )}
     </>
   );
 });
 
-// Loading... -> <NewPage />
+// Loading... -> <Page />
 ```
 
 ## Async rendering
@@ -818,9 +796,7 @@ Concurrent rendering is a strategy that enables the assignment of the lowest pri
 Marks the update as low priority and renders it in the background. This allows you to switch between tabs quickly, even if they are rendered slowly due to the large number of calculations. When switching tabs, unnecessary work is marked as obsolete and removed from the task list.
 
 ```tsx
-const selectTab = (nextTab: string) => {
-  startTransition(() => setTab(nextTab));
-}
+const selectTab = (name: string) => startTransition(() => setTab(name));
 
 <>
   <TabButton onClick={() => selectTab('about')}>
@@ -844,10 +820,7 @@ Allows you to create a version of `startTransition` and a flag `isPending` that 
 
 ```tsx
 const [isPending, startTransition] = useTransition();
-
-const handleClick = () => {
-  startTransition(() => onClick());
-};
+const handleClick = () => startTransition(() => onClick());
 
 <button style={`color: ${isPending ? 'red' : 'yellow'}`}>{slot}</button>;
 ```
@@ -861,8 +834,7 @@ Returns a delayed value that may lag behind the main value. It can be combined w
 const [name, setName] = useState('');
 const deferredName = useDeferredValue(name);
 const isStale = name !== deferredName;
-
-const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setName(e.target.value);
+const handleInput = e => setName(e.target.value);
 
 // <List /> should be a memo component
 
@@ -902,21 +874,16 @@ root.render(<App />);
 
 #### `useId`
 
-The hook for generating unique IDs that stable between renders.
+The hook for generating unique identifiers that stable between renders.
 
 ```tsx
-const Checkbox = component(() => {
-  const id = useId();
+const id = useId();
 
-  // generates something like this 'dark:0:lflt'
-
-  return (
-    <>
-      <label for={id}>Do you like it?</label>
-      <input id={id} type='checkbox' name='likeit' />
-    </>
-  );
-});
+// generates something like this 'dark:0:lflt'
+<>
+  <label for={id}>Do you like it?</label>
+  <input id={id} type='checkbox' name='likeit' />
+</>
 ```
 
 #### `useSyncExternalStore`
@@ -924,11 +891,7 @@ const Checkbox = component(() => {
 It's useful for synchronizing render states with an external state management library such as Redux.
 
 ```tsx
-const App = component(() => {
-  const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
-
-  return <div>{state.isFetching ? 'loading...' : '🤪'}</div>;
-});
+const state = useSyncExternalStore(store.subscribe, store.getState); // redux store
 ```
 
 # LICENSE

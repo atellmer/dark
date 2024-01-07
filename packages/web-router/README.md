@@ -11,7 +11,7 @@ The isomorphic Dark router designed for rendering universal web applications tha
 - 🌠 Wildcards a.k.a Fallbacks
 - 🔄 Combination wildcards and redirects
 - 🔢 Parameters
-- 🪝 Hooks
+- 📈 Hooks
 - 💻 SSR first class support
 - 🚫 No deps
 - 📦 Small size (4 kB gzipped)
