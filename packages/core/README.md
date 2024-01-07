@@ -39,10 +39,11 @@ CDN:
 - [Code splitting](#code-splitting)
 - [Async rendering](#async-rendering)
 - [Concurrent rendering](#concurrent-rendering)
-- [Hot module replacement](#hot)
+- [Hot module replacement](#hmr)
 - [Others](#others)
 
-<a name="api"></a>
+<a id="api"></a>
+
 ## API
 
 ```tsx
@@ -111,7 +112,8 @@ import {
 
 # Сore concepts...
 
-<a name="elements"></a>
+<a id="elements"></a>
+
 ## Elements
 
 Elements are a collection of platform-specific primitives and components. For the browser platform, these are tags, text, and comments.
@@ -154,7 +156,8 @@ const content = [<h1>I'm the text inside the tag</h1>, <span>Hello</span>];
 createRoot(document.getElementById('root')).render(content);
 ```
 
-<a name="components"></a>
+<a id="components"></a>
+
 ## Components
 
 Components are the fundamental logical units of a modern interface. Components can accept props, have their own internal state, and contain child elements or components.
@@ -223,7 +226,8 @@ const App = component(({ slot }) => {
 <App>Content</App>;
 ```
 
-<a name="conditional-rendering"></a>
+<a id="conditional-rendering"></a>
+
 ## Conditional rendering
 
 ```tsx
@@ -255,7 +259,8 @@ const App = component(({ isOpen }) => {
 });
 ```
 
-<a name="list-rendering"></a>
+<a id="list-rendering"></a>
+
 ## List rendering
 
 ```tsx
@@ -274,7 +279,8 @@ const List = component(({ items }) => {
 });
 ```
 
-<a name="recursive-rendering"></a>
+<a id="recursive-rendering"></a>
+
 ## Recursive rendering
 
 You can put components into themself to get recursion if you want. But every recursion must have return condition for out. In other case we will have infinity loop. Recursive rendering might be useful for tree building or something else.
@@ -304,7 +310,8 @@ level: 1
         level: 5
 ```
 
-<a name="hooks"></a>
+<a id="hooks"></a>
+
 ## Hooks
 Hooks are needed to bring components to life: give them an internal state, start some actions, and so on. The basic rule for using hooks is to use them at the top level of the component, i.e. do not nest them inside other functions, cycles, conditions. This is a necessary condition, because hooks are not magic, but work based on array indices.
 
@@ -384,7 +391,8 @@ return (
 );
 ```
 
-<a name="effects"></a>
+<a id="effects"></a>
+
 ## Effects
 
 Side effects are useful actions that take place outside of the interface rendering. For example, side effects can be fetch data from the server, calling timers, subscribing.
@@ -448,7 +456,8 @@ useInsertionEffect(() => {
 }, []);
 ```
 
-<a name="memoization"></a>
+<a id="memoization"></a>
+
 ## Memoization
 
 Memoization in Dark is the process of remembering the last value of a function and returning it if the parameters have not changed. Allows you to skip heavy calculations if possible.
@@ -538,7 +547,8 @@ A component that is intended to mark a certain area of the layout as static, whi
 </Guard>
 ```
 
-<a name="refs"></a>
+<a id="refs"></a>
+
 ## Refs
 
 To get full control over components or DOM nodes Dark suggests using refs.
@@ -595,7 +605,8 @@ const App = component(() => {
 });
 ```
 
-<a name="catching-errors"></a>
+<a id="catching-errors"></a>
+
 ## Catching errors
 
 When you get an error, you can log it and show an alternate user interface.
@@ -633,7 +644,8 @@ const App = component(() => {
 });
 ```
 
-<a name="context"></a>
+<a id="context"></a>
+
 ## Context
 
 The context might be useful when you need to synchronize state between deeply nested elements without having to pass props from parent to child.
@@ -666,7 +678,8 @@ const App = component(() => {
 
 If the context consumer is inside a memoized component that will skip the render from above when the context changes, then the consumer will automatically apply its internal render to apply the latest changes.
 
-<a name="batching"></a>
+<a id="batching"></a>
+
 ## Batching
 
 The strategy that allows you to merge similar updates into one render to reduce computational work.
@@ -688,7 +701,8 @@ useEffect(() => {
 }, []);
 ```
 
-<a name="atoms"></a>
+<a id="atoms"></a>
+
 ## Atoms
 
 Atoms, sometimes called signals, are fine-grained reactivity elements that are objects with useful data and methods that allow triggering updates in the component-consumer. Atoms can be successfully used as independent units of information storage, replacing the state manager functions. At the same time, they can be used as a tool for optimizing the performance of critical areas in combination with memoization. In this case, we can achieve the same performance as if the data were in the consumer's local state. The main idea is to split a large render into many smaller ones so that we don't have to process the calculation of the whole tree, even if it is memoized, because traversing memoized components is still a traversal, albeit a superficial one.
@@ -784,7 +798,8 @@ const [a, b, c, d] = useStore([a$, b$, c$, d$]);
 <div>{a}, {b}, {c}, {d}</div>;
 ```
 
-<a name="code-splitting"></a>
+<a id="code-splitting"></a>
+
 ## Code splitting
 
 #### `lazy` and `Suspense`
@@ -812,7 +827,8 @@ const App = component(() => {
 // Loading... -> <Page />
 ```
 
-<a name="async-rendering"></a>
+<a id="async-rendering"></a>
+
 ## Async rendering
 
 Dark is designed with support for asynchronous rendering. This implies that following the mounting of each component during the reconciliation phase, the core checks if a preset deadline has been reached. If the deadline is met, control of the event loop is yielded to other code, resuming at the next tick. If the deadline is not yet met, the core continues the rendering process. The deadline is consistently set at 6 milliseconds.
@@ -832,7 +848,8 @@ if (error) return <div>{error}</div>;
 return <div>{data}</div>;
 ```
 
-<a name="cocurrent-rendering"></a>
+<a id="cocurrent-rendering"></a>
+
 ## Concurrent rendering
 
 Concurrent rendering is a strategy that enables the assignment of the lowest priority to updates, allowing them to execute in the background without obstructing the main thread. Upon the arrival of higher-priority updates, such as custom render events, the low-priority task is halted and retains all essential data for potential reinstatement (or permanent cancellation) by the scheduler, should there be no further high-priority updates. This technique facilitates the creation of fluid user interfaces.
@@ -892,7 +909,8 @@ return (
 );
 ```
 
-<a name="hot"></a>
+<a id="hmr"></a>
+
 ## Hot Module Replacement (HMR)
 
 Allows you to avoid reloading the entire interface when changing code in development mode. Saves the state of other components, because under the hood, instead of reloading the page, it simply performs a new render as if the interface was rebuilt not by new code, but by the user.
@@ -917,7 +935,8 @@ const root = createRoot(document.getElementById('root'));
 root.render(<App />);
 ```
 
-<a name="others"></a>
+<a id="others"></a>
+
 ## Others
 
 #### `useId`
