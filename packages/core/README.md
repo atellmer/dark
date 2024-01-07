@@ -658,7 +658,7 @@ useEffect(() => {
 
 Atoms, sometimes called signals, are fine-grained reactivity elements that are objects with useful data and methods that allow triggering updates in the component-consumer. Atoms can be successfully used as independent units of information storage, replacing the state manager functions. At the same time, they can be used as a tool for optimizing the performance of critical areas in combination with memoization. In this case, we can achieve the same performance as if the data were in the consumer's local state. The main idea is to split a large render into many smaller ones so that we don't have to process the calculation of the whole tree, even if it is memoized, because traversing memoized components is still a traversal, albeit a superficial one.
 
-There are `writableAtom` and `ReadableAtom`. You can write values in `WritableAtom` using the set method. You cannot write to `ReadableAtom`; it is intended to be computed by a formula that is calculated based on its dependencies on other atoms.
+There are `writableAtom` and `ReadableAtom`. You can write values in `WritableAtom` using the `set` method. You cannot write to `ReadableAtom`; it is intended to be computed by a formula that is calculated based on its dependencies on other atoms.
 
 #### `WritableAtom` and `atom`
 
@@ -714,6 +714,14 @@ const Child = component<ChildProps>(({ a$ }) => {
   // Renders only <Child /> through call a$.val()
   return <div>{a$.val()}</div>;
 });
+```
+
+You can pass function that will control rendering necessity.
+
+```tsx
+const a = a$.val((prev, next) => prev !== next && next >= 5);
+
+<div>{a}</div>
 ```
 
 #### `useComputed`
