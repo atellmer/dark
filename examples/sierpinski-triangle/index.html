@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Sierpinski triangle</title>
+  <title>Dark Sierpinski triangle</title>
   <style>
     * {
       box-sizing: border-box;
     }
-    html, body {
+
+    html,
+    body {
       position: relative;
       width: 100%;
       min-height: 100vh;
@@ -17,31 +20,42 @@
       padding: 0;
       font-size: 14px;
     }
+
     body {
-      font-family: 'Roboto';
+      font-family: sans-serif;
       color: black;
       overflow: hidden;
     }
+
     .message {
       padding: 20px;
     }
+
     .mark {
       width: 400px;
       max-width: 100%;
     }
   </style>
-  <link rel="stylesheet"href="https://fonts.googleapis.com/css?family=Roboto">
 </head>
+
 <body>
   <div class="message">
     <h1>Dark Sierpinski Triangle</h1>
     <div class="mark">
-      <p>The point of this benchmark is not to show how it is rendered in standard (synchronous) mode, because this is a trivial task, the point is to demonstrate scheduling, cancellation and restoration of the rendering task in <b>concurrent</b> mode. In this triangle, each group of 3 points is artificially slowed down (see code) so as to cause freezes if using synchronous rendering. In the case of <b>concurrent</b> rendering, the animation is smooth and the counter is updated, hover effect (uses render, not css) remains responsive, even if you also artificially slow down the execution through the performance tab (probably it will take more time).</p> 
-      <p>On slower devices the counter will not update, but the animation and hover will be smooth because it takes precedence in this example.</p>
-      <p>This behavior is achieved without using requestIdleCallback or any other web api, so <b>concurrent</b> mode can be used on any dynamic platforms.</p>
+      <p>The point of this benchmark is not to show how it is rendered in standard (synchronous) mode, because this is a
+        trivial task, the point is to demonstrate scheduling, cancellation and restoration of the rendering task in
+        <b>concurrent</b> mode. In this triangle, each group of 3 points is artificially slowed down (see code) so as to
+        cause freezes if using synchronous rendering. In the case of <b>concurrent</b> rendering, the animation is
+        smooth and the counter is updated, hover effect (uses render, not css) remains responsive, even if you also
+        artificially slow down the execution through the performance tab (probably it will take more time).</p>
+      <p>On slower devices the counter will not update, but the animation and hover will be smooth because it takes
+        precedence in this example.</p>
+      <p>This behavior is achieved without using requestIdleCallback or any other web api, so <b>concurrent</b> mode can
+        be used on any dynamic platforms.</p>
     </div>
   </div>
   <div id="root"></div>
   <script src="./build.js"></script>
 </body>
+
 </html>

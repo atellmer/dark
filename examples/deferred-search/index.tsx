@@ -1,5 +1,5 @@
 import { h, Fragment, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
-import { type SyntheticEvent, render } from '@dark-engine/platform-browser';
+import { type SyntheticEvent, createRoot } from '@dark-engine/platform-browser';
 
 function generateProducts() {
   const products: Array<string> = [];
@@ -64,10 +64,11 @@ const App = component(() => {
 
   return (
     <div>
+      <div>Note: Every list item is artificially slowed down</div>
       <input value={name} placeholder='type...' onInput={handleInput} />
       <ProductList name={deferredName} isStale={isStale} />
     </div>
   );
 });
 
-render(<App />, document.getElementById('root'));
+createRoot(document.getElementById('root')).render(<App />);

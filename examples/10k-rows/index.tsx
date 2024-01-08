@@ -1,6 +1,5 @@
 import {
   type WritableAtom,
-  h,
   Text,
   TagVirtualNode,
   TextVirtualNode,
@@ -13,7 +12,7 @@ import {
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
 
 const createMeasurer = () => {
-  let startTime;
+  let startTime: number;
   let lastMeasureName: string;
   const start = (name: string) => {
     startTime = performance.now();

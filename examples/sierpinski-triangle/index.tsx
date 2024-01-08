@@ -9,10 +9,8 @@ import {
   DarkElement,
   startTransition,
 } from '@dark-engine/core';
-import { render } from '@dark-engine/platform-browser';
+import { createRoot } from '@dark-engine/platform-browser';
 import { useStyle } from '@dark-engine/styled';
-
-const domElement = document.getElementById('root');
 
 const targetSize = 25;
 
@@ -143,9 +141,10 @@ const App = component<AppProps>(props => {
 });
 
 const start = new Date().getTime();
+const root = createRoot(document.getElementById('root'));
 
 function run() {
-  render(<App elapsed={new Date().getTime() - start} />, domElement);
+  root.render(<App elapsed={new Date().getTime() - start} />);
 
   requestAnimationFrame(run);
 }

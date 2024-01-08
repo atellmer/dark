@@ -1,12 +1,13 @@
 {
-  "name": "spring-masonry-grid",
+  "name": "dark-spring-masonry-grid",
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
-    "build": "npx webpack",
-    "dev": "npx webpack-dev-server"
+    "build": "cross-env NODE_ENV=production npx webpack",
+    "dev": "cross-env NODE_ENV=development npx webpack-dev-server"
   },
   "devDependencies": {
+    "cross-env": "7.0.3",
     "ts-loader": "9.4.2",
     "typescript": "4.9.4",
     "webpack": "5.75.0",
