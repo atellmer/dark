@@ -12,7 +12,7 @@ The isomorphic Dark router designed for rendering universal web applications tha
 - 🔄 Combination wildcards and redirects
 - 🔢 Parameters
 - 📈 Hooks
-- 💻 SSR first class support
+- 💽 SSR
 - 🚫 No deps
 - 📦 Small size (4 kB gzipped)
 

@@ -436,7 +436,7 @@ useEffect(() => {
 
 #### `useLayoutEffect`
 
-This type of effect is similar to useEffect, however, it is executed synchronously right after the commit phase of new changes. Use this to read layout from the DOM and synchronously re-render.
+This type of effect is similar to `useEffect`, however, it is executed synchronously right after the commit phase of new changes. Use this to read layout from the DOM and synchronously re-render.
 
 ```tsx
 useLayoutEffect(() => {
@@ -448,7 +448,7 @@ useLayoutEffect(() => {
 
 #### `useInsertionEffect`
 
-The signature is identical to useEffect, but it fires synchronously before all DOM mutations. Use this to inject styles into the DOM before reading layout in `useLayoutEffect`. This hook does not have access to refs and cannot call render. Useful for css-in-js libraries.
+The signature is identical to `useEffect`, but it fires synchronously before all DOM mutations. Use this to inject styles into the DOM before reading layout in `useLayoutEffect`. This hook does not have access to refs and cannot call render. Useful for css-in-js libraries.
 
 ```tsx
 useInsertionEffect(() => {
@@ -856,7 +856,7 @@ Concurrent rendering is a strategy that enables the assignment of the lowest pri
 
 #### `startTransition`
 
-Marks the update as low priority and renders it in the background. This allows you to switch between tabs quickly, even if they are rendered slowly due to the large number of calculations. When switching tabs, unnecessary work is marked as obsolete and removed from the task list.
+Marks the update as low-priority and renders it in the background. This allows you to switch between tabs quickly, even if they are rendered slowly due to the large number of calculations. When switching tabs, unnecessary work is marked as obsolete and removed from the task list.
 
 ```tsx
 const selectTab = (name: string) => startTransition(() => setTab(name));

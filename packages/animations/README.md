@@ -9,7 +9,7 @@ Spring based animations for Dark
 - ⏱️ No durations and curves, only physic parameters
 - 🔄 No rerenders
 - 🛸 Can use for web, native and desktop
-- 💻 SSR
+- 💽 SSR
 - 🎊 Includes trails and transitions support
 - 🎢 Animation sequences
 - 🚫 No deps

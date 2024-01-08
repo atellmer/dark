@@ -1,11 +1,11 @@
 ## Dark browser template
 
 ```
-npx degit github:atellmer/dark/templates/browser browser-app
+npx degit github:atellmer/dark/templates/browser app
 ```
 
 ```
-cd browser-app
+cd app
 npm i
 npm start
 ```

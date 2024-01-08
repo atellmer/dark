@@ -14,7 +14,7 @@ Styled components for Dark 🌖
 - 🛒 CSS nesting
 - 🎨 Theming
 - 💃 CSS Animations
-- 💻 SSR
+- 💽 SSR
 - 🗜️ Minification
 - 🚫 No deps
 - 📦 Small size (6 kB gzipped)
