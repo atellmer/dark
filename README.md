@@ -57,16 +57,16 @@ npm start
 
 ## Demos
 
-- [1k components](https://atellmer.github.io/dark/new/1k-components/)
-- [10k rows](https://atellmer.github.io/dark/new/10k-rows/)
-- [Animated grid](https://atellmer.github.io/dark/new/animated-grid/)
-- [Concurrent Sierpinski triangle](https://atellmer.github.io/dark/new/sierpinski-triangle/)
-- [Concurrent deferred search](https://atellmer.github.io/dark/new/deferred-search/)
-- [Spring draggable list](https://atellmer.github.io/dark/new/spring-draggable-list/)
-- [Spring snake](https://atellmer.github.io/dark/new/spring-snake/)
-- [Spring masonry grid](https://atellmer.github.io/dark/new/spring-masonry-grid/)
-- [Spring slider](https://atellmer.github.io/dark/new/spring-slider/)
-- [Spring menu](https://atellmer.github.io/dark/new/spring-menu/)
+- [1k components](https://atellmer.github.io/dark/next/1k-components/)
+- [10k rows](https://atellmer.github.io/dark/next/10k-rows/)
+- [Animated grid](https://atellmer.github.io/dark/next/animated-grid/)
+- [Concurrent Sierpinski triangle](https://atellmer.github.io/dark/next/sierpinski-triangle/)
+- [Concurrent deferred search](https://atellmer.github.io/dark/next/deferred-search/)
+- [Spring draggable list](https://atellmer.github.io/dark/next/spring-draggable-list/)
+- [Spring snake](https://atellmer.github.io/dark/next/spring-snake/)
+- [Spring masonry grid](https://atellmer.github.io/dark/next/spring-masonry-grid/)
+- [Spring slider](https://atellmer.github.io/dark/next/spring-slider/)
+- [Spring menu](https://atellmer.github.io/dark/next/spring-menu/)
 
 ## Stackblitz demos
 
