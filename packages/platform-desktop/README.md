@@ -17,13 +17,19 @@ NodeGui is an open source framework for building cross-platform native desktop a
 </div>
 
 ## Installation
+
+from template:
+```
+npx degit github:atellmer/dark/templates/desktop my-app
+```
+
 npm:
 ```
-npm install @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
+npm install @nodegui/nodegui @dark-engine/platform-desktop
 ```
 yarn:
 ```
-yarn add @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
+yarn add @nodegui/nodegui @dark-engine/platform-desktop
 ```
 
 ## Usage
@@ -76,7 +82,7 @@ const App = component(() => {
 
 ## Environment Setup
 
-Full working examples with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/desktop" target="_blank">here</a>.
+Full working example with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/desktop" target="_blank">here</a> or just install it from template.
 
 ## API
 
@@ -225,9 +231,9 @@ More about styling in NodeGUI [here](https://docs.nodegui.org/docs/guides/stylin
 
 NodeGui uses a layout system to automatically arrange child widgets within a widget to ensure that they make good use of the available space.
 
-### FlexLayout
+### `FlexLayout`
 
-FlexLayout is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated CSS.
+`FlexLayout` is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated CSS.
 
 ```tsx
 import { FlexLayout } from '@dark-engine/platform-desktop';
@@ -257,9 +263,9 @@ const style = useStyle(styled => ({
 return (
   <Window styleSheet={style.root}>
     <FlexLayout id='box'>
-      <Text id='text-1'>Content 1</Text>
-      <Text id='text-2'>Content 2</Text>
-      <Text id='text-3'>Content 3</Text>
+      <Text id='text-1'>Label 1</Text>
+      <Text id='text-2'>Label 2</Text>
+      <Text id='text-3'>Label 3</Text>
     </FlexLayout>
   </Window>
 );
@@ -268,11 +274,12 @@ return (
   <img src="./assets/flex.jpg">
 </div>
 
-### BoxLayout
+### `BoxLayout`
 
 This is a built-in layout in Qt that lays out its child elements either horizontally or vertically. You can also control the placement direction using the `Direction` property.
 
 ```tsx
+import { Direction } from '@nodegui/nodegui';
 import { BoxLayout } from '@dark-engine/platform-desktop';
 ```
 
@@ -280,9 +287,9 @@ import { BoxLayout } from '@dark-engine/platform-desktop';
 return (
   <Window styleSheet={style.root}>
     <BoxLayout direction={Direction.LeftToRight}>
-      <Text id='text-1'>Content 1</Text>
-      <Text id='text-2'>Content 2</Text>
-      <Text id='text-3'>Content 3</Text>
+      <Text id='text-1'>Label 1</Text>
+      <Text id='text-2'>Label 2</Text>
+      <Text id='text-3'>Label 3</Text>
     </BoxLayout>
   </Window>
 );
@@ -292,7 +299,7 @@ return (
   <img src="./assets/box.jpg">
 </div>
 
-### GridLayout
+### `GridLayout`
 
 This layout implements a layout system similar to grid on the web, where each child is inside its own row and column.
 
@@ -339,7 +346,7 @@ Not all elements that contain child elements support conditional rendering. For 
 import { ScrollArea } from '@dark-engine/platform-desktop';
 ```
 
-ScrollArea allows you to display a large content (images, lists, plain text) in an area of predefined size. A scroll area is used to display the contents of a child widget within a frame. If the widget exceeds the size of the frame, the view can provide scroll bars so that the entire area of the child widget can be viewed.
+`ScrollArea` allows you to display a large content (images, lists, plain text) in an area of predefined size. A scroll area is used to display the contents of a child widget within a frame. If the widget exceeds the size of the frame, the view can provide scroll bars so that the entire area of the child widget can be viewed.
 
 ```tsx
 return (

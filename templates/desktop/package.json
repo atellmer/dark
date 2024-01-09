@@ -1,26 +1,22 @@
 {
-  "name": "dark-nodegui",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
   "scripts": {
     "start": "npx qode ./dist/index.js",
+    "start:hmr": "npm run start",
     "start:watch": "nodemon -e js,ts,tsx --ignore dist/ --ignore node_modules/ --exec npm start",
     "debug": "npx qode --inspect-brk ./dist/index.js",
     "build": "npx webpack --env NODE_ENV=production",
     "dev": "npx webpack --env NODE_ENV=development"
   },
   "dependencies": {
-    "@dark-engine/core": "0.25.0",
-    "@dark-engine/platform-desktop": "0.25.0",
-    "@nodegui/nodegui": "0.63.0"
+    "@nodegui/nodegui": "0.63.0",
+    "nodemon": "^3.0.2"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.5.0",
+    "@styled/typescript-styled-plugin": "^1.0.1",
     "@types/node": "^18.7.14",
     "clean-webpack-plugin": "^4.0.0",
     "file-loader": "^6.2.0",
-    "nodemon": "^3.0.2",
     "native-addon-loader": "^2.0.1",
     "ts-loader": "9.4.2",
     "typescript": "5.3.3",
