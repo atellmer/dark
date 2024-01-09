@@ -25,8 +25,8 @@ import { createNativeElement, insertNativeElementByIndex, commit, finishCommit }
 import { type NSElement } from '../registry';
 
 const APP_ID = 0;
-const raf = requestAnimationFrame.bind(window);
-const caf = cancelAnimationFrame.bind(window);
+const raf = requestAnimationFrame.bind(this);
+const caf = cancelAnimationFrame.bind(this);
 const spawn = raf;
 let nextRootId = APP_ID;
 let isInjected = false;

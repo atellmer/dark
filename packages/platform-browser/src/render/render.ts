@@ -24,8 +24,8 @@ import { detectIsPortal, unmountPortal } from '../portal';
 import type { TagNativeElement } from '../native-element';
 
 const roots = new Map<Element, number>();
-const raf = requestAnimationFrame.bind(window);
-const caf = cancelAnimationFrame.bind(window);
+const raf = requestAnimationFrame.bind(this);
+const caf = cancelAnimationFrame.bind(this);
 const spawn = raf;
 let isInjected = false;
 
