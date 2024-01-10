@@ -37,13 +37,11 @@ class QDarkFlexLayout extends QWidget implements Container {
 
   appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
-    this.updateChild(child);
     this.flexLayout.addWidget(child);
   }
 
   insertBefore(child: QWidget, sibling: QWidget) {
     if (detectIsDialog(child)) return;
-    this.updateChild(child);
     this.flexLayout.insertChildBefore(child, sibling);
   }
 
@@ -51,10 +49,6 @@ class QDarkFlexLayout extends QWidget implements Container {
     if (detectIsDialog(child)) return;
     this.flexLayout.removeWidget(child);
     child.close();
-  }
-
-  updateChild(child: QWidget) {
-    child.setStyleSheet('flex-grow: 1');
   }
 }
 

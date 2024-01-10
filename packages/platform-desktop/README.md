@@ -12,10 +12,6 @@ NodeGui is an open source framework for building cross-platform native desktop a
 <br>
 [More about NodeGui](https://docs.nodegui.org/)
 
-<div align="center"> 
-  <img src="./assets/cover.jpg">
-</div>
-
 ## Installation
 
 from template:
