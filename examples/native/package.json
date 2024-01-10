@@ -1,0 +1,30 @@
+{
+  "name": "dark-native-app",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "npm run android",
+    "android": "npx ns run android --no-hmr",
+    "ios": "npx ns run ios --no-hmr",
+    "debug:android": "npx ns debug android --no-hmr",
+    "debug:ios": "npx ns debug ios --no-hmr",
+    "clean": "npx ns clean"
+  },
+  "dependencies": {
+    "@dark-engine/animations": "*",
+    "@dark-engine/core": "*",
+    "@dark-engine/native-navigation": "*",
+    "@dark-engine/platform-native": "*",
+    "@nativescript/core": "8.6.2",
+    "@nativescript/theme": "3.0.2"
+  },
+  "devDependencies": {
+    "@nativescript/android": "8.6.2",
+    "@nativescript/types": "8.6.1",
+    "@nativescript/webpack": "5.0.18",
+    "@types/webpack-env": "1.18.0",
+    "nativescript": "8.6.3",
+    "ts-loader": "9.4.2",
+    "typescript": "5.3.3",
+    "webpack-merge": "5.8.0"
+  }
+}
