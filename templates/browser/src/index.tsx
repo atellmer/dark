@@ -1,15 +1,15 @@
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { h, Fragment, component, useAtom } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { createGlobalStyle } from '@dark-engine/styled';
 
 const App = component(() => {
-  const [count, setCount] = useState(0);
+  const count$ = useAtom(0);
 
   return (
     <>
       <GlobalStyle />
-      <h1>Hello Dark: {count}</h1>
-      <button onClick={() => setCount(x => x + 1)}>increment!</button>
+      <h1>Hello Dark: {count$.val()}</h1>
+      <button onClick={() => count$.set(x => x + 1)}>increment!</button>
     </>
   );
 });

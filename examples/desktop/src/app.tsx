@@ -26,9 +26,11 @@ const App = component<AppProps>(() => {
       #text-1 {
         background-color: red;
       }
+
       #text-2 {
         background-color: yellow;
       }
+
       #text-3 {
         background-color: green;
       }
