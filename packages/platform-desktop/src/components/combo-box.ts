@@ -35,12 +35,12 @@ const ComboBox = forwardRef<ComboBoxProps, ComboBoxRef>(
 ) as ComponentFactory<ComboBoxProps, ComboBoxRef>;
 
 class QDarkComboBox extends QComboBox {
-  public setItems(items: Array<ComboBoxItem>) {
+  setItems(items: Array<ComboBoxItem>) {
     this.clear();
     items.forEach(x => this.addItem(x.icon, x.text, x.userData));
   }
 
-  public async setCurrentIndex(value: number) {
+  async setCurrentIndex(value: number) {
     await Promise.resolve();
     this.setProperty('currentIndex', value);
   }

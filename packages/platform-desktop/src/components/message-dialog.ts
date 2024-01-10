@@ -31,11 +31,11 @@ class QDarkMessageDialog extends QMessageBox {
     this.addButton(this.button, ButtonRole.AcceptRole);
   }
 
-  public setOpen(value: boolean) {
+  setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 
-  public setButtonText(value: string) {
+  setButtonText(value: string) {
     this.button.setText(value);
   }
 }

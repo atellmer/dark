@@ -5,8 +5,7 @@ function styled(strings: TemplateStringsArray, ...args: Array<string | number>):
     return strings
       .map((x, idx) => x + (!detectIsUndefined(args[idx]) ? args[idx] : ''))
       .join('')
-      .replace(/;\s*/gm, ';')
-      .replace(/:\s*/gm, ':')
+      .replace(/([:;])\s*/gm, '$1')
       .trim();
   }, [strings, ...args]);
 

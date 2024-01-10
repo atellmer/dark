@@ -37,11 +37,11 @@ class QDarkMainWindow extends QMainWindow implements Container {
     this.show();
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsSystemTrayIcon(child)) return;
     if (detectIsMenuBar(child)) {
       this.setMenuBar(child);
@@ -52,11 +52,11 @@ class QDarkMainWindow extends QMainWindow implements Container {
     }
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     child.close();
   }
 }

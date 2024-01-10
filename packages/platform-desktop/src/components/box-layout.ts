@@ -34,23 +34,23 @@ class QDarkBoxLayout extends QWidget implements Container {
     this.setLayout(this.boxLayout);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public getBoxLayout() {
+  getBoxLayout() {
     return this.boxLayout;
   }
 
-  public setDirection(value: Direction) {
+  setDirection(value: Direction) {
     this.boxLayout.setDirection(value);
   }
 
-  public setSpacing(value: number) {
+  setSpacing(value: number) {
     runAtTheEndOfCommit(() => this.boxLayout.setSpacing(value));
   }
 
-  public setMargin(value: number | [number, number, number, number]) {
+  setMargin(value: number | [number, number, number, number]) {
     if (detectIsNumber(value)) {
       runAtTheEndOfCommit(() => this.boxLayout.setContentsMargins(value, value, value, value));
     } else if (detectIsArray(value)) {
@@ -60,21 +60,21 @@ class QDarkBoxLayout extends QWidget implements Container {
     }
   }
 
-  public setStretch(value: Array<number>) {
+  setStretch(value: Array<number>) {
     runAtTheEndOfCommit(() => value.forEach((x, idx) => this.boxLayout.setStretch(idx, x)));
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.boxLayout.addWidget(child);
   }
 
-  public insertBefore(child: QWidget, _: QWidget, idx: number) {
+  insertBefore(child: QWidget, _: QWidget, idx: number) {
     if (detectIsDialog(child)) return;
     this.boxLayout.insertWidget(idx, child);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.boxLayout.removeWidget(child);
     child.close();

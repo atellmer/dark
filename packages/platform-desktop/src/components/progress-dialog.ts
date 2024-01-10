@@ -32,11 +32,11 @@ const ProgressDialog = forwardRef<ProgressDialogProps, ProgressDialogRef>(
 ) as ComponentFactory<ProgressDialogProps, ProgressDialogRef>;
 
 class QDarkProgressDialog extends QProgressDialog {
-  public setOpen(value: boolean) {
+  setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 
-  public setProgressRange(value: ProgressRange) {
+  setProgressRange(value: ProgressRange) {
     this.setRange(value.minimum, value.maximum);
   }
 }

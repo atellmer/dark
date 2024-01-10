@@ -41,55 +41,55 @@ class QDarkGridItem extends QWidget implements Container {
   private colSpan: number;
   private alignment: AlignmentFlag;
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public getChild() {
+  getChild() {
     return this.child;
   }
 
-  public setRow(value: number) {
+  setRow(value: number) {
     this.row = value;
   }
 
-  public getRow(): number | undefined {
+  getRow(): number | undefined {
     return this.row;
   }
 
-  public setCol(value: number) {
+  setCol(value: number) {
     this.col = value;
   }
 
-  public getCol(): number | undefined {
+  getCol(): number | undefined {
     return this.col;
   }
 
-  public setRowSpan(value: number) {
+  setRowSpan(value: number) {
     this.rowSpan = value;
   }
 
-  public getRowSpan(): number | undefined {
+  getRowSpan(): number | undefined {
     return this.rowSpan;
   }
 
-  public setColSpan(value: number) {
+  setColSpan(value: number) {
     this.colSpan = value;
   }
 
-  public getColSpan(): number | undefined {
+  getColSpan(): number | undefined {
     return this.colSpan;
   }
 
-  public setAlignment(value: AlignmentFlag) {
+  setAlignment(value: AlignmentFlag) {
     this.alignment = value;
   }
 
-  public getAlignment(): AlignmentFlag | undefined {
+  getAlignment(): AlignmentFlag | undefined {
     return this.alignment;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (this.child) {
       console.warn(`GridItem can't have more than one child node`);
       throwUnsupported(this);
@@ -97,11 +97,11 @@ class QDarkGridItem extends QWidget implements Container {
     this.child = child;
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild() {
+  removeChild() {
     this.child = null;
   }
 }

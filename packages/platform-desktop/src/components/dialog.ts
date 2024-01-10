@@ -31,29 +31,29 @@ class QDarkDialog extends QDialog implements Container {
     this.setLayout(this.flexLayout);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setOpen(value: boolean) {
+  setOpen(value: boolean) {
     value ? this.open() : this.close();
   }
 
-  public getFlexLayout() {
+  getFlexLayout() {
     return this.flexLayout;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.flexLayout.addWidget(child);
   }
 
-  public insertBefore(child: QWidget, sibling: QWidget) {
+  insertBefore(child: QWidget, sibling: QWidget) {
     if (detectIsDialog(child)) return;
     this.flexLayout.insertChildBefore(child, sibling);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     this.flexLayout.removeWidget(child);
     child.close();
   }

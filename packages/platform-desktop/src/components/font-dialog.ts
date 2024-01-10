@@ -25,7 +25,7 @@ const FontDialog = forwardRef<FontDialogProps, FontDialogRef>(
 ) as ComponentFactory<FontDialogProps, FontDialogRef>;
 
 class QDarkFontDialog extends QFontDialog {
-  public setOpen(value: boolean) {
+  setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 }

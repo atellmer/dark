@@ -30,24 +30,24 @@ const Tree = forwardRef<TreeProps, TreeRef>(
 ) as ComponentFactory<TreeProps, TreeRef>;
 
 class QDarkTree extends QTreeWidget implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setColWidth(value: Array<number>) {
+  setColWidth(value: Array<number>) {
     value.forEach((x, idx) => this.setColumnWidth(idx, x));
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (!detectIsTreeItem(child)) return;
     this.addTopLevelItem(child);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild() {
+  removeChild() {
     throwUnsupported(this);
   }
 }

@@ -25,20 +25,20 @@ const Stack = forwardRef<StackProps, StackRef>(
 ) as ComponentFactory<StackProps, StackRef>;
 
 class QDarkStack extends QStackedWidget implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.addWidget(child);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.removeWidget(child);
     child.close();

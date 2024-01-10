@@ -31,7 +31,7 @@ class QDarkImage extends QLabel {
     this.setProperty('scaledContents', true);
   }
 
-  public async setSrc(value: string) {
+  async setSrc(value: string) {
     if (!value) return;
     try {
       this.setPixmap(this.scale(await createPixmapFromPath(value)));
@@ -40,26 +40,26 @@ class QDarkImage extends QLabel {
     }
   }
 
-  public setBuffer(buffer: Buffer) {
+  setBuffer(buffer: Buffer) {
     this.setPixmap(createPixmapFromBuffer(buffer));
   }
 
-  public setAspectRatioMode(mode: AspectRatioMode) {
+  setAspectRatioMode(mode: AspectRatioMode) {
     this.aspectRatioMode = mode;
     this.fit();
   }
 
-  public setTransformationMode(mode: TransformationMode) {
+  setTransformationMode(mode: TransformationMode) {
     this.transformationMode = mode;
     this.fit();
   }
 
-  public fit() {
+  fit() {
     if (!this.pixmap()) return;
     this.setPixmap(this.scale(this.pixmap()));
   }
 
-  public scale(pixmap: QPixmap) {
+  scale(pixmap: QPixmap) {
     return pixmap.scaled(this.width(), this.height(), this.aspectRatioMode, this.transformationMode);
   }
 }

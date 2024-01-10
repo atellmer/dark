@@ -33,25 +33,25 @@ class QDarkSplitter extends QSplitter implements Container {
     this.setOrientation(Orientation.Horizontal);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setCollapse(collapse: Array<boolean>) {
+  setCollapse(collapse: Array<boolean>) {
     collapse.forEach((x, idx) => this.setCollapsible(idx, x));
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.addWidget(child);
     this.setCollapsible(this.indexOf(child), false);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild() {
+  removeChild() {
     throwUnsupported(this);
   }
 }

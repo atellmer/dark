@@ -42,20 +42,20 @@ const ToolButton = forwardRef<ToolButtonProps, ToolButtonRef>(
 ) as ComponentFactory<ToolButtonProps, ToolButtonRef>;
 
 class QDarkToolButton extends QToolButton implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (!detectIsMenu(child)) return;
     this.setMenu(child);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild() {
+  removeChild() {
     throwUnsupported(this);
   }
 }

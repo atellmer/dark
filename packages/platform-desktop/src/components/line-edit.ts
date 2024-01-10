@@ -30,7 +30,7 @@ const LineEdit = forwardRef<LineEditProps, LineEditRef>(
 ) as ComponentFactory<LineEditProps, LineEditRef>;
 
 class QDarkLineEdit extends QLineEdit {
-  public setPlaceholder(value: string) {
+  setPlaceholder(value: string) {
     this.setPlaceholderText(value);
   }
 }

@@ -20,11 +20,11 @@ const ErrorMessage = forwardRef<ErrorMessageProps, ErrorMessageRef>(
 ) as ComponentFactory<ErrorMessageProps, ErrorMessageRef>;
 
 class QDarkErrorMessage extends QErrorMessage {
-  public setOpen(value: boolean) {
+  setOpen(value: boolean) {
     value ? this.show() : this.close();
   }
 
-  public setMessage(value: string) {
+  setMessage(value: string) {
     this.showMessage(value);
   }
 }

@@ -26,11 +26,11 @@ const Menu = forwardRef<MenuProps, MenuRef>(
 ) as ComponentFactory<MenuProps, MenuRef>;
 
 class QDarkMenu extends QMenu implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (child instanceof QDarkAction) {
       this.addAction(child);
     } else {
@@ -39,11 +39,11 @@ class QDarkMenu extends QMenu implements Container {
     }
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     if (child instanceof QDarkAction) {
       this.removeAction(child);
     }

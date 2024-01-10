@@ -49,23 +49,23 @@ class QDarkGridLayout extends QWidget implements Container {
     this.setLayout(this.gridLayout);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public getGridLayout() {
+  getGridLayout() {
     return this.gridLayout;
   }
 
-  public setHorizontalSpacing(value: number) {
+  setHorizontalSpacing(value: number) {
     this.gridLayout.setHorizontalSpacing(value);
   }
 
-  public setVerticalSpacing(value: number) {
+  setVerticalSpacing(value: number) {
     this.gridLayout.setVerticalSpacing(value);
   }
 
-  public setMargin(value: number | [number, number, number, number]) {
+  setMargin(value: number | [number, number, number, number]) {
     if (detectIsNumber(value)) {
       runAtTheEndOfCommit(() => this.gridLayout.setContentsMargins(value, value, value, value));
     } else if (detectIsArray(value)) {
@@ -75,23 +75,23 @@ class QDarkGridLayout extends QWidget implements Container {
     }
   }
 
-  public setColumnStretch(value: Array<ValueVariant>) {
+  setColumnStretch(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setColumnStretch(...args));
   }
 
-  public setRowStretch(value: Array<ValueVariant>) {
+  setRowStretch(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setRowStretch(...args));
   }
 
-  public setRowMinimumHeight(value: Array<ValueVariant>) {
+  setRowMinimumHeight(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setRowMinimumHeight(...args));
   }
 
-  public setColumnMinimumWidth(value: Array<ValueVariant>) {
+  setColumnMinimumWidth(value: Array<ValueVariant>) {
     setIndexedValue(value, (...args) => this.gridLayout.setColumnMinimumWidth(...args));
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (!detectIsGridItem(child)) return;
     runAtTheEndOfCommit(() => {
       this.gridLayout.addWidget(
@@ -105,11 +105,11 @@ class QDarkGridLayout extends QWidget implements Container {
     });
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     if (!detectIsGridItem(child)) return;
     this.gridLayout.removeWidget(child);
     child.close();

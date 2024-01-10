@@ -29,15 +29,15 @@ class QDarkScrollArea extends QScrollArea implements Container {
     this.setResizable(true);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setResizable(value: boolean) {
+  setResizable(value: boolean) {
     this.setWidgetResizable(value);
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     const widget = this.widget();
 
     if (widget) {
@@ -52,11 +52,11 @@ class QDarkScrollArea extends QScrollArea implements Container {
     this.setWidget(child);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     child.close();
     this.setWidget(new QDarkPlaceholder());
   }

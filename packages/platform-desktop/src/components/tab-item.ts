@@ -32,29 +32,29 @@ class QDarkTabItem extends QDarkFlexLayout {
   private text: string;
   private icon: QIcon = new QIcon();
 
-  public setTab(value: QTabWidget) {
+  setTab(value: QTabWidget) {
     this.tab = value;
   }
 
-  public setText(value: string) {
+  setText(value: string) {
     this.text = value;
     this.tab.setTabText(this.getIndex(), this.text);
   }
 
-  public getText() {
+  getText() {
     return this.text;
   }
 
-  public setIcon(value: QIcon) {
+  setIcon(value: QIcon) {
     this.icon = value;
     this.tab.setTabIcon(this.getIndex(), this.icon);
   }
 
-  public getIcon() {
+  getIcon() {
     return this.icon;
   }
 
-  public getIndex() {
+  getIndex() {
     return this.tab.indexOf(this);
   }
 }

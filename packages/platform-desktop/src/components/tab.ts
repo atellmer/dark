@@ -33,11 +33,11 @@ const Tab = forwardRef<TabProps, TabRef>(
 ) as ComponentFactory<TabProps, TabRef>;
 
 class QDarkTab extends QTabWidget implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public appendChild(child: QDarkTabItem) {
+  appendChild(child: QDarkTabItem) {
     if (!detectIsTabItem(child)) return;
     child.setTab(this);
     runAtTheEndOfCommit(() => {
@@ -45,7 +45,7 @@ class QDarkTab extends QTabWidget implements Container {
     });
   }
 
-  public insertBefore(child: QDarkTabItem, _: QDarkTabItem, idx: number) {
+  insertBefore(child: QDarkTabItem, _: QDarkTabItem, idx: number) {
     if (!detectIsTabItem(child)) return;
     child.setTab(this);
     runAtTheEndOfCommit(() => {
@@ -53,7 +53,7 @@ class QDarkTab extends QTabWidget implements Container {
     });
   }
 
-  public removeChild(child: QDarkTabItem) {
+  removeChild(child: QDarkTabItem) {
     if (!detectIsTabItem(child)) return;
     this.removeTab(child.getIndex());
     child.setTab(null);

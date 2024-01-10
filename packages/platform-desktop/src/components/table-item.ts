@@ -30,23 +30,23 @@ class QDarkTableItem extends QTableWidgetItem {
   private tableRow: number = undefined;
   private tableCol: number = undefined;
 
-  public setRow(value: number) {
+  setRow(value: number) {
     this.tableRow = value;
   }
 
-  public getRow(): number | undefined {
+  getRow(): number | undefined {
     return this.tableRow;
   }
 
-  public setCol(value: number) {
+  setCol(value: number) {
     this.tableCol = value;
   }
 
-  public getCol(): number | undefined {
+  getCol(): number | undefined {
     return this.tableCol;
   }
 
-  public setBackgroundColor(value: string) {
+  setBackgroundColor(value: string) {
     this.setBackground(new QBrush(new QColor(value)));
   }
 }

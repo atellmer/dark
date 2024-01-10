@@ -26,7 +26,7 @@ class QDarkAnimatedImage extends QLabel {
     this.setProperty('scaledContents', true);
   }
 
-  public async setSrc(value: string) {
+  async setSrc(value: string) {
     if (!value) return;
     try {
       this.setMovie(await createMoviewFromPath(value));
@@ -36,7 +36,7 @@ class QDarkAnimatedImage extends QLabel {
     }
   }
 
-  public setBuffer(buffer: Buffer) {
+  setBuffer(buffer: Buffer) {
     this.setMovie(createMovieFromBuffer(buffer));
     this.movie().start();
   }

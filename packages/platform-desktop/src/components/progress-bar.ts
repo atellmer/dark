@@ -23,7 +23,7 @@ const ProgressBar = forwardRef<ProgressBarProps, ProgressBarRef>(
 ) as ComponentFactory<ProgressBarProps, ProgressBarRef>;
 
 class QDarkProgressBar extends QProgressBar {
-  public setTextHidden(value: boolean) {
+  setTextHidden(value: boolean) {
     this.setTextVisible(!value);
   }
 }

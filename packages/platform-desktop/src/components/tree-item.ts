@@ -26,24 +26,24 @@ const TreeItem = forwardRef<TreeItemProps, TreeItemRef>(
 ) as ComponentFactory<TreeItemProps, TreeItemRef>;
 
 class QDarkTreeItem extends QTreeWidgetItem implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setValue(value: Array<string>) {
+  setValue(value: Array<string>) {
     value.forEach((x, idx) => this.setText(idx, x));
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (!detectIsTreeItem(child)) return;
     this.addChild(child);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild() {
+  removeChild() {
     throwUnsupported(this);
   }
 }

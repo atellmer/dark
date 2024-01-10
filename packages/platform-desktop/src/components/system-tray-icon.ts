@@ -36,24 +36,24 @@ class QDarkSystemTrayIcon extends QSystemTrayIcon implements Container {
     globalThis.tray = this;
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setVisible(value: boolean) {
+  setVisible(value: boolean) {
     value ? this.show() : this.hide();
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (!detectIsMenu(child)) return console.warn(`SystemTrayIcon supports only Menu as its children`);
     this.setContextMenu(child);
   }
 
-  public insertBefore() {
+  insertBefore() {
     throwUnsupported(this);
   }
 
-  public removeChild() {
+  removeChild() {
     throwUnsupported(this);
   }
 }

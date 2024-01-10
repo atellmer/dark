@@ -32,26 +32,26 @@ const Table = forwardRef<TableProps, TableRef>(
 ) as ComponentFactory<TableProps, TableRef>;
 
 class QDarkTable extends QTableWidget implements Container {
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public setGridHidden(value: boolean) {
+  setGridHidden(value: boolean) {
     this.setShowGrid(!value);
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     this.insertBefore(child);
   }
 
-  public insertBefore(child: QWidget) {
+  insertBefore(child: QWidget) {
     if (!detectIsTableItem(child)) return;
     runAtTheEndOfCommit(() => {
       this.setItem(child.getRow(), child.getCol(), child);
     });
   }
 
-  public removeChild() {
+  removeChild() {
     throwUnsupported(this);
   }
 }

@@ -29,21 +29,21 @@ class QDarkStatusBar extends QStatusBar implements Container {
     this.setSizeGripEnabled(false);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.addWidget(child);
   }
 
-  public insertBefore(child: QWidget, _: QWidget, idx: number) {
+  insertBefore(child: QWidget, _: QWidget, idx: number) {
     if (detectIsDialog(child)) return;
     this.insertWidget(idx, child);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.removeWidget(child);
     child.close();

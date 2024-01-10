@@ -23,7 +23,7 @@ const LCDNumber = forwardRef<LCDNumberProps, LCDNumberRef>(
 ) as ComponentFactory<LCDNumberProps, LCDNumberRef>;
 
 class QDarkLCDNumber extends QLCDNumber {
-  public setDisplay(value: number) {
+  setDisplay(value: number) {
     this.display(value);
   }
 }

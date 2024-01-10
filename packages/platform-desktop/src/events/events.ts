@@ -3,8 +3,8 @@ import { type NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component'
 import { useMemo, $$scope } from '@dark-engine/core';
 
 class SyntheticEvent<T> {
-  public type = '';
-  public value: T = null;
+  type = '';
+  value: T = null;
 
   constructor(options: SyntheticEvent<T>) {
     this.type = options.type;

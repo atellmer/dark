@@ -41,29 +41,29 @@ class QDarkGroupBox extends QGroupBox implements Container {
     this.setLayout(this.boxLayout);
   }
 
-  public detectIsContainer() {
+  detectIsContainer() {
     return true;
   }
 
-  public getBoxLayout() {
+  getBoxLayout() {
     return this.boxLayout;
   }
 
-  public setDirection(value: Direction) {
+  setDirection(value: Direction) {
     this.boxLayout.setDirection(value);
   }
 
-  public appendChild(child: QWidget) {
+  appendChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.boxLayout.addWidget(child);
   }
 
-  public insertBefore(child: QWidget, _: QWidget, idx: number) {
+  insertBefore(child: QWidget, _: QWidget, idx: number) {
     if (detectIsDialog(child)) return;
     this.boxLayout.insertWidget(idx, child);
   }
 
-  public removeChild(child: QWidget) {
+  removeChild(child: QWidget) {
     if (detectIsDialog(child)) return;
     this.boxLayout.removeWidget(child);
     child.close();

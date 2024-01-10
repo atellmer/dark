@@ -3,7 +3,7 @@ import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
 import { detectIsVoidElement } from '../utils';
 import { CLASS_ATTR, CLASS_NAME_ATTR } from '../constants';
 
-class NativeElement {
+abstract class NativeElement {
   type: NodeType;
   parentElement: TagNativeElement = null;
 
@@ -11,13 +11,11 @@ class NativeElement {
     this.type = type;
   }
 
-  renderToString(isRoot?: boolean) {
-    return this.type as string;
-  }
+  abstract renderToString(): string;
+  abstract renderToString(isRoot: boolean): string;
 
-  renderToChunk(start?: boolean, close?: boolean) {
-    return this.type as string;
-  }
+  abstract renderToChunk(): string;
+  abstract renderToChunk(start: boolean, close?: boolean): string;
 }
 
 class TagNativeElement extends NativeElement {
@@ -41,7 +39,8 @@ class TagNativeElement extends NativeElement {
     this.attrs[$name] = detectIsString(value) ? escape(value) : value;
   }
 
-  override renderToString(isRoot: boolean): string {
+  override renderToString(...args: Array<unknown>) {
+    const isRoot = args[0] as boolean;
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
 
@@ -53,7 +52,9 @@ class TagNativeElement extends NativeElement {
     return value;
   }
 
-  override renderToChunk(start: boolean, close?: boolean): string {
+  override renderToChunk(...args: Array<unknown>) {
+    const start = args[0] as boolean;
+    const close = args[1] as boolean;
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
 
@@ -75,11 +76,11 @@ class TextNativeElement extends NativeElement {
     this.value = escape(text);
   }
 
-  override renderToString(): string {
+  override renderToString() {
     return this.value;
   }
 
-  override renderToChunk(): string {
+  override renderToChunk() {
     return this.value;
   }
 }
@@ -92,11 +93,11 @@ class CommentNativeElement extends NativeElement {
     this.value = `<!--${escape(text)}-->`;
   }
 
-  override renderToString(): string {
+  override renderToString() {
     return this.value;
   }
 
-  override renderToChunk(): string {
+  override renderToChunk() {
     return this.value;
   }
 }

@@ -4,9 +4,9 @@ import { $$scope } from '@dark-engine/core';
 import { type NSElement } from '../registry';
 
 class SyntheticEvent<E, T = NSElement> {
-  public type = '';
-  public sourceEvent: E = null;
-  public target: T = null;
+  type = '';
+  sourceEvent: E = null;
+  target: T = null;
 
   constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
     this.type = (options.sourceEvent as EventData).eventName;
