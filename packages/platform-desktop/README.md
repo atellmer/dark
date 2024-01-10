@@ -44,7 +44,7 @@ const App = component(() => {
   });
 
   return (
-    <Window windowTitle='My desktop app' width={400} height={400}>
+    <Window windowTitle='My Desktop App' width={400} height={400}>
       <BoxLayout direction={Direction.TopToBottom}>
         <PushButton text={`Fired ${count} times`} on={buttonEvents} />
       </BoxLayout>
@@ -67,7 +67,7 @@ const App = component(() => {
   });
 
   return Window({
-    windowTitle: 'My desktop app',
+    windowTitle: 'My Desktop App',
     width: 400,
     height: 400,
     slot: BoxLayout({
@@ -167,6 +167,7 @@ To give your components a personality, you'll need styles. For this, there is a 
 ```tsx
 import { useStyle } from '@dark-engine/platform-desktop';
 ```
+
 ### Global styles
 
 In the case of a global stylesheet, you can define all your style properties in a stylesheet string and then tell the root view or window to set it as a stylesheet for itself and its child components. The only difference from the web is that you can set a stylesheet on a component at any level in the entire tree of components, and the stylesheet will affect the component and its children. In the example, in order to reference a component in a stylesheet, we will assign it an id using the `id` prop. Think of it as similar to an `id` in the case of the web (but in reality, it calls the setObjectName method in nodegui). Now, using the id, you could reference the component in the stylesheet and set style properties on them. The global stylesheet really becomes powerful when you use things like pseudo-selectors (hover, checked, etc.). It also helps implement cascaded styles that allow you to style a group of components at once.
@@ -179,9 +180,11 @@ const style = useStyle(styled => ({
       qproperty-alignment: 'AlignCenter';
       color: white;
     }
+
     #text-1 {
       background-color: red;
     }
+
     #text-2 {
       background-color: green;
     }
@@ -243,14 +246,17 @@ const style = useStyle(styled => ({
     #box {
       flex-direction: 'column';
     }
+
     #text-1 {
       flex: 1;
       background-color: red;
     }
+
     #text-2 {
       flex: 1;
       background-color: yellow;
     }
+
     #text-3 {
       flex: 2;
       background-color: green;
