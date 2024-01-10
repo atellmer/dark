@@ -1,15 +1,19 @@
-import { h, Fragment, component, useAtom } from '@dark-engine/core';
+import { h, Fragment, component, useAtom, useComputed, useStore } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { createGlobalStyle } from '@dark-engine/styled';
 
 const App = component(() => {
-  const count$ = useAtom(0);
+  const a$ = useAtom(0);
+  const b$ = useComputed([a$], a => a ** 2);
+  const [a, b] = useStore([a$, b$]);
 
   return (
     <>
       <GlobalStyle />
-      <h1>Hello Dark: {count$.val()}</h1>
-      <button onClick={() => count$.set(x => x + 1)}>increment!</button>
+      <h1>
+        {a} ^ 2 = {b}
+      </h1>
+      <button onClick={() => a$.set(x => x + 1)}>increment</button>
     </>
   );
 });
