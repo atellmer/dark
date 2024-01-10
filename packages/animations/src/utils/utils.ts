@@ -1,5 +1,3 @@
-const time = () => performance.now();
-
 const fix = (x: number, precision = 4) => Number(x.toFixed(precision));
 
 const illegal = (value: string) => {
@@ -25,4 +23,4 @@ const uniq = <T>(items: Array<T>, selector: (x: T) => unknown) => {
   return arr;
 };
 
-export { time, fix, illegal, range, uniq };
+export { fix, illegal, range, uniq };

@@ -1,9 +1,9 @@
-import { type ElementKey, platform, falseFn, detectIsUndefined } from '@dark-engine/core';
+import { type ElementKey, platform, falseFn, detectIsUndefined, getTime } from '@dark-engine/core';
 
 import { type SpringValue, type SpringConfig, defaultSpringConfig } from '../shared';
 import { type AnimationEventName, SharedState } from '../state';
 import { Spring } from '../spring';
-import { time, fix } from '../utils';
+import { fix } from '../utils';
 import { stepper } from '../stepper';
 
 const BASE_FRAME_TIME_IN_MS = 1000 / 60;
@@ -178,10 +178,10 @@ class Controller<T extends string, I = unknown> {
     const keys = Object.keys(value) as Array<T>;
     const make = () => this.motion(to);
 
-    this.frameTime = time();
+    this.frameTime = getTime();
     this.frameId = platform.raf(() => {
       if (this.state.getIsPaused()) return make();
-      let step = (time() - this.frameTime) / 1000;
+      let step = (getTime() - this.frameTime) / 1000;
 
       if (step > MAX_DELTA_TIME_IN_SEC) {
         step = MIN_STEP;

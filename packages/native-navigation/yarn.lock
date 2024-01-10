@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dark-engine/native-navigation@workspace:."
   dependencies:
-    "@nativescript/core": ~8.5.0
+    "@nativescript/core": 8.6.2
   peerDependencies:
     "@dark-engine/core": "*"
     "@dark-engine/platform-native": "*"
@@ -17,9 +17,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nativescript/core@npm:~8.5.0":
-  version: 8.5.9
-  resolution: "@nativescript/core@npm:8.5.9"
+"@nativescript/core@npm:8.6.2":
+  version: 8.6.2
+  resolution: "@nativescript/core@npm:8.6.2"
   dependencies:
     "@nativescript/hook": ~2.0.0
     acorn: ^8.7.0
@@ -27,7 +27,7 @@ __metadata:
     emoji-regex: ^10.2.1
     reduce-css-calc: ^2.1.7
     tslib: ^2.0.0
-  checksum: 67a9c057decc843b662470247473d969ea9ccea9fe4775c56ac2b4bed1b0f31af14e1ace5bc9656ffc3d0d522736b82ec76d76557a2de2d2ba46be7ec2a8046a
+  checksum: 53b7eb0ed3bbeba7ffdf2f610bf8af683a73a7f8bdbccfdb6e3e5a41df5d05d28732c0fb786aa448a2def4c6ac3c63ddb986b22ac1fbf031642d1d8e805d60aa
   languageName: node
   linkType: hard
 

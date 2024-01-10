@@ -9,7 +9,9 @@
     "tsconfigRootDir": ".",
     "ecmaVersion": 2021,
     "sourceType": "module",
-    "extraFileExtensions": ["mjs"],
+    "extraFileExtensions": [
+      "mjs"
+    ],
     "ecmaFeatures": {
       "jsx": true
     }
@@ -30,7 +32,10 @@
     "indent": "off",
     "no-trailing-spaces": "warn",
     "semi": "warn",
-    "jsx-quotes": ["warn", "prefer-single"],
+    "jsx-quotes": [
+      "warn",
+      "prefer-single"
+    ],
     "prefer-const": "error",
     "no-use-before-define": "off",
     "no-async-promise-executor": "off",
@@ -99,6 +104,9 @@
       "off"
     ],
     "@typescript-eslint/no-unsafe-argument": [
+      "off"
+    ],
+    "@typescript-eslint/no-redundant-type-constituents": [
       "off"
     ]
   }

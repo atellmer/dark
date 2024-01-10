@@ -1,15 +1,15 @@
-import { EventData } from '@nativescript/core';
+import { type EventData } from '@nativescript/core';
 import { $$scope } from '@dark-engine/core';
 
 import { type NSElement } from '../registry';
 
-class SyntheticEvent<E extends EventData, T = NSElement> {
+class SyntheticEvent<E, T = NSElement> {
   public type = '';
   public sourceEvent: E = null;
   public target: T = null;
 
   constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
-    this.type = options.sourceEvent.eventName;
+    this.type = (options.sourceEvent as EventData).eventName;
     this.sourceEvent = options.sourceEvent;
     this.target = options.target;
   }

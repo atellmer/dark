@@ -32,7 +32,7 @@
     "navigation"
   ],
   "devDependencies": {
-    "@nativescript/core": "~8.5.0"
+    "@nativescript/core": "8.6.2"
   },
   "peerDependencies": {
     "@dark-engine/core": "*",

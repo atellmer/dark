@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@dark-engine/core": "0.21.1",
-    "@dark-engine/platform-native": "0.21.1",
     "@dark-engine/native-navigation": "0.21.1",
+    "@dark-engine/platform-native": "0.21.1",
     "@nativescript/core": "~8.5.0",
     "@nativescript/theme": "~3.0.2",
     "@nstudio/nativescript-carousel": "^8.0.3"

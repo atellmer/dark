@@ -1,13 +1,6 @@
-import { time, fix, illegal, range, uniq } from './utils';
-
-jest.spyOn(performance, 'now').mockImplementation(() => 12345);
+import { fix, illegal, range, uniq } from './utils';
 
 describe('@animations/utils', () => {
-  test('the time function works correctly', () => {
-    expect(typeof time).toBe('function');
-    expect(time()).toBe(12345);
-    expect(time()).toBe(12345);
-  });
   test('the fix function works correctly', () => {
     expect(typeof fix).toBe('function');
     expect(fix(-0.123456)).toBe(-0.1235);
