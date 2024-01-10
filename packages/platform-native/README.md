@@ -8,6 +8,8 @@ NativeScript is a free and open-source framework for building native mobile apps
 <br>
 [More about NativeScript](https://nativescript.org/)
 
+[app.webm](https://github.com/atellmer/dark/assets/16635118/d295001b-3abd-4c62-b985-e4428118645c)
+
 ## Installation
 
 from template:
