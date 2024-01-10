@@ -13,13 +13,18 @@ NativeScript is a free and open-source framework for building native mobile apps
 </div>
 
 ## Installation
+
+from template:
+```
+npx degit github:atellmer/dark/templates/native app
+```
 npm:
 ```
-npm install @nativescript/core @dark-engine/core @dark-engine/platform-native
+npm install @nativescript/core @dark-engine/core @dark-engine/animations @dark-engine/platform-native
 ```
 yarn:
 ```
-yarn add @nativescript/core @dark-engine/core @dark-engine/platform-native
+yarn add @nativescript/core @dark-engine/core @dark-engine/animations @dark-engine/platform-native
 ```
 
 ## Usage

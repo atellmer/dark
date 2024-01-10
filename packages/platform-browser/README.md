@@ -8,17 +8,17 @@ Dark renderer for browser.
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/browser my-app
+npx degit github:atellmer/dark/templates/browser app
 ```
 
 npm:
 ```
-npm install @dark-engine/platform-browser
+npm install @dark-engine/core @dark-engine/platform-browser
 ```
 
 yarn:
 ```
-yarn add @dark-engine/platform-browser
+yarn add @dark-engine/core @dark-engine/platform-browser
 ```
 
 CDN:

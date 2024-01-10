@@ -14,17 +14,17 @@ Additionally, rendering can be performed directly into HTML files via the Node.j
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/server my-app
+npx degit github:atellmer/dark/templates/server app
 ```
 
 npm:
 ```
-npm install @dark-engine/platform-server
+npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
 
 yarn:
 ```
-yarn add @dark-engine/platform-server
+yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server
 ```
 
 ## API

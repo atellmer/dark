@@ -20,16 +20,16 @@ NodeGui is an open source framework for building cross-platform native desktop a
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/desktop my-app
+npx degit github:atellmer/dark/templates/desktop app
 ```
 
 npm:
 ```
-npm install @nodegui/nodegui @dark-engine/platform-desktop
+npm install @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
 ```
 yarn:
 ```
-yarn add @nodegui/nodegui @dark-engine/platform-desktop
+yarn add @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
 ```
 
 ## Usage

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { CoreTypes } from '@nativescript/core';
+import { type ComponentFactory } from '@dark-engine/core';
 
 export type AccessibilityLiveRegion = import('@nativescript/core').AccessibilityLiveRegion;
 export type AccessibilityRole = import('@nativescript/core').AccessibilityRole;
@@ -485,7 +486,7 @@ export type ScrollViewAttributes = WithStandardElementAttributes<
     scrollableHeight?: number;
     scrollableWidth?: number;
     verticalOffset?: number;
-  }
+  } & { slot: ComponentFactory }
 >;
 
 export type LayoutBaseAttributes = CustomLayoutViewAttributes & {
