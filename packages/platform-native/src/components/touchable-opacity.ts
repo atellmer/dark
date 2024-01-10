@@ -29,7 +29,7 @@ const TouchableOpacity = component<TouchableOpacityProps>(
 
       if (isDown) {
         detectIsFunction(onPress) && onPress(e);
-        api.start(to(0.3));
+        api.start(to(0.5));
       } else if (isUp) {
         api.start(to(1));
       }

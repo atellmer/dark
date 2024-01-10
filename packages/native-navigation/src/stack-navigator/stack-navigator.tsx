@@ -1,11 +1,4 @@
-import {
-  type AbsoluteLayout,
-  type StackLayout,
-  type AnimationDefinition,
-  type Size,
-  Animation,
-  CoreTypes,
-} from '@nativescript/core';
+import { type AnimationDefinition, type Size, Animation, CoreTypes } from '@nativescript/core';
 import {
   type Component,
   type ComponentFactory,
@@ -24,6 +17,7 @@ import {
   useRef,
   useImperativeHandle,
 } from '@dark-engine/core';
+import { type AbsoluteLayoutRef, type StackLayoutRef, AbsoluteLayout, StackLayout } from '@dark-engine/platform-native';
 
 import { SLASH_MARK, TransitionName } from '../constants';
 import { createPathname, getSegments, detectIsVisited } from '../utils';
@@ -44,7 +38,7 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
     ({ slot, onNavigate }, ref) => {
       const { pathname, transition, replace, subscribe } = useNavigationContext();
       const { prefix } = useScreenNavigatorContext();
-      const rootRef = useRef<AbsoluteLayout>(null);
+      const rootRef = useRef<AbsoluteLayoutRef>(null);
       const names = slot.map(x => x.props.name);
       const pathnames = names.map(x => createPathname(x, prefix));
       const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
@@ -96,22 +90,22 @@ const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
       useImperativeHandle(ref, () => ({}));
 
       return (
-        <absolute-layout ref={rootRef} width={FULL} height={FULL}>
+        <AbsoluteLayout ref={rootRef} width={FULL} height={FULL}>
           {slot.map(x => {
             const name = x.props.name;
             const key = createPathname(name, prefix);
             const isHidden = Boolean(hiddensMap[key]);
-            const setRef = (ref: StackLayout) => {
+            const setRef = (ref: StackLayoutRef) => {
               scope.refsMap[key] = ref;
             };
 
             return (
-              <stack-layout ref={setRef} key={key} width={FULL} height={FULL} hidden={isHidden}>
+              <StackLayout ref={setRef} key={key} width={FULL} height={FULL} hidden={isHidden}>
                 {x}
-              </stack-layout>
+              </StackLayout>
             );
           })}
-        </absolute-layout>
+        </AbsoluteLayout>
       );
     },
     { displayName: 'StackNavigator.Root' },
@@ -352,7 +346,7 @@ function matchRef(refsMap: Record<string, SyntheticStackLayout>, pathname: strin
 
 type SyntheticStackLayout = {
   hidden?: boolean;
-} & StackLayout;
+} & StackLayoutRef;
 
 const FULL = '100%';
 

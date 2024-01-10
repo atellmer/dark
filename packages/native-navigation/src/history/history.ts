@@ -1,4 +1,4 @@
-import { Frame, Page, isAndroid, AndroidApplication } from '@nativescript/core';
+import { type Frame, type Page, isAndroid, Application } from '@nativescript/core';
 
 import { normalizePathname } from '../utils';
 import { type NavigationOptions } from '../navigation-container';
@@ -21,13 +21,13 @@ class NavigationHistory {
     if (isAndroid) {
       const handleBack = () => this.back(false);
 
-      AndroidApplication.on(AndroidApplication.activityBackPressedEvent, handleBack);
+      Application.android.on(Application.android.activityBackPressedEvent, handleBack);
 
       this.dispose = () => {
         this.subscribers.clear();
         this.stack = [];
         this.cursor = -1;
-        AndroidApplication.off(AndroidApplication.activityBackPressedEvent, handleBack);
+        Application.android.off(Application.android.activityBackPressedEvent, handleBack);
       };
     } else {
       this.dispose = () => {

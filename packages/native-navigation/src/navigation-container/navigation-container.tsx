@@ -1,4 +1,4 @@
-import { type Frame, type Page, CoreTypes } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
   h,
@@ -15,6 +15,7 @@ import {
   createContext,
   detectIsFunction,
 } from '@dark-engine/core';
+import { type FrameRef, type PageRef, Frame, Page } from '@dark-engine/platform-native';
 
 import {
   type HistorySubscriber,
@@ -47,8 +48,8 @@ export type RenderActionBarOptions = {
 const NavigationContainer = forwardRef<NavigationContainerProps, NavigationContainerRef>(
   component(
     ({ slot, defaultPathname = SLASH_MARK, renderActionBar, onNavigate }, ref) => {
-      const frameRef = useRef<Frame>(null);
-      const pageRef = useRef<Page>(null);
+      const frameRef = useRef<FrameRef>(null);
+      const pageRef = useRef<PageRef>(null);
       const [pathname, setPathname] = useState(normalizePathname(defaultPathname));
       const [transition, setTransition] = useState<Transition>(null);
       const scope = useMemo<Scope>(
@@ -147,15 +148,15 @@ const NavigationContainer = forwardRef<NavigationContainerProps, NavigationConta
 
       return (
         <NavigationContext.Provider value={contextValue}>
-          <frame>
-            <page actionBarHidden={!hasActionBar}>
+          <Frame>
+            <Page actionBarHidden={!hasActionBar}>
               {hasActionBar && renderActionBar({ pathname, goBack: back })}
               {slot}
-            </page>
-          </frame>
-          <frame ref={frameRef} hidden>
-            <page ref={pageRef} actionBarHidden />
-          </frame>
+            </Page>
+          </Frame>
+          <Frame ref={frameRef} hidden>
+            <Page ref={pageRef} actionBarHidden />
+          </Frame>
         </NavigationContext.Provider>
       );
     },

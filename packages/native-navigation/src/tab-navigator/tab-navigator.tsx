@@ -1,4 +1,4 @@
-import { type AbsoluteLayout, type StackLayout, AccessibilityRole } from '@nativescript/core';
+import { AccessibilityRole } from '@nativescript/core';
 import {
   type DarkElement,
   type Component,
@@ -14,6 +14,13 @@ import {
   useContext,
   memo,
 } from '@dark-engine/core';
+import {
+  type AbsoluteLayoutRef,
+  type StackLayoutRef,
+  AbsoluteLayout,
+  StackLayout,
+  FlexboxLayout,
+} from '@dark-engine/platform-native';
 
 import {
   type StackNavigatorRef,
@@ -32,8 +39,8 @@ type TabNavigatorProps = {
 const Navigator = component<TabNavigatorProps>(
   ({ bottomNavigationOptions, slot }) => {
     const navRef = useRef<StackNavigatorRef>(null);
-    const layoutRef = useRef<AbsoluteLayout>(null);
-    const bottomRef = useRef<StackLayout>(null);
+    const layoutRef = useRef<AbsoluteLayoutRef>(null);
+    const bottomRef = useRef<StackLayoutRef>(null);
     const update = useUpdate();
     const {
       height = 64,
@@ -51,30 +58,27 @@ const Navigator = component<TabNavigatorProps>(
       [],
     );
     const { descriptorsMap } = contextValue;
+    const descriptorKeys = Object.keys(descriptorsMap);
 
     useLayoutEffect(() => update(), []);
 
     const handleLayoutChange = useEvent(() => {
-      const bottomNavigation = bottomRef.current;
+      const nav = bottomRef.current;
       const size = layoutRef.current.getActualSize();
 
-      setTimeout(() => {
-        bottomNavigation.top = size.height - height - (shift + compensate);
-        bottomNavigation.left = shift;
-        bottomNavigation.width = size.width - 2 * shift;
-        bottomNavigation.height = height;
-        bottomNavigation.borderRadius = borderRadius;
+      requestAnimationFrame(() => {
+        nav.top = size.height - height - (shift + compensate);
+        nav.left = shift;
+        nav.width = size.width - 2 * shift;
+        nav.height = height;
+        nav.borderRadius = borderRadius;
       });
     });
 
-    const handleTap = useEvent(() => {});
-
-    const descriptorKeys = Object.keys(descriptorsMap);
-
     return (
       <TabNavigatorContext.Provider value={contextValue}>
-        <absolute-layout ref={layoutRef} onLayoutChanged={handleLayoutChange}>
-          <stack-layout width='100%' height='100%'>
+        <AbsoluteLayout ref={layoutRef} onLayoutChanged={handleLayoutChange}>
+          <StackLayout width='100%' height='100%'>
             {descriptorKeys.length > 0 && (
               <StackNavigator.Root ref={navRef}>
                 {descriptorKeys.map(key => {
@@ -88,19 +92,18 @@ const Navigator = component<TabNavigatorProps>(
                 })}
               </StackNavigator.Root>
             )}
-          </stack-layout>
-          <flexbox-layout
+          </StackLayout>
+          <FlexboxLayout
             ref={bottomRef}
             backgroundColor={backgroundColor}
             opacity={opacity}
             justifyContent='space-between'
             alignItems='center'
             paddingLeft={padding}
-            paddingRight={padding}
-            onTap={handleTap}>
+            paddingRight={padding}>
             {slot}
-          </flexbox-layout>
-        </absolute-layout>
+          </FlexboxLayout>
+        </AbsoluteLayout>
       </TabNavigatorContext.Provider>
     );
   },
@@ -125,15 +128,15 @@ const Screen = component<TabScreenProps>(
     descriptorsMap[name] = { name, component, slot };
 
     return (
-      <stack-layout accessibilityRole={AccessibilityRole.Button} width={`${width}%`} onTap={handleTap}>
-        <flexbox-layout
+      <StackLayout accessibilityRole={AccessibilityRole.Button} width={`${width}%`} onTap={handleTap}>
+        <FlexboxLayout
           flexDirection='column'
           justifyContent='center'
           alignItems='center'
           color={isActive ? activeTabColor : tabColor}>
           {renderTab(name, isActive)}
-        </flexbox-layout>
-      </stack-layout>
+        </FlexboxLayout>
+      </StackLayout>
     );
   },
   {
