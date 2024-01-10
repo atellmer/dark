@@ -12,6 +12,8 @@ NodeGui is an open source framework for building cross-platform native desktop a
 <br>
 [More about NodeGui](https://docs.nodegui.org/)
 
+[app.webm](https://github.com/atellmer/dark/assets/16635118/f063ca46-4519-47eb-b124-6754035f5492)
+
 ## Installation
 
 from template:
