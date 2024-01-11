@@ -184,8 +184,6 @@ import { App } from './app';
 hydrateRoot(document.getElementById('root'), <App />);
 ```
 
-Please see code examples in the `/examples` directory.
-
 # LICENSE
 
 MIT © [Alex Plex](https://github.com/atellmer)

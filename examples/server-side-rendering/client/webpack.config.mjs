@@ -1,26 +1,21 @@
-import { resolve, dirname, join } from 'node:path';
+import { resolve, dirname } from 'node:path';
 
-import { alias, plugins } from '../../webpack.base.mjs';
+import { alias, plugins } from '../../../webpack.base.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = {
-  mode: process.env.NODE_ENV,
+  mode: 'production',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
     alias,
   },
-  devtool: 'source-map',
   entry: resolve(__dirname, './index.tsx'),
   output: {
-    path: resolve(__dirname, './'),
+    path: resolve(__dirname, './static'),
     filename: 'build.js',
   },
-  devServer: {
-    static: join(__dirname, './'),
-    compress: false,
-    port: 9000,
-  },
+  devtool: 'source-map',
   module: {
     rules: [
       {

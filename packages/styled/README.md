@@ -77,13 +77,13 @@ import {
   type Keyframes,
   ThemeProvider,
   createGlobalStyle,
+  ServerStyleSheet,
   keyframes,
   useTheme,
   useStyle,
   styled,
   css,
 } from '@dark-engine/styled';
-import { ServerStyleSheet } from '@dark-engine/styled/server';
 ```
 
 ## Getting Started

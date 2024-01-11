@@ -1,7 +1,7 @@
-import { resolve, dirname, join } from 'path';
+import { resolve, dirname, join } from 'node:path';
 import webpack from 'webpack';
 
-import { alias } from '../../webpack.alias.mjs';
+import { alias, plugins } from '../../webpack.base.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = {
@@ -36,6 +36,7 @@ const config = {
     ],
   },
   plugins: [
+    ...plugins,
     new webpack.DefinePlugin({
       'process.env': JSON.stringify(process.env),
     }),

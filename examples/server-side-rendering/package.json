@@ -30,7 +30,6 @@
     "@dark-engine/platform-server": "../../packages/platform-server/src/index",
     "@dark-engine/web-router": "../../packages/web-router/src/index",
     "@dark-engine/animations": "../../packages/animations/src/index",
-    "@dark-engine/styled": "../../packages/styled/src/index",
-    "@dark-engine/styled/server": "../../packages/styled/src/server/index"
+    "@dark-engine/styled": "../../packages/styled/src/index"
   }
 }

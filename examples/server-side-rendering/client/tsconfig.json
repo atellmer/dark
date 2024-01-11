@@ -1,23 +1,15 @@
 {
+  "extends": "../tsconfig",
   "compilerOptions": {
     "target": "ES2021",
-    "moduleResolution": "node",
     "module": "esnext",
-    "sourceMap": true,
-    "noImplicitAny": false,
-    "removeComments": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
+    "moduleResolution": "node",
     "lib": [
       "ES6",
       "ES7",
       "ES2021",
-      "dom"
+      "DOM"
     ],
-    "typeRoots": ["node_modules/@types"],
     "baseUrl": ".",
     "paths": {
       "@dark-engine/core": [
@@ -25,9 +17,6 @@
       ],
       "@dark-engine/platform-browser": [
         "../../../packages/platform-browser/src/index"
-      ],
-      "@dark-engine/platform-server": [
-        "../../../packages/platform-server/src/index"
       ],
       "@dark-engine/web-router": [
         "../../../packages/web-router/src/index"

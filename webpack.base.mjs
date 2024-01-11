@@ -1,5 +1,6 @@
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import webpack from 'webpack';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const alias = {
@@ -13,5 +14,12 @@ const alias = {
   '@dark-engine/animations': resolve(__dirname, './packages/animations/src'),
   '@dark-engine/styled': resolve(__dirname, './packages/styled/src'),
 };
+const plugins = [
+  new webpack.IgnorePlugin({
+    checkResource(resource) {
+      return resource === './server/sheet';
+    },
+  }),
+];
 
-export { alias };
+export { alias, plugins };

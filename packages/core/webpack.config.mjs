@@ -1,7 +1,7 @@
 import { resolve, dirname } from 'node:path';
 import webpack from 'webpack';
 
-import { alias } from '../../webpack.alias.mjs';
+import { alias } from '../../webpack.base.mjs';
 
 const __dirname = resolve(dirname(''));
 const library = 'DarkCore';

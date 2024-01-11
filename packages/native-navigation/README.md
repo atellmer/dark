@@ -1,10 +1,8 @@
 # @dark-engine/native-navigation 🌖
 
-Dark navigation for NativeScript platform.
+Dark router for `NativeScript` platform.
 
 [More about Dark](https://github.com/atellmer/dark)
-<br>
-[More about NativeScript](https://nativescript.org/)
 
 ## Features
 - 📚 Stack navigation

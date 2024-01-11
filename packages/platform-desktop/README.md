@@ -1,16 +1,12 @@
 # @dark-engine/platform-desktop 🌖
 
-Dark renderer to desktop platforms like Windows, Linux, macOS via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>.
+Dark renderer to desktop platforms like Windows, Linux, macOS via [NodeGui](https://docs.nodegui.org/) and [Qt](https://www.qt.io/).
 
 Qt is a cross-platform framework for developing applications and embedded systems. It provides developers with tools and libraries to build applications for various platforms such as Windows, macOS, Linux, Android, and iOS using the same code. Qt contains a comprehensive set of highly intuitive and modular C++ library classes and is loaded with APIs to simplify application development. It allows you to create easily readable, easily maintainable and reusable code with high runtime performance and small size.
 
 NodeGui is an open source framework for building cross-platform native desktop apps with JavaScript and CSS-like styling. You can run NodeGui applications on macOS , Windows and Linux from the same codebase. NodeGui allows you to build truly native applications without sacrificing user experience by providing a core set of platform-independent native widgets that directly correspond to the platform's UI building blocks. NodeGui widgets are built on top of Qt, are extremely customizable, just like the web, but don't use a web browser under the hood. Applications can be built entirely in JavaScript. With NodeGui, you get the flexibility of web applications and the performance of native desktop applications.
 
 [More about Dark](https://github.com/atellmer/dark)
-<br>
-[More about Qt](https://www.qt.io/)
-<br>
-[More about NodeGui](https://docs.nodegui.org/)
 
 [app.webm](https://github.com/atellmer/dark/assets/16635118/f063ca46-4519-47eb-b124-6754035f5492)
 
@@ -80,7 +76,7 @@ const App = component(() => {
 
 ## Environment Setup
 
-Full working example with environment setup you can find <a href="https://github.com/atellmer/dark/tree/master/examples/desktop" target="_blank">here</a> or just install it from template.
+Full working example with environment setup you can find [here](https://github.com/atellmer/dark/tree/master/templates/desktop) or just install it from template.
 
 ## API
 
@@ -170,7 +166,7 @@ import { useStyle } from '@dark-engine/platform-desktop';
 
 ### Global styles
 
-In the case of a global stylesheet, you can define all your style properties in a stylesheet string and then tell the root view or window to set it as a stylesheet for itself and its child components. The only difference from the web is that you can set a stylesheet on a component at any level in the entire tree of components, and the stylesheet will affect the component and its children. In the example, in order to reference a component in a stylesheet, we will assign it an id using the `id` prop. Think of it as similar to an `id` in the case of the web (but in reality, it calls the setObjectName method in nodegui). Now, using the id, you could reference the component in the stylesheet and set style properties on them. The global stylesheet really becomes powerful when you use things like pseudo-selectors (hover, checked, etc.). It also helps implement cascaded styles that allow you to style a group of components at once.
+In the case of a global stylesheet, you can define all your style properties in a stylesheet string and then tell the root view or window to set it as a stylesheet for itself and its child components. The only difference from the web is that you can set a stylesheet on a component at any level in the entire tree of components, and the stylesheet will affect the component and its children. In the example, in order to reference a component in a stylesheet, we will assign it an id using the `id` prop. Think of it as similar to an `id` in the case of the web (but in reality, it calls the `setObjectName` method in NodeGui). Now, using the id, you could reference the component in the stylesheet and set style properties on them. The global stylesheet really becomes powerful when you use things like pseudo-selectors (hover, checked, etc.). It also helps implement cascaded styles that allow you to style a group of components at once.
 
 ```tsx
 const style = useStyle(styled => ({
@@ -201,7 +197,7 @@ return (
 );
 ```
 
-Note we are using QLabel here instead of Text. This is because <Text /> component internally renders a QLabel.
+Note we are using `QLabel` here instead of `Text`. This is because `Text` component internally renders a `QLabel`.
 
 ### Inline styles
 
@@ -234,7 +230,7 @@ NodeGui uses a layout system to automatically arrange child widgets within a wid
 
 ### `FlexLayout`
 
-`FlexLayout` is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project <a href="https://yogalayout.com/" target="_blank">Yoga Layout Engine</a> (like View in React Native). Styling properties happens through changing the values in the associated CSS.
+`FlexLayout` is a kind of layout system based on the flexbox behavior of the web, implemented through the open-source project [Yoga Layout Engine](https://yogalayout.com/) (like View in React Native). Styling properties happens through changing the values in the associated CSS.
 
 ```tsx
 import { FlexLayout } from '@dark-engine/platform-desktop';

@@ -8,18 +8,7 @@
     "typeRoots": [
       "node_modules/@types"
     ],
-    "baseUrl": ".",
-    "paths": {
-      "@dark-engine/core": [
-        "../../packages/core/src/index"
-      ],
-      "@dark-engine/platform-browser": [
-        "../../packages/platform-browser/src/index"
-      ],
-      "@dark-engine/styled": [
-        "../../packages/styled/src/index"
-      ]
-    }
+    "baseUrl": "."
   },
   "include": [
     "./src/*"

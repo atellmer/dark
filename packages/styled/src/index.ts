@@ -4,7 +4,7 @@ export { ThemeProvider, useTheme } from './theme';
 export { createGlobalStyle } from './global';
 export { type StyleSheet } from './tokens';
 export { useStyle } from './use-style';
-
+export { ServerStyleSheet } from './server/sheet';
 declare module '@dark-engine/styled' {
   export interface DefaultTheme {}
 }

@@ -74,7 +74,7 @@ const App = component(() => {
 });
 ```
 
-## <base href>
+## `<base href>`
 
 You must add the <base href> element to the application's index.html for pushState routing to work.
 
@@ -222,6 +222,7 @@ const routes: Routes = [
 ```
 
 ## Parameters
+
 Sometimes, a feature of your application requires accessing a part of a route, such as a parameter like id of something. You can define parameterized route like below.
 
 ```tsx
@@ -251,6 +252,7 @@ const FirstComponent = component(() => {
 ```
 
 ## Lazy loading
+
 You can configure your routes to lazy load modules, which means that Dark only loads modules as needed, rather than loading all modules when the application launches.
 
 ```tsx
@@ -276,32 +278,6 @@ const routes: Routes = [
 ];
 ```
 
-## Server-Side Rendering (SSR)
-
-If you are rendering the application on the server, then you must pass the request url to the router to emulate routing when rendering to a string.
-
-```tsx
-server.get('*', async (req, res) => {
-  const { url } = req;
-  const app = await renderToString(Page({ title: 'My App', slot: App({ url }) })); // render
-  const page = `
-    <!DOCTYPE html>
-    ${app}
-  `;
-
-  res.statusCode = 200;
-  res.send(page);
-});
-```
-
-```tsx
-const App = component(({ url }) => {
-  <Router routes={routes} url={url}>{slot => slot}</Router>
-})
-```
-
-Full example SSR routing you can see in examples.
-
 ## Imperative access to router
 
 ```tsx
@@ -319,6 +295,29 @@ const App = component<AppProps>(({ url, routes }) => {
   );
 });
 ```
+
+## Server-Side Rendering (SSR)
+
+If you are rendering the application on the server, then you must pass the request url to the router to emulate routing when rendering to a string.
+
+```tsx
+server.get('*', async (req, res) => {
+  const { url } = req;
+  const app = await renderToString(Page({ title: 'My App', slot: App({ url }) })); // render
+  const page = `<!DOCTYPE html>${app}`;
+
+  res.statusCode = 200;
+  res.send(page);
+});
+```
+
+```tsx
+const App = component(({ url }) => {
+  <Router routes={routes} url={url}>{slot => slot}</Router>
+})
+```
+
+Full example SSR routing you can see in `/examples`.
 
 # LICENSE
 
