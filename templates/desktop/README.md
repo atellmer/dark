@@ -19,10 +19,10 @@ npm run dev
 ```
 In the second terminal:
 ```
-npm start:hmr
+npm run start:hmr
 ```
 
 or
 ```
-npm start:watch
+npm run start:watch
 ```
