@@ -1,8 +1,35 @@
+import { useCallback } from '../use-callback';
 import { detectIsFunction } from '../utils';
-import { type UpdateOptions, useUpdate } from '../use-update';
+import { useUpdate } from '../use-update';
+import { type Tools } from '../workloop';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
-import { useCallback } from '../use-callback';
+import { trueFn } from '../utils';
+
+type CreateToolsOptions<T> = {
+  next: Value<T>;
+  get: () => T;
+  set: (x: T) => void;
+  reset: (x: T) => void;
+  shouldUpdate?: (p: T, n: T) => boolean;
+};
+
+function createTools<T>(options: CreateToolsOptions<T>) {
+  const { get, set, reset, next, shouldUpdate: $shouldUpdate = trueFn } = options;
+  const $scope = $$scope();
+  const isBatch = $scope.getIsBatchZone();
+  const tools = (): Tools => {
+    const prevValue = get();
+    const newValue = detectIsFunction(next) ? next(prevValue) : next;
+    const shouldUpdate = () => isBatch || $shouldUpdate(prevValue, newValue);
+    const setValue = () => set(newValue);
+    const resetValue = () => reset(prevValue);
+
+    return { shouldUpdate, setValue, resetValue };
+  };
+
+  return tools;
+}
 
 type Value<T> = T | ((prevValue: T) => T);
 
@@ -14,23 +41,19 @@ function useState<T = unknown>(initialValue: T | (() => T)): [T, (value: Value<T
     }),
     [],
   );
-  const setState = useCallback((sourceValue: Value<T>) => {
-    const $scope = $$scope();
-    const isBatch = $scope.getIsBatchZone();
-    const create = (): UpdateOptions => {
-      const prevValue = scope.value;
-      const newValue = detectIsFunction(sourceValue) ? sourceValue(prevValue) : sourceValue;
-      const shouldUpdate = () => isBatch || !Object.is(prevValue, newValue);
-      const setValue = () => (scope.value = newValue);
-      const resetValue = () => (scope.value = prevValue);
+  const setState = useCallback((next: Value<T>) => {
+    const tools = createTools({
+      next,
+      get: () => scope.value,
+      set: (x: T) => (scope.value = x),
+      reset: (x: T) => (scope.value = x),
+      shouldUpdate: (p: T, n: T) => !Object.is(p, n),
+    });
 
-      return { shouldUpdate, setValue, resetValue };
-    };
-
-    update(create);
+    update(tools);
   }, []);
 
   return [scope.value, setState];
 }
 
-export { useState };
+export { createTools, useState };

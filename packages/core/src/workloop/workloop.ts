@@ -548,23 +548,19 @@ function fork($scope: Scope): false {
   return false;
 }
 
-export type CreateUpdateOptions = {
+export type CreateCallbackOptions = {
   rootId: number;
   isTransition?: boolean;
   hook: Hook;
-  createChanger?: () => UpdateChanger;
+  tools?: () => Tools;
 };
 
-export type UpdateChanger = {
-  shouldUpdate: () => boolean;
-} & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
-
-function createUpdate(options: CreateUpdateOptions) {
-  const { rootId, hook, isTransition, createChanger = $createChanger } = options;
+function createCallback(options: CreateCallbackOptions) {
+  const { rootId, hook, isTransition, tools = $tools } = options;
   const callback = (restore?: (options: RestoreOptions) => void) => {
     setRootId(rootId); // !
     const fromRestore = detectIsFunction(restore);
-    const { shouldUpdate, setValue, resetValue } = createChanger();
+    const { shouldUpdate, setValue, resetValue } = tools();
     const $scope = $$scope();
     const owner = hook.owner;
     const fiber = owner.alt || owner;
@@ -598,7 +594,11 @@ function createUpdate(options: CreateUpdateOptions) {
   return callback;
 }
 
-const $createChanger = (): UpdateChanger => ({
+export type Tools = {
+  shouldUpdate: () => boolean;
+} & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
+
+const $tools = (): Tools => ({
   shouldUpdate: trueFn,
   setValue: null,
   resetValue: null,
@@ -606,4 +606,4 @@ const $createChanger = (): UpdateChanger => ({
 
 const detectIsBusy = () => Boolean($$scope()?.getWorkInProgress());
 
-export { Fiber, workLoop, createUpdate, detectIsBusy };
+export { Fiber, workLoop, createCallback, detectIsBusy };

@@ -1,34 +1,30 @@
 import { type ScheduleCallbackOptions, scheduler } from '../scheduler';
-import { type UpdateChanger, createUpdate } from '../workloop';
+import { type Tools, createCallback } from '../workloop';
 import { getRootId, $$scope } from '../scope';
+import { createHookLocation } from '../walk';
+import { detectIsFunction } from '../utils';
 import { TaskPriority } from '../constants';
 import { addBatch } from '../batch';
-import { detectIsFunction } from '../utils';
-import { createHookLocation } from '../walk';
+import { type Hook } from '../fiber';
 
-export type UpdateOptions = UpdateChanger;
-
-function useUpdate() {
-  const rootId = getRootId();
-  const fiber = $$scope().getCursorFiber();
-  const hook = fiber.hook; // !
+function createUpdate(rootId: number, hook: Hook) {
   const { idx } = hook;
-  const update = (createChanger?: () => UpdateChanger) => {
+  const update = (tools?: () => Tools) => {
     const $scope = $$scope();
     if ($scope.getIsInsertionEffectsZone()) return;
     const { owner } = hook;
-    const hasChanger = detectIsFunction(createChanger);
+    const hasTools = detectIsFunction(tools);
     const isTransition = $scope.getIsTransitionZone();
     const isBatch = $scope.getIsBatchZone();
     const isEvent = $scope.getIsEventZone();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
     const setPendingStatus = $scope.getPendingStatusSetter();
-    const callback = createUpdate({
+    const callback = createCallback({
       rootId,
       hook,
       isTransition,
-      createChanger: hasChanger ? createChanger : undefined,
+      tools: hasTools ? tools : undefined,
     });
     const createLocation = () => createHookLocation(rootId, idx, owner);
     const callbackOptions: ScheduleCallbackOptions = {
@@ -43,7 +39,7 @@ function useUpdate() {
       addBatch(
         owner,
         () => scheduler.schedule(callback, callbackOptions),
-        () => hasChanger && createChanger().setValue(),
+        () => hasTools && tools().setValue(),
       );
     } else {
       scheduler.schedule(callback, callbackOptions);
@@ -53,4 +49,11 @@ function useUpdate() {
   return update;
 }
 
-export { useUpdate };
+function useUpdate() {
+  const rootId = getRootId();
+  const fiber = $$scope().getCursorFiber();
+
+  return createUpdate(rootId, fiber.hook);
+}
+
+export { createUpdate, useUpdate };

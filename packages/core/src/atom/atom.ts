@@ -3,10 +3,9 @@ import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
 import { ATOM_HOST_MASK } from '../constants';
 import { $$scope, getRootId } from '../scope';
-import { createUpdate } from '../workloop';
-import { useUpdate } from '../use-update';
+import { createUpdate, useUpdate } from '../use-update';
+import { createTools } from '../use-state';
 import { EventEmitter } from '../emitter';
-import { scheduler } from '../scheduler';
 import { useMemo } from '../use-memo';
 import { type Hook } from '../fiber';
 import { batch } from '../batch';
@@ -122,7 +121,22 @@ class Atom<T = unknown> {
       const [rootId, hook, shouldUpdate, key] = tuple;
       const fn = shouldUpdate || trueFn;
 
-      fn(prev, next, key) && scheduler.schedule(createUpdate({ rootId, hook }));
+      if (fn(prev, next, key)) {
+        const update = createUpdate(rootId, hook);
+
+        if (this.__getSize() === 1) {
+          const tools = createTools({
+            next,
+            get: () => prev,
+            set: () => (this.value = next),
+            reset: () => (this.value = prev),
+          });
+
+          update(tools);
+        } else {
+          update();
+        }
+      }
     };
 
     this.value = next;
