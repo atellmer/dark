@@ -42,6 +42,8 @@ import type {
   AttributeValue,
 } from '../native-element';
 
+export type CSSProperties = Record<string, string | number>;
+
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
@@ -151,7 +153,7 @@ function detectIsVoidElement(name: string) {
   return voidTagNames.has(name);
 }
 
-function setObjectStyle(element: TagNativeElement, style: object) {
+function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
   const keys = Object.keys(style);
 
   for (const key of keys) {
@@ -179,7 +181,7 @@ function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZo
     }
 
     if (attrName === STYLE_ATTR && attrValue && detectIsObject(attrValue)) {
-      setObjectStyle(tagElement, attrValue);
+      setObjectStyle(tagElement, attrValue as CSSProperties);
       continue;
     }
 
@@ -219,7 +221,7 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
     }
 
     if (attrName === STYLE_ATTR && nextAttrValue && prevAttrValue !== nextAttrValue && detectIsObject(nextAttrValue)) {
-      setObjectStyle(tagElement, nextAttrValue);
+      setObjectStyle(tagElement, nextAttrValue as CSSProperties);
       continue;
     }
 

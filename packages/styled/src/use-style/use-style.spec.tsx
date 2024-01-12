@@ -1,5 +1,6 @@
 /** @jsx h */
 import { h, component } from '@dark-engine/core';
+import { type CSSProperties } from '@dark-engine/platform-browser';
 
 import { createBrowserEnv, dom } from '@test-utils';
 import { useStyle } from './use-style';
@@ -12,7 +13,7 @@ beforeEach(() => {
 
 describe('@styled/use-style', () => {
   test('transforms a string style to an object correctly', () => {
-    let style: { root: object; button: object };
+    let style: { root: CSSProperties; button: CSSProperties };
     const App = component(() => {
       style = useStyle(styled => ({
         root: styled`

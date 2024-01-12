@@ -1,26 +1,15 @@
-import { type DarkElement, type ElementKey, type Ref } from '@dark-engine/core';
-import { type SyntheticEvent } from './events';
+import { type KeyProps, type RefProps, type SlotProps } from '@dark-engine/core';
+import { type EventHandler } from './events';
+import { type CSSProperties } from './dom';
 
 export declare namespace DarkJSX {
-  type KeyAttributes = {
-    key: ElementKey;
-  };
+  type KeyAttributes = KeyProps;
 
-  type RefAttributes<T> = {
-    ref: Ref<T>;
-  };
+  type RefAttributes<T> = RefProps<T>;
 
-  type SlotAttributes = {
-    slot: DarkElement;
-  };
+  type SlotAttributes = SlotProps;
 
   type Booleanish = boolean | 'true' | 'false';
-
-  type EventHandler<E extends Event, T> =
-    | ((e: SyntheticEvent<E, T>) => void)
-    | [(...args: Array<any>) => void, ...args: Array<any>];
-
-  type CSSProperties = string | Record<string, string | number>;
 
   type CrossOrigin = 'anonymous' | 'use-credentials' | '';
 
@@ -368,7 +357,7 @@ export declare namespace DarkJSX {
     lang: string;
     nonce: string;
     spellCheck: Booleanish;
-    style: CSSProperties;
+    style: string | CSSProperties;
     tabIndex: number;
     title: string;
     translate: 'yes' | 'no';
@@ -918,7 +907,7 @@ export declare namespace DarkJSX {
     method: string;
     min: number | string;
     name: string;
-    style: CSSProperties;
+    style: string | CSSProperties;
     target: string;
     type: string;
     width: number | string;

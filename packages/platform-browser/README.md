@@ -32,6 +32,7 @@ CDN:
 import {
   type DarkJSX,
   type SyntheticEvent,
+  type CSSProperties,
   createRoot,
   hydrateRoot,
   createPortal,

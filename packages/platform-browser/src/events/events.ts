@@ -2,6 +2,10 @@ import { detectIsFunction, $$scope, detectIsArray } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 
+export type EventHandler<E extends Event = Event, T = unknown> =
+  | ((e: SyntheticEvent<E, T>) => void)
+  | [(...args: Array<any>) => void, ...args: Array<any>];
+
 type BrowserEventConstructor = (type: string, event: Event) => void;
 
 class SyntheticEvent<E extends Event, T = TagNativeElement> {
@@ -30,11 +34,7 @@ class SyntheticEvent<E extends Event, T = TagNativeElement> {
   }
 }
 
-function delegateEvent(
-  target: Element,
-  eventName: string,
-  handler: (e: Event) => void | [fn: () => void, ...args: Array<any>],
-) {
+function delegateEvent(target: Element, eventName: string, handler: EventHandler) {
   const $scope = $$scope();
   const eventsMap = $scope.getEvents();
   const handlersMap = eventsMap.get(eventName);
