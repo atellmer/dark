@@ -337,14 +337,14 @@ const Layout = styled.div`
 ## Referring to other components
 
 ```tsx
-const Link = styled.a<{ href: string }>`
+const Link = styled.a`
   display: inline-flex;
   align-items: center;
   color: #bf4f74;
   padding: 8px;
 `;
 
-const Icon = styled.svg<{ viewBox: string }>`
+const Icon = styled.svg`
   flex: none;
   transition: fill 0.25s;
   width: 16px;

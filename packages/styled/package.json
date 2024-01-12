@@ -32,7 +32,8 @@
     "app"
   ],
   "peerDependencies": {
-    "@dark-engine/core": "*"
+    "@dark-engine/core": "*",
+    "@dark-engine/platform-browser": "*"
   },
   "exports": {
     ".": {

@@ -30,6 +30,7 @@ CDN:
 
 ```tsx
 import {
+  type DarkJSX,
   type SyntheticEvent,
   createRoot,
   hydrateRoot,

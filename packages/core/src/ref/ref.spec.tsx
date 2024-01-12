@@ -1,19 +1,19 @@
 /** @jsx h */
-import { render } from '@dark-engine/platform-browser';
+import { createBrowserEnv } from '@test-utils';
 
 import { h } from '../element';
 import { component } from '../component';
 import { type MutableRef, forwardRef, useRef } from './ref';
 
-let host: HTMLElement = null;
+let { render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = document.createElement('div');
+  ({ render } = createBrowserEnv());
 });
 
 describe('@core/ref', () => {
   test('component ref is not available without forwarding', () => {
-    let ref: MutableRef = null;
+    let ref: MutableRef<HTMLDivElement> = null;
 
     const Child = component(() => {
       return <div />;
@@ -25,14 +25,14 @@ describe('@core/ref', () => {
       return <Child ref={ref} />;
     });
 
-    render(App(), host);
+    render(<App />);
     expect(ref.current).toBeFalsy();
   });
 
   test('can forward ref', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
-    const Child = forwardRef(component((_, ref) => <div ref={ref} />));
+    const Child = forwardRef<{}, HTMLDivElement>(component((_, ref) => <div ref={ref} />));
 
     const App = component(() => {
       ref = useRef(null);
@@ -40,7 +40,7 @@ describe('@core/ref', () => {
       return <Child ref={ref} />;
     });
 
-    render(App(), host);
+    render(<App />);
     expect(ref.current).toBeTruthy();
     expect(ref.current instanceof HTMLDivElement).toBeTruthy();
   });
@@ -54,7 +54,7 @@ describe('@core/ref', () => {
       return <div ref={ref} />;
     });
 
-    render(App(), host);
+    render(<App />);
     expect(ref.current).toBeTruthy();
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });

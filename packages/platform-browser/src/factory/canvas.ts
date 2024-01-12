@@ -1,3 +1,4 @@
+import { type HTMLTags } from '../jsx';
 import { factory } from './factory';
 
-export const canvas = factory('canvas');
+export const canvas = factory<HTMLTags['canvas']>('canvas');

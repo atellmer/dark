@@ -1,3 +1,4 @@
+import { type SVGTags } from '../jsx';
 import { factory } from './factory';
 
-export const feComposite = factory('feComposite');
+export const feComposite = factory<SVGTags['feComposite']>('feComposite');

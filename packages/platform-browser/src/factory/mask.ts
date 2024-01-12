@@ -1,3 +1,4 @@
+import { type SVGTags } from '../jsx';
 import { factory } from './factory';
 
-export const mask = factory('mask');
+export const mask = factory<SVGTags['mask']>('mask');

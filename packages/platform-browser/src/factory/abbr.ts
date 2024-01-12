@@ -1,3 +1,4 @@
+import { type HTMLTags } from '../jsx';
 import { factory } from './factory';
 
-export const abbr = factory('abbr');
+export const abbr = factory<HTMLTags['abbr']>('abbr');

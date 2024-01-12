@@ -1,3 +1,4 @@
+import { type HTMLTags } from '../jsx';
 import { factory } from './factory';
 
-export const templateh4 = factory('template');
+export const template = factory<HTMLTags['template']>('template');

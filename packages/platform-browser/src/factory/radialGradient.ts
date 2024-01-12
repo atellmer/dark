@@ -1,3 +1,4 @@
+import { type SVGTags } from '../jsx';
 import { factory } from './factory';
 
-export const radialGradient = factory('radialGradient');
+export const radialGradient = factory<SVGTags['radialGradient']>('radialGradient');

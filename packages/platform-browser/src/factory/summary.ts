@@ -1,3 +1,4 @@
+import { type HTMLTags } from '../jsx';
 import { factory } from './factory';
 
-export const summary = factory('summary');
+export const summary = factory<HTMLTags['summary']>('summary');

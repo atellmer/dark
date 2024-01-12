@@ -1,3 +1,4 @@
+import { type SVGTags } from '../jsx';
 import { factory } from './factory';
 
-export const feImage = factory('feImage');
+export const feImage = factory<SVGTags['feImage']>('feImage');

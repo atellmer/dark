@@ -63,7 +63,7 @@ function View(options: ViewOptions) {
 
 const Text = (source: TextSource) => new TextVirtualNode(source);
 
-Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : source + '');
+Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : String(source));
 
 const Comment = (text: string) => new CommentVirtualNode(text);
 

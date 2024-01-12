@@ -1,3 +1,4 @@
+import { type HTMLTags } from '../jsx';
 import { factory } from './factory';
 
-export const footer = factory('footer');
+export const footer = factory<HTMLTags['footer']>('footer');

@@ -12,7 +12,7 @@ export type RoutreLinkProps = {
   className?: string;
   title?: string;
   slot: DarkElement;
-  onClick?: (e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => void;
+  onClick?: (e: SyntheticEvent<MouseEvent, HTMLAnchorElement>) => void;
 };
 
 const RouterLink = component<RoutreLinkProps>(
@@ -25,7 +25,7 @@ const RouterLink = component<RoutreLinkProps>(
       [sourceClassName, activeClassName, isActive],
     );
 
-    const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLLinkElement>) => {
+    const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLAnchorElement>) => {
       e.preventDefault();
       history.push(to);
       detectIsFunction(onClick) && onClick(e);

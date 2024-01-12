@@ -1,3 +1,4 @@
+import { type HTMLTags } from '../jsx';
 import { factory } from './factory';
 
-export const col = factory('col');
+export const col = factory<HTMLTags['col']>('col');

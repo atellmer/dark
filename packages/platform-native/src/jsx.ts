@@ -976,13 +976,3 @@ export type ListViewAttributes = ViewAttributes & {
   rowHeight?: string | number | 'auto' | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit;
   separatorColor?: string | Color;
 };
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      [elementName: string]: any;
-    }
-  }
-}

@@ -1,5 +1,5 @@
 import { h, Fragment, component, useState } from '@dark-engine/core';
-import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const App = component(() => {
   const [textInputValue, setTextInputValue] = useState('hello');
@@ -19,7 +19,7 @@ const App = component(() => {
       <div>
         html5 form validation
         <form
-          onSubmit={(e: SyntheticEvent<InputEvent, HTMLFormElement>) => {
+          onSubmit={e => {
             e.preventDefault();
             alert(
               JSON.stringify({
@@ -54,46 +54,27 @@ const App = component(() => {
       <hr />
       <div>
         <div>text input: {textInputValue}</div>
-        <input
-          type='text'
-          value={textInputValue}
-          required
-          onInput={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setTextInputValue(e.target.value)}
-        />
+        <input type='text' value={textInputValue} required onInput={e => setTextInputValue(e.target.value)} />
       </div>
       <hr />
       <div>
         <div>password input: {passwordInputValue}</div>
-        <input
-          type='password'
-          value={passwordInputValue}
-          onInput={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setPasswordInputValue(e.target.value)}
-        />
+        <input type='password' value={passwordInputValue} onInput={e => setPasswordInputValue(e.target.value)} />
       </div>
       <hr />
       <div>
         <div>number input: {numberInputValue}</div>
-        <input
-          type='number'
-          value={numberInputValue}
-          onInput={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setNumberInputValue(Number(e.target.value))}
-        />
+        <input type='number' value={numberInputValue} onInput={e => setNumberInputValue(Number(e.target.value))} />
       </div>
       <hr />
       <div>
         <div style={`color: ${colorInputValue}`}>color input: {colorInputValue}</div>
-        <input
-          type='color'
-          value={colorInputValue}
-          onInput={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setColorInputValue(e.target.value)}
-        />
+        <input type='color' value={colorInputValue} onInput={e => setColorInputValue(e.target.value)} />
       </div>
       <hr />
       <div>
         <div>textarea: {textareaValue}</div>
-        <textarea
-          value={textareaValue}
-          onInput={(e: SyntheticEvent<InputEvent, HTMLTextAreaElement>) => setTextareaValue(e.target.value)}></textarea>
+        <textarea value={textareaValue} onInput={e => setTextareaValue(e.target.value)}></textarea>
       </div>
       <hr />
       <div>
@@ -101,7 +82,7 @@ const App = component(() => {
           <input
             type='checkbox'
             value={checkboxInputValue}
-            onChange={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setCheckboxInputValue(!checkboxInputValue)}
+            onChange={() => setCheckboxInputValue(!checkboxInputValue)}
           />
           {checkboxInputValue ? 'checked' : 'unchecked'}
         </label>
@@ -117,7 +98,7 @@ const App = component(() => {
                 name='contact'
                 value={x}
                 checked={radioInputValue === x}
-                onChange={(e: SyntheticEvent<InputEvent, HTMLInputElement>) => setRadioInputValue(e.target.value)}
+                onChange={e => setRadioInputValue(e.target.value)}
               />
               {x}
             </label>
@@ -130,10 +111,7 @@ const App = component(() => {
         <label>
           Choose a pet:
           <br />
-          <select
-            name='pet'
-            style='width: 200px'
-            onChange={(e: SyntheticEvent<InputEvent, HTMLSelectElement>) => setSelectValue(e.target.value)}>
+          <select name='pet' style='width: 200px' onChange={e => setSelectValue(e.target.value)}>
             {['Dog 🐶', 'Cat 🐱', 'Fox 🦊'].map((x, idx) => {
               return (
                 <option key={idx + x} value={x} selected={selectValue === x}>
@@ -154,9 +132,7 @@ const App = component(() => {
             name='fruit'
             style='width: 200px'
             multiple
-            onChange={(e: SyntheticEvent<InputEvent, HTMLSelectElement>) =>
-              setMultiSelectValue(Array.from(e.target.selectedOptions).map(x => x.value))
-            }>
+            onChange={e => setMultiSelectValue(Array.from(e.target.selectedOptions).map(x => x.value))}>
             {['Apple 🍎', 'Banana 🍌', 'Watermelon 🍉', 'Strawberry🍓'].map((x, idx) => {
               return (
                 <option key={idx + x} value={x} selected={multiSelectValue.includes(x)}>

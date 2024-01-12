@@ -215,7 +215,7 @@ const App = component(() => {
         <AnimatedList items={items} getKey={x => x.id} duration={1000}>
           {({ items, containerRef, itemRef }) => {
             return (
-              <div ref={containerRef} class='grid'>
+              <div ref={containerRef as MutableRef<HTMLDivElement>} class='grid'>
                 {items.map((x, idx) => {
                   const key = x.id;
 

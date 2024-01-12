@@ -1,3 +1,4 @@
+import { type SVGTags } from '../jsx';
 import { factory } from './factory';
 
-export const view = factory('view');
+export const view = factory<SVGTags['view']>('view');

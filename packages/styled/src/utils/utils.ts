@@ -50,7 +50,7 @@ const mergeTemplates = (t1: TemplateStringsArray, t2: TemplateStringsArray) => {
   return result as TemplateStringsArray;
 };
 
-const detectIsBrowser = () => typeof window !== 'undefined';
+const detectIsBrowser = () => typeof globalThis.window !== 'undefined';
 
 export {
   uniq,
