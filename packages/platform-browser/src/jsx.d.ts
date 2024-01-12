@@ -1149,6 +1149,7 @@ export declare namespace DarkJSX {
     x2: number | string;
     x: number | string;
     xChannelSelector: string;
+    xmlns: string;
     'x-height': number | string;
     y1: number | string;
     y2: number | string;
