@@ -1,4 +1,4 @@
-import { type KeyProps, type RefProps, type SlotProps } from '@dark-engine/core';
+import { type KeyProps, type RefProps, type SlotProps, type FlagProps } from '@dark-engine/core';
 import { type EventHandler } from './events';
 import { type CSSProperties } from './dom';
 
@@ -8,6 +8,8 @@ export declare namespace DarkJSX {
   type RefAttributes<T> = RefProps<T>;
 
   type SlotAttributes = SlotProps;
+
+  type FlagAttributes = FlagProps;
 
   type Booleanish = boolean | 'true' | 'false';
 
@@ -518,7 +520,7 @@ export declare namespace DarkJSX {
     formTarget?: string;
     name?: string;
     type?: 'submit' | 'reset' | 'button';
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLCanvasProps<T> = {
@@ -536,7 +538,7 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLDataProps<T> = {
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLDetailsProps<T> = {
@@ -652,7 +654,7 @@ export declare namespace DarkJSX {
     src?: string;
     step?: number | string;
     type?: HTMLInputTypeAttribute;
-    value?: string | readonly string[] | number | boolean;
+    value?: string | number | boolean;
     width?: number | string;
   } & HTMLProps<T>;
 
@@ -671,7 +673,7 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLLiProps<T> = {
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLLinkProps<T> = {
@@ -726,7 +728,7 @@ export declare namespace DarkJSX {
     max?: number | string;
     min?: number | string;
     optimum?: number;
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLQuoteProps<T> = {
@@ -760,7 +762,7 @@ export declare namespace DarkJSX {
     disabled?: boolean;
     label?: string;
     selected?: boolean;
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLOutputProps<T> = {
@@ -771,12 +773,12 @@ export declare namespace DarkJSX {
 
   type HTMLParamProps<T> = {
     name?: string;
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLProgressProps<T> = {
     max?: number | string;
-    value?: string | readonly string[] | number;
+    value?: string | number;
   } & HTMLProps<T>;
 
   type HTMLSlotProps<T> = {
@@ -803,7 +805,7 @@ export declare namespace DarkJSX {
     name?: string;
     required?: boolean;
     size?: number;
-    value?: string | readonly string[] | number;
+    value?: string | number;
     onChange?: EventHandler<InputEvent, T>;
   } & HTMLProps<T>;
 
@@ -848,7 +850,7 @@ export declare namespace DarkJSX {
     readOnly?: boolean;
     required?: boolean;
     rows?: number;
-    value?: string | readonly string[] | number;
+    value?: string | number;
     wrap?: string;
   } & HTMLProps<T>;
 
@@ -1173,12 +1175,24 @@ export declare namespace DarkJSX {
 
   interface HTMLProps<T>
     extends Partial<
-      KeyAttributes & RefAttributes<T> & SlotAttributes & HTMLAttributes & AriaAttributes & EventHandlers<T>
+      KeyAttributes &
+        RefAttributes<T> &
+        SlotAttributes &
+        FlagAttributes &
+        HTMLAttributes &
+        AriaAttributes &
+        EventHandlers<T>
     > {}
 
   interface SVGProps<T>
     extends Partial<
-      KeyAttributes & RefAttributes<T> & SlotAttributes & SVGAttributes & AriaAttributes & EventHandlers<T>
+      KeyAttributes &
+        RefAttributes<T> &
+        SlotAttributes &
+        FlagAttributes &
+        SVGAttributes &
+        AriaAttributes &
+        EventHandlers<T>
     > {}
 
   type HTMLTags = {
