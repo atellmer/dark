@@ -496,7 +496,7 @@ export declare namespace DarkJSX {
     href?: string;
     hrefLang?: string;
     media?: string;
-    referrerPolicy?: HTMLAttributeReferrerPolicy;
+    referrerpolicy?: HTMLAttributeReferrerPolicy;
     shape?: string;
     target?: string;
   } & HTMLProps<T>;
@@ -513,11 +513,11 @@ export declare namespace DarkJSX {
   type HTMLButtonProps<T> = {
     disabled?: boolean;
     form?: string;
-    formAction?: string;
-    formEncType?: string;
-    formMethod?: string;
-    formNoValidate?: boolean;
-    formTarget?: string;
+    formaction?: string;
+    formenctype?: string;
+    formmethod?: string;
+    formnovalidate?: boolean;
+    formtarget?: string;
     name?: string;
     type?: 'submit' | 'reset' | 'button';
     value?: string | number;
@@ -572,13 +572,13 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLFormProps<T> = {
-    acceptCharset?: string;
+    acceptcharset?: string;
     action?: string;
-    autoComplete?: string;
-    encType?: string;
+    autocomplete?: string;
+    enctype?: string;
     method?: string;
     name?: string;
-    noValidate?: boolean;
+    novalidate?: boolean;
     target?: string;
   } & HTMLProps<T>;
 
@@ -588,40 +588,40 @@ export declare namespace DarkJSX {
 
   type HTMLIframeProps<T> = {
     allow?: string;
-    allowFullScreen?: boolean;
-    allowTransparency?: boolean;
-    frameBorder?: number | string;
+    allowfullscreen?: boolean;
+    allowtransparency?: boolean;
+    frameborder?: number | string;
     height?: number | string;
     loading?: 'eager' | 'lazy';
-    marginHeight?: number;
-    marginWidth?: number;
+    marginheight?: number;
+    marginwidth?: number;
     name?: string;
-    referrerPolicy?: HTMLAttributeReferrerPolicy;
+    referrerpolicy?: HTMLAttributeReferrerPolicy;
     sandbox?: string;
     scrolling?: string;
     seamless?: boolean;
     src?: string;
-    srcDoc?: string;
+    srcdoc?: string;
     width?: number | string;
   } & HTMLProps<T>;
 
   type HTMLImgProps<T> = {
     alt?: string;
-    crossOrigin?: CrossOrigin;
+    crossorigin?: CrossOrigin;
     decoding?: 'async' | 'auto' | 'sync';
     height?: number | string;
     loading?: 'eager' | 'lazy';
-    referrerPolicy?: HTMLAttributeReferrerPolicy;
+    referrerpolicy?: HTMLAttributeReferrerPolicy;
     sizes?: string;
     src?: string;
-    srcSet?: string;
-    useMap?: string;
+    srcset?: string;
+    usemap?: string;
     width?: number | string;
   } & HTMLProps<T>;
 
   type HTMLInsProps<T> = {
     cite?: string;
-    dateTime?: string;
+    datetime?: string;
   } & HTMLProps<T>;
 
   type HTMLInputProps<T> = {
@@ -662,8 +662,8 @@ export declare namespace DarkJSX {
     challenge?: string;
     disabled?: boolean;
     form?: string;
-    keyType?: string;
-    keyParams?: string;
+    keytype?: string;
+    keyparams?: string;
     name?: string;
   } & HTMLProps<T>;
 
@@ -678,18 +678,18 @@ export declare namespace DarkJSX {
 
   type HTMLLinkProps<T> = {
     as?: string;
-    crossOrigin?: CrossOrigin;
-    fetchPriority?: 'high' | 'low' | 'auto';
+    crossorigin?: CrossOrigin;
+    fetchpriority?: 'high' | 'low' | 'auto';
     href?: string;
-    hrefLang?: string;
+    hreflang?: string;
     integrity?: string;
     media?: string;
-    imageSrcSet?: string;
-    imageSizes?: string;
-    referrerPolicy?: HTMLAttributeReferrerPolicy;
+    imagesrcset?: string;
+    imagesizes?: string;
+    referrerpolicy?: HTMLAttributeReferrerPolicy;
     sizes?: string;
     type?: string;
-    charSet?: string;
+    charset?: string;
   } & HTMLProps<T>;
 
   type HTMLMapProps<T> = {
@@ -701,21 +701,21 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLMediaProps<T> = {
-    autoPlay?: boolean;
+    autoplay?: boolean;
     controls?: boolean;
-    controlsList?: string;
-    crossOrigin?: CrossOrigin;
+    controlslist?: string;
+    crossorigin?: CrossOrigin;
     loop?: boolean;
-    mediaGroup?: string;
+    mediagroup?: string;
     muted?: boolean;
-    playsInline?: boolean;
+    playsinline?: boolean;
     preload?: string;
     src?: string;
   } & HTMLProps<T>;
 
   type HTMLMetaProps<T> = {
     charSet?: string;
-    httpEquiv?: string;
+    httpequiv?: string;
     name?: string;
     media?: string;
     content?: string;
@@ -736,13 +736,13 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLObjectProps<T> = {
-    classID?: string;
+    classid?: string;
     data?: string;
     form?: string;
     height?: number | string;
     name?: string;
     type?: string;
-    useMap?: string;
+    usemap?: string;
     width?: number | string;
     wmode?: string;
   } & HTMLProps<T>;
@@ -787,18 +787,18 @@ export declare namespace DarkJSX {
 
   type HTMLScriptProps<T> = {
     async?: boolean;
-    charSet?: string;
-    crossOrigin?: CrossOrigin;
+    charset?: string;
+    crossorigin?: CrossOrigin;
     defer?: boolean;
     integrity?: string;
-    noModule?: boolean;
-    referrerPolicy?: HTMLAttributeReferrerPolicy;
+    nomodule?: boolean;
+    referrerpolicy?: HTMLAttributeReferrerPolicy;
     src?: string;
     type?: string;
   } & HTMLProps<T>;
 
   type HTMLSelectProps<T> = {
-    autoComplete?: string;
+    autocomplete?: string;
     disabled?: boolean;
     form?: string;
     multiple?: boolean;
@@ -814,7 +814,7 @@ export declare namespace DarkJSX {
     media?: string;
     sizes?: string;
     src?: string;
-    srcSet?: string;
+    srcset?: string;
     type?: string;
     width?: number | string;
   } & HTMLProps<T>;
@@ -829,8 +829,8 @@ export declare namespace DarkJSX {
     align?: 'left' | 'center' | 'right';
     bgcolor?: string;
     border?: number;
-    cellPadding?: number | string;
-    cellSpacing?: number | string;
+    cellpadding?: number | string;
+    cellspacing?: number | string;
     frame?: boolean;
     rules?: 'none' | 'groups' | 'rows' | 'columns' | 'all';
     summary?: string;
@@ -838,16 +838,16 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLTextareaProps<T> = {
-    autoComplete?: string;
+    autocomplete?: string;
     cols?: number;
-    dirName?: string;
+    dirname?: string;
     disabled?: boolean;
     form?: string;
-    maxLength?: number;
-    minLength?: number;
+    maxlength?: number;
+    minlength?: number;
     name?: string;
     placeholder?: string;
-    readOnly?: boolean;
+    readonly?: boolean;
     required?: boolean;
     rows?: number;
     value?: string | number;
@@ -856,9 +856,9 @@ export declare namespace DarkJSX {
 
   type HTMLTdProps<T> = {
     align?: 'left' | 'center' | 'right' | 'justify' | 'char';
-    colSpan?: number;
+    colspan?: number;
     headers?: string;
-    rowSpan?: number;
+    rowspan?: number;
     scope?: string;
     abbr?: string;
     height?: number | string;
@@ -868,15 +868,15 @@ export declare namespace DarkJSX {
 
   type HTMLThProps<T> = {
     align?: 'left' | 'center' | 'right' | 'justify' | 'char';
-    colSpan?: number;
+    colspan?: number;
     headers?: string;
-    rowSpan?: number;
+    rowspan?: number;
     scope?: string;
     abbr?: string;
   } & HTMLProps<T>;
 
   type HTMLTimeProps<T> = {
-    dateTime?: string;
+    datetime?: string;
   } & HTMLProps<T>;
 
   type HTMLTrackProps<T> = {
@@ -884,12 +884,12 @@ export declare namespace DarkJSX {
     kind?: string;
     label?: string;
     src?: string;
-    srcLang?: string;
+    srclang?: string;
   } & HTMLProps<T>;
 
   type HTMLVideoProps<T> = {
     height?: number | string;
-    playsInline?: boolean;
+    playsinline?: boolean;
     poster?: string;
     width?: number | string;
     disablePictureInPicture?: boolean;
@@ -914,12 +914,12 @@ export declare namespace DarkJSX {
     type: string;
     width: number | string;
     role: AriaRole;
-    tabIndex: number;
-    crossOrigin: CrossOrigin;
-    accentHeight: number | string;
+    tabindex: number;
+    crossorigin: CrossOrigin;
+    'accent-height': number | string;
     accumulate: 'none' | 'sum';
     additive: 'replace' | 'sum';
-    alignmentBaseline:
+    'alignment-baseline':
       | 'auto'
       | 'baseline'
       | 'before-edge'
@@ -933,32 +933,31 @@ export declare namespace DarkJSX {
       | 'hanging'
       | 'mathematical'
       | 'inherit';
-    allowReorder: 'no' | 'yes';
     alphabetic: number | string;
     amplitude: number | string;
-    arabicForm: 'initial' | 'medial' | 'terminal' | 'isolated';
+    'arabic-form': 'initial' | 'medial' | 'terminal' | 'isolated';
     ascent: number | string;
     attributeName: string;
     attributeType: string;
-    autoReverse: Booleanish;
+    'auto-reverse': Booleanish;
     azimuth: number | string;
     baseFrequency: number | string;
-    baselineShift: number | string;
+    'baseline-shift': number | string;
     baseProfile: number | string;
     bbox: number | string;
     begin: number | string;
     bias: number | string;
     by: number | string;
-    calcMode: number | string;
-    capHeight: number | string;
+    'calc-mode': number | string;
+    'cap-height': number | string;
     clip: number | string;
-    clipPath: string;
-    clipPathUnits: number | string;
-    clipRule: number | string;
-    colorInterpolation: number | string;
-    colorInterpolationFilters: 'auto' | 'sRGB' | 'linearRGB' | 'inherit';
-    colorProfile: number | string;
-    colorRendering: number | string;
+    'clip-path': string;
+    'clip-path-units': number | string;
+    'clip-rule': number | string;
+    'color-interpolation': number | string;
+    'color-interpolation-filters': 'auto' | 'sRGB' | 'linearRGB' | 'inherit';
+    'color-profile': number | string;
+    'color-rendering': number | string;
     contentScriptType: number | string;
     contentStyleType: number | string;
     cursor: number | string;
@@ -971,32 +970,32 @@ export declare namespace DarkJSX {
     direction: number | string;
     display: number | string;
     divisor: number | string;
-    dominantBaseline: number | string;
+    'dominant-baseline': number | string;
     dur: number | string;
     dx: number | string;
     dy: number | string;
     edgeMode: number | string;
     elevation: number | string;
-    enableBackground: number | string;
+    'enable-background': number | string;
     end: number | string;
     exponent: number | string;
     externalResourcesRequired: Booleanish;
     fill: string;
-    fillOpacity: number | string;
-    fillRule: 'nonzero' | 'evenodd' | 'inherit';
+    'fill-opacity': number | string;
+    'fill-rule': 'nonzero' | 'evenodd' | 'inherit';
     filter: string;
-    filterRes: number | string;
-    filterUnits: number | string;
-    floodColor: number | string;
-    floodOpacity: number | string;
+    'filter-res': number | string;
+    'filter-units': number | string;
+    'flood-color': number | string;
+    'flood-opacity': number | string;
     focusable: Booleanish | 'auto';
-    fontFamily: string;
-    fontSize: number | string;
-    fontSizeAdjust: number | string;
-    fontStretch: number | string;
-    fontStyle: number | string;
-    fontVariant: number | string;
-    fontWeight: number | string;
+    'font-family': string;
+    'font-size': number | string;
+    'font-size-adjust': number | string;
+    'font-stretch': number | string;
+    'font-style': number | string;
+    'font-variant': number | string;
+    'font-weight': number | string;
     format: number | string;
     fr: number | string;
     from: number | string;
@@ -1004,18 +1003,18 @@ export declare namespace DarkJSX {
     fy: number | string;
     g1: number | string;
     g2: number | string;
-    glyphName: number | string;
-    glyphOrientationHorizontal: number | string;
-    glyphOrientationVertical: number | string;
+    'glyph-name': number | string;
+    'glyph-orientation-horizontal': number | string;
+    'glyph-orientation-vertical': number | string;
     glyphRef: number | string;
     gradientTransform: string;
     gradientUnits: string;
     hanging: number | string;
-    horizAdvX: number | string;
-    horizOriginX: number | string;
+    'horiz-adv-x': number | string;
+    'horiz-origin-x': number | string;
     href: string;
     ideographic: number | string;
-    imageRendering: number | string;
+    'image-rendering': number | string;
     in2: number | string;
     in: string;
     intercept: number | string;
@@ -1031,16 +1030,16 @@ export declare namespace DarkJSX {
     keySplines: number | string;
     keyTimes: number | string;
     lengthAdjust: number | string;
-    letterSpacing: number | string;
-    lightingColor: number | string;
+    'letter-spacing': number | string;
+    'lighting-color': number | string;
     limitingConeAngle: number | string;
     local: number | string;
-    markerEnd: string;
-    markerHeight: number | string;
-    markerMid: string;
-    markerStart: string;
-    markerUnits: number | string;
-    markerWidth: number | string;
+    'marker-end': string;
+    'marker-height': number | string;
+    'marker-mid': string;
+    'marker-start': string;
+    'marker-units': number | string;
+    'marker-width': number | string;
     mask: string;
     maskContentUnits: number | string;
     maskUnits: number | string;
@@ -1055,16 +1054,16 @@ export declare namespace DarkJSX {
     orientation: number | string;
     origin: number | string;
     overflow: number | string;
-    overlinePosition: number | string;
-    overlineThickness: number | string;
-    paintOrder: number | string;
-    panose1: number | string;
+    'overline-position': number | string;
+    'overline-thickness': number | string;
+    'paint-order': number | string;
+    'panose-1': number | string;
     path: string;
     pathLength: number | string;
     patternContentUnits: string;
     patternTransform: number | string;
     patternUnits: string;
-    pointerEvents: number | string;
+    'pointer-events': number | string;
     points: string;
     pointsAtX: number | string;
     pointsAtY: number | string;
@@ -1076,7 +1075,7 @@ export declare namespace DarkJSX {
     radius: number | string;
     refX: number | string;
     refY: number | string;
-    renderingIntent: number | string;
+    'rendering-intent': number | string;
     repeatCount: number | string;
     repeatDur: number | string;
     requiredExtensions: number | string;
@@ -1088,7 +1087,7 @@ export declare namespace DarkJSX {
     ry: number | string;
     scale: number | string;
     seed: number | string;
-    shapeRendering: number | string;
+    'shape-rendering': number | string;
     slope: number | string;
     spacing: number | string;
     specularConstant: number | string;
@@ -1100,71 +1099,57 @@ export declare namespace DarkJSX {
     stemh: number | string;
     stemv: number | string;
     stitchTiles: number | string;
-    stopColor: string;
-    stopOpacity: number | string;
-    strikethroughPosition: number | string;
-    strikethroughThickness: number | string;
+    'stop-color': string;
+    'stop-opacity': number | string;
+    'strikethrough-position': number | string;
+    'strikethrough-thickness': number | string;
     string: number | string;
     stroke: string;
-    strokeDasharray: string | number;
-    strokeDashoffset: string | number;
-    strokeLinecap: 'butt' | 'round' | 'square' | 'inherit';
-    strokeLinejoin: 'miter' | 'round' | 'bevel' | 'inherit';
-    strokeMiterlimit: number | string;
-    strokeOpacity: number | string;
-    strokeWidth: number | string;
+    'stroke-dasharray': string | number;
+    'stroke-dashoffset': string | number;
+    'stroke-linecap': 'butt' | 'round' | 'square' | 'inherit';
+    'stroke-linejoin': 'miter' | 'round' | 'bevel' | 'inherit';
+    'stroke-miterlimit': number | string;
+    'stroke-opacity': number | string;
+    'stroke-width': number | string;
     surfaceScale: number | string;
     systemLanguage: number | string;
     tableValues: number | string;
     targetX: number | string;
     targetY: number | string;
-    textAnchor: string;
-    textDecoration: number | string;
+    'text-anchor': string;
+    'text-decoration': number | string;
     textLength: number | string;
-    textRendering: number | string;
+    'text-rendering': number | string;
     to: number | string;
     transform: string;
     u1: number | string;
     u2: number | string;
-    underlinePosition: number | string;
-    underlineThickness: number | string;
+    'underline-position': number | string;
+    'underline-thickness': number | string;
     unicode: number | string;
     unicodeBidi: number | string;
-    unicodeRange: number | string;
-    unitsPerEm: number | string;
-    vAlphabetic: number | string;
+    'unicode-range ': number | string;
+    'units-per-em': number | string;
+    'v-alphabetic': number | string;
     values: string;
-    vectorEffect: number | string;
+    'vector-effect': number | string;
     version: string;
     vertAdvY: number | string;
     vertOriginX: number | string;
     vertOriginY: number | string;
-    vHanging: number | string;
     vIdeographic: number | string;
     viewBox: string;
     viewTarget: number | string;
     visibility: number | string;
-    vMathematical: number | string;
     widths: number | string;
-    wordSpacing: number | string;
-    writingMode: number | string;
+    'word-spacing': number | string;
+    'writing-mode': number | string;
     x1: number | string;
     x2: number | string;
     x: number | string;
     xChannelSelector: string;
-    xHeight: number | string;
-    xlinkActuate: string;
-    xlinkArcrole: string;
-    xlinkHref: string;
-    xlinkRole: string;
-    xlinkShow: string;
-    xlinkTitle: string;
-    xlinkType: string;
-    xmlBase: string;
-    xmlLang: string;
-    xmlns: string;
-    xmlnsXlink: string;
-    xmlSpace: string;
+    'x-height': number | string;
     y1: number | string;
     y2: number | string;
     y: number | string;
