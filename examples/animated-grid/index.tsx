@@ -109,6 +109,7 @@ const AnimatedList: AnimatedList = component<AnimatedListProps>(({ items: xItems
 
   useEffect(() => {
     if (scope.firstRender) return;
+    forceBrowserReflow();
     removeStyles(items);
   }, [items]);
 
