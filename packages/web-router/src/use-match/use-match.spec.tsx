@@ -11,6 +11,7 @@ import { useMatch, type Match } from './use-match';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
 });
 
@@ -48,12 +49,14 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
+    jest.runAllTimers();
     expect(match).toBeTruthy();
     expect(match.path).toBe('/');
     expect(match.url).toBe('/');
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/second/10');
+    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('/second/:id/');

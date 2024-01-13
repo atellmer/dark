@@ -20,7 +20,7 @@ function parseURL(url: string) {
   let search = '';
 
   if (body.indexOf(PROTOCOL_MARK) !== -1) {
-    [protocol, body] = body.split(PROTOCOL_MARK).filter(Boolean);
+    [protocol, body] = body.split(PROTOCOL_MARK).filter((x, _, arr) => (arr.length > 2 ? Boolean(x) : true));
   }
 
   const splitted = body.split('');

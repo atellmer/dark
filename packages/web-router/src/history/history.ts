@@ -2,7 +2,7 @@ import { detectIsFalsy, type SubscriberWithValue } from '@dark-engine/core';
 
 import { normalaizePathname, parseURL } from '../utils';
 
-const browserHistory = globalThis.history;
+const history = globalThis.history;
 class RouterHistory {
   private stack: Array<string> = [];
   private cursor = -1;
@@ -21,11 +21,11 @@ class RouterHistory {
     this.stack.push(spathname);
     this.cursor = this.stack.length - 1;
 
-    if (browserHistory) {
+    if (history) {
       const state = this.getState();
 
       if (!state) {
-        browserHistory.replaceState(this.createStateBox(), '');
+        history.replaceState(this.createStateBox(), '');
       } else {
         this.stack = state.stack;
         this.cursor = state.cursor;
@@ -68,25 +68,25 @@ class RouterHistory {
   };
 
   private getState(): State {
-    return (browserHistory.state && browserHistory.state[STATE_KEY]) || null;
+    return (history.state && history.state[STATE_KEY]) || null;
   }
 
   private createStateBox(): StateBox {
-    const state = browserHistory.state || {};
+    const state = history.state || {};
 
     return { ...state, [STATE_KEY]: { cursor: this.cursor, stack: this.stack } };
   }
 
   private syncHistory(action: HistoryAction, spathname: string) {
-    if (!browserHistory) return;
+    if (!history) return;
     const stateBox = this.createStateBox();
     const $spathname = normalaizePathname(spathname);
 
     switch (action) {
       case HistoryAction.PUSH:
-        return browserHistory.pushState(stateBox, '', $spathname);
+        return history.pushState(stateBox, '', $spathname);
       case HistoryAction.REPLACE:
-        return browserHistory.replaceState(stateBox, '', $spathname);
+        return history.replaceState(stateBox, '', $spathname);
     }
   }
 
@@ -118,16 +118,21 @@ class RouterHistory {
   }
 
   public go(delta: number) {
+    const max = this.stack.length - 1;
+    let $delta = delta;
+
     this.fromHistory = true;
     this.cursor += delta;
 
-    if (this.cursor > this.stack.length - 1) {
-      this.cursor = this.stack.length - 1;
+    if (this.cursor > max) {
+      this.cursor = max;
+      $delta = max;
     } else if (this.cursor < 0) {
       this.cursor = 0;
+      $delta = -max;
     }
 
-    browserHistory?.go(delta);
+    history?.go($delta);
     this.mapSubscribers();
   }
 }

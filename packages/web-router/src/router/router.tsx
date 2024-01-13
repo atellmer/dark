@@ -12,7 +12,7 @@ import {
   nextTick,
 } from '@dark-engine/core';
 
-import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
+import { SLASH_MARK, PROTOCOL_MARK, WILDCARD_MARK } from '../constants';
 import { normalaizePathname } from '../utils';
 import { createRouterHistory } from '../history';
 import { type RouterLocation, createRouterLocation } from '../location';
@@ -78,7 +78,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
       }, []);
 
       useEffect(() => {
-        if (!activeRoute) return;
+        if (!activeRoute || activeRoute.marker === WILDCARD_MARK) return;
         const spathname = pathname + search + hash;
         const newSpathname = createPathname(pathname, activeRoute.getPath()) + search + hash;
 

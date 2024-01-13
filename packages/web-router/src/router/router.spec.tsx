@@ -1,23 +1,29 @@
 /** @jsx h */
-import { type DarkElement, h, component } from '@dark-engine/core';
+import { type DarkElement, type MutableRef, h, component, useRef } from '@dark-engine/core';
 
 import { createBrowserEnv, replacer, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
-import { Router } from './router';
+import { type RouterRef, Router } from './router';
 
 type AppProps = {
   url: string;
 };
 
-let { host, render } = createBrowserEnv();
+let { host, render: $render } = createBrowserEnv();
 
 beforeEach(() => {
-  ({ host, render } = createBrowserEnv());
+  jest.useFakeTimers();
+  ({ host, render: $render } = createBrowserEnv());
 });
 
 afterEach(() => {
   resetBrowserHistory();
 });
+
+const render = (element: DarkElement) => {
+  $render(element);
+  jest.runAllTimers();
+};
 
 describe('@web-router/router', () => {
   test('can render simple routes correctly', () => {
@@ -995,5 +1001,48 @@ describe('@web-router/router', () => {
 
     render(<App url='/broken/url' />);
     expect(host.innerHTML).toBe(`<first><div>root</div></first>`);
+  });
+
+  test('a history updates correctly with wildcard routing', () => {
+    let routerRef: MutableRef<RouterRef> = null;
+    const routes: Routes = [
+      {
+        path: 'first',
+        component: component(() => <div>first</div>),
+      },
+      {
+        path: 'second',
+        component: component(() => <div>second</div>),
+      },
+      {
+        path: 'third',
+        component: component(() => <div>third</div>),
+      },
+      {
+        path: '',
+        redirectTo: 'first',
+      },
+      {
+        path: '**',
+        component: component(() => <div>404</div>),
+      },
+    ];
+
+    const App = component(() => {
+      routerRef = useRef<RouterRef>(null);
+
+      return (
+        <Router ref={routerRef} routes={routes}>
+          {slot => slot}
+        </Router>
+      );
+    });
+
+    render(<App />);
+
+    routerRef.current.navigateTo('/broken/');
+    jest.runAllTimers();
+    expect(host.innerHTML).toBe(`<div>404</div>`);
+    expect(location.href).toBe('http://localhost/broken/');
   });
 });
