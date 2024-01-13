@@ -9,9 +9,9 @@ export type EventHandler<E extends Event = Event, T = unknown> =
 type BrowserEventConstructor = (type: string, event: Event) => void;
 
 class SyntheticEvent<E extends Event, T = TagNativeElement> {
-  public type = '';
-  public sourceEvent: E = null;
-  public target: T = null;
+  type = '';
+  sourceEvent: E = null;
+  target: T = null;
   private propagation = true;
 
   constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
@@ -20,16 +20,16 @@ class SyntheticEvent<E extends Event, T = TagNativeElement> {
     this.target = options.target;
   }
 
-  public stopPropagation() {
+  stopPropagation() {
     this.propagation = false;
     this.sourceEvent.stopPropagation();
   }
 
-  public preventDefault() {
+  preventDefault() {
     this.sourceEvent.preventDefault();
   }
 
-  public getPropagation() {
+  getPropagation() {
     return this.propagation;
   }
 }

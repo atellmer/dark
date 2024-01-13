@@ -8,7 +8,7 @@ class RouterHistory {
   private cursor = -1;
   private subscribers: Set<SubscriberWithValue<string>> = new Set();
   private fromHistory = false;
-  public dispose: () => void = null;
+  dispose: () => void = null;
 
   constructor(url: string) {
     if (detectIsFalsy(url)) {
@@ -90,34 +90,34 @@ class RouterHistory {
     }
   }
 
-  public subscribe = (subscriber: SubscriberWithValue<string>) => {
+  subscribe = (subscriber: SubscriberWithValue<string>) => {
     this.subscribers.add(subscriber);
 
     return () => this.subscribers.delete(subscriber);
   };
 
-  public push(spathname: string) {
+  push(spathname: string) {
     this.stack.splice(this.cursor + 1, this.stack.length, spathname);
     this.cursor = this.stack.length - 1;
     this.syncHistory(HistoryAction.PUSH, spathname);
     this.mapSubscribers();
   }
 
-  public replace(spathname: string) {
+  replace(spathname: string) {
     this.stack[this.stack.length - 1] = spathname;
     this.syncHistory(HistoryAction.REPLACE, spathname);
     this.mapSubscribers();
   }
 
-  public forward() {
+  forward() {
     this.go(1);
   }
 
-  public back() {
+  back() {
     this.go(-1);
   }
 
-  public go(delta: number) {
+  go(delta: number) {
     const max = this.stack.length - 1;
     let $delta = delta;
 

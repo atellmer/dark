@@ -5,13 +5,13 @@ import { type Ref } from '../ref';
 
 const $$inject = Symbol('inject');
 class Component<P extends StandardComponentProps = any, R = any> {
-  public type: CreateElement<P>;
-  public props: P;
-  public ref?: Ref<R>;
-  public token?: Symbol;
-  public displayName?: string;
-  public shouldUpdate?: ShouldUpdate<P>;
-  public children: Array<Instance> = [];
+  type: CreateElement<P>;
+  props: P;
+  ref?: Ref<R>;
+  token?: Symbol;
+  displayName?: string;
+  shouldUpdate?: ShouldUpdate<P>;
+  children: Array<Instance> = [];
 
   constructor(
     type: CreateElement<P>,

@@ -8,7 +8,7 @@ const $$vNode = Symbol('vNode');
 const ATTR_TYPE = 'type';
 
 class VirtualNode {
-  public type: NodeType = null;
+  type: NodeType = null;
 
   constructor(type: NodeType) {
     this.type = type;
@@ -16,9 +16,9 @@ class VirtualNode {
 }
 
 class TagVirtualNode extends VirtualNode {
-  public name: string;
-  public attrs: Record<string, any>;
-  public children: Array<TextVirtualNode | CommentVirtualNode | TagVirtualNode | VirtualNodeFactory | Component>;
+  name: string;
+  attrs: Record<string, any>;
+  children: Array<TextVirtualNode | CommentVirtualNode | TagVirtualNode | VirtualNodeFactory | Component>;
 
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
@@ -29,7 +29,7 @@ class TagVirtualNode extends VirtualNode {
 }
 
 class TextVirtualNode extends VirtualNode {
-  public value: string;
+  value: string;
 
   constructor(source: TextSource) {
     super(NodeType.TEXT);
@@ -38,7 +38,7 @@ class TextVirtualNode extends VirtualNode {
 }
 
 class CommentVirtualNode extends VirtualNode {
-  public value = '';
+  value = '';
 
   constructor(text: string) {
     super(NodeType.COMMENT);

@@ -3,13 +3,13 @@ import { detectIsFalsy } from '@dark-engine/core';
 import { parseURL } from '../utils';
 
 class RouterLocation {
-  public url: string;
-  public protocol: string;
-  public host: string;
-  public pathname: string;
-  public hash: string;
-  public search: string;
-  public key: string;
+  url: string;
+  protocol: string;
+  host: string;
+  pathname: string;
+  hash: string;
+  search: string;
+  key: string;
 
   constructor(url: string) {
     if (detectIsFalsy(url)) {

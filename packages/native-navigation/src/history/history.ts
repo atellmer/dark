@@ -10,7 +10,7 @@ class NavigationHistory {
   private frame: Frame;
   private page: Page;
   private params: Record<string, Record<string, ParamsMap>> = {};
-  public dispose: () => void = null;
+  dispose: () => void = null;
 
   constructor(root: string, frame: Frame, page: Page) {
     this.stack.push(normalizePathname(root));
@@ -62,21 +62,21 @@ class NavigationHistory {
     }
   }
 
-  public getBack(): string {
+  getBack(): string {
     return this.stack[this.cursor - 1] || this.getValue();
   }
 
-  public getParams(pathname: string): ParamsMap {
+  getParams(pathname: string): ParamsMap {
     return this.params[pathname] ? this.params[pathname][this.cursor] || null : null;
   }
 
-  public subscribe(subscriber: HistorySubscriber) {
+  subscribe(subscriber: HistorySubscriber) {
     this.subscribers.add(subscriber);
 
     return () => this.subscribers.delete(subscriber);
   }
 
-  public push(pathname: string, options?: NavigationOptions) {
+  push(pathname: string, options?: NavigationOptions) {
     const action = HistoryAction.PUSH;
     const normalPathname = normalizePathname(pathname);
     const params = options?.params || null;
@@ -98,7 +98,7 @@ class NavigationHistory {
     this.mapSubscribers(action, options);
   }
 
-  public replace(pathname: string) {
+  replace(pathname: string) {
     const action = HistoryAction.REPLACE;
     const normalPathname = normalizePathname(pathname);
 
@@ -108,7 +108,7 @@ class NavigationHistory {
     this.mapSubscribers(action);
   }
 
-  public back(sync = true) {
+  back(sync = true) {
     if (this.cursor === 0) return;
 
     const action = HistoryAction.BACK;

@@ -793,9 +793,9 @@ const b$ = useComputed([a$], a => a ** 2);
 Retrieves atom values into an array and updates the component when atom values change. Uses batching to update.
 
 ```tsx
-const [a, b, c, d] = useStore([a$, b$, c$, d$]);
+const [a, b] = useStore([a$, b$]);
 
-<div>{a}, {b}, {c}, {d}</div>;
+<div>{a} ^ 2 = {b}</div>;
 ```
 
 <a id="code-splitting"></a>

@@ -11,17 +11,17 @@ type RouteConstructorOptions = {
 } & RouteDescriptor;
 
 class Route {
-  public path = '';
-  public pathMatch?: PathMatchStrategy;
-  public parent: Route = null;
-  public children: Array<Route> = [];
-  public level: number = null;
-  public marker = '';
-  public redirectTo: {
+  path = '';
+  pathMatch?: PathMatchStrategy;
+  parent: Route = null;
+  children: Array<Route> = [];
+  level: number = null;
+  marker = '';
+  redirectTo: {
     path: string;
     route: Route;
   };
-  public component: RouteConstructorOptions['component'] | null;
+  component: RouteConstructorOptions['component'] | null;
 
   constructor(options: RouteConstructorOptions) {
     const { prefix, path, redirectTo, pathMatch = 'prefix', children = [], parent, component } = options;
@@ -47,11 +47,11 @@ class Route {
     return this;
   }
 
-  public getPath() {
+  getPath() {
     return this.path.replaceAll(ROOT_MARK + SLASH_MARK, '');
   }
 
-  public render(): DarkElement {
+  render(): DarkElement {
     let slot = null;
     let nextRoute = this.getRoute();
 
