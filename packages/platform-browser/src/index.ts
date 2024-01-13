@@ -1,4 +1,4 @@
-/// <reference path="jsx.d.ts" />
+/// <reference path="jsx.ts" />
 export { type CSSProperties, setTrackUpdate } from './dom';
 export { type SyntheticEvent } from './events';
 export { hydrateRoot } from './hydrate-root';

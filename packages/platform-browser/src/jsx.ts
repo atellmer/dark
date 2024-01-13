@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { type KeyProps, type RefProps, type SlotProps, type FlagProps } from '@dark-engine/core';
 import { type EventHandler } from './events';
 import { type CSSProperties } from './dom';
@@ -1361,7 +1363,9 @@ export declare namespace DarkJSX {
 
 declare global {
   namespace JSX {
+    // @ts-ignore
     interface IntrinsicElements extends DarkJSX.HTMLTags, DarkJSX.SVGTags {
+      // @ts-ignore
       [name: string]: any;
     }
   }
