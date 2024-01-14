@@ -99,6 +99,10 @@ This project was written in my free time as a hobby. I challenged myself: can I 
 
 [js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html)
 
+<img src="./assets/bench.png">
+
+According to the benchmark, Dark is only ~ 24% slower than the <mark>reference vanillajs implementation</mark>, while it is faster than React and Preact. Compared to other frameworks, speed is limited by the requirements of the Fiber architecture: in order to support the features of concurrent rendering, Dark must divide rendering into 2 phases (reconcilation and commit), i.e. performs 2 passes in a loop, whereas other framework implementations probably only use one pass (diff -> immediate update), so their performance will of course be higher in this example. In addition, the top results are compiled frameworks, while Dark is completely runtime thing. 🫠
+
 ## Usage
 
 ```tsx
