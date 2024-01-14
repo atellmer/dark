@@ -10,6 +10,10 @@ The fundamental principle involves rendering the component code into a string on
 
 Additionally, rendering can be performed directly into HTML files via the Node.js API, which can then be saved for subsequent distribution without hydration. This approach results in static site generation.
 
+<div align="center"> 
+  <img src="./assets/lighthouse.png">
+</div>
+
 ## Installation
 
 from template:
