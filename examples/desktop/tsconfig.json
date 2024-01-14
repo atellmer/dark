@@ -1,12 +1,6 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "strict": true,
-    "alwaysStrict": true,
-    "esModuleInterop": true,
     "plugins": [
       {
         "name": "@styled/typescript-styled-plugin",

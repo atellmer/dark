@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
     "sourceMap": true,
     "noImplicitAny": false,
     "removeComments": true,
-    "downlevelIteration": true,
     "esModuleInterop": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "typeRoots": ["node_modules/@types"]
   }
 }

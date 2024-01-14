@@ -12,7 +12,7 @@
     "jsxFragmentFactory": "Fragment",
     "lib": [
       "ES2021",
-      "dom"
+      "DOM"
     ],
     "typeRoots": [
       "node_modules/@types"

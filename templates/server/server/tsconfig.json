@@ -2,7 +2,7 @@
   "extends": "../tsconfig",
   "compilerOptions": {
     "target": "ESNext",
-    "module": "commonjs",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "lib": [
       "ESNext",
