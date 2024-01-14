@@ -107,16 +107,15 @@ Based on the benchmark results, Dark is approximately 24% slower than the refere
 
 ```tsx
 import { h, Fragment, component, useState } from '@dark-engine/core';
-import { type SyntheticEvent, createRoot } from '@dark-engine/platform-browser';
+import { createRoot } from '@dark-engine/platform-browser';
 
 const App = component(() => {
   const [name, setName] = useState('Dark');
-  const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setName(e.target.value);
 
   return (
     <>
       <div>Hello {name}</div>
-      <input value={name} onInput={handleInput} />
+      <input value={name} onInput={e => setName(e.target.value)} />
     </>
   );
 });
@@ -128,15 +127,14 @@ without JSX:
 
 ```tsx
 import { Text, component, useState } from '@dark-engine/core';
-import { type SyntheticEvent, createRoot, div, input } from '@dark-engine/platform-browser';
+import { createRoot, div, input } from '@dark-engine/platform-browser';
 
 const App = component(() => {
   const [name, setName] = useState('Dark');
-  const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setName(e.target.value);
 
   return [
     div({ slot: Text(`Hello ${name}`) }),
-    input({ value: name, onInput: handleInput }),
+    input({ value: name, onInput: e => setName(e.target.value) }),
   ];
 });
 
