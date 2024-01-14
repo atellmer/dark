@@ -1,11 +1,21 @@
-import { h, component, type DarkElement } from '@dark-engine/core';
+import { styled, keyframes } from '@dark-engine/styled';
 
-type AnimatedRouteProps = {
-  slot: DarkElement;
-};
+const fade = keyframes`
+  0% {
+    opacity: 0;
+  }
 
-const AnimatedRoute = component<AnimatedRouteProps>(({ slot }) => {
-  return <article class='fade animated-route'>{slot}</article>;
-});
+  100% {
+    opacity: 1;
+  }
+`;
+
+const AnimatedRoute = styled.div`
+  animation-name: ${fade};
+  animation-iteration-count: 1;
+  animation-duration: 600ms;
+  animation-fill-mode: both;
+  animation-timing-function: ease-in-out;
+`;
 
 export { AnimatedRoute };

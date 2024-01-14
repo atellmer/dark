@@ -2,9 +2,8 @@ import {
   type ComponentFactory,
   type TagVirtualNodeFactory,
   type StandardComponentProps,
-  type Component,
-  type VirtualNode,
   type TextBased,
+  type DarkElement,
   View,
   component,
   forwardRef,
@@ -317,14 +316,12 @@ type Factory<P extends object> = ComponentFactory<P> | ((props: P) => TagVirtual
 
 type ClassNameFn = (className: string) => string;
 
-type StyledElement = Component | VirtualNode | TextBased | Array<Component | VirtualNode | TextBased>;
-
 type StyledProps = {
   as?: string | ComponentFactory;
   class?: string;
   className?: string;
   style?: string | Record<string, string>;
-  slot?: ((fn: ClassNameFn) => StyledElement) | StyledElement;
+  slot?: ((fn: ClassNameFn) => DarkElement) | DarkElement;
 };
 
 type ExtendingConfig<P extends object = {}> = {

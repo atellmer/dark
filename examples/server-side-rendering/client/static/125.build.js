@@ -1,0 +1,16 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[125],{8422:(t,i,e)=>{e.d(i,{h:()=>u});const r=t=>new Promise((i=>setTimeout(i,t))),n="products",o="product",a={[n]:null,[o]:{}},s=void 0!==globalThis.process,u={async fetchProductList(){if(s||!a[n]){await r(s?100:600);const t=new Array(10).fill(null).map(((t,i)=>({id:i+1,title:`Product #${i+1}`})));a[n]=t}return a[n]},async fetchProduct(t){if(s||!a[o][t]){if(await r(s?100:600),"number"!=typeof t||Number.isNaN(t))throw new Error("Invalid id!");const i={id:t,title:`Product #${t}`,description:"Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nostrum blanditiis quia minus corrupti quidem. Ipsam quae ad velit repudiandae molestias unde ab officiis harum atque? Quo veritatis maxime illo asperiores."};a[o][t]=i}return a[o][t]}}},6038:(t,i,e)=>{e.d(i,{G:()=>a});var r=e(7820),n=e(6630);const o=r.F4`
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+`,a=n.zo.div`
+  animation-name: ${o};
+  animation-iteration-count: 1;
+  animation-duration: 600ms;
+  animation-fill-mode: both;
+  animation-timing-function: ease-in-out;
+`},4418:(t,i,e)=>{e.d(i,{j:()=>o});var r=e(2654),n=e(3524);const o=(0,r.wU)((({value:t})=>(0,n.h)("div",null,t," 🫠")))},1125:(t,i,e)=>{e.r(i),e.d(i,{default:()=>h});var r=e(2654),n=e(8903),o=e(3524),a=e(1523),s=e(7059),u=e(8422),c=e(5092),l=e(4418),d=e(6038);const h=(0,r.wU)((({slot:t})=>{const{url:i}=(0,a.b)(),e=(0,n.W)((()=>u.h.fetchProductList())),{loading:r,data:h,error:m}=e;return r?(0,o.h)(c.$,null):m?(0,o.h)(l.j,{value:m}):(0,o.h)(d.G,null,(0,o.h)("h2",null,"List"),t||(0,o.h)("ul",null,h.map((t=>(0,o.h)("li",null,(0,o.h)(s.r,{to:`${i}${t.id}`},t.title))))))}))},8903:(t,i,e)=>{e.d(i,{W:()=>d});var r=e(3760),n=e(7544),o=e(6238),a=e(8047),s=e(4435),u=e(1261),c=e(3443),l=e(9812);function d(t,i=[]){const e=(0,u.Y)((()=>({isFetching:!0,isLoaded:!1,data:null,error:null})),[]),{register:d,unregister:m}=(0,a.h)(),[f,p]=function(){const t=(0,u.Y)((()=>({isMounted:!0,isFirstTime:!0})),[]),{isFirstTime:i}=t;return(0,r.b)((()=>(t.isFirstTime=!1,()=>t.isMounted=!1)),[]),[()=>t.isMounted,()=>i]}(),g=(0,s.P)(),v=()=>f()&&g(),w=(0,c.pj)(),b=(0,u.Y)((()=>w.getNextResourceId()),[]),y=String(b),F=(0,n.X)(),L=w.getIsHydrateZone(),P=async(r,...n)=>{try{F||p()||(e.isFetching=!0,v());const o=await t(...r?n:i);return F?w.setResource(b,[o,null]):(m(y),e.data=o,e.isFetching=!1,e.error=null),o}catch(t){(0,l.vU)(t),F?w.setResource(b,[null,String(t)]):(m(y),e.isFetching=!1,e.error=String(t))}finally{F||(e.isLoaded=!0,v())}};if((0,o.d4)((()=>{!L&&P()}),[...i]),(0,o.d4)((()=>()=>m(y)),[]),F||L){const t=w.getResource(b);if(F)t?h(e,t):w.defer(P);else if(L){if(!t)throw new Error("[Dark]: can not read app state from the server!");h(e,t)}}else p()&&d(y);return{loading:e.isFetching,data:e.data,error:e.error,refetch:(...t)=>P(!0,...t)}}function h(t,i){const[e,r]=i;t.isFetching=!1,t.isLoaded=!0,t.data=e,t.error=r}},1523:(t,i,e)=>{e.d(i,{b:()=>a});var r=e(1261),n=e(3113),o=e(3397);function a(){const t=(0,n.M6)();(0,n.BU)(t);const i=(0,n._L)(),{location:{pathname:e}}=t,a=(0,r.Y)((()=>i?(0,o.L7)(e,i):""),[i,e]);return{path:i,url:a}}}}]);
+//# sourceMappingURL=125.build.js.map

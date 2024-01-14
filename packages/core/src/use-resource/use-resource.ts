@@ -19,13 +19,13 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
   const $id = String(id);
   const isServer = detectIsServer();
   const isHydrateZone = $scope.getIsHydrateZone();
-  const make = async () => {
+  const make = async (isRefetch?: boolean, ...args: Array<any>) => {
     try {
       if (!isServer && !firstTime()) {
         state.isFetching = true;
         $update();
       }
-      const data = await fetch();
+      const data = await fetch(...(isRefetch ? args : deps));
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
@@ -82,7 +82,7 @@ function useResource<T>(fetch: FetchFn<T>, deps: Array<any> = []) {
     loading: state.isFetching,
     data: state.data,
     error: state.error,
-    refetch: make,
+    refetch: (...args: Array<any>) => make(true, ...args),
   };
 
   return value;
@@ -125,6 +125,6 @@ type Resource<T> = {
   refetch: FetchFn<T>;
 };
 
-type FetchFn<T> = () => Promise<T>;
+type FetchFn<T> = (...args: Array<any>) => Promise<T>;
 
 export { useResource };
