@@ -541,6 +541,7 @@ function fork($scope: Scope): false {
 
   wipFiber.child = wipFiber.alt.child;
   wipFiber.alt = null;
+  $scope.runInsertionEffects(); // !
   $scope.applyCancels();
   flush($scope, true);
   scheduler.cancelTask(restore);

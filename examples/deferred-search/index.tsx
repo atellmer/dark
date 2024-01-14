@@ -1,58 +1,92 @@
 import { h, Fragment, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
 import { type SyntheticEvent, createRoot } from '@dark-engine/platform-browser';
+import { styled } from '@dark-engine/styled';
 
-function generateProducts() {
-  const products: Array<string> = [];
+import { highlight } from './utils';
+
+const Highlight = styled.span<{ $color: string }>`
+  color: ${p => p.$color || 'inherit'};
+`;
+
+type HighlightedTextProps = {
+  value: string;
+  query: string;
+  color?: string;
+};
+
+const HighlightedText = component<HighlightedTextProps>(props => {
+  const { value, query, color = '#E91E63' } = props;
+  const matches = highlight.match(value, query, value);
+  const parts = highlight.parse(value, matches);
+
+  return (
+    <span>
+      {parts.map((x, idx) => {
+        return (
+          <Highlight key={`${x.text}${idx}`} $color={x.highlight ? color : undefined}>
+            {x.text}
+          </Highlight>
+        );
+      })}
+    </span>
+  );
+});
+
+function generateItems() {
+  const items: Array<string> = [];
 
   for (let i = 0; i < 500; i++) {
-    products.push(`Product ${i + 1}`);
+    items.push(`Item #${i + 1}`);
   }
-  return products;
+
+  return items;
 }
 
-const dummyProducts = generateProducts();
+const dummyItems = generateItems();
 
-function filterProducts(filterTerm: string) {
-  if (!filterTerm) {
-    return dummyProducts;
-  }
-
-  return dummyProducts.filter(product => product.toLowerCase().indexOf(filterTerm.toLowerCase()) !== -1);
+function filterItems(term: string) {
+  if (!term) return dummyItems;
+  return dummyItems.filter(x => x.toLowerCase().indexOf(term.toLowerCase()) !== -1);
 }
 
 type SlowListItemProps = {
-  slot: string;
+  query: string;
+  name: string;
 };
 
-const SlowListItem = component<SlowListItemProps>(({ slot }) => {
+const SlowListItem = component<SlowListItemProps>(({ query, name }) => {
   const startTime = performance.now();
 
-  while (performance.now() - startTime < 3) {
-    // Do nothing for 3 ms per item to emulate extremely slow code
+  while (performance.now() - startTime < 1.5) {
+    // Do nothing for 1.5 ms per item to emulate extremely slow code
   }
 
-  return <li>{slot}</li>;
+  return (
+    <li>
+      <HighlightedText query={query} value={name} />
+    </li>
+  );
 });
 
-type ProductListProps = {
+type ItemListProps = {
   name: string;
   isStale: boolean;
 };
 
-const ProductList = component<ProductListProps>(({ name, isStale }) => {
+const ItemList = component<ItemListProps>(({ name, isStale }) => {
   const items = useMemo(() => {
-    const products = filterProducts(name);
+    const items = filterItems(name);
 
     return (
       <>
-        {products.map(product => (
-          <SlowListItem key={product}>{product}</SlowListItem>
+        {items.map(x => (
+          <SlowListItem key={x} query={name} name={x} />
         ))}
       </>
     );
   }, [name]);
 
-  return <ul style={`color: ${isStale ? 'red' : 'yellow'}`}>{items}</ul>;
+  return <ul style={`color: ${isStale ? '#2196F3' : 'black'}`}>{items}</ul>;
 });
 
 const App = component(() => {
@@ -64,9 +98,13 @@ const App = component(() => {
 
   return (
     <div>
-      <div>Note: Every list item is artificially slowed down</div>
-      <input value={name} placeholder='type...' onInput={handleInput} />
-      <ProductList name={deferredName} isStale={isStale} />
+      <div>Try quickly entering the number, erasing and re-entering.</div>
+      <div>
+        Note: Every list item is artificially slowed down. The lagging version of the UI is marked here in blue.
+      </div>
+      <br />
+      <input value={name} placeholder='type number...' onInput={handleInput} />
+      <ItemList name={deferredName} isStale={isStale} />
     </div>
   );
 });

@@ -12,15 +12,15 @@ class Scope {
   private mountDeep = true;
   private mountLevel = 0;
   private mountNav: Record<number, number> = {};
-  private events: Map<string, WeakMap<object, Function>> = new Map();
-  private unsubs: Set<Callback> = new Set();
+  private events = new Map<string, WeakMap<object, Function>>();
+  private unsubs = new Set<Callback>();
   private actions: Actions = {};
-  private candidates: Set<Fiber> = new Set();
-  private deletions: Set<Fiber> = new Set();
+  private candidates = new Set<Fiber>();
+  private deletions = new Set<Fiber>();
   private cancels: Array<Callback> = [];
-  private asyncEffects: Set<Callback> = new Set();
-  private layoutEffects: Set<Callback> = new Set();
-  private insertionEffects: Set<Callback> = new Set();
+  private asyncEffects = new Set<Callback>();
+  private layoutEffects = new Set<Callback>();
+  private insertionEffects = new Set<Callback>();
   private resourceId = 0;
   private resources: AppResources = new Map();
   private defers: Array<() => Promise<unknown>> = [];
@@ -99,7 +99,6 @@ class Scope {
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
-    scope.insertionEffects = new Set([...this.insertionEffects]);
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
 
