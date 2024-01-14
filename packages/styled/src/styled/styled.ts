@@ -4,6 +4,7 @@ import {
   type StandardComponentProps,
   type Component,
   type VirtualNode,
+  type TextBased,
   View,
   component,
   forwardRef,
@@ -39,7 +40,6 @@ import {
 import { type KeyframesRule, StyleSheet, detectIsStyleSheet, detectIsKeyframesRule } from '../tokens';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
 import { type ThemeProps, useTheme } from '../theme';
-import { type TextBased } from '../shared';
 import { useManager } from '../server/manager';
 import { parse } from '../parse';
 import { hash } from '../hash';
@@ -317,7 +317,7 @@ type Factory<P extends object> = ComponentFactory<P> | ((props: P) => TagVirtual
 
 type ClassNameFn = (className: string) => string;
 
-type StyledElement = Component | VirtualNode | string | Array<Component | VirtualNode | string>;
+type StyledElement = Component | VirtualNode | TextBased | Array<Component | VirtualNode | TextBased>;
 
 type StyledProps = {
   as?: string | ComponentFactory;

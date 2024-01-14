@@ -1,7 +1,6 @@
-import { useMemo, detectIsUndefined } from '@dark-engine/core';
+import { type TextBased, useMemo, detectIsUndefined } from '@dark-engine/core';
 import { type CSSProperties } from '@dark-engine/platform-browser';
 
-import { type TextBased } from '../shared';
 import { SEMICOLON_MARK } from '../constants';
 
 function styled(source: TemplateStringsArray, ...args: Array<TextBased>): CSSProperties {

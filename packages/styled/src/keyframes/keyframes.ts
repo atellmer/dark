@@ -1,6 +1,5 @@
-import { detectIsTextBased } from '@dark-engine/core';
+import { type TextBased, detectIsTextBased } from '@dark-engine/core';
 
-import { type TextBased } from '../shared';
 import { hash } from '../hash';
 import { parse } from '../parse';
 import {

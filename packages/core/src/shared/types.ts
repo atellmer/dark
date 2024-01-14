@@ -3,7 +3,7 @@ import type { VirtualNode, VirtualNodeFactory } from '../view';
 import { type Ref } from '../ref';
 import { FLAGS } from '../constants';
 
-export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | string | number>;
+export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | TextBased>;
 
 export type Nullable = null | false | undefined;
 
@@ -44,3 +44,5 @@ export type TimerId = undefined | ReturnType<typeof setTimeout>;
 export type AppResource<T = unknown> = [T, string];
 
 export type AppResources = Map<number, AppResource>;
+
+export type TextBased = number | string;

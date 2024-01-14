@@ -12,7 +12,7 @@ class SyntheticEvent<E extends Event, T = TagNativeElement> {
   type = '';
   sourceEvent: E = null;
   target: T = null;
-  private propagation = true;
+  propagation = true; // should be private but typescript has a bug
 
   constructor(options: Pick<SyntheticEvent<E, T>, 'sourceEvent' | 'target'>) {
     this.type = options.sourceEvent.type;

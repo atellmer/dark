@@ -1,5 +1,5 @@
 import { QLabel } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef, detectIsArray } from '@dark-engine/core';
+import { type ComponentFactory, type TextBased, component, forwardRef, detectIsArray } from '@dark-engine/core';
 
 import type { WidgetProps, WithPartialSlotProps } from '../shared';
 import { qText } from '../factory';
@@ -9,7 +9,6 @@ import { qText } from '../factory';
 //   {`<h1>Hello world</h1><p>Rich text</p>`}
 // </Text>
 
-type TextBased = string | number;
 export type TextProps = WithPartialSlotProps<{} & WidgetProps, TextBased | Array<TextBased>>;
 export type TextRef = QDarkText;
 

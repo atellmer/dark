@@ -1,4 +1,5 @@
 import { h, component, type DarkElement, useState, useEffect, useResource } from '@dark-engine/core';
+import { type DarkJSX } from '@dark-engine/platform-browser';
 import { RouterLink, useMatch, useHistory, useParams, useLocation } from '@dark-engine/web-router';
 import { styled, css } from '@dark-engine/styled';
 
@@ -100,15 +101,15 @@ const Home = component<HomeProps>(({ slot }) => {
         <RouterLink to={`${url}a`}>child route a</RouterLink>
         <RouterLink to={`${url}b`}>child route b</RouterLink>
         <RouterLink to={`${url}c`}>child route c</RouterLink>
-        <button onClick={() => setCount(count + 1)}>fired {count} times</button>
+        <Button $primary onClick={() => setCount(count + 1)}>
+          fired {count} times
+        </Button>
       </header>
       <p>
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero excepturi quae harum laborum temporibus?
         Repellendus laboriosam sunt corporis quasi. Quo accusamus aperiam consequuntur quia veritatis nobis minima omnis
         error expedita!
       </p>
-      <Button>Default</Button>
-      <Button $primary>Primary</Button>
       <div>
         <h4>{post.title}</h4>
         <p>{post.body}</p>
@@ -128,7 +129,7 @@ const Home = component<HomeProps>(({ slot }) => {
   );
 });
 
-const Button = styled.button<{ $primary?: boolean }>`
+const Button = styled.button<{ $primary?: boolean } & DarkJSX.HTMLTags['button']>`
   display: inline-block;
   font-size: 1rem;
   padding: 0.5rem 0.7rem;
