@@ -32,6 +32,7 @@ export { useUpdate } from './use-update';
 export { useState } from './use-state';
 export { useId } from './use-id';
 export { useSyncExternalStore } from './use-sync-external-store';
+export { type CacheKey, type CacheRecord, InMemoryCache, CacheProvider, useCache } from './cache';
 export { useResource } from './use-resource';
 export * from './walk';
 export { unmountRoot } from './unmount';

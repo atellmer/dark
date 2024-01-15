@@ -486,7 +486,7 @@ export declare namespace DarkJSX {
     ping?: string;
     target?: HTMLAttributeAnchorTarget;
     type?: string;
-    referrerPolicy?: HTMLAttributeReferrerPolicy;
+    referrerpolicy?: HTMLAttributeReferrerPolicy;
   } & HTMLProps<T>;
 
   type HTMLAudioProps<T> = HTMLMediaProps<T>;

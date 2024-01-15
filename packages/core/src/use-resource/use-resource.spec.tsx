@@ -64,10 +64,10 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([false, null, 'Error: oops!']);
   });
 
-  test('refetches an async resource with deps correctly', async () => {
+  test('refetches an async resource correctly', async () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
-      const { loading, data, error } = useResource(() => fetchData(id), [id]);
+      const { loading, data, error } = useResource(({ id }) => fetchData(id), { variables: { id } });
 
       spy([loading, data, error]);
 
