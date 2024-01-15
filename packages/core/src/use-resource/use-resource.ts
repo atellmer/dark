@@ -49,7 +49,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
         state.data = data;
         state.isFetching = false;
         state.error = null;
-        key && cache?.write(key, data, extractId($$variables));
+        key && data && cache?.write(key, data, extractId($$variables));
       }
 
       return data;
@@ -81,8 +81,8 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     let off: Callback = null;
 
     if (cache) {
-      off = cache.onInvalidate(({ key: $key, record }) => {
-        if ($key === key && record.id === extractId(state.variables)) {
+      off = cache.onChange(({ type, key: $key, id: $id }) => {
+        if (type === 'invalidate' && $key === key && $id === extractId(state.variables)) {
           make();
         }
       });
@@ -111,7 +111,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     firstTime() && !isLoaded && register($id);
   }
 
-  const result: QueryResult<T> = {
+  const result: Result<T> = {
     loading: state.isFetching,
     data: state.data,
     error: state.error,
@@ -170,7 +170,7 @@ type State<T, V = unknown> = {
   variables: V;
 };
 
-type QueryResult<T> = {
+type Result<T> = {
   loading: boolean;
   data: T;
   error: string;
@@ -180,5 +180,7 @@ type QueryResult<T> = {
 type Variables<K extends string = string, V = any> = Record<K, V>;
 
 type Query<T, V extends Variables = Variables> = (variables: V) => Promise<T>;
+
+type FetchPolicy = 'no-cache' | 'cache-only' | 'cache-first' | 'network-only' | 'cache-and-network';
 
 export { useResource };
