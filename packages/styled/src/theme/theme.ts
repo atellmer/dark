@@ -2,7 +2,7 @@ import { type DarkElement, createContext, useContext, component } from '@dark-en
 
 import { type DefaultTheme } from '../';
 
-// styled.d.ts
+// // styled.d.ts
 // type Theme = {
 //   color1: string;
 //   color2: string;

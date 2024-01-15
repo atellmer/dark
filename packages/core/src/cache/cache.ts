@@ -3,7 +3,6 @@ import { createContext, useContext } from '../context';
 import { EventEmitter } from '../emitter';
 import { component } from '../component';
 import { getTime } from '../utils';
-
 class InMemoryCache {
   private state: State;
   private emitter = new EventEmitter<EventName, EventData>();
@@ -16,23 +15,23 @@ class InMemoryCache {
     return this.state;
   }
 
-  read<T>(key: string, id: TextBased = CACHE_ROOT_ID) {
+  read<T>({ key, id = CACHE_ROOT_ID }: ReadOptions) {
     const data = this.state[key];
     const record = (data?.[id] as CacheRecord<T>) || null;
 
     return record;
   }
 
-  write<T>(key: string, value: T, id: TextBased = CACHE_ROOT_ID) {
+  write<T>({ key, id = CACHE_ROOT_ID, value, optimistic }: WriteOptions<T>) {
     if (!this.state[key]) this.state[key] = {};
     const data = this.state[key];
-    const record: CacheRecord = { id, isValid: true, modifiedAt: getTime(), value };
+    const record: CacheRecord = { id, isValid: !optimistic, modifiedAt: getTime(), value };
 
     data[id] = record;
     this.emitter.emit('change', { type: 'write', key, id, record });
   }
 
-  invalidate(key: string, id: TextBased = CACHE_ROOT_ID) {
+  invalidate({ key, id = CACHE_ROOT_ID }: InvalidateOptions) {
     const data = this.state[key];
     if (!data) return;
     const record = data[id];
@@ -41,7 +40,7 @@ class InMemoryCache {
     this.emitter.emit('change', { type: 'invalidate', key, id, record });
   }
 
-  delete(key: string, id: TextBased = CACHE_ROOT_ID) {
+  delete({ key, id = CACHE_ROOT_ID }: DeleteOptions) {
     if (!this.state[key]) return;
     const data = this.state[key];
 
@@ -71,6 +70,28 @@ type State = Record<string, Record<string, CacheRecord>>;
 type EventName = 'change';
 type EventType = 'write' | 'invalidate' | 'delete';
 type EventData = { type: EventType; key: string; id: TextBased; record?: CacheRecord };
+
+type ReadOptions = {
+  key: string;
+  id?: TextBased;
+};
+
+type WriteOptions<T> = {
+  key: string;
+  value: T;
+  id?: TextBased;
+  optimistic?: boolean;
+};
+
+type InvalidateOptions = {
+  key: string;
+  id?: TextBased;
+};
+
+type DeleteOptions = {
+  key: string;
+  id?: TextBased;
+};
 
 export type CacheRecord<T = unknown> = {
   id: TextBased;

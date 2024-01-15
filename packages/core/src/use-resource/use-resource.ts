@@ -18,7 +18,8 @@ type UseResourceOptions<V extends Variables> = {
 function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseResourceOptions<V>) {
   const { variables = {} as V, key, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
   const cache = useCache();
-  const state = useMemo<State<T, V>>(() => createState<T, V>(cache, key, extractId(variables)), []);
+  const cacheId = extractId(variables);
+  const state = useMemo<State<T, V>>(() => createState<T, V>(cache, key, cacheId), []);
   const { register, unregister } = useSuspense();
   const [mounted, firstTime] = useMounted();
   const update = useUpdate();
@@ -49,7 +50,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
         state.data = data;
         state.isFetching = false;
         state.error = null;
-        key && data && cache?.write(key, data, extractId($$variables));
+        key && data && cache?.write({ key, id: extractId($$variables), value: data });
       }
 
       return data;
@@ -73,7 +74,12 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
 
   useEffect(() => {
     if (isHydrateZone) return;
-    if (key && cache && isLoaded) return;
+    if (key && cache) {
+      const record = cache.read({ key, id: cacheId });
+
+      if (record?.isValid) return;
+    }
+
     make();
   }, [...mapRecord(variables)]);
 
@@ -82,8 +88,10 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
 
     if (cache) {
       off = cache.onChange(({ type, key: $key, id: $id }) => {
-        if (type === 'invalidate' && $key === key && $id === extractId(state.variables)) {
-          make();
+        if ($key === key && $id === extractId(state.variables)) {
+          if (type === 'invalidate') {
+            make();
+          }
         }
       });
     }
@@ -125,12 +133,12 @@ function createState<T, V>(cache: InMemoryCache, key: string, id: string) {
   const state: State<T, V> = { isFetching: true, isLoaded: false, data: null, error: null, variables: null };
 
   if (cache) {
-    const record = cache.read<T>(key, id);
+    const record = cache.read({ key, id });
 
     if (record) {
       state.isFetching = false;
       state.isLoaded = true;
-      state.data = record.value;
+      state.data = record.value as T;
     }
   }
 

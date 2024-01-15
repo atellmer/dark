@@ -3,26 +3,28 @@ import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { type InMemoryCache, useCache } from '../cache';
 
-type UseMutatinOptions = {
+type UseMutatinOptions<T> = {
   refetchQueries?: Array<string>;
-  onComplete?: (x: InMemoryCache) => void;
+  onComplete?: (x: InMemoryCache, data: T) => void;
 };
 
-function useMutation<M extends Mutation>(mutation: M, options?: UseMutatinOptions) {
-  type FnParams = Parameters<M>;
-  type FnResult = ReturnType<M>;
+function useMutation<M extends Mutation>(mutation: M, options?: UseMutatinOptions<Awaited<ReturnType<M>>>) {
+  type Params = Parameters<M>;
+  type AwaitedResult = Awaited<ReturnType<M>>;
   const { refetchQueries = [], onComplete } = options || {};
   const update = useUpdate();
   const cache = useCache();
-  const state = useMemo<State<FnResult>>(() => ({ isFetching: false, data: null, error: null }), []);
-  const make = async (...args: FnParams) => {
+  const state = useMemo<State<AwaitedResult>>(() => ({ isFetching: false, data: null, error: null }), []);
+  const make = async (...args: Params) => {
+    let data: AwaitedResult = null;
+
     try {
       state.isFetching = true;
       state.error = null;
       update();
-      await mutation(...args);
-      refetchQueries.forEach(x => cache.invalidate(x));
-      detectIsFunction(onComplete) && onComplete(cache);
+      data = (await mutation(...args)) as AwaitedResult;
+      detectIsFunction(onComplete) && onComplete(cache, data);
+      refetchQueries.forEach(x => cache.invalidate({ key: x }));
     } catch (err) {
       error(err);
       state.error = String(err);
@@ -30,14 +32,16 @@ function useMutation<M extends Mutation>(mutation: M, options?: UseMutatinOption
       state.isFetching = false;
       update();
     }
+
+    return data;
   };
-  const result: Result<FnResult> = {
+  const result: Result<AwaitedResult> = {
     loading: state.isFetching,
     data: state.data,
     error: state.error,
   };
 
-  return [make, result] as [(...args: FnParams) => FnResult, Result<FnResult>];
+  return [make, result] as [(...args: Params) => ReturnType<M>, Result<AwaitedResult>];
 }
 
 type State<T> = {
