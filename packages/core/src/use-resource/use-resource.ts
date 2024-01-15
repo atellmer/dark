@@ -1,5 +1,5 @@
 import { type InMemoryCache, useCache, CACHE_ROOT_ID } from '../cache';
-import { type AppResource, type Callback } from '../shared';
+import { type AppResource, type Callback, type TextBased } from '../shared';
 import { useLayoutEffect } from '../use-layout-effect';
 import { error, detectIsFunction } from '../utils';
 import { detectIsServer } from '../platform';
@@ -12,7 +12,7 @@ import { $$scope } from '../scope';
 type UseResourceOptions<V extends Variables> = {
   variables?: V;
   key?: string;
-  extractId?: (x: V) => string;
+  extractId?: (x: V) => TextBased;
 };
 
 function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseResourceOptions<V>) {
@@ -50,7 +50,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
         state.data = data;
         state.isFetching = false;
         state.error = null;
-        key && data && cache?.write({ key, id: extractId($$variables), value: data });
+        key && data && cache?.write({ key, id: extractId($$variables), data });
       }
 
       return data;
@@ -129,7 +129,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
   return result;
 }
 
-function createState<T, V>(cache: InMemoryCache, key: string, id: string) {
+function createState<T, V>(cache: InMemoryCache, key: string, id: TextBased) {
   const state: State<T, V> = { isFetching: true, isLoaded: false, data: null, error: null, variables: null };
 
   if (cache) {
@@ -138,7 +138,7 @@ function createState<T, V>(cache: InMemoryCache, key: string, id: string) {
     if (record) {
       state.isFetching = false;
       state.isLoaded = true;
-      state.data = record.value as T;
+      state.data = record.data as T;
     }
   }
 
