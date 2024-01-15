@@ -1,4 +1,4 @@
-import { type InMemoryCache, type CacheKey, useCache, CACHE_ROOT_ID } from '../cache';
+import { type InMemoryCache, useCache, CACHE_ROOT_ID } from '../cache';
 import { type AppResource, type Callback } from '../shared';
 import { useLayoutEffect } from '../use-layout-effect';
 import { error, detectIsFunction } from '../utils';
@@ -11,11 +11,11 @@ import { $$scope } from '../scope';
 
 type UseResourceOptions<V extends Variables> = {
   variables?: V;
-  key?: CacheKey;
+  key?: string;
   extractId?: (x: V) => string;
 };
 
-function useResource<T, V extends Variables>(fetch: GetResource<T, V>, options?: UseResourceOptions<V>) {
+function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseResourceOptions<V>) {
   const { variables = {} as V, key, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
   const cache = useCache();
   const state = useMemo<State<T, V>>(() => createState<T, V>(cache, key, extractId(variables)), []);
@@ -40,7 +40,7 @@ function useResource<T, V extends Variables>(fetch: GetResource<T, V>, options?:
         state.isFetching = true;
         $update();
       }
-      const data = await fetch($$variables);
+      const data = await query($$variables);
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
@@ -111,17 +111,17 @@ function useResource<T, V extends Variables>(fetch: GetResource<T, V>, options?:
     firstTime() && !isLoaded && register($id);
   }
 
-  const value: Resource<T> = {
+  const result: QueryResult<T> = {
     loading: state.isFetching,
     data: state.data,
     error: state.error,
     refetch: (variables: V) => make(true, variables),
   };
 
-  return value;
+  return result;
 }
 
-function createState<T, V>(cache: InMemoryCache, key: CacheKey, id: string) {
+function createState<T, V>(cache: InMemoryCache, key: string, id: string) {
   const state: State<T, V> = { isFetching: true, isLoaded: false, data: null, error: null, variables: null };
 
   if (cache) {
@@ -170,15 +170,15 @@ type State<T, V = unknown> = {
   variables: V;
 };
 
-type Resource<T> = {
+type QueryResult<T> = {
   loading: boolean;
   data: T;
   error: string;
-  refetch: GetResource<T>;
+  refetch: Query<T>;
 };
 
 type Variables<K extends string = string, V = any> = Record<K, V>;
 
-type GetResource<T, V extends Variables = Variables> = (variables: V) => Promise<T>;
+type Query<T, V extends Variables = Variables> = (variables: V) => Promise<T>;
 
 export { useResource };

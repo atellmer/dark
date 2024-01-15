@@ -5,27 +5,35 @@ import { component } from '../component';
 import { getTime } from '../utils';
 
 class InMemoryCache {
-  private state = new Map<CacheKey, Record<string, CacheRecord>>();
+  private state: State;
   private emitter = new EventEmitter<EventName, EventData>();
 
-  read<T>(key: CacheKey, id: string = CACHE_ROOT_ID) {
-    const data = this.state.get(key);
+  constructor(state?: State) {
+    this.state = state || {};
+  }
+
+  get() {
+    return this.state;
+  }
+
+  read<T>(key: string, id: string = CACHE_ROOT_ID) {
+    const data = this.state[key];
     const record = (data?.[id] as CacheRecord<T>) || null;
 
     return record;
   }
 
-  write<T>(key: CacheKey, value: T, id: string = CACHE_ROOT_ID) {
-    if (!this.state.has(key)) this.state.set(key, {});
-    const data = this.state.get(key);
+  write<T>(key: string, value: T, id: string = CACHE_ROOT_ID) {
+    if (!this.state[key]) this.state[key] = {};
+    const data = this.state[key];
     const record: CacheRecord = { id, isValid: true, modifiedAt: getTime(), value };
 
     data[id] = record;
     this.emitter.emit('write', { key, record });
   }
 
-  invalidate(key: CacheKey, id: string = CACHE_ROOT_ID) {
-    const data = this.state.get(key);
+  invalidate(key: string, id: string = CACHE_ROOT_ID) {
+    const data = this.state[key];
     if (!data) return;
     const record = data[id];
     if (!record) return;
@@ -55,11 +63,9 @@ const CacheProvider = component<CacheProviderProps>(({ cache, slot }) => {
   return CacheContext.Provider({ value: cache, slot });
 });
 
+type State = Record<string, Record<string, CacheRecord>>;
 type EventName = 'write' | 'invalidate';
-
-type EventData = { key: CacheKey; record: CacheRecord };
-
-export type CacheKey = string | symbol;
+type EventData = { key: string; record: CacheRecord };
 
 export type CacheRecord<T = unknown> = {
   id: string;
