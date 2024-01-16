@@ -1,4 +1,4 @@
-import { type InMemoryCache, useCache, MonitorEventType } from '../cache';
+import { type InMemoryCache, useCache, MonitorEventType, checkCache } from '../cache';
 import { error, detectIsFunction } from '../utils';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
@@ -15,6 +15,7 @@ function useMutation<M extends Mutation>(mutation: M, options: UseMutatinOptions
   const { key, refetchQueries = [], onSuccess } = options || {};
   const update = useUpdate();
   const cache = useCache();
+  checkCache(cache);
   const state = useMemo<State<AwaitedResult>>(() => ({ isFetching: false, data: null, error: null }), []);
   const make = async (...args: Params) => {
     let data: AwaitedResult = null;

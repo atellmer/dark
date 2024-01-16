@@ -92,6 +92,7 @@ type CacheProviderProps = {
 };
 
 const CacheProvider = component<CacheProviderProps>(({ cache, slot }) => {
+  if (useCache()) throw new Error('[Dark]: illegal cache provider!');
   return CacheContext.Provider({ value: cache, slot });
 });
 
@@ -126,6 +127,10 @@ export enum MonitorEventType {
   MUTATION = 'MUTATION',
 }
 
+function checkCache(cache: InMemoryCache) {
+  if (!cache) throw new Error('[Dark]: the hook requires a cache provider with a cache!');
+}
+
 const CACHE_ROOT_ID = '__ROOT__';
 
-export { CACHE_ROOT_ID, InMemoryCache, CacheProvider, useCache };
+export { CACHE_ROOT_ID, InMemoryCache, CacheProvider, useCache, checkCache };

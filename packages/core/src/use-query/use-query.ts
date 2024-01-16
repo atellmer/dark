@@ -1,4 +1,4 @@
-import { type InMemoryCache, useCache, MonitorEventType, CACHE_ROOT_ID } from '../cache';
+import { type InMemoryCache, useCache, MonitorEventType, checkCache, CACHE_ROOT_ID } from '../cache';
 import { type AppResource, type Callback, type TextBased } from '../shared';
 import { error, detectIsFunction, mapRecord } from '../utils';
 import { useLayoutEffect } from '../use-layout-effect';
@@ -25,6 +25,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   } = options || { variables: {} as V };
   const $scope = $$scope();
   const cache = useCache();
+  checkCache(cache);
   const cacheId = extractId(variables);
   const id = useMemo(() => $scope.getNextResourceId(), []);
   const state = useMemo<State<T>>(() => createState<T>(cache, cacheKey, cacheId, lazy), []);
