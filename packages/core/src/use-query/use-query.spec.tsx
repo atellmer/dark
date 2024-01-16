@@ -34,8 +34,8 @@ const fetchError = async () => {
   throw new Error('oops!');
 };
 
-describe('@core/use-resource', () => {
-  test('resolves an async resource correctly', async () => {
+describe('@core/use-query', () => {
+  test('resolves an async query correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
       const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
@@ -53,7 +53,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
   });
 
-  test('resolves an async resource with error correctly', async () => {
+  test('resolves an async query with error correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
       const { loading, data, error } = useQuery(() => fetchError(), { key: KEY });
@@ -71,7 +71,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([false, null, 'Error: oops!']);
   });
 
-  test('refetches an async resource correctly', async () => {
+  test('refetches an async query correctly', async () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
       const { loading, data, error } = useQuery(({ id }) => fetchData(id), {
@@ -111,7 +111,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([false, 30, null]);
   });
 
-  test('resolves an async resource with suspense correctly', async () => {
+  test('resolves an async query with suspense correctly', async () => {
     const content = (isLoading: boolean, data: number) => dom`
     ${
       isLoading
@@ -156,7 +156,7 @@ describe('@core/use-resource', () => {
     expect(host.innerHTML).toBe(content(false, 10));
   });
 
-  test('renders an async resource on the server correctly', async () => {
+  test('renders an async query on the server correctly', async () => {
     const content = (data1: number, data2: number) => dom`
       <div>
         <div>${data1}</div>
@@ -191,7 +191,7 @@ describe('@core/use-resource', () => {
     expect(result).toBe(content(10, 20));
   });
 
-  test('hydrates an async resource correctly', () => {
+  test('hydrates an async query correctly', () => {
     const content = (marker: string, data1: number, data2: number, isHydrated = false) => dom`
       <div>
         <div>${marker}:${data1}</div>
