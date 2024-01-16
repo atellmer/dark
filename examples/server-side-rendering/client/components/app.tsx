@@ -1,7 +1,6 @@
-import { type DarkElement, h, component, Suspense, lazy, InMemoryCache, CacheProvider } from '@dark-engine/core';
+import { h, component, Fragment, Suspense, lazy, useMemo, InMemoryCache, CacheProvider } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
-import { api } from '../api';
 import { GlobalStyle, Spinner, Root, Header, Content, Footer } from './ui';
 
 const Products = lazy(() => import('./products'));
@@ -80,42 +79,36 @@ const routes: Routes = [
   },
 ];
 
-type ShellProps = {
-  slot: DarkElement;
-};
-
-const Shell = component<ShellProps>(({ slot }) => {
-  return (
-    <Suspense fallback={<Spinner />}>
-      <Root>
-        <Header>
-          <RouterLink to='/products'>Products</RouterLink>
-          <RouterLink to='/operations'>Operations</RouterLink>
-          <RouterLink to='/invoices'>Invoices</RouterLink>
-        </Header>
-        <Content>{slot}</Content>
-        <Footer>© {new Date().getFullYear()} Some Cool Company Ltd.</Footer>
-      </Root>
-    </Suspense>
-  );
-});
-
-const cache = new InMemoryCache(api.restore());
-
-cache.onChange(() => api.persist(cache));
-
 export type AppProps = {
   url?: string;
 };
 
 const App = component<AppProps>(({ url }) => {
+  const cache = useMemo(() => new InMemoryCache(), []);
+
   return (
-    <CacheProvider cache={cache}>
+    <>
       <GlobalStyle />
-      <Router routes={routes} url={url}>
-        {slot => <Shell>{slot}</Shell>}
-      </Router>
-    </CacheProvider>
+      <CacheProvider cache={cache}>
+        <Router routes={routes} url={url}>
+          {slot => {
+            return (
+              <Suspense fallback={<Spinner />}>
+                <Root>
+                  <Header>
+                    <RouterLink to='/products'>Products</RouterLink>
+                    <RouterLink to='/operations'>Operations</RouterLink>
+                    <RouterLink to='/invoices'>Invoices</RouterLink>
+                  </Header>
+                  <Content>{slot}</Content>
+                  <Footer>© {new Date().getFullYear()} Some Cool Company Ltd.</Footer>
+                </Root>
+              </Suspense>
+            );
+          }}
+        </Router>
+      </CacheProvider>
+    </>
   );
 });
 

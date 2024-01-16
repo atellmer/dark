@@ -28,12 +28,12 @@ const ProductRemove = component(() => {
       cache.delete({ key: State.PRODUCT_ITEM, id });
     },
   });
-  const backUrl = url.replace(`${id}/remove/`, '');
+  const urlToList = url.replace(`${id}/remove/`, '');
 
   const handleRemove = async () => {
     if (loading) return;
     await removeProduct(id);
-    history.push(backUrl);
+    history.push(urlToList);
   };
 
   return (

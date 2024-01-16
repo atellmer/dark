@@ -1,5 +1,3 @@
-import { type InMemoryCache } from '@dark-engine/core';
-
 export type ProductBrief = {
   id: number;
   name: string;
@@ -16,69 +14,42 @@ export enum State {
   PRODUCT_ITEM = 'product-item',
 }
 
-const APP_CACHE = 'APP_CACHE';
 const IS_SERVER = typeof globalThis.window === 'undefined';
 const TIMEOUT = IS_SERVER ? 100 : 600;
-const DESCRIPTION =
-  'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nostrum blanditiis quia minus corrupti quidem. Ipsam quae ad velit repudiandae molestias unde'.repeat(
-    3,
-  );
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // sumulates the database
 let nextId = 0;
-const state = IS_SERVER ? null : JSON.parse(localStorage.getItem(APP_CACHE));
-let products: Array<Product> = [];
-
-if (state) {
-  products = [...state[State.PRODUCTS]['__ROOT__'].data];
-  products.forEach(x => {
-    x.description = DESCRIPTION;
-  });
-  nextId = Math.max(...products.map(x => x.id));
-} else {
-  products = new Array(50).fill(null).map(() => ({
-    id: ++nextId,
-    name: `Product #${nextId}`,
-    description: DESCRIPTION,
-  }));
-}
+const products: Array<Product> = new Array(50).fill(null).map(() => ({
+  id: ++nextId,
+  name: `Product #${nextId}`,
+  description:
+    'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nostrum blanditiis quia minus corrupti quidem. Ipsam quae ad velit repudiandae molestias unde'.repeat(
+      3,
+    ),
+}));
 
 // api
 const api = {
-  restore() {
-    if (IS_SERVER) return;
-    let state = undefined;
-
-    try {
-      state = JSON.parse(localStorage.getItem(APP_CACHE));
-    } catch (error) {
-      console.error(error);
-    }
-
-    return state;
-  },
-  persist(cache: InMemoryCache) {
-    if (IS_SERVER) return;
-    localStorage.setItem(APP_CACHE, JSON.stringify(cache.get()));
-  },
   async fetchProductList() {
+    console.log('[fetch]: product-list');
     await sleep(TIMEOUT);
     const briefs = products.map(x => ({ ...x, description: null })) as Array<ProductBrief>;
 
     return briefs;
   },
   async fetchProduct(id: number) {
-    await sleep(TIMEOUT);
+    console.log('[fetch]: product', id);
     if (!detectIsValidId(id)) throwError();
+    await sleep(TIMEOUT);
     const product = products.find(x => x.id === id) || null;
 
     return product;
   },
   async addProduct(product: Partial<Product>) {
-    await sleep(TIMEOUT);
     if (detectIsValidId(product.id)) throwError();
+    await sleep(TIMEOUT);
 
     product.id = ++nextId;
     products.push(product as Product);
@@ -86,9 +57,9 @@ const api = {
     return product as Product;
   },
   async changeProduct(product: Product) {
-    await sleep(TIMEOUT);
-    if (!product) return null;
     if (!detectIsValidId(product.id)) throwError();
+    if (!product) return null;
+    await sleep(TIMEOUT);
     const idx = products.findIndex(x => x.id === product.id);
 
     if (idx !== -1) {
@@ -98,8 +69,8 @@ const api = {
     return product;
   },
   async removeProduct(id: number) {
-    await sleep(TIMEOUT);
     if (!detectIsValidId(id)) throwError();
+    await sleep(TIMEOUT);
     const idx = products.findIndex(x => x.id === id);
 
     if (idx !== -1) {

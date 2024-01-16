@@ -24,7 +24,7 @@ const ProductEdit = component(() => {
   });
   const { url } = useMatch();
   const history = useHistory();
-  const backUrl = url.replace(`${id}/edit/`, '');
+  const urlToList = url.replace(`${id}/edit/`, '');
   const cache = useCache();
   const record = cache.read<Product>({ key: State.PRODUCT_ITEM, id });
   const product = record?.data;
@@ -36,7 +36,7 @@ const ProductEdit = component(() => {
 
     if (loading) return;
     await changeProduct({ ...product, name, description });
-    history.push(backUrl);
+    history.push(urlToList);
   };
 
   return (

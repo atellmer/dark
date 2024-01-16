@@ -17,8 +17,8 @@ const ProductCard = component<ProductCardProps>(({ slot }) => {
     key: State.PRODUCT_ITEM,
     extractId: x => x.id,
   });
-  const editUrl = url + 'edit/';
-  const removeUrl = url + 'remove/';
+  const urlToEdit = url + 'edit/';
+  const urlToRemove = url + 'remove/';
 
   if (loading) return <Spinner />;
   if (error) return <Error value={error} />;
@@ -36,10 +36,10 @@ const ProductCard = component<ProductCardProps>(({ slot }) => {
       )}
       {data && (
         <>
-          <Button as={RouterLink} to={editUrl}>
+          <Button as={RouterLink} to={urlToEdit}>
             Edit
           </Button>
-          <Button as={RouterLink} to={removeUrl}>
+          <Button as={RouterLink} to={urlToRemove}>
             Remove
           </Button>
         </>

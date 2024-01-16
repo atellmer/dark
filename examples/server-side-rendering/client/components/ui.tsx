@@ -147,7 +147,7 @@ const Header = styled.header<{ $nested?: boolean } & DarkJSX.HTMLTags['header']>
 `;
 
 const Content = styled.main`
-  padding: 0 16px;
+  padding: 0 16px 16px;
   background-color: #fff8e1;
 `;
 
@@ -208,6 +208,24 @@ const Button = styled.button`
   }
 `;
 
+const List = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const ListItem = styled.li`
+  width: 100%;
+  background-color: #fff;
+  margin: 6px 0;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+  &:first-child {
+    margin-top: 0;
+  }
+`;
+
 export {
   GlobalStyle,
   Error,
@@ -222,4 +240,6 @@ export {
   Textarea,
   Form,
   Button,
+  List,
+  ListItem,
 };

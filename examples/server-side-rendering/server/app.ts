@@ -15,7 +15,7 @@ app.get('*', (req, res) => {
   const { url } = req;
   console.log('url', url);
   if (url === '/favicon.ico') return res.end();
-  const stream = bootstrap({ props: { url }, title: 'Dark SSR' });
+  const stream = bootstrap({ props: { url }, title: 'Dark SSR App' });
 
   res.statusCode = 200;
   stream.pipe(res);
