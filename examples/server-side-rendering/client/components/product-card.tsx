@@ -1,10 +1,14 @@
-import { h, component, Fragment, useResource } from '@dark-engine/core';
+import { type DarkElement, h, component, Fragment, useResource } from '@dark-engine/core';
 import { RouterLink, useMatch, useParams } from '@dark-engine/web-router';
 
 import { State, api } from '../api';
 import { Spinner, Error, Card, Button } from './ui';
 
-const ProductCard = component(() => {
+type ProductCardProps = {
+  slot: DarkElement;
+};
+
+const ProductCard = component<ProductCardProps>(({ slot }) => {
   const params = useParams();
   const { url } = useMatch();
   const id = Number(params.get('id'));
@@ -18,6 +22,7 @@ const ProductCard = component(() => {
 
   if (loading) return <Spinner />;
   if (error) return <Error value={error} />;
+  if (slot) return slot;
 
   return (
     <Card>

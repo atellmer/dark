@@ -51,7 +51,10 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
         state.data = data;
         state.isFetching = false;
         state.error = null;
-        cacheKey && data && cache?.write({ key: cacheKey, id: $cacheId, data });
+      }
+
+      if (cacheKey && cache && data) {
+        cache.write({ key: cacheKey, id: $cacheId, data });
       }
 
       return data;
@@ -78,7 +81,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     if (cacheKey && cache) {
       const record = cache.read({ key: cacheKey, id: cacheId });
 
-      if (record?.isValid) return;
+      if (record?.valid) return;
     }
 
     make();
@@ -114,8 +117,13 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
       }
     } else if (isHydrateZone) {
       if (!res) throw new Error('[Dark]: can not read app state from the server!');
+      const [data] = res;
+
       mutate(state, res);
-      cacheKey && cache?.write({ key: cacheKey, id: cacheId, data: res[0] });
+
+      if (cacheKey && cache && data) {
+        cache.write({ key: cacheKey, id: cacheId, data });
+      }
     }
   } else {
     firstTime() && !isLoaded && register(id);

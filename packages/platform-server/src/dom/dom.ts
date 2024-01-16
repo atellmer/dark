@@ -28,6 +28,7 @@ import {
   type AttributeValue,
 } from '../native-element';
 import { detectIsVoidElement } from '../utils';
+import { TEXTAREA_TAG, VALUE_ATTR } from '../constants';
 
 let chunkIds: Record<string, boolean> = {};
 
@@ -86,19 +87,22 @@ type PatchPropertiesOptions = {
 
 function patchProperties(options: PatchPropertiesOptions): boolean {
   const { element, attrName, attrValue } = options;
-  const fn = patchPropertiesSpecialCasesMap[element.name];
+  const fn = specialCasesMap[element.name];
   const stop = fn ? fn(element, attrName, attrValue) : false;
 
   return stop;
 }
 
-const patchPropertiesSpecialCasesMap: Record<
+const specialCasesMap: Record<
   string,
   (element: TagNativeElement, attrName: string, attrValue: AttributeValue) => boolean
 > = {
-  textarea: (element: TagNativeElement, attrName: string, attrValue: AttributeValue) => {
-    if (attrName === 'value') {
-      element.children = [new TextNativeElement(String(attrValue))];
+  [TEXTAREA_TAG]: (element: TagNativeElement, attrName: string, attrValue: AttributeValue) => {
+    if (attrName === VALUE_ATTR && attrValue) {
+      const textElement = new TextNativeElement(String(attrValue));
+
+      element.children = [textElement];
+      textElement.parentElement = element;
 
       return true;
     }
@@ -136,8 +140,12 @@ function chunk(fiber: Fiber<NativeElement>) {
 
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
-      addAttributes(tagElement, fiber.inst);
-      chunk = tagElement.renderToChunk(true, fiber.inst.children.length === 0);
+      const { inst } = fiber;
+      const content = inst.name === TEXTAREA_TAG ? inst.attrs[VALUE_ATTR] || '' : '';
+      const close = inst.children.length === 0 && !content;
+
+      addAttributes(tagElement, inst);
+      chunk = tagElement.renderToChunk(true, close, content);
     } else if (detectIsPlainVirtualNode(fiber.inst)) {
       chunk = fiber.element.renderToChunk();
     }

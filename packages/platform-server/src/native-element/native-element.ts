@@ -55,13 +55,14 @@ class TagNativeElement extends NativeElement {
   override renderToChunk(...args: Array<unknown>) {
     const start = args[0] as boolean;
     const close = args[1] as boolean;
+    const content = args[2] as string;
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
 
     return start
       ? close
         ? `<${this.name}${attrs}></${this.name}>`
-        : `<${this.name}${attrs}>`
+        : `<${this.name}${attrs}>${content || ''}`
       : isVoid
       ? ''
       : `</${this.name}>`;

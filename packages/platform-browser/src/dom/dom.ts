@@ -32,7 +32,15 @@ import {
 
 import { detectIsPortal } from '../portal';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { STYLE_ATTR, CLASS_ATTR, CLASS_NAME_ATTR, EXCLUDE_ATTR_MARK } from '../constants';
+import {
+  INPUT_TAG,
+  TEXTAREA_TAG,
+  STYLE_ATTR,
+  CLASS_ATTR,
+  CLASS_NAME_ATTR,
+  VALUE_ATTR,
+  EXCLUDE_ATTR_MARK,
+} from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
@@ -270,7 +278,7 @@ type PatchPropertiesOptions = {
 
 function patchProperties(options: PatchPropertiesOptions): boolean {
   const { tagName, element, attrName, attrValue } = options;
-  const fn = patchPropertiesSpecialCasesMap[tagName];
+  const fn = specialCasesMap[tagName];
   let stop = fn ? fn(element, attrName, attrValue) : false;
 
   if (canSetProperty(element, attrName)) {
@@ -291,26 +299,21 @@ function canSetProperty(element: TagNativeElement, key: string) {
   return Boolean(descriptor?.set);
 }
 
-const patchPropertiesSpecialCasesMap: Record<
+const specialCasesMap: Record<
   string,
   (element: NativeElement, attrName: string, attrValue: AttributeValue) => boolean
 > = {
-  input: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
-    if (attrName === 'value') {
+  [INPUT_TAG]: (element: HTMLInputElement, attrName: string, attrValue: AttributeValue) => {
+    if (attrName === VALUE_ATTR) {
       patches.push(() => {
         detectIsBoolean(attrValue) ? (element.checked = attrValue) : (element.value = String(attrValue));
-      });
-    } else if (attrName === 'autoFocus') {
-      patches.push(() => {
-        element.autofocus = Boolean(attrValue);
-        element.autofocus && element.focus();
       });
     }
 
     return false;
   },
-  textarea: (element: HTMLTextAreaElement, attrName: string, attrValue: AttributeValue) => {
-    if (attrName === 'value') {
+  [TEXTAREA_TAG]: (element: HTMLTextAreaElement, attrName: string, attrValue: AttributeValue) => {
+    if (attrName === VALUE_ATTR) {
       element.innerText = String(attrValue);
 
       return true;

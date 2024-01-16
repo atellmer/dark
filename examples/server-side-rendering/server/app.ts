@@ -13,9 +13,10 @@ app.use(express.static(join(__dirname, '../client/static')));
 
 app.get('*', (req, res) => {
   const { url } = req;
+  console.log('url', url);
+  if (url === '/favicon.ico') return res.end();
   const stream = bootstrap({ props: { url }, title: 'Dark SSR' });
 
-  console.log('url', url);
   res.statusCode = 200;
   stream.pipe(res);
 });

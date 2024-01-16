@@ -25,7 +25,7 @@ class InMemoryCache {
   write<T>({ key, id = CACHE_ROOT_ID, data }: WriteOptions<T>) {
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
-    const record: CacheRecord = { id, isValid: true, modifiedAt: getTime(), data };
+    const record: CacheRecord = { id, valid: true, modifiedAt: getTime(), data };
 
     map[id] = record;
     this.emitter.emit('change', { type: 'write', key, id, record });
@@ -34,7 +34,7 @@ class InMemoryCache {
   optimistic<T>({ key, id = CACHE_ROOT_ID, data }: OptimisticOptions<T>) {
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
-    const record: CacheRecord = { id, isValid: false, modifiedAt: getTime(), data };
+    const record: CacheRecord = { id, valid: false, modifiedAt: getTime(), data };
 
     map[id] = record;
     this.emitter.emit('change', { type: 'optimistic', key, id, record });
@@ -45,7 +45,7 @@ class InMemoryCache {
     if (!map) return;
     const record = map[id];
     if (!record) return;
-    record.isValid = false;
+    record.valid = false;
     this.emitter.emit('change', { type: 'invalidate', key, id, record });
   }
 
@@ -76,6 +76,7 @@ const CacheProvider = component<CacheProviderProps>(({ cache, slot }) => {
 });
 
 type State = Record<string, Record<string, CacheRecord>>;
+
 type EventName = 'change';
 type EventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
 type EventData = { type: EventType; key: string; id: TextBased; record?: CacheRecord };
@@ -86,23 +87,15 @@ type BaseOptions = {
 };
 
 type ReadOptions = BaseOptions;
-
-type WriteOptions<T> = {
-  data: T;
-} & BaseOptions;
-
-type OptimisticOptions<T> = {
-  data: T;
-} & BaseOptions;
-
+type WriteOptions<T> = { data: T } & BaseOptions;
+type OptimisticOptions<T> = { data: T } & BaseOptions;
 type InvalidateOptions = BaseOptions;
-
 type DeleteOptions = BaseOptions;
 
 export type CacheRecord<T = unknown> = {
   id: TextBased;
   data: T;
-  isValid: boolean;
+  valid: boolean;
   modifiedAt: number;
 };
 

@@ -20,7 +20,7 @@ const ProductAdd = component(() => {
   });
   const { url } = useMatch();
   const history = useHistory();
-  const listUrl = url.replace('add/', '');
+  const back = url.replace('add/', '');
 
   const handleSubmit = async (e: SyntheticEvent<InputEvent, HTMLFormElement>) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ const ProductAdd = component(() => {
 
     if (loading) return;
     await addProduct({ name, description });
-    history.push(listUrl);
+    history.push(back);
   };
 
   return (
