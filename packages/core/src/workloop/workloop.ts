@@ -421,7 +421,7 @@ function extractKeys(alt: Fiber, children: Array<Instance>) {
 
       if (process.env.NODE_ENV !== 'production') {
         if (usedKeysMap[nextKey]) {
-          error(`[Dark]: The key of node [${nextKey}] already has been used!`, [inst]);
+          error(`[Dark]: the key of node [${nextKey}] already has been used!`, [inst]);
         }
       }
 

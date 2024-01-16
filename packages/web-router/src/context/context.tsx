@@ -40,7 +40,7 @@ function useCurrentPathContext() {
 
 function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
   if (!value) {
-    throw new Error('[web-router]:  Illegal invoke hook outside router!');
+    throw new Error('[web-router]: illegal invoke hook outside router!');
   }
 }
 

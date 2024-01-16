@@ -12,7 +12,7 @@ class RouterHistory {
 
   constructor(url: string) {
     if (detectIsFalsy(url)) {
-      throw new Error('[web-router]: RouterHistory must have initial url!');
+      throw new Error('[web-router]: RouterHistory must have an initial url!');
     }
 
     const { pathname, search } = parseURL(url);

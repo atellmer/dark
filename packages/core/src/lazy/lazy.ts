@@ -54,7 +54,7 @@ function load<P extends object>(module: ModuleFn<P>) {
     module().then(module => {
       if (process.env.NODE_ENV !== 'production') {
         if (!module.default) {
-          throw new Error('[Dark]: Lazy loaded component should be exported as default!');
+          throw new Error('[Dark]: the lazy loaded component should be exported as default!');
         }
       }
 

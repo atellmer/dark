@@ -41,7 +41,7 @@ function component<P extends object, R = unknown>(type: CreateElement<P, R>, opt
 
       if (process.env.NODE_ENV !== 'production') {
         process.env.NODE_ENV === 'development' &&
-          error(`[Dark]: To use ref you need to wrap the component with forwardRef!`);
+          error(`[Dark]: to use ref you need to wrap the component with forwardRef!`);
       }
     }
 

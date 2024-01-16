@@ -149,7 +149,7 @@ function canRender() {
     if (route?.component) return route;
 
     if (process.env.NODE_ENV !== 'test') {
-      throw new Error('[web-router]: Route not found or it has no component!');
+      throw new Error('[web-router]: the route not found or it has no component!');
     }
 
     return null;

@@ -41,7 +41,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
   component(
     ({ url, baseURL = SLASH_MARK, routes: sourceRoutes, slot }, ref) => {
       if (useActiveRouteContext()) {
-        throw new Error('[web-router]: Parent active route context detected!');
+        throw new Error(`[web-router]: the parent active route's context detected!`);
       }
       const sourceURL = url || window.location.href;
       const [location, setLocation] = useState(() => createRouterLocation(sourceURL));

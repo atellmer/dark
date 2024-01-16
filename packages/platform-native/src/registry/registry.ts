@@ -48,7 +48,7 @@ function getElementFactory(name: string): NSElementFactory {
   const factory = viewMap[name] || null;
 
   if (!factory) {
-    throw new Error(`[Dark]: Element with name ${name} is not registered!`);
+    throw new Error(`[Dark]: the element with name "${name}" is not registered!`);
   }
 
   return factory;
