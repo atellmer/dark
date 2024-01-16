@@ -1,27 +1,28 @@
-import { type DarkElement, h, component, Fragment, useResource } from '@dark-engine/core';
+import { type DarkElement, h, component, Fragment } from '@dark-engine/core';
 import { RouterLink, useMatch, useParams } from '@dark-engine/web-router';
 
-import { State, api } from '../api';
+import { useProduct } from '../hooks';
 import { Spinner, Error, Card, Button } from './ui';
 
-type ProductCardProps = {
-  slot: DarkElement;
-};
-
-const ProductCard = component<ProductCardProps>(({ slot }) => {
+const ProductCard = component<{ slot: DarkElement }>(({ slot }) => {
   const params = useParams();
-  const { url } = useMatch();
   const id = Number(params.get('id'));
-  const { data, loading, error } = useResource(({ id }) => api.fetchProduct(id), {
-    variables: { id },
-    key: State.PRODUCT_ITEM,
-    extractId: x => x.id,
-  });
+  const { data, loading, error } = useProduct(id);
+  const { url } = useMatch();
   const urlToEdit = url + 'edit/';
   const urlToRemove = url + 'remove/';
 
   if (loading) return <Spinner />;
   if (error) return <Error value={error} />;
+
+  if (!data) {
+    return (
+      <Card>
+        <h3>It seems there is no product with #{id} 🤫</h3>
+      </Card>
+    );
+  }
+
   if (slot) return slot;
 
   return (

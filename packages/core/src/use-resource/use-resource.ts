@@ -91,10 +91,12 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     let off: Callback = null;
 
     if (cache) {
-      off = cache.onChange(({ type, key, id }) => {
+      off = cache.subscribe(({ type, key, id }) => {
         if (key === state.cacheKey && id === state.cacheId) {
           if (type === 'invalidate' || type === 'optimistic') {
-            make();
+            if (cache.canUpdate(key)) {
+              make();
+            }
           }
         }
       });

@@ -1,6 +1,7 @@
 import { h, component, Fragment, Suspense, lazy, useMemo, InMemoryCache, CacheProvider } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
+import { Cache } from '../api';
 import { GlobalStyle, Spinner, Root, Header, Content, Footer } from './ui';
 
 const Products = lazy(() => import('./products'));
@@ -84,7 +85,7 @@ export type AppProps = {
 };
 
 const App = component<AppProps>(({ url }) => {
-  const cache = useMemo(() => new InMemoryCache(), []);
+  const cache = useMemo(() => new InMemoryCache<Cache>(), []);
 
   return (
     <>

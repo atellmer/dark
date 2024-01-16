@@ -1,35 +1,25 @@
-import { h, component, useMutation } from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { useMatch, useHistory } from '@dark-engine/web-router';
 
-import { type ProductBrief, State, api } from '../api';
+import { useAddProductMutation } from '../hooks';
 import { Card, Input, Textarea, Form, Button } from './ui';
 
 const ProductAdd = component(() => {
-  const [addProduct, { loading }] = useMutation(api.addProduct, {
-    onComplete: (cache, product) => {
-      const record = cache.read<Array<ProductBrief>>({ key: State.PRODUCTS });
-
-      if (record) {
-        const products = record.data;
-
-        products.push(product);
-        cache.optimistic({ key: State.PRODUCTS, data: products });
-      }
-    },
-  });
   const { url } = useMatch();
   const history = useHistory();
-  const back = url.replace('add/', '');
+  const [addProduct, { loading }] = useAddProductMutation();
+  const urlToList = url.replace('add/', '');
 
   const handleSubmit = async (e: SyntheticEvent<InputEvent, HTMLFormElement>) => {
     e.preventDefault();
-    const name = e.target.elements['name'].value as string;
-    const description = e.target.elements['desc'].value as string;
-
     if (loading) return;
+    const { elements } = e.target;
+    const name = elements['name'].value as string;
+    const description = elements['desc'].value as string;
+
     await addProduct({ name, description });
-    history.push(back);
+    history.push(urlToList);
   };
 
   return (

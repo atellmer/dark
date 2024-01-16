@@ -5,13 +5,13 @@ import { type InMemoryCache, useCache } from '../cache';
 
 type UseMutatinOptions<T> = {
   refetchQueries?: Array<string>;
-  onComplete?: (x: InMemoryCache, data: T) => void;
+  onSuccess?: (x: InMemoryCache, data: T) => void;
 };
 
 function useMutation<M extends Mutation>(mutation: M, options?: UseMutatinOptions<Awaited<ReturnType<M>>>) {
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
-  const { refetchQueries = [], onComplete } = options || {};
+  const { refetchQueries = [], onSuccess } = options || {};
   const update = useUpdate();
   const cache = useCache();
   const state = useMemo<State<AwaitedResult>>(() => ({ isFetching: false, data: null, error: null }), []);
@@ -23,7 +23,7 @@ function useMutation<M extends Mutation>(mutation: M, options?: UseMutatinOption
       state.error = null;
       update();
       data = (await mutation(...args)) as AwaitedResult;
-      detectIsFunction(onComplete) && onComplete(cache, data);
+      detectIsFunction(onSuccess) && onSuccess(cache, data);
       refetchQueries.forEach(x => cache.invalidate({ key: x }));
     } catch (err) {
       error(err);
