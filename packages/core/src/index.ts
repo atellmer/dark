@@ -34,6 +34,7 @@ export { useId } from './use-id';
 export { useSyncExternalStore } from './use-sync-external-store';
 export { InMemoryCache, CacheProvider } from './cache';
 export { useQuery } from './use-query';
+export { useLazyQuery } from './use-lazy-query';
 export { useMutation } from './use-mutation';
 export * from './walk';
 export { unmountRoot } from './unmount';

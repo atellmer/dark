@@ -40,13 +40,13 @@ function useMutation<M extends Mutation>(mutation: M, options: UseMutatinOptions
 
     return data;
   };
-  const result: Result<AwaitedResult> = {
+  const result: MutationResult<AwaitedResult> = {
     loading: state.isFetching,
     data: state.data,
     error: state.error,
   };
 
-  return [make, result] as [(...args: Params) => ReturnType<M>, Result<AwaitedResult>];
+  return [make, result] as [(...args: Params) => ReturnType<M>, MutationResult<AwaitedResult>];
 }
 
 type State<T> = {
@@ -55,7 +55,7 @@ type State<T> = {
   error: string;
 };
 
-type Result<T> = {
+type MutationResult<T> = {
   loading: boolean;
 } & Pick<State<T>, 'data' | 'error'>;
 

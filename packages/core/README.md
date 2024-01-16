@@ -99,6 +99,7 @@ import {
   useImperativeHandle,
   useInsertionEffect,
   useLayoutEffect,
+  useLazyQuery,
   useMemo,
   useMutation,
   useQuery,

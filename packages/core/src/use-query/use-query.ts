@@ -9,19 +9,25 @@ import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
 
-type UseQueryOptions<V extends Variables> = {
+export type UseQueryOptions<V extends Variables> = {
   key: string;
   variables?: V;
   extractId?: (x: V) => TextBased;
+  lazy?: boolean;
 };
 
 function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryOptions<V>) {
-  const { variables = {} as V, key: cacheKey, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
+  const {
+    variables = {} as V,
+    key: cacheKey,
+    extractId = () => CACHE_ROOT_ID,
+    lazy = false,
+  } = options || { variables: {} as V };
   const $scope = $$scope();
   const cache = useCache();
   const cacheId = extractId(variables);
   const id = useMemo(() => $scope.getNextResourceId(), []);
-  const state = useMemo<State<T>>(() => createState<T>(cache, cacheKey, cacheId), []);
+  const state = useMemo<State<T>>(() => createState<T>(cache, cacheKey, cacheId, lazy), []);
   const { register, unregister } = useSuspense();
   const [mounted, firstTime] = useMounted();
   const update = useUpdate();
@@ -33,8 +39,8 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   state.cacheKey = cacheKey;
   state.cacheId = cacheId;
 
-  const make = async (isRefetch?: boolean, $variables?: V) => {
-    const $$variables = isRefetch ? $variables : variables;
+  const make = async ($variables?: V) => {
+    const $$variables = $variables || variables;
     const $cacheId = extractId($$variables);
 
     cache.__emit({ type: MonitorEventType.QUERY, phase: 'start', key: cacheKey, data: $$variables });
@@ -84,6 +90,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
 
   useEffect(() => {
     if (isHydrateZone) return;
+    if (lazy) return;
     const record = cache.read({ key: cacheKey, id: cacheId });
 
     if (record?.valid) return;
@@ -130,22 +137,22 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
       }
     }
   } else {
-    firstTime() && !isLoaded && register(id);
+    firstTime() && !isLoaded && !lazy && register(id);
   }
 
-  const result: Result<T> = {
+  const result: QueryResult<T> = {
     loading: state.isFetching,
     data: state.data,
     error: state.error,
-    refetch: (variables: V) => make(true, variables),
+    refetch: make,
   };
 
   return result;
 }
 
-function createState<T>(cache: InMemoryCache, cacheKey: string, cacheId: TextBased) {
+function createState<T>(cache: InMemoryCache, cacheKey: string, cacheId: TextBased, lazy) {
   const state: State<T> = {
-    isFetching: true,
+    isFetching: !lazy,
     isLoaded: false,
     data: null,
     error: null,
@@ -195,15 +202,12 @@ type State<T> = {
   cacheKey: string;
 };
 
-type Result<T> = {
+export type QueryResult<T> = {
   loading: boolean;
-  data: T;
-  error: string;
   refetch: Query<T>;
-};
+} & Pick<State<T>, 'data' | 'error'>;
 
-type Variables<K extends string = string, V = any> = Record<K, V>;
-
-type Query<T, V extends Variables = Variables> = (variables: V) => Promise<T>;
+export type Variables<K extends string = string, V = any> = Record<K, V>;
+export type Query<T, V extends Variables = Variables> = (variables?: V) => Promise<T>;
 
 export { useQuery };
