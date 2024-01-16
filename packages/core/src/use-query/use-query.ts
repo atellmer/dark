@@ -9,13 +9,13 @@ import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
 
-type UseResourceOptions<V extends Variables> = {
+type UseQueryOptions<V extends Variables> = {
   key: string;
   variables?: V;
   extractId?: (x: V) => TextBased;
 };
 
-function useResource<T, V extends Variables>(query: Query<T, V>, options: UseResourceOptions<V>) {
+function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryOptions<V>) {
   const { variables = {} as V, key: cacheKey, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
   const $scope = $$scope();
   const cache = useCache();
@@ -206,4 +206,4 @@ type Variables<K extends string = string, V = any> = Record<K, V>;
 
 type Query<T, V extends Variables = Variables> = (variables: V) => Promise<T>;
 
-export { useResource };
+export { useQuery };

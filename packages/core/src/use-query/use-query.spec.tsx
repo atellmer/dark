@@ -9,7 +9,7 @@ import { Suspense } from '../suspense';
 import { APP_STATE_ATTR } from '../constants';
 import { useState } from '../use-state';
 import { InMemoryCache, CacheProvider } from '../cache';
-import { useResource } from './use-resource';
+import { useQuery } from './use-query';
 
 jest.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -38,7 +38,7 @@ describe('@core/use-resource', () => {
   test('resolves an async resource correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(1), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
 
       spy([loading, data, error]);
 
@@ -56,7 +56,7 @@ describe('@core/use-resource', () => {
   test('resolves an async resource with error correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useResource(() => fetchError(), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchError(), { key: KEY });
 
       spy([loading, data, error]);
 
@@ -74,7 +74,7 @@ describe('@core/use-resource', () => {
   test('refetches an async resource correctly', async () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
-      const { loading, data, error } = useResource(({ id }) => fetchData(id), {
+      const { loading, data, error } = useQuery(({ id }) => fetchData(id), {
         key: KEY,
         variables: { id },
         extractId: x => x.id,
@@ -126,7 +126,7 @@ describe('@core/use-resource', () => {
         `
     }`;
     const Child = component(() => {
-      const { loading, data } = useResource(() => fetchData(1), { key: KEY });
+      const { loading, data } = useQuery(() => fetchData(1), { key: KEY });
 
       if (loading) return <div>...</div>;
 
@@ -165,7 +165,7 @@ describe('@core/use-resource', () => {
       <script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(2), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(2), { key: KEY });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -173,7 +173,7 @@ describe('@core/use-resource', () => {
       return <div>{data}</div>;
     });
     const App = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(1), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -201,7 +201,7 @@ describe('@core/use-resource', () => {
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(2), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(2), { key: KEY });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -210,7 +210,7 @@ describe('@core/use-resource', () => {
     });
     const App = component(() => {
       const [marker, _setMarker] = useState('a');
-      const { loading, data, error } = useResource(() => fetchData(1), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
 
       setMarker = _setMarker;
 

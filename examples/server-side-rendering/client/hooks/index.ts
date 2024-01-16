@@ -1,4 +1,4 @@
-import { useResource, useMutation } from '@dark-engine/core';
+import { useQuery, useMutation } from '@dark-engine/core';
 
 import { type ProductBrief, api } from '../api';
 
@@ -11,11 +11,11 @@ export enum Key {
 }
 
 function useProducts() {
-  return useResource(() => api.fetchProducts(), { key: Key.FETCH_PRODUCTS });
+  return useQuery(() => api.fetchProducts(), { key: Key.FETCH_PRODUCTS });
 }
 
 function useProduct(id: number) {
-  return useResource(({ id }) => api.fetchProduct(id), {
+  return useQuery(({ id }) => api.fetchProduct(id), {
     key: Key.FETCH_PRODUCT,
     variables: { id },
     extractId: x => x.id,
