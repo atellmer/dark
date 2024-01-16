@@ -3,7 +3,10 @@ import { useResource, useMutation } from '@dark-engine/core';
 import { type ProductBrief, Cache, api } from '../api';
 
 function useProducts() {
-  return useResource(() => api.fetchProducts(), { key: Cache.PRODUCTS });
+  return useResource(() => api.fetchProducts(), {
+    key: Cache.PRODUCTS,
+    onBefore: () => console.log('[fetch]: products'),
+  });
 }
 
 function useProduct(id: number) {
@@ -11,6 +14,9 @@ function useProduct(id: number) {
     variables: { id },
     key: Cache.PRODUCT_ITEM,
     extractId: x => x.id,
+    onBefore: () => {
+      console.log('[fetch]: product', id);
+    },
   });
 }
 

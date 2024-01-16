@@ -13,10 +13,16 @@ type UseResourceOptions<V extends Variables> = {
   variables?: V;
   key?: string;
   extractId?: (x: V) => TextBased;
+  onBefore?: () => void;
 };
 
 function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseResourceOptions<V>) {
-  const { variables = {} as V, key: cacheKey, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
+  const {
+    variables = {} as V,
+    key: cacheKey,
+    extractId = () => CACHE_ROOT_ID,
+    onBefore,
+  } = options || { variables: {} as V };
   const $scope = $$scope();
   const cache = useCache();
   const cacheId = extractId(variables);
@@ -36,6 +42,8 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
   const make = async (isRefetch?: boolean, $variables?: V) => {
     const $$variables = isRefetch ? $variables : variables;
     const $cacheId = extractId($$variables);
+
+    detectIsFunction(onBefore) && onBefore();
 
     try {
       if (!isServer && !firstTime()) {

@@ -9,7 +9,7 @@ export type Product = {
   description: string;
 };
 
-export enum State {
+export enum Cache {
   PRODUCTS = 'products',
   PRODUCT_ITEM = 'product-item',
 }
@@ -32,15 +32,13 @@ const products: Array<Product> = new Array(50).fill(null).map(() => ({
 
 // api
 const api = {
-  async fetchProductList() {
-    console.log('[fetch]: product-list');
+  async fetchProducts() {
     await sleep(TIMEOUT);
     const briefs = products.map(x => ({ ...x, description: null })) as Array<ProductBrief>;
 
     return briefs;
   },
   async fetchProduct(id: number) {
-    console.log('[fetch]: product', id);
     if (!detectIsValidId(id)) throwError();
     await sleep(TIMEOUT);
     const product = products.find(x => x.id === id) || null;
