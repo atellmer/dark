@@ -1,13 +1,4 @@
-import {
-  uniq,
-  mapProps,
-  mergeClassNames,
-  getElement,
-  createStyleElement,
-  setAttr,
-  append,
-  mergeTemplates,
-} from './utils';
+import { uniq, mergeClassNames, getElement, createStyleElement, setAttr, append, mergeTemplates } from './utils';
 
 describe('@styled/utils', () => {
   test('the uniq function works correctly', () => {
@@ -20,12 +11,6 @@ describe('@styled/utils', () => {
       { id: 2 },
       { id: 3 },
     ]);
-  });
-
-  test('the mapProps function works correctly', () => {
-    expect(typeof mapProps).toBe('function');
-    expect(mapProps({ a: 1, b: 2, c: 3 })).toEqual([1, 2, 3]);
-    expect(mapProps({ a: {}, b: [], c: '3' })).toEqual([{}, [], '3']);
   });
 
   test('the mergeClassNames function works correctly', () => {

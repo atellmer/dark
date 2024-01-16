@@ -1,16 +1,25 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[125],{8422:(t,i,e)=>{e.d(i,{h:()=>u});const r=t=>new Promise((i=>setTimeout(i,t))),n="products",o="product",a={[n]:null,[o]:{}},s=void 0!==globalThis.process,u={async fetchProductList(){if(s||!a[n]){await r(s?100:600);const t=new Array(10).fill(null).map(((t,i)=>({id:i+1,title:`Product #${i+1}`})));a[n]=t}return a[n]},async fetchProduct(t){if(s||!a[o][t]){if(await r(s?100:600),"number"!=typeof t||Number.isNaN(t))throw new Error("Invalid id!");const i={id:t,title:`Product #${t}`,description:"Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nostrum blanditiis quia minus corrupti quidem. Ipsam quae ad velit repudiandae molestias unde ab officiis harum atque? Quo veritatis maxime illo asperiores."};a[o][t]=i}return a[o][t]}}},6038:(t,i,e)=>{e.d(i,{G:()=>a});var r=e(7820),n=e(6630);const o=r.F4`
-  0% {
-    opacity: 0;
-  }
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[125],{1125:(e,t,r)=>{r.r(t),r.d(t,{default:()=>f});var i=r(2654),a=r(8903),n=r(3524),s=r(1523),o=r(2752),d=r(1169),l=r(6630),c=r(8422),u=r(5010);const h=l.zo.header`
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  grid-template-rows: auto;
+  padding: 16px 0;
 
-  100% {
-    opacity: 1;
+  & h2 {
+    margin: 0;
   }
-`,a=n.zo.div`
-  animation-name: ${o};
-  animation-iteration-count: 1;
-  animation-duration: 600ms;
-  animation-fill-mode: both;
-  animation-timing-function: ease-in-out;
-`},4418:(t,i,e)=>{e.d(i,{j:()=>o});var r=e(2654),n=e(3524);const o=(0,r.wU)((({value:t})=>(0,n.h)("div",null,t," 🫠")))},1125:(t,i,e)=>{e.r(i),e.d(i,{default:()=>h});var r=e(2654),n=e(8903),o=e(3524),a=e(1523),s=e(7059),u=e(8422),c=e(5092),l=e(4418),d=e(6038);const h=(0,r.wU)((({slot:t})=>{const{url:i}=(0,a.b)(),e=(0,n.W)((()=>u.h.fetchProductList())),{loading:r,data:h,error:m}=e;return r?(0,o.h)(c.$,null):m?(0,o.h)(l.j,{value:m}):(0,o.h)(d.G,null,(0,o.h)("h2",null,"List"),t||(0,o.h)("ul",null,h.map((t=>(0,o.h)("li",null,(0,o.h)(s.r,{to:`${i}${t.id}`},t.title))))))}))},8903:(t,i,e)=>{e.d(i,{W:()=>d});var r=e(3760),n=e(7544),o=e(6238),a=e(8047),s=e(4435),u=e(1261),c=e(3443),l=e(9812);function d(t,i=[]){const e=(0,u.Y)((()=>({isFetching:!0,isLoaded:!1,data:null,error:null})),[]),{register:d,unregister:m}=(0,a.h)(),[f,p]=function(){const t=(0,u.Y)((()=>({isMounted:!0,isFirstTime:!0})),[]),{isFirstTime:i}=t;return(0,r.b)((()=>(t.isFirstTime=!1,()=>t.isMounted=!1)),[]),[()=>t.isMounted,()=>i]}(),g=(0,s.P)(),v=()=>f()&&g(),w=(0,c.pj)(),b=(0,u.Y)((()=>w.getNextResourceId()),[]),y=String(b),F=(0,n.X)(),L=w.getIsHydrateZone(),P=async(r,...n)=>{try{F||p()||(e.isFetching=!0,v());const o=await t(...r?n:i);return F?w.setResource(b,[o,null]):(m(y),e.data=o,e.isFetching=!1,e.error=null),o}catch(t){(0,l.vU)(t),F?w.setResource(b,[null,String(t)]):(m(y),e.isFetching=!1,e.error=String(t))}finally{F||(e.isLoaded=!0,v())}};if((0,o.d4)((()=>{!L&&P()}),[...i]),(0,o.d4)((()=>()=>m(y)),[]),F||L){const t=w.getResource(b);if(F)t?h(e,t):w.defer(P);else if(L){if(!t)throw new Error("[Dark]: can not read app state from the server!");h(e,t)}}else p()&&d(y);return{loading:e.isFetching,data:e.data,error:e.error,refetch:(...t)=>P(!0,...t)}}function h(t,i){const[e,r]=i;t.isFetching=!1,t.isLoaded=!0,t.data=e,t.error=r}},1523:(t,i,e)=>{e.d(i,{b:()=>a});var r=e(1261),n=e(3113),o=e(3397);function a(){const t=(0,n.M6)();(0,n.BU)(t);const i=(0,n._L)(),{location:{pathname:e}}=t,a=(0,r.Y)((()=>i?(0,o.L7)(e,i):""),[i,e]);return{path:i,url:a}}}}]);
+`,g=l.zo.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`,p=l.zo.li`
+  width: 100%;
+  background-color: #fff;
+  margin: 6px 0;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+
+  &:first-child {
+    margin-top: 0;
+  }
+`,f=(0,i.wU)((({slot:e})=>{const{url:t}=(0,s.b)(),{pathname:r}=(0,o.T)(),{data:i,loading:l,error:f}=(0,a.W)((()=>c.h.fetchProductList()),{key:c.Z.PRODUCTS}),k=r.endsWith("list/"),m=t+"add/";return l?(0,n.h)(u.$j,null):f?(0,n.h)(u.jj,{value:f}):(0,n.h)(u.iK,null,(0,n.h)(h,null,(0,n.h)("div",null,k?(0,n.h)(u.zx,{as:d.r,to:m},"Add product"):(0,n.h)(u.zx,{onClick:()=>history.back()},"Back"))),(0,n.h)(u.iK,{key:r},e||(0,n.h)(g,null,i.map((e=>(0,n.h)(p,{key:e.id},(0,n.h)(d.r,{to:`${t}${e.id}`},e.name)))))))}))},8903:(e,t,r)=>{r.d(t,{W:()=>h});var i=r(5747),a=r(3760),n=r(9812),s=r(7544),o=r(6238),d=r(8047),l=r(4435),c=r(1261),u=r(3443);function h(e,t){const{variables:r={},key:h,extractId:f=(()=>i.kI)}=t||{variables:{}},k=(0,i.YT)(),m=f(r),y=(0,c.Y)((()=>function(e,t,r){const i={isFetching:!0,isLoaded:!1,data:null,error:null,variables:null};if(e){const a=e.read({key:t,id:r});a&&(i.isFetching=!1,i.isLoaded=!0,i.data=a.data)}return i}(k,h,m)),[]),{register:b,unregister:v}=(0,d.h)(),[x,w]=function(){const e=(0,c.Y)((()=>({isMounted:!0,isFirstTime:!0})),[]),{isFirstTime:t}=e;return(0,a.b)((()=>(e.isFirstTime=!1,()=>e.isMounted=!1)),[]),[()=>e.isMounted,()=>t]}(),F=(0,l.P)(),L=()=>x()&&F(),T=(0,u.pj)(),Y=(0,c.Y)((()=>T.getNextResourceId()),[]),j=String(Y),z=(0,s.X)(),C=T.getIsHydrateZone(),{isLoaded:R}=y;y.variables=r;const I=async(t,i)=>{const a=t?i:r;try{z||w()||(y.isFetching=!0,L());const t=await e(a);return z?T.setResource(Y,[t,null]):(v(j),y.data=t,y.isFetching=!1,y.error=null,h&&t&&k?.write({key:h,id:f(a),data:t})),t}catch(e){(0,n.vU)(e),z?T.setResource(Y,[null,String(e)]):(v(j),y.isFetching=!1,y.error=String(e))}finally{z||(y.isLoaded=!0,L())}};if((0,o.d4)((()=>{if(!C){if(h&&k&&k.read({key:h,id:m})?.isValid)return;I()}}),[...p(r)]),(0,o.d4)((()=>{let e=null;return k&&(e=k.onChange((({type:e,key:t,id:r})=>{t===h&&r===f(y.variables)&&("invalidate"!==e&&"optimistic"!==e||I())}))),()=>{v(j),(0,n.EY)(e)&&e()}}),[]),z||C){const e=T.getResource(Y);if(z)e?g(y,e):T.defer(I);else if(C){if(!e)throw new Error("[Dark]: can not read app state from the server!");g(y,e)}}else w()&&!R&&b(j);const M={loading:y.isFetching,data:y.data,error:y.error,refetch:e=>I(!0,e)};return M}function g(e,t){const[r,i]=t;e.isFetching=!1,e.isLoaded=!0,e.data=r,e.error=i}const p=e=>Object.keys(e).map((t=>e[t]))},1523:(e,t,r)=>{r.d(t,{b:()=>s});var i=r(1261),a=r(3113),n=r(3397);function s(){const e=(0,a.M6)();(0,a.BU)(e);const t=(0,a._L)(),{location:{pathname:r}}=e,s=(0,i.Y)((()=>t?(0,n.L7)(r,t):""),[t,r]);return{path:t,url:s}}}}]);
 //# sourceMappingURL=125.build.js.map

@@ -1,4 +1,4 @@
-import type { DarkElement, SlotProps } from '../shared';
+import type { DarkElement, SlotProps, TextBased } from '../shared';
 import { useLayoutEffect } from '../use-layout-effect';
 import { detectIsServer } from '../platform';
 import { createContext, useContext } from '../context';
@@ -17,8 +17,8 @@ type SuspenseProps = {
 type ContextValue = {
   isLoaded: boolean;
   fallback: DarkElement;
-  register: (id: string) => void;
-  unregister: (id: string) => void;
+  register: (id: TextBased) => void;
+  unregister: (id: TextBased) => void;
 };
 
 const SuspenseContext = createContext<ContextValue>({
@@ -60,14 +60,14 @@ const Suspense = component<SuspenseProps>(({ fallback, slot }) => {
   scope.isLoaded = isLoaded;
   value.isLoaded = isLoaded;
   value.fallback = fallback;
-  value.register = (id: string) => scope.store.add(id);
-  value.unregister = (id: string) => scope.store.delete(id);
+  value.register = (id: TextBased) => scope.store.add(id);
+  value.unregister = (id: TextBased) => scope.store.delete(id);
 
   return SuspenseContext.Provider({ value, slot: content });
 });
 
 type Scope = {
-  store: Set<string>;
+  store: Set<TextBased>;
   isLoaded: boolean;
 };
 

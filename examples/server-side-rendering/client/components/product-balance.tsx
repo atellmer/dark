@@ -1,10 +1,10 @@
 import { h, component } from '@dark-engine/core';
 
-import { AnimatedRoute } from './animated-route';
+import { AnimationFade } from './ui';
 
 const ProductBalance = component(() => {
   return (
-    <AnimatedRoute>
+    <AnimationFade>
       <h2>Balance</h2>
       <p>
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla temporibus amet sed deserunt nostrum molestias,
@@ -17,7 +17,7 @@ const ProductBalance = component(() => {
         quas nemo! Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla temporibus amet sed deserunt nostrum
         molestias, consequatur numquam quis minima blanditiis corrupti voluptatem vel animi officia dolorem quibusdam
       </p>
-    </AnimatedRoute>
+    </AnimationFade>
   );
 });
 

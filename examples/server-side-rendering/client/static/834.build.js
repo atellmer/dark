@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[834],{38:(a,t,s)=>{s.d(t,{G:()=>f});var l=s(654),e=s(524);const f=(0,l.wU)((({slot:a})=>(0,e.h)("article",{class:"fade animated-route"},a)))},834:(a,t,s)=>{s.r(t),s.d(t,{default:()=>h});var l=s(654),e=s(524),f=s(38);const h=(0,l.wU)((()=>(0,e.h)(f.G,null,(0,e.h)("h2",null,"Child route C"),(0,e.h)("img",{src:"https://images.unsplash.com/photo-1667199021796-f5a369a92eaf?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80"}))))}}]);
-//# sourceMappingURL=834.build.js.map

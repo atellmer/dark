@@ -90,6 +90,8 @@ function nextTick(callback: () => void) {
 
 const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
+const mapRecord = <T extends object>(record: T) => Object.keys(record).map(x => record[x]);
+
 export {
   detectIsFunction,
   detectIsUndefined,
@@ -112,4 +114,5 @@ export {
   detectAreDepsDifferent,
   nextTick,
   createIndexKey,
+  mapRecord,
 };

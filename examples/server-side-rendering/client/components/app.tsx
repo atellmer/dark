@@ -1,11 +1,14 @@
-import { type DarkElement, h, Fragment, component, Suspense, lazy } from '@dark-engine/core';
+import { type DarkElement, h, component, Suspense, lazy, InMemoryCache, CacheProvider } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
-import { GlobalStyle, Root, Header, Content, Footer } from './ui';
-import { Spinner } from './spinner';
+import { api } from '../api';
+import { GlobalStyle, Spinner, Root, Header, Content, Footer } from './ui';
 
 const Products = lazy(() => import('./products'));
 const ProductList = lazy(() => import('./product-list'));
+const ProductAdd = lazy(() => import('./product-add'));
+const ProductEdit = lazy(() => import('./product-edit'));
+const ProductRemove = lazy(() => import('./product-remove'));
 const ProductCard = lazy(() => import('./product-card'));
 const ProductAnalytics = lazy(() => import('./product-analytics'));
 const ProductBalance = lazy(() => import('./product-balance'));
@@ -22,8 +25,22 @@ const routes: Routes = [
         component: ProductList,
         children: [
           {
+            path: 'add',
+            component: ProductAdd,
+          },
+          {
             path: ':id',
             component: ProductCard,
+            children: [
+              {
+                path: 'edit',
+                component: ProductEdit,
+              },
+              {
+                path: 'remove',
+                component: ProductRemove,
+              },
+            ],
           },
         ],
       },
@@ -83,18 +100,22 @@ const Shell = component<ShellProps>(({ slot }) => {
   );
 });
 
+const cache = new InMemoryCache(api.restore());
+
+cache.onChange(() => api.persist(cache));
+
 export type AppProps = {
   url?: string;
 };
 
 const App = component<AppProps>(({ url }) => {
   return (
-    <>
+    <CacheProvider cache={cache}>
       <GlobalStyle />
       <Router routes={routes} url={url}>
         {slot => <Shell>{slot}</Shell>}
       </Router>
-    </>
+    </CacheProvider>
   );
 });
 

@@ -1,7 +1,7 @@
 import { type InMemoryCache, useCache, CACHE_ROOT_ID } from '../cache';
 import { type AppResource, type Callback, type TextBased } from '../shared';
+import { error, detectIsFunction, mapRecord } from '../utils';
 import { useLayoutEffect } from '../use-layout-effect';
-import { error, detectIsFunction } from '../utils';
 import { detectIsServer } from '../platform';
 import { useEffect } from '../use-effect';
 import { useSuspense } from '../suspense';
@@ -16,25 +16,26 @@ type UseResourceOptions<V extends Variables> = {
 };
 
 function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseResourceOptions<V>) {
-  const { variables = {} as V, key, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
+  const { variables = {} as V, key: cacheKey, extractId = () => CACHE_ROOT_ID } = options || { variables: {} as V };
+  const $scope = $$scope();
   const cache = useCache();
   const cacheId = extractId(variables);
-  const state = useMemo<State<T, V>>(() => createState<T, V>(cache, key, cacheId), []);
+  const id = useMemo(() => $scope.getNextResourceId(), []);
+  const state = useMemo<State<T>>(() => createState<T>(cache, cacheKey, cacheId), []);
   const { register, unregister } = useSuspense();
   const [mounted, firstTime] = useMounted();
   const update = useUpdate();
   const $update = () => mounted() && update();
-  const $scope = $$scope();
-  const id = useMemo(() => $scope.getNextResourceId(), []);
-  const $id = String(id);
   const isServer = detectIsServer();
   const isHydrateZone = $scope.getIsHydrateZone();
   const { isLoaded } = state;
 
-  state.variables = variables;
+  state.cacheKey = cacheKey;
+  state.cacheId = cacheId;
 
   const make = async (isRefetch?: boolean, $variables?: V) => {
     const $$variables = isRefetch ? $variables : variables;
+    const $cacheId = extractId($$variables);
 
     try {
       if (!isServer && !firstTime()) {
@@ -46,11 +47,11 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
       if (isServer) {
         $scope.setResource(id, [data, null]);
       } else {
-        unregister($id);
+        unregister(id);
         state.data = data;
         state.isFetching = false;
         state.error = null;
-        key && data && cache?.write({ key, id: extractId($$variables), data });
+        cacheKey && data && cache?.write({ key: cacheKey, id: $cacheId, data });
       }
 
       return data;
@@ -60,7 +61,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
       if (isServer) {
         $scope.setResource(id, [null, String(err)]);
       } else {
-        unregister($id);
+        unregister(id);
         state.isFetching = false;
         state.error = String(err);
       }
@@ -74,8 +75,8 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
 
   useEffect(() => {
     if (isHydrateZone) return;
-    if (key && cache) {
-      const record = cache.read({ key, id: cacheId });
+    if (cacheKey && cache) {
+      const record = cache.read({ key: cacheKey, id: cacheId });
 
       if (record?.isValid) return;
     }
@@ -87,9 +88,9 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     let off: Callback = null;
 
     if (cache) {
-      off = cache.onChange(({ type, key: $key, id: $id }) => {
-        if ($key === key && $id === extractId(state.variables)) {
-          if (type === 'invalidate') {
+      off = cache.onChange(({ type, key, id }) => {
+        if (key === state.cacheKey && id === state.cacheId) {
+          if (type === 'invalidate' || type === 'optimistic') {
             make();
           }
         }
@@ -97,7 +98,7 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     }
 
     return () => {
-      unregister($id);
+      unregister(id);
       detectIsFunction(off) && off();
     };
   }, []);
@@ -114,9 +115,10 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
     } else if (isHydrateZone) {
       if (!res) throw new Error('[Dark]: can not read app state from the server!');
       mutate(state, res);
+      cacheKey && cache?.write({ key: cacheKey, id: cacheId, data: res[0] });
     }
   } else {
-    firstTime() && !isLoaded && register($id);
+    firstTime() && !isLoaded && register(id);
   }
 
   const result: Result<T> = {
@@ -129,11 +131,18 @@ function useResource<T, V extends Variables>(query: Query<T, V>, options?: UseRe
   return result;
 }
 
-function createState<T, V>(cache: InMemoryCache, key: string, id: TextBased) {
-  const state: State<T, V> = { isFetching: true, isLoaded: false, data: null, error: null, variables: null };
+function createState<T>(cache: InMemoryCache, cacheKey: string, cacheId: TextBased) {
+  const state: State<T> = {
+    isFetching: true,
+    isLoaded: false,
+    data: null,
+    error: null,
+    cacheKey,
+    cacheId,
+  };
 
   if (cache) {
-    const record = cache.read({ key, id });
+    const record = cache.read({ key: cacheKey, id: cacheId });
 
     if (record) {
       state.isFetching = false;
@@ -166,16 +175,15 @@ function useMounted() {
   return [() => scope.isMounted, () => isFirstTime] as [BooleanFn, BooleanFn];
 }
 
-const mapRecord = (record: object) => Object.keys(record).map(x => record[x]);
-
 type BooleanFn = () => boolean;
 
-type State<T, V = unknown> = {
+type State<T> = {
   isFetching: boolean;
   isLoaded: boolean;
   data: T;
   error: string;
-  variables: V;
+  cacheId: TextBased;
+  cacheKey: string;
 };
 
 type Result<T> = {
@@ -188,7 +196,5 @@ type Result<T> = {
 type Variables<K extends string = string, V = any> = Record<K, V>;
 
 type Query<T, V extends Variables = Variables> = (variables: V) => Promise<T>;
-
-type FetchPolicy = 'no-cache' | 'cache-only' | 'cache-first' | 'network-only' | 'cache-and-network';
 
 export { useResource };

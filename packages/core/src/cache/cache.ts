@@ -22,13 +22,22 @@ class InMemoryCache {
     return record;
   }
 
-  write<T>({ key, id = CACHE_ROOT_ID, data, optimistic }: WriteOptions<T>) {
+  write<T>({ key, id = CACHE_ROOT_ID, data }: WriteOptions<T>) {
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
-    const record: CacheRecord = { id, isValid: !optimistic, modifiedAt: getTime(), data };
+    const record: CacheRecord = { id, isValid: true, modifiedAt: getTime(), data };
 
     map[id] = record;
     this.emitter.emit('change', { type: 'write', key, id, record });
+  }
+
+  optimistic<T>({ key, id = CACHE_ROOT_ID, data }: OptimisticOptions<T>) {
+    if (!this.state[key]) this.state[key] = {};
+    const map = this.state[key];
+    const record: CacheRecord = { id, isValid: false, modifiedAt: getTime(), data };
+
+    map[id] = record;
+    this.emitter.emit('change', { type: 'optimistic', key, id, record });
   }
 
   invalidate({ key, id = CACHE_ROOT_ID }: InvalidateOptions) {
@@ -68,7 +77,7 @@ const CacheProvider = component<CacheProviderProps>(({ cache, slot }) => {
 
 type State = Record<string, Record<string, CacheRecord>>;
 type EventName = 'change';
-type EventType = 'write' | 'invalidate' | 'delete';
+type EventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
 type EventData = { type: EventType; key: string; id: TextBased; record?: CacheRecord };
 
 type BaseOptions = {
@@ -80,7 +89,10 @@ type ReadOptions = BaseOptions;
 
 type WriteOptions<T> = {
   data: T;
-  optimistic?: boolean;
+} & BaseOptions;
+
+type OptimisticOptions<T> = {
+  data: T;
 } & BaseOptions;
 
 type InvalidateOptions = BaseOptions;

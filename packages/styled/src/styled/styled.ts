@@ -13,6 +13,7 @@ import {
   detectIsTextBased,
   detectIsServer,
   useInsertionEffect,
+  mapRecord,
 } from '@dark-engine/core';
 import { type DarkJSX } from '@dark-engine/platform-browser';
 
@@ -27,7 +28,6 @@ import {
 } from '../constants';
 import {
   detectIsBrowser,
-  mapProps,
   mergeClassNames,
   getElement,
   getElements,
@@ -100,7 +100,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
             Array<string>,
             Array<string>,
           ];
-        }, [...mapProps(props), theme]);
+        }, [...mapRecord(props), theme]);
 
         useInsertionEffect(() => {
           if (!tag) {

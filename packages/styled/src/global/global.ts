@@ -1,15 +1,14 @@
-import { component, forwardRef, useInsertionEffect, useMemo, useId, detectIsServer } from '@dark-engine/core';
-
 import {
-  detectIsBrowser,
-  mapProps,
-  getElement,
-  insertBefore,
-  getElements,
-  createStyleElement,
-  setAttr,
-  append,
-} from '../utils';
+  component,
+  forwardRef,
+  useInsertionEffect,
+  useMemo,
+  useId,
+  detectIsServer,
+  mapRecord,
+} from '@dark-engine/core';
+
+import { detectIsBrowser, getElement, insertBefore, getElements, createStyleElement, setAttr, append } from '../utils';
 import { STYLED_ATTR, GLOBAL_ATTR_VALUE, INTERLEAVE_GLOBAL_ATTR_VALUE } from '../constants';
 import { css, inject, reuse, getTag as getStyleTag, filterArgs } from '../styled';
 import { type ThemeProps, useTheme } from '../theme';
@@ -33,7 +32,7 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
     component(props => {
       const theme = useTheme();
       const id = useId();
-      const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapProps(props), theme]);
+      const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapRecord(props), theme]);
 
       useInsertionEffect(() => {
         if (!tag) {
