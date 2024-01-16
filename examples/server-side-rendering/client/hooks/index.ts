@@ -1,35 +1,38 @@
 import { useResource, useMutation } from '@dark-engine/core';
 
-import { type ProductBrief, Cache, api } from '../api';
+import { type ProductBrief, api } from '../api';
+
+export enum Key {
+  FETCH_PRODUCTS = 'FETCH_PRODUCTS',
+  FETCH_PRODUCT = 'FETCH_PRODUCT',
+  ADD_PRODUCT = 'ADD_PRODUCT',
+  CHANGE_PRODUCT = 'CHANGE_PRODUCT',
+  REMOVE_PRODUCT = 'REMOVE_PRODUCT',
+}
 
 function useProducts() {
-  return useResource(() => api.fetchProducts(), {
-    key: Cache.PRODUCTS,
-    onBefore: () => console.log('[fetch]: products'),
-  });
+  return useResource(() => api.fetchProducts(), { key: Key.FETCH_PRODUCTS });
 }
 
 function useProduct(id: number) {
   return useResource(({ id }) => api.fetchProduct(id), {
+    key: Key.FETCH_PRODUCT,
     variables: { id },
-    key: Cache.PRODUCT_ITEM,
     extractId: x => x.id,
-    onBefore: () => {
-      console.log('[fetch]: product', id);
-    },
   });
 }
 
 function useAddProductMutation() {
   return useMutation(api.addProduct, {
+    key: Key.ADD_PRODUCT,
     onSuccess: (cache, product) => {
-      const record = cache.read<Array<ProductBrief>>({ key: Cache.PRODUCTS });
+      const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
 
       if (record) {
         const products = record.data;
 
         products.push(product);
-        cache.optimistic({ key: Cache.PRODUCTS, data: products });
+        cache.optimistic({ key: Key.FETCH_PRODUCTS, data: products });
       }
     },
   });
@@ -37,16 +40,17 @@ function useAddProductMutation() {
 
 function useChangeProductMutation() {
   return useMutation(api.changeProduct, {
+    key: Key.CHANGE_PRODUCT,
     onSuccess: (cache, product) => {
-      const record = cache.read<Array<ProductBrief>>({ key: Cache.PRODUCTS });
+      const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
 
       if (record) {
         const products = record.data;
         const $product = products.find(x => x.id === product.id);
 
         $product.name = product.name;
-        cache.optimistic({ key: Cache.PRODUCTS, data: products });
-        cache.optimistic({ key: Cache.PRODUCT_ITEM, data: product, id: product.id });
+        cache.optimistic({ key: Key.FETCH_PRODUCTS, data: products });
+        cache.optimistic({ key: Key.FETCH_PRODUCT, data: product, id: product.id });
       }
     },
   });
@@ -54,8 +58,9 @@ function useChangeProductMutation() {
 
 function useRemoveProductMutation(id: number) {
   return useMutation(() => api.removeProduct(id), {
+    key: Key.REMOVE_PRODUCT,
     onSuccess: cache => {
-      const record = cache.read<Array<ProductBrief>>({ key: Cache.PRODUCTS });
+      const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
 
       if (record) {
         const products = record.data;
@@ -63,11 +68,11 @@ function useRemoveProductMutation(id: number) {
 
         if (idx !== -1) {
           products.splice(idx, 1);
-          cache.optimistic({ key: Cache.PRODUCTS, data: products });
+          cache.optimistic({ key: Key.FETCH_PRODUCTS, data: products });
         }
       }
 
-      cache.delete({ key: Cache.PRODUCT_ITEM, id });
+      cache.delete({ key: Key.FETCH_PRODUCT, id });
     },
   });
 }

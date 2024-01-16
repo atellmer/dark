@@ -2,21 +2,28 @@
 import { createBrowserEnv, createBrowserHydrateEnv, createServerEnv, sleep, dom } from '@test-utils';
 
 import { h } from '../element';
+import { type DarkElement } from '../shared';
 import { Fragment } from '../fragment';
 import { component } from '../component';
 import { Suspense } from '../suspense';
 import { APP_STATE_ATTR } from '../constants';
 import { useState } from '../use-state';
+import { InMemoryCache, CacheProvider } from '../cache';
 import { useResource } from './use-resource';
 
 jest.spyOn(console, 'error').mockImplementation(() => {});
 
 let { host, render } = createBrowserEnv();
+let cache = new InMemoryCache();
+const KEY = 'data';
 
 beforeEach(() => {
   jest.useRealTimers();
   ({ host, render } = createBrowserEnv());
+  cache = new InMemoryCache();
 });
+
+const withProvider = (app: DarkElement) => <CacheProvider cache={cache}>{app}</CacheProvider>;
 
 const fetchData = async (x: number) => {
   await sleep(5);
@@ -31,14 +38,14 @@ describe('@core/use-resource', () => {
   test('resolves an async resource correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(1));
+      const { loading, data, error } = useResource(() => fetchData(1), { key: KEY });
 
       spy([loading, data, error]);
 
       return null;
     });
 
-    render(<App />);
+    render(withProvider(<App />));
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
@@ -49,14 +56,14 @@ describe('@core/use-resource', () => {
   test('resolves an async resource with error correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useResource(() => fetchError());
+      const { loading, data, error } = useResource(() => fetchError(), { key: KEY });
 
       spy([loading, data, error]);
 
       return null;
     });
 
-    render(<App />);
+    render(withProvider(<App />));
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
@@ -67,14 +74,18 @@ describe('@core/use-resource', () => {
   test('refetches an async resource correctly', async () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
-      const { loading, data, error } = useResource(({ id }) => fetchData(id), { variables: { id } });
+      const { loading, data, error } = useResource(({ id }) => fetchData(id), {
+        key: KEY,
+        variables: { id },
+        extractId: x => x.id,
+      });
 
       spy([loading, data, error]);
 
       return null;
     });
 
-    render(<App id={1} />);
+    render(withProvider(<App id={1} />));
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
@@ -82,7 +93,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
     spy.mockClear();
 
-    render(<App id={2} />);
+    render(withProvider(<App id={2} />));
     await sleep(0);
     expect(spy).toHaveBeenCalledWith([true, 10, null]);
     spy.mockClear();
@@ -91,7 +102,7 @@ describe('@core/use-resource', () => {
     expect(spy).toHaveBeenCalledWith([false, 20, null]);
     spy.mockClear();
 
-    render(<App id={3} />);
+    render(withProvider(<App id={3} />));
     await sleep(0);
     expect(spy).toHaveBeenCalledWith([true, 20, null]);
     spy.mockClear();
@@ -115,7 +126,7 @@ describe('@core/use-resource', () => {
         `
     }`;
     const Child = component(() => {
-      const { loading, data } = useResource(() => fetchData(1));
+      const { loading, data } = useResource(() => fetchData(1), { key: KEY });
 
       if (loading) return <div>...</div>;
 
@@ -138,7 +149,7 @@ describe('@core/use-resource', () => {
       );
     });
 
-    render(<App />);
+    render(withProvider(<App />));
     expect(host.innerHTML).toBe(content(true, null));
 
     await sleep(50);
@@ -154,7 +165,7 @@ describe('@core/use-resource', () => {
       <script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(2));
+      const { loading, data, error } = useResource(() => fetchData(2), { key: KEY });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -162,7 +173,7 @@ describe('@core/use-resource', () => {
       return <div>{data}</div>;
     });
     const App = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(1));
+      const { loading, data, error } = useResource(() => fetchData(1), { key: KEY });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -175,7 +186,7 @@ describe('@core/use-resource', () => {
       );
     });
     const { renderToString } = createServerEnv();
-    const result = await renderToString(<App />);
+    const result = await renderToString(withProvider(<App />));
 
     expect(result).toBe(content(10, 20));
   });
@@ -190,7 +201,7 @@ describe('@core/use-resource', () => {
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {
-      const { loading, data, error } = useResource(() => fetchData(2));
+      const { loading, data, error } = useResource(() => fetchData(2), { key: KEY });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -199,7 +210,7 @@ describe('@core/use-resource', () => {
     });
     const App = component(() => {
       const [marker, _setMarker] = useState('a');
-      const { loading, data, error } = useResource(() => fetchData(1));
+      const { loading, data, error } = useResource(() => fetchData(1), { key: KEY });
 
       setMarker = _setMarker;
 
@@ -217,7 +228,7 @@ describe('@core/use-resource', () => {
     });
     const { host, hydrate } = createBrowserHydrateEnv(content('a', 10, 20));
 
-    hydrate(<App />);
+    hydrate(withProvider(<App />));
     expect(host.innerHTML).toBe(content('a', 10, 20, true));
 
     setMarker('b');

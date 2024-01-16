@@ -9,11 +9,6 @@ export type Product = {
   description: string;
 };
 
-export enum Cache {
-  PRODUCTS = 'products',
-  PRODUCT_ITEM = 'product-item',
-}
-
 const IS_SERVER = typeof globalThis.window === 'undefined';
 const TIMEOUT = IS_SERVER ? 100 : 600;
 
