@@ -6,14 +6,7 @@ import { useProducts } from '../hooks';
 import { Spinner, Error, AnimationFade, Button, List, ListItem } from './ui';
 
 const Header = styled.header`
-  display: grid;
-  grid-template-columns: 1fr 4fr;
-  grid-template-rows: auto;
   padding: 16px 0;
-
-  & h2 {
-    margin: 0;
-  }
 `;
 
 const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
@@ -42,15 +35,13 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
   return (
     <AnimationFade>
       <Header>
-        <div>
-          {isList ? (
-            <Button as={RouterLink} to={urlToAdd}>
-              Add product
-            </Button>
-          ) : (
-            <Button onClick={() => history.back()}>Back</Button>
-          )}
-        </div>
+        {isList ? (
+          <Button as={RouterLink} to={urlToAdd}>
+            Add product
+          </Button>
+        ) : (
+          <Button onClick={() => history.back()}>Back</Button>
+        )}
       </Header>
       <AnimationFade key={pathname}>{slot || renderList()}</AnimationFade>
     </AnimationFade>
