@@ -2,9 +2,9 @@
   "name": "dark-universal-app",
   "scripts": {
     "start": "npm run backend",
-    "backend": "nodemon -e js,ts,tsx --ignore frontend/static/ --ignore node_modules/ --exec ts-node -- ./backend/app.ts",
-    "frontend": "cd frontend && cross-env NODE_ENV=production npx webpack",
-    "frontend:watch": "cd frontend && cross-env NODE_ENV=development npx webpack --watch"
+    "backend": "nodemon -e js,ts,tsx --watch backend/ --watch frontend/static/ --exec ts-node -- ./backend/app.ts",
+    "frontend": "cd frontend && npx webpack --env production",
+    "frontend:watch": "cd frontend && npx webpack --watch --env development"
   },
   "devDependencies": {
     "ts-loader": "9.4.2",
@@ -17,7 +17,6 @@
     "@types/node": "^18.11.17",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
-    "cross-env": "7.0.3",
     "express": "^4.18.2",
     "module-alias": "^2.2.2",
     "nodemon": "^2.0.20",

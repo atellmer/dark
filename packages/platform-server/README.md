@@ -42,13 +42,13 @@ Suppose you have a directory like this:
 
 ```
 app/
-├─ client/
+├─ frontend/
 │  ├─ static/
 │  │  ├─ build.js
 │  ├─ app.tsx
 │  ├─ index.tsx
 │  ├─ webpack.config.js
-├─ server/
+├─ backend/
 │  ├─ app.ts
 ├─ package.json
 ├─ tsconfig.json
@@ -59,11 +59,11 @@ app/
 The method renders app to string async to unblock main thread of Node.js
 
 ```tsx
-// server/app.ts
+// backend/app.ts
 import { renderToString } from '@dark-engine/platform-server';
-import { Page, App } from '../client/app';
+import { Page, App } from '../frontend/app';
 
-server.use(express.static(join(__dirname, '../client/static')));
+server.use(express.static(join(__dirname, '../frontend/static')));
 
 server.get('*', async (req, res) => {
   const content = Page({ title: 'Awesome App', slot: App() });
@@ -76,7 +76,7 @@ server.get('*', async (req, res) => {
 ```
 
 ```tsx
-// client/app.tsx
+// frontend/app.tsx
 import { h, component } from '@dark-engine/core';
 
 const Page = component(({ title, slot }) => {
@@ -99,7 +99,7 @@ export { Page, App };
 ```
 
 ```tsx
-// client/index.tsx
+// frontend/index.tsx
 import { h } from '@dark-engine/core';
 import { hydrateRoot } from '@dark-engine/platform-browser';
 

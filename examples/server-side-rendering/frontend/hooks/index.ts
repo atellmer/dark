@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from '@dark-engine/core';
 
-import { type ProductBrief, useApi } from '../contract';
+import { type ProductBrief, useApi } from '../../contract';
 
 export enum Key {
   FETCH_PRODUCTS = 'FETCH_PRODUCTS',

@@ -24,12 +24,12 @@ const ApiContext = createContext<Api>(null, { displayName: 'Api' });
 
 const useApi = () => useContext(ApiContext);
 
-type CacheProviderProps = {
+type ApiProviderProps = {
   api: Api;
   slot: DarkElement;
 };
 
-const ApiProvider = component<CacheProviderProps>(({ api, slot }) => {
+const ApiProvider = component<ApiProviderProps>(({ api, slot }) => {
   return ApiContext.Provider({ value: api, slot });
 });
 

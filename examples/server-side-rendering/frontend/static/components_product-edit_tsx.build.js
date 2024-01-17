@@ -32,11 +32,12 @@ const ProductEdit = (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.component)
     const urlToList = url.replace(`${id}/edit/`, '');
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const name = e.target.elements['name'].value;
-        const description = e.target.elements['desc'].value;
+        const { elements } = e.target;
+        const name = elements['name'].value;
+        const description = elements['desc'].value;
         if (loading)
             return;
-        await changeProduct({ ...product, name, description });
+        await changeProduct(id, { name, description });
         history.push(urlToList);
     };
     return ((0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_6__.h)(_ui__WEBPACK_IMPORTED_MODULE_1__.Card, { "$loading": loading },

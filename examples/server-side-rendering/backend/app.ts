@@ -12,6 +12,7 @@ const app = express();
 
 app.use(compression());
 app.use(json());
+app.use('/favicon.ico', express.static(join(__dirname, '../frontend/static/assets/favicon.ico')));
 app.use(express.static(join(__dirname, '../frontend/static')));
 
 createRestApi(app);

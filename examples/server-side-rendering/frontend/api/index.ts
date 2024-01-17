@@ -1,4 +1,4 @@
-import { type Api, type ProductBrief, type Product } from '../contract';
+import { type Api, type ProductBrief, type Product } from '../../contract';
 
 const HEADERS = { 'Content-Type': 'application/json' };
 const api: Api = {

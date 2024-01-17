@@ -11,7 +11,7 @@ import {
 } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
-import { type Api, ApiProvider } from '../contract';
+import { type Api, ApiProvider } from '../../contract';
 import { Key } from '../hooks';
 import { GlobalStyle, Spinner, Root, Header, Content, Footer } from './ui';
 

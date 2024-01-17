@@ -1,5 +1,5 @@
 import { type Express, type Request, type Response, type NextFunction } from 'express';
-import { type Api, type ProductBrief, type Product } from '../../frontend/contract';
+import { type Api, type ProductBrief, type Product } from '../../contract';
 
 // sumulates the database
 const TIMEOUT = 300;

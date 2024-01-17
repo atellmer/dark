@@ -3,8 +3,8 @@ import { resolve, dirname } from 'node:path';
 import { alias, plugins } from '../../../webpack.base.mjs';
 
 const __dirname = resolve(dirname(''));
-const config = {
-  mode: process.env.NODE_ENV,
+const config = env => ({
+  mode: env.production ? 'production' : 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -21,14 +21,11 @@ const config = {
       {
         test: /\.(ts|tsx)$/,
         loader: 'ts-loader',
-        options: {
-          transpileOnly: process.env.NODE_ENV === 'development',
-        },
         exclude: /node_modules/,
       },
     ],
   },
   plugins: [...plugins],
-};
+});
 
 export default config;

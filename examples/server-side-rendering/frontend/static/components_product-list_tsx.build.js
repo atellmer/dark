@@ -77,7 +77,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @dark-engine/core */ "../../../packages/core/src/use-query/use-query.ts");
 /* harmony import */ var _dark_engine_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @dark-engine/core */ "../../../packages/core/src/use-mutation/use-mutation.ts");
-/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../api */ "./api/index.ts");
+/* harmony import */ var _contract__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../contract */ "../contract/index.ts");
 
 
 var Key;
@@ -89,17 +89,20 @@ var Key;
     Key["REMOVE_PRODUCT"] = "REMOVE_PRODUCT";
 })(Key || (Key = {}));
 function useProducts() {
-    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_1__.useQuery)(() => _api__WEBPACK_IMPORTED_MODULE_0__.api.fetchProducts(), { key: Key.FETCH_PRODUCTS });
+    const api = (0,_contract__WEBPACK_IMPORTED_MODULE_0__.useApi)();
+    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_1__.useQuery)(() => api.fetchProducts(), { key: Key.FETCH_PRODUCTS });
 }
 function useProduct(id) {
-    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_1__.useQuery)(({ id }) => _api__WEBPACK_IMPORTED_MODULE_0__.api.fetchProduct(id), {
+    const api = (0,_contract__WEBPACK_IMPORTED_MODULE_0__.useApi)();
+    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_1__.useQuery)(({ id }) => api.fetchProduct(id), {
         key: Key.FETCH_PRODUCT,
         variables: { id },
         extractId: x => x.id,
     });
 }
 function useAddProductMutation() {
-    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.useMutation)(_api__WEBPACK_IMPORTED_MODULE_0__.api.addProduct, {
+    const api = (0,_contract__WEBPACK_IMPORTED_MODULE_0__.useApi)();
+    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.useMutation)(api.addProduct, {
         key: Key.ADD_PRODUCT,
         onSuccess: (cache, product) => {
             const record = cache.read({ key: Key.FETCH_PRODUCTS });
@@ -112,7 +115,8 @@ function useAddProductMutation() {
     });
 }
 function useChangeProductMutation() {
-    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.useMutation)(_api__WEBPACK_IMPORTED_MODULE_0__.api.changeProduct, {
+    const api = (0,_contract__WEBPACK_IMPORTED_MODULE_0__.useApi)();
+    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.useMutation)(api.changeProduct, {
         key: Key.CHANGE_PRODUCT,
         onSuccess: (cache, product) => {
             const record = cache.read({ key: Key.FETCH_PRODUCTS });
@@ -127,7 +131,8 @@ function useChangeProductMutation() {
     });
 }
 function useRemoveProductMutation(id) {
-    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.useMutation)(() => _api__WEBPACK_IMPORTED_MODULE_0__.api.removeProduct(id), {
+    const api = (0,_contract__WEBPACK_IMPORTED_MODULE_0__.useApi)();
+    return (0,_dark_engine_core__WEBPACK_IMPORTED_MODULE_2__.useMutation)(() => api.removeProduct(id), {
         key: Key.REMOVE_PRODUCT,
         onSuccess: cache => {
             const record = cache.read({ key: Key.FETCH_PRODUCTS });
