@@ -14,6 +14,7 @@ app.use(compression());
 app.use(json());
 app.use('/static', express.static(join(__dirname, '../frontend/static')));
 app.use('/favicon.ico', express.static(join(__dirname, '../frontend/static/assets/favicon.ico')));
+app.use('/robots.txt', express.static(join(__dirname, '../frontend/static/assets/robots.txt')));
 app.use('/service-worker.js', express.static(join(__dirname, '../frontend/static/service-worker.js')));
 app.use('/service-worker.js.map', express.static(join(__dirname, '../frontend/static/service-worker.js.map')));
 
