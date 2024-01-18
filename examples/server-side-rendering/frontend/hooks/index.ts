@@ -1,14 +1,7 @@
 import { useQuery, useMutation } from '@dark-engine/core';
 
 import { type ProductBrief, useApi } from '../../contract';
-
-export enum Key {
-  FETCH_PRODUCTS = 'FETCH_PRODUCTS',
-  FETCH_PRODUCT = 'FETCH_PRODUCT',
-  ADD_PRODUCT = 'ADD_PRODUCT',
-  CHANGE_PRODUCT = 'CHANGE_PRODUCT',
-  REMOVE_PRODUCT = 'REMOVE_PRODUCT',
-}
+import { Key } from '../api';
 
 function useProducts() {
   const api = useApi();

@@ -12,7 +12,7 @@ import {
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
 import { type Api, ApiProvider } from '../../contract';
-import { Key } from '../hooks';
+import { Key } from '../api';
 import { GlobalStyle, Spinner, Root, Header, Content, Footer } from './ui';
 
 const Products = lazy(() => import('./products'));
@@ -97,7 +97,19 @@ export type AppProps = {
 };
 
 const App = component<AppProps>(({ url, api }) => {
-  const cache = useMemo(() => new InMemoryCache<Key>(), []);
+  const cache = useMemo(() => {
+    const cache = new InMemoryCache<Key>();
+
+    if (typeof window !== 'undefined') {
+      cache.subscribe(x => {
+        if (x.key === Key.FETCH_PRODUCTS && x.record.data) {
+          localStorage.setItem(x.key, JSON.stringify(x.record.data));
+        }
+      });
+    }
+
+    return cache;
+  }, []);
 
   useEffect(() => {
     cache.monitor(x => console.log(x));
