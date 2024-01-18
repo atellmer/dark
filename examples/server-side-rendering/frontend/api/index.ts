@@ -1,6 +1,5 @@
 import { type Api, type ProductBrief, type Product } from '../../contract';
-
-const HEADERS = { 'Content-Type': 'application/json' };
+import { detectIsBrowser, getItem, setItem, checkId, checkResponse, headers } from '../utils';
 
 export enum Key {
   FETCH_PRODUCTS = 'FETCH_PRODUCTS',
@@ -21,7 +20,7 @@ const api: Api = {
       checkResponse(response);
       data = (await response.json()) as Array<ProductBrief>;
     } catch (error) {
-      data = getItem(Key.FETCH_PRODUCTS, true);
+      data = getItem(Key.FETCH_PRODUCTS, String(error));
     }
 
     return data;
@@ -32,7 +31,7 @@ const api: Api = {
     try {
       const response = await fetch(`/api/products`, {
         method: 'post',
-        headers: HEADERS,
+        headers: headers(),
         body: JSON.stringify({ ...product, id: undefined }),
       });
       checkResponse(response);
@@ -64,7 +63,7 @@ const api: Api = {
     if (!product) return null;
     const response = await fetch(`/api/products/${id}`, {
       method: 'put',
-      headers: HEADERS,
+      headers: headers(),
       body: JSON.stringify(product),
     });
     checkResponse(response);
@@ -81,34 +80,6 @@ const api: Api = {
     return data;
   },
 };
-
-function checkId(id: unknown) {
-  const isValid = typeof id === 'number' && !Number.isNaN(id);
-
-  if (!isValid) {
-    throw new Error('Invalid id!');
-  }
-}
-
-function checkResponse(response: Response) {
-  if (!response.ok) throw new Error(`${response.status}`);
-}
-
-function getItem(key: Key, emit = false) {
-  try {
-    return JSON.parse(localStorage.getItem(key));
-  } catch (error) {
-    if (emit) {
-      throw new Error('Network!');
-    }
-
-    return null;
-  }
-}
-
-function setItem(key: Key, data: any) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
 
 function sync() {
   let inProcess = false;
@@ -131,7 +102,7 @@ function sync() {
   window.addEventListener('online', make);
 }
 
-if (typeof window !== 'undefined') {
+if (detectIsBrowser()) {
   sync();
 }
 

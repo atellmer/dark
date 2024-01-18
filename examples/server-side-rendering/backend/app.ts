@@ -13,6 +13,7 @@ const app = express();
 app.use(compression());
 app.use(json());
 app.use('/favicon.ico', express.static(join(__dirname, '../frontend/static/assets/favicon.ico')));
+app.use('/manifest.webmanifest', express.static(join(__dirname, '../frontend/static/assets/manifest.webmanifest')));
 app.use(express.static(join(__dirname, '../frontend/static')));
 
 createRestApi(app);
@@ -20,7 +21,7 @@ createRestApi(app);
 app.get('*', (req, res) => {
   const { url } = req;
   console.log('url', url);
-  const stream = bootstrap({ props: { url, api }, title: 'Dark SSR App' });
+  const stream = bootstrap({ props: { url, api }, title: 'Dark Online' });
 
   res.statusCode = 200;
   stream.pipe(res);

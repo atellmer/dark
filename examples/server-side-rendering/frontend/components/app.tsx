@@ -11,9 +11,10 @@ import {
 } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
+import { GlobalStyle, Spinner, Root, Header, Menu, Content, Footer } from './ui';
 import { type Api, ApiProvider } from '../../contract';
+import { detectIsBrowser, setItem } from '../utils';
 import { Key } from '../api';
-import { GlobalStyle, Spinner, Root, Header, Content, Footer } from './ui';
 
 const Products = lazy(() => import('./products'));
 const ProductList = lazy(() => import('./product-list'));
@@ -25,7 +26,6 @@ const ProductAnalytics = lazy(() => import('./product-analytics'));
 const ProductBalance = lazy(() => import('./product-balance'));
 const Operations = lazy(() => import('./operations'));
 const Invoices = lazy(() => import('./invoices'));
-
 const routes: Routes = [
   {
     path: 'products',
@@ -100,10 +100,10 @@ const App = component<AppProps>(({ url, api }) => {
   const cache = useMemo(() => {
     const cache = new InMemoryCache<Key>();
 
-    if (typeof window !== 'undefined') {
-      cache.subscribe(x => {
-        if (x.key === Key.FETCH_PRODUCTS && x.record.data) {
-          localStorage.setItem(x.key, JSON.stringify(x.record.data));
+    if (detectIsBrowser()) {
+      cache.subscribe(({ key, record }) => {
+        if (key === Key.FETCH_PRODUCTS && record.data) {
+          setItem(key, record.data);
         }
       });
     }
@@ -126,9 +126,11 @@ const App = component<AppProps>(({ url, api }) => {
                 <Suspense fallback={<Spinner />}>
                   <Root>
                     <Header>
-                      <RouterLink to='/products'>Products</RouterLink>
-                      <RouterLink to='/operations'>Operations</RouterLink>
-                      <RouterLink to='/invoices'>Invoices</RouterLink>
+                      <Menu>
+                        <RouterLink to='/products'>Products</RouterLink>
+                        <RouterLink to='/operations'>Operations</RouterLink>
+                        <RouterLink to='/invoices'>Invoices</RouterLink>
+                      </Menu>
                     </Header>
                     <Content>{slot}</Content>
                     <Footer>© {new Date().getFullYear()} Some Cool Company Ltd.</Footer>
@@ -143,10 +145,12 @@ const App = component<AppProps>(({ url, api }) => {
   );
 });
 
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
-  });
+if (detectIsBrowser()) {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
+    });
+  }
 }
 
 export { App };

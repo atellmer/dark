@@ -8,7 +8,6 @@ import {
   COMPONENTS_ATTR_VALUE,
   INTERLEAVE_GLOBAL_ATTR_VALUE,
   INTERLEAVE_COMPONENTS_ATTR_VALUE,
-  FUNCTION_MARK,
 } from '../constants';
 import { STYLE_LEVEL, Manager, ManagerProvider } from './manager';
 
@@ -22,8 +21,6 @@ class ServerStyleSheet {
   getStyleTags(): Array<string> {
     const styles = this.manager.getStyles();
     const tags: Array<string> = [];
-    const tag1 = `<${STYLE_TAG} ${STYLED_ATTR}="${GLOBAL_ATTR_VALUE}">${FUNCTION_MARK}</${STYLE_TAG}>`;
-    const tag2 = `<${STYLE_TAG} ${STYLED_ATTR}="${COMPONENTS_ATTR_VALUE}">${FUNCTION_MARK}</${STYLE_TAG}>`;
     let css1 = '';
     let css2 = '';
 
@@ -35,8 +32,8 @@ class ServerStyleSheet {
       css2 += $css;
     }
 
-    css1 && tags.push(tag1.replace(FUNCTION_MARK, css1));
-    css2 && tags.push(tag2.replace(FUNCTION_MARK, css2));
+    css1 && tags.push(ServerStyleSheet.wrapWithStyleTag(css1, false, false));
+    css2 && tags.push(ServerStyleSheet.wrapWithStyleTag(css2, true, false));
 
     return tags;
   }
@@ -53,25 +50,19 @@ class ServerStyleSheet {
         const styles = manager.getStyles();
         const set1 = styles[STYLE_LEVEL.GLOBAL];
         const set2 = styles[STYLE_LEVEL.COMPONENT];
-        const tag1 = `<${STYLE_TAG} ${STYLED_ATTR}="${INTERLEAVE_GLOBAL_ATTR_VALUE}">${FUNCTION_MARK}</${STYLE_TAG}>`;
-        const tag2 = `<${STYLE_TAG} ${STYLED_ATTR}="${INTERLEAVE_COMPONENTS_ATTR_VALUE}">${FUNCTION_MARK}</${STYLE_TAG}>`;
-        let css1 = '';
-        let css2 = '';
         let content = '';
 
         if (pattern.test(data)) {
           for (const style of set1) {
-            css1 += style;
+            content += ServerStyleSheet.wrapWithStyleTag(style, false, true);
             set1.delete(style);
           }
 
           for (const style of set2) {
-            css2 += style;
+            content += ServerStyleSheet.wrapWithStyleTag(style, true, true);
             set2.delete(style);
           }
 
-          css1 && (content += tag1.replace(FUNCTION_MARK, css1));
-          css2 && (content += tag2.replace(FUNCTION_MARK, css2));
           content = data.replace(pattern, `$1${content}`);
           this.push(content);
         } else {
@@ -93,6 +84,18 @@ class ServerStyleSheet {
 
   seal() {
     this.manager.seal();
+  }
+
+  private static wrapWithStyleTag(style: string, isComponentStyle: boolean, isInterleave: boolean) {
+    return `<${STYLE_TAG} ${STYLED_ATTR}="${
+      isComponentStyle
+        ? isInterleave
+          ? INTERLEAVE_COMPONENTS_ATTR_VALUE
+          : COMPONENTS_ATTR_VALUE
+        : isInterleave
+        ? INTERLEAVE_GLOBAL_ATTR_VALUE
+        : GLOBAL_ATTR_VALUE
+    }">${style}</${STYLE_TAG}>`;
   }
 }
 

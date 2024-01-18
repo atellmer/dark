@@ -1,6 +1,8 @@
 import { h, component } from '@dark-engine/core';
-import { createGlobalStyle, styled, keyframes } from '@dark-engine/styled';
+import { createGlobalStyle, styled, keyframes, css } from '@dark-engine/styled';
 import { type DarkJSX } from '@dark-engine/platform-browser';
+
+const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
 
 const GlobalStyle = createGlobalStyle`
   *, *::before, *::after {
@@ -15,7 +17,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: sans-serif;
     line-height: 1.4;
-    background-color: #1A237E;
+    background-color: #001d36;
     overflow-y: scroll;
   }
 
@@ -30,7 +32,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   .router-link-active, .router-link-active:hover {
-    color: #ffeb3b;
+    color: #FFEB3B;
     text-decoration: underline;
   }
 
@@ -123,59 +125,70 @@ const Root = styled.div`
   grid-template-rows: 64px minmax(max-content, 1fr) 64px;
 `;
 
-const Header = styled.header<{ $nested?: boolean } & DarkJSX.HTMLTags['header']>`
+const Header = styled.header`
+  display: flex;
+`;
+
+const Menu = styled.nav<{ $secondary?: boolean } & DarkJSX.HTMLTags['nav']>`
   width: 100%;
-  background-color: ${p => (p.$nested ? '#673ab7' : '#03a9f4')};
-  padding: 16px;
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: ${BOX_SHADOW};
   display: flex;
   align-items: center;
+  flex-grow: 1;
 
   & a {
     text-transform: uppercase;
     font-size: 0.9rem;
   }
 
-  & a:not(.router-link-active) {
-    color: #fff;
-  }
-
   & a:hover {
     text-decoration: underline;
   }
+
+  ${p => css`
+    background-color: ${p.$secondary ? 'transparent' : '#0061a4'};
+    padding: ${p.$secondary ? '8px' : '16px'};
+    border-radius: ${p.$secondary ? '2px' : '0'};
+
+    & a {
+      color: ${p.$secondary ? '#000' : '#fff'};
+    }
+  `};
 `;
 
 const Content = styled.main`
   padding: 0 16px 16px;
-  background-color: #fff8e1;
+  background-color: #fdfcff;
 `;
 
 const Footer = styled.footer`
   padding: 16px;
-  background-color: #880e4f;
+  background-color: #410002;
   color: #fff;
 `;
 
-const Card = styled.article<{ $loading?: boolean }>`
+const Card = styled.article<{ $loading?: boolean } & DarkJSX.HTMLTags['article']>`
   padding: 16px;
   opacity: ${p => (p.$loading ? 0.2 : 1)};
   transition: opacity 0.2s ease-in-out;
   background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: ${BOX_SHADOW};
 `;
 
-const Input = styled.input`
-  border: 1px solid blue;
+const Input = styled.input.attrs(p => ({ ...p, placeholder: 'Enter the text...' }))`
+  border: 1px solid #251431;
   height: 30px;
   padding: 6px;
+  border-radius: 2px;
 `;
 
-const Textarea = styled.textarea`
-  border: 1px solid blue;
+const Textarea = styled.textarea.attrs(p => ({ ...p, placeholder: 'Enter the text...' }))`
+  border: 1px solid #251431;
   resize: none;
   min-height: 30px;
   padding: 6px;
+  border-radius: 2px;
+  font-family: sans-serif;
 `;
 
 const Form = styled.form`
@@ -188,10 +201,11 @@ const Form = styled.form`
 
 const Button = styled.button`
   padding: 6px 8px;
-  background-color: #2196f3;
+  background-color: #251431;
   color: #fff;
   text-transform: uppercase;
   border: none;
+  border-radius: 2px;
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
@@ -219,10 +233,23 @@ const ListItem = styled.li`
   background-color: #fff;
   margin: 6px 0;
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: ${BOX_SHADOW};
 
   &:first-child {
     margin-top: 0;
+  }
+`;
+
+const Sticky = styled.div`
+  position: sticky;
+  top: 0;
+  background-color: #fdfcff;
+  padding: 16px;
+  box-shadow: ${BOX_SHADOW};
+  margin: 0 -16px;
+
+  & h1 {
+    margin: 0;
   }
 `;
 
@@ -233,6 +260,7 @@ export {
   AnimationFade,
   Root,
   Header,
+  Menu,
   Content,
   Footer,
   Card,
@@ -242,4 +270,5 @@ export {
   Button,
   List,
   ListItem,
+  Sticky,
 };

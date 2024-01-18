@@ -20,6 +20,8 @@ import {
   $$scope,
 } from '@dark-engine/core';
 
+import { TEXTAREA_TAG, VALUE_ATTR } from '../constants';
+import { detectIsVoidElement } from '../utils';
 import {
   NativeElement,
   TagNativeElement,
@@ -27,8 +29,6 @@ import {
   CommentNativeElement,
   type AttributeValue,
 } from '../native-element';
-import { detectIsVoidElement } from '../utils';
-import { TEXTAREA_TAG, VALUE_ATTR } from '../constants';
 
 let chunkIds: Record<string, boolean> = {};
 

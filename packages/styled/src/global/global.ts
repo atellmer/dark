@@ -23,9 +23,10 @@ setupGlobal();
 
 function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, ...args: Args<P & ThemeProps>) {
   if (!isLoaded && detectIsBrowser()) {
-    reuse(getInterleavedElements(), createTag);
+    reuse(getInterleavedElements(), createTag, false);
     isLoaded = true;
   }
+
   const fns = filterArgs<P>(args);
   const sheet = css<P>(source, ...args);
   const factory = forwardRef<P, unknown>(

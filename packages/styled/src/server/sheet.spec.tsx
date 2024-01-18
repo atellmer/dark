@@ -141,7 +141,7 @@ describe('@styled/server', () => {
         stream.on('end', () => {
           resolve(null);
           expect(data).toBe(
-            `${DOCTYPE}<html><head><title>App</title><style dark-styled="interleave-global">body{font-family:Arial;}</style><style dark-styled="interleave-components">.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}</style></head><body><div id="root">${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-dhfaea">SSR</div><div class="dk-dhfaea">!!!</div></div><script src="./build.js" defer></script></body></html>`,
+            `${DOCTYPE}<html><head><title>App</title><style dark-styled="ig">body{font-family:Arial;}</style><style dark-styled="ic">.dk-dhfaea{width:100px;height:100px;background-color:blueviolet;}</style></head><body><div id="root">${replacer}<div class="dk-dhfaea">Hello</div><div class="dk-dhfaea">SSR</div><div class="dk-dhfaea">!!!</div></div><script src="./build.js" defer></script></body></html>`,
           );
         });
       });

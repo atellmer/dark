@@ -30,8 +30,9 @@ import {
   applyRef,
 } from '@dark-engine/core';
 
-import { detectIsPortal } from '../portal';
+import { detectIsSvgElement, detectIsVoidElement } from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
+import { detectIsPortal } from '../portal';
 import {
   INPUT_TAG,
   TEXTAREA_TAG,
@@ -55,82 +56,6 @@ export type CSSProperties = Record<string, string | number>;
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
-const svgTagNames = new Set([
-  'svg',
-  'animate',
-  'animateMotion',
-  'animateTransform',
-  'circle',
-  'clipPath',
-  'defs',
-  'desc',
-  'ellipse',
-  'feBlend',
-  'feColorMatrix',
-  'feComponentTransfer',
-  'feComposite',
-  'feConvolveMatrix',
-  'feDiffuseLighting',
-  'feDisplacementMap',
-  'feDistantLight',
-  'feDropShadow',
-  'feFlood',
-  'feFuncA',
-  'feFuncB',
-  'feFuncG',
-  'feFuncR',
-  'feGaussianBlur',
-  'feImage',
-  'feMerge',
-  'feMergeNode',
-  'feMorphology',
-  'feOffset',
-  'fePointLight',
-  'feSpecularLighting',
-  'feSpotLight',
-  'feTile',
-  'feTurbulence',
-  'filter',
-  'foreignObject',
-  'g',
-  'image',
-  'line',
-  'linearGradient',
-  'marker',
-  'mask',
-  'metadata',
-  'mpath',
-  'path',
-  'pattern',
-  'polygon',
-  'polyline',
-  'radialGradient',
-  'rect',
-  'stop',
-  'switch',
-  'symbol',
-  'text',
-  'textPath',
-  'tspan',
-  'use',
-  'view',
-]);
-const voidTagNames = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr',
-]);
 
 const createNativeElementMap = {
   [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
@@ -151,14 +76,6 @@ const createNativeElementMap = {
 
 function createNativeElement(node: VirtualNode): NativeElement {
   return createNativeElementMap[node.type](node);
-}
-
-function detectIsSvgElement(name: string) {
-  return svgTagNames.has(name);
-}
-
-function detectIsVoidElement(name: string) {
-  return voidTagNames.has(name);
 }
 
 function setObjectStyle(element: TagNativeElement, style: CSSProperties) {

@@ -157,10 +157,10 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
 function filter(styles: Array<string>, injections: Set<string>) {
   const $styles: Array<string> = [];
 
-  for (const css of styles) {
-    if (!injections.has(css)) {
-      $styles.push(css);
-      injections.add(css);
+  for (const style of styles) {
+    if (style && !injections.has(style)) {
+      $styles.push(style);
+      injections.add(style);
     }
   }
 
@@ -282,13 +282,16 @@ function inject(css: string, tag: HTMLStyleElement) {
   tag.textContent = `${tag.textContent}${css}`;
 }
 
-function reuse(elements: Array<HTMLStyleElement>, createTag: () => HTMLStyleElement) {
+function reuse(elements: Array<HTMLStyleElement>, createTag: () => HTMLStyleElement, isComponentStyle = true) {
   if (elements.length === 0) return;
   const tag = createTag();
   let content = '';
 
   for (const element of elements) {
-    content += element.textContent;
+    const style = element.textContent;
+
+    isComponentStyle && filter([style], injections);
+    content += style;
     element.remove();
   }
 

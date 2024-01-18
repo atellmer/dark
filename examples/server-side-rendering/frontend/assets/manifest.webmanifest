@@ -1,0 +1,32 @@
+{
+    "theme_color": "#9575CD",
+    "background_color": "#9575CD",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "name": "Dark App",
+    "short_name": "Dark App",
+    "description": "An application that is rendered on the server, cached and hydrated. Can behave like an SPA in offline mode.",
+    "icons": [
+        {
+            "src": "/assets/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/icon-256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png"
+        },
+        {
+            "src": "/assets/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

@@ -1,10 +1,10 @@
 export const VERSION = '0.25.1';
 export const STYLE_TAG = 'style';
 export const STYLED_ATTR = 'dark-styled';
-export const GLOBAL_ATTR_VALUE = 'global';
-export const COMPONENTS_ATTR_VALUE = 'components';
-export const INTERLEAVE_GLOBAL_ATTR_VALUE = 'interleave-global';
-export const INTERLEAVE_COMPONENTS_ATTR_VALUE = 'interleave-components';
+export const GLOBAL_ATTR_VALUE = 'g';
+export const COMPONENTS_ATTR_VALUE = 'c';
+export const INTERLEAVE_GLOBAL_ATTR_VALUE = 'ig';
+export const INTERLEAVE_COMPONENTS_ATTR_VALUE = 'ic';
 export const CLASS_NAME_PREFIX = 'dk';
 export const ANIMATION_NAME_PREFIX = 'dka';
 export const OPENING_CURLY_BRACE_MARK = '{';
