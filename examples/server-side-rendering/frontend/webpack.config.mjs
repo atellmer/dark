@@ -34,7 +34,7 @@ const config = env => ({
       patterns: [{ from: './assets', to: './assets' }],
     }),
     new InjectManifest({
-      swSrc: './service-worker.js',
+      swSrc: './service-worker.ts',
     }),
   ],
 });
