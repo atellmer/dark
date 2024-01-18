@@ -1,7 +1,7 @@
 import { h, component } from '@dark-engine/core';
 import { useMatch, useHistory, useParams } from '@dark-engine/web-router';
 
-import { useRemoveProductMutation } from '../hooks';
+import { useProduct, useRemoveProductMutation } from '../hooks';
 import { Card, Button } from './ui';
 
 const ProductRemove = component(() => {
@@ -9,6 +9,7 @@ const ProductRemove = component(() => {
   const history = useHistory();
   const params = useParams();
   const id = Number(params.get('id'));
+  const { data: product } = useProduct(id);
   const [removeProduct, { loading }] = useRemoveProductMutation(id);
   const urlToList = url.replace(`${id}/remove/`, '');
 
@@ -20,7 +21,9 @@ const ProductRemove = component(() => {
 
   return (
     <Card $loading={loading}>
-      <h3>Do you want to remove product #{id}? 🤔</h3>
+      <h3>
+        Do you want to remove product #{product.id} with name «{product.name}»? 🤔
+      </h3>
       <Button onClick={handleRemove}>Yes</Button>
       <Button onClick={() => history.back()}>No</Button>
     </Card>

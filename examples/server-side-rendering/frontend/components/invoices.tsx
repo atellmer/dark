@@ -5,7 +5,7 @@ import { AnimationFade } from './ui';
 const Invoices = component(() => {
   return (
     <AnimationFade>
-      <h1>Invoices</h1>
+      <h1>Invoices 🛒</h1>
       <p>
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla temporibus amet sed deserunt nostrum molestias,
         consequatur numquam quis minima blanditiis corrupti voluptatem vel animi officia dolorem quibusdam minus nemo,

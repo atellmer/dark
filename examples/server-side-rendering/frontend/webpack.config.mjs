@@ -35,6 +35,9 @@ const config = env => ({
     }),
     new InjectManifest({
       swSrc: './service-worker.ts',
+      modifyURLPrefix: {
+        '': '/static/',
+      },
     }),
   ],
 });

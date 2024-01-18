@@ -5,7 +5,7 @@ import { AnimationFade } from './ui';
 const ProductAnalytics = component(() => {
   return (
     <AnimationFade>
-      <h2>Analytics</h2>
+      <h2>Analytics 📊</h2>
       <p>
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla temporibus amet sed deserunt nostrum molestias,
         consequatur numquam quis minima blanditiis corrupti voluptatem vel animi officia dolorem quibusdam minus nemo,

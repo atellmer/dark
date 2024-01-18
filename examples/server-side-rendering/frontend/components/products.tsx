@@ -14,7 +14,7 @@ const Products = component<ProductsProps>(({ slot }) => {
   return (
     <AnimationFade>
       <Sticky>
-        <h1>Products 🤓</h1>
+        <h1>Products 📈</h1>
         <Menu $secondary>
           <RouterLink to={`${url}list`}>List</RouterLink>
           <RouterLink to={`${url}analytics`}>Analytics</RouterLink>

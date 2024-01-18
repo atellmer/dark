@@ -6,7 +6,7 @@ import { useProducts } from '../hooks';
 import { Spinner, Error, AnimationFade, Button, List, ListItem } from './ui';
 
 const Header = styled.header`
-  padding: 16px 0;
+  padding-bottom: 16px;
 `;
 
 const ProductList = component<{ slot: DarkElement }>(({ slot }) => {

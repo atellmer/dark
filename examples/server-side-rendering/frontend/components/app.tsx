@@ -11,7 +11,7 @@ import {
 } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 
-import { GlobalStyle, Spinner, Root, Header, Menu, Content, Footer } from './ui';
+import { GlobalStyle, Spinner, Root, Header, Menu, Content } from './ui';
 import { type Api, ApiProvider } from '../../contract';
 import { detectIsBrowser, setItem } from '../utils';
 import { Key } from '../api';
@@ -133,7 +133,6 @@ const App = component<AppProps>(({ url, api }) => {
                       </Menu>
                     </Header>
                     <Content>{slot}</Content>
-                    <Footer>© {new Date().getFullYear()} Some Cool Company Ltd.</Footer>
                   </Root>
                 </Suspense>
               );

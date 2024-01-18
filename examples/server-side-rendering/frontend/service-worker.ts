@@ -9,7 +9,10 @@ self.__WB_DISABLE_DEV_LOGS = true;
 
 setDefaultHandler(new NetworkOnly());
 precacheAndRoute(self.__WB_MANIFEST);
-offlineFallback({ pageFallback: '/assets/offline.html' });
+offlineFallback({
+  pageFallback: '/static/assets/offline.html',
+  fontFallback: '/static/assets/fonts/Roboto-Regular.ttf',
+});
 
 registerRoute(
   new Route(({ request, sameOrigin }) => {
