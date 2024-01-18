@@ -1,4 +1,6 @@
 import { resolve, dirname } from 'node:path';
+import { InjectManifest } from 'workbox-webpack-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
 import { alias, plugins } from '../../../webpack.base.mjs';
 
@@ -14,6 +16,7 @@ const config = env => ({
   output: {
     path: resolve(__dirname, './static'),
     filename: 'build.js',
+    clean: true,
   },
   devtool: 'source-map',
   module: {
@@ -25,7 +28,15 @@ const config = env => ({
       },
     ],
   },
-  plugins: [...plugins],
+  plugins: [
+    ...plugins,
+    new CopyPlugin({
+      patterns: [{ from: './assets', to: './assets' }],
+    }),
+    new InjectManifest({
+      swSrc: './service-worker.js',
+    }),
+  ],
 });
 
 export default config;

@@ -131,7 +131,7 @@ const App = component<AppProps>(({ url, api }) => {
   );
 });
 
-if (typeof globalThis.window !== 'undefined' && 'serviceWorker' in navigator) {
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
   });

@@ -20,16 +20,16 @@
   "display": "standalone",
   "screenshots": [
     {
-      "src": "/assets/screenshot2.png",
-      "type": "image/png",
-      "sizes": "384x529",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/assets/screenshot1.png",
+      "src": "/assets/screenshot-1.png",
       "type": "image/png",
       "sizes": "1280x937",
       "form_factor": "wide"
+    },
+    {
+      "src": "/assets/screenshot-2.png",
+      "type": "image/png",
+      "sizes": "384x529",
+      "form_factor": "narrow"
     }
   ]
 }
