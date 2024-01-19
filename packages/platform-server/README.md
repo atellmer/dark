@@ -34,7 +34,11 @@ yarn add @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-s
 ## API
 
 ```tsx
-import { renderToString, renderToStream } from '@dark-engine/platform-server';
+import {
+  renderToString,
+  renderToStream,
+  VERSION,
+} from '@dark-engine/platform-server';
 ```
 
 ## Usage

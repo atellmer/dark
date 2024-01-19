@@ -1,7 +1,7 @@
-import { useQuery, useMutation } from '@dark-engine/core';
+import { useQuery, useMutation } from '@dark-engine/data';
 
-import { type ProductBrief, useApi } from '../../contract';
-import { Key } from '../api';
+import { type ProductBrief } from '../../contract';
+import { Key, useApi } from '../api';
 
 function useProducts() {
   const api = useApi();

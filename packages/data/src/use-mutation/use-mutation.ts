@@ -1,7 +1,7 @@
-import { type InMemoryCache, useCache, MonitorEventType, checkCache } from '../cache';
-import { error, detectIsFunction } from '../utils';
-import { useUpdate } from '../use-update';
-import { useMemo } from '../use-memo';
+import { error, detectIsFunction, useUpdate, useMemo } from '@dark-engine/core';
+
+import { type InMemoryCache, MonitorEventType, checkCache } from '../cache';
+import { useCache } from '../client';
 
 type UseMutatinOptions<T> = {
   key: string;

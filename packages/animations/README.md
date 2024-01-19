@@ -74,6 +74,7 @@ import {
   useTransition,
   useChain,
   preset,
+  VERSION,
 } from '@dark-engine/animations'
 ```
 

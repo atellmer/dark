@@ -67,7 +67,6 @@ import {
   type WritableAtom,
   atom,
   batch,
-  CacheProvider,
   Comment,
   component,
   computed,
@@ -81,7 +80,6 @@ import {
   Guard,
   h,
   hot,
-  InMemoryCache,
   lazy,
   memo,
   startTransition,
@@ -99,10 +97,7 @@ import {
   useImperativeHandle,
   useInsertionEffect,
   useLayoutEffect,
-  useLazyQuery,
   useMemo,
-  useMutation,
-  useQuery,
   useReducer,
   useRef,
   useState,
@@ -111,6 +106,7 @@ import {
   useTransition,
   useUpdate,
   View,
+  VERSION,
 } from '@dark-engine/core';
 ```
 
@@ -837,20 +833,7 @@ const App = component(() => {
 
 Dark is designed with support for asynchronous rendering. This implies that following the mounting of each component during the reconciliation phase, the core checks if a preset deadline has been reached. If the deadline is met, control of the event loop is yielded to other code, resuming at the next tick. If the deadline is not yet met, the core continues the rendering process. The deadline is consistently set at 6 milliseconds.
 
-By default, core runs in synchronous mode, however, if Dark understands that it is rendering on the server, it goes into asynchronous mode and can wait for lazy modules to load and asynchronous code to execute if the `useQuery` hook is used.
-
-#### `useQuery`
-
-This hook is designed to work with asynchronous resources, such as network requests. When rendered in the browser, it knows how to interact with `Suspense`, display the loader, and also the error, if there is one. When rendering on the server, it immediately begins to load the resource in order to provide useful asynchronous content to the server. When hydrated, the state of the hook is restored as if it were running in the browser. This allows us to solve the problem with asynchronous data and how to work with it in the same way both in the browser and on the server.
-
-```tsx
-const { data, loading, error, refetch } = useQuery(({ id }) => fetchUserById(id), { key: 'FETCH_DATA', variables: { id } });
-
-if (loading) return <div>loading...</div>;
-if (error) return <div>{error}</div>;
-
-return <div>{data}</div>;
-```
+By default, core runs in synchronous mode, however, if Dark understands that it is rendering on the server, it goes into asynchronous mode and can wait for lazy modules to load and asynchronous code to execute if the `useQuery` hook from `@dark-engine/data` package is used.
 
 <a id="cocurrent-rendering"></a>
 

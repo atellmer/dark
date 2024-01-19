@@ -115,6 +115,7 @@ import {
   TabViewItem,
   Frame,
   Page,
+  VERSION,
 } from '@dark-engine/platform-native';
 ```
 

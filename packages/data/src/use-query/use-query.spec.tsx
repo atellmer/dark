@@ -1,29 +1,26 @@
 /** @jsx h */
+import { type DarkElement, h, Fragment, component, Suspense, APP_STATE_ATTR, useState } from '@dark-engine/core';
 import { createBrowserEnv, createBrowserHydrateEnv, createServerEnv, sleep, dom } from '@test-utils';
 
-import { h } from '../element';
-import { type DarkElement } from '../shared';
-import { Fragment } from '../fragment';
-import { component } from '../component';
-import { Suspense } from '../suspense';
-import { APP_STATE_ATTR } from '../constants';
-import { useState } from '../use-state';
-import { InMemoryCache, CacheProvider } from '../cache';
+import { InMemoryCache } from '../cache';
+import { DataClient, DataProvider } from '../client';
 import { useQuery } from './use-query';
+
+const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
 
 jest.spyOn(console, 'error').mockImplementation(() => {});
 
 let { host, render } = createBrowserEnv();
-let cache = new InMemoryCache();
+let client = createClient();
 const KEY = 'data';
 
 beforeEach(() => {
   jest.useRealTimers();
   ({ host, render } = createBrowserEnv());
-  cache = new InMemoryCache();
+  client = createClient();
 });
 
-const withProvider = (app: DarkElement) => <CacheProvider cache={cache}>{app}</CacheProvider>;
+const withProvider = (app: DarkElement) => <DataProvider client={client}>{app}</DataProvider>;
 
 const fetchData = async (x: number) => {
   await sleep(5);
@@ -34,7 +31,7 @@ const fetchError = async () => {
   throw new Error('oops!');
 };
 
-describe('@core/use-query', () => {
+describe('@data/use-query', () => {
   test('resolves an async query correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {

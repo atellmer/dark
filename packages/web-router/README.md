@@ -44,6 +44,7 @@ import {
   useHistory,
   useParams,
   useMatch,
+  VERSION,
 } from '@dark-engine/web-router';
 ```
 

@@ -1,3 +1,5 @@
+import { useApi as $useApi } from '@dark-engine/data';
+
 import { type Api, type ProductBrief, type Product } from '../../contract';
 import { detectIsBrowser, getItem, setItem, checkId, checkResponse, headers } from '../utils';
 
@@ -106,4 +108,6 @@ if (detectIsBrowser()) {
   sync();
 }
 
-export { api };
+const useApi = () => $useApi() as Api;
+
+export { api, useApi };

@@ -1,18 +1,9 @@
-import {
-  h,
-  component,
-  Fragment,
-  Suspense,
-  lazy,
-  useMemo,
-  useEffect,
-  InMemoryCache,
-  CacheProvider,
-} from '@dark-engine/core';
+import { h, component, Fragment, Suspense, lazy, useMemo, useEffect } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
+import { DataClient, DataProvider, InMemoryCache } from '@dark-engine/data';
 
 import { GlobalStyle, Spinner, Root, Header, Menu, Content } from './ui';
-import { type Api, ApiProvider } from '../../contract';
+import { type Api } from '../../contract';
 import { detectIsBrowser, setItem } from '../utils';
 import { Key } from '../api';
 
@@ -97,49 +88,47 @@ export type AppProps = {
 };
 
 const App = component<AppProps>(({ url, api }) => {
-  const cache = useMemo(() => {
-    const cache = new InMemoryCache<Key>();
+  const client = useMemo(() => {
+    const client = new DataClient<Api, Key>({ api, cache: new InMemoryCache() });
 
     if (detectIsBrowser()) {
-      cache.subscribe(({ key, record }) => {
+      client.subscribe(({ key, record }) => {
         if (key === Key.FETCH_PRODUCTS && record.data) {
           setItem(key, record.data);
         }
       });
     }
 
-    return cache;
+    return client;
   }, []);
 
   useEffect(() => {
-    cache.monitor(x => console.log(x));
+    client.monitor(x => console.log(x));
   }, []);
 
   return (
     <>
       <GlobalStyle />
-      <ApiProvider api={api}>
-        <CacheProvider cache={cache}>
-          <Router routes={routes} url={url}>
-            {slot => {
-              return (
-                <Suspense fallback={<Spinner />}>
-                  <Root>
-                    <Header>
-                      <Menu>
-                        <RouterLink to='/products'>Products</RouterLink>
-                        <RouterLink to='/operations'>Operations</RouterLink>
-                        <RouterLink to='/invoices'>Invoices</RouterLink>
-                      </Menu>
-                    </Header>
-                    <Content>{slot}</Content>
-                  </Root>
-                </Suspense>
-              );
-            }}
-          </Router>
-        </CacheProvider>
-      </ApiProvider>
+      <DataProvider client={client}>
+        <Router routes={routes} url={url}>
+          {slot => {
+            return (
+              <Suspense fallback={<Spinner />}>
+                <Root>
+                  <Header>
+                    <Menu>
+                      <RouterLink to='/products'>Products</RouterLink>
+                      <RouterLink to='/operations'>Operations</RouterLink>
+                      <RouterLink to='/invoices'>Invoices</RouterLink>
+                    </Menu>
+                  </Header>
+                  <Content>{slot}</Content>
+                </Root>
+              </Suspense>
+            );
+          }}
+        </Router>
+      </DataProvider>
     </>
   );
 });

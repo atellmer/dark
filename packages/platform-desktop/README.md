@@ -143,6 +143,7 @@ import {
   StatusBar,
   TextBrowser,
   LCDNumber,
+  VERSION,
 } from '@dark-engine/platform-desktop';
 ```
 

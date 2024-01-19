@@ -27,6 +27,9 @@
       ],
       "@dark-engine/styled": [
         "../../../packages/styled/src/index"
+      ],
+      "@dark-engine/data": [
+        "../../../packages/data/src/index"
       ]
     }
   }

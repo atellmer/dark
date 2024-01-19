@@ -11,6 +11,7 @@ const alias = {
   '@dark-engine/native-navigation': resolve(__dirname, './packages/native-navigation/src'),
   '@dark-engine/animations': resolve(__dirname, './packages/animations/src'),
   '@dark-engine/styled': resolve(__dirname, './packages/styled/src'),
+  '@dark-engine/data': resolve(__dirname, './packages/data/src'),
 };
 const plugins = [
   new webpack.IgnorePlugin({

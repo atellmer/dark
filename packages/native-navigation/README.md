@@ -33,6 +33,7 @@ import {
   TabNavigator,
   TransitionName,
   useNavigation,
+  VERSION,
 } from '@dark-engine/native-navigation';
 ```
 ## Usage

@@ -1,0 +1,47 @@
+{
+  "name": "@dark-engine/data",
+  "version": "0.25.1",
+  "description": "Data transfer for Dark",
+  "author": "AlexPlex",
+  "license": "MIT",
+  "main": "./dist/cjs/index.js",
+  "typings": "./dist/types/index.d.ts",
+  "scripts": {
+    "build": "npm run before-build && npm run build:pipeline && npm run format && npm run after-build",
+    "build:pipeline": "npm run build:types && npm run build:cjs && npm run build:esm && npm run build:umd:dev && npm run build:umd:prod",
+    "build:cjs": "npx tsc -p ./tsconfig.cjs.json",
+    "build:esm": "npx tsc -p ./tsconfig.esm.json",
+    "build:umd:dev": "npx webpack --env development",
+    "build:umd:prod": "npx webpack --env production",
+    "build:types": "npx tsc -p ./tsconfig.types.json -d",
+    "format": "npx prettier --write ./**/*.{js,ts}",
+    "after-build": "node ./after-build.js",
+    "before-build": "node ./before-build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atellmer/dark.git"
+  },
+  "keywords": [
+    "dark",
+    "react",
+    "reactjs",
+    "angular",
+    "query",
+    "app"
+  ],
+  "peerDependencies": {
+    "@dark-engine/core": "*"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "/dist"
+  ],
+  "sideEffects": false
+}

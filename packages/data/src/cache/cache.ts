@@ -1,8 +1,7 @@
-import { type DarkElement, type TextBased, type SubscriberWithValue } from '../shared';
-import { createContext, useContext } from '../context';
-import { EventEmitter } from '../emitter';
-import { component } from '../component';
-import { getTime, nextTick } from '../utils';
+import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTick } from '@dark-engine/core';
+
+import { ROOT_ID } from '../constants';
+
 class InMemoryCache<K extends string = string> {
   private state: State;
   private emitter1 = new EventEmitter<EventName, EventData<K>>();
@@ -17,14 +16,14 @@ class InMemoryCache<K extends string = string> {
     return this.state;
   }
 
-  read<T>({ key, id = CACHE_ROOT_ID }: ReadOptions<K>) {
+  read<T>({ key, id = ROOT_ID }: ReadOptions<K>) {
     const map = this.state[key];
     const record = (map?.[id] || null) as CacheRecord<T>;
 
     return record;
   }
 
-  write<T>({ key, id = CACHE_ROOT_ID, data }: WriteOptions<T, K>) {
+  write<T>({ key, id = ROOT_ID, data }: WriteOptions<T, K>) {
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
     const record: CacheRecord = { id, valid: true, modifiedAt: getTime(), data };
@@ -33,7 +32,7 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'write', key, id, record });
   }
 
-  optimistic<T>({ key, id = CACHE_ROOT_ID, data }: OptimisticOptions<T, K>) {
+  optimistic<T>({ key, id = ROOT_ID, data }: OptimisticOptions<T, K>) {
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
     const record: CacheRecord = { id, valid: false, modifiedAt: getTime(), data };
@@ -42,7 +41,7 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'optimistic', key, id, record });
   }
 
-  invalidate({ key, id = CACHE_ROOT_ID }: InvalidateOptions<K>) {
+  invalidate({ key, id = ROOT_ID }: InvalidateOptions<K>) {
     const map = this.state[key];
     if (!map) return;
     const record = map[id];
@@ -51,7 +50,7 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'invalidate', key, id, record });
   }
 
-  delete({ key, id = CACHE_ROOT_ID }: DeleteOptions<K>) {
+  delete({ key, id = ROOT_ID }: DeleteOptions<K>) {
     if (!this.state[key]) return;
     const map = this.state[key];
 
@@ -81,20 +80,6 @@ class InMemoryCache<K extends string = string> {
     return false;
   }
 }
-
-const CacheContext = createContext<InMemoryCache>(null, { displayName: 'InMemoryCache' });
-
-const useCache = () => useContext(CacheContext);
-
-type CacheProviderProps = {
-  cache: InMemoryCache;
-  slot: DarkElement;
-};
-
-const CacheProvider = component<CacheProviderProps>(({ cache, slot }) => {
-  if (useCache()) throw new Error('[Dark]: illegal cache provider!');
-  return CacheContext.Provider({ value: cache, slot });
-});
 
 type State = Record<string, Record<string, CacheRecord>>;
 
@@ -128,9 +113,7 @@ export enum MonitorEventType {
 }
 
 function checkCache(cache: InMemoryCache) {
-  if (!cache) throw new Error('[Dark]: the hook requires a cache provider with a cache!');
+  if (!cache) throw new Error('[data]: the hook requires a provider with a client!');
 }
 
-const CACHE_ROOT_ID = '__ROOT__';
-
-export { CACHE_ROOT_ID, InMemoryCache, CacheProvider, useCache, checkCache };
+export { InMemoryCache, checkCache };

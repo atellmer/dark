@@ -37,6 +37,7 @@ import {
   hydrateRoot,
   createPortal,
   factory,
+  VERSION,
 } from '@dark-engine/platform-browser';
 ```
 

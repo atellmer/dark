@@ -73,6 +73,12 @@
       "@dark-engine/styled/*": [
         "./packages/styled/src/*"
       ],
+      "@dark-engine/data": [
+        "./packages/data/src/index"
+      ],
+      "@dark-engine/data/*": [
+        "./packages/data/src/*"
+      ],
       "@test-utils": [
         "./test/utils"
       ]

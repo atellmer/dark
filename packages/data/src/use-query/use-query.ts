@@ -1,13 +1,23 @@
-import { type InMemoryCache, useCache, MonitorEventType, checkCache, CACHE_ROOT_ID } from '../cache';
-import { type AppResource, type Callback, type TextBased } from '../shared';
-import { error, detectIsFunction, mapRecord } from '../utils';
-import { useLayoutEffect } from '../use-layout-effect';
-import { detectIsServer } from '../platform';
-import { useEffect } from '../use-effect';
-import { useSuspense } from '../suspense';
-import { useUpdate } from '../use-update';
-import { useMemo } from '../use-memo';
-import { $$scope } from '../scope';
+import {
+  type TextBased,
+  type AppResource,
+  type Callback,
+  error,
+  detectIsFunction,
+  mapRecord,
+  useLayoutEffect,
+  detectIsServer,
+  useEffect,
+  useUpdate,
+  useMemo,
+  $$scope,
+  __useSuspense as useSuspense,
+} from '@dark-engine/core';
+
+import { ROOT_ID } from '../constants';
+
+import { type InMemoryCache, MonitorEventType, checkCache } from '../cache';
+import { useCache } from '../client';
 
 export type UseQueryOptions<V extends Variables> = {
   key: string;
@@ -20,7 +30,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   const {
     variables = {} as V,
     key: cacheKey,
-    extractId = () => CACHE_ROOT_ID,
+    extractId = () => ROOT_ID,
     lazy = false,
   } = options || { variables: {} as V };
   const $scope = $$scope();
