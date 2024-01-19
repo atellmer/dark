@@ -96,7 +96,7 @@ function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZo
     const attrValue = node.attrs[attrName];
     const attribute = performAttribute(tagElement, attrName, attrValue);
 
-    if (attribute === true) {
+    if (attribute === null) {
       continue;
     } else {
       attrName = attribute;
@@ -126,7 +126,7 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
     const nextAttrValue = nextNode.attrs[attrName];
     const attribute = performAttribute(tagElement, attrName, nextAttrValue, prevAttrValue);
 
-    if (attribute === true) {
+    if (attribute === null) {
       continue;
     } else {
       attrName = attribute;
@@ -157,21 +157,21 @@ function performAttribute(
   nextAttrValue: AttributeValue,
   prevAttrValue?: AttributeValue,
 ) {
-  if (attrName[0] === EXCLUDE_ATTR_MARK) return true;
+  if (attrName[0] === EXCLUDE_ATTR_MARK) return null;
 
   if (attrName === REF_ATTR) {
     applyRef(nextAttrValue as unknown as Ref<TagNativeElement>, tagElement);
-    return true;
+    return null;
   }
 
   if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && nextAttrValue !== prevAttrValue) {
     toggleAttribute(tagElement, CLASS_ATTR, nextAttrValue as string);
-    return true;
+    return null;
   }
 
   if (attrName === STYLE_ATTR && nextAttrValue && nextAttrValue !== prevAttrValue && detectIsObject(nextAttrValue)) {
     setObjectStyle(tagElement, nextAttrValue as CSSProperties);
-    return true;
+    return null;
   }
 
   if (attrName === AS_ATTR) {
