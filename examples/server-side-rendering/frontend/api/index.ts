@@ -108,6 +108,6 @@ if (detectIsBrowser()) {
   sync();
 }
 
-const useApi = () => $useApi() as Api;
+const useApi = () => $useApi<Api>();
 
 export { api, useApi };

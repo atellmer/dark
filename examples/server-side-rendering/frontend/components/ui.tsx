@@ -8,12 +8,14 @@ const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Roboto';
     font-weight: 700;
+    font-display: swap;
     src: url('/static/assets/fonts/Roboto-Bold.ttf');
   }
 
   @font-face {
     font-family: 'Roboto';
     font-weight: 400;
+    font-display: swap;
     src: url('/static/assets/fonts/Roboto-Regular.ttf');
   }
 
@@ -27,21 +29,18 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    font-family: 'Roboto';
+    font-family: 'Roboto', sans-serif;
     line-height: 1.4;
     background-color: #1A237E;
     overflow-y: scroll;
     color: #fff;
   }
 
-  input,
-  textarea,
-  button {
+  input, textarea, button {
     font-family: 'Roboto';
   }
 
-  input,
-  textarea {
+  input, textarea {
     font-size: 1rem;
   }
 

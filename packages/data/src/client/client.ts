@@ -32,11 +32,12 @@ class DataClient<A extends object = {}, K extends string = string> {
 
 const DataClientContext = createContext<DataClient>(null, { displayName: 'DataClient' });
 
-const useClient = () => useContext(DataClientContext);
+const useClient = <A extends object = {}, K extends string = string>() =>
+  useContext(DataClientContext) as DataClient<A, K>;
 
-const useApi = () => useClient().getApi();
+const useApi = <A extends object = {}>() => useClient().getApi() as A;
 
-const useCache = () => useClient().getCache();
+const useCache = <K extends string = string>() => useClient().getCache() as InMemoryCache<K>;
 
 type DataProviderProps = {
   client: DataClient;

@@ -86,19 +86,24 @@ type State = Record<string, Record<string, CacheRecord>>;
 type EventName = 'change';
 type EventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
 type EventData<K extends string> = { type: EventType; key: K; id?: TextBased; record?: CacheRecord };
-type MonitorEventPhase = 'start' | 'finish' | 'error';
-type MonitorEventData<K extends string> = { type: MonitorEventType; phase: MonitorEventPhase; key: K; data?: unknown };
+export type MonitorEventPhase = 'start' | 'finish' | 'error';
+export type MonitorEventData<K extends string> = {
+  type: MonitorEventType;
+  phase: MonitorEventPhase;
+  key: K;
+  data?: unknown;
+};
 
 type BaseOptions<K> = {
   key: K;
   id?: TextBased;
 };
 
-type ReadOptions<K> = BaseOptions<K>;
-type WriteOptions<T, K> = { data: T } & BaseOptions<K>;
-type OptimisticOptions<T, K> = { data: T } & BaseOptions<K>;
-type InvalidateOptions<K> = BaseOptions<K>;
-type DeleteOptions<K> = BaseOptions<K>;
+export type ReadOptions<K> = BaseOptions<K>;
+export type WriteOptions<T, K> = { data: T } & BaseOptions<K>;
+export type OptimisticOptions<T, K> = { data: T } & BaseOptions<K>;
+export type InvalidateOptions<K> = BaseOptions<K>;
+export type DeleteOptions<K> = BaseOptions<K>;
 
 export type CacheRecord<T = unknown> = {
   id: TextBased;
