@@ -16,7 +16,7 @@ import {
 
 import { ROOT_ID } from '../constants';
 
-import { type InMemoryCache, MonitorEventType, checkCache } from '../cache';
+import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
 
 export type UseQueryOptions<V extends Variables> = {
@@ -54,7 +54,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
     const $$variables = $variables || variables;
     const $cacheId = extractId($$variables);
 
-    cache.__emit({ type: MonitorEventType.QUERY, phase: 'start', key: cacheKey, data: $$variables });
+    cache.__emit({ type: 'query', phase: 'start', key: cacheKey, data: $$variables });
 
     try {
       if (!isServer && !firstTime()) {
@@ -64,7 +64,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
 
       const data = await query($$variables);
 
-      cache.__emit({ type: MonitorEventType.QUERY, phase: 'finish', key: cacheKey, data });
+      cache.__emit({ type: 'query', phase: 'finish', key: cacheKey, data });
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
@@ -82,7 +82,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
       return data;
     } catch (err) {
       error(err);
-      cache.__emit({ type: MonitorEventType.QUERY, phase: 'error', key: cacheKey, data: err });
+      cache.__emit({ type: 'query', phase: 'error', key: cacheKey, data: err });
 
       if (isServer) {
         $scope.setResource(id, [null, String(err)]);

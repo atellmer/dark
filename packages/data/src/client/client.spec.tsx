@@ -3,7 +3,7 @@ import { h, component } from '@dark-engine/core';
 import * as core from '@dark-engine/core';
 import { createBrowserEnv } from '@test-utils';
 
-import { InMemoryCache, type WriteOptions, type MonitorEventData, MonitorEventType } from '../cache';
+import { InMemoryCache, type WriteOptions, type MonitorEventData } from '../cache';
 import { DataClient, DataProvider, useApi, useCache, useClient } from '../client';
 import { ROOT_ID } from '../constants';
 
@@ -29,7 +29,7 @@ const createClient = () => new DataClient({ api, cache });
 let { render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useRealTimers();
+  jest.useFakeTimers();
   ({ render } = createBrowserEnv());
 });
 
@@ -57,7 +57,7 @@ describe('@data/client', () => {
     const off1 = client.subscribe(spy);
     const off2 = client.monitor(spy);
     const options: WriteOptions<number, Key> = { key: Key.DATA, data: 1 };
-    const data: MonitorEventData<Key> = { key: Key.DATA, phase: 'start', type: MonitorEventType.QUERY, data: 2 };
+    const data: MonitorEventData<Key> = { key: Key.DATA, phase: 'start', type: 'query', data: 2 };
 
     cache.write(options);
     expect(spy).toHaveBeenCalledTimes(1);

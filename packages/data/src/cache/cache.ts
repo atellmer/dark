@@ -3,14 +3,10 @@ import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTi
 import { ROOT_ID } from '../constants';
 
 class InMemoryCache<K extends string = string> {
-  private state: State;
-  private emitter1 = new EventEmitter<EventName, EventData<K>>();
+  private state: State = {};
+  private emitter1 = new EventEmitter<EventName, CacheEventData<K>>();
   private emitter2 = new EventEmitter<EventName, MonitorEventData<K>>();
   private keys = new Set<K>();
-
-  constructor(state?: State) {
-    this.state = state || {};
-  }
 
   getState() {
     return this.state;
@@ -58,7 +54,7 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'delete', key, id });
   }
 
-  subscribe(subscriber: SubscriberWithValue<EventData<K>>) {
+  subscribe(subscriber: SubscriberWithValue<CacheEventData<K>>) {
     return this.emitter1.on('change', subscriber);
   }
 
@@ -84,8 +80,11 @@ class InMemoryCache<K extends string = string> {
 type State = Record<string, Record<string, CacheRecord>>;
 
 type EventName = 'change';
-type EventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
-type EventData<K extends string> = { type: EventType; key: K; id?: TextBased; record?: CacheRecord };
+
+export type CacheEventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
+export type CacheEventData<K extends string> = { type: CacheEventType; key: K; id?: TextBased; record?: CacheRecord };
+
+export type MonitorEventType = 'query' | 'mutation';
 export type MonitorEventPhase = 'start' | 'finish' | 'error';
 export type MonitorEventData<K extends string> = {
   type: MonitorEventType;
@@ -111,11 +110,6 @@ export type CacheRecord<T = unknown> = {
   valid: boolean;
   modifiedAt: number;
 };
-
-export enum MonitorEventType {
-  QUERY = 'QUERY',
-  MUTATION = 'MUTATION',
-}
 
 function checkCache(cache: InMemoryCache) {
   if (!cache) throw new Error('[data]: the hook requires a provider with a client!');
