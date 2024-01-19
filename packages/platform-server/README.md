@@ -11,7 +11,11 @@ The fundamental principle involves rendering the component code into a string on
 Additionally, rendering can be performed directly into HTML files via the Node.js API, which can then be saved for subsequent distribution without hydration. This approach results in static site generation.
 
 <div align="center"> 
-  <img src="./assets/lighthouse.png">
+  <img src="./assets/lighthouse-1.png">
+</div>
+<br />
+<div align="center"> 
+  <img src="./assets/lighthouse-2.png">
 </div>
 
 ## Installation
