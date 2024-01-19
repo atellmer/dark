@@ -6,6 +6,7 @@ import {
   type CommentVirtualNode,
   type PlainVirtualNode,
   type Callback,
+  type Ref,
   REF_ATTR,
   ATTR_BLACK_LIST,
   CREATE_EFFECT_TAG,
@@ -40,6 +41,7 @@ import {
   CLASS_ATTR,
   CLASS_NAME_ATTR,
   VALUE_ATTR,
+  AS_ATTR,
   EXCLUDE_ATTR_MARK,
 } from '../constants';
 import type {
@@ -90,24 +92,14 @@ function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZo
   const attrNames = Object.keys(node.attrs);
   const tagElement = element as TagNativeElement;
 
-  for (const attrName of attrNames) {
+  for (let attrName of attrNames) {
     const attrValue = node.attrs[attrName];
+    const attribute = performAttribute(tagElement, attrName, attrValue);
 
-    if (attrName[0] === EXCLUDE_ATTR_MARK) continue;
-
-    if (attrName === REF_ATTR) {
-      applyRef(attrValue, element);
+    if (attribute === true) {
       continue;
-    }
-
-    if (attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) {
-      toggleAttribute(tagElement, CLASS_ATTR, attrValue);
-      continue;
-    }
-
-    if (attrName === STYLE_ATTR && attrValue && detectIsObject(attrValue)) {
-      setObjectStyle(tagElement, attrValue as CSSProperties);
-      continue;
+    } else {
+      attrName = attribute;
     }
 
     if (detectIsEvent(attrName)) {
@@ -129,25 +121,15 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
   const attrNames = getAttributeNames(prevNode, nextNode);
   const tagElement = element as TagNativeElement;
 
-  for (const attrName of attrNames) {
+  for (let attrName of attrNames) {
     const prevAttrValue = prevNode.attrs[attrName];
     const nextAttrValue = nextNode.attrs[attrName];
+    const attribute = performAttribute(tagElement, attrName, nextAttrValue, prevAttrValue);
 
-    if (attrName[0] === EXCLUDE_ATTR_MARK) continue;
-
-    if (attrName === REF_ATTR) {
-      applyRef(prevAttrValue, element);
+    if (attribute === true) {
       continue;
-    }
-
-    if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && prevAttrValue !== nextAttrValue) {
-      toggleAttribute(tagElement, CLASS_ATTR, nextAttrValue);
-      continue;
-    }
-
-    if (attrName === STYLE_ATTR && nextAttrValue && prevAttrValue !== nextAttrValue && detectIsObject(nextAttrValue)) {
-      setObjectStyle(tagElement, nextAttrValue as CSSProperties);
-      continue;
+    } else {
+      attrName = attribute;
     }
 
     if (!detectIsUndefined(nextAttrValue)) {
@@ -167,6 +149,36 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       tagElement.removeAttribute(attrName);
     }
   }
+}
+
+function performAttribute(
+  tagElement: TagNativeElement,
+  attrName: string,
+  nextAttrValue: AttributeValue,
+  prevAttrValue?: AttributeValue,
+) {
+  if (attrName[0] === EXCLUDE_ATTR_MARK) return true;
+
+  if (attrName === REF_ATTR) {
+    applyRef(nextAttrValue as unknown as Ref<TagNativeElement>, tagElement);
+    return true;
+  }
+
+  if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && nextAttrValue !== prevAttrValue) {
+    toggleAttribute(tagElement, CLASS_ATTR, nextAttrValue as string);
+    return true;
+  }
+
+  if (attrName === STYLE_ATTR && nextAttrValue && nextAttrValue !== prevAttrValue && detectIsObject(nextAttrValue)) {
+    setObjectStyle(tagElement, nextAttrValue as CSSProperties);
+    return true;
+  }
+
+  if (attrName === AS_ATTR) {
+    attrName = attrName.slice(1, AS_ATTR.length);
+  }
+
+  return attrName;
 }
 
 function toggleAttribute(element: TagNativeElement, name: string, value: string) {

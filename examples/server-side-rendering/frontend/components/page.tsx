@@ -14,6 +14,7 @@ const Page = component<PageProps>(({ title, slot }) => {
         <meta http-equiv='X-UA-Compatible' content='ie=edge' />
         <meta name='description' content={title} />
         <link rel='manifest' href='/static/assets/manifest.webmanifest' />
+        <link rel='preload' href='/static/assets/fonts/Roboto-Regular.ttf' _as='font' crossorigin='anonymous' />
         <base href='/' />
         <title>{title}</title>
       </head>

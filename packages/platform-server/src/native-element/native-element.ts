@@ -1,6 +1,6 @@
 import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
 
-import { CLASS_ATTR, CLASS_NAME_ATTR, EXCLUDE_ATTR_MARK } from '../constants';
+import { CLASS_ATTR, CLASS_NAME_ATTR, EXCLUDE_ATTR_MARK, AS_ATTR } from '../constants';
 import { detectIsVoidElement } from '../utils';
 
 abstract class NativeElement {
@@ -34,9 +34,10 @@ class TagNativeElement extends NativeElement {
   }
 
   setAttribute(name: string, value: AttributeValue) {
-    const $name = name === CLASS_NAME_ATTR ? CLASS_ATTR : name;
+    let $name = name === CLASS_NAME_ATTR ? CLASS_ATTR : name;
 
-    if (name[0] === EXCLUDE_ATTR_MARK) return;
+    if ($name[0] === EXCLUDE_ATTR_MARK) return;
+    if ($name === AS_ATTR) $name = name.slice(1, AS_ATTR.length);
     this.attrs[$name] = detectIsString(value) ? escape(value) : value;
   }
 

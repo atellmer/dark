@@ -5,4 +5,5 @@ export const CLASS_NAME_ATTR = 'className';
 export const CLASS_ATTR = 'class';
 export const STYLE_ATTR = 'style';
 export const VALUE_ATTR = 'value';
+export const AS_ATTR = '_as';
 export const EXCLUDE_ATTR_MARK = '$';

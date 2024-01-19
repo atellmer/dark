@@ -679,7 +679,7 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLLinkProps<T> = {
-    as?: string;
+    _as?: string;
     crossorigin?: CrossOrigin;
     fetchpriority?: 'high' | 'low' | 'auto';
     href?: string;

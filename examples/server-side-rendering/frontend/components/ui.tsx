@@ -7,13 +7,6 @@ const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'Roboto';
-    font-weight: 700;
-    font-display: swap;
-    src: url('/static/assets/fonts/Roboto-Bold.ttf');
-  }
-
-  @font-face {
-    font-family: 'Roboto';
     font-weight: 400;
     font-display: swap;
     src: url('/static/assets/fonts/Roboto-Regular.ttf');
