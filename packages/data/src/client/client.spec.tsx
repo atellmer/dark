@@ -19,7 +19,7 @@ jest.mock('@dark-engine/core', () => {
 jest.spyOn(core, 'getTime').mockImplementation(() => TIME);
 
 enum Key {
-  DATA = 'DATA',
+  GET_DATA = 'GET_DATA',
 }
 type Api = { fn: Function };
 const api: Api = { fn: () => {} };
@@ -56,14 +56,14 @@ describe('@data/client', () => {
     const cache = client.getCache();
     const off1 = client.subscribe(spy);
     const off2 = client.monitor(spy);
-    const options: WriteOptions<number, Key> = { key: Key.DATA, data: 1 };
-    const data: MonitorEventData<Key> = { key: Key.DATA, phase: 'start', type: 'query', data: 2 };
+    const options: WriteOptions<number, Key> = { key: Key.GET_DATA, data: 1 };
+    const data: MonitorEventData<Key> = { key: Key.GET_DATA, phase: 'start', type: 'query', data: 2 };
 
     cache.write(options);
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({
       id: ROOT_ID,
-      key: Key.DATA,
+      key: Key.GET_DATA,
       record: {
         id: ROOT_ID,
         data: 1,
@@ -84,7 +84,7 @@ describe('@data/client', () => {
 
     off1();
     off2();
-    cache.write({ key: Key.DATA, data: 2 });
+    cache.write({ key: Key.GET_DATA, data: 2 });
     cache.__emit(data);
 
     expect(spy).not.toHaveBeenCalled();

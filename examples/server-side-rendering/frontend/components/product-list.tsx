@@ -29,7 +29,7 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
     );
   };
 
-  if (loading) return <Spinner />;
+  if (loading && !data) return <Spinner />;
   if (error) return <Error value={error} />;
 
   return (

@@ -24,7 +24,7 @@ function useAddProductMutation() {
 
   return useMutation(api.addProduct, {
     key: Key.ADD_PRODUCT,
-    onSuccess: (cache, product) => {
+    onSuccess: ({ cache, data: product }) => {
       const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
 
       if (record) {
@@ -42,7 +42,7 @@ function useChangeProductMutation() {
 
   return useMutation(api.changeProduct, {
     key: Key.CHANGE_PRODUCT,
-    onSuccess: (cache, product) => {
+    onSuccess: ({ cache, data: product }) => {
       const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
 
       if (record) {
@@ -57,12 +57,12 @@ function useChangeProductMutation() {
   });
 }
 
-function useRemoveProductMutation(id: number) {
+function useRemoveProductMutation() {
   const api = useApi();
 
-  return useMutation(() => api.removeProduct(id), {
+  return useMutation(api.removeProduct, {
     key: Key.REMOVE_PRODUCT,
-    onSuccess: cache => {
+    onSuccess: ({ cache, args: [id] }) => {
       const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
 
       if (record) {

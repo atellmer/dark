@@ -43,6 +43,7 @@ class InMemoryCache<K extends string = string> {
     const record = map[id];
     if (!record) return;
     record.valid = false;
+
     this.emitter1.emit('change', { type: 'invalidate', key, id, record });
   }
 

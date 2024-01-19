@@ -12,7 +12,7 @@ const ProductCard = component<{ slot: DarkElement }>(({ slot }) => {
   const urlToEdit = url + 'edit/';
   const urlToRemove = url + 'remove/';
 
-  if (loading) return <Spinner />;
+  if (loading && !data) return <Spinner />;
   if (error) return <Error value={error} />;
 
   if (!data) {

@@ -3,13 +3,16 @@ import { error, detectIsFunction, useUpdate, useMemo } from '@dark-engine/core';
 import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
 
-type UseMutatinOptions<T> = {
+type UseMutationOptions<T, P> = {
   key: string;
   refetchQueries?: Array<string>;
-  onSuccess?: (x: InMemoryCache, data: T) => void;
+  onSuccess?: (x: OnSuccessOptions<T, P>) => void;
 };
 
-function useMutation<M extends Mutation>(mutation: M, options: UseMutatinOptions<Awaited<ReturnType<M>>>) {
+function useMutation<M extends Mutation>(
+  mutation: M,
+  options: UseMutationOptions<Awaited<ReturnType<M>>, Parameters<M>>,
+) {
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
   const { key, refetchQueries = [], onSuccess } = options || {};
@@ -27,8 +30,9 @@ function useMutation<M extends Mutation>(mutation: M, options: UseMutatinOptions
       state.error = null;
       update();
       data = (await mutation(...args)) as AwaitedResult;
+      state.data = data;
       cache.__emit({ type: 'mutation', phase: 'finish', key, data });
-      detectIsFunction(onSuccess) && onSuccess(cache, data);
+      detectIsFunction(onSuccess) && onSuccess({ cache, args, data });
       refetchQueries.forEach(x => cache.invalidate({ key: x }));
     } catch (err) {
       error(err);
@@ -50,11 +54,9 @@ function useMutation<M extends Mutation>(mutation: M, options: UseMutatinOptions
   return [make, result] as [(...args: Params) => ReturnType<M>, MutationResult<AwaitedResult>];
 }
 
-type State<T> = {
-  isFetching: boolean;
-  data: T;
-  error: string;
-};
+type OnSuccessOptions<T, P> = { cache: InMemoryCache; data: T; args: P };
+
+type State<T> = { isFetching: boolean; data: T; error: string };
 
 type MutationResult<T> = {
   loading: boolean;

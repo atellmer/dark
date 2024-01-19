@@ -10,12 +10,12 @@ const ProductRemove = component(() => {
   const params = useParams();
   const id = Number(params.get('id'));
   const { data: product } = useProduct(id);
-  const [removeProduct, { loading }] = useRemoveProductMutation(id);
+  const [removeProduct, { loading }] = useRemoveProductMutation();
   const urlToList = url.replace(`${id}/remove/`, '');
 
   const handleRemove = async () => {
     if (loading) return;
-    await removeProduct();
+    await removeProduct(id);
     history.push(urlToList);
   };
 

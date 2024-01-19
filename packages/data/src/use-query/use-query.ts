@@ -4,13 +4,14 @@ import {
   type Callback,
   error,
   detectIsFunction,
+  detectIsEmpty,
   mapRecord,
-  useLayoutEffect,
   detectIsServer,
   useEffect,
   useUpdate,
   useMemo,
   $$scope,
+  nextTick,
   __useSuspense as useSuspense,
 } from '@dark-engine/core';
 
@@ -75,7 +76,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
         state.error = null;
       }
 
-      if (data) {
+      if (!detectIsEmpty(data)) {
         cache.write({ key: cacheKey, id: $cacheId, data });
       }
 
@@ -192,14 +193,15 @@ function mutate<T>(state: State<T>, res: AppResource<T>) {
 
 function useMounted() {
   const scope = useMemo(() => ({ isMounted: true, isFirstTime: true }), []);
-  const { isFirstTime } = scope;
 
-  useLayoutEffect(() => {
-    scope.isFirstTime = false;
+  useEffect(() => {
+    nextTick(() => {
+      scope.isFirstTime = false;
+    });
     return () => (scope.isMounted = false);
   }, []);
 
-  return [() => scope.isMounted, () => isFirstTime] as [BooleanFn, BooleanFn];
+  return [() => scope.isMounted, () => scope.isFirstTime] as [BooleanFn, BooleanFn];
 }
 
 type BooleanFn = () => boolean;

@@ -6,13 +6,16 @@ import { InMemoryCache } from '../cache';
 import { DataClient, DataProvider } from '../client';
 import { useQuery } from './use-query';
 
-const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
-
 jest.spyOn(console, 'error').mockImplementation(() => {});
+
+const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
 
 let { host, render } = createBrowserEnv();
 let client = createClient();
-const KEY = 'data';
+
+enum Key {
+  GET_DATA = 'GET_DATA',
+}
 
 beforeEach(() => {
   jest.useRealTimers();
@@ -35,7 +38,7 @@ describe('@data/use-query', () => {
   test('resolves an async query correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
 
       spy([loading, data, error]);
 
@@ -53,7 +56,7 @@ describe('@data/use-query', () => {
   test('resolves an async query with error correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => fetchError(), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchError(), { key: Key.GET_DATA });
 
       spy([loading, data, error]);
 
@@ -72,7 +75,7 @@ describe('@data/use-query', () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
       const { loading, data, error } = useQuery(({ id }) => fetchData(id), {
-        key: KEY,
+        key: Key.GET_DATA,
         variables: { id },
         extractId: x => x.id,
       });
@@ -123,7 +126,7 @@ describe('@data/use-query', () => {
         `
     }`;
     const Child = component(() => {
-      const { loading, data } = useQuery(() => fetchData(1), { key: KEY });
+      const { loading, data } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
 
       if (loading) return <div>...</div>;
 
@@ -162,7 +165,7 @@ describe('@data/use-query', () => {
       <script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(2), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(2), { key: Key.GET_DATA });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -170,7 +173,7 @@ describe('@data/use-query', () => {
       return <div>{data}</div>;
     });
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -198,7 +201,7 @@ describe('@data/use-query', () => {
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(2), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(2), { key: Key.GET_DATA });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -207,7 +210,7 @@ describe('@data/use-query', () => {
     });
     const App = component(() => {
       const [marker, _setMarker] = useState('a');
-      const { loading, data, error } = useQuery(() => fetchData(1), { key: KEY });
+      const { loading, data, error } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
 
       setMarker = _setMarker;
 
