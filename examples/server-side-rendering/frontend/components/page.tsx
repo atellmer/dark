@@ -13,6 +13,7 @@ const Page = component<PageProps>(({ title, slot }) => {
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <meta http-equiv='X-UA-Compatible' content='ie=edge' />
         <meta name='description' content={title} />
+        <meta name='theme-color' content='#fdd835' />
         <link rel='manifest' href='/static/assets/manifest.webmanifest' />
         <link rel='preload' href='/static/assets/fonts/Roboto-Regular.ttf' _as='font' crossorigin='anonymous' />
         <base href='/' />
