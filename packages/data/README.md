@@ -13,7 +13,7 @@ This approach also eliminates the need to parse the request url on the server in
 - 📝 Declarative
 - 📬 App-level cache system
 - 💾 Shared state between server and client
-- 🪩 Server-side asynchronous code in the app (in SSR)
+- 🪩 Server asynchronous code in the app (in SSR)
 - 🔄 Auto refetches
 - 🌟 Optimistic updates
 - 🥱 lazy queries support

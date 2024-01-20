@@ -27,12 +27,15 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 💥 Tree-shakeable
 - 🔄 Async rendering
 - 🔀 Concurrent rendering
-- 💽 Server-side rendering
 - 🥱 Lazy loading modules
 - ☄️ Hot module replacement
-- 🏄‍♂️ Isomorphic routing
 - 💅 Styled components
 - 💃🏼 Spring animations
+- 💽 Server-side rendering
+- 🏄‍♂️ Isomorphic routing
+- 💾 Shared state between server and client
+- 🪩 Server asynchronous code in the app (in SSR)
+- 📬 Declarative queries and muations
 - 📲 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
 - 💻 Rendering to desktop platforms (Windows, Linux, macOS) via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>
 
