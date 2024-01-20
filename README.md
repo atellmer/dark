@@ -143,7 +143,7 @@ createRoot(document.getElementById('root')).render(App());
 
 <img src="./assets/bench.png">
 
-Based on the benchmark results (on the my machine), Dark is approximately 24% slower than the reference `vanillajs implementation`, yet it outperforms both React and Preact. When compared to other frameworks, the speed of Dark is constrained by the necessities of the Fiber architecture: to be able to make concurrent rendering, Dark has to split the rendering into two phases - reconciliation and commit. This means it performs two iterations in a loop, while other framework implementations likely only use a single pass (diff -> immediate update), resulting in their superior performance in this instance. Furthermore, it’s important to note that the top-performing results are from compiled frameworks, whereas Dark is entirely a runtime entity. 🫠
+Based on the benchmark results (on the my machine), Dark is approximately 24% slower than the reference `vanillajs implementation`, yet it outperforms both React and Preact. When compared to other frameworks, the speed of Dark is constrained by the necessities of the Fiber architecture: to be able to make concurrent rendering, Dark has to split the rendering into two phases - reconciliation and commit. This means it performs two iterations in a loop, while other framework implementations likely only use a single pass (diff -> immediate update), resulting in their superior performance in this instance. Furthermore, it’s important to note that the top-performing results are from compiled frameworks, whereas Dark is entirely a runtime entity. 🤷‍♂️
 
 ## Lighthouse
 

@@ -217,7 +217,7 @@ const Sticky = styled.div`
   }
 `;
 
-const Error = component<{ value: string }>(({ value }) => <div>{value} 🫠</div>);
+const Error = component<{ value: string }>(({ value }) => <div>{value} 🤷‍♂️</div>);
 
 const rotate = keyframes`
   0% {
