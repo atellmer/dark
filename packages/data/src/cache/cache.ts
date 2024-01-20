@@ -12,14 +12,16 @@ class InMemoryCache<K extends string = string> {
     return this.state;
   }
 
-  read<T>({ key, id = ROOT_ID }: ReadOptions<K>) {
+  read<T>(key: K, options?: MethodOptions) {
+    const { id = ROOT_ID } = options || {};
     const map = this.state[key];
     const record = (map?.[id] || null) as CacheRecord<T>;
 
     return record;
   }
 
-  write<T>({ key, id = ROOT_ID, data }: WriteOptions<T, K>) {
+  write<T>(key: K, data: T, options?: MethodOptions) {
+    const { id = ROOT_ID } = options || {};
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
     const record: CacheRecord = { id, valid: true, modifiedAt: getTime(), data };
@@ -28,7 +30,8 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'write', key, id, record });
   }
 
-  optimistic<T>({ key, id = ROOT_ID, data }: OptimisticOptions<T, K>) {
+  optimistic<T>(key: K, data: T, options?: MethodOptions) {
+    const { id = ROOT_ID } = options || {};
     if (!this.state[key]) this.state[key] = {};
     const map = this.state[key];
     const record: CacheRecord = { id, valid: false, modifiedAt: getTime(), data };
@@ -37,7 +40,8 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'optimistic', key, id, record });
   }
 
-  invalidate({ key, id = ROOT_ID }: InvalidateOptions<K>) {
+  invalidate(key: K, options?: MethodOptions) {
+    const { id = ROOT_ID } = options || {};
     const map = this.state[key];
     if (!map) return;
     const record = map[id];
@@ -47,7 +51,8 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'invalidate', key, id, record });
   }
 
-  delete({ key, id = ROOT_ID }: DeleteOptions<K>) {
+  delete(key: K, options?: MethodOptions) {
+    const { id = ROOT_ID } = options || {};
     if (!this.state[key]) return;
     const map = this.state[key];
 
@@ -79,12 +84,11 @@ class InMemoryCache<K extends string = string> {
 }
 
 type State = Record<string, Record<string, CacheRecord>>;
+type MethodOptions = { id?: TextBased };
 
 type EventName = 'change';
-
 export type CacheEventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
 export type CacheEventData<K extends string> = { type: CacheEventType; key: K; id?: TextBased; record?: CacheRecord };
-
 export type MonitorEventType = 'query' | 'mutation';
 export type MonitorEventPhase = 'start' | 'finish' | 'error';
 export type MonitorEventData<K extends string> = {
@@ -93,17 +97,6 @@ export type MonitorEventData<K extends string> = {
   key: K;
   data?: unknown;
 };
-
-type BaseOptions<K> = {
-  key: K;
-  id?: TextBased;
-};
-
-export type ReadOptions<K> = BaseOptions<K>;
-export type WriteOptions<T, K> = { data: T } & BaseOptions<K>;
-export type OptimisticOptions<T, K> = { data: T } & BaseOptions<K>;
-export type InvalidateOptions<K> = BaseOptions<K>;
-export type DeleteOptions<K> = BaseOptions<K>;
 
 export type CacheRecord<T = unknown> = {
   id: TextBased;

@@ -79,7 +79,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
       }
 
       if (!detectIsEmpty(data)) {
-        cache.write({ key, id: $cacheId, data });
+        cache.write(key, data, { id: $cacheId });
       }
 
       return data;
@@ -106,7 +106,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   useEffect(() => {
     if (isHydrateZone) return;
     if (lazy) return;
-    const record = cache.read({ key, id: cacheId });
+    const record = cache.read(key, { id: cacheId });
 
     if (record?.valid) return;
 
@@ -149,7 +149,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
       mutate(state, res);
 
       if (!detectIsEmpty(data)) {
-        cache.write({ key, id: cacheId, data });
+        cache.write(key, data, { id: cacheId });
       }
     }
   } else {
@@ -166,7 +166,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   return result;
 }
 
-function createState<T>(cache: InMemoryCache, key: string, cacheId: TextBased, lazy) {
+function createState<T>(cache: InMemoryCache, key: string, cacheId: TextBased, lazy: boolean) {
   const state: State<T> = {
     isFetching: !lazy,
     isLoaded: false,
@@ -174,7 +174,7 @@ function createState<T>(cache: InMemoryCache, key: string, cacheId: TextBased, l
     error: null,
     cacheId,
   };
-  const record = cache.read({ key, id: cacheId });
+  const record = cache.read(key, { id: cacheId });
 
   if (record) {
     state.isFetching = false;

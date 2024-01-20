@@ -34,7 +34,7 @@ function useMutation<M extends Mutation>(
       state.data = data;
       cache.__emit({ type: 'mutation', phase: 'finish', key, data });
       detectIsFunction(onSuccess) && onSuccess({ cache, args, data });
-      refetchQueries.forEach(x => cache.invalidate({ key: x }));
+      refetchQueries.forEach(key => cache.invalidate(key));
     } catch (err) {
       error(err);
       state.error = String(err);

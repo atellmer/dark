@@ -23,13 +23,13 @@ function useAddProductMutation() {
 
   return useMutation(Key.ADD_PRODUCT, api.addProduct, {
     onSuccess: ({ cache, data: product }) => {
-      const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
+      const record = cache.read<Array<ProductBrief>>(Key.FETCH_PRODUCTS);
 
       if (record) {
         const products = record.data;
 
         products.push(product);
-        cache.optimistic({ key: Key.FETCH_PRODUCTS, data: products });
+        cache.optimistic(Key.FETCH_PRODUCTS, products);
       }
     },
   });
@@ -40,15 +40,15 @@ function useChangeProductMutation() {
 
   return useMutation(Key.CHANGE_PRODUCT, api.changeProduct, {
     onSuccess: ({ cache, data: product }) => {
-      const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
+      const record = cache.read<Array<ProductBrief>>(Key.FETCH_PRODUCTS);
 
       if (record) {
         const products = record.data;
         const $product = products.find(x => x.id === product.id);
 
         $product.name = product.name;
-        cache.optimistic({ key: Key.FETCH_PRODUCTS, data: products });
-        cache.optimistic({ key: Key.FETCH_PRODUCT, data: product, id: product.id });
+        cache.optimistic(Key.FETCH_PRODUCTS, products);
+        cache.optimistic(Key.FETCH_PRODUCT, product, { id: product.id });
       }
     },
   });
@@ -59,7 +59,7 @@ function useRemoveProductMutation() {
 
   return useMutation(Key.REMOVE_PRODUCT, api.removeProduct, {
     onSuccess: ({ cache, args: [id] }) => {
-      const record = cache.read<Array<ProductBrief>>({ key: Key.FETCH_PRODUCTS });
+      const record = cache.read<Array<ProductBrief>>(Key.FETCH_PRODUCTS);
 
       if (record) {
         const products = record.data;
@@ -67,11 +67,11 @@ function useRemoveProductMutation() {
 
         if (idx !== -1) {
           products.splice(idx, 1);
-          cache.optimistic({ key: Key.FETCH_PRODUCTS, data: products });
+          cache.optimistic(Key.FETCH_PRODUCTS, products);
         }
       }
 
-      cache.delete({ key: Key.FETCH_PRODUCT, id });
+      cache.delete(Key.FETCH_PRODUCT, { id });
     },
   });
 }

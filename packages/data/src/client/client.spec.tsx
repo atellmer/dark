@@ -1,13 +1,16 @@
 /** @jsx h */
-import { h, component } from '@dark-engine/core';
 import * as core from '@dark-engine/core';
+import { h, component } from '@dark-engine/core';
 import { createBrowserEnv } from '@test-utils';
 
-import { InMemoryCache, type WriteOptions, type MonitorEventData } from '../cache';
+import { InMemoryCache, type MonitorEventData } from '../cache';
 import { DataClient, DataProvider, useApi, useCache, useClient } from '../client';
 import { ROOT_ID } from '../constants';
 
 const TIME = 1705647402757;
+enum Key {
+  GET_DATA = 'GET_DATA',
+}
 
 jest.mock('@dark-engine/core', () => {
   return {
@@ -16,15 +19,12 @@ jest.mock('@dark-engine/core', () => {
   };
 });
 
-jest.spyOn(core, 'getTime').mockImplementation(() => TIME);
-
-enum Key {
-  GET_DATA = 'GET_DATA',
-}
 type Api = { fn: Function };
 const api: Api = { fn: () => {} };
 const cache = new InMemoryCache();
 const createClient = () => new DataClient({ api, cache });
+
+jest.spyOn(core, 'getTime').mockImplementation(() => TIME);
 
 let { render } = createBrowserEnv();
 
@@ -56,10 +56,9 @@ describe('@data/client', () => {
     const cache = client.getCache();
     const off1 = client.subscribe(spy);
     const off2 = client.monitor(spy);
-    const options: WriteOptions<number, Key> = { key: Key.GET_DATA, data: 1 };
     const data: MonitorEventData<Key> = { key: Key.GET_DATA, phase: 'start', type: 'query', data: 2 };
 
-    cache.write(options);
+    cache.write(Key.GET_DATA, 1);
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({
       id: ROOT_ID,
@@ -84,7 +83,7 @@ describe('@data/client', () => {
 
     off1();
     off2();
-    cache.write({ key: Key.GET_DATA, data: 2 });
+    cache.write(Key.GET_DATA, 2);
     cache.__emit(data);
 
     expect(spy).not.toHaveBeenCalled();
