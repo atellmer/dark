@@ -1,6 +1,6 @@
 # @dark-engine/data 🌖
 
-Data transfer for Dark
+Data queries and mutations for Dark
 
 [More about Dark](https://github.com/atellmer/dark)
 

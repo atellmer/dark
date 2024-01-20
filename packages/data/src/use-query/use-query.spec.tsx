@@ -1,21 +1,30 @@
 /** @jsx h */
 import { type DarkElement, h, Fragment, component, Suspense, APP_STATE_ATTR, useState } from '@dark-engine/core';
-import { createBrowserEnv, createBrowserHydrateEnv, createServerEnv, sleep, dom } from '@test-utils';
+import {
+  createBrowserEnv,
+  createBrowserHydrateEnv,
+  createServerEnv,
+  sleep,
+  dom,
+  waitUntilEffectsStart,
+} from '@test-utils';
 
 import { InMemoryCache } from '../cache';
 import { DataClient, DataProvider } from '../client';
 import { useQuery } from './use-query';
 
-jest.spyOn(console, 'error').mockImplementation(() => {});
+enum Key {
+  GET_DATA = 'GET_DATA',
+}
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
+const withProvider = (app: DarkElement) => <DataProvider client={client}>{app}</DataProvider>;
+const waitQuery = () => sleep(5);
 
 let { host, render } = createBrowserEnv();
 let client = createClient();
 
-enum Key {
-  GET_DATA = 'GET_DATA',
-}
+jest.spyOn(console, 'error').mockImplementation(() => {});
 
 beforeEach(() => {
   jest.useRealTimers();
@@ -23,22 +32,20 @@ beforeEach(() => {
   client = createClient();
 });
 
-const withProvider = (app: DarkElement) => <DataProvider client={client}>{app}</DataProvider>;
-
-const fetchData = async (x: number) => {
-  await sleep(5);
-  return x * 10;
-};
-const fetchError = async () => {
-  await sleep(5);
-  throw new Error('oops!');
+const api = {
+  count: 0,
+  async getData(x: number, error?: boolean) {
+    await sleep(5);
+    if (error) throw new Error('oops!');
+    return x * 10;
+  },
 };
 
 describe('@data/use-query', () => {
   test('resolves an async query correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
+      const { loading, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
       spy([loading, data, error]);
 
@@ -49,14 +56,17 @@ describe('@data/use-query', () => {
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await waitUntilEffectsStart();
+    await waitQuery();
+
+    expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
   });
 
   test('resolves an async query with error correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => fetchError(), { key: Key.GET_DATA });
+      const { loading, data, error } = useQuery(() => api.getData(1, true), { key: Key.GET_DATA });
 
       spy([loading, data, error]);
 
@@ -67,14 +77,17 @@ describe('@data/use-query', () => {
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await waitUntilEffectsStart();
+    await waitQuery();
+
+    expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith([false, null, 'Error: oops!']);
   });
 
   test('refetches an async query correctly', async () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
-      const { loading, data, error } = useQuery(({ id }) => fetchData(id), {
+      const { loading, data, error } = useQuery(({ id }) => api.getData(id), {
         key: Key.GET_DATA,
         variables: { id },
         extractId: x => x.id,
@@ -89,25 +102,26 @@ describe('@data/use-query', () => {
     expect(spy).toHaveBeenCalledWith([true, null, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await waitUntilEffectsStart();
+    await waitQuery();
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
     spy.mockClear();
 
     render(withProvider(<App id={2} />));
-    await sleep(0);
+    await waitUntilEffectsStart();
     expect(spy).toHaveBeenCalledWith([true, 10, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await waitQuery();
     expect(spy).toHaveBeenCalledWith([false, 20, null]);
     spy.mockClear();
 
     render(withProvider(<App id={3} />));
-    await sleep(0);
+    await waitUntilEffectsStart();
     expect(spy).toHaveBeenCalledWith([true, 20, null]);
     spy.mockClear();
 
-    await sleep(50);
+    await waitQuery();
     expect(spy).toHaveBeenCalledWith([false, 30, null]);
   });
 
@@ -126,7 +140,7 @@ describe('@data/use-query', () => {
         `
     }`;
     const Child = component(() => {
-      const { loading, data } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
+      const { loading, data } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
       if (loading) return <div>...</div>;
 
@@ -152,7 +166,8 @@ describe('@data/use-query', () => {
     render(withProvider(<App />));
     expect(host.innerHTML).toBe(content(true, null));
 
-    await sleep(50);
+    await waitUntilEffectsStart();
+    await waitQuery();
     expect(host.innerHTML).toBe(content(false, 10));
   });
 
@@ -165,7 +180,7 @@ describe('@data/use-query', () => {
       <script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(2), { key: Key.GET_DATA });
+      const { loading, data, error } = useQuery(() => api.getData(2), { key: Key.GET_DATA });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -173,7 +188,7 @@ describe('@data/use-query', () => {
       return <div>{data}</div>;
     });
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
+      const { loading, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -201,7 +216,7 @@ describe('@data/use-query', () => {
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {
-      const { loading, data, error } = useQuery(() => fetchData(2), { key: Key.GET_DATA });
+      const { loading, data, error } = useQuery(() => api.getData(2), { key: Key.GET_DATA });
 
       if (loading) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -210,7 +225,7 @@ describe('@data/use-query', () => {
     });
     const App = component(() => {
       const [marker, _setMarker] = useState('a');
-      const { loading, data, error } = useQuery(() => fetchData(1), { key: Key.GET_DATA });
+      const { loading, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
       setMarker = _setMarker;
 

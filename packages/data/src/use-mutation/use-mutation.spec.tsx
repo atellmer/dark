@@ -1,6 +1,6 @@
 /** @jsx h */
 import { type DarkElement, h, component } from '@dark-engine/core';
-import { createBrowserEnv, sleep } from '@test-utils';
+import { createBrowserEnv, sleep, waitUntilEffectsStart } from '@test-utils';
 
 import { InMemoryCache } from '../cache';
 import { DataClient, DataProvider } from '../client';
@@ -14,6 +14,8 @@ enum Key {
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
 const withProvider = (app: DarkElement) => <DataProvider client={client}>{app}</DataProvider>;
+const waitQuery = () => sleep(5);
+
 let { render } = createBrowserEnv();
 let client = createClient();
 let count = 0;
@@ -28,7 +30,6 @@ beforeEach(() => {
 });
 
 const api = {
-  count: 0,
   async getData() {
     await sleep(5);
     return count * 10;
@@ -52,16 +53,15 @@ describe('@data/use-mutation', () => {
         onSuccess: ({ args, data }) => spy2([args, data]),
       });
 
-      spy1(loading, data, error);
       addData = _addData;
+      spy1(loading, data, error);
 
       return null;
     });
 
     render(withProvider(<App />));
-    await sleep(10);
+    await waitUntilEffectsStart();
     await addData(1);
-    await sleep(20);
 
     expect(spy1).toHaveBeenCalledTimes(3);
     expect(spy1.mock.calls).toEqual([
@@ -83,16 +83,15 @@ describe('@data/use-mutation', () => {
         onSuccess: ({ args, data }) => spy2([args, data]),
       });
 
-      spy1([loading, data, error]);
       addData = _addData;
+      spy1([loading, data, error]);
 
       return null;
     });
 
     render(withProvider(<App />));
-    await sleep(0);
-    addData(1, true);
-    await sleep(20);
+    await waitUntilEffectsStart();
+    await addData(1, true);
 
     expect(spy1.mock.calls).toEqual([[[false, null, null]], [[true, null, null]], [[false, null, 'Error: oops!']]]);
     expect(spy2).not.toHaveBeenCalled();
@@ -108,18 +107,17 @@ describe('@data/use-mutation', () => {
         refetchQueries: [Key.GET_DATA],
       });
 
-      spy(loading, data);
       addData = _addData;
+      spy(loading, data);
 
       return null;
     });
 
     render(withProvider(<App />));
-    await sleep(0);
-
-    await sleep(10);
+    await waitUntilEffectsStart();
+    await waitQuery();
     await addData(1);
-    await sleep(20);
+    await waitQuery();
 
     expect(spy.mock.calls).toEqual([
       [true, null],

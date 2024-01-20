@@ -12,7 +12,7 @@ jest.mock('@dark-engine/core', () => {
   };
 });
 
-const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boolean>) => {
+function dom(strings: TemplateStringsArray, ...args: Array<string | number | boolean>) {
   const markup = strings
     .map((x, idx) => x + (typeof args[idx] !== 'undefined' ? args[idx] : ''))
     .join('')
@@ -20,13 +20,13 @@ const dom = (strings: TemplateStringsArray, ...args: Array<string | number | boo
     .trim();
 
   return markup;
-};
+}
 
 const createReplacerString = () => `<!--${REPLACER}-->`;
 
 const createTestHostNode = () => document.createElement('div');
 
-const fireEvent = (element: Element, eventName: string, value?: any) => {
+function fireEvent(element: Element, eventName: string, value?: any) {
   if (element instanceof HTMLInputElement && eventName === 'input') {
     element.value = value;
   }
@@ -37,7 +37,7 @@ const fireEvent = (element: Element, eventName: string, value?: any) => {
   });
 
   element.dispatchEvent(event);
-};
+}
 
 const click = (element: Element) => fireEvent(element, 'click');
 
@@ -124,6 +124,18 @@ const wrapWithStyledTag = (x: string) => `<style ${STYLED_ATTR}="${COMPONENTS_AT
 
 const resetBrowserHistory = () => globalThis.history.replaceState(null, null, '/');
 
+function detectIsFakeJestTimer() {
+  return setTimeout.name === 'setTimeout';
+}
+
+async function waitUntilEffectsStart() {
+  if (detectIsFakeJestTimer()) {
+    jest.runAllTimers();
+  } else {
+    await sleep(0);
+  }
+}
+
 export {
   dom,
   nextTick,
@@ -143,4 +155,5 @@ export {
   wrapWithGlobalStyledTag,
   wrapWithStyledTag,
   resetBrowserHistory,
+  waitUntilEffectsStart,
 };
