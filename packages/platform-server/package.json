@@ -22,12 +22,14 @@
   },
   "keywords": [
     "dark",
+    "rendering",
+    "app",
     "react",
     "reactjs",
     "angular",
-    "rendering",
-    "app",
-    "server"
+    "vue",
+    "server",
+    "ssr"
   ],
   "peerDependencies": {
     "@dark-engine/core": "*",

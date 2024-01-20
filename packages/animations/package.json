@@ -24,12 +24,14 @@
   },
   "keywords": [
     "dark",
+    "rendering",
+    "app",
     "react",
     "reactjs",
     "angular",
-    "animations",
+    "vue",
     "spring",
-    "app"
+    "animations"
   ],
   "peerDependencies": {
     "@dark-engine/core": "*"

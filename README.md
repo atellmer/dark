@@ -1,7 +1,7 @@
 <div align="center">
-<h1>Dark</h1>
+<h1>Dark 🌖</h1>
 
-The lightweight and powerful UI rendering engine without dependencies and written in TypeScript 💫 <br> (Browser, Node.js, Android, iOS, Windows, Linux, macOS)
+The lightweight and powerful UI rendering engine without dependencies and written in TypeScript <br> (Browser, Node.js, Android, iOS, Windows, Linux, macOS)
 
 <img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
 <img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">

@@ -1,7 +1,7 @@
 {
   "name": "@dark-engine/data",
   "version": "0.25.1",
-  "description": "Data transfer for Dark",
+  "description": "Declarative queries and mutations for Dark",
   "author": "AlexPlex",
   "license": "MIT",
   "main": "./dist/cjs/index.js",
@@ -24,11 +24,14 @@
   },
   "keywords": [
     "dark",
+    "rendering",
+    "app",
     "react",
     "reactjs",
     "angular",
+    "vue",
     "query",
-    "app"
+    "mutations"
   ],
   "peerDependencies": {
     "@dark-engine/core": "*"

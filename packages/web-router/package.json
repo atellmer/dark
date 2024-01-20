@@ -24,11 +24,12 @@
   },
   "keywords": [
     "dark",
+    "rendering",
+    "app",
     "react",
     "reactjs",
     "angular",
-    "rendering",
-    "app",
+    "vue",
     "router"
   ],
   "peerDependencies": {
