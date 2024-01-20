@@ -48,8 +48,7 @@ describe('@data/use-mutation', () => {
     const spy2 = jest.fn();
     let addData: typeof api.addData = null;
     const App = component(() => {
-      const [_addData, { isFetching, data, error }] = useMutation(api.addData, {
-        key: Key.ADD_DATA,
+      const [_addData, { isFetching, data, error }] = useMutation(Key.ADD_DATA, api.addData, {
         onSuccess: ({ args, data }) => spy2([args, data]),
       });
 
@@ -78,8 +77,7 @@ describe('@data/use-mutation', () => {
     const spy2 = jest.fn();
     let addData: typeof api.addData = null;
     const App = component(() => {
-      const [_addData, { isFetching, data, error }] = useMutation(api.addData, {
-        key: Key.ADD_DATA,
+      const [_addData, { isFetching, data, error }] = useMutation(Key.ADD_DATA, api.addData, {
         onSuccess: ({ args, data }) => spy2([args, data]),
       });
 
@@ -101,11 +99,8 @@ describe('@data/use-mutation', () => {
     const spy = jest.fn();
     let addData: typeof api.addData = null;
     const App = component(() => {
-      const { isFetching, data } = useQuery(api.getData, { key: Key.GET_DATA });
-      const [_addData] = useMutation(api.addData, {
-        key: Key.ADD_DATA,
-        refetchQueries: [Key.GET_DATA],
-      });
+      const { isFetching, data } = useQuery(Key.GET_DATA, api.getData);
+      const [_addData] = useMutation(Key.ADD_DATA, api.addData, { refetchQueries: [Key.GET_DATA] });
 
       addData = _addData;
       spy(isFetching, data);

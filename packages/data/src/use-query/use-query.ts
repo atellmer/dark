@@ -20,26 +20,28 @@ import { ROOT_ID } from '../constants';
 import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
 
-export type UseQueryOptions<V extends Variables> = {
-  key: string;
+export type UseQueryOptions<T, V extends Variables> = {
   variables?: V;
   extractId?: (x: V) => TextBased;
   lazy?: boolean;
+  onSuccess?: (x: OnSuccessOptions<T, V>) => void;
+  onError?: (err: any) => void;
 };
 
-function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryOptions<V>) {
+function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, options?: UseQueryOptions<T, V>) {
   const {
     variables = {} as V,
-    key: cacheKey,
     extractId = () => ROOT_ID,
     lazy = false,
+    onSuccess,
+    onError,
   } = options || { variables: {} as V };
   const $scope = $$scope();
   const cache = useCache();
   checkCache(cache);
   const cacheId = extractId(variables);
   const id = useMemo(() => $scope.getNextResourceId(), []);
-  const state = useMemo<State<T>>(() => createState<T>(cache, cacheKey, cacheId, lazy), []);
+  const state = useMemo<State<T>>(() => createState<T>(cache, key, cacheId, lazy), []);
   const { register, unregister } = useSuspense();
   const [mounted, firstTime] = useMounted();
   const update = useUpdate();
@@ -48,14 +50,13 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   const isHydrateZone = $scope.getIsHydrateZone();
   const { isLoaded } = state;
 
-  state.cacheKey = cacheKey;
   state.cacheId = cacheId;
 
   const make = async ($variables?: V) => {
     const $$variables = $variables || variables;
     const $cacheId = extractId($$variables);
 
-    cache.__emit({ type: 'query', phase: 'start', key: cacheKey, data: $$variables });
+    cache.__emit({ type: 'query', phase: 'start', key, data: $$variables });
 
     try {
       if (!isServer && !firstTime()) {
@@ -65,7 +66,8 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
 
       const data = await query($$variables);
 
-      cache.__emit({ type: 'query', phase: 'finish', key: cacheKey, data });
+      cache.__emit({ type: 'query', phase: 'finish', key, data });
+      detectIsFunction(onSuccess) && onSuccess({ cache, args: $$variables, data });
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
@@ -77,13 +79,14 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
       }
 
       if (!detectIsEmpty(data)) {
-        cache.write({ key: cacheKey, id: $cacheId, data });
+        cache.write({ key, id: $cacheId, data });
       }
 
       return data;
     } catch (err) {
       error(err);
-      cache.__emit({ type: 'query', phase: 'error', key: cacheKey, data: err });
+      cache.__emit({ type: 'query', phase: 'error', key, data: err });
+      detectIsFunction(onError) && onError(err);
 
       if (isServer) {
         $scope.setResource(id, [null, String(err)]);
@@ -103,7 +106,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   useEffect(() => {
     if (isHydrateZone) return;
     if (lazy) return;
-    const record = cache.read({ key: cacheKey, id: cacheId });
+    const record = cache.read({ key, id: cacheId });
 
     if (record?.valid) return;
 
@@ -111,10 +114,11 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   }, [...mapRecord(variables)]);
 
   useEffect(() => {
+    const $key = key;
     let off: Callback = null;
 
     off = cache.subscribe(({ type, key, id }) => {
-      if (key === state.cacheKey && id === state.cacheId) {
+      if (key === $key && id === state.cacheId) {
         if (type === 'invalidate' || type === 'optimistic') {
           if (cache.__canUpdate(key)) {
             make();
@@ -144,8 +148,8 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
 
       mutate(state, res);
 
-      if (data) {
-        cache.write({ key: cacheKey, id: cacheId, data });
+      if (!detectIsEmpty(data)) {
+        cache.write({ key, id: cacheId, data });
       }
     }
   } else {
@@ -162,16 +166,15 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   return result;
 }
 
-function createState<T>(cache: InMemoryCache, cacheKey: string, cacheId: TextBased, lazy) {
+function createState<T>(cache: InMemoryCache, key: string, cacheId: TextBased, lazy) {
   const state: State<T> = {
     isFetching: !lazy,
     isLoaded: false,
     data: null,
     error: null,
-    cacheKey,
     cacheId,
   };
-  const record = cache.read({ key: cacheKey, id: cacheId });
+  const record = cache.read({ key, id: cacheId });
 
   if (record) {
     state.isFetching = false;
@@ -204,21 +207,17 @@ function useMounted() {
   return [() => scope.isMounted, () => scope.isFirstTime] as [BooleanFn, BooleanFn];
 }
 
-type BooleanFn = () => boolean;
-
 type State<T> = {
   isFetching: boolean;
   isLoaded: boolean;
   data: T;
   error: string;
   cacheId: TextBased;
-  cacheKey: string;
 };
 
-export type QueryResult<T> = {
-  refetch: Query<T>;
-} & Pick<State<T>, 'isFetching' | 'data' | 'error'>;
-
+type BooleanFn = () => boolean;
+type OnSuccessOptions<T, V extends Variables> = { cache: InMemoryCache; data: T; args: V };
+export type QueryResult<T> = { refetch: Query<T> } & Pick<State<T>, 'isFetching' | 'data' | 'error'>;
 export type Variables<K extends string = string, V = any> = Record<K, V>;
 export type Query<T, V extends Variables = Variables> = (variables?: V) => Promise<T>;
 

@@ -4,18 +4,19 @@ import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
 
 type UseMutationOptions<T, P> = {
-  key: string;
   refetchQueries?: Array<string>;
   onSuccess?: (x: OnSuccessOptions<T, P>) => void;
+  onError?: (err: any) => void;
 };
 
 function useMutation<M extends Mutation>(
+  key: string,
   mutation: M,
   options: UseMutationOptions<Awaited<ReturnType<M>>, Parameters<M>>,
 ) {
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
-  const { key, refetchQueries = [], onSuccess } = options || {};
+  const { refetchQueries = [], onSuccess, onError } = options || {};
   const update = useUpdate();
   const cache = useCache();
   checkCache(cache);
@@ -38,6 +39,7 @@ function useMutation<M extends Mutation>(
       error(err);
       state.error = String(err);
       cache.__emit({ type: 'mutation', phase: 'error', key, data: err });
+      detectIsFunction(onError) && onError(err);
     } finally {
       state.isFetching = false;
       update();
@@ -55,11 +57,8 @@ function useMutation<M extends Mutation>(
 }
 
 type OnSuccessOptions<T, P> = { cache: InMemoryCache; data: T; args: P };
-
 type State<T> = { isFetching: boolean; data: T; error: string };
-
 type MutationResult<T> = Pick<State<T>, 'isFetching' | 'data' | 'error'>;
-
 type Mutation = (...args: Array<unknown>) => Promise<unknown>;
 
 export { useMutation };
