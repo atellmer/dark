@@ -39,6 +39,7 @@ return (
 
 ```tsx
 import {
+  type Query,
   type CacheRecord,
   DataClient,
   DataProvider,
