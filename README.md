@@ -1,5 +1,5 @@
 <div align="center">
-<h1>Dark 🌖</h1>
+<h1>Dark</h1>
 
 The lightweight and powerful UI rendering engine without dependencies and written in TypeScript <br> (Browser, Node.js, Android, iOS, Windows, Linux, macOS)
 

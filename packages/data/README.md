@@ -14,7 +14,7 @@ When rendering on the server, query will execute server code; when rendering on 
 - 🪩 Server-side asynchronous code in the app (in SSR)
 - 🔄 Auto refetches
 - 🌟 Optimistic updates
-- 🥱 lazy querries support
+- 🥱 lazy queries support
 - 🦾 All platforms: server, browser, native, desktop
 - 🚫 No deps
 - 📦 Small size (3 kB gzipped)
