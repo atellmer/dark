@@ -3,7 +3,7 @@ import { type DarkElement, h, component } from '@dark-engine/core';
 import { createBrowserEnv, sleep, waitUntilEffectsStart } from '@test-utils';
 
 import { InMemoryCache } from '../cache';
-import { DataClient, DataProvider } from '../client';
+import { DataClient, DataClientProvider } from '../client';
 import { type Query } from '../use-query';
 import { useLazyQuery } from './use-lazy-query';
 
@@ -12,7 +12,7 @@ enum Key {
 }
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
-const withProvider = (app: DarkElement) => <DataProvider client={client}>{app}</DataProvider>;
+const withProvider = (app: DarkElement) => <DataClientProvider client={client}>{app}</DataClientProvider>;
 
 let { render } = createBrowserEnv();
 let client = createClient();

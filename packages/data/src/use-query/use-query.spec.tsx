@@ -10,7 +10,7 @@ import {
 } from '@test-utils';
 
 import { InMemoryCache } from '../cache';
-import { DataClient, DataProvider } from '../client';
+import { DataClient, DataClientProvider } from '../client';
 import { useQuery } from './use-query';
 
 enum Key {
@@ -18,7 +18,7 @@ enum Key {
 }
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
-const withProvider = (app: DarkElement) => <DataProvider client={client}>{app}</DataProvider>;
+const withProvider = (app: DarkElement) => <DataClientProvider client={client}>{app}</DataClientProvider>;
 const waitQuery = () => sleep(5);
 
 let { host, render } = createBrowserEnv();

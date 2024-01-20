@@ -1,4 +1,4 @@
-export { DataClient, useClient, useApi, useCache, DataProvider } from './client';
+export { DataClient, useClient, useApi, useCache, DataClientProvider } from './client';
 export { type CacheRecord, InMemoryCache } from './cache';
 export { type Query, useQuery } from './use-query';
 export { useLazyQuery } from './use-lazy-query';

@@ -1,6 +1,6 @@
 import { h, component, Fragment, Suspense, lazy, useMemo, useEffect } from '@dark-engine/core';
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
-import { DataClient, DataProvider, InMemoryCache } from '@dark-engine/data';
+import { DataClient, DataClientProvider, InMemoryCache } from '@dark-engine/data';
 
 import { GlobalStyle, Spinner, Root, Header, Menu, Content } from './ui';
 import { type Api } from '../../contract';
@@ -109,7 +109,7 @@ const App = component<AppProps>(({ url, api }) => {
   return (
     <>
       <GlobalStyle />
-      <DataProvider client={client}>
+      <DataClientProvider client={client}>
         <Router routes={routes} url={url}>
           {slot => {
             return (
@@ -128,7 +128,7 @@ const App = component<AppProps>(({ url, api }) => {
             );
           }}
         </Router>
-      </DataProvider>
+      </DataClientProvider>
     </>
   );
 });

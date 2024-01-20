@@ -39,14 +39,14 @@ const useApi = <A extends object = {}>() => useClient().getApi() as A;
 
 const useCache = <K extends string = string>() => useClient().getCache() as InMemoryCache<K>;
 
-type DataProviderProps = {
+type DataClientProviderProps = {
   client: DataClient;
   slot: DarkElement;
 };
 
-const DataProvider = component<DataProviderProps>(({ client, slot }) => {
+const DataClientProvider = component<DataClientProviderProps>(({ client, slot }) => {
   if (useClient()) throw new Error('[data]: illegal nested data client provider!');
   return DataClientContext.Provider({ value: client, slot });
 });
 
-export { DataClient, useClient, useApi, useCache, DataProvider };
+export { DataClient, useClient, useApi, useCache, DataClientProvider };

@@ -4,7 +4,7 @@ import { h, component } from '@dark-engine/core';
 import { createBrowserEnv } from '@test-utils';
 
 import { InMemoryCache, type MonitorEventData } from '../cache';
-import { DataClient, DataProvider, useApi, useCache, useClient } from '../client';
+import { DataClient, DataClientProvider, useApi, useCache, useClient } from '../client';
 import { ROOT_ID } from '../constants';
 
 const TIME = 1705647402757;
@@ -103,9 +103,9 @@ describe('@data/client', () => {
 
     const client = createClient();
     const content = (
-      <DataProvider client={client}>
+      <DataClientProvider client={client}>
         <App />
-      </DataProvider>
+      </DataClientProvider>
     );
 
     render(content);
