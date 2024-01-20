@@ -839,7 +839,7 @@ By default, core runs in synchronous mode, however, if Dark understands that it 
 
 ## Concurrent rendering
 
-Concurrent rendering is a strategy that enables the assignment of the lowest priority to updates, allowing them to execute in the background without obstructing the main thread. Upon the arrival of higher-priority updates, such as custom render events, the low-priority task is halted and retains all essential data for potential reinstatement (or permanent cancellation) by the scheduler, should there be no further high-priority updates. This technique facilitates the creation of fluid user interfaces.
+Concurrent rendering is a strategy that enables the assignment of the lowest priority to updates, allowing them to execute in the background without obstructing the main thread. Upon the arrival of higher-priority updates, such as user render events, the low-priority task is halted and retains all essential data for potential reinstatement (or permanent cancellation) by the scheduler, if there won't be further high-priority updates. This technique facilitates the creation of fluid user interfaces.
 
 #### `startTransition`
 

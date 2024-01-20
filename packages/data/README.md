@@ -5,6 +5,8 @@ Declarative queries and mutations for Dark
 Basic idea: A single API contract controlled by `typescript`, and different API implementations depending on the platform: `server` or `client`.
 When rendering on the server, query will execute server code; when rendering on the client, it will execute client code. The implementation is not important to us because it is asynchronous and corresponds to a single contract. When rendering on the server, the server serializes the state of the query hooks. During hydration (if we render to the browser), the state coming from the server will be written to the necessary memory cells of the hooks as if the data was loaded from the browser.
 
+This approach also eliminates the need to parse the request url on the server in order to understand what data needs to be prefetched for our application, because the application directly uses server-side methods on the server.
+
 [More about Dark](https://github.com/atellmer/dark)
 
 ## Features
@@ -212,6 +214,15 @@ function useUser(id: number) {
     extractId: x => x.id,
   });
 }
+```
+
+```tsx
+const { isFetching, data: user } = useUser(id);
+
+<>
+  <div>{user.id}</div>
+  <div>{user.name}</div>
+</>
 ```
 
 ## Events
