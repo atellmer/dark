@@ -144,7 +144,7 @@ Based on the benchmark results (on the my machine), Dark is approximately 24% sl
 
 ## Lighthouse
 
-A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `rendering to stream`, `serive-worker`, `router`, `styled components` and `async queries` scores maximum points in Lighthouse.
+A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `server-side rendering to stream`, `service-worker`, `offline mode`, `suspense`, `router`, `async queries`, `lazy ` and `styled` components scores maximum points in Lighthouse.
 
 <img src="./assets/lighthouse.png">
 
