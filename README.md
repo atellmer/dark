@@ -96,14 +96,6 @@ This project was written in my free time as a hobby. I challenged myself: can I 
 | `@dark-engine/styled`            | Styled components                                                | [Link](https://github.com/atellmer/dark/tree/master/packages/styled)           |
 | `@dark-engine/data`              | Declarative queries and mutations                                | [Link](https://github.com/atellmer/dark/tree/master/packages/data)             |
 
-## Benchmark
-
-[js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html)
-
-<img src="./assets/bench.png">
-
-Based on the benchmark results (on the my machine), Dark is approximately 24% slower than the reference `vanillajs implementation`, yet it outperforms both React and Preact. When compared to other frameworks, the speed of Dark is constrained by the necessities of the Fiber architecture: to be able to make concurrent rendering, Dark has to split the rendering into two phases - reconciliation and commit. This means it performs two iterations in a loop, while other framework implementations likely only use a single pass (diff -> immediate update), resulting in their superior performance in this instance. Furthermore, it’s important to note that the top-performing results are from compiled frameworks, whereas Dark is entirely a runtime entity. 🫠
-
 ## Usage
 
 ```tsx
@@ -141,6 +133,21 @@ const App = component(() => {
 
 createRoot(document.getElementById('root')).render(App());
 ```
+
+## Benchmark
+
+[js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html)
+
+<img src="./assets/bench.png">
+
+Based on the benchmark results (on the my machine), Dark is approximately 24% slower than the reference `vanillajs implementation`, yet it outperforms both React and Preact. When compared to other frameworks, the speed of Dark is constrained by the necessities of the Fiber architecture: to be able to make concurrent rendering, Dark has to split the rendering into two phases - reconciliation and commit. This means it performs two iterations in a loop, while other framework implementations likely only use a single pass (diff -> immediate update), resulting in their superior performance in this instance. Furthermore, it’s important to note that the top-performing results are from compiled frameworks, whereas Dark is entirely a runtime entity. 🫠
+
+## Lighthouse
+
+A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `rendering to stream`, `serive-worker`, `web-router`, `styled` and `async queries` scores maximum points in Lighthouse.
+
+<img src="./assets/lighthouse.png">
+
 
 # LICENSE
 

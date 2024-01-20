@@ -67,26 +67,32 @@ import {
 } from '@dark-engine/data';
 ```
 
-#### `DataClient`, `InMemoryCache` and `DataClientProvider`
+## `DataClient`, `InMemoryCache` and `DataClientProvider`
 
-`DataClient` is an object that includes a third-party asynchronous API and a cache object in which all results of calls to the API will be stored.
+`DataClient` is a required object that includes a third-party asynchronous API and a cache object in which all results of calls to the API will be stored.
 
 ```tsx
 // contract between server and browser
 export type Api = {
   fetchUsers: () => Promise<Array<User>>;
 }
+```
 
+```tsx
 // on the server side
 const api: Api = {
   fetchUsers: () => db.collection('users').find({}).toArray(),
 }
+```
 
+```tsx
 // on the browser side
 const api: Api = {
   fetchUsers: () => fetch('url/to/api/users'),
 }
+```
 
+```tsx
 // in app
 const App = component<{ api: Api }>(({ api }) => {
   const client = useMemo(() => new DataClient({ api, cache: new InMemoryCache() }), []);
@@ -193,7 +199,7 @@ const [addUser, { isFetching }] = useMutation('add-user', api.addProduct, {
 });
 ```
 
-#### `useClient`, `useApi` and `useCache`
+## `useClient`, `useApi` and `useCache`
 
 This is a set of utility hooks, each of which returns its own entity. The most important hook here is the `useApi`, as it allows you to move the request logic out of components into abstract hooks.
 
@@ -208,7 +214,7 @@ function useUser(id: number) {
 }
 ```
 
-#### Events
+## Events
 
 When working with queries and mutations, the client produces events that you can subscribe to in order to log or synchronize data with another part of the application state.
 
