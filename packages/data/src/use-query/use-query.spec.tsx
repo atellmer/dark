@@ -1,5 +1,5 @@
 /** @jsx h */
-import { type DarkElement, h, Fragment, component, Suspense, APP_STATE_ATTR, useState } from '@dark-engine/core';
+import { type DarkElement, h, Fragment, component, Suspense, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
 import {
   createBrowserEnv,
   createBrowserHydrateEnv,
@@ -176,7 +176,7 @@ describe('@data/use-query', () => {
         <div>${data1}</div>
         <div>${data2}</div>
       </div>
-      <script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
+      <script type="${STATE_SCRIPT_TYPE}">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
       const { isFetching, data, error } = useQuery(Key.GET_DATA, () => api.getData(2));
@@ -211,7 +211,7 @@ describe('@data/use-query', () => {
         <div>${marker}:${data1}</div>
         <div>${data2}</div>
       </div>
-      ${!isHydrated ? `<script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>` : ''}
+      ${!isHydrated ? `<script type="${STATE_SCRIPT_TYPE}">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>` : ''}
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {

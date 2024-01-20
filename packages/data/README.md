@@ -23,7 +23,7 @@ CDN:
 ## Usage
 
 ```tsx
-const { isFetching, data, error } = useQuery('users', fetchUsers);
+const { isFetching, data, error } = useQuery('users', () => fetch('url/to/api/users'));
 
 if (isFetching && !data) return <div>Loading...</div>;
 if (error) return <div>{error}</div>;

@@ -1,4 +1,4 @@
-import { type DarkElement, type AppResource, APP_STATE_ATTR, $$scope } from '@dark-engine/core';
+import { type DarkElement, type AppResource, STATE_SCRIPT_TYPE, $$scope } from '@dark-engine/core';
 
 import { render } from '../render';
 import { unmount } from '../create-root';
@@ -13,7 +13,7 @@ function hydrateRoot(container: TagNativeElement, element: DarkElement) {
 }
 
 function hydrate() {
-  const element = document.querySelector(`[${APP_STATE_ATTR}]`);
+  const element = document.querySelector(`script[type="${STATE_SCRIPT_TYPE}"]`);
 
   if (!element) return;
   try {

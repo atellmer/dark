@@ -1,5 +1,4 @@
 /** @jsx h */
-import * as core from '@dark-engine/core';
 import { h, Fragment, component, useState } from '@dark-engine/core';
 import { dom, createBrowserEnv, replacer } from '@test-utils';
 
@@ -11,15 +10,6 @@ import { useTrail } from '../use-trail';
 import { useSprings } from '../use-springs';
 import { useChain } from './use-chain';
 import { type TransitionApi, useTransition } from '../use-transition';
-
-jest.mock('@dark-engine/core', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('@dark-engine/core'),
-  };
-});
-
-jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
 
 let { host, render } = createBrowserEnv();
 

@@ -112,7 +112,10 @@ function createServerEnv() {
 }
 
 function mockBrowserPlatform() {
-  jest.spyOn(core, 'nextTick').mockImplementation(cb => setTimeout(cb));
+  jest.spyOn(core, 'nextTick').mockImplementation(cb => {
+    setTimeout(cb);
+    return Promise.resolve();
+  });
   jest.spyOn(platform, 'raf').mockImplementation((cb: FrameRequestCallback) => setTimeout(cb, 16));
   jest.spyOn(platform, 'caf').mockImplementation((id: number) => clearTimeout(id));
   jest.spyOn(platform, 'spawn').mockImplementation(cb => setTimeout(cb));
