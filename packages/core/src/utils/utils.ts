@@ -74,7 +74,7 @@ function keyBy<T = any>(
 }
 
 function detectAreDepsDifferent(prevDeps: Array<unknown>, nextDeps: Array<unknown>): boolean {
-  if (prevDeps === nextDeps) return false;
+  if (prevDeps === nextDeps || (prevDeps.length === 0 && nextDeps.length === 0)) return false;
   const max = Math.max(prevDeps.length, nextDeps.length);
 
   for (let i = 0; i < max; i++) {
@@ -84,9 +84,7 @@ function detectAreDepsDifferent(prevDeps: Array<unknown>, nextDeps: Array<unknow
   return false;
 }
 
-function nextTick(callback: () => void) {
-  Promise.resolve().then(callback);
-}
+const nextTick = (callback: () => void) => Promise.resolve().then(callback);
 
 const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
