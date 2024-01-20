@@ -79,7 +79,7 @@ npm start
 
 ## Motivation
 
-This project was written in my free time as a hobby. I challenged myself: can I write something similar to React without third-party dependencies and alone. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
+This project was written in my free time as a hobby. I challenged myself: can I write something similar to React `without third-party dependencies` and `alone`. The biggest discovery for me: writing a rendering library is not difficult, it is difficult to write one that is fast and consumes little memory. And this is a really hard task.
 
 ## Ecosystem
 
@@ -144,7 +144,7 @@ Based on the benchmark results (on the my machine), Dark is approximately 24% sl
 
 ## Lighthouse
 
-A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `server-side rendering to stream`, `service-worker`, `offline mode`, `suspense`, `router`, `async queries`, `lazy ` and `styled` components scores maximum points in Lighthouse.
+A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
 
 <img src="./assets/lighthouse.png">
 
