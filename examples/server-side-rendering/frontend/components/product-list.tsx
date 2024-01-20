@@ -12,7 +12,7 @@ const Header = styled.header`
 const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
   const { url } = useMatch();
   const { pathname } = useLocation();
-  const { data, loading, error } = useProducts();
+  const { isFetching, data, error } = useProducts();
   const isList = pathname.endsWith('list/');
   const urlToAdd = url + 'add/';
   const renderList = () => {
@@ -29,7 +29,7 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
     );
   };
 
-  if (loading && !data) return <Spinner />;
+  if (isFetching && !data) return <Spinner />;
   if (error) return <Error value={error} />;
 
   return (

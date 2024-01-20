@@ -9,17 +9,17 @@ import { ProductForm } from './product-form';
 const ProductAdd = component(() => {
   const { url } = useMatch();
   const history = useHistory();
-  const [addProduct, { loading }] = useAddProductMutation();
+  const [addProduct, { isFetching }] = useAddProductMutation();
   const urlToList = url.replace('add/', '');
 
   const handleSubmit = async (product: Partial<Product>) => {
-    if (loading) return;
+    if (isFetching) return;
     await addProduct(product);
     history.push(urlToList);
   };
 
   return (
-    <Card $loading={loading}>
+    <Card $isFetching={isFetching}>
       <h3>Add product</h3>
       <ProductForm variant='add' onSubmit={handleSubmit} />
     </Card>

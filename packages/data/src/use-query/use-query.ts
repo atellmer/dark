@@ -139,7 +139,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
         $scope.defer(make);
       }
     } else if (isHydrateZone) {
-      if (!res) throw new Error('[Dark]: can not read app state from the server!');
+      if (!res) throw new Error('[data]: can not read app state from the server!');
       const [data] = res;
 
       mutate(state, res);
@@ -153,7 +153,7 @@ function useQuery<T, V extends Variables>(query: Query<T, V>, options: UseQueryO
   }
 
   const result: QueryResult<T> = {
-    loading: state.isFetching,
+    isFetching: state.isFetching,
     data: state.data,
     error: state.error,
     refetch: make,
@@ -216,9 +216,8 @@ type State<T> = {
 };
 
 export type QueryResult<T> = {
-  loading: boolean;
   refetch: Query<T>;
-} & Pick<State<T>, 'data' | 'error'>;
+} & Pick<State<T>, 'isFetching' | 'data' | 'error'>;
 
 export type Variables<K extends string = string, V = any> = Record<K, V>;
 export type Query<T, V extends Variables = Variables> = (variables?: V) => Promise<T>;

@@ -45,9 +45,9 @@ describe('@data/use-query', () => {
   test('resolves an async query correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
+      const { isFetching, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
-      spy([loading, data, error]);
+      spy([isFetching, data, error]);
 
       return null;
     });
@@ -66,9 +66,9 @@ describe('@data/use-query', () => {
   test('resolves an async query with error correctly', async () => {
     const spy = jest.fn();
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => api.getData(1, true), { key: Key.GET_DATA });
+      const { isFetching, data, error } = useQuery(() => api.getData(1, true), { key: Key.GET_DATA });
 
-      spy([loading, data, error]);
+      spy([isFetching, data, error]);
 
       return null;
     });
@@ -87,13 +87,13 @@ describe('@data/use-query', () => {
   test('refetches an async query correctly', async () => {
     const spy = jest.fn();
     const App = component<{ id: number }>(({ id }) => {
-      const { loading, data, error } = useQuery(({ id }) => api.getData(id), {
+      const { isFetching, data, error } = useQuery(({ id }) => api.getData(id), {
         key: Key.GET_DATA,
         variables: { id },
         extractId: x => x.id,
       });
 
-      spy([loading, data, error]);
+      spy([isFetching, data, error]);
 
       return null;
     });
@@ -140,9 +140,9 @@ describe('@data/use-query', () => {
         `
     }`;
     const Child = component(() => {
-      const { loading, data } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
+      const { isFetching, data } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
-      if (loading) return <div>...</div>;
+      if (isFetching) return <div>...</div>;
 
       return <child>{data}</child>;
     });
@@ -180,17 +180,17 @@ describe('@data/use-query', () => {
       <script ${APP_STATE_ATTR}="true">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
-      const { loading, data, error } = useQuery(() => api.getData(2), { key: Key.GET_DATA });
+      const { isFetching, data, error } = useQuery(() => api.getData(2), { key: Key.GET_DATA });
 
-      if (loading) return <div>loading...</div>;
+      if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
 
       return <div>{data}</div>;
     });
     const App = component(() => {
-      const { loading, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
+      const { isFetching, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
-      if (loading) return <div>loading...</div>;
+      if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
 
       return (
@@ -216,20 +216,20 @@ describe('@data/use-query', () => {
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {
-      const { loading, data, error } = useQuery(() => api.getData(2), { key: Key.GET_DATA });
+      const { isFetching, data, error } = useQuery(() => api.getData(2), { key: Key.GET_DATA });
 
-      if (loading) return <div>loading...</div>;
+      if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
 
       return <div>{data}</div>;
     });
     const App = component(() => {
       const [marker, _setMarker] = useState('a');
-      const { loading, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
+      const { isFetching, data, error } = useQuery(() => api.getData(1), { key: Key.GET_DATA });
 
       setMarker = _setMarker;
 
-      if (loading) return <div>loading...</div>;
+      if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
 
       return (

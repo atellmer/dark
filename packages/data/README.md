@@ -1,6 +1,6 @@
 # @dark-engine/data 🌖
 
-Data queries and mutations for Dark
+Declarative queries and mutations for Dark
 
 [More about Dark](https://github.com/atellmer/dark)
 
@@ -23,12 +23,16 @@ CDN:
 ## Usage
 
 ```tsx
-const { data, loading, error, refetch } = useQuery(({ id }) => fetchUserById(id), { key: 'FETCH_DATA', variables: { id } });
+const { isFetching, data, error } = useQuery(fetchUsers, { key: 'users' });
 
-if (loading) return <div>loading...</div>;
+if (isFetching && !data) return <div>Loading...</div>;
 if (error) return <div>{error}</div>;
 
-return <div>{data}</div>;
+return (
+  <ul>
+    {data.map(x => <li key={x.id}>{x.name}</li>)}
+  </ul>
+);
 ```
 
 ## API

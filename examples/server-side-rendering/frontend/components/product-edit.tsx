@@ -12,17 +12,17 @@ const ProductEdit = component(() => {
   const history = useHistory();
   const id = Number(params.get('id'));
   const { data: product } = useProduct(id);
-  const [changeProduct, { loading }] = useChangeProductMutation();
+  const [changeProduct, { isFetching }] = useChangeProductMutation();
   const urlToList = url.replace(`${id}/edit/`, '');
 
   const handleSubmit = async (product: Partial<Product>) => {
-    if (loading) return;
+    if (isFetching) return;
     await changeProduct(id, product);
     history.push(urlToList);
   };
 
   return (
-    <Card $loading={loading}>
+    <Card $isFetching={isFetching}>
       <h3>Edit product</h3>
       <ProductForm variant='edit' product={product} onSubmit={handleSubmit} />
     </Card>

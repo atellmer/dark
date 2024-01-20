@@ -46,7 +46,7 @@ function useMutation<M extends Mutation>(
     return data;
   };
   const result: MutationResult<AwaitedResult> = {
-    loading: state.isFetching,
+    isFetching: state.isFetching,
     data: state.data,
     error: state.error,
   };
@@ -58,9 +58,7 @@ type OnSuccessOptions<T, P> = { cache: InMemoryCache; data: T; args: P };
 
 type State<T> = { isFetching: boolean; data: T; error: string };
 
-type MutationResult<T> = {
-  loading: boolean;
-} & Pick<State<T>, 'data' | 'error'>;
+type MutationResult<T> = Pick<State<T>, 'isFetching' | 'data' | 'error'>;
 
 type Mutation = (...args: Array<unknown>) => Promise<unknown>;
 

@@ -94,7 +94,7 @@ This project was written in my free time as a hobby. I challenged myself: can I 
 | `@dark-engine/native-navigation` | Dark NativeScript router                                         | [Link](https://github.com/atellmer/dark/tree/master/packages/native-navigation)|
 | `@dark-engine/animations`        | Spring based animations                                          | [Link](https://github.com/atellmer/dark/tree/master/packages/animations)       |
 | `@dark-engine/styled`            | Styled components                                                | [Link](https://github.com/atellmer/dark/tree/master/packages/styled)           |
-| `@dark-engine/data`              | Query and mutations                                              | [Link](https://github.com/atellmer/dark/tree/master/packages/data)             |
+| `@dark-engine/data`              | Declarative queries and mutations                                | [Link](https://github.com/atellmer/dark/tree/master/packages/data)             |
 
 ## Benchmark
 

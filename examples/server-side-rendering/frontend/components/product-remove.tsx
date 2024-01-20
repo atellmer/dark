@@ -10,17 +10,17 @@ const ProductRemove = component(() => {
   const params = useParams();
   const id = Number(params.get('id'));
   const { data: product } = useProduct(id);
-  const [removeProduct, { loading }] = useRemoveProductMutation();
+  const [removeProduct, { isFetching }] = useRemoveProductMutation();
   const urlToList = url.replace(`${id}/remove/`, '');
 
   const handleRemove = async () => {
-    if (loading) return;
+    if (isFetching) return;
     await removeProduct(id);
     history.push(urlToList);
   };
 
   return (
-    <Card $loading={loading}>
+    <Card $isFetching={isFetching}>
       <h3>
         Do you want to remove product #{product.id} with name «{product.name}»? 🤔
       </h3>

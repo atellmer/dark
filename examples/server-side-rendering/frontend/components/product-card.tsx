@@ -7,12 +7,12 @@ import { Spinner, Error, Card, Button } from './ui';
 const ProductCard = component<{ slot: DarkElement }>(({ slot }) => {
   const params = useParams();
   const id = Number(params.get('id'));
-  const { data, loading, error } = useProduct(id);
+  const { isFetching, data, error } = useProduct(id);
   const { url } = useMatch();
   const urlToEdit = url + 'edit/';
   const urlToRemove = url + 'remove/';
 
-  if (loading && !data) return <Spinner />;
+  if (isFetching && !data) return <Spinner />;
   if (error) return <Error value={error} />;
 
   if (!data) {

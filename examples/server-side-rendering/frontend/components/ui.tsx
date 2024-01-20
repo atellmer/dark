@@ -89,7 +89,7 @@ const Header = styled.header`
   display: flex;
 `;
 
-const Menu = styled.nav<{ $secondary?: boolean } & DarkJSX.HTMLTags['nav']>`
+const Menu = styled.nav<{ $isSecondary?: boolean } & DarkJSX.HTMLTags['nav']>`
   width: 100%;
   display: flex;
   align-items: center;
@@ -107,12 +107,12 @@ const Menu = styled.nav<{ $secondary?: boolean } & DarkJSX.HTMLTags['nav']>`
   }
 
   ${p => css`
-    background-color: ${p.$secondary ? '#3F51B5' : '#fdd835'};
-    padding: ${p.$secondary ? '8px' : '16px'};
-    border-radius: ${p.$secondary ? '6px' : '0'};
+    background-color: ${p.$isSecondary ? '#3F51B5' : '#fdd835'};
+    padding: ${p.$isSecondary ? '8px' : '16px'};
+    border-radius: ${p.$isSecondary ? '6px' : '0'};
 
     & a {
-      color: ${p.$secondary ? '#fff' : '#000'};
+      color: ${p.$isSecondary ? '#fff' : '#000'};
     }
   `};
 `;
@@ -123,9 +123,9 @@ const Content = styled.main`
   box-shadow: ${BOX_SHADOW};
 `;
 
-const Card = styled.article<{ $loading?: boolean } & DarkJSX.HTMLTags['article']>`
+const Card = styled.article<{ $isFetching?: boolean } & DarkJSX.HTMLTags['article']>`
   padding: 16px;
-  opacity: ${p => (p.$loading ? 0.2 : 1)};
+  opacity: ${p => (p.$isFetching ? 0.2 : 1)};
   transition: opacity 0.2s ease-in-out;
   background-color: #3f51b5;
   box-shadow: ${BOX_SHADOW};

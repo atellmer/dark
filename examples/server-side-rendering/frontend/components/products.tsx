@@ -1,6 +1,5 @@
 import { type DarkElement, h, component } from '@dark-engine/core';
 import { RouterLink, useMatch } from '@dark-engine/web-router';
-import { styled } from '@dark-engine/styled';
 
 import { AnimationFade, Menu, Sticky } from './ui';
 
@@ -15,7 +14,7 @@ const Products = component<ProductsProps>(({ slot }) => {
     <AnimationFade>
       <Sticky>
         <h1>Products 📈</h1>
-        <Menu $secondary>
+        <Menu $isSecondary>
           <RouterLink to={`${url}list`}>List</RouterLink>
           <RouterLink to={`${url}analytics`}>Analytics</RouterLink>
           <RouterLink to={`${url}balance`}>Balance</RouterLink>
