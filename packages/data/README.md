@@ -13,7 +13,7 @@ This approach also eliminates the need to parse the request url on the server in
 - 📝 Declarative
 - 📬 App-level cache system
 - 💾 Shared state between server and client
-- 🪩 Server asynchronous code in the app (in SSR)
+- ⚙️ Server asynchronous code in the app (in SSR)
 - 🔄 Auto refetches
 - 🌟 Optimistic updates
 - 🥱 lazy queries support
@@ -54,8 +54,6 @@ if (error) return <div>{error}</div>;
 
 ```tsx
 import {
-  type Query,
-  type CacheRecord,
   DataClient,
   DataClientProvider,
   InMemoryCache,
@@ -151,7 +149,7 @@ const { isFetching, data, error } = useQuery('user',  ({ id }) => api.fetchUser(
 Standard queries begin loading after the component is mounted in the tree. If you don't need this behavior, you can use `useLazyQuery`, which returns the content loading method and call it then you need it.
 
 ```tsx
-const [fetchUsers, { isFetching, data, error }] = useQuery('users', api.fetchUsers);
+const [fetchUsers, { isFetching, data, error }] = useLazyQuery('users', api.fetchUsers);
 
 ...
 

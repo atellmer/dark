@@ -2,9 +2,18 @@ import { h, component } from '@dark-engine/core';
 import { createGlobalStyle, styled, keyframes, css } from '@dark-engine/styled';
 import { type DarkJSX } from '@dark-engine/platform-browser';
 
-const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)';
-
 const GlobalStyle = createGlobalStyle`
+  :root {
+    --light-color: #fff;
+    --dark-color: #000;
+    --accent-color: #fdd835;
+    --bg-color-1: #1A237E;
+    --bg-color-2: #1a237e;
+    --bg-color-3: #283593;
+    --bg-color-4: #3F51B5;
+    --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+
   @font-face {
     font-family: 'Roboto';
     font-weight: 400;
@@ -24,9 +33,9 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: 'Roboto', sans-serif;
     line-height: 1.4;
-    background-color: #1A237E;
+    background-color: var(--bg-color-1);
     overflow-y: scroll;
-    color: #fff;
+    color: var(--light-color);
   }
 
   input, textarea, button {
@@ -44,7 +53,7 @@ const GlobalStyle = createGlobalStyle`
 
   a {
     margin: 4px;
-    color: #FFEB3B;
+    color: var(--accent-color);
     text-decoration: none;
   }
 
@@ -94,7 +103,7 @@ const Menu = styled.nav<{ $isSecondary?: boolean } & DarkJSX.HTMLTags['nav']>`
   display: flex;
   align-items: center;
   flex-grow: 1;
-  box-shadow: ${BOX_SHADOW};
+  box-shadow: var(--elevation-1);
   font-weight: 700;
 
   & a {
@@ -107,48 +116,53 @@ const Menu = styled.nav<{ $isSecondary?: boolean } & DarkJSX.HTMLTags['nav']>`
   }
 
   ${p => css`
-    background-color: ${p.$isSecondary ? '#3F51B5' : '#fdd835'};
+    background-color: ${p.$isSecondary ? 'var(--bg-color-4)' : 'var(--accent-color)'};
     padding: ${p.$isSecondary ? '8px' : '16px'};
     border-radius: ${p.$isSecondary ? '6px' : '0'};
 
     & a {
-      color: ${p.$isSecondary ? '#fff' : '#000'};
+      color: ${p.$isSecondary ? 'var(--light-color)' : 'var(--dark-color)'};
     }
   `};
 `;
 
 const Content = styled.main`
   padding: 0 16px 16px;
-  background-color: #283593;
-  box-shadow: ${BOX_SHADOW};
+  background-color: var(--bg-color-3);
+  box-shadow: var(--elevation-1);
+`;
+
+const cardFragment = css`
+  width: 100%;
+  background-color: var(--bg-color-4);
+  box-shadow: var(--elevation-1);
+  border-radius: 6px;
+  padding: 16px;
 `;
 
 const Card = styled.article<{ $isFetching?: boolean } & DarkJSX.HTMLTags['article']>`
-  padding: 16px;
+  ${() => cardFragment}
   opacity: ${p => (p.$isFetching ? 0.2 : 1)};
   transition: opacity 0.2s ease-in-out;
-  background-color: #3f51b5;
-  box-shadow: ${BOX_SHADOW};
+`;
+
+const inputFragment = css`
+  border: none;
+  padding: 6px;
   border-radius: 6px;
+  background-color: var(--bg-color-2);
+  color: var(--light-color);
 `;
 
 const Input = styled.input`
-  border: 1px solid #1a237e;
+  ${() => inputFragment}
   height: 30px;
-  padding: 6px;
-  border-radius: 6px;
-  background-color: #1a237e;
-  color: #fff;
 `;
 
 const Textarea = styled.textarea`
-  border: 1px solid #1a237e;
+  ${() => inputFragment}
   resize: none;
   min-height: 30px;
-  padding: 6px;
-  border-radius: 6px;
-  background-color: #1a237e;
-  color: #fff;
 `;
 
 const Form = styled.form`
@@ -161,19 +175,19 @@ const Form = styled.form`
 
 const Button = styled.button`
   padding: 6px 8px;
-  background-color: #fdd835;
-  color: #000;
+  background-color: var(--accent-color);
+  color: var(--dark-color);
   text-transform: uppercase;
   text-align: center;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
   display: inline-block;
   text-decoration: none;
   line-height: 1.7;
   font-size: 0.9rem;
   font-weight: 700;
   margin: 0;
+  cursor: pointer;
 
   &:hover {
     text-decoration: none;
@@ -191,12 +205,8 @@ const List = styled.ul`
 `;
 
 const ListItem = styled.li`
-  width: 100%;
-  background-color: #3f51b5;
+  ${() => cardFragment}
   margin: 6px 0;
-  padding: 16px;
-  box-shadow: ${BOX_SHADOW};
-  border-radius: 6px;
 
   &:first-child {
     margin-top: 0;
@@ -206,9 +216,9 @@ const ListItem = styled.li`
 const Sticky = styled.div`
   position: sticky;
   top: 0;
-  background-color: #283593;
+  background-color: var(--bg-color-3);
   padding: 16px;
-  box-shadow: ${BOX_SHADOW};
+  box-shadow: var(--elevation-1);
   margin: 0 -16px;
 
   & h1 {
@@ -242,7 +252,7 @@ const SpinnerHydrogen = styled.div`
   clear: both;
   margin: 20px auto;
   position: relative;
-  border: 4px #fdd835 solid;
+  border: 4px var(--accent-color) solid;
   border-radius: 50%;
   animation: ${rotate} 0.6s infinite linear;
 
@@ -252,7 +262,7 @@ const SpinnerHydrogen = styled.div`
     position: absolute;
     width: 10px;
     height: 10px;
-    background-color: #fdd835;
+    background-color: var(--accent-color);
     border-radius: 50%;
   }
 
