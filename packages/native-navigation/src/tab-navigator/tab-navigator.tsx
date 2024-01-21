@@ -52,9 +52,10 @@ const Navigator = component<TabNavigatorProps>(
       padding = 8,
       activeTabColor = '#e91e63',
       tabColor = '#fff',
+      animated = false,
     } = bottomNavigationOptions || {};
     const contextValue = useMemo<TabNavigatorContextValue>(
-      () => ({ descriptorsMap: {}, count: slot.length, activeTabColor, tabColor }),
+      () => ({ descriptorsMap: {}, count: slot.length, activeTabColor, tabColor, animated }),
       [],
     );
     const { descriptorsMap } = contextValue;
@@ -117,13 +118,12 @@ type TabScreenProps = {
 const Screen = component<TabScreenProps>(
   ({ name, component, renderTab = defaultRenderTab, slot }) => {
     const { push, pathname: currentPathname } = useNavigationContext();
-    const { descriptorsMap, count, activeTabColor, tabColor } = useTabNavigatorContext();
+    const { descriptorsMap, count, activeTabColor, tabColor, animated } = useTabNavigatorContext();
     const { prefix } = useScreenNavigatorContext();
     const pathname = createPathname(name, prefix);
     const isActive = detectIsMatch(currentPathname, pathname);
     const width = 100 / count;
-
-    const handleTap = useEvent(() => push(pathname, { animated: true }));
+    const handleTap = useEvent(() => push(pathname, { animated }));
 
     descriptorsMap[name] = { name, component, slot };
 
@@ -148,13 +148,6 @@ const defaultRenderTab = (name: string) => <label>{name}</label>;
 
 type TabDescriptor = Omit<TabScreenProps, 'renderTab'>;
 
-type TabNavigatorContextValue = {
-  descriptorsMap: Record<string, TabDescriptor>;
-  count: number;
-  activeTabColor: string;
-  tabColor: string;
-};
-
 type BottomNavigationOptions = {
   height: number;
   borderRadius: number;
@@ -165,7 +158,13 @@ type BottomNavigationOptions = {
   padding: number;
   activeTabColor: string;
   tabColor: string;
+  animated: boolean;
 };
+
+type TabNavigatorContextValue = {
+  descriptorsMap: Record<string, TabDescriptor>;
+  count: number;
+} & Pick<BottomNavigationOptions, 'activeTabColor' | 'tabColor' | 'animated'>;
 
 const TabNavigatorContext = createContext<TabNavigatorContextValue>(null);
 

@@ -25,7 +25,7 @@ const App = component(() => {
   return (
     <NavigationContainer defaultPathname='/Home'>
       <View>
-        <TabNavigator.Root>
+        <TabNavigator.Root bottomNavigationOptions={{ animated: true }}>
           <TabNavigator.Screen name='Home' component={Home} renderTab={renderTab} />
           <TabNavigator.Screen name='Contacts' component={Contacts} renderTab={renderTab} />
           <TabNavigator.Screen name='Settings' component={Settings} renderTab={renderTab} />
