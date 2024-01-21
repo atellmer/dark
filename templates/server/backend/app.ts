@@ -1,20 +1,26 @@
 import { join } from 'node:path';
 import express from 'express';
 import compression from 'compression';
+import { json } from 'body-parser';
 
 import { bootstrap } from './bootstrap';
+import { api, createRestApi } from './api';
 
 const PORT = 3000;
 const app = express();
 
 app.use(compression());
-app.use(express.static(join(__dirname, '../client/static')));
+app.use(json());
+app.use('/static', express.static(join(__dirname, '../frontend/static')));
+app.use('/favicon.ico', express.static(join(__dirname, '../frontend/static/assets/favicon.ico')));
+
+createRestApi(app);
 
 app.get('*', (req, res) => {
   const { url } = req;
-  const stream = bootstrap({ props: { url }, title: 'Dark SSR' });
-
   console.log('url', url);
+  const stream = bootstrap({ props: { url, api }, title: 'Dark SSR' });
+
   res.statusCode = 200;
   stream.pipe(res);
 });

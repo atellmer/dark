@@ -1,9 +1,8 @@
 import { resolve, dirname, join } from 'node:path';
-import webpack from 'webpack';
 
 const __dirname = resolve(dirname(''));
-const config = {
-  mode: process.env.NODE_ENV,
+const config = env => ({
+  mode: env.production ? 'production' : 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
@@ -25,17 +24,12 @@ const config = {
         test: /\.(ts|tsx)$/,
         loader: 'ts-loader',
         options: {
-          transpileOnly: true,
+          transpileOnly: env.development,
         },
         exclude: /node_modules/,
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env': JSON.stringify(process.env),
-    }),
-  ],
-};
+});
 
 export default config;

@@ -1,6 +1,6 @@
-import { type DarkElement, component, createContext, useContext } from '@dark-engine/core';
+import { type DarkElement, type SubscriberWithValue, component, createContext, useContext } from '@dark-engine/core';
 
-import { InMemoryCache } from '../cache';
+import { type CacheEventData, type MonitorEventData, InMemoryCache } from '../cache';
 
 class DataClient<A extends object = {}, K extends string = string> {
   private api: A;
@@ -21,12 +21,12 @@ class DataClient<A extends object = {}, K extends string = string> {
     return this.cache;
   }
 
-  subscribe(...args: Parameters<typeof this.cache.subscribe>) {
-    return this.cache.subscribe(...args);
+  subscribe(subscriber: SubscriberWithValue<CacheEventData<K>>) {
+    return this.cache.subscribe(subscriber);
   }
 
-  monitor(...args: Parameters<typeof this.cache.monitor>) {
-    return this.cache.monitor(...args);
+  monitor(subscriber: SubscriberWithValue<MonitorEventData<K>>) {
+    return this.cache.monitor(subscriber);
   }
 }
 

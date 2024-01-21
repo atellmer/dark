@@ -1,12 +1,5 @@
 ## Dark server template
 
-Includes:
-- SSR
-- Hydration
-- Routing
-- Lazy modules
-- Styled
-
 ```
 npx degit github:atellmer/dark/templates/server app
 ```

@@ -1,6 +1,6 @@
 import { h } from '@dark-engine/core';
 import { renderToStream } from '@dark-engine/platform-server';
-import { ServerStyleSheet } from '@dark-engine/styled';
+import { ServerStyleSheet } from '@dark-engine/styled/server';
 
 import { type AppProps, App } from '../frontend/components/app';
 import { Page } from '../frontend/components/page';

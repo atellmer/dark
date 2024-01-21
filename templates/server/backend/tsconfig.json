@@ -2,10 +2,10 @@
   "extends": "../tsconfig",
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "lib": [
-      "ES2021",
+      "ESNext",
       "DOM"
     ],
     "baseUrl": "."

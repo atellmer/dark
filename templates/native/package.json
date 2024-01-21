@@ -12,6 +12,7 @@
   "dependencies": {
     "@dark-engine/animations": "*",
     "@dark-engine/core": "*",
+    "@dark-engine/data": "*",
     "@dark-engine/native-navigation": "*",
     "@dark-engine/platform-native": "*",
     "@nativescript/core": "8.6.2",

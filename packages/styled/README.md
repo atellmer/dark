@@ -22,7 +22,7 @@ Styled components for Dark 🌖
 ## Usage
 
 ```tsx
-const Button = styled.button<{ $primary?: boolean } & DarkJSX.HTMLTags['button']>`
+const Button = styled.button<{ $isPrimary?: boolean } & DarkJSX.HTMLTags['button']>`
   display: inline-block;
   font-size: 1rem;
   padding: 0.5rem 0.7rem;
@@ -41,14 +41,14 @@ const Button = styled.button<{ $primary?: boolean } & DarkJSX.HTMLTags['button']
   }
 
   ${p => css`
-    --color: ${p.$primary ? '#BA68C8' : '#eee'};
-    --hover-color: ${p.$primary ? '#8E24AA' : '#E0E0E0'};
-    --text-color: ${p.$primary ? '#fff' : '#000'};
+    --color: ${p.$isPrimary ? '#BA68C8' : '#eee'};
+    --hover-color: ${p.$isPrimary ? '#8E24AA' : '#E0E0E0'};
+    --text-color: ${p.$isPrimary ? '#fff' : '#000'};
   `}
 `;
 
 <Button>Normal</Button>
-<Button $primary>Primary</Button>
+<Button $isPrimary>Primary</Button>
 ```
 
 ## Installation
@@ -77,7 +77,6 @@ import {
   type Keyframes,
   ThemeProvider,
   createGlobalStyle,
-  ServerStyleSheet,
   keyframes,
   useTheme,
   useStyle,
@@ -85,6 +84,7 @@ import {
   css,
   VERSION,
 } from '@dark-engine/styled';
+import { ServerStyleSheet } from '@dark-engine/styled/server';
 ```
 
 ## Getting Started
@@ -523,6 +523,10 @@ const style = useStyle(styled => ({
 The styled supports server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a context API.
 
 ### Rendering to string
+
+```tsx
+import { ServerStyleSheet } from '@dark-engine/styled/server';
+```
 
 ```tsx
 const sheet = new ServerStyleSheet();

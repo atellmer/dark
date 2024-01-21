@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
-    "moduleResolution": "node",
-    "module": "esnext",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "outDir": "./lib/",
     "sourceMap": true,
     "noImplicitAny": false,
@@ -13,8 +13,6 @@
     "jsxFactory": "h",
     "jsxFragmentFactory": "Fragment",
     "lib": [
-      "ES6",
-      "ES7",
       "ES2021",
       "dom"
     ],

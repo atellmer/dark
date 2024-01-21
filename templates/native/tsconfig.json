@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "noEmitHelpers": true,
     "noEmitOnError": true,
     "sourceMap": true,
@@ -13,9 +16,6 @@
       "ES7",
       "dom"
     ],
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
     "baseUrl": ".",
     "paths": {
       "~/*": [
