@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
-    "build": "cross-env NODE_ENV=production npx webpack",
-    "dev": "cross-env NODE_ENV=development npx webpack-dev-server"
+    "build": "npx webpack --env production",
+    "dev": "npx webpack-dev-server --env development"
   },
   "devDependencies": {
-    "cross-env": "7.0.3",
     "ts-loader": "9.4.2",
     "typescript": "5.3.3",
     "webpack": "5.75.0",

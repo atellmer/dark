@@ -1,22 +1,21 @@
-const { resolve } = require('path');
-const webpack = require('webpack');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+import { resolve, dirname } from 'node:path';
 
-module.exports = env => {
+import { alias } from '../../webpack.common.mjs';
+
+const __dirname = resolve(dirname(''));
+const config = env => {
   const config = {
-    mode: 'production',
+    mode: env.production ? 'production' : 'development',
     entry: ['./src/index.tsx'],
     target: 'node',
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
-      alias: {
-        '@dark-engine/core': resolve(__dirname, '../../packages/core/src'),
-        '@dark-engine/platform-desktop': resolve(__dirname, '../../packages/platform-desktop/src'),
-      },
+      alias,
     },
     output: {
       path: resolve(__dirname, 'dist'),
       filename: 'index.js',
+      clean: true,
     },
     module: {
       rules: [
@@ -48,16 +47,9 @@ module.exports = env => {
         },
       ],
     },
-    plugins: [new CleanWebpackPlugin()],
   };
-
-  if (env.NODE_ENV === 'development') {
-    config.mode = 'development';
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
-    config.devtool = 'source-map';
-    config.watch = true;
-    config.entry.unshift('webpack/hot/poll?100');
-  }
 
   return config;
 };
+
+export default config;

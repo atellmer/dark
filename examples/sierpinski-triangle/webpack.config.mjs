@@ -3,15 +3,12 @@ import { resolve, dirname, join } from 'node:path';
 import { alias } from '../../webpack.common.mjs';
 
 const __dirname = resolve(dirname(''));
-const config = {
-  mode: process.env.NODE_ENV,
+const config = env => ({
+  mode: env.production ? 'production' : 'development',
   resolve: {
     modules: ['node_modules'],
     extensions: ['.js', '.ts', '.tsx'],
     alias,
-  },
-  externals: {
-    'node:worker_threads': 'commonjs2 node:worker_threads',
   },
   devtool: 'source-map',
   entry: resolve(__dirname, './index.tsx'),
@@ -23,6 +20,7 @@ const config = {
     static: join(__dirname, './'),
     compress: false,
     port: 9000,
+    historyApiFallback: true,
   },
   module: {
     rules: [
@@ -36,6 +34,6 @@ const config = {
       },
     ],
   },
-};
+});
 
 export default config;

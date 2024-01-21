@@ -1,10 +1,8 @@
 const { resolve } = require('path');
-const webpack = require('webpack');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = env => {
   const config = {
-    mode: 'production',
+    mode: env.production ? 'production' : 'development',
     entry: ['./src/index.tsx'],
     target: 'node',
     resolve: {
@@ -13,6 +11,7 @@ module.exports = env => {
     output: {
       path: resolve(__dirname, 'dist'),
       filename: 'index.js',
+      clean: true,
     },
     module: {
       rules: [
@@ -44,16 +43,7 @@ module.exports = env => {
         },
       ],
     },
-    plugins: [new CleanWebpackPlugin()],
   };
-
-  if (env.NODE_ENV === 'development') {
-    config.mode = 'development';
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
-    config.devtool = 'source-map';
-    config.watch = true;
-    config.entry.unshift('webpack/hot/poll?100');
-  }
 
   return config;
 };

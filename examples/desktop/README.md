@@ -1,4 +1,4 @@
-### Working example of platform-desktop app
+### Example of platform-desktop app
 
 Step 1. Install deps:
 ```
@@ -15,5 +15,3 @@ In the second terminal:
 ```
 npm start
 ```
-
-Happy coding!

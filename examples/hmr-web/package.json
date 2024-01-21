@@ -1,11 +1,11 @@
 {
-  "name": "bench",
+  "name": "dark-hmr",
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
-    "dev": "npx webpack-dev-server"
+    "build": "npx webpack --env production",
+    "dev": "npx webpack-dev-server --env development"
   },
-  "keywords": [],
   "devDependencies": {
     "ts-loader": "9.4.2",
     "typescript": "5.3.3",

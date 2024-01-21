@@ -1,12 +1,9 @@
 {
   "name": "dark-desktop-app",
   "scripts": {
-    "start": "npx qode ./dist/index.js",
-    "start:hmr": "npm run start",
-    "start:watch": "nodemon -e js,ts,tsx --ignore dist/ --ignore node_modules/ --exec npm start",
-    "debug": "npx qode --inspect-brk ./dist/index.js",
-    "build": "npx webpack --env NODE_ENV=production",
-    "dev": "npx webpack --env NODE_ENV=development"
+    "start": "nodemon -e js,ts,tsx --ignore dist/ --ignore node_modules/ --exec npx qode ./dist/index.js",
+    "build": "npx webpack --env production",
+    "dev": "npx webpack --watch --env development"
   },
   "dependencies": {
     "@dark-engine/core": "*",

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
-    "build": "npx webpack",
-    "dev": "npx webpack-dev-server"
+    "build": "npx webpack --env production",
+    "dev": "npx webpack-dev-server --env development"
   },
   "keywords": [],
   "devDependencies": {
