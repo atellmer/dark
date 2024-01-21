@@ -1,7 +1,6 @@
 import { resolve, dirname } from 'node:path';
-import webpack from 'webpack';
 
-import { alias, plugins } from '../../webpack.base.mjs';
+import { alias } from '../../webpack.common.mjs';
 
 const __dirname = resolve(dirname(''));
 const libraryName = 'DarkStyled';
@@ -39,12 +38,6 @@ const config = env => ({
       },
     ],
   },
-  plugins: [
-    ...plugins,
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': env.production ? JSON.stringify('production') : JSON.stringify('development'),
-    }),
-  ],
 });
 
 export default config;

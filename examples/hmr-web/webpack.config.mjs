@@ -1,6 +1,6 @@
 import { resolve, dirname, join } from 'node:path';
 
-import { alias, plugins } from '../../webpack.base.mjs';
+import { alias } from '../../webpack.common.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = {
@@ -36,7 +36,6 @@ const config = {
       },
     ],
   },
-  plugins: [...plugins],
 };
 
 export default config;

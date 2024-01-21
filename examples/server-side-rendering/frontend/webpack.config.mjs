@@ -2,7 +2,7 @@ import { resolve, dirname } from 'node:path';
 import { InjectManifest } from 'workbox-webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 
-import { alias } from '../../../webpack.base.mjs';
+import { alias } from '../../../webpack.common.mjs';
 
 const __dirname = resolve(dirname(''));
 const config = env => ({

@@ -1,6 +1,7 @@
-const { resolve } = require('node:path');
-const webpack = require('webpack');
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const alias = {
   '@dark-engine/core': resolve(__dirname, './packages/core/src'),
   '@dark-engine/platform-browser': resolve(__dirname, './packages/platform-browser/src'),
@@ -13,12 +14,5 @@ const alias = {
   '@dark-engine/styled': resolve(__dirname, './packages/styled/src'),
   '@dark-engine/data': resolve(__dirname, './packages/data/src'),
 };
-const plugins = [
-  new webpack.IgnorePlugin({
-    checkResource(resource) {
-      return resource === './server/sheet';
-    },
-  }),
-];
 
-module.exports = { alias, plugins };
+export { alias };

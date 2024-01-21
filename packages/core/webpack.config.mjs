@@ -1,7 +1,6 @@
 import { resolve, dirname } from 'node:path';
-import webpack from 'webpack';
 
-import { alias } from '../../webpack.base.mjs';
+import { alias } from '../../webpack.common.mjs';
 
 const __dirname = resolve(dirname(''));
 const library = 'DarkCore';
@@ -31,11 +30,6 @@ const config = env => ({
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': env.production ? JSON.stringify('production') : JSON.stringify('development'),
-    }),
-  ],
 });
 
 export default config;
