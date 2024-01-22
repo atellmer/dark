@@ -132,7 +132,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
   const $inst = parent.inst;
   const idx = 0;
   const inst = hasChildrenProp($inst) ? $inst.children[idx] : null;
-  const alt = getAlternate(parent, inst, true, $scope);
+  const alt = getAlternate(parent, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
 
   fiber.parent = parent;
@@ -159,7 +159,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   }
 
   $scope.setMountDeep(true);
-  const alt = getAlternate(left, inst, false, $scope);
+  const alt = getAlternate(left, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
 
   fiber.parent = left.parent;
@@ -204,30 +204,28 @@ function createFiber(alt: Fiber, inst: Instance, idx: number) {
   return fiber;
 }
 
-function getAlternate(fiber: Fiber, inst: Instance, fromChild: boolean, $scope: Scope) {
+function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
+  const isChild = idx === 0;
   const key = getElementKey(inst);
+  const parentId = isChild ? fiber.id : fiber.parent.id;
+  const actions = $scope.getActionsById(parentId);
+  let alt: Fiber = null;
 
-  if (key !== null) {
-    const parentId = fromChild ? fiber.id : fiber.parent.id;
-    const actions = $scope.getActionsById(parentId);
+  if (key !== null && actions) {
+    const isMove = actions.move && Boolean(actions.move[key]);
+    const isStable = actions.stable && Boolean(actions.stable[key]);
 
-    if (actions) {
-      const isMove = actions.move && Boolean(actions.move[key]);
-      const isStable = actions.stable && Boolean(actions.stable[key]);
-
-      if (isMove || isStable) {
-        const alt = actions.map[key];
-
-        isMove && (alt.mask |= MOVE_MASK);
-
-        return alt;
-      }
-
-      return null;
+    if (isMove || isStable) {
+      alt = actions.map[key];
+      isMove && (alt.mask |= MOVE_MASK);
+    }
+  } else {
+    if (fiber.alt) {
+      alt = isChild ? fiber.alt.child : fiber.alt.next;
+    } else {
+      alt = actions ? actions.map[createIndexKey(idx)] || null : null;
     }
   }
-
-  const alt = fiber.alt ? (fromChild ? fiber.alt.child || null : fiber.alt.next || null) : null;
 
   return alt;
 }

@@ -7,7 +7,7 @@ Dark router for `NativeScript` platform.
 ## Features
 - 📚 Stack navigation
 - 📂 Tab navigation
-- 🪟 Modal navigation
+- 🎆 Modal navigation
 - 🌳 Nested screens
 - 🔢 Parameters
 - 💃 Animated transitions

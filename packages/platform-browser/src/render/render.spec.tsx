@@ -1355,4 +1355,29 @@ describe('@platform-browser/render', () => {
     render(<App />);
     expect(host.innerHTML).toBe(content());
   });
+
+  test('renders correctly if the previous sibling has a new key', () => {
+    const content = (key: number) => dom`
+      <div>1:${key}</div>
+      <div>2</div>
+    `;
+
+    const App = component<{ x: number }>(({ x }) => {
+      return (
+        <>
+          <div key={x}>1:{x}</div>
+          <div>2</div>
+        </>
+      );
+    });
+
+    render(<App x={1} />);
+    expect(host.innerHTML).toBe(content(1));
+
+    render(<App x={2} />);
+    expect(host.innerHTML).toBe(content(2));
+
+    render(<App x={3} />);
+    expect(host.innerHTML).toBe(content(3));
+  });
 });

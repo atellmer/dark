@@ -34,7 +34,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 💽 Server-side rendering
 - 🏄‍♂️ Isomorphic routing
 - 💾 Shared state between server and client
-- 🪩 Server asynchronous code in the app (in SSR)
+- ⚙️ Server asynchronous code in the app (in SSR)
 - 📬 Declarative queries and mutations
 - 📲 Rendering to mobile platforms (Android, iOS) via <a href="https://nativescript.org/" target="_blank">NativeScript</a>
 - 💻 Rendering to desktop platforms (Windows, Linux, macOS) via <a href="https://docs.nodegui.org/" target="_blank">NodeGui</a> and <a href="https://www.qt.io/" target="_blank">Qt</a>
