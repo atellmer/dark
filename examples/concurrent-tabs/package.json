@@ -1,5 +1,5 @@
 {
-  "name": "deferred-search",
+  "name": "dark-concurrent-tabs",
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
