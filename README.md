@@ -77,9 +77,7 @@ npm start
 - [Working with standard HTML input elements](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
 - [SPA with lazy routes](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=index.tsx)
 - [Concurrent tabs](https://stackblitz.com/edit/darkapp-ccz57rk-g8ppbn?file=index.tsx)
-- [Universal app](https://stackblitz.com/edit/darkapp-ccz57rk-n5zjg6?file=server%2Fapp.ts,client%2Fcomponents%2Fapp.tsx)
-- [Dark NativeScript](https://stackblitz.com/edit/darkapp-ccz57rk-vqbndt?file=src%2Fcomponents%2Fapp.tsx)
-- [Dark NodeGui](https://github.com/atellmer/dark/tree/master/examples/desktop)
+- [SSR+PWA app](https://stackblitz.com/edit/darkapp-ccz57rk-wrfqdk?file=backend%2Fapp.ts,frontend%2Fcomponents%2Fapp.tsx)
 
 ## Motivation
 

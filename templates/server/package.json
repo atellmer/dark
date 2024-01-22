@@ -1,5 +1,6 @@
 {
-  "name": "dark-server-app",
+  "name": "dark-ssr-pwa-app",
+  "version": "1.0.0",
   "scripts": {
     "start": "npm run backend",
     "backend": "nodemon -e js,ts,tsx --watch backend/ --watch frontend/static/ --exec ts-node -- ./backend/app.ts",

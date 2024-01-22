@@ -1,5 +1,5 @@
 {
-  "name": "dark-theme-context",
+  "name": "dark-context",
   "version": "1.0.0",
   "scripts": {
     "start": "npm run dev",
