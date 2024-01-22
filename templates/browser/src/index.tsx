@@ -8,7 +8,7 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <h1>{a$.val()}</h1>
+      <h1>Count is {a$.val()}</h1>
       <button onClick={() => a$.set(x => x + 1)}>increment</button>
     </>
   );

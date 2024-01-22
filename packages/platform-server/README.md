@@ -22,6 +22,13 @@ from template:
 npx degit github:atellmer/dark/templates/server app
 ```
 
+```
+cd app
+npm ci
+npm run frontend
+npm start
+```
+
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser @dark-engine/platform-server

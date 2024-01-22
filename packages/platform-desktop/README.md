@@ -16,6 +16,18 @@ from template:
 ```
 npx degit github:atellmer/dark/templates/desktop app
 ```
+```
+cd app
+npm ci
+```
+```
+#in the first terminal:
+npm run dev
+```
+```
+#in the second terminal:
+npm start
+```
 
 npm:
 ```

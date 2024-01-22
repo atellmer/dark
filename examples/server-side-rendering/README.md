@@ -1,8 +1,8 @@
-## Dark SSR app
+## Dark SSR+PWA app
 
 ```
 cd app
 npm i
-npm run build:frontend
+npm run frontend
 npm start
 ```

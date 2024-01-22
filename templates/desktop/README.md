@@ -8,16 +8,16 @@ npx degit github:atellmer/dark/templates/desktop app
 
 ```
 cd app
-npm i
+npm ci
 ```
 
 #### Step 2
 
-In the first terminal:
 ```
+#in the first terminal:
 npm run dev
 ```
-In the second terminal:
 ```
+#in the second terminal:
 npm start
 ```

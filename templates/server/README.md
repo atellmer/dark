@@ -6,7 +6,7 @@ npx degit github:atellmer/dark/templates/server app
 
 ```
 cd app
-npm i
-npm run build:frontend
+npm ci
+npm run frontend
 npm start
 ```

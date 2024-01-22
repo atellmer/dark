@@ -11,6 +11,12 @@ from template:
 npx degit github:atellmer/dark/templates/browser app
 ```
 
+```
+cd app
+npm ci
+npm start
+```
+
 npm:
 ```
 npm install @dark-engine/core @dark-engine/platform-browser
