@@ -1,8 +1,9 @@
-import { detectIsFunction } from '../utils';
 import { INSERTION_EFFECT_HOST_MASK, LAYOUT_EFFECT_HOST_MASK, ASYNC_EFFECT_HOST_MASK } from '../constants';
-import { $$scope } from '../scope';
-import { useMemo } from '../use-memo';
 import { type Hook, type HookValue } from '../fiber';
+import { detectIsFiberAlive } from '../walk';
+import { detectIsFunction } from '../utils';
+import { useMemo } from '../use-memo';
+import { $$scope } from '../scope';
 
 const $$useEffect = Symbol('use-effect');
 
@@ -25,7 +26,13 @@ function createEffect(token: Symbol, type: EffectType) {
     isAsyncEffect && fiber.markHost(ASYNC_EFFECT_HOST_MASK);
 
     useMemo(() => {
-      const runEffect = () => (scope.cleanup = effect());
+      const runEffect = () => {
+        scope.cleanup = effect();
+
+        if (isAsyncEffect && detectIsFunction(scope.cleanup) && !detectIsFiberAlive(fiber)) {
+          scope.cleanup();
+        }
+      };
 
       isInsertionEffect && $scope.addInsertionEffect(runEffect);
       isLayoutEffect && $scope.addLayoutEffect(runEffect);

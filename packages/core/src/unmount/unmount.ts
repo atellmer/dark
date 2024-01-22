@@ -1,11 +1,11 @@
-import { type Fiber } from '../fiber';
-import { platform } from '../platform';
-import { dropEffects } from '../use-effect';
-import { dropLayoutEffects } from '../use-layout-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
-import { walk } from '../walk';
-import { detectIsUndefined } from '../utils';
+import { dropLayoutEffects } from '../use-layout-effect';
 import { removeScope, $$scope } from '../scope';
+import { detectIsUndefined } from '../utils';
+import { dropEffects } from '../use-effect';
+import { platform } from '../platform';
+import { type Fiber } from '../fiber';
+import { walk } from '../walk';
 import {
   INSERTION_EFFECT_HOST_MASK,
   LAYOUT_EFFECT_HOST_MASK,
@@ -23,7 +23,6 @@ function unmountFiber(fiber: Fiber) {
   if (!shouldUnmountFiber(fiber)) return;
   walk(fiber, (fiber, skip) => {
     if (!shouldUnmountFiber(fiber)) return skip();
-
     if (fiber.hook && fiber.hook.values.length > 0) {
       fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects(fiber.hook);
       fiber.mask & LAYOUT_EFFECT_HOST_MASK && dropLayoutEffects(fiber.hook);
