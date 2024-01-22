@@ -1,4 +1,4 @@
-export const VERSION = '0.25.1';
+export const VERSION = '1.0.0';
 export const INPUT_TAG = 'input';
 export const TEXTAREA_TAG = 'textarea';
 export const CLASS_NAME_ATTR = 'className';
