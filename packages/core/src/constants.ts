@@ -1,4 +1,4 @@
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 export const ROOT = 'dark:root';
 export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';

@@ -1,4 +1,4 @@
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 export const DOCTYPE = '<!DOCTYPE html>';
 export const TEXTAREA_TAG = 'textarea';
 export const VALUE_ATTR = 'value';
