@@ -310,6 +310,7 @@ const Layout = styled.div`
     }
   }
 `;
+
 <Layout>
   This is <span>Content</span>
 </Layout>
@@ -330,6 +331,7 @@ const Layout = styled.div`
     }
   }
 `;
+
 <Layout>
   This is <span>Content</span>
 </Layout>
