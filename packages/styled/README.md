@@ -16,7 +16,7 @@ Styled components for Dark 🌖
 - 💃 CSS Animations
 - 💽 SSR
 - 🗜️ Minification
-- 🚫 No deps
+- ✂️ No deps
 - 📦 Small size (6 kB gzipped)
 
 ## Usage

@@ -12,7 +12,7 @@ Dark router for `NativeScript` platform.
 - 🔢 Parameters
 - 💃 Animated transitions
 - 📈 Hooks
-- 🚫 No deps
+- ✂️ No deps
 
 ## Installation
 npm:

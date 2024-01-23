@@ -12,7 +12,7 @@ Spring based animations for Dark
 - 💽 SSR
 - 🎊 Includes trails and transitions support
 - 🎢 Animation sequences
-- 🚫 No deps
+- ✂️ No deps
 - 📦 Small size (5 kB gzipped)
 
 ## Installation

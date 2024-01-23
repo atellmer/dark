@@ -18,7 +18,7 @@ This approach also eliminates the need to parse the request url on the server in
 - 🌟 Optimistic updates
 - 🥱 lazy queries support
 - 🦾 All platforms: server, browser, native, desktop
-- 🚫 No deps
+- ✂️ No deps
 - 📦 Small size (3 kB gzipped)
 
 ## Installation
@@ -40,13 +40,13 @@ CDN:
 ## Usage
 
 ```tsx
-const { isFetching, data, error } = useQuery('users', api.fetchUsers);
+const { isFetching, data, error } = useQuery('posts', api.fetchPosts);
 
 if (isFetching && !data) return <div>Loading...</div>;
 if (error) return <div>{error}</div>;
 
 <ul>
-  {data.map(x => <li key={x.id}>{x.name}</li>)}
+  {data.map(x => <li key={x.id}>{x.title}</li>)}
 </ul>
 ```
 
@@ -74,21 +74,21 @@ import {
 ```tsx
 // contract between server and browser
 export type Api = {
-  fetchUsers: () => Promise<Array<User>>;
+  fetchPosts: () => Promise<Array<Post>>;
 }
 ```
 
 ```tsx
 // on the server side
 const api: Api = {
-  fetchUsers: () => db.collection('users').find({}).toArray(),
+  fetchPosts: () => db.collection('posts').find({}).toArray(),
 }
 ```
 
 ```tsx
 // on the browser side
 const api: Api = {
-  fetchUsers: () => fetch('url/to/api/users'),
+  fetchPosts: () => fetch('url/to/api/posts'),
 }
 ```
 
@@ -116,13 +116,13 @@ A `query` is an asynchronous request that appears synchronous in code, returning
 `useQuery` hook is designed to work with asynchronous resources, such as network requests. When rendered in the browser, it knows how to interact with `Suspense`, display the loader, and also the error, if there is one. When rendering on the server, it immediately begins to load the resource in order to provide useful asynchronous content to the server. When hydrated, the state of the hook is restored as if it were running in the browser. This allows us to solve the problem with asynchronous data and how to work with it in the same way both in the browser and on the server.
 
 ```tsx
-const { isFetching, data, error, refetch } = useQuery('users', api.fetchUsers);
+const { isFetching, data, error, refetch } = useQuery('posts', api.fetchPosts);
 
 if (isFetching && !data) return <div>Loading...</div>;
 if (error) return <div>{error}</div>;
 
 <ul>
-  {data.map(x => <li key={x.id}>{x.name}</li>)}
+  {data.map(x => <li key={x.id}>{x.title}</li>)}
 </ul>
 ```
 
@@ -131,7 +131,7 @@ In this example, when the `id` changes, a new fetch will be produced, the data o
 
 ```tsx
 const { id } = props;
-const { isFetching, data, error } = useQuery('user',  ({ id }) => api.fetchUser(id), {
+const { isFetching, data, error } = useQuery('post',  ({ id }) => api.fetchPost(id), {
   variables: { id },
   extractId: x => x.id,
 });
@@ -140,7 +140,7 @@ const { isFetching, data, error } = useQuery('user',  ({ id }) => api.fetchUser(
 
 <>
   <div>{data.id}</div>
-  <div>{data.name}</div>
+  <div>{data.title}</div>
 </>
 ```
 
@@ -149,11 +149,11 @@ const { isFetching, data, error } = useQuery('user',  ({ id }) => api.fetchUser(
 Standard queries begin loading after the component is mounted in the tree. If you don't need this behavior, you can use `useLazyQuery`, which returns the content loading method and call it then you need it.
 
 ```tsx
-const [fetchUsers, { isFetching, data, error }] = useLazyQuery('users', api.fetchUsers);
+const [fetchPosts, { isFetching, data, error }] = useLazyQuery('posts', api.fetchPosts);
 
 ...
 
-<button onClick={() => fetchUsers()}>Load</button>
+<button onClick={() => fetchPosts()}>Load</button>
 ```
 
 ## `Mutation`
@@ -163,11 +163,11 @@ A `mutation` is any asynchronous change that changes the state of the applicatio
 #### `useMutation`
 
 ```tsx
-const [addUser, { isFetching, data, error }] = useMutation('add-user', api.addUser);
+const [addPost, { isFetching, data, error }] = useMutation('add-post', api.addPost);
 
 ...
 
-<button onClick={() => addUser(newUser)}>add</button>
+<button onClick={() => addPost(newPost)}>add</button>
 ```
 
 ## Refetches
@@ -175,8 +175,8 @@ const [addUser, { isFetching, data, error }] = useMutation('add-user', api.addUs
 When you specify a set of related keys, the cached data for those keys will be marked as requiring updating. If there is or appears a `query` in the component tree that requests this key, it will perform a refresh and update the data in the `cache`. This allows you to automatically and reactively control the relevance of asynchronous data.
 
 ```tsx
-const [addUser, { isFetching }] = useMutation('add-user', api.addUser, {
-  refetchQueries: ['users']
+const [addPost, { isFetching }] = useMutation('add-post', api.addPost, {
+  refetchQueries: ['posts']
 });
 ```
 
@@ -185,15 +185,15 @@ const [addUser, { isFetching }] = useMutation('add-user', api.addUser, {
 Sometimes you may want to update associated data immediately, rather than waiting for a second request to the server. For this, there is an optimistic update scenario in which, after a successful mutation, the data in the cache is replaced with new ones and marked as requiring final synchronization with the server. At the same time, it will look seamless to the user.
 
 ```tsx
-const [addUser, { isFetching }] = useMutation('add-user', api.addProduct, {
-  onSuccess: ({ cache, data: user }) => {
-    const record = cache.read<Array<User>>('users');
+const [addPost, { isFetching }] = useMutation('add-post', api.addPost, {
+  onSuccess: ({ cache, data: post }) => {
+    const record = cache.read<Array<Post>>('posts');
 
     if (record) {
-      const users = record.data;
+      const posts = record.data;
 
-      users.push(user);
-      cache.optimistic('users', users);
+      posts.push(post);
+      cache.optimistic('posts', posts);
     }
   },
 });
@@ -204,10 +204,10 @@ const [addUser, { isFetching }] = useMutation('add-user', api.addProduct, {
 This is a set of utility hooks, each of which returns its own entity. The most important hook here is the `useApi`, as it allows you to move the request logic out of components into abstract hooks.
 
 ```tsx
-function useUser(id: number) {
+function usePost(id: number) {
   const api = useApi();
 
-  return useQuery('user', ({ id }) => api.fetchUser(id), {
+  return useQuery('post', ({ id }) => api.fetchPost(id), {
     variables: { id },
     extractId: x => x.id,
   });
@@ -215,11 +215,11 @@ function useUser(id: number) {
 ```
 
 ```tsx
-const { isFetching, data: user } = useUser(id);
+const { isFetching, data: post } = usePost(id);
 
 <>
-  <div>{user.id}</div>
-  <div>{user.name}</div>
+  <div>{post.id}</div>
+  <div>{post.title}</div>
 </>
 ```
 
@@ -231,10 +231,10 @@ When working with queries and mutations, the client produces events that you can
 const client = useClient();
 
 // queries and mutations events
-client.monitor(x => console.log(x)) // {type: 'query', phase: 'start', key: 'users', data: [...]}
+client.monitor(x => console.log(x)) // {type: 'query', phase: 'start', key: 'posts', data: [...]}
 
 // cache events (write, optimistic, invalidate, delete)
-client.subscribe(x => console.log(x)); //{ type: 'write', key: 'users', record: {...} }
+client.subscribe(x => console.log(x)); //{ type: 'write', key: 'posts', record: {...} }
 ```
 
 # LICENSE
