@@ -12,7 +12,7 @@ const Home = component<{ slot: DarkElement }>(({ slot }) => {
         repellendus ducimus est earum autem! Esse vel provident fugit explicabo corrupti fugiat ducimus, hic eius ea
         repudiandae repellendus! Nisi aspernatur mollitia laudantium vitae non libero minus ipsum repellat. Libero
       </p>
-      <img src='https://www.rd.com/wp-content/uploads/2021/03/GettyImages-140594401-1-scaled.jpg?resize=2048,1360' />
+      <img src='/assets/images/1.jpg' />
       <p>
         Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium voluptatum et odio, ipsum cum distinctio,
         facilis consectetur praesentium nam soluta sint, doloremque illo dignissimos nihil. Nesciunt quibusdam accusamus

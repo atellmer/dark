@@ -20,10 +20,6 @@ const routes: Routes = [
     component: Contacts,
   },
   {
-    path: '',
-    redirectTo: 'home',
-  },
-  {
     path: '**',
     redirectTo: 'home',
   },
@@ -145,9 +141,11 @@ const GlobalStyle = createGlobalStyle`
 
   img {
     width: 600px;
+    min-height: 300px;
     max-width: 100%;
     margin: 20px auto;
     background-color: #eeeeee;
+    object-fit: cover;
   }
 
   article {
