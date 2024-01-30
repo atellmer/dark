@@ -512,7 +512,7 @@ function sync(fiber: Fiber) {
 }
 
 function fork($scope: Scope): false {
-  const $$scope$ = $scope.copy();
+  const $fork = $scope.copy();
   const wipFiber = $scope.getWorkInProgress();
   const child = wipFiber.child;
   child && (child.parent = null);
@@ -521,7 +521,7 @@ function fork($scope: Scope): false {
     const $scope = $$scope();
 
     detectIsFunction(setValue) && setValue();
-    detectIsFunction(resetValue) && $$scope$.addCancel(resetValue);
+    detectIsFunction(resetValue) && $fork.addCancel(resetValue);
 
     wipFiber.alt = new Fiber().mutate(wipFiber);
     wipFiber.tag = UPDATE_EFFECT_TAG;
@@ -532,9 +532,9 @@ function fork($scope: Scope): false {
       wipFiber.marker = '✌️';
     }
 
-    $$scope$.setRoot($scope.getRoot());
-    $$scope$.setWorkInProgress(wipFiber);
-    replaceScope($$scope$);
+    $fork.setRoot($scope.getRoot());
+    $fork.setWorkInProgress(wipFiber);
+    replaceScope($fork);
   };
 
   wipFiber.child = wipFiber.alt.child;
