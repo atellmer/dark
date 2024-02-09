@@ -156,7 +156,7 @@ import {
 } from '@dark-engine/platform-native';
 ```
 
-To learn more about how they work, you can visit the [NativeScript documentation](https://docs.nativescript.org/ui-and-styling.html).
+To learn more about how they work, you can visit the [NativeScript documentation](https://docs.nativescript.org/ui/).
 
 ## Conditional rendering
 
