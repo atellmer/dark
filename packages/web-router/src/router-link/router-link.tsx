@@ -1,5 +1,5 @@
-import { h, component, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
-import { type SyntheticEvent } from '@dark-engine/platform-browser';
+import { h, component, forwardRef, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
+import { type SyntheticEvent, type DarkJSX } from '@dark-engine/platform-browser';
 
 import { useHistory } from '../use-history';
 import { useLocation } from '../use-location';
@@ -9,37 +9,37 @@ import { SLASH_MARK } from '../constants';
 export type RoutreLinkProps = {
   to: string;
   activeClassName?: string;
-  className?: string;
-  title?: string;
   slot: DarkElement;
-  onClick?: (e: SyntheticEvent<MouseEvent, HTMLAnchorElement>) => void;
-};
+} & DarkJSX.HTMLTags['a'];
 
-const RouterLink = component<RoutreLinkProps>(
-  ({ to, activeClassName = 'router-link-active', className: sourceClassName, slot, onClick, ...rest }) => {
-    const history = useHistory();
-    const { pathname, hash } = useLocation();
-    const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash, to]);
-    const className = useMemo(
-      () => cm(sourceClassName, isActive ? activeClassName : ''),
-      [sourceClassName, activeClassName, isActive],
-    );
+const RouterLink = forwardRef<RoutreLinkProps, HTMLAnchorElement>(
+  component(
+    (props, ref) => {
+      const { to, activeClassName = 'router-link-active', class: cl1, className: cl2, slot, onClick, ...rest } = props;
+      const history = useHistory();
+      const { pathname, hash } = useLocation();
+      const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash, to]);
+      const className = useMemo(
+        () => cm(cl1, cl2, isActive ? activeClassName : ''),
+        [cl1, cl2, activeClassName, isActive],
+      );
 
-    const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLAnchorElement>) => {
-      e.preventDefault();
-      history.push(to);
-      detectIsFunction(onClick) && onClick(e);
-    });
+      const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLAnchorElement>) => {
+        e.preventDefault();
+        history.push(to);
+        detectIsFunction(onClick) && onClick(e);
+      });
 
-    return (
-      <a {...rest} href={to} class={className} onClick={handleClick}>
-        {slot}
-      </a>
-    );
-  },
-  {
-    displayName: 'RouterLink',
-  },
+      return (
+        <a ref={ref} {...rest} href={to} class={className} onClick={handleClick}>
+          {slot}
+        </a>
+      );
+    },
+    {
+      displayName: 'RouterLink',
+    },
+  ),
 );
 
 function detectIsActiveLink(pathname: string, hash: string, to: string): boolean {

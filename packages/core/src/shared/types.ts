@@ -46,3 +46,7 @@ export type AppResource<T = unknown> = [T, string];
 export type AppResources = Map<number, AppResource>;
 
 export type TextBased = number | string;
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};

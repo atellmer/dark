@@ -1,4 +1,4 @@
-import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, FlagProps } from '../shared';
+import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, FlagProps, Prettify } from '../shared';
 import { KEY_ATTR } from '../constants';
 import { error } from '../utils';
 import { type Ref } from '../ref';
@@ -48,7 +48,7 @@ function component<P extends object, R = unknown>(type: CreateElement<P, R>, opt
     return new Component(type, token, props, ref, shouldUpdate, displayName);
   };
 
-  return factory as ComponentFactory<Props, R>;
+  return factory as ComponentFactory<Prettify<Props>, R>;
 }
 
 const defaultInject: ComponentInject = {};
