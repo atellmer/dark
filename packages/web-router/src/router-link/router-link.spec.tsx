@@ -5,6 +5,7 @@ import { type SyntheticEvent } from '@dark-engine/platform-browser';
 import { createBrowserEnv, replacer, click, dom, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
+import { ACTIVE_LINK_CLASSNAME } from '../constants';
 import { RouterLink } from './router-link';
 
 let { host, render } = createBrowserEnv();
@@ -22,9 +23,9 @@ describe('@web-router/router-link', () => {
   test('can navigate by routes correctly', () => {
     const content = (active: string, value: string) => dom`
       <header>
-        <a href="/first"${active === '/first' ? ` class="router-link-active"` : ''}>first</a>
-        <a href="/second"${active === '/second' ? ` class="router-link-active"` : ''}>second</a>
-        <a href="/third"${active === '/third' ? ` class="router-link-active"` : ''}>third</a>
+        <a href="/first"${active === '/first' ? ` class="${ACTIVE_LINK_CLASSNAME}"` : ''}>first</a>
+        <a href="/second"${active === '/second' ? ` class="${ACTIVE_LINK_CLASSNAME}"` : ''}>second</a>
+        <a href="/third"${active === '/third' ? ` class="${ACTIVE_LINK_CLASSNAME}"` : ''}>third</a>
       </header>
       <main>${value}</main>
     `;
@@ -141,7 +142,7 @@ describe('@web-router/router-link', () => {
 
     render(<App />);
     jest.runAllTimers();
-    expect(host.innerHTML).toBe(`<a href="/" class="router-link-active">first</a>`);
+    expect(host.innerHTML).toBe(`<a href="/" class="${ACTIVE_LINK_CLASSNAME}">first</a>`);
 
     click(host.querySelector('a'));
     expect(defaultPrevented).toBe(true);

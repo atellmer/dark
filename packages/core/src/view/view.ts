@@ -1,4 +1,4 @@
-import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps, FlagProps } from '../shared';
+import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
 import { detectIsArray, detectIsFunction } from '../utils';
 import { REPLACER, KEY_ATTR } from '../constants';
@@ -177,8 +177,7 @@ export type ViewOptions = {
   [prop: string]: any;
 } & Partial<SlotProps> &
   RefProps &
-  KeyProps &
-  FlagProps;
+  KeyProps;
 
 export enum NodeType {
   TAG = 'TAG',

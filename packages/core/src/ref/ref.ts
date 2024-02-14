@@ -1,12 +1,12 @@
 import { detectIsObject, detectIsNull, detectIsFunction } from '../utils';
 import type { Component, ComponentFactory } from '../component';
-import type { RefProps, KeyProps, FlagProps, Prettify } from '../shared';
+import type { RefProps, KeyProps, Prettify } from '../shared';
 import { useMemo } from '../use-memo';
 
 function forwardRef<P extends object, R>(
-  component: ComponentFactory<P, R>,
-): ComponentFactory<Prettify<P & RefProps<R> & KeyProps & FlagProps>, R> {
-  type Props = P & RefProps<R> & KeyProps & FlagProps;
+  component: ComponentFactory<Prettify<P>, R>,
+): ComponentFactory<Prettify<P & RefProps<R> & KeyProps>, R> {
+  type Props = P & RefProps<R> & KeyProps;
 
   return (props: Props) => {
     const { ref, ...rest } = (props || {}) as Props;

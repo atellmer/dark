@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { type KeyProps, type RefProps, type SlotProps, type FlagProps } from '@dark-engine/core';
+import { type KeyProps, type RefProps, type SlotProps } from '@dark-engine/core';
 import { type EventHandler } from './events';
 import { type CSSProperties } from './dom';
 
@@ -10,8 +10,6 @@ export declare namespace DarkJSX {
   type RefAttributes<T> = RefProps<T>;
 
   type SlotAttributes = SlotProps;
-
-  type FlagAttributes = FlagProps;
 
   type Booleanish = boolean | 'true' | 'false';
 
@@ -347,7 +345,6 @@ export declare namespace DarkJSX {
   }
 
   type HTMLAttributes = {
-    [attr: string]: any;
     accesskey: string;
     autofocus: boolean;
     class: string;
@@ -899,7 +896,6 @@ export declare namespace DarkJSX {
   } & HTMLMediaProps<T>;
 
   type SVGAttributes = {
-    [attr: string]: any;
     class: string;
     className: string;
     color: string;
@@ -1163,25 +1159,17 @@ export declare namespace DarkJSX {
 
   interface HTMLProps<T>
     extends Partial<
-      KeyAttributes &
-        RefAttributes<T> &
-        SlotAttributes &
-        FlagAttributes &
-        HTMLAttributes &
-        AriaAttributes &
-        EventHandlers<T>
+      KeyAttributes & RefAttributes<T> & SlotAttributes & HTMLAttributes & AriaAttributes & EventHandlers<T>
     > {}
 
   interface SVGProps<T>
     extends Partial<
-      KeyAttributes &
-        RefAttributes<T> &
-        SlotAttributes &
-        FlagAttributes &
-        SVGAttributes &
-        AriaAttributes &
-        EventHandlers<T>
+      KeyAttributes & RefAttributes<T> & SlotAttributes & SVGAttributes & AriaAttributes & EventHandlers<T>
     > {}
+
+  type NonStrictAttributes<T extends object> = {
+    [K in keyof T]: { [n: string]: unknown } & T[K];
+  };
 
   type HTMLTags = {
     a: HTMLAnchorProps<HTMLAnchorElement>;
@@ -1361,10 +1349,12 @@ export declare namespace DarkJSX {
   };
 }
 
+type Elements = DarkJSX.NonStrictAttributes<DarkJSX.HTMLTags & DarkJSX.SVGTags>;
+
 declare global {
   namespace JSX {
     // @ts-ignore
-    interface IntrinsicElements extends DarkJSX.HTMLTags, DarkJSX.SVGTags {
+    interface IntrinsicElements extends Elements {
       // @ts-ignore
       [name: string]: any;
     }

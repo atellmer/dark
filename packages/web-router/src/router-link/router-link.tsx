@@ -1,29 +1,29 @@
-import { h, component, forwardRef, useMemo, useEvent, detectIsFunction, type DarkElement } from '@dark-engine/core';
+import { type DarkElement, h, component, forwardRef, useMemo, useEvent, detectIsFunction } from '@dark-engine/core';
 import { type SyntheticEvent, type DarkJSX } from '@dark-engine/platform-browser';
 
-import { useHistory } from '../use-history';
-import { useLocation } from '../use-location';
+import { SLASH_MARK, ACTIVE_LINK_CLASSNAME } from '../constants';
 import { normalaizePathname, cm, parseURL } from '../utils';
-import { SLASH_MARK } from '../constants';
+import { useLocation } from '../use-location';
+import { useHistory } from '../use-history';
 
 export type RoutreLinkProps = {
   to: string;
-  activeClassName?: string;
   slot: DarkElement;
-} & DarkJSX.HTMLTags['a'];
+  activeClassName?: string;
+} & Omit<DarkJSX.HTMLTags['a'], 'href'>;
 
 const RouterLink = forwardRef<RoutreLinkProps, HTMLAnchorElement>(
   component(
     (props, ref) => {
-      const { to, activeClassName = 'router-link-active', class: cl1, className: cl2, slot, onClick, ...rest } = props;
+      const { to, activeClassName = ACTIVE_LINK_CLASSNAME, class: cl1, className: cl2, slot, onClick, ...rest } = props;
       const history = useHistory();
       const { pathname, hash } = useLocation();
       const isActive = useMemo(() => detectIsActiveLink(pathname, hash, to), [pathname, hash, to]);
+      const $className = cl1 || cl2;
       const className = useMemo(
-        () => cm(cl1, cl2, isActive ? activeClassName : ''),
-        [cl1, cl2, activeClassName, isActive],
+        () => cm($className, isActive ? activeClassName : ''),
+        [$className, activeClassName, isActive],
       );
-
       const handleClick = useEvent((e: SyntheticEvent<MouseEvent, HTMLAnchorElement>) => {
         e.preventDefault();
         history.push(to);

@@ -1,7 +1,7 @@
-import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, FlagProps, Prettify } from '../shared';
+import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, Prettify } from '../shared';
 import { KEY_ATTR } from '../constants';
-import { error } from '../utils';
 import { type Ref } from '../ref';
+import { error } from '../utils';
 
 const $$inject = Symbol('inject');
 class Component<P extends StandardComponentProps = any, R = any> {
@@ -78,7 +78,7 @@ export type ComponentInject<P extends object = {}> = Readonly<{
 
 export type ShouldUpdate<P> = (prevProps: P, nextProps: P) => boolean;
 
-export type StandardComponentProps = KeyProps & RefProps & FlagProps;
+export type StandardComponentProps = KeyProps & RefProps;
 
 export type ComponentFactory<P extends object = {}, R = unknown> = (props?: P, ref?: Ref<R>) => Component<P, R>;
 
