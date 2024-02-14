@@ -7,40 +7,30 @@ import { type Api } from '../../contract';
 import { detectIsBrowser, setItem } from '../utils';
 import { Key } from '../api';
 
-const Products = lazy(() => import('./products'));
-const ProductList = lazy(() => import('./product-list'));
-const ProductAdd = lazy(() => import('./product-add'));
-const ProductEdit = lazy(() => import('./product-edit'));
-const ProductRemove = lazy(() => import('./product-remove'));
-const ProductCard = lazy(() => import('./product-card'));
-const ProductAnalytics = lazy(() => import('./product-analytics'));
-const ProductBalance = lazy(() => import('./product-balance'));
-const Operations = lazy(() => import('./operations'));
-const Invoices = lazy(() => import('./invoices'));
 const routes: Routes = [
   {
     path: 'products',
-    component: Products,
+    component: lazy(() => import('./products')),
     children: [
       {
         path: 'list',
-        component: ProductList,
+        component: lazy(() => import('./product-list')),
         children: [
           {
             path: 'add',
-            component: ProductAdd,
+            component: lazy(() => import('./product-add')),
           },
           {
             path: ':id',
-            component: ProductCard,
+            component: lazy(() => import('./product-card')),
             children: [
               {
                 path: 'edit',
-                component: ProductEdit,
+                component: lazy(() => import('./product-edit')),
               },
               {
                 path: 'remove',
-                component: ProductRemove,
+                component: lazy(() => import('./product-remove')),
               },
             ],
           },
@@ -48,11 +38,11 @@ const routes: Routes = [
       },
       {
         path: 'analytics',
-        component: ProductAnalytics,
+        component: lazy(() => import('./product-analytics')),
       },
       {
         path: 'balance',
-        component: ProductBalance,
+        component: lazy(() => import('./product-balance')),
       },
       {
         path: '',
@@ -66,11 +56,11 @@ const routes: Routes = [
   },
   {
     path: 'operations',
-    component: Operations,
+    component: lazy(() => import('./operations')),
   },
   {
     path: 'invoices',
-    component: Invoices,
+    component: lazy(() => import('./invoices')),
   },
   {
     path: '',
