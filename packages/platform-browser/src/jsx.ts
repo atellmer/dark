@@ -11,7 +11,7 @@ export declare namespace DarkJSX {
 
   type AttributesOf<T extends object> = { [n: string]: unknown } & T;
 
-  type AttributesOfTags<T extends object> = {
+  type NonStrict<T extends object> = {
     [K in keyof T]: T[K] extends object ? AttributesOf<T[K]> : T[K];
   };
 
@@ -1355,7 +1355,7 @@ export declare namespace DarkJSX {
   };
 
   type Elements = DarkJSX.HTMLTags & DarkJSX.SVGTags;
-  type NonStrictElements = DarkJSX.AttributesOfTags<Elements>;
+  type NonStrictElements = DarkJSX.NonStrict<Elements>;
 }
 
 declare global {

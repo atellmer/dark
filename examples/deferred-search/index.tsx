@@ -1,10 +1,10 @@
 import { h, Fragment, component, useState, useMemo, useDeferredValue } from '@dark-engine/core';
-import { type SyntheticEvent, createRoot } from '@dark-engine/platform-browser';
+import { type DarkJSX, type SyntheticEvent, createRoot } from '@dark-engine/platform-browser';
 import { styled } from '@dark-engine/styled';
 
 import { highlight } from './utils';
 
-const Highlight = styled.span<{ $color: string }>`
+const Highlight = styled.span<{ $color: string } & DarkJSX.Elements['span']>`
   color: ${p => p.$color || 'inherit'};
 `;
 

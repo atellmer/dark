@@ -122,7 +122,7 @@ return (
 To transmit dynamic data, it is recommended to use props names that begin with `$`, if these properties should not end up in the attributes of the DOM node.
 
 ```tsx
-const Box = styled.div<{ $color: string }>`
+const Box = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
   width: 100px;
   height: 100px;
   background-color: ${p => p.$color};
@@ -136,7 +136,7 @@ const Box = styled.div<{ $color: string }>`
 If you need to dynamically generate something more than just a style property value, then you need to always use a special `css` function that converts the style string to the AST.
 
 ```tsx
-const Box = styled.div<{ $color: string }>`
+const Box = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
   width: 100px;
   height: 100px;
 
@@ -449,7 +449,7 @@ const color = (from: string, to: string) => keyframes`
   }
 `;
 
-const Colored = styled.div<{ $from: string; $to: string }>`
+const Colored = styled.div<{ $from: string; $to: string } & DarkJSX.Elements['div']>`
   display: inline-block;
   animation: ${p => color(p.$from, p.$to)} 3s linear infinite;
   padding: 2rem 1rem;

@@ -1,5 +1,5 @@
 import { h, Fragment, component, useState } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
 import { styled } from '@dark-engine/styled';
 import { SpringValue, Animated, useTransition } from '@dark-engine/animations';
 
@@ -93,7 +93,7 @@ const Container = styled.div`
   overflow: hidden;
 `;
 
-const Item = styled.div<{ $color: string }>`
+const Item = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
   position: absolute;
   width: 100%;
   height: 100%;
