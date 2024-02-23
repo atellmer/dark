@@ -36,7 +36,7 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
     <AnimationFade>
       <Header>
         {isList ? (
-          <Button as={RouterLink} to={urlToAdd}>
+          <Button as={RouterLink} {...{ to: urlToAdd }}>
             Add product
           </Button>
         ) : (

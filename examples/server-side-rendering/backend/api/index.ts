@@ -6,7 +6,7 @@ const TIMEOUT = 300;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 let nextId = 0;
-const products: Array<Product> = new Array(50).fill(null).map(() => ({
+const products: Array<Product> = new Array(200).fill(null).map(() => ({
   id: ++nextId,
   name: `Product #${nextId}`,
   description:

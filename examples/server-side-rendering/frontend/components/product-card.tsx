@@ -29,10 +29,10 @@ const ProductCard = component<{ slot: DarkElement }>(({ slot }) => {
     <Card>
       <h3>{data.name}</h3>
       <p>{data.description}</p>
-      <Button as={RouterLink} to={urlToEdit}>
+      <Button as={RouterLink} {...{ to: urlToEdit }}>
         Edit
       </Button>
-      <Button as={RouterLink} to={urlToRemove}>
+      <Button as={RouterLink} {...{ to: urlToRemove }}>
         Remove
       </Button>
     </Card>

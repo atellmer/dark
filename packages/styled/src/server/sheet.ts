@@ -1,4 +1,4 @@
-import { type Readable, Writable, Transform } from 'node:stream';
+import { type Readable, Transform } from 'node:stream';
 import { type Component } from '@dark-engine/core';
 
 import {
@@ -41,7 +41,6 @@ class ServerStyleSheet {
   interleaveWithStream(readable: Readable): Transform {
     const { manager } = this;
     const $seal = this.seal.bind(this);
-    const writable = new Writable({ write() {} });
     const transform = new Transform({
       encoding: 'utf-8',
       transform(chunk: Buffer, _, callback) {
@@ -77,7 +76,7 @@ class ServerStyleSheet {
       },
     });
 
-    readable.pipe(transform).pipe(writable);
+    readable.pipe(transform);
 
     return transform;
   }

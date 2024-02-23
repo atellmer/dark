@@ -224,6 +224,7 @@ const Sticky = styled.div`
   padding: 16px;
   box-shadow: var(--elevation-1);
   margin: 0 -16px;
+  z-index: 2;
 
   & h1 {
     margin: 0;
