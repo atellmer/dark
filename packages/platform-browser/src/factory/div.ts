@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const div = factory<HTMLTags['div']>('div');
+export const div = factory<DarkJSX.AttributesOf<DarkJSX.HTMLTags['div']>>('div');

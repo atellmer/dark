@@ -6,11 +6,13 @@ import { type CSSProperties } from './dom';
 
 export declare namespace DarkJSX {
   type Element<T extends object> = {
-    [key in keyof T]: T[key];
+    [K in keyof T]: T[K];
   };
 
-  type NonStrictAttributes<T extends object> = {
-    [K in keyof T]: { [n: string]: unknown } & T[K];
+  type AttributesOf<T extends object> = { [n: string]: unknown } & T;
+
+  type AttributesOfTags<T extends object> = {
+    [K in keyof T]: T[K] extends object ? AttributesOf<T[K]> : T[K];
   };
 
   type KeyAttributes = KeyProps;
@@ -1353,7 +1355,7 @@ export declare namespace DarkJSX {
   };
 }
 
-type Elements = DarkJSX.NonStrictAttributes<DarkJSX.HTMLTags & DarkJSX.SVGTags>;
+type Elements = DarkJSX.AttributesOfTags<DarkJSX.HTMLTags & DarkJSX.SVGTags>;
 
 declare global {
   namespace JSX {
