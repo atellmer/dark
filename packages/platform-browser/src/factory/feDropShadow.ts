@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feDropShadow = factory<SVGTags['feDropShadow']>('feDropShadow');
+export const feDropShadow = factory<DarkJSX.NonStrictElements['feDropShadow']>('feDropShadow');

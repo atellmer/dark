@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const tspan = factory<SVGTags['tspan']>('tspan');
+export const tspan = factory<DarkJSX.NonStrictElements['tspan']>('tspan');

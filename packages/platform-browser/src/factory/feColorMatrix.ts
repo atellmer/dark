@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feColorMatrix = factory<SVGTags['feColorMatrix']>('feColorMatrix');
+export const feColorMatrix = factory<DarkJSX.NonStrictElements['feColorMatrix']>('feColorMatrix');

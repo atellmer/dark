@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const linearGradient = factory<SVGTags['linearGradient']>('linearGradient');
+export const linearGradient = factory<DarkJSX.NonStrictElements['linearGradient']>('linearGradient');

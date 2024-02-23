@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const audio = factory<HTMLTags['audio']>('audio');
+export const audio = factory<DarkJSX.NonStrictElements['audio']>('audio');

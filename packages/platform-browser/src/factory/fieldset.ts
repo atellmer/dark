@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const fieldset = factory<HTMLTags['fieldset']>('fieldset');
+export const fieldset = factory<DarkJSX.NonStrictElements['fieldset']>('fieldset');

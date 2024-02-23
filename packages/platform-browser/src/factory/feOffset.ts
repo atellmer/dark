@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feOffset = factory<SVGTags['feOffset']>('feOffset');
+export const feOffset = factory<DarkJSX.NonStrictElements['feOffset']>('feOffset');

@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feBlend = factory<SVGTags['feBlend']>('feBlend');
+export const feBlend = factory<DarkJSX.NonStrictElements['feBlend']>('feBlend');

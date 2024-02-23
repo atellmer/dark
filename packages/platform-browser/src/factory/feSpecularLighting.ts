@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feSpecularLighting = factory<SVGTags['feSpecularLighting']>('feSpecularLighting');
+export const feSpecularLighting = factory<DarkJSX.NonStrictElements['feSpecularLighting']>('feSpecularLighting');

@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feMergeNode = factory<SVGTags['feMergeNode']>('feMergeNode');
+export const feMergeNode = factory<DarkJSX.NonStrictElements['feMergeNode']>('feMergeNode');

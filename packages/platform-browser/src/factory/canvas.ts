@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const canvas = factory<HTMLTags['canvas']>('canvas');
+export const canvas = factory<DarkJSX.NonStrictElements['canvas']>('canvas');

@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const fePointLight = factory<SVGTags['fePointLight']>('fePointLight');
+export const fePointLight = factory<DarkJSX.NonStrictElements['fePointLight']>('fePointLight');

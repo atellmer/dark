@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const figcaption = factory<HTMLTags['figcaption']>('figcaption');
+export const figcaption = factory<DarkJSX.NonStrictElements['figcaption']>('figcaption');

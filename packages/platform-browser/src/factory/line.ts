@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const line = factory<SVGTags['line']>('line');
+export const line = factory<DarkJSX.NonStrictElements['line']>('line');

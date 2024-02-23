@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const ellipse = factory<SVGTags['ellipse']>('ellipse');
+export const ellipse = factory<DarkJSX.NonStrictElements['ellipse']>('ellipse');

@@ -102,7 +102,7 @@ const Header = styled.header`
   display: flex;
 `;
 
-const Menu = styled.nav<{ $isSecondary?: boolean } & DarkJSX.HTMLTags['nav']>`
+const Menu = styled.nav<{ $isSecondary?: boolean } & DarkJSX.Elements['nav']>`
   width: 100%;
   display: flex;
   align-items: center;
@@ -144,7 +144,7 @@ const cardFragment = css`
   padding: 16px;
 `;
 
-const Card = styled.article<{ $isFetching?: boolean } & DarkJSX.HTMLTags['article']>`
+const Card = styled.article<{ $isFetching?: boolean } & DarkJSX.Elements['article']>`
   ${() => cardFragment}
   opacity: ${p => (p.$isFetching ? 0.2 : 1)};
   transition: opacity 0.2s ease-in-out;

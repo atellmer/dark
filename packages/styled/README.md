@@ -22,7 +22,7 @@ Styled components for Dark 🌖
 ## Usage
 
 ```tsx
-const Button = styled.button<{ $isPrimary?: boolean } & DarkJSX.HTMLTags['button']>`
+const Button = styled.button<{ $isPrimary?: boolean } & DarkJSX.Elements['button']>`
   display: inline-block;
   font-size: 1rem;
   padding: 0.5rem 0.7rem;

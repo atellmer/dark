@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const clipPath = factory<SVGTags['clipPath']>('clipPath');
+export const clipPath = factory<DarkJSX.NonStrictElements['clipPath']>('clipPath');

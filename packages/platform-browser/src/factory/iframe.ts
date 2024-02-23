@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const iframe = factory<HTMLTags['iframe']>('iframe');
+export const iframe = factory<DarkJSX.NonStrictElements['iframe']>('iframe');

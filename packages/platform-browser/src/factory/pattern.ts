@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const pattern = factory<SVGTags['pattern']>('pattern');
+export const pattern = factory<DarkJSX.NonStrictElements['pattern']>('pattern');

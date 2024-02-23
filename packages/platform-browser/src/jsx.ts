@@ -1353,19 +1353,17 @@ export declare namespace DarkJSX {
     use: Element<SVGProps<SVGUseElement>>;
     view: Element<SVGProps<SVGViewElement>>;
   };
-}
 
-type Elements = DarkJSX.AttributesOfTags<DarkJSX.HTMLTags & DarkJSX.SVGTags>;
+  type Elements = DarkJSX.HTMLTags & DarkJSX.SVGTags;
+  type NonStrictElements = DarkJSX.AttributesOfTags<Elements>;
+}
 
 declare global {
   namespace JSX {
     // @ts-ignore
-    interface IntrinsicElements extends Elements {
+    interface IntrinsicElements extends DarkJSX.NonStrictElements {
       // @ts-ignore
       [name: string]: any;
     }
   }
 }
-
-export type HTMLTags = DarkJSX.HTMLTags;
-export type SVGTags = DarkJSX.SVGTags;

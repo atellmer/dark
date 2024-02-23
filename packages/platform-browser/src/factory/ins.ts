@@ -1,4 +1,4 @@
-import { type HTMLTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const ins = factory<HTMLTags['ins']>('ins');
+export const ins = factory<DarkJSX.NonStrictElements['ins']>('ins');

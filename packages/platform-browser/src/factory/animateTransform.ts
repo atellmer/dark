@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const animateTransform = factory<SVGTags['animateTransform']>('animateTransform');
+export const animateTransform = factory<DarkJSX.NonStrictElements['animateTransform']>('animateTransform');

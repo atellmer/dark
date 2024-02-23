@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feGaussianBlur = factory<SVGTags['feGaussianBlur']>('feGaussianBlur');
+export const feGaussianBlur = factory<DarkJSX.NonStrictElements['feGaussianBlur']>('feGaussianBlur');

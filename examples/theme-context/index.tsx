@@ -149,7 +149,7 @@ const Icon = styled.div`
   animation-fill-mode: forwards;
 `;
 
-const Button = styled.button<{ $isDark: boolean } & DarkJSX.HTMLTags['button']>`
+const Button = styled.button<{ $isDark: boolean } & DarkJSX.Elements['button']>`
   transition: all 0.4s ease-in-out;
   width: 200px;
   padding: 16px;

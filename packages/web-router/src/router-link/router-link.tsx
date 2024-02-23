@@ -10,7 +10,7 @@ export type RoutreLinkProps = {
   to: string;
   slot: DarkElement;
   activeClassName?: string;
-} & Omit<DarkJSX.HTMLTags['a'], 'href'>;
+} & Omit<DarkJSX.Elements['a'], 'href'>;
 
 const RouterLink = forwardRef<RoutreLinkProps, HTMLAnchorElement>(
   component(

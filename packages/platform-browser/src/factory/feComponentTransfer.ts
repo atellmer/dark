@@ -1,4 +1,4 @@
-import { type SVGTags } from '../jsx';
+import { type DarkJSX } from '../jsx';
 import { factory } from './factory';
 
-export const feComponentTransfer = factory<SVGTags['feComponentTransfer']>('feComponentTransfer');
+export const feComponentTransfer = factory<DarkJSX.NonStrictElements['feComponentTransfer']>('feComponentTransfer');
