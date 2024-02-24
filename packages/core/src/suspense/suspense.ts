@@ -2,6 +2,7 @@ import type { DarkElement, SlotProps, TextBased } from '../shared';
 import { createContext, useContext } from '../context';
 import { useLayoutEffect } from '../use-layout-effect';
 import { detectIsServer } from '../platform';
+import { detectIsFiberAlive } from '../walk';
 import { useUpdate } from '../use-update';
 import { component } from '../component';
 import { useState } from '../use-state';
@@ -51,6 +52,7 @@ const Suspense = forwardRef<SuspenseProps, unknown>(
       () => ({ isLoaded, fallback, update: null, register: null, unregister: null }),
       [],
     );
+    const fiber = $scope.getCursorFiber();
     const content = [
       Shadow({ key: CONTENT, isInserted: isLoaded, slot }),
       isLoaded ? null : Fragment({ key: FALLBACK, slot: fallback }),
@@ -72,7 +74,7 @@ const Suspense = forwardRef<SuspenseProps, unknown>(
     scope.isLoaded = isLoaded;
     value.isLoaded = isLoaded;
     value.fallback = fallback;
-    value.update = suspense.update || update;
+    value.update = () => (detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update());
     value.register = (id: TextBased) => scope.store.add(id);
     value.unregister = (id: TextBased) => scope.store.delete(id);
 

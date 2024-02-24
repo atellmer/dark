@@ -1,12 +1,12 @@
 import { type ComponentFactory, component } from '../component';
 import { detectIsUndefined, dummyFn } from '../utils';
 import { detectIsServer } from '../platform';
+import { detectIsFiberAlive } from '../walk';
 import { useSuspense } from '../suspense';
 import { useUpdate } from '../use-update';
 import { forwardRef } from '../ref';
 import { $$scope } from '../scope';
 import { useId } from '../use-id';
-import { detectIsFiberAlive } from '../walk';
 
 const $$lazy = Symbol('lazy');
 const factories = new Map<Function, ComponentFactory>();
@@ -14,13 +14,14 @@ const factories = new Map<Function, ComponentFactory>();
 function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => void = dummyFn) {
   return forwardRef(
     component<P, R>(
-      function type(props, ref) {
+      (props, ref) => {
         const $scope = $$scope();
         const suspense = useSuspense();
         const update = useUpdate();
         const id = useId();
         const factory = factories.get(module);
         const fiber = $scope.getCursorFiber();
+        const $update = () => (detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update());
 
         if (detectIsUndefined(factory)) {
           suspense.register(id);
@@ -36,13 +37,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
           if (isServer || isHydrateZone) {
             $scope.defer(make);
           } else {
-            make().then(() => {
-              if (detectIsFiberAlive(fiber)) {
-                update();
-              } else {
-                suspense.update();
-              }
-            });
+            make().then($update);
           }
         }
 
@@ -68,6 +63,7 @@ function load<P extends object>(module: ModuleFn<P>) {
 }
 
 type ModuleFn<P extends object> = () => Promise<Module<P>>;
+
 export type Module<P extends object = {}> = { default: ComponentFactory<P> };
 
 export { lazy };
