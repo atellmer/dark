@@ -6,12 +6,12 @@
     "dev": "npx webpack-dev-server --env development"
   },
   "dependencies": {
-    "@dark-engine/animations": "1.0.2",
-    "@dark-engine/core": "1.0.2",
-    "@dark-engine/data": "1.0.2",
-    "@dark-engine/platform-browser": "1.0.2",
-    "@dark-engine/styled": "1.0.2",
-    "@dark-engine/web-router": "1.0.2"
+    "@dark-engine/animations": "1.0.3",
+    "@dark-engine/core": "1.0.3",
+    "@dark-engine/data": "1.0.3",
+    "@dark-engine/platform-browser": "1.0.3",
+    "@dark-engine/styled": "1.0.3",
+    "@dark-engine/web-router": "1.0.3"
   },
   "devDependencies": {
     "ts-loader": "9.4.2",

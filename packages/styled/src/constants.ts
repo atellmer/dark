@@ -1,4 +1,4 @@
-export const VERSION = '1.0.2';
+export const VERSION = '1.0.3';
 export const STYLE_TAG = 'style';
 export const STYLED_ATTR = 'dark-styled';
 export const GLOBAL_ATTR_VALUE = 'g';

@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/platform-native",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Dark renderer to native platforms like Android and iOS via NativeScript",
   "author": "AlexPlex",
   "license": "MIT",
