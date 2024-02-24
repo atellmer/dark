@@ -138,7 +138,7 @@ createRoot(document.getElementById('root')).render(App());
 
 ## Benchmark
 
-[js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html)
+[js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_122.0.6261.69.html)
 
 <img src="./assets/bench.png">
 
