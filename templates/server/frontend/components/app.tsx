@@ -6,21 +6,18 @@ import { type Api } from '../../contract';
 import { Key } from '../api';
 import { GlobalStyle, Spinner, Root, Header, Menu, Content } from './ui';
 
-const Products = lazy(() => import('./products'));
-const Operations = lazy(() => import('./operations'));
-const Invoices = lazy(() => import('./invoices'));
 const routes: Routes = [
   {
     path: 'products',
-    component: Products,
+    component: lazy(() => import('./products')),
   },
   {
     path: 'operations',
-    component: Operations,
+    component: lazy(() => import('./operations')),
   },
   {
     path: 'invoices',
-    component: Invoices,
+    component: lazy(() => import('./invoices')),
   },
   {
     path: '',
