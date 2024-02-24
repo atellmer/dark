@@ -8,7 +8,7 @@ npx degit github:atellmer/dark/templates/desktop app
 
 ```
 cd app
-npm ci
+npm i
 ```
 
 #### Step 2

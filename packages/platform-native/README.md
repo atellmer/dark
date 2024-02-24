@@ -18,7 +18,7 @@ npx degit github:atellmer/dark/templates/native app
 ```
 ```
 cd app
-npm ci
+npm i
 npm start
 ```
 
