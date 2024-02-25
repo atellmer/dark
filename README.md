@@ -3,11 +3,10 @@
 
 The lightweight and powerful UI rendering engine without dependencies and written in TypeScript <br> (Browser, Node.js, Android, iOS, Windows, Linux, macOS)
 
-<img alt="License" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
-<img alt="GitHub Release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
-<img alt="NPM Downloads" src="https://img.shields.io/npm/dt/@dark-engine/core.svg?style=flat&colorA=000063&colorB=673ab7">
-<img alt="bundle size core" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/core?label=size%20[core]&style=flat&colorA=000063&colorB=673ab7">
-<img alt="bundle size browser" src="https://img.shields.io/bundlephobia/minzip/@dark-engine/platform-browser?label=size%20[platform-browser]&style=flat&colorA=000063&colorB=673ab7">
+<img alt="license" src="https://img.shields.io/github/license/atellmer/dark?style=flat&colorA=000063&colorB=673ab7">
+<img alt="github release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
+<img alt="npm downloads" src="https://img.shields.io/npm/dt/%40dark-engine%2Fcore.svg?style=flat&colorA=000063&colorB=673ab7">
+<img alt="bundle size" src="https://img.shields.io/bundlejs/size/%40dark-engine%2Fcore?label=size%20(gzip)&style=flat&colorA=000063&colorB=673ab7">
 </div>
 
 <div align="center"> 
