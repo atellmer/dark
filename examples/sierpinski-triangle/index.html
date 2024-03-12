@@ -47,11 +47,15 @@
         <b>concurrent</b> mode. In this triangle, each group of 3 points is artificially slowed down (see code) so as to
         cause freezes if using synchronous rendering. In the case of <b>concurrent</b> rendering, the animation is
         smooth and the counter is updated, hover effect (uses render, not css) remains responsive, even if you also
-        artificially slow down the execution through the performance tab (probably it will take more time).</p>
+        artificially slow down the execution through <b>the performance tab (6x slowdown)</b>.
+      </p>
       <p>On slower devices the counter will not update, but the animation and hover will be smooth because it takes
         precedence in this example.</p>
       <p>This behavior is achieved without using requestIdleCallback or any other web api, so <b>concurrent</b> mode can
         be used on any dynamic platforms.</p>
+      <p>Compare it with <a href="https://claudiopro.github.io/react-fiber-vs-stack-demo/fiber.html" target="_blank"
+          rel="noopener">React Fiber
+          version</a></p>
     </div>
   </div>
   <div id="root"></div>

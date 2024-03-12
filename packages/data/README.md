@@ -93,7 +93,7 @@ const api: Api = {
 ```
 
 ```tsx
-// in app
+// in the app
 const App = component<{ api: Api }>(({ api }) => {
   const client = useMemo(() => new DataClient({ api, cache: new InMemoryCache() }), []);
 

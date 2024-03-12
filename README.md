@@ -57,12 +57,15 @@ npm i
 npm start
 ```
 
+## Dark vs React Fiber
+
+- [Concurrent Sierpinski triangle](https://atellmer.github.io/dark/next/sierpinski-triangle/)
+
 ## Demos
 
 - [1k components](https://atellmer.github.io/dark/next/1k-components/)
 - [10k rows](https://atellmer.github.io/dark/next/10k-rows/)
 - [Animated grid](https://atellmer.github.io/dark/next/animated-grid/)
-- [Concurrent Sierpinski triangle](https://atellmer.github.io/dark/next/sierpinski-triangle/)
 - [Concurrent deferred search](https://atellmer.github.io/dark/next/deferred-search/)
 - [Spring draggable list](https://atellmer.github.io/dark/next/spring-draggable-list/)
 - [Spring snake](https://atellmer.github.io/dark/next/spring-snake/)
