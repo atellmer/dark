@@ -47,8 +47,8 @@ function inject() {
 function render(element: DarkElement, container: TagNativeElement, hydrate?: Callback) {
   !isInjected && inject();
   if (process.env.NODE_ENV !== 'production') {
-    if (!(container instanceof Element)) {
-      throw new Error(`[Dark]: render receives only Element as container!`);
+    if (!(container instanceof Element) && !((container as unknown) instanceof Document)) {
+      throw new Error(`[Dark]: render receives a valid element as container!`);
     }
   }
 

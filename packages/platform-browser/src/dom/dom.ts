@@ -259,7 +259,11 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const isHydrateZone = $$scope().getIsHydrateZone();
 
   if (isHydrateZone) {
-    const nativeElement = childNodes[fiber.eidx] as NativeElement;
+    let nativeElement = childNodes[fiber.eidx] as NativeElement;
+
+    if (nativeElement instanceof DocumentType) {
+      nativeElement = nativeElement.nextSibling as NativeElement;
+    }
 
     if (
       detectIsTextVirtualNode(fiber.inst) &&
