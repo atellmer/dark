@@ -19,7 +19,7 @@ import {
   detectIsPlainVirtualNode,
   $$scope,
 } from '@dark-engine/core';
-import { VALUE_ATTR, TEXTAREA_TAG, detectIsVoidElement } from '@dark-engine/platform-browser';
+import { VALUE_ATTR, TEXTAREA_TAG, DANGER_HTML_CONTENT, detectIsVoidElement } from '@dark-engine/platform-browser';
 
 import {
   NativeElement,
@@ -140,7 +140,10 @@ function chunk(fiber: Fiber<NativeElement>) {
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
       const { inst } = fiber;
-      const content = inst.name === TEXTAREA_TAG ? inst.attrs[VALUE_ATTR] || '' : '';
+      const content =
+        inst.name === TEXTAREA_TAG
+          ? (inst.attrs[VALUE_ATTR] as string) || ''
+          : (inst.attrs[DANGER_HTML_CONTENT] as string) || '';
       const close = inst.children.length === 0 && !content;
 
       addAttributes(tagElement, inst);

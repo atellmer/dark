@@ -29,7 +29,6 @@ import {
   dummyFn,
   $$scope,
   applyRef,
-  error,
 } from '@dark-engine/core';
 
 import { detectIsSvgElement, detectIsVoidElement } from '../utils';
@@ -86,7 +85,7 @@ function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
   const keys = Object.keys(style);
 
   for (const key of keys) {
-    element.style.setProperty(key, String(style[key]));
+    (element as HTMLElement).style.setProperty(key, String(style[key]));
   }
 }
 
@@ -161,7 +160,7 @@ function performAttribute(
 ) {
   if (attrName[0] === EXCLUDE_ATTR_MARK) return null;
 
-  if (attrName === DANGER_HTML_CONTENT && nextAttrValue !== prevAttrValue) {
+  if (attrName === DANGER_HTML_CONTENT && tagElement.innerHTML !== nextAttrValue) {
     tagElement.innerHTML = String(nextAttrValue);
     return null;
   }
@@ -288,10 +287,8 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     fiber.element = nativeElement;
   } else {
     if (!(fiber.mask & SHADOW_MASK)) {
-      if (process.env.NODE_ENV !== 'production') {
-        if (detectIsTagVirtualNode(fiber.parent.inst) && fiber.parent.inst.attrs[DANGER_HTML_CONTENT]) {
-          error(`[Dark]: element with danger content can't have a children!`);
-        }
+      if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
+        throw new Error(`[platform-browser]: element with danger content can't have a children!`);
       }
 
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {

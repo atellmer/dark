@@ -1,6 +1,6 @@
 export type NativeElement = TagNativeElement | TextNativeElement | CommentNativeElement;
 
-export type TagNativeElement = HTMLElement | SVGElement;
+export type TagNativeElement = Element;
 
 export type TextNativeElement = Text;
 
