@@ -94,7 +94,7 @@ describe('@platform-server/render', () => {
     expect(app).toBe(replacer);
   });
 
-  test('can render to stream correctly', done => {
+  test('can render to stream correctly via bootstrapScripts', done => {
     const content = (x: number) =>
       dom`
         <!DOCTYPE html>
@@ -136,6 +136,59 @@ describe('@platform-server/render', () => {
 
     let data = '';
     const stream = renderToStream(App(), { bootstrapScripts: ['./build.js'] });
+
+    stream.on('data', chunk => {
+      data += chunk;
+    });
+
+    stream.on('end', () => {
+      expect(data).toBe(content(0));
+      done();
+    });
+  });
+
+  test('can render to stream correctly via bootstrapModules', done => {
+    const content = (x: number) =>
+      dom`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Hello</title>
+        </head>
+        <body>
+          <div class="app">
+            <div>Hello World</div>
+            <div>count: ${x}</div>
+            <button class="button">increment</button>
+          </div>
+          <script type="module" src="./index.js" defer></script>
+        </body>
+        </html>
+      `;
+
+    const App = component(() => {
+      const [count, setCount] = useState(0);
+
+      return (
+        <html>
+          <head>
+            <title>Hello</title>
+          </head>
+          <body>
+            <div class='app'>
+              <div>Hello World</div>
+              <div>count: {count}</div>
+              <button class='button' onClick={() => setCount(count + 1)}>
+                increment
+              </button>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    let data = '';
+    const stream = renderToStream(App(), { bootstrapModules: ['./index.js'] });
 
     stream.on('data', chunk => {
       data += chunk;

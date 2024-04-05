@@ -97,11 +97,12 @@ function renderToString(element: DarkElement): Promise<string> {
 
 type RenderToStreamOptions = {
   bootstrapScripts?: Array<string>;
+  bootstrapModules?: Array<string>;
   chunkSize?: number;
 };
 
 function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
-  const { bootstrapScripts = [], chunkSize = 500 } = options || {};
+  const { bootstrapScripts = [], bootstrapModules = [], chunkSize = 500 } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
   let content = '';
 
@@ -123,7 +124,8 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
 
     emitter.on<string>('chunk', chunk => {
       if (chunk === PREPEND_SCRIPTS_CHUNK) {
-        content += addScripts(bootstrapScripts);
+        content += addScripts(bootstrapScripts, false);
+        content += addScripts(bootstrapModules, true);
       }
 
       content += chunk;
@@ -141,11 +143,11 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
   return stream;
 }
 
-function addScripts(scripts: Array<string>) {
+function addScripts(scripts: Array<string>, isModule: boolean) {
   if (scripts.length === 0) return '';
   let content = '';
 
-  scripts.forEach(script => (content += `<script src="${script}" defer></script>`));
+  scripts.forEach(x => (content += isModule ? createModule(x) : createScript(x)));
 
   return content;
 }
@@ -163,8 +165,12 @@ function withState(content = '') {
   return $content;
 }
 
-const PREPEND_SCRIPTS_CHUNK = '</body>';
+const createModule = (src: string) => `<script type="module" src="${src}" defer></script>`;
+
+const createScript = (src: string) => `<script src="${src}" defer></script>`;
 
 const getNextRootId = () => ++nextRootId;
+
+const PREPEND_SCRIPTS_CHUNK = '</body>';
 
 export { renderToString, renderToStream, inject };
