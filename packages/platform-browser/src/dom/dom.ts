@@ -198,6 +198,10 @@ function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
   return attrNames;
 }
 
+const ATTR_TRANSFORM_MAP = {
+  readonly: 'readOnly',
+};
+
 type PatchPropertiesOptions = {
   tagName: string;
   element: TagNativeElement;
@@ -208,14 +212,15 @@ type PatchPropertiesOptions = {
 function patchProperties(options: PatchPropertiesOptions): boolean {
   const { tagName, element, attrName, attrValue } = options;
   const fn = specialCasesMap[tagName];
+  const $attrName = ATTR_TRANSFORM_MAP[attrName] || attrName;
   let stop = fn ? fn(element, attrName, attrValue) : false;
 
-  if (canSetProperty(element, attrName)) {
-    element[attrName] = attrValue;
+  if (canSetProperty(element, $attrName)) {
+    element[$attrName] = attrValue;
   }
 
   if (!stop && detectIsBoolean(attrValue)) {
-    stop = !attrName.includes('-');
+    stop = !$attrName.includes('-');
   }
 
   return stop;
