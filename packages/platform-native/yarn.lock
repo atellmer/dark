@@ -11,6 +11,7 @@ __metadata:
   dependencies:
     "@nativescript/core": 8.6.2
   peerDependencies:
+    "@dark-engine/animations": "*"
     "@dark-engine/core": "*"
     "@nativescript/core": "*"
   languageName: unknown

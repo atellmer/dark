@@ -1026,9 +1026,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dark-theme-context@workspace:.":
+"dark-context@workspace:.":
   version: 0.0.0-use.local
-  resolution: "dark-theme-context@workspace:."
+  resolution: "dark-context@workspace:."
   dependencies:
     ts-loader: 9.4.2
     typescript: 5.3.3

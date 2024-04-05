@@ -4,11 +4,13 @@ import { render } from '../render';
 import { unmount } from '../create-root';
 import type { TagNativeElement } from '../native-element';
 
-function hydrateRoot(container: TagNativeElement, element: DarkElement) {
-  render(element, container, hydrate);
+function hydrateRoot(container: TagNativeElement | Document, element: DarkElement) {
+  const tag = container as TagNativeElement;
+
+  render(element, tag, hydrate);
 
   return {
-    unmount: () => unmount(container),
+    unmount: () => unmount(tag),
   };
 }
 
