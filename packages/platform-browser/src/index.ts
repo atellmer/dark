@@ -5,6 +5,7 @@ export { hydrateRoot } from './hydrate-root';
 export { createRoot } from './create-root';
 export { render, inject } from './render';
 export { createPortal } from './portal';
-export { VERSION } from './constants';
 export type { DarkJSX } from './jsx';
+export * from './constants';
 export * from './factory';
+export * from './utils';

@@ -43,6 +43,7 @@ import {
   VALUE_ATTR,
   AS_ATTR,
   EXCLUDE_ATTR_MARK,
+  DANGER_HTML_CONTENT,
 } from '../constants';
 import type {
   NativeElement,
@@ -158,6 +159,11 @@ function performAttribute(
   prevAttrValue?: AttributeValue,
 ) {
   if (attrName[0] === EXCLUDE_ATTR_MARK) return null;
+
+  if (attrName === DANGER_HTML_CONTENT && nextAttrValue !== prevAttrValue) {
+    tagElement.innerHTML = String(nextAttrValue);
+    return null;
+  }
 
   if (attrName === REF_ATTR) {
     applyRef(nextAttrValue as unknown as Ref<TagNativeElement>, tagElement);

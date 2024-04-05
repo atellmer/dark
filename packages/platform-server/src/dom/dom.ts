@@ -19,9 +19,8 @@ import {
   detectIsPlainVirtualNode,
   $$scope,
 } from '@dark-engine/core';
+import { VALUE_ATTR, TEXTAREA_TAG, detectIsVoidElement } from '@dark-engine/platform-browser';
 
-import { TEXTAREA_TAG, VALUE_ATTR } from '../constants';
-import { detectIsVoidElement } from '../utils';
 import {
   NativeElement,
   TagNativeElement,

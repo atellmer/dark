@@ -1,7 +1,11 @@
 import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
-
-import { CLASS_ATTR, CLASS_NAME_ATTR, EXCLUDE_ATTR_MARK, AS_ATTR } from '../constants';
-import { detectIsVoidElement } from '../utils';
+import {
+  AS_ATTR,
+  CLASS_ATTR,
+  CLASS_NAME_ATTR,
+  EXCLUDE_ATTR_MARK,
+  detectIsVoidElement,
+} from '@dark-engine/platform-browser';
 
 abstract class NativeElement {
   type: NodeType;
