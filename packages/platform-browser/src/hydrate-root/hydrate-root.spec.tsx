@@ -1,15 +1,16 @@
 /** @jsx h */
 import { h, Fragment, component, useInsertionEffect, useLayoutEffect, useEffect, useState } from '@dark-engine/core';
 
-import { click, dom } from '@test-utils';
+import { click, dom, createBrowserEnv } from '@test-utils';
 import { hydrateRoot } from './hydrate-root';
 
-let host: HTMLElement = null;
-
-jest.useFakeTimers();
+let { host } = createBrowserEnv();
 
 beforeEach(() => {
-  host = document.createElement('div');
+  ({ host } = createBrowserEnv());
+  document.head.innerHTML = '';
+  document.body.innerHTML = '';
+  jest.useFakeTimers();
 });
 
 describe('@platform-browser/hydrate-root', () => {
@@ -150,6 +151,50 @@ describe('@platform-browser/hydrate-root', () => {
     click(button);
     expect(host1.innerHTML).toBe(innerHTML3);
     expect(button).toBe(host1.querySelector('button'));
+    root.unmount();
+  });
+
+  test('can hydrate an entire document', () => {
+    // https://github.com/atellmer/dark/issues/44
+    let root: { unmount: () => void } = null;
+    const headContent = (x: number) =>
+      `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Test: ${x}</title>`;
+    const bodyContent = (x: number) => `<div>${x}</div><button>click</button>`;
+
+    document.head.innerHTML = headContent(0);
+    document.body.innerHTML = bodyContent(0);
+
+    const button = document.querySelector('button');
+    const App = component(() => {
+      const [count, setCount] = useState(0);
+
+      return (
+        <html>
+          <head>
+            <meta charset='UTF-8' />
+            <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+            <title>Test: {count}</title>
+          </head>
+          <body>
+            <div>{count}</div>
+            <button onClick={() => setCount(x => x + 1)}>click</button>
+          </body>
+        </html>
+      );
+    });
+
+    expect(() => (root = hydrateRoot(document, <App />))).not.toThrowError();
+    expect(document.head.innerHTML).toBe(headContent(0));
+    expect(document.body.innerHTML).toBe(bodyContent(0));
+
+    click(button);
+    expect(document.head.innerHTML).toBe(headContent(1));
+    expect(document.body.innerHTML).toBe(bodyContent(1));
+
+    click(button);
+    expect(document.head.innerHTML).toBe(headContent(2));
+    expect(document.body.innerHTML).toBe(bodyContent(2));
+
     root.unmount();
   });
 });
