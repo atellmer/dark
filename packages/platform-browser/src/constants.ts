@@ -7,4 +7,4 @@ export const STYLE_ATTR = 'style';
 export const VALUE_ATTR = 'value';
 export const AS_ATTR = '_as';
 export const EXCLUDE_ATTR_MARK = '$';
-export const DANGER_HTML_CONTENT = '__html';
+export const DANGER_HTML_CONTENT = '__danger';

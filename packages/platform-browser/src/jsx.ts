@@ -355,7 +355,7 @@ export declare namespace DarkJSX {
   }
 
   type HTMLAttributes = {
-    __html: string;
+    __danger: string;
     accesskey: string;
     autofocus: boolean;
     class: string;

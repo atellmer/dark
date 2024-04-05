@@ -29,6 +29,7 @@ import {
   dummyFn,
   $$scope,
   applyRef,
+  error,
 } from '@dark-engine/core';
 
 import { detectIsSvgElement, detectIsVoidElement } from '../utils';
@@ -287,6 +288,12 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     fiber.element = nativeElement;
   } else {
     if (!(fiber.mask & SHADOW_MASK)) {
+      if (process.env.NODE_ENV !== 'production') {
+        if (detectIsTagVirtualNode(fiber.parent.inst) && fiber.parent.inst.attrs[DANGER_HTML_CONTENT]) {
+          error(`[Dark]: element with danger content can't have a children!`);
+        }
+      }
+
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
         !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
           appendNativeElement(fiber.element, parentElement);
