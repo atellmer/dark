@@ -54,13 +54,11 @@ import { Fragment, detectIsFragment } from '../fragment';
 import { unmountFiber } from '../unmount';
 
 let hasPendingPromise = false;
-let hasRenderError = false;
 
 export type WorkLoop = (isAsync: boolean) => boolean;
 
 function workLoop(isAsync: boolean): boolean | null {
   if (hasPendingPromise) return null;
-  if (hasRenderError) return false;
   const $scope = $$scope();
   const wipFiber = $scope.getWorkInProgress();
   let unit = $scope.getNextUnitOfWork();
@@ -87,8 +85,16 @@ function workLoop(isAsync: boolean): boolean | null {
         !isAsync && workLoop(false);
       });
     } else {
-      hasRenderError = true;
-      throw err;
+      const emitter = $scope.getEmitter();
+
+      $scope.keepRoot(); // !
+      emitter.emit('error', String(err));
+
+      if (!isAsync) {
+        throw err;
+      }
+
+      return false;
     }
   }
 

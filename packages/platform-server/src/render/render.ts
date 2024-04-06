@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 import {
   type DarkElement,
   type Callback,
+  type CallbackWithValue,
   type AppResource,
   ROOT,
   Fiber,
@@ -48,12 +49,13 @@ type ScheduleRenderOptions = {
   element: DarkElement;
   isStream?: boolean;
   onCompleted: Callback;
+  onError: CallbackWithValue<string>;
   onStart?: Callback;
 };
 
 function scheduleRender(options: ScheduleRenderOptions) {
   !isInjected && inject();
-  const { element, isStream = false, onCompleted, onStart = dummyFn } = options;
+  const { element, isStream = false, onCompleted, onError, onStart = dummyFn } = options;
   const rootId = getNextRootId();
   const callback = () => {
     setRootId(rootId);
@@ -75,23 +77,34 @@ function scheduleRender(options: ScheduleRenderOptions) {
       emitter.kill();
       onCompleted();
     });
+    emitter.on<string>('error', err => {
+      emitter.kill();
+      onError(err);
+    });
   };
 
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL, forceAsync: true });
 }
 
 function renderToString(element: DarkElement): Promise<string> {
-  return new Promise<string>(resolve => {
+  return new Promise<string>((resolve, reject) => {
     const onCompleted = () => {
       const rootId = getRootId();
       const { element: nativeElement } = $$scope().getRoot() as Fiber<TagNativeElement>;
       const content = nativeElement.renderToString(true);
 
       resolve(withState(content));
-      unmountRoot(rootId, () => {});
+      unmountRoot(rootId, dummyFn);
     };
 
-    scheduleRender({ element, onCompleted });
+    const onError = (err: string) => {
+      const rootId = getRootId();
+
+      reject(new Error(err));
+      unmountRoot(rootId, dummyFn);
+    };
+
+    scheduleRender({ element, onCompleted, onError });
   });
 }
 
@@ -116,7 +129,15 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
 
     stream.push(withState());
     stream.push(null);
-    unmountRoot(rootId, () => {});
+    unmountRoot(rootId, dummyFn);
+  };
+
+  const onError = (err: string) => {
+    const rootId = getRootId();
+
+    stream.emit('error', new Error(err));
+    stream.push(null);
+    unmountRoot(rootId, dummyFn);
   };
 
   const onStart = () => {
@@ -137,7 +158,7 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     });
   };
 
-  nextTick(() => scheduleRender({ element, isStream: true, onCompleted, onStart }));
+  scheduleRender({ element, isStream: true, onCompleted, onError, onStart });
   stream.push(DOCTYPE);
 
   return stream;

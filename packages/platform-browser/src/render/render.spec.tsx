@@ -1381,7 +1381,7 @@ describe('@platform-browser/render', () => {
     expect(host.innerHTML).toBe(content(3));
   });
 
-  test('works with dangerous html content correctly', () => {
+  test('can render dangerous html content', () => {
     const App = component<{ x: number }>(({ x }) => {
       return (
         <div>

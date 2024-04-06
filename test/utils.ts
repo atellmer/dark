@@ -1,3 +1,4 @@
+import { type Readable } from 'node:stream';
 import * as core from '@dark-engine/core';
 import { type DarkElement, platform, REPLACER } from '@dark-engine/core';
 import { createRoot, hydrateRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
@@ -139,6 +140,16 @@ async function waitUntilEffectsStart() {
   }
 }
 
+function convertStreamToPromise(stream: Readable) {
+  return new Promise<string>((resolve, reject) => {
+    let data = '';
+
+    stream.on('data', chunk => (data += chunk));
+    stream.on('end', () => resolve(data));
+    stream.on('error', reject);
+  });
+}
+
 export {
   dom,
   nextTick,
@@ -159,4 +170,5 @@ export {
   wrapWithStyledTag,
   resetBrowserHistory,
   waitUntilEffectsStart,
+  convertStreamToPromise,
 };
