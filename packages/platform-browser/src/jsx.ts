@@ -21,6 +21,10 @@ export declare namespace DarkJSX {
 
   type SlotAttributes = SlotProps;
 
+  type DangerAttributes = {
+    __danger: string;
+  };
+
   type Booleanish = boolean | 'true' | 'false';
 
   type CrossOrigin = 'anonymous' | 'use-credentials' | '';
@@ -355,7 +359,6 @@ export declare namespace DarkJSX {
   }
 
   type HTMLAttributes = {
-    __danger: string;
     accesskey: string;
     autofocus: boolean;
     class: string;
@@ -1170,12 +1173,24 @@ export declare namespace DarkJSX {
 
   interface HTMLProps<T>
     extends Partial<
-      KeyAttributes & RefAttributes<T> & SlotAttributes & HTMLAttributes & AriaAttributes & EventHandlers<T>
+      KeyAttributes &
+        RefAttributes<T> &
+        SlotAttributes &
+        HTMLAttributes &
+        AriaAttributes &
+        DangerAttributes &
+        EventHandlers<T>
     > {}
 
   interface SVGProps<T>
     extends Partial<
-      KeyAttributes & RefAttributes<T> & SlotAttributes & SVGAttributes & AriaAttributes & EventHandlers<T>
+      KeyAttributes &
+        RefAttributes<T> &
+        SlotAttributes &
+        SVGAttributes &
+        AriaAttributes &
+        DangerAttributes &
+        EventHandlers<T>
     > {}
 
   type HTMLTags = {
