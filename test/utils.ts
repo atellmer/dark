@@ -1,4 +1,3 @@
-import { type Readable } from 'node:stream';
 import * as core from '@dark-engine/core';
 import { type DarkElement, platform, REPLACER } from '@dark-engine/core';
 import { createRoot, hydrateRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
