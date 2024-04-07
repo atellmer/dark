@@ -10,9 +10,9 @@ import {
   useLayoutEffect,
   useEffect,
 } from '@dark-engine/core';
-
 import { dom, sleep, replacer } from '@test-utils';
-import { renderToString, renderToStream } from './render';
+
+import { renderToString, renderToStream, convertStreamToPromise } from './render';
 
 describe('@platform-server/render', () => {
   test('can render text correctly', async () => {
@@ -48,7 +48,6 @@ describe('@platform-server/render', () => {
           <button class="button">increment</button>
         </div>
       `;
-
     const App = component(() => {
       const [count, setCount] = useState(0);
 
@@ -65,12 +64,11 @@ describe('@platform-server/render', () => {
       );
     });
 
-    expect(await renderToString(App())).toBe(content(0));
+    expect(await renderToString(<App />)).toBe(content(0));
   });
 
   test('can not fire effects', async () => {
     const effectFn = jest.fn();
-
     const App = component(() => {
       useInsertionEffect(() => {
         effectFn();
@@ -86,8 +84,7 @@ describe('@platform-server/render', () => {
 
       return null;
     });
-
-    const app = await renderToString(App());
+    const app = await renderToString(<App />);
 
     await sleep(10);
     expect(effectFn).toBeCalledTimes(0);
@@ -112,7 +109,6 @@ describe('@platform-server/render', () => {
         </body>
         </html>
       `;
-
     const App = component(() => {
       const [count, setCount] = useState(0);
 
@@ -133,9 +129,8 @@ describe('@platform-server/render', () => {
         </html>
       );
     });
-
     let data = '';
-    const stream = renderToStream(App(), { bootstrapScripts: ['./build.js'] });
+    const stream = renderToStream(<App />, { bootstrapScripts: ['./build.js'] });
 
     stream.on('data', chunk => {
       data += chunk;
@@ -165,7 +160,6 @@ describe('@platform-server/render', () => {
         </body>
         </html>
       `;
-
     const App = component(() => {
       const [count, setCount] = useState(0);
 
@@ -186,9 +180,8 @@ describe('@platform-server/render', () => {
         </html>
       );
     });
-
     let data = '';
-    const stream = renderToStream(App(), { bootstrapModules: ['./index.js'] });
+    const stream = renderToStream(<App />, { bootstrapModules: ['./index.js'] });
 
     stream.on('data', chunk => {
       data += chunk;
@@ -198,5 +191,63 @@ describe('@platform-server/render', () => {
       expect(data).toBe(content(0));
       done();
     });
+  });
+
+  test('can render dangerous html content via renderToString', async () => {
+    const App = component(() => {
+      return (
+        <div>
+          <div>header</div>
+          <div __danger={`<p>inner html</p>`}></div>
+          <div>footer</div>
+        </div>
+      );
+    });
+    const content = await renderToString(<App />);
+
+    expect(content).toMatchInlineSnapshot(
+      `"<div><div>header</div><div><p>inner html</p></div><div>footer</div></div>"`,
+    );
+  });
+
+  test('can render dangerous html content via renderToStream', async () => {
+    const App = component(() => {
+      return (
+        <div>
+          <div>header</div>
+          <div __danger={`<p>inner html</p>`}></div>
+          <div>footer</div>
+        </div>
+      );
+    });
+    const content = await convertStreamToPromise(renderToStream(<App />));
+
+    expect(content).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><div><div>header</div><div><p>inner html</p></div><div>footer</div></div>"`,
+    );
+  });
+
+  test('throws an error when an element with dangerous content has child elements via renderToString', async () => {
+    const App = component(() => {
+      return <div __danger={`<p>inner html</p>`}>1</div>;
+    });
+
+    try {
+      await renderToString(<App />);
+    } catch (err) {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  test('throws an error when an element with dangerous content has child elements via renderToStream', async () => {
+    const App = component(() => {
+      return <div __danger={`<p>inner html</p>`}>1</div>;
+    });
+
+    try {
+      await convertStreamToPromise(renderToStream(<App />));
+    } catch (err) {
+      expect(err).toBeTruthy();
+    }
   });
 });

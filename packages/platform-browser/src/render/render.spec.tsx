@@ -1380,4 +1380,34 @@ describe('@platform-browser/render', () => {
     render(<App x={3} />);
     expect(host.innerHTML).toBe(content(3));
   });
+
+  test('can render dangerous html content', () => {
+    const App = component<{ x: number }>(({ x }) => {
+      return (
+        <div>
+          <div>header {x}</div>
+          <div __danger={`<p>inner html: ${x}</p>`}></div>
+          <div>footer</div>
+        </div>
+      );
+    });
+
+    render(<App x={1} />);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<div><div>header 1</div><div><p>inner html: 1</p></div><div>footer</div></div>"`,
+    );
+
+    render(<App x={2} />);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<div><div>header 2</div><div><p>inner html: 2</p></div><div>footer</div></div>"`,
+    );
+  });
+
+  test('throws an error when an element with dangerous content has child elements', () => {
+    const App = component<{ x: number }>(({ x }) => {
+      return <div __danger={`<p>inner html: ${x}</p>`}>1</div>;
+    });
+
+    expect(() => render(<App x={1} />)).toThrowError();
+  });
 });

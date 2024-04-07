@@ -1,3 +1,5 @@
+import { detectIsUndefined } from '@dark-engine/core';
+
 const svgTagNames = new Set([
   'svg',
   'animate',
@@ -79,4 +81,6 @@ const detectIsSvgElement = (name: string) => svgTagNames.has(name);
 
 const detectIsVoidElement = (name: string) => voidTagNames.has(name);
 
-export { detectIsSvgElement, detectIsVoidElement };
+const detectIsBrowser = () => !detectIsUndefined(globalThis.window);
+
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser };

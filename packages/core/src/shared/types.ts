@@ -39,6 +39,8 @@ export type FlagProps = Partial<Record<keyof typeof FLAGS, boolean>>;
 
 export type Callback = () => void;
 
+export type CallbackWithValue<T> = (x: T) => void;
+
 export type TimerId = undefined | ReturnType<typeof setTimeout>;
 
 export type AppResource<T = unknown> = [T, string];

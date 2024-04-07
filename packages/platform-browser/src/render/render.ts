@@ -22,10 +22,12 @@ import {
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import type { TagNativeElement } from '../native-element';
+import { detectIsBrowser } from '../utils';
 
+const isBrowser = detectIsBrowser();
 const roots = new Map<Element, number>();
-const raf = requestAnimationFrame.bind(this);
-const caf = cancelAnimationFrame.bind(this);
+const raf = isBrowser && requestAnimationFrame.bind(this);
+const caf = isBrowser && cancelAnimationFrame.bind(this);
 const spawn = raf;
 let isInjected = false;
 

@@ -19,16 +19,15 @@ import {
   detectIsPlainVirtualNode,
   $$scope,
 } from '@dark-engine/core';
-
-import { TEXTAREA_TAG, VALUE_ATTR } from '../constants';
-import { detectIsVoidElement } from '../utils';
 import {
-  NativeElement,
-  TagNativeElement,
-  TextNativeElement,
-  CommentNativeElement,
   type AttributeValue,
-} from '../native-element';
+  VALUE_ATTR,
+  TEXTAREA_TAG,
+  DANGER_HTML_CONTENT,
+  detectIsVoidElement,
+} from '@dark-engine/platform-browser';
+
+import { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
 
 let chunkIds: Record<string, boolean> = {};
 
@@ -141,16 +140,19 @@ function chunk(fiber: Fiber<NativeElement>) {
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
       const { inst } = fiber;
-      const content = inst.name === TEXTAREA_TAG ? inst.attrs[VALUE_ATTR] || '' : '';
+      const content =
+        inst.name === TEXTAREA_TAG
+          ? (inst.attrs[VALUE_ATTR] as string) || ''
+          : (inst.attrs[DANGER_HTML_CONTENT] as string) || '';
       const close = inst.children.length === 0 && !content;
 
       addAttributes(tagElement, inst);
-      chunk = tagElement.renderToChunk(true, close, content);
+      chunk = tagElement.render(true, close, content);
     } else if (detectIsPlainVirtualNode(fiber.inst)) {
-      chunk = fiber.element.renderToChunk();
+      chunk = fiber.element.render();
     }
   } else if (detectIsTagVirtualNode(fiber.inst)) {
-    chunk = tagElement.renderToChunk(false);
+    chunk = tagElement.render(false);
   }
 
   chunkIds[fiber.id] = true;

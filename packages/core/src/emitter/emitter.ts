@@ -1,6 +1,6 @@
 import { type SubscriberWithValue } from '../shared';
 
-type EventName = 'finish' | 'chunk';
+type EventName = 'finish' | 'chunk' | 'error';
 
 class EventEmitter<E extends string = EventName, T = unknown> {
   private subscribers: Map<Partial<E>, Set<SubscriberWithValue<unknown>>> = new Map();

@@ -113,6 +113,10 @@ class Scope {
     this.root = fiber;
   }
 
+  keepRoot() {
+    !this.isUpdateZone && this.setRoot(this.wip);
+  }
+
   getWorkInProgress() {
     return this.wip;
   }
@@ -367,7 +371,7 @@ class Scope {
   }
 
   flush() {
-    !this.isUpdateZone && this.setRoot(this.wip); // !
+    this.keepRoot(); // !
     this.setWorkInProgress(null);
     this.setNextUnitOfWork(null);
     this.setCursorFiber(null);

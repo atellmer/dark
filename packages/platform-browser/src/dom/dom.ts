@@ -43,6 +43,7 @@ import {
   VALUE_ATTR,
   AS_ATTR,
   EXCLUDE_ATTR_MARK,
+  DANGER_HTML_CONTENT,
 } from '../constants';
 import type {
   NativeElement,
@@ -84,7 +85,7 @@ function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
   const keys = Object.keys(style);
 
   for (const key of keys) {
-    element.style.setProperty(key, String(style[key]));
+    (element as HTMLElement).style.setProperty(key, String(style[key]));
   }
 }
 
@@ -159,6 +160,11 @@ function performAttribute(
 ) {
   if (attrName[0] === EXCLUDE_ATTR_MARK) return null;
 
+  if (attrName === DANGER_HTML_CONTENT && tagElement.innerHTML !== nextAttrValue) {
+    tagElement.innerHTML = String(nextAttrValue);
+    return null;
+  }
+
   if (attrName === REF_ATTR) {
     applyRef(nextAttrValue as unknown as Ref<TagNativeElement>, tagElement);
     return null;
@@ -198,6 +204,10 @@ function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
   return attrNames;
 }
 
+const ATTR_TRANSFORM_MAP = {
+  readonly: 'readOnly',
+};
+
 type PatchPropertiesOptions = {
   tagName: string;
   element: TagNativeElement;
@@ -208,14 +218,15 @@ type PatchPropertiesOptions = {
 function patchProperties(options: PatchPropertiesOptions): boolean {
   const { tagName, element, attrName, attrValue } = options;
   const fn = specialCasesMap[tagName];
+  const $attrName = ATTR_TRANSFORM_MAP[attrName] || attrName;
   let stop = fn ? fn(element, attrName, attrValue) : false;
 
-  if (canSetProperty(element, attrName)) {
-    element[attrName] = attrValue;
+  if (canSetProperty(element, $attrName)) {
+    element[$attrName] = attrValue;
   }
 
   if (!stop && detectIsBoolean(attrValue)) {
-    stop = !attrName.includes('-');
+    stop = !$attrName.includes('-');
   }
 
   return stop;
@@ -276,6 +287,10 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     fiber.element = nativeElement;
   } else {
     if (!(fiber.mask & SHADOW_MASK)) {
+      if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
+        throw new Error(`[platform-browser]: element with danger content can't have a children!`);
+      }
+
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
         !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
           appendNativeElement(fiber.element, parentElement);
