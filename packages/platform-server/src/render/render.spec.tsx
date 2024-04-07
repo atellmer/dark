@@ -10,9 +10,9 @@ import {
   useLayoutEffect,
   useEffect,
 } from '@dark-engine/core';
-import { dom, sleep, replacer, convertStreamToPromise } from '@test-utils';
+import { dom, sleep, replacer } from '@test-utils';
 
-import { renderToString, renderToStream } from './render';
+import { renderToString, renderToStream, convertStreamToPromise } from './render';
 
 describe('@platform-server/render', () => {
   test('can render text correctly', async () => {

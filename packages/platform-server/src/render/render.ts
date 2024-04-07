@@ -47,15 +47,14 @@ function inject() {
 
 type ScheduleRenderOptions = {
   element: DarkElement;
-  isStream?: boolean;
-  onCompleted: Callback;
+  onStart: Callback;
   onError: CallbackWithValue<string>;
-  onStart?: Callback;
+  onCompleted: Callback;
 };
 
 function scheduleRender(options: ScheduleRenderOptions) {
   !isInjected && inject();
-  const { element, isStream = false, onCompleted, onError, onStart = dummyFn } = options;
+  const { element, onCompleted, onError, onStart } = options;
   const rootId = getNextRootId();
   const callback = () => {
     setRootId(rootId);
@@ -67,7 +66,7 @@ function scheduleRender(options: ScheduleRenderOptions) {
     });
     const emitter = $scope.getEmitter();
 
-    $scope.setIsStreamZone(isStream);
+    $scope.setIsStreamZone(true);
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
     $scope.setNextUnitOfWork(fiber);
@@ -86,38 +85,34 @@ function scheduleRender(options: ScheduleRenderOptions) {
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL, forceAsync: true });
 }
 
-function renderToString(element: DarkElement): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const onCompleted = () => {
-      const rootId = getRootId();
-      const { element: nativeElement } = $$scope().getRoot() as Fiber<TagNativeElement>;
-      const content = nativeElement.renderToString(true);
-
-      resolve(withState(content));
-      unmountRoot(rootId, dummyFn);
-    };
-
-    const onError = (err: string) => {
-      const rootId = getRootId();
-
-      reject(new Error(err));
-      unmountRoot(rootId, dummyFn);
-    };
-
-    scheduleRender({ element, onCompleted, onError });
-  });
-}
-
 type RenderToStreamOptions = {
   bootstrapScripts?: Array<string>;
   bootstrapModules?: Array<string>;
   chunkSize?: number;
 };
 
-function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
+function renderToReadableStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
   const { bootstrapScripts = [], bootstrapModules = [], chunkSize = 500 } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
   let content = '';
+
+  const onStart = () => {
+    const emitter = $$scope().getEmitter();
+
+    emitter.on<string>('chunk', chunk => {
+      if (chunk === PREPEND_SCRIPTS_CHUNK && (bootstrapScripts.length > 0 || bootstrapModules.length > 0)) {
+        content += addScripts(bootstrapScripts, false);
+        content += addScripts(bootstrapModules, true);
+      }
+
+      content += chunk;
+
+      if (content.length >= chunkSize) {
+        stream.push(content);
+        content = '';
+      }
+    });
+  };
 
   const onCompleted = () => {
     const rootId = getRootId();
@@ -140,28 +135,31 @@ function renderToStream(element: DarkElement, options?: RenderToStreamOptions): 
     unmountRoot(rootId, dummyFn);
   };
 
-  const onStart = () => {
-    const emitter = $$scope().getEmitter();
+  scheduleRender({ element, onStart, onCompleted, onError });
 
-    emitter.on<string>('chunk', chunk => {
-      if (chunk === PREPEND_SCRIPTS_CHUNK) {
-        content += addScripts(bootstrapScripts, false);
-        content += addScripts(bootstrapModules, true);
-      }
+  return stream;
+}
 
-      content += chunk;
+function renderToString(element: DarkElement): Promise<string> {
+  return convertStreamToPromise(renderToReadableStream(element));
+}
 
-      if (content.length >= chunkSize) {
-        stream.push(content);
-        content = '';
-      }
-    });
-  };
+function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
+  const stream = renderToReadableStream(element, options);
 
-  scheduleRender({ element, isStream: true, onCompleted, onError, onStart });
   stream.push(DOCTYPE);
 
   return stream;
+}
+
+function convertStreamToPromise(stream: Readable) {
+  return new Promise<string>((resolve, reject) => {
+    let data = '';
+
+    stream.on('data', chunk => (data += chunk));
+    stream.on('end', () => resolve(data));
+    stream.on('error', reject);
+  });
 }
 
 function addScripts(scripts: Array<string>, isModule: boolean) {
@@ -194,4 +192,4 @@ const getNextRootId = () => ++nextRootId;
 
 const PREPEND_SCRIPTS_CHUNK = '</body>';
 
-export { renderToString, renderToStream, inject };
+export { renderToString, renderToStream, convertStreamToPromise, inject };

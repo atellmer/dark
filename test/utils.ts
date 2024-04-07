@@ -140,16 +140,6 @@ async function waitUntilEffectsStart() {
   }
 }
 
-function convertStreamToPromise(stream: Readable) {
-  return new Promise<string>((resolve, reject) => {
-    let data = '';
-
-    stream.on('data', chunk => (data += chunk));
-    stream.on('end', () => resolve(data));
-    stream.on('error', reject);
-  });
-}
-
 export {
   dom,
   nextTick,
@@ -170,5 +160,4 @@ export {
   wrapWithStyledTag,
   resetBrowserHistory,
   waitUntilEffectsStart,
-  convertStreamToPromise,
 };
