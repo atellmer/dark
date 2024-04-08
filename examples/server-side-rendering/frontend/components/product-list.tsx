@@ -13,15 +13,15 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
   const { url } = useMatch();
   const { pathname } = useLocation();
   const { isFetching, data, error } = useProducts();
-  const isList = pathname.endsWith('list/');
-  const urlToAdd = url + 'add/';
+  const isList = pathname.endsWith('list');
+  const urlToAdd = url + '/add';
   const renderList = () => {
     return (
       <List>
         {[...data].reverse().map(x => {
           return (
             <ListItem key={x.id}>
-              <RouterLink to={`${url}${x.id}`}>{x.name}</RouterLink>
+              <RouterLink to={`${url}/${x.id}`}>{x.name}</RouterLink>
             </ListItem>
           );
         })}

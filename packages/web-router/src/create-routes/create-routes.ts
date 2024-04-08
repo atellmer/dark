@@ -48,7 +48,7 @@ class Route {
   }
 
   getPath() {
-    return this.path.replaceAll(ROOT_MARK + SLASH_MARK, '');
+    return this.path.replaceAll(new RegExp(`${ROOT_MARK}${SLASH_MARK}?`, 'g'), '');
   }
 
   render(): DarkElement {
@@ -242,7 +242,7 @@ function createPathname(urlPath: string, routePath: string): string {
 }
 
 function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
-  const $prefix = pathMatch === 'prefix' ? normalaizePathname(prefix) : '';
+  const $prefix = pathMatch === 'prefix' ? normalaizePathname(prefix) + SLASH_MARK : '';
 
   return normalaizePathname($prefix ? `${$prefix}${path}` : path);
 }

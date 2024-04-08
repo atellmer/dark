@@ -53,11 +53,11 @@ describe('@web-router/use-history', () => {
     history.push('/second/');
     jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
-    expect(location.href).toBe('http://localhost/second/');
+    expect(location.href).toBe('http://localhost/second');
 
     history.push('/third/');
     jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>third</div>`);
-    expect(location.href).toBe('http://localhost/third/');
+    expect(location.href).toBe('http://localhost/third');
   });
 });

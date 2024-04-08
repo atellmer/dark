@@ -49,7 +49,7 @@ function parseURL(url: string) {
   return {
     protocol,
     host,
-    pathname: addSlashToEnd(pathname),
+    pathname,
     search: createSearch(search),
     hash: createHash(hash),
   };
@@ -69,13 +69,15 @@ const splitPath = (path: string) => split(path, SLASH_MARK);
 
 const addSlashToStart = (path: string) => (path.startsWith(SLASH_MARK) ? path : SLASH_MARK + path);
 
-const addSlashToEnd = (path: string) => (path.endsWith(SLASH_MARK) ? path : path + SLASH_MARK);
-
 function normalaizePathname(spath: string) {
   const { pathname, search, hash } = parseURL(addSlashToStart(spath));
-  const newSpath = pathname + search + hash;
+  const newSpath = normalizeSlashes(pathname + search + hash);
 
   return newSpath;
+}
+
+function normalizeSlashes(pathname: string) {
+  return pathname.replaceAll(new RegExp(`${SLASH_MARK}+`, 'g'), SLASH_MARK);
 }
 
 function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => number) {
@@ -88,4 +90,4 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
 
 const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
 
-export { pipe, parseURL, detectIsParam, getParamName, splitPath, normalaizePathname, sort, cm };
+export { pipe, parseURL, detectIsParam, getParamName, splitPath, normalaizePathname, normalizeSlashes, sort, cm };

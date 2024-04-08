@@ -59,7 +59,7 @@ describe('@web-router/use-match', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(match).toBeTruthy();
-    expect(match.path).toBe('/second/:id/');
-    expect(match.url).toBe('/second/10/');
+    expect(match.path).toBe('/second/:id');
+    expect(match.url).toBe('/second/10');
   });
 });

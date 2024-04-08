@@ -62,7 +62,7 @@ describe('@web-router/utils', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route/');
+    expect(pathname).toBe('/some/route');
     expect(search).toBe('');
   });
 
@@ -71,7 +71,7 @@ describe('@web-router/utils', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route/');
+    expect(pathname).toBe('/some/route');
     expect(search).toBe('?q="hello"');
   });
 
@@ -80,16 +80,17 @@ describe('@web-router/utils', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route/');
+    expect(pathname).toBe('/some/route');
     expect(hash).toBe('#one');
     expect(search).toBe('?q="hello"');
   });
 
   test('the normalaizePathname works correctly', () => {
-    expect(normalaizePathname('/some/route')).toBe('/some/route/');
+    expect(normalaizePathname('/some/route')).toBe('/some/route');
     expect(normalaizePathname('/some/route/')).toBe('/some/route/');
-    expect(normalaizePathname('/some/route?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
+    expect(normalaizePathname('/some/route?q=123&t=qwe')).toBe('/some/route?q=123&t=qwe');
     expect(normalaizePathname('/some/route/?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
+    expect(normalaizePathname('////some////route////?q=123&t=qwe///')).toBe('/some/route/?q=123&t=qwe/');
   });
 
   test('the detectIsParam works correctly', () => {

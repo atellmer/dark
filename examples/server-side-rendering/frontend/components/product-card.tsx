@@ -9,8 +9,8 @@ const ProductCard = component<{ slot: DarkElement }>(({ slot }) => {
   const id = Number(params.get('id'));
   const { isFetching, data, error } = useProduct(id);
   const { url } = useMatch();
-  const urlToEdit = url + 'edit/';
-  const urlToRemove = url + 'remove/';
+  const urlToEdit = url + '/edit';
+  const urlToRemove = url + '/remove';
 
   if (isFetching && !data) return <Spinner />;
   if (error) return <Error value={error} />;

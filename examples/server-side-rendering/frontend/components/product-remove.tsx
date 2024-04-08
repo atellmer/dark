@@ -11,7 +11,7 @@ const ProductRemove = component(() => {
   const id = Number(params.get('id'));
   const { data: product } = useProduct(id);
   const [removeProduct, { isFetching }] = useRemoveProductMutation();
-  const urlToList = url.replace(`${id}/remove/`, '');
+  const urlToList = url.replace(`${id}/remove`, '');
 
   const handleRemove = async () => {
     if (isFetching) return;

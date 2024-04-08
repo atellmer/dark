@@ -60,7 +60,7 @@ describe('@web-router/use-location', () => {
     jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(location).toBeInstanceOf(RouterLocation);
-    expect(location.pathname).toBe('/second/');
+    expect(location.pathname).toBe('/second');
     expect(location.key).toBeTruthy();
   });
 });
