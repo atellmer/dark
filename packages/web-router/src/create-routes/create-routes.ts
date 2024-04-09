@@ -243,8 +243,13 @@ function createPathname(urlPath: string, routePath: string): string {
 
 function createPath(pathMatch: PathMatchStrategy, prefix: string, path: string): string {
   const $prefix = pathMatch === 'prefix' ? normalaizePathname(prefix) + SLASH_MARK : '';
+  const $path = biteSlashes(normalaizePathname($prefix ? `${$prefix}${path}` : path));
 
-  return normalaizePathname($prefix ? `${$prefix}${path}` : path);
+  return $path;
+}
+
+function biteSlashes(path: string) {
+  return path.replace(new RegExp(`^${SLASH_MARK}+|${SLASH_MARK}+$`, 'g'), '');
 }
 
 function createRootPath(path: string): string {

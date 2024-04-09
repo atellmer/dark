@@ -51,15 +51,15 @@ describe('@web-router/use-match', () => {
     render(<App />);
     jest.runAllTimers();
     expect(match).toBeTruthy();
-    expect(match.path).toBe('/');
-    expect(match.url).toBe('/');
+    expect(match.path).toBe('');
+    expect(match.url).toBe('');
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/second/10');
     jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(match).toBeTruthy();
-    expect(match.path).toBe('/second/:id');
+    expect(match.path).toBe('second/:id');
     expect(match.url).toBe('/second/10');
   });
 });
