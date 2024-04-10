@@ -13,10 +13,10 @@ import {
 } from '@dark-engine/core';
 
 import { SLASH_MARK, PROTOCOL_MARK, WILDCARD_MARK } from '../constants';
-import { normalaizePathname } from '../utils';
+import { normalizePath, join } from '../utils';
 import { createRouterHistory } from '../history';
 import { type RouterLocation, createRouterLocation } from '../location';
-import { type Routes, createRoutes, resolveRoute, createPathname } from '../create-routes';
+import { type Routes, createRoutes, resolveRoute, mergePathnames } from '../create-routes';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -33,27 +33,25 @@ export type RouterProps = {
 };
 
 export type RouterRef = {
-  navigateTo: (pathname: string) => void;
+  navigateTo: (url: string) => void;
   location: RouterLocation;
 };
 
 const Router = forwardRef<RouterProps, RouterRef>(
   component(
     ({ url, baseURL = SLASH_MARK, routes: sourceRoutes, slot }, ref) => {
-      if (useActiveRouteContext()) {
-        throw new Error(`[web-router]: the parent active route's context detected!`);
-      }
+      if (useActiveRouteContext()) throw new Error(`[web-router]: the parent active route's context detected!`);
       const sourceURL = url || window.location.href;
       const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
       const history = useMemo(() => createRouterHistory(sourceURL), []);
-      const routes = useMemo(() => createRoutes(sourceRoutes, normalaizePathname(baseURL)), []);
-      const { protocol, host, pathname, search, hash } = location;
-      const { activeRoute, slot: $slot, params } = resolveRoute(pathname, routes);
+      const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
+      const { protocol, host, pathname: path, search, hash } = location;
+      const { activeRoute, slot: $slot, params } = resolveRoute(path, routes);
       const scope = useMemo(() => ({ location }), []);
       const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
       const routerContext = useMemo<ActiveRouteContextValue>(
         () => ({ location, activeRoute, params }),
-        [pathname, search, hash],
+        [path, search, hash],
       );
 
       scope.location = location;
@@ -65,10 +63,10 @@ const Router = forwardRef<RouterProps, RouterRef>(
       }, [sourceURL]);
 
       useLayoutEffect(() => {
-        const unsubscribe = history.subscribe(spathname => {
-          const url = `${protocol}${PROTOCOL_MARK}${host}${spathname}`;
+        const unsubscribe = history.subscribe(url => {
+          const href = `${protocol}${PROTOCOL_MARK}${host}${url}`;
 
-          setLocation(createRouterLocation(url));
+          setLocation(createRouterLocation(href));
         });
 
         return () => {
@@ -79,16 +77,16 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
       useEffect(() => {
         if (!activeRoute || activeRoute.marker === WILDCARD_MARK) return;
-        const spathname = pathname + search + hash;
-        const newSpathname = createPathname(pathname, activeRoute.getPath()) + search + hash;
+        const url = join(path, search, hash);
+        const $url = join(mergePathnames(path, activeRoute.getPath()), search, hash);
 
-        if (spathname !== newSpathname) {
-          history.replace(newSpathname);
+        if (url !== $url) {
+          history.replace($url);
         }
-      }, [pathname, search, hash]);
+      }, [path, search, hash]);
 
       useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
-        navigateTo: (pathname: string) => nextTick(() => history.push(pathname)),
+        navigateTo: (url: string) => nextTick(() => history.push(url)),
         location,
       }));
 

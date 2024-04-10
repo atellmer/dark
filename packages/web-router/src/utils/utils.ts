@@ -55,30 +55,31 @@ function parseURL(url: string) {
   };
 }
 
-const createSearch = (value: string) => (value ? `${SEARCH_MARK}${value}` : '');
+const createSearch = (x: string) => (x ? `${SEARCH_MARK}${x}` : '');
 
-const createHash = (value: string) => (value ? `${HASH_MARK}${value}` : '');
+const createHash = (x: string) => (x ? `${HASH_MARK}${x}` : '');
 
-const detectIsParam = (value: string) => value && value.startsWith(PARAMETER_MARK);
+const detectIsParam = (x: string) => x && x.startsWith(PARAMETER_MARK);
 
-const getParamName = (value: string) => (detectIsParam(value) ? value.slice(1, value.length) : null);
+const getParamName = (x: string) => (detectIsParam(x) ? x.slice(1, x.length) : null);
 
-const split = (value: string, token: string) => value.split(token).filter(Boolean);
+const split = (x: string, token: string) => x.split(token).filter(Boolean);
 
-const splitPath = (path: string) => split(path, SLASH_MARK);
+const splitBySlash = (x: string) => split(x, SLASH_MARK);
 
-const addSlashToStart = (path: string) => (path.startsWith(SLASH_MARK) ? path : SLASH_MARK + path);
+const startSlash = (x: string) => (x.startsWith(SLASH_MARK) ? x : SLASH_MARK + x);
 
-function normalaizePathname(spath: string) {
-  const { pathname, search, hash } = parseURL(addSlashToStart(spath));
-  const newSpath = normalizeSlashes(pathname + search + hash);
+const join = (...args: Array<string>) => args.join('');
 
-  return newSpath;
+function normalizePath(x: string) {
+  const { pathname, search, hash } = parseURL(startSlash(x));
+
+  return reduceSlashes(join(pathname, search, hash));
 }
 
-function normalizeSlashes(pathname: string) {
-  return pathname.replaceAll(new RegExp(`${SLASH_MARK}+`, 'g'), SLASH_MARK);
-}
+const reduceSlashes = (x: string) => x.replaceAll(new RegExp(`${SLASH_MARK}+`, 'g'), SLASH_MARK);
+
+const trimSlashes = (x: string) => x.replace(new RegExp(`^${SLASH_MARK}+|${SLASH_MARK}+$`, 'g'), '');
 
 function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => number) {
   const asc = (a: T, b: T) => selector(a) - selector(b);
@@ -90,4 +91,16 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
 
 const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
 
-export { pipe, parseURL, detectIsParam, getParamName, splitPath, normalaizePathname, normalizeSlashes, sort, cm };
+export {
+  pipe,
+  parseURL,
+  detectIsParam,
+  getParamName,
+  splitBySlash,
+  normalizePath,
+  reduceSlashes,
+  trimSlashes,
+  join,
+  sort,
+  cm,
+};

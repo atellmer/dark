@@ -12,10 +12,7 @@ class RouterLocation {
   key: string;
 
   constructor(url: string) {
-    if (detectIsFalsy(url)) {
-      throw new Error('[web-router]: RouterLocation must have an initial url!');
-    }
-
+    if (detectIsFalsy(url)) throw new Error('[web-router]: RouterLocation must have an initial url!');
     const { protocol, host, pathname, hash, search } = parseURL(url);
 
     this.url = url;
@@ -29,8 +26,8 @@ class RouterLocation {
   }
 }
 
-function createKey(pathname: string): string {
-  return pathname
+function createKey(path: string): string {
+  return path
     .split('')
     .map(x => x.charCodeAt(0))
     .reduce((acc, x) => ((acc += x), acc), 200000)
