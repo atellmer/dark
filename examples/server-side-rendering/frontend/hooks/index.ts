@@ -1,7 +1,8 @@
-import { useQuery, useMutation } from '@dark-engine/data';
+import { useQuery, useMutation, useApi as $useApi } from '@dark-engine/data';
 
-import { type ProductBrief } from '../../contract';
-import { Key, useApi } from '../api';
+import { type Api, type ProductBrief, Key } from '../../contract';
+
+const useApi = () => $useApi<Api>();
 
 function useProducts() {
   const api = useApi();
@@ -76,4 +77,4 @@ function useRemoveProductMutation() {
   });
 }
 
-export { useProducts, useProduct, useAddProductMutation, useChangeProductMutation, useRemoveProductMutation };
+export { useApi, useProducts, useProduct, useAddProductMutation, useChangeProductMutation, useRemoveProductMutation };

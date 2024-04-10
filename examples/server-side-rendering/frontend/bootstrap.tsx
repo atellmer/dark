@@ -19,6 +19,12 @@ function bootstrap() {
     //If we are online, then the application contacts the server for SSR content, then hydrates itself.
     hydrateRoot(element, content);
   }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
+    });
+  }
 }
 
 export { bootstrap };
