@@ -127,7 +127,7 @@ function tryOptMemoSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
   const hasMove = Boolean(actions.move);
   const hasRemove = Boolean(actions.remove);
   const hasInsert = Boolean(actions.insert);
-  const hasReplace = Boolean(actions.insert);
+  const hasReplace = Boolean(actions.replace);
   const canOptimize = ((hasMove && !hasRemove) || (hasRemove && !hasMove)) && !hasInsert && !hasReplace;
 
   if (!canOptimize || !detectIsStableMemoTree(fiber, $scope)) return;
