@@ -16,7 +16,7 @@ import { SLASH_MARK, PROTOCOL_MARK, WILDCARD_MARK } from '../constants';
 import { normalizePath, join } from '../utils';
 import { createRouterHistory } from '../history';
 import { type RouterLocation, createRouterLocation } from '../location';
-import { type Routes, createRoutes, resolveRoute, mergePathnames } from '../create-routes';
+import { type Routes, createRoutes, resolveRoute, mergePathes } from '../create-routes';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -64,7 +64,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
       useLayoutEffect(() => {
         const unsubscribe = history.subscribe(url => {
-          const href = `${protocol}${PROTOCOL_MARK}${host}${url}`;
+          const href = join(protocol, PROTOCOL_MARK, host, url);
 
           setLocation(createRouterLocation(href));
         });
@@ -78,7 +78,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
       useEffect(() => {
         if (!activeRoute || activeRoute.marker === WILDCARD_MARK) return;
         const url = join(path, search, hash);
-        const $url = join(mergePathnames(path, activeRoute.getPath()), search, hash);
+        const $url = join(mergePathes(path, activeRoute.getPath()), search, hash);
 
         if (url !== $url) {
           history.replace($url);

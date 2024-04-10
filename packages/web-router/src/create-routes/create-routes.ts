@@ -215,7 +215,7 @@ function createMatcher(options: CreateMatcherOptions) {
   };
 }
 
-function mergePathnames(urlPath: string, routePath: string) {
+function mergePathes(urlPath: string, routePath: string) {
   const sUrl = splitBySlash(urlPath);
   const sRoute = splitBySlash(routePath);
   const parts: Array<string> = [];
@@ -272,4 +272,4 @@ function resolveRoute(path: string, routes: Array<Route>) {
   return value;
 }
 
-export { type Route, createRoutes, resolve, resolveRoute, mergePathnames };
+export { type Route, createRoutes, resolve, resolveRoute, mergePathes };
