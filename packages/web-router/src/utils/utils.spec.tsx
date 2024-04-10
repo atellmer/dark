@@ -2,14 +2,14 @@
 import { PARAMETER_MARK } from '../constants';
 import {
   parseURL,
-  normalizePath,
   reduceSlashes,
   trimSlashes,
   join,
+  normalizePath,
   detectIsParam,
   getParamName,
-  sort,
   splitBySlash,
+  sort,
   cm,
 } from './utils';
 
@@ -96,6 +96,20 @@ describe('@web-router/utils', () => {
     expect(search).toBe('?q="hello"');
   });
 
+  test('the reduceSlashes works correctly', () => {
+    expect(reduceSlashes('///some////route///')).toBe('/some/route/');
+  });
+
+  test('the trimSlashes works correctly', () => {
+    expect(trimSlashes('some/route')).toBe('some/route');
+    expect(trimSlashes('/some/route/')).toBe('some/route');
+    expect(trimSlashes('///some/route///')).toBe('some/route');
+  });
+
+  test('the join works correctly', () => {
+    expect(join('/some/route', '?q=www', '#xxx')).toBe('/some/route?q=www#xxx');
+  });
+
   test('the normalizePath works correctly', () => {
     expect(normalizePath('/some/route')).toBe('/some/route');
     expect(normalizePath('/some/route/')).toBe('/some/route/');
@@ -116,16 +130,16 @@ describe('@web-router/utils', () => {
     expect(getParamName('id')).toBe(null);
   });
 
-  test('the sort works correctly', () => {
-    expect(sort('asc', [10, 5, 2, 4, 20], x => x)).toEqual([2, 4, 5, 10, 20]);
-    expect(sort('desc', [10, 5, 2, 4, 20], x => x)).toEqual([20, 10, 5, 4, 2]);
-  });
-
   test('the splitBySlash works correctly', () => {
     expect(splitBySlash('/some/awesome/url/')).toEqual(['some', 'awesome', 'url']);
     expect(splitBySlash('/')).toEqual([]);
     expect(splitBySlash('')).toEqual([]);
     expect(splitBySlash('some/awesome/url?q="hello"')).toEqual(['some', 'awesome', 'url?q="hello"']);
+  });
+
+  test('the sort works correctly', () => {
+    expect(sort('asc', [10, 5, 2, 4, 20], x => x)).toEqual([2, 4, 5, 10, 20]);
+    expect(sort('desc', [10, 5, 2, 4, 20], x => x)).toEqual([20, 10, 5, 4, 2]);
   });
 
   test('the cm works correctly', () => {
