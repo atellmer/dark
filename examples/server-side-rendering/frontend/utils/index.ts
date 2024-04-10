@@ -1,5 +1,3 @@
-const detectIsBrowser = () => typeof window !== 'undefined';
-
 function getItem(key: string, emit?: string) {
   try {
     return JSON.parse(localStorage.getItem(key));
@@ -30,4 +28,4 @@ function checkResponse(response: Response) {
 
 const headers = () => ({ 'Content-Type': 'application/json' });
 
-export { detectIsBrowser, getItem, setItem, checkId, checkResponse, headers };
+export { getItem, setItem, checkId, checkResponse, headers };

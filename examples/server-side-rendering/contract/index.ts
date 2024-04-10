@@ -17,3 +17,11 @@ export type Api = {
   changeProduct: (id: number, product: Partial<Product>) => Promise<Product>;
   removeProduct: (id: number) => Promise<boolean>;
 };
+
+export enum Key {
+  FETCH_PRODUCTS = 'FETCH_PRODUCTS',
+  FETCH_PRODUCT = 'FETCH_PRODUCT',
+  ADD_PRODUCT = 'ADD_PRODUCT',
+  CHANGE_PRODUCT = 'CHANGE_PRODUCT',
+  REMOVE_PRODUCT = 'REMOVE_PRODUCT',
+}

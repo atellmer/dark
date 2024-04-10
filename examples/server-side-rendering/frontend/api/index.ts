@@ -1,15 +1,5 @@
-import { useApi as $useApi } from '@dark-engine/data';
-
-import { type Api, type ProductBrief, type Product } from '../../contract';
-import { detectIsBrowser, getItem, setItem, checkId, checkResponse, headers } from '../utils';
-
-export enum Key {
-  FETCH_PRODUCTS = 'FETCH_PRODUCTS',
-  FETCH_PRODUCT = 'FETCH_PRODUCT',
-  ADD_PRODUCT = 'ADD_PRODUCT',
-  CHANGE_PRODUCT = 'CHANGE_PRODUCT',
-  REMOVE_PRODUCT = 'REMOVE_PRODUCT',
-}
+import { type Api, type ProductBrief, type Product, Key } from '../../contract';
+import { getItem, setItem, checkId, checkResponse, headers } from '../utils';
 
 const api: Api = {
   marker: 'frontend',
@@ -104,10 +94,6 @@ function sync() {
   window.addEventListener('online', make);
 }
 
-if (detectIsBrowser()) {
-  sync();
-}
+sync();
 
-const useApi = () => $useApi<Api>();
-
-export { api, useApi };
+export { api };

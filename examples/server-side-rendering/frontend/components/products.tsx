@@ -15,9 +15,9 @@ const Products = component<ProductsProps>(({ slot }) => {
       <Sticky>
         <h1>Products 📈</h1>
         <Menu $isSecondary>
-          <RouterLink to={`${url}list`}>List</RouterLink>
-          <RouterLink to={`${url}analytics`}>Analytics</RouterLink>
-          <RouterLink to={`${url}balance`}>Balance</RouterLink>
+          <RouterLink to={`${url}/list`}>List</RouterLink>
+          <RouterLink to={`${url}/analytics`}>Analytics</RouterLink>
+          <RouterLink to={`${url}/balance`}>Balance</RouterLink>
         </Menu>
       </Sticky>
       {slot}

@@ -13,7 +13,7 @@ const ProductEdit = component(() => {
   const id = Number(params.get('id'));
   const { data: product } = useProduct(id);
   const [changeProduct, { isFetching }] = useChangeProductMutation();
-  const urlToList = url.replace(`${id}/edit/`, '');
+  const urlToList = url.replace(`${id}/edit`, '');
 
   const handleSubmit = async (product: Partial<Product>) => {
     if (isFetching) return;

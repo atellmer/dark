@@ -25,38 +25,38 @@ describe('@web-router/history', () => {
 
     history.push('/first');
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/first/');
-    expect(location.href).toBe('http://localhost/first/');
+    expect(subscriber).lastCalledWith('/first');
+    expect(location.href).toBe('http://localhost/first');
 
     history.push('/second');
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/second/');
-    expect(location.href).toBe('http://localhost/second/');
+    expect(subscriber).lastCalledWith('/second');
+    expect(location.href).toBe('http://localhost/second');
 
     history.push('/second/a/1');
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/second/a/1/');
-    expect(location.href).toBe('http://localhost/second/a/1/');
+    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(location.href).toBe('http://localhost/second/a/1');
 
     history.forward();
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/second/a/1/');
-    expect(location.href).toBe('http://localhost/second/a/1/');
+    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(location.href).toBe('http://localhost/second/a/1');
 
     history.forward();
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/second/a/1/');
-    expect(location.href).toBe('http://localhost/second/a/1/');
+    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(location.href).toBe('http://localhost/second/a/1');
 
     history.back();
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/second/');
-    expect(location.href).toBe('http://localhost/second/');
+    expect(subscriber).lastCalledWith('/second');
+    expect(location.href).toBe('http://localhost/second');
 
     history.back();
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/first/');
-    expect(location.href).toBe('http://localhost/first/');
+    expect(subscriber).lastCalledWith('/first');
+    expect(location.href).toBe('http://localhost/first');
 
     history.back();
     jest.runAllTimers();
@@ -70,8 +70,8 @@ describe('@web-router/history', () => {
 
     history.go(1000);
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/second/a/1/');
-    expect(location.href).toBe('http://localhost/second/a/1/');
+    expect(subscriber).lastCalledWith('/second/a/1');
+    expect(location.href).toBe('http://localhost/second/a/1');
 
     history.go(-10000);
     jest.runAllTimers();
@@ -80,13 +80,13 @@ describe('@web-router/history', () => {
 
     history.push('/third');
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/third/');
-    expect(location.href).toBe('http://localhost/third/');
+    expect(subscriber).lastCalledWith('/third');
+    expect(location.href).toBe('http://localhost/third');
 
     history.push('/third');
     jest.runAllTimers();
-    expect(subscriber).lastCalledWith('/third/');
-    expect(location.href).toBe('http://localhost/third/');
+    expect(subscriber).lastCalledWith('/third');
+    expect(location.href).toBe('http://localhost/third');
   });
 
   test('can unsubscribe correctly', () => {

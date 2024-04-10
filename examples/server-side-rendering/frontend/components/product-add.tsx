@@ -10,7 +10,7 @@ const ProductAdd = component(() => {
   const { url } = useMatch();
   const history = useHistory();
   const [addProduct, { isFetching }] = useAddProductMutation();
-  const urlToList = url.replace('add/', '');
+  const urlToList = url.replace('add', '');
 
   const handleSubmit = async (product: Partial<Product>) => {
     if (isFetching) return;

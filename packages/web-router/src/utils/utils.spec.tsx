@@ -1,6 +1,17 @@
 /** @jsx h */
 import { PARAMETER_MARK } from '../constants';
-import { parseURL, normalaizePathname, detectIsParam, getParamName, sort, splitPath, cm } from './utils';
+import {
+  parseURL,
+  reduceSlashes,
+  trimSlashes,
+  join,
+  normalizePath,
+  detectIsParam,
+  getParamName,
+  splitBySlash,
+  sort,
+  cm,
+} from './utils';
 
 describe('@web-router/utils', () => {
   test('the parseURL works correctly #1', () => {
@@ -62,7 +73,7 @@ describe('@web-router/utils', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route/');
+    expect(pathname).toBe('/some/route');
     expect(search).toBe('');
   });
 
@@ -71,7 +82,7 @@ describe('@web-router/utils', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route/');
+    expect(pathname).toBe('/some/route');
     expect(search).toBe('?q="hello"');
   });
 
@@ -80,16 +91,31 @@ describe('@web-router/utils', () => {
 
     expect(protocol).toBe('');
     expect(host).toBe('');
-    expect(pathname).toBe('/some/route/');
+    expect(pathname).toBe('/some/route');
     expect(hash).toBe('#one');
     expect(search).toBe('?q="hello"');
   });
 
-  test('the normalaizePathname works correctly', () => {
-    expect(normalaizePathname('/some/route')).toBe('/some/route/');
-    expect(normalaizePathname('/some/route/')).toBe('/some/route/');
-    expect(normalaizePathname('/some/route?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
-    expect(normalaizePathname('/some/route/?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
+  test('the reduceSlashes works correctly', () => {
+    expect(reduceSlashes('///some////route///')).toBe('/some/route/');
+  });
+
+  test('the trimSlashes works correctly', () => {
+    expect(trimSlashes('some/route')).toBe('some/route');
+    expect(trimSlashes('/some/route/')).toBe('some/route');
+    expect(trimSlashes('///some/route///')).toBe('some/route');
+  });
+
+  test('the join works correctly', () => {
+    expect(join('/some/route', '?q=www', '#xxx')).toBe('/some/route?q=www#xxx');
+  });
+
+  test('the normalizePath works correctly', () => {
+    expect(normalizePath('/some/route')).toBe('/some/route');
+    expect(normalizePath('/some/route/')).toBe('/some/route/');
+    expect(normalizePath('/some/route?q=123&t=qwe')).toBe('/some/route?q=123&t=qwe');
+    expect(normalizePath('/some/route/?q=123&t=qwe')).toBe('/some/route/?q=123&t=qwe');
+    expect(normalizePath('////some////route////?q=123&t=qwe///')).toBe('/some/route/?q=123&t=qwe/');
   });
 
   test('the detectIsParam works correctly', () => {
@@ -104,16 +130,16 @@ describe('@web-router/utils', () => {
     expect(getParamName('id')).toBe(null);
   });
 
+  test('the splitBySlash works correctly', () => {
+    expect(splitBySlash('/some/awesome/url/')).toEqual(['some', 'awesome', 'url']);
+    expect(splitBySlash('/')).toEqual([]);
+    expect(splitBySlash('')).toEqual([]);
+    expect(splitBySlash('some/awesome/url?q="hello"')).toEqual(['some', 'awesome', 'url?q="hello"']);
+  });
+
   test('the sort works correctly', () => {
     expect(sort('asc', [10, 5, 2, 4, 20], x => x)).toEqual([2, 4, 5, 10, 20]);
     expect(sort('desc', [10, 5, 2, 4, 20], x => x)).toEqual([20, 10, 5, 4, 2]);
-  });
-
-  test('the splitPath works correctly', () => {
-    expect(splitPath('/some/awesome/url/')).toEqual(['some', 'awesome', 'url']);
-    expect(splitPath('/')).toEqual([]);
-    expect(splitPath('')).toEqual([]);
-    expect(splitPath('some/awesome/url?q="hello"')).toEqual(['some', 'awesome', 'url?q="hello"']);
   });
 
   test('the cm works correctly', () => {

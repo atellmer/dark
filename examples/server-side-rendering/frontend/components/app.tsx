@@ -2,10 +2,9 @@ import { h, component, Fragment, Suspense, lazy, useMemo, useEffect } from '@dar
 import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
 import { DataClient, DataClientProvider, InMemoryCache } from '@dark-engine/data';
 
+import { type Api, Key } from '../../contract';
 import { GlobalStyle, Spinner, Root, Header, Menu, Content } from './ui';
-import { type Api } from '../../contract';
-import { detectIsBrowser, setItem } from '../utils';
-import { Key } from '../api';
+import { setItem } from '../utils';
 
 const routes: Routes = [
   {
@@ -78,19 +77,15 @@ export type AppProps = {
 };
 
 const App = component<AppProps>(({ url, api }) => {
-  const client = useMemo(() => {
-    const client = new DataClient<Api, Key>({ api, cache: new InMemoryCache() });
+  const client = useMemo(() => new DataClient<Api, Key>({ api, cache: new InMemoryCache() }), []);
 
-    if (detectIsBrowser()) {
-      client.subscribe(({ key, record }) => {
-        if (key === Key.FETCH_PRODUCTS && record.data) {
-          setItem(key, record.data);
-        }
-      });
-    }
-
-    return client;
-  }, []);
+  useEffect(() => {
+    client.subscribe(({ key, record }) => {
+      if (key === Key.FETCH_PRODUCTS && record.data) {
+        setItem(key, record.data);
+      }
+    });
+  });
 
   useEffect(() => {
     client.monitor(x => console.log(x));
@@ -122,13 +117,5 @@ const App = component<AppProps>(({ url, api }) => {
     </>
   );
 });
-
-if (detectIsBrowser()) {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js', { scope: '/' });
-    });
-  }
-}
 
 export { App };

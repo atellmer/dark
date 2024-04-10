@@ -1,6 +1,6 @@
-import { detectIsFalsy, type SubscriberWithValue } from '@dark-engine/core';
+import { type SubscriberWithValue, detectIsFalsy, detectIsUndefined } from '@dark-engine/core';
 
-import { normalaizePathname, parseURL } from '../utils';
+import { normalizePath, parseURL, join } from '../utils';
 
 const history = globalThis.history;
 class RouterHistory {
@@ -11,17 +11,14 @@ class RouterHistory {
   dispose: () => void = null;
 
   constructor(url: string) {
-    if (detectIsFalsy(url)) {
-      throw new Error('[web-router]: RouterHistory must have an initial url!');
-    }
+    if (detectIsFalsy(url)) throw new Error('[web-router]: RouterHistory must have an initial url!');
+    const { pathname, search, hash } = parseURL(url);
+    const $url = join(pathname, search, hash);
 
-    const { pathname, search } = parseURL(url);
-    const spathname = pathname + search;
-
-    this.stack.push(spathname);
+    this.stack.push($url);
     this.cursor = this.stack.length - 1;
 
-    if (history) {
+    if (!detectIsUndefined(history)) {
       const state = this.getState();
 
       if (!state) {
@@ -64,7 +61,7 @@ class RouterHistory {
   }
 
   private getValue = () => {
-    return normalaizePathname(this.stack[this.cursor]);
+    return normalizePath(this.stack[this.cursor]);
   };
 
   private getState(): State {
@@ -77,16 +74,16 @@ class RouterHistory {
     return { ...state, [STATE_KEY]: { cursor: this.cursor, stack: this.stack } };
   }
 
-  private syncHistory(action: HistoryAction, spathname: string) {
+  private syncHistory(action: HistoryAction, url: string) {
     if (!history) return;
-    const stateBox = this.createStateBox();
-    const $spathname = normalaizePathname(spathname);
+    const box = this.createStateBox();
+    const $url = normalizePath(url);
 
     switch (action) {
       case HistoryAction.PUSH:
-        return history.pushState(stateBox, '', $spathname);
+        return history.pushState(box, '', $url);
       case HistoryAction.REPLACE:
-        return history.replaceState(stateBox, '', $spathname);
+        return history.replaceState(box, '', $url);
     }
   }
 
@@ -96,16 +93,16 @@ class RouterHistory {
     return () => this.subscribers.delete(subscriber);
   };
 
-  push(spathname: string) {
-    this.stack.splice(this.cursor + 1, this.stack.length, spathname);
+  push(url: string) {
+    this.stack.splice(this.cursor + 1, this.stack.length, url);
     this.cursor = this.stack.length - 1;
-    this.syncHistory(HistoryAction.PUSH, spathname);
+    this.syncHistory(HistoryAction.PUSH, url);
     this.mapSubscribers();
   }
 
-  replace(spathname: string) {
-    this.stack[this.stack.length - 1] = spathname;
-    this.syncHistory(HistoryAction.REPLACE, spathname);
+  replace(url: string) {
+    this.stack[this.stack.length - 1] = url;
+    this.syncHistory(HistoryAction.REPLACE, url);
     this.mapSubscribers();
   }
 
