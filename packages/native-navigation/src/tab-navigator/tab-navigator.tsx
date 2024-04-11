@@ -3,7 +3,6 @@ import {
   type DarkElement,
   type Component,
   type StandardComponentProps,
-  h,
   component,
   createContext,
   useUpdate,

@@ -1,12 +1,12 @@
-import { detectIsString, detectIsFunction } from '../utils';
 import { type TagVirtualNodeFactory, type ViewOptions, View } from '../view';
-import { type ComponentFactory } from '../component';
+import { type ComponentFactory, type Component } from '../component';
+import { detectIsString, detectIsFunction } from '../utils';
 
 function createElement(
-  element: string | Function,
+  element: string | ComponentFactory,
   props: object,
   ...slot: Array<any>
-): ComponentFactory | TagVirtualNodeFactory | null {
+): TagVirtualNodeFactory | Component | null {
   if (detectIsString(element)) {
     const options = (props || {}) as ViewOptions;
 

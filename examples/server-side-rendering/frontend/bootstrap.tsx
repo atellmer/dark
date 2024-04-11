@@ -1,4 +1,3 @@
-import { h } from '@dark-engine/core';
 import { hydrateRoot, createRoot } from '@dark-engine/platform-browser';
 
 import { App } from './components/app';

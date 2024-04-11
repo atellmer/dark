@@ -1,4 +1,3 @@
-import { h } from '@dark-engine/core';
 import { renderToStream } from '@dark-engine/platform-server';
 import { ServerStyleSheet } from '@dark-engine/styled/server';
 

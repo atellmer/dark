@@ -1,4 +1,4 @@
-import { h, Fragment, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { View, Text } from '@dark-engine/platform-native';
 import { NavigationContainer, TabNavigator } from '@dark-engine/native-navigation';
 

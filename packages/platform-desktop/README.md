@@ -42,7 +42,7 @@ yarn add @nodegui/nodegui @dark-engine/core @dark-engine/platform-desktop
 
 ```tsx
 import { Direction } from '@nodegui/nodegui';
-import { h, component, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { type PushButtonSignals, Window, BoxLayout, PushButton, useEvents } from '@dark-engine/platform-desktop';
 
 const App = component(() => {

@@ -1,4 +1,3 @@
-/** @jsx h */
 import { EventEmitter } from './emitter';
 
 type EventName = 'data';

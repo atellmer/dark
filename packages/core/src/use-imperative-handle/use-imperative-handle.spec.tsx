@@ -1,7 +1,5 @@
-/** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
-import { h } from '../element';
 import { component } from '../component';
 import { type MutableRef, forwardRef, useRef } from '../ref';
 import { useLayoutEffect } from '../use-layout-effect';

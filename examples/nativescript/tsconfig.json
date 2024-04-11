@@ -13,9 +13,8 @@
       "ES7",
       "dom"
     ],
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@dark-engine/core",
     "baseUrl": ".",
     "paths": {
       "@nativescript/core": [
@@ -23,6 +22,9 @@
       ],
       "@dark-engine/core": [
         "../../packages/core/src/index"
+      ],
+      "@dark-engine/core/*": [
+        "../../packages/core/src/*"
       ],
       "@dark-engine/platform-native": [
         "../../packages/platform-native/src/index"

@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { styled } from '@dark-engine/styled';
 

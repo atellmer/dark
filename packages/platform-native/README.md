@@ -34,7 +34,7 @@ yarn add @nativescript/core @dark-engine/core @dark-engine/animations @dark-engi
 
 ## Usage
 ```tsx
-import { h, component, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { FlexboxLayout, Button } from '@dark-engine/platform-native';
 
 const App = component(() => {
@@ -300,7 +300,7 @@ return (
 Dark includes additional components of type `View`, `Text`, `TouchableOpacity`, so that you can write an application in a almost similar to React Native style.
 
 ```tsx
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { View, Text, TouchableOpacity } from '@dark-engine/platform-native';
 
 const App = component(() => {

@@ -24,6 +24,7 @@ CDN:
 ## Table of contents
 - [API](#api)
 - [Elements](#elements)
+- [JSX](#jsx)
 - [Components](#components)
 - [Conditional rendering](#conditional-rendering)
 - [List rendering](#list-rendering)
@@ -132,13 +133,31 @@ const content = [h1({ slot: Text(`I'm the text inside the tag`) }), Comment(`I'm
 createRoot(document.getElementById('root')).render(content);
 ```
 
-#### JSX via `h`
+<a id="jsx"></a>
 
-```tsx
-import { h } from '@dark-engine/core';
+## JSX
+JSX is a syntax extension for JavaScript that lets you write HTML-like markup inside a JavaScript file.
+You can use it:
+
+### via `jsx-runtime`
+
+In your `tsconfig.json`, you must add these rows:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "@dark-engine/core",
+  }
+}
 ```
+The necessary functions will be automatically imported into your code.
 
-This is the function you need to enable JSX support and write in a React-like style. If you are writing in typescript you need to enable custom JSX support in `tsconfig.json`.
+If for some reason you don't want to use auto-imports, then you should use a different approach.
+
+### via `h`
+
+This is the function you need to enable JSX support. In your `tsconfig.json`:
 
 ```json
 {
@@ -150,8 +169,19 @@ This is the function you need to enable JSX support and write in a React-like st
 }
 ```
 
+In this case, you will always have to import the `h` function and the `Fragment` component yourself.
+
 ```tsx
-const content = [<h1>I'm the text inside the tag</h1>, <span>Hello</span>];
+import { h, Fragment } from '@dark-engine/core';
+```
+
+```tsx
+const content = (
+  <>
+    <h1>I'm the text inside the tag</h1>
+    <span>Hello</span>
+  </>
+);
 
 createRoot(document.getElementById('root')).render(content);
 ```

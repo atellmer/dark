@@ -1,7 +1,5 @@
-/** @jsx h */
 import { createRoot } from '@dark-engine/platform-browser';
 
-import { h } from '../element';
 import { component } from '../component';
 import { useInsertionEffect } from '../use-insertion-effect';
 import { useLayoutEffect } from '../use-layout-effect';

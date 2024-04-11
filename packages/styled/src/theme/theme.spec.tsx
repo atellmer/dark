@@ -1,4 +1,4 @@
-import { h, component, Guard } from '@dark-engine/core';
+import { component, Guard } from '@dark-engine/core';
 import {
   createBrowserEnv,
   replacer,

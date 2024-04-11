@@ -1,6 +1,6 @@
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { h, component, useState, useEffect, useMemo, useUpdate, Flag, TagVirtualNode } from '@dark-engine/core';
+import { component, useState, useEffect, useMemo, useUpdate, Flag, TagVirtualNode } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const Demo = component(() => {

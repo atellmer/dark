@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, component, useState, useLayoutEffect, detectIsArray } from '@dark-engine/core';
+import { component, useState, useLayoutEffect, detectIsArray } from '@dark-engine/core';
 import { hydrateRoot } from '@dark-engine/platform-browser';
 import { dom, createBrowserEnv, createServerEnv, getSpyLength, time, replacer } from '@test-utils';
 

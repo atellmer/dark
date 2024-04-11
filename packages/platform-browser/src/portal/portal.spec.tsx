@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 
 import { dom, createBrowserEnv } from '@test-utils';
 import { createPortal } from './portal';

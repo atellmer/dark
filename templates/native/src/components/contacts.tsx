@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { ListView, StackLayout, View, Text } from '@dark-engine/platform-native';
 
 const contacts = Array(1000)

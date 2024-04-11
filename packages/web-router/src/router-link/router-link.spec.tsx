@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, Fragment, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
 import { createBrowserEnv, replacer, click, dom, resetBrowserHistory } from '@test-utils';

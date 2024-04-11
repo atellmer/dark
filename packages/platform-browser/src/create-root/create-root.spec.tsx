@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, component, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { component, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
 
 import { createRoot } from './create-root';
 

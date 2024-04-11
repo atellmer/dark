@@ -7,9 +7,8 @@
     "noImplicitAny": false,
     "removeComments": true,
     "esModuleInterop": true,
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@dark-engine/core",
     "lib": [
       "ES2021",
       "DOM"

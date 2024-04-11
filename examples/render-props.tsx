@@ -1,4 +1,4 @@
-import { h, Fragment, component, useState, useEffect, type DarkElement } from '@dark-engine/core';
+import { component, useState, useEffect, type DarkElement } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 type TimerProps = {

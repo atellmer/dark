@@ -1,6 +1,5 @@
-/** @jsx h */
 import * as core from '@dark-engine/core';
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { createBrowserEnv } from '@test-utils';
 
 import { InMemoryCache, type MonitorEventData } from '../cache';

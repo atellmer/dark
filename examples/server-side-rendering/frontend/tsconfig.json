@@ -13,6 +13,9 @@
       "@dark-engine/core": [
         "../../../packages/core/src/index"
       ],
+      "@dark-engine/core/*": [
+        "../../../packages/core/src/*"
+      ],
       "@dark-engine/platform-browser": [
         "../../../packages/platform-browser/src/index"
       ],

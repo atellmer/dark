@@ -1,7 +1,4 @@
-/** @jsx h */
 import {
-  h,
-  Fragment,
   component,
   Text,
   useState,

@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, Fragment, Text, Comment, component, useState } from '@dark-engine/core';
+import { Text, Comment, component, useState } from '@dark-engine/core';
 
 import { setInputValue, dom, createBrowserEnv, replacer } from '@test-utils';
 import { type SyntheticEvent } from '../events';

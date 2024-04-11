@@ -1,4 +1,4 @@
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 
 const Counter = component(() => {
   const [count, setCount] = useState(0);

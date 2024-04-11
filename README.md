@@ -103,7 +103,7 @@ This project was written in my free time as a hobby. I challenged myself: can I 
 ## Usage
 
 ```tsx
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const App = component(() => {

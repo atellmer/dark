@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { View, ScrollView } from '@dark-engine/platform-native';
 
 import { Card } from './card';

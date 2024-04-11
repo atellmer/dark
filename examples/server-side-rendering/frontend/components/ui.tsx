@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { createGlobalStyle, styled, keyframes, css } from '@dark-engine/styled';
 import { type DarkJSX } from '@dark-engine/platform-browser';
 
