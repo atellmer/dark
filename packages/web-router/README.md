@@ -96,13 +96,11 @@ The order of routes is important because the Router uses a first-match wins stra
 ## Getting route information
 
 ```tsx
-import { useLocation, useMatch } from '@dark-engine/web-router';
-
 const FirstComponent = component(() => {
   const location = useLocation(); // url, protocol, host, pathname, search, key
   const match = useMatch(); // url prefix for links
 
-  return <div>FirstComponent</div>
+  return <div>FirstComponent</div>;
 });
 ```
 
@@ -222,6 +220,28 @@ const routes: Routes = [
 ];
 ```
 
+## Navigation
+
+### via `RouterLink`
+
+```tsx
+<RouterLink to='/home'>Home</RouterLink>
+```
+
+### via `history`
+
+```tsx
+const SomeComponent = component(() => {
+  const history = useHistory();
+
+  useEffect(() => {
+    history.push('/home'); // or history.replace('/home');
+  }, []);
+
+  return <div>SomeComponent</div>;
+});
+```
+
 ## Parameters
 
 Sometimes, a feature of your application requires accessing a part of a route, such as a parameter like id of something. You can define parameterized route like below.
@@ -242,13 +262,11 @@ const routes: Routes = [
 Then get access for parameter through hook
 
 ```tsx
-import { useParams } from '@dark-engine/web-router';
-
 const FirstComponent = component(() => {
   const params = useParams();
-  const selectedId = Number(params.get('id'));
+  const id = Number(params.get('id'));
 
-  return <div>FirstComponent: {selectedId}</div>
+  return <div>FirstComponent: {id}</div>;
 });
 ```
 
@@ -304,7 +322,7 @@ If you are rendering the application on the server, then you must pass the reque
 ```tsx
 server.get('*', async (req, res) => {
   const { url } = req;
-  const app = await renderToString(Page({ title: 'My App', slot: App({ url }) })); // render
+  const app = await renderToString(Page({ title: 'My App', slot: App({ url }) }));
   const page = `<!DOCTYPE html>${app}`;
 
   res.statusCode = 200;
