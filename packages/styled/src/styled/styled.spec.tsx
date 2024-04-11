@@ -1,4 +1,4 @@
-import { type DarkElement, h, Fragment, component } from '@dark-engine/core';
+import { type DarkElement, component } from '@dark-engine/core';
 import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';

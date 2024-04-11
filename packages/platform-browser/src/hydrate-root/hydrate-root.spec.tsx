@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, Fragment, component, useInsertionEffect, useLayoutEffect, useEffect, useState } from '@dark-engine/core';
+import { component, useInsertionEffect, useLayoutEffect, useEffect, useState } from '@dark-engine/core';
 
 import { click, dom, createBrowserEnv } from '@test-utils';
 import { hydrateRoot } from './hydrate-root';

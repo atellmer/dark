@@ -1,6 +1,4 @@
-/** @jsx h */
 import { dom, createBrowserEnv, createServerEnv, nextTick, replacer } from '@test-utils';
-import { h } from '../element';
 import { component } from '../component';
 import { type Module, lazy } from './lazy';
 import { platform } from '../platform';

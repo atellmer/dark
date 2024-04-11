@@ -4,8 +4,6 @@ import {
   type Ref,
   type Component,
   type StandardComponentProps,
-  h,
-  Fragment,
   component,
   useEffect,
   useLayoutEffect,

@@ -1,7 +1,6 @@
 import { CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
-  h,
   component,
   forwardRef,
   useRef,

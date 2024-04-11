@@ -1,4 +1,3 @@
-/** @jsx h */
 import { resetBrowserHistory } from '@test-utils';
 
 import { createRouterHistory } from './history';

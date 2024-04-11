@@ -1,4 +1,4 @@
-import { h, component, useAtom } from '@dark-engine/core';
+import { component, useAtom } from '@dark-engine/core';
 import { View, Text } from '@dark-engine/platform-native';
 
 import { Button } from './button';

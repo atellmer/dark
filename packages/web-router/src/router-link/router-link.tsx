@@ -1,4 +1,4 @@
-import { type DarkElement, h, component, forwardRef, useMemo, useEvent, detectIsFunction } from '@dark-engine/core';
+import { type DarkElement, component, forwardRef, useMemo, useEvent, detectIsFunction } from '@dark-engine/core';
 import { type SyntheticEvent, type DarkJSX } from '@dark-engine/platform-browser';
 
 import { SLASH_MARK, ACTIVE_LINK_CLASSNAME } from '../constants';

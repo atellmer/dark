@@ -1,4 +1,4 @@
-import { h, hot } from '@dark-engine/core';
+import { hot } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { App } from './app';

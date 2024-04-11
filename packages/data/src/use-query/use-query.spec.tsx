@@ -1,5 +1,4 @@
-/** @jsx h */
-import { type DarkElement, h, Fragment, component, Suspense, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
+import { type DarkElement, component, Suspense, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
 import {
   createBrowserEnv,
   createBrowserHydrateEnv,

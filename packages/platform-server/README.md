@@ -89,7 +89,7 @@ server.get('*', async (req, res) => {
 
 ```tsx
 // frontend/app.tsx
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 
 const Page = component(({ title, slot }) => {
   return (
@@ -112,7 +112,6 @@ export { Page, App };
 
 ```tsx
 // frontend/index.tsx
-import { h } from '@dark-engine/core';
 import { hydrateRoot } from '@dark-engine/platform-browser';
 
 import { App } from './app';

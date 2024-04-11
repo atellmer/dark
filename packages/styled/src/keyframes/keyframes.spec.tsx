@@ -1,4 +1,3 @@
-import { h } from '@dark-engine/core';
 import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled } from '../styled';

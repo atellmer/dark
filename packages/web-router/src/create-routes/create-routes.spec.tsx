@@ -1,4 +1,3 @@
-/** @jsx h */
 import { component } from '@dark-engine/core';
 import { resetBrowserHistory } from '@test-utils';
 

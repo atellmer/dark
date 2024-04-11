@@ -1,4 +1,4 @@
-import { h, Fragment, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 
 import { Counter } from './counter';
 

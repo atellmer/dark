@@ -1,4 +1,3 @@
-/** @jsx h */
 import { View, Text, Comment, TagVirtualNode, TextVirtualNode, CommentVirtualNode } from './view';
 
 describe('@core/view', () => {

@@ -4,7 +4,6 @@ import {
   type ComponentFactory,
   type StandardComponentProps,
   type DarkElement,
-  h,
   component,
   createContext,
   detectIsFunction,

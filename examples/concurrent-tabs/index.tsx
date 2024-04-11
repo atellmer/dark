@@ -1,4 +1,4 @@
-import { h, type DarkElement, Fragment, component, memo, useState, useTransition } from '@dark-engine/core';
+import { type DarkElement, component, memo, useState, useTransition } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const AboutTab = component(() => {

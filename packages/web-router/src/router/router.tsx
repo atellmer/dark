@@ -1,7 +1,6 @@
 import {
   type DarkElement,
   type MutableRef,
-  h,
   component,
   useMemo,
   useEffect,

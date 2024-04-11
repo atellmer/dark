@@ -28,13 +28,13 @@
     "workbox-webpack-plugin": "^7.0.0"
   },
   "_moduleAliases": {
-    "@dark-engine/core": "../../packages/core/src/index",
-    "@dark-engine/platform-browser": "../../packages/platform-browser/src/index",
-    "@dark-engine/platform-server": "../../packages/platform-server/src/index",
-    "@dark-engine/web-router": "../../packages/web-router/src/index",
-    "@dark-engine/animations": "../../packages/animations/src/index",
-    "@dark-engine/styled": "../../packages/styled/src/index",
+    "@dark-engine/core": "../../packages/core/src",
+    "@dark-engine/platform-browser": "../../packages/platform-browser/src",
+    "@dark-engine/platform-server": "../../packages/platform-server/src",
+    "@dark-engine/web-router": "../../packages/web-router/src",
+    "@dark-engine/animations": "../../packages/animations/src",
+    "@dark-engine/styled": "../../packages/styled/src",
     "@dark-engine/styled/server": "../../packages/styled/src/server",
-    "@dark-engine/data": "../../packages/data/src/index"
+    "@dark-engine/data": "../../packages/data/src"
   }
 }

@@ -1,8 +1,5 @@
-/** @jsx h */
 import { createBrowserEnv, dom, replacer, sleep } from '@test-utils';
 
-import { h } from '../element';
-import { Fragment } from '../fragment';
 import { component } from '../component';
 import { useState } from '../use-state';
 import { memo } from '../memo';

@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { createBrowserEnv, replacer, wrapWithGlobalStyledTag as style } from '@test-utils';
 
 import { setupGlobal, createGlobalStyle } from '../global';

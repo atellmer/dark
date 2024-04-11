@@ -1,4 +1,3 @@
-/** @jsx h */
 import { PARAMETER_MARK } from '../constants';
 import {
   parseURL,

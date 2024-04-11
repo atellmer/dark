@@ -6,3 +6,7 @@ export type Product = {
 export type Api = {
   fetchProducts: () => Promise<Array<Product>>;
 };
+
+export enum Key {
+  PRODUCTS = 'PRODUCTS',
+}

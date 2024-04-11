@@ -1,4 +1,4 @@
-import { h, component, useRef, useEffect } from '@dark-engine/core';
+import { component, useRef, useEffect } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
 import { type Product } from '../../contract';

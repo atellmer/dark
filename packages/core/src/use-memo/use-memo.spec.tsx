@@ -1,8 +1,6 @@
-/** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
 import { dom } from '@test-utils';
-import { h } from '../element';
 import { component } from '../component';
 import { useMemo } from './use-memo';
 import { DarkElement } from '../shared';

@@ -1,7 +1,5 @@
-/** @jsx h */
 import { createBrowserEnv, dom } from '@test-utils';
 
-import { h } from '../element';
 import { component } from '../component';
 import { Fragment } from './fragment';
 

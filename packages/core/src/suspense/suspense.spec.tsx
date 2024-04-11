@@ -1,10 +1,7 @@
-/** @jsx h */
 import { dom, replacer, createBrowserEnv, nextTick } from '@test-utils';
-import { h } from '../element';
 import { component } from '../component';
 import { type Module, lazy } from '../lazy';
 import { Suspense } from './suspense';
-import { Fragment } from '../fragment';
 
 let { host, render } = createBrowserEnv();
 

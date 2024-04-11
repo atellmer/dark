@@ -1,4 +1,4 @@
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const App = component(() => {
@@ -49,7 +49,7 @@ const App = component(() => {
       <hr />
       <div>
         <div>readonly input</div>
-        <input value='hello' readOnly />
+        <input value='hello' readonly />
       </div>
       <hr />
       <div>

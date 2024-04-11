@@ -1,4 +1,4 @@
-import { type DarkElement, h, component } from '@dark-engine/core';
+import { type DarkElement, component } from '@dark-engine/core';
 
 const Home = component<{ slot: DarkElement }>(({ slot }) => {
   return (

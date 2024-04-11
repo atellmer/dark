@@ -1,10 +1,4 @@
-import { useApi as $useApi } from '@dark-engine/data';
-
 import { type Api, type Product } from '../../contract';
-
-export enum Key {
-  PRODUCTS = 'PRODUCTS',
-}
 
 const api: Api = {
   async fetchProducts() {
@@ -16,6 +10,4 @@ const api: Api = {
   },
 };
 
-const useApi = () => $useApi<Api>();
-
-export { api, useApi };
+export { api };

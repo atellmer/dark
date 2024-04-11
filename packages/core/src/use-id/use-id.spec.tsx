@@ -1,4 +1,3 @@
-/** @jsx h */
 import { render } from '@dark-engine/platform-browser';
 
 import { component } from '../component';

@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, Fragment, component, useState } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { dom, createBrowserEnv, replacer } from '@test-utils';
 
 import { type SpringValue } from '../shared';

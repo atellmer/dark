@@ -1,7 +1,5 @@
 import {
   type DarkElement,
-  h,
-  Fragment,
   component,
   createContext,
   useContext,

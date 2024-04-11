@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { useMatch, useHistory, useParams } from '@dark-engine/web-router';
 
 import { type Product } from '../../contract';

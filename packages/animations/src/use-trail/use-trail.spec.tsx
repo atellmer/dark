@@ -1,6 +1,4 @@
-/** @jsx h */
-
-import { h, component, useState, detectIsArray } from '@dark-engine/core';
+import { component, useState, detectIsArray } from '@dark-engine/core';
 import { dom, createBrowserEnv } from '@test-utils';
 
 import { type SpringValue } from '../shared';

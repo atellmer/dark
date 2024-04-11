@@ -91,7 +91,7 @@ describe('@animations/controller', () => {
   });
 
   test('can animate the complex value', () => {
-    type SpringProps = 'x' | 'y' | 'x';
+    type SpringProps = 'x' | 'y' | 'z';
     const ctrl = setup<SpringProps>();
     const configurator: ConfiguratorFn<SpringProps> = () => ({
       from: { x: -100, y: 0, z: 0 },

@@ -1,4 +1,3 @@
-/** @jsx h */
 import { createRouterLocation } from './location';
 
 describe('@web-router/location', () => {

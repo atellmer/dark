@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { type CSSProperties } from '@dark-engine/platform-browser';
 
 import { createBrowserEnv, dom } from '@test-utils';

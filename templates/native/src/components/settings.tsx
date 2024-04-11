@@ -1,4 +1,4 @@
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 import { View, Text, Switch } from '@dark-engine/platform-native';
 
 const features = Array(4)

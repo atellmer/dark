@@ -1,4 +1,4 @@
-import { type DarkElement, h, component } from '@dark-engine/core';
+import { type DarkElement, component } from '@dark-engine/core';
 import { RouterLink, useMatch } from '@dark-engine/web-router';
 
 import { AnimationFade, Menu, Sticky } from './ui';

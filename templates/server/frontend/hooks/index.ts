@@ -1,6 +1,8 @@
-import { useQuery } from '@dark-engine/data';
+import { useQuery, useApi as $useApi } from '@dark-engine/data';
 
-import { Key, useApi } from '../api';
+import { type Api, Key } from '../../contract';
+
+const useApi = () => $useApi<Api>();
 
 function useProducts() {
   const api = useApi();
@@ -8,4 +10,4 @@ function useProducts() {
   return useQuery(Key.PRODUCTS, () => api.fetchProducts());
 }
 
-export { useProducts };
+export { useApi, useProducts };

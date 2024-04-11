@@ -1,5 +1,4 @@
-/** @jsx h */
-import { h, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
 
 import { createBrowserEnv, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';

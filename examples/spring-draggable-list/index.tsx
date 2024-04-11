@@ -1,4 +1,4 @@
-import { h, component, useMemo, useLayoutEffect } from '@dark-engine/core';
+import { component, useMemo, useLayoutEffect } from '@dark-engine/core';
 import { createRoot, type SyntheticEvent } from '@dark-engine/platform-browser';
 import {
   type SpringValue,

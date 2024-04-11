@@ -1,4 +1,3 @@
-/** @jsx h */
 import * as core from '@dark-engine/core';
 
 import { InMemoryCache, type CacheEventData, type MonitorEventData } from '../cache';
