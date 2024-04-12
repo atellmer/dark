@@ -3,7 +3,6 @@ import {
   type MutableRef,
   component,
   useMemo,
-  useEffect,
   useLayoutEffect,
   useState,
   forwardRef,
@@ -73,7 +72,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
         };
       }, []);
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         if (!activeRoute || activeRoute.marker === WILDCARD_MARK) return;
         const url1 = join(url, search, hash);
         const url2 = join(mergePaths(url, activeRoute.getPath()), search, hash);

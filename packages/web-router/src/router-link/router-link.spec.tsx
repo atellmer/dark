@@ -10,7 +10,6 @@ import { RouterLink } from './router-link';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
 });
 
@@ -68,7 +67,6 @@ describe('@web-router/router-link', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(content('', replacer));
 
     const link1 = host.querySelector('a[href="/first"]');
@@ -111,7 +109,6 @@ describe('@web-router/router-link', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<a href="/" class="my-link custom-active-link">first</a>`);
   });
 
@@ -144,7 +141,6 @@ describe('@web-router/router-link', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<a href="/" class="${ACTIVE_LINK_CLASSNAME}">first</a>`);
 
     click(host.querySelector('a'));

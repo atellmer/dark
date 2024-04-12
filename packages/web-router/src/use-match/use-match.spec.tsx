@@ -10,7 +10,6 @@ import { useMatch, type Match } from './use-match';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
 });
 
@@ -47,14 +46,12 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(match).toBeTruthy();
     expect(match.path).toBe('');
     expect(match.url).toBe('');
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>root</div>"`);
 
     history.push('/second/10');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('second/:id');
@@ -97,21 +94,18 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(match).toBeTruthy();
     expect(match.path).toBe('');
     expect(match.url).toBe('');
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>root</div>"`);
 
     history.push('/first');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>first</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('first');
     expect(match.url).toBe('/first');
 
     history.push('/second');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('second');
@@ -154,21 +148,18 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(match).toBeTruthy();
     expect(match.path).toBe('');
     expect(match.url).toBe('');
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>root</div>"`);
 
     history.push('/first/');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>first</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('first');
     expect(match.url).toBe('/first');
 
     history.push('/second/');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('second');
@@ -211,21 +202,18 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(match).toBeTruthy();
     expect(match.path).toBe('');
     expect(match.url).toBe('');
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>root</div>"`);
 
     history.push('/first');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>first</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('first');
     expect(match.url).toBe('/first');
 
     history.push('/second');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second</div>"`);
     expect(match).toBeTruthy();
     expect(match.path).toBe('second');
@@ -274,10 +262,8 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
 
     history.push('/second/child');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second: <div>child</div></div>"`);
     expect(match1).toBeTruthy();
     expect(match1.path).toBe('second');
@@ -340,10 +326,8 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
 
     history.push('/second/child/another');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second: <div>child: <div>another</div></div></div>"`);
     expect(match1).toBeTruthy();
     expect(match1.path).toBe('second');
@@ -409,10 +393,8 @@ describe('@web-router/use-match', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
 
     history.push('/second/child/10/another');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second: <div>child: <div>another</div></div></div>"`);
     expect(match1).toBeTruthy();
     expect(match1.path).toBe('second');
@@ -425,7 +407,6 @@ describe('@web-router/use-match', () => {
     expect(match3.url).toBe('/second/child/10/another');
 
     history.push('/second/child/20/another?q=xxx');
-    jest.runAllTimers();
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>second: <div>child: <div>another</div></div></div>"`);
     expect(match1).toBeTruthy();
     expect(match1.path).toBe('second');

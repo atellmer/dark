@@ -1,6 +1,6 @@
 import { type DarkElement, type MutableRef, component, useRef } from '@dark-engine/core';
 
-import { createBrowserEnv, replacer, resetBrowserHistory } from '@test-utils';
+import { createBrowserEnv, replacer, resetBrowserHistory, sleep } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { type RouterRef, Router } from './router';
 
@@ -8,21 +8,15 @@ type AppProps = {
   url: string;
 };
 
-let { host, render: $render, unmount } = createBrowserEnv();
+let { host, render, unmount } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
-  ({ host, render: $render, unmount } = createBrowserEnv());
+  ({ host, render, unmount } = createBrowserEnv());
 });
 
 afterEach(() => {
   resetBrowserHistory();
 });
-
-const render = (element: DarkElement) => {
-  $render(element);
-  jest.runAllTimers();
-};
 
 describe('@web-router/router', () => {
   test('can render simple routes correctly', () => {
@@ -1006,7 +1000,7 @@ describe('@web-router/router', () => {
     expect(host.innerHTML).toBe(`<first><div>root</div></first>`);
   });
 
-  test('a history updates correctly with wildcard routing', () => {
+  test('a history updates correctly with wildcard routing', async () => {
     let routerRef: MutableRef<RouterRef> = null;
     const routes: Routes = [
       {
@@ -1044,7 +1038,7 @@ describe('@web-router/router', () => {
     render(<App />);
 
     routerRef.current.navigateTo('/broken/');
-    jest.runAllTimers();
+    await sleep(0);
     expect(host.innerHTML).toBe(`<div>404</div>`);
     expect(location.href).toBe('http://localhost/broken/');
   });
