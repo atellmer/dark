@@ -2,7 +2,7 @@ import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponen
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { type Context, type ContextProviderValue } from '../context';
 import { detectIsComponent } from '../component';
-import { detectIsFunction } from '../utils';
+import { detectIsFunction, error } from '../utils';
 import { type Atom } from '../atom';
 import { $$scope } from '../scope';
 
@@ -72,11 +72,14 @@ class Fiber<N = NativeElement> {
     }
   }
 
-  setError(error: Error) {
+  setError(err: Error) {
     if (detectIsFunction(this.catch)) {
-      this.catch(error);
+      this.catch(err);
+      error(err);
     } else if (this.parent) {
-      this.parent.setError(error);
+      this.parent.setError(err);
+    } else {
+      throw err;
     }
   }
 

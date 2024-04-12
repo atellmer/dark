@@ -381,7 +381,6 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
       if (err instanceof Promise) throw err;
       component.children = [];
       fiber.setError(err);
-      error(err);
     }
   } else if (detectIsVirtualNodeFactory(inst)) {
     inst = inst();

@@ -8,11 +8,11 @@ type AppProps = {
   url: string;
 };
 
-let { host, render: $render } = createBrowserEnv();
+let { host, render: $render, unmount } = createBrowserEnv();
 
 beforeEach(() => {
   jest.useFakeTimers();
-  ({ host, render: $render } = createBrowserEnv());
+  ({ host, render: $render, unmount } = createBrowserEnv());
 });
 
 afterEach(() => {
@@ -72,6 +72,10 @@ describe('@web-router/router', () => {
       {
         path: 'third',
         component: component(() => <div>third</div>),
+      },
+      {
+        path: '**',
+        component: component(() => null),
       },
     ];
 
@@ -154,9 +158,9 @@ describe('@web-router/router', () => {
     render(<App url='/second/b' />);
     expect(host.innerHTML).toBe(`<second><div>b</div></second>`);
 
-    render(<App url='/second/b/some/broken/route' />);
-    expect(host.innerHTML).toBe(replacer);
+    expect(() => render(<App url='/second/b/some/broken/route' />)).toThrowError();
 
+    unmount();
     render(<App url='/third' />);
     expect(host.innerHTML).toBe(`<div>third</div>`);
   });

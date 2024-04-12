@@ -42,6 +42,10 @@ describe('@web-router/router-link', () => {
         path: 'third',
         component: component(() => <div>third</div>),
       },
+      {
+        path: '**',
+        component: component(() => null),
+      },
     ];
 
     const App = component(() => {
