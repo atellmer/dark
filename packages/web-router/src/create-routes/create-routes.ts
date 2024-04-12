@@ -1,6 +1,15 @@
 import { type DarkElement, type ComponentFactory, type SlotProps, keyBy, detectIsString } from '@dark-engine/core';
 
-import { pipe, splitBySlash, normalizePath, trimSlashes, detectIsParam, getParamName, sort } from '../utils';
+import {
+  pipe,
+  splitBySlash,
+  normalizePath,
+  trimSlashes,
+  detectIsParam,
+  getParamName,
+  sort,
+  reduceSlashes,
+} from '../utils';
 import { SLASH_MARK, WILDCARD_MARK, ROOT_MARK } from '../constants';
 import { CurrentPathContext } from '../context';
 import type { Routes, RouteDescriptor, PathMatchStrategy, Params } from './types';
@@ -67,6 +76,8 @@ class Route {
   }
 }
 
+const trim = (x: string) => trimSlashes(reduceSlashes(x.replaceAll(ROOT_MARK, SLASH_MARK)));
+
 function createRoutes(routes: Routes, prefix = SLASH_MARK, parent: Route = null): Array<Route> {
   const $routes: Array<Route> = [];
 
@@ -77,11 +88,11 @@ function createRoutes(routes: Routes, prefix = SLASH_MARK, parent: Route = null)
   }
 
   if (!parent) {
-    const map = keyBy($routes, x => x.path, true) as Record<string, Route>;
+    const map = keyBy($routes, x => trim(x.path), true) as Record<string, Route>;
 
     for (const $route of $routes) {
       if ($route.redirectTo) {
-        $route.redirectTo.route = map[$route.redirectTo.path] || null;
+        $route.redirectTo.route = map[trim($route.redirectTo.path)] || null;
       }
     }
   }
@@ -263,10 +274,52 @@ function getParamsMap(path: string, route: Route): Params {
   return map;
 }
 
-function resolveRoute(path: string, routes: Array<Route>) {
-  const activeRoute = resolve(path, routes);
+function resolve2(url: string, routes: Array<Route>): Route | null {
+  const a = splitBySlash(url);
+
+  let [route] = routes.filter(x => {
+    const path = reduceSlashes(x.path.replaceAll(ROOT_MARK, SLASH_MARK));
+    const b = splitBySlash(path);
+    const max = Math.max(a.length, b.length);
+
+    for (let i = 0; i < max; i++) {
+      const part1 = a[i];
+      const part2 = b[i];
+
+      if (detectIsParam(part2)) continue;
+      if (part1 !== part2) return false;
+    }
+
+    return true;
+  });
+
+  if (route && route.redirectTo) {
+    route = redirect()(route);
+  }
+
+  if (!route) {
+    let wild = wildcard(url, routes)(route);
+
+    if (wild && wild.redirectTo) {
+      wild = redirect()(wild);
+    }
+
+    route = wild;
+  }
+
+  route = root()(route);
+
+  if (route && route.redirectTo) {
+    route = redirect()(route);
+  }
+
+  return route;
+}
+
+function resolveRoute(url: string, routes: Array<Route>) {
+  const activeRoute = resolve2(url, routes);
   const slot = activeRoute ? activeRoute.render() : null;
-  const params = activeRoute ? getParamsMap(path, activeRoute) : null;
+  const params = activeRoute ? getParamsMap(url, activeRoute) : null;
   const value = { activeRoute, slot, params };
 
   return value;
