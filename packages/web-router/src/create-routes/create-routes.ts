@@ -231,10 +231,10 @@ function getParamsMap(url: string, route: Route): Params {
 }
 
 function resolveRoute(url: string, routes: Array<Route>) {
-  const activeRoute = resolve(url, routes);
-  const slot = activeRoute ? activeRoute.render() : null;
-  const params = activeRoute ? getParamsMap(url, activeRoute) : null;
-  const value = { activeRoute, slot, params };
+  const route = resolve(url, routes);
+  const slot = route.render();
+  const params = getParamsMap(url, route);
+  const value = { activeRoute: route, slot, params };
 
   return value;
 }
