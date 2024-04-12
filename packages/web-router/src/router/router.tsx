@@ -62,7 +62,9 @@ const Router = forwardRef<RouterProps, RouterRef>(
         const unsubscribe = history.subscribe(url => {
           const href = join(protocol, PROTOCOL_MARK, host, url);
 
-          setLocation(createRouterLocation(href));
+          if (href !== scope.location.url) {
+            setLocation(createRouterLocation(href));
+          }
         });
 
         return () => {
@@ -79,7 +81,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
         if (url1 !== url2) {
           history.replace(url2);
         }
-      }, [url, search, hash]);
+      }, [location]);
 
       useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
         navigateTo: (url: string) => nextTick(() => history.push(url)),
