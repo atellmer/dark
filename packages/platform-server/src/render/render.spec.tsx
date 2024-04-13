@@ -239,4 +239,23 @@ describe('@platform-server/render', () => {
       expect(err).toBeTruthy();
     }
   });
+
+  test('renders void tags correctly', async () => {
+    const App = component(() => {
+      return (
+        <div>
+          <br />
+          <input type='text' />
+          <textarea></textarea>
+          <div></div>
+          <span></span>
+          <img src='/xxx.jpeg' alt='xxx' />
+        </div>
+      );
+    });
+
+    expect(await renderToString(<App />)).toMatchInlineSnapshot(
+      `"<div><br><input type="text"><textarea></textarea><div></div><span></span><img src="/xxx.jpeg" alt="xxx"></div>"`,
+    );
+  });
 });
