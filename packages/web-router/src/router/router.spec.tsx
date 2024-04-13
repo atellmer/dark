@@ -1,4 +1,4 @@
-import { type DarkElement, type MutableRef, component, useRef } from '@dark-engine/core';
+import { type DarkElement, type MutableRef, component, useRef, Fragment } from '@dark-engine/core';
 
 import { createBrowserEnv, replacer, resetBrowserHistory, sleep } from '@test-utils';
 import { type Routes } from '../create-routes';
@@ -1041,5 +1041,159 @@ describe('@web-router/router', () => {
     await sleep(0);
     expect(host.innerHTML).toBe(`<div>404</div>`);
     expect(location.href).toBe('http://localhost/broken/');
+  });
+
+  test('can render nested indexed routes', () => {
+    // https://github.com/atellmer/dark/issues/53
+    const routes: Routes = [
+      {
+        path: '/',
+        component: component<{ slot: DarkElement }>(({ slot }) => <root>{slot}</root>),
+        children: [
+          {
+            path: '/',
+            component: component(() => <home>/</home>),
+          },
+          {
+            path: 'contact',
+            component: component(() => <contact>/</contact>),
+          },
+          {
+            path: 'de',
+            component: Fragment,
+            children: [
+              {
+                path: '/',
+                component: component(() => <home>de</home>),
+              },
+              {
+                path: 'contact',
+                component: component(() => <contact>de</contact>),
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: '**',
+        redirectTo: '/',
+      },
+    ];
+
+    const App = component<AppProps>(({ url }) => {
+      return (
+        <Router routes={routes} url={url}>
+          {slot => slot}
+        </Router>
+      );
+    });
+
+    render(<App url='/' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><home>/</home></root>"`);
+
+    render(<App url='/contact' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><contact>/</contact></root>"`);
+
+    render(<App url='/de' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><home>de</home></root>"`);
+
+    render(<App url='/de/contact' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><contact>de</contact></root>"`);
+
+    render(<App url='/de///contact///' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><contact>de</contact></root>"`);
+
+    render(<App url='/broken' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><home>/</home></root>"`);
+
+    render(<App url='/de/broken' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><home>/</home></root>"`);
+
+    render(<App url='/de/contact/broken' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><home>/</home></root>"`);
+  });
+
+  test('can render i18n static routes', () => {
+    // https://github.com/atellmer/dark/issues/53
+    const routes: Routes = [
+      ...['en', 'it', 'fr'].map(lang => ({
+        path: lang,
+        component: component<{ slot: DarkElement }>(({ slot }) => (
+          <root>
+            {lang}:{slot || '/'}
+          </root>
+        )),
+        children: [
+          {
+            path: 'contact',
+            component: component(() => <contact>{lang}</contact>),
+          },
+          {
+            path: '**',
+            pathMatch: 'full',
+            redirectTo: '/not-found',
+          },
+        ],
+      })),
+      {
+        path: '',
+        component: component<{ slot: DarkElement }>(({ slot }) => <root>{slot || '/'}</root>),
+        children: [
+          {
+            path: 'contact',
+            component: component(() => <contact>/</contact>),
+          },
+          {
+            path: 'not-found',
+            component: component(() => <not-found>/</not-found>),
+          },
+        ],
+      },
+      {
+        path: '**',
+        redirectTo: 'not-found',
+      },
+    ] as Routes;
+
+    const App = component<AppProps>(({ url }) => {
+      return (
+        <Router routes={routes} url={url}>
+          {slot => slot}
+        </Router>
+      );
+    });
+
+    render(<App url='/' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>/</root>"`);
+
+    render(<App url='/contact' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><contact>/</contact></root>"`);
+
+    render(<App url='/en' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>en:/</root>"`);
+
+    render(<App url='/en/contact' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>en:<contact>en</contact></root>"`);
+
+    render(<App url='/it' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>it:/</root>"`);
+
+    render(<App url='/it/contact' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>it:<contact>it</contact></root>"`);
+
+    render(<App url='/fr' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>fr:/</root>"`);
+
+    render(<App url='/fr/contact' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root>fr:<contact>fr</contact></root>"`);
+
+    render(<App url='/broken' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><not-found>/</not-found></root>"`);
+
+    render(<App url='/en/broken' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><not-found>/</not-found></root>"`);
+
+    render(<App url='/en/contact/broken' />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<root><not-found>/</not-found></root>"`);
   });
 });

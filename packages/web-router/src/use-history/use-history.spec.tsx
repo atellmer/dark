@@ -9,6 +9,7 @@ import { RouterHistory } from '../history';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
+  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
 });
 
@@ -48,18 +49,22 @@ describe('@web-router/use-history', () => {
     expect(location.href).toBe('http://localhost/');
 
     history.push('/second/');
+    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(location.href).toBe('http://localhost/second');
 
     history.push('/third/');
+    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>third</div>`);
     expect(location.href).toBe('http://localhost/third');
 
     history.push('/second');
+    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(location.href).toBe('http://localhost/second');
 
     history.push('/second');
+    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(location.href).toBe('http://localhost/second');
   });
