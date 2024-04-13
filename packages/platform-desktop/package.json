@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/platform-desktop",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Dark renderer to desktop platforms like Windows, Linux, macOS via Nodegui and Qt",
   "author": "AlexPlex",
   "license": "MIT",
