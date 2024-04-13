@@ -70,8 +70,9 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
           if (isDifferent || prevURL !== nextURL) {
             const href = join(protocol, PROTOCOL_MARK, host, nextURL);
+            const location = createRouterLocation(href);
 
-            setLocation(createRouterLocation(href));
+            setLocation(location);
             isDifferent && !detectIsWildcard(nextRoute) && history.replace(nextURL);
           }
         });

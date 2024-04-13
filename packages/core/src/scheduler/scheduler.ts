@@ -1,11 +1,11 @@
+import { ROOT, HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
+import { getTime, detectIsFunction, detectIsPromise, nextTick } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
 import { type SetPendingStatus } from '../start-transition';
 import { type Callback } from '../shared';
-import { type Fiber } from '../fiber';
-import { ROOT, HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
-import { getTime, detectIsFunction, nextTick } from '../utils';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
+import { type Fiber } from '../fiber';
 
 class MessageChannel extends EventEmitter<PortEvent> {
   port1: MessagePort = null;
@@ -170,9 +170,10 @@ class Scheduler {
 
   private execute() {
     const isBusy = detectIsBusy();
-    const { high, normal, low } = this.getQueues();
 
     if (!isBusy && !this.isMessageLoopRunning) {
+      const { high, normal, low } = this.getQueues();
+
       this.pick(high) || this.pick(normal) || this.pick(low);
     }
   }
@@ -187,26 +188,33 @@ class Scheduler {
   }
 
   private requestCallback(callback: WorkLoop) {
-    callback(false);
-    this.task = null;
-    this.execute();
+    const result = callback(false);
+
+    if (detectIsPromise(result)) {
+      result.finally(() => {
+        this.requestCallback(callback);
+      });
+    } else {
+      this.task = null;
+      this.execute();
+    }
   }
 
   private performWorkUntilDeadline() {
     if (this.scheduledCallback) {
       this.deadline = getTime() + YIELD_INTERVAL;
-      const hasMoreWork = this.scheduledCallback(true);
+      const result = this.scheduledCallback(true);
 
-      if (hasMoreWork) {
+      if (detectIsPromise(result)) {
+        result.finally(() => {
+          this.port.postMessage(null);
+        });
+      } else if (result) {
         this.port.postMessage(null);
       } else {
-        if (hasMoreWork === null) {
-          setTimeout(() => this.port.postMessage(null)); // has promise
-        } else {
-          this.complete(this.task);
-          this.reset();
-          this.execute();
-        }
+        this.complete(this.task);
+        this.reset();
+        this.execute();
       }
     } else {
       this.isMessageLoopRunning = false;
