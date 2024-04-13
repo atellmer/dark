@@ -1,11 +1,11 @@
 import { useActiveRouteContext, checkContextValue } from '../context';
 
 function useLocation() {
-  const activeRoute = useActiveRouteContext();
+  const active = useActiveRouteContext();
 
-  checkContextValue(activeRoute);
+  checkContextValue(active);
 
-  return activeRoute.location;
+  return active.location;
 }
 
 export { useLocation };

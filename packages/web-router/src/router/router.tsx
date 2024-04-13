@@ -11,11 +11,11 @@ import {
   detectIsString,
 } from '@dark-engine/core';
 
-import { SLASH_MARK, PROTOCOL_MARK, WILDCARD_MARK } from '../constants';
+import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
+import { type RouterLocation, createRouterLocation } from '../location';
+import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
 import { normalizePath, join, parseURL } from '../utils';
 import { createRouterHistory } from '../history';
-import { type RouterLocation, createRouterLocation } from '../location';
-import { type Routes, type Route, createRoutes, resolveRoute, mergePaths } from '../create-routes';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -45,10 +45,10 @@ const Router = forwardRef<RouterProps, RouterRef>(
       const history = useMemo(() => createRouterHistory(sourceURL), []);
       const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
       const { protocol, host, pathname: url, search, hash } = location;
-      const { activeRoute, slot: $slot, params } = useMemo(() => resolveRoute(url, routes), [url]);
-      const scope = useMemo(() => ({ location, fromOwnEffect: false }), []);
+      const { route, slot: $slot, params } = useMemo(() => resolveRoute(url, routes), [url]);
+      const scope = useMemo(() => ({ location }), []);
       const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-      const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, activeRoute, params }), [location]);
+      const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
 
       scope.location = location;
 
@@ -60,21 +60,20 @@ const Router = forwardRef<RouterProps, RouterRef>(
       }, [sourceURL]);
 
       useLayoutEffect(() => {
-        const unsubscribe = history.subscribe(url => {
+        const unsubscribe = history.subscribe(candidateURL => {
           const { pathname: url1, search: search1, hash: hash1 } = scope.location;
-          const { pathname: url2, search: search2, hash: hash2 } = parseURL(url);
-          const { activeRoute } = resolveRoute(url2, routes);
+          const { pathname: url2, search: search2, hash: hash2 } = parseURL(candidateURL);
+          const { route: nextRoute } = resolveRoute(url2, routes);
           const prevURL = join(url1, search1, hash1);
-          const nextURL = merge(url2, activeRoute, search2, hash2);
+          const nextURL = merge(url2, nextRoute, search2, hash2);
+          const isDifferent = candidateURL !== nextURL;
 
-          if (url !== nextURL || prevURL !== nextURL) {
+          if (isDifferent || prevURL !== nextURL) {
             const href = join(protocol, PROTOCOL_MARK, host, nextURL);
 
             setLocation(createRouterLocation(href));
-            !scope.fromOwnEffect && activeRoute.marker !== WILDCARD_MARK && history.replace(nextURL);
+            isDifferent && !detectIsWildcard(nextRoute) && history.replace(nextURL);
           }
-
-          scope.fromOwnEffect = false;
         });
 
         return () => {
@@ -85,12 +84,11 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
       // !
       useLayoutEffect(() => {
-        if (activeRoute.marker === WILDCARD_MARK) return;
+        if (detectIsWildcard(route)) return;
         const prevURL = join(url, search, hash);
-        const nextURL = merge(url, activeRoute, search, hash);
+        const nextURL = merge(url, route, search, hash);
 
         if (prevURL !== nextURL) {
-          scope.fromOwnEffect = true;
           history.replace(nextURL);
         }
       }, []);
@@ -109,7 +107,5 @@ const Router = forwardRef<RouterProps, RouterRef>(
     { displayName: 'Router' },
   ),
 );
-
-const merge = (url: string, route: Route, s: string, h: string) => join(mergePaths(url, route.getPath()), s, h);
 
 export { Router };

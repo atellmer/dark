@@ -9,12 +9,12 @@ export type Match = {
 };
 
 function useMatch() {
-  const activeRoute = useActiveRouteContext();
-  checkContextValue(activeRoute);
+  const active = useActiveRouteContext();
+  checkContextValue(active);
   const path = useCurrentPathContext();
   const {
     location: { pathname: url },
-  } = activeRoute;
+  } = active;
   const $url = useMemo(() => (path ? mergePaths(url, path) : ''), [url, path]);
   const value: Match = { path, url: $url };
 

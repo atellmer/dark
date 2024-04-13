@@ -230,11 +230,17 @@ function getParamsMap(url: string, route: Route): Params {
   return map;
 }
 
+type ResolveRouteValue = {
+  route: Route;
+  slot: DarkElement;
+  params: Params;
+};
+
 function resolveRoute(url: string, routes: Array<Route>) {
   const route = resolve(url, routes);
   const slot = route.render();
   const params = getParamsMap(url, route);
-  const value = { activeRoute: route, slot, params };
+  const value: ResolveRouteValue = { route, slot, params };
 
   return value;
 }
@@ -243,4 +249,8 @@ const createRootPath = (path: string) => (path === SLASH_MARK ? '' : path);
 
 const split = (url: string, path: string) => [splitBySlash(url), splitBySlash(path)];
 
-export { type Route, createRoutes, resolve, resolveRoute, mergePaths };
+const merge = (url: string, route: Route, s: string, h: string) => join(mergePaths(url, route.getPath()), s, h);
+
+const detectIsWildcard = (route: Route) => route.marker === WILDCARD_MARK;
+
+export { type Route, createRoutes, resolve, resolveRoute, mergePaths, merge, detectIsWildcard };
