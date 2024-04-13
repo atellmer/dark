@@ -1,5 +1,5 @@
-export { type RouterRef, Router } from './router';
 export { type Routes } from './create-routes';
+export { type RouterRef, Router } from './router';
 export { useLocation } from './use-location';
 export { RouterLink } from './router-link';
 export { useHistory } from './use-history';

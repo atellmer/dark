@@ -3,19 +3,19 @@ import {
   type MutableRef,
   component,
   useMemo,
-  useEffect,
   useLayoutEffect,
   useState,
   forwardRef,
   useImperativeHandle,
   nextTick,
+  detectIsString,
 } from '@dark-engine/core';
 
-import { SLASH_MARK, PROTOCOL_MARK, WILDCARD_MARK } from '../constants';
-import { normalizePath, join } from '../utils';
-import { createRouterHistory } from '../history';
+import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
 import { type RouterLocation, createRouterLocation } from '../location';
-import { type Routes, createRoutes, resolveRoute, mergePathes } from '../create-routes';
+import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
+import { normalizePath, join, parseURL } from '../utils';
+import { createRouterHistory } from '../history';
 import {
   type RouterHistoryContextValue,
   type ActiveRouteContextValue,
@@ -38,34 +38,43 @@ export type RouterRef = {
 
 const Router = forwardRef<RouterProps, RouterRef>(
   component(
-    ({ url, baseURL = SLASH_MARK, routes: sourceRoutes, slot }, ref) => {
+    ({ url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, slot }, ref) => {
       if (useActiveRouteContext()) throw new Error(`[web-router]: the parent active route's context detected!`);
-      const sourceURL = url || window.location.href;
+      const sourceURL = fullURL || window.location.href;
       const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
       const history = useMemo(() => createRouterHistory(sourceURL), []);
       const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
-      const { protocol, host, pathname: path, search, hash } = location;
-      const { activeRoute, slot: $slot, params } = resolveRoute(path, routes);
+      const { protocol, host, pathname: url, search, hash } = location;
+      const { route, slot: $slot, params } = useMemo(() => resolveRoute(url, routes), [url]);
       const scope = useMemo(() => ({ location }), []);
       const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
-      const routerContext = useMemo<ActiveRouteContextValue>(
-        () => ({ location, activeRoute, params }),
-        [path, search, hash],
-      );
+      const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
 
       scope.location = location;
 
       useLayoutEffect(() => {
+        if (!detectIsString(fullURL)) return;
         if (sourceURL !== scope.location.url) {
           setLocation(createRouterLocation(sourceURL));
         }
       }, [sourceURL]);
 
       useLayoutEffect(() => {
-        const unsubscribe = history.subscribe(url => {
-          const href = join(protocol, PROTOCOL_MARK, host, url);
+        const unsubscribe = history.subscribe(candidateURL => {
+          const { pathname: url1, search: search1, hash: hash1 } = scope.location;
+          const { pathname: url2, search: search2, hash: hash2 } = parseURL(candidateURL);
+          const { route: nextRoute } = resolveRoute(url2, routes);
+          const prevURL = join(url1, search1, hash1);
+          const nextURL = merge(url2, nextRoute, search2, hash2);
+          const isDifferent = candidateURL !== nextURL;
 
-          setLocation(createRouterLocation(href));
+          if (isDifferent || prevURL !== nextURL) {
+            const href = join(protocol, PROTOCOL_MARK, host, nextURL);
+            const location = createRouterLocation(href);
+
+            setLocation(location);
+            isDifferent && !detectIsWildcard(nextRoute) && history.replace(nextURL);
+          }
         });
 
         return () => {
@@ -74,15 +83,16 @@ const Router = forwardRef<RouterProps, RouterRef>(
         };
       }, []);
 
-      useEffect(() => {
-        if (!activeRoute || activeRoute.marker === WILDCARD_MARK) return;
-        const url = join(path, search, hash);
-        const $url = join(mergePathes(path, activeRoute.getPath()), search, hash);
+      // !
+      useLayoutEffect(() => {
+        if (detectIsWildcard(route)) return;
+        const prevURL = join(url, search, hash);
+        const nextURL = merge(url, route, search, hash);
 
-        if (url !== $url) {
-          history.replace($url);
+        if (prevURL !== nextURL) {
+          history.replace(nextURL);
         }
-      }, [path, search, hash]);
+      }, []);
 
       useImperativeHandle(ref as MutableRef<RouterRef>, () => ({
         navigateTo: (url: string) => nextTick(() => history.push(url)),

@@ -11,7 +11,6 @@ import { useLocation } from './use-location';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
 });
 
@@ -49,14 +48,12 @@ describe('@web-router/use-location', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(location).toBeInstanceOf(RouterLocation);
     expect(location.pathname).toBe('/');
     expect(location.key).toBeTruthy();
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/second');
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second</div>`);
     expect(location).toBeInstanceOf(RouterLocation);
     expect(location.pathname).toBe('/second');

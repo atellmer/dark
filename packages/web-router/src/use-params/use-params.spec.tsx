@@ -10,7 +10,6 @@ import { useParams } from './use-params';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
 });
 
@@ -73,19 +72,15 @@ describe('@web-router/use-params', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>root</div>`);
 
     history.push('/first/1');
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>first: 1</div>`);
 
     history.push('/second/2');
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second: 2${replacer}</div>`);
 
     history.push('/second/2/a/3');
-    jest.runAllTimers();
     expect(host.innerHTML).toBe(`<div>second: 2<div>a: 2|3</div></div>`);
   });
 });

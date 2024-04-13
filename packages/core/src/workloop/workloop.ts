@@ -22,6 +22,7 @@ import {
   detectIsArray,
   detectIsFunction,
   detectIsTextBased,
+  detectIsPromise,
   createIndexKey,
   trueFn,
 } from '../utils';
@@ -53,12 +54,9 @@ import { type RestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
 import { unmountFiber } from '../unmount';
 
-let hasPendingPromise = false;
+export type WorkLoop = (isAsync: boolean) => boolean | Promise<unknown> | null;
 
-export type WorkLoop = (isAsync: boolean) => boolean;
-
-function workLoop(isAsync: boolean): boolean | null {
-  if (hasPendingPromise) return null;
+function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
   const $scope = $$scope();
   const wipFiber = $scope.getWorkInProgress();
   let unit = $scope.getNextUnitOfWork();
@@ -78,12 +76,8 @@ function workLoop(isAsync: boolean): boolean | null {
       commit($scope);
     }
   } catch (err) {
-    if (err instanceof Promise) {
-      hasPendingPromise = true;
-      err.finally(() => {
-        hasPendingPromise = false;
-        !isAsync && workLoop(false);
-      });
+    if (detectIsPromise(err)) {
+      return err;
     } else {
       const emitter = $scope.getEmitter();
 
@@ -378,10 +372,9 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
       component.children = result as Array<Instance>;
       platform.detectIsPortal(inst) && fiber.markHost(PORTAL_HOST_MASK);
     } catch (err) {
-      if (err instanceof Promise) throw err;
+      if (detectIsPromise(err)) throw err;
       component.children = [];
       fiber.setError(err);
-      error(err);
     }
   } else if (detectIsVirtualNodeFactory(inst)) {
     inst = inst();

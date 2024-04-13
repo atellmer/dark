@@ -23,6 +23,8 @@ const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
 
 const detectIsFalsy = (o: any) => detectIsEmpty(o) || o === false;
 
+const detectIsPromise = <T = unknown>(o: any): o is Promise<T> => o instanceof Promise;
+
 const getTime = () => Date.now();
 
 const dummyFn = () => {};
@@ -102,6 +104,7 @@ export {
   detectIsNull,
   detectIsEmpty,
   detectIsFalsy,
+  detectIsPromise,
   getTime,
   dummyFn,
   trueFn,

@@ -476,7 +476,7 @@ const GlobalStyle = createGlobalStyle<{ $light?: boolean }>`
 ```
 ## Theming
 
-The styled offers complete theming support by exporting a `<ThemeProvider>` wrapper component. This component supplies a theme to all its child components through the context API. Consequently, all styled components in the render tree, regardless of their depth, can access the provided theme.
+The styled offers complete theming support by exporting a `<ThemeProvider>` wrapper component. This component supplies a theme to all its child components through the `Context API`. Consequently, all styled components in the render tree, regardless of their depth, can access the provided theme.
 
 ```tsx
 type Theme = {
@@ -522,7 +522,7 @@ const style = useStyle(styled => ({
 
 ## Server Side Rendering
 
-The styled supports server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a context API.
+The styled supports server-side rendering, complemented by stylesheet rehydration. Essentially, each time your application is rendered on the server, a `ServerStyleSheet` can be created and a provider can be added to your component tree, which accepts styles through a `Context API`. Please note that `sheet.collectStyles()` already contains the provider and you do not need to do anything additional.
 
 ### Rendering to string
 
@@ -535,7 +535,7 @@ const sheet = new ServerStyleSheet();
 try {
   const app = await renderToString(sheet.collectStyles(<App />));
   const tags = sheet.getStyleTags();
-  const mark = '{{%styles%}}' // somewhere in your <head></head>
+  const mark = '__styled__' // somewhere in your <head></head>
   const page = `<!DOCTYPE html>${app}`.replace(mark, tags.join(''));
 
   res.statusCode = 200;

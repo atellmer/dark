@@ -44,7 +44,6 @@ describe('@web-router/use-history', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
     expect(history).toBeInstanceOf(RouterHistory);
     expect(host.innerHTML).toBe(`<div>root</div>`);
     expect(location.href).toBe('http://localhost/');

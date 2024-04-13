@@ -1,13 +1,7 @@
-import { component } from '@dark-engine/core';
-import { resetBrowserHistory } from '@test-utils';
+import { component, Fragment } from '@dark-engine/core';
 
 import { Routes } from './types';
 import { createRoutes, resolve } from './create-routes';
-import { ROOT_MARK } from '../constants';
-
-afterEach(() => {
-  resetBrowserHistory();
-});
 
 describe('@web-router/create-routes', () => {
   test('can match simple routes correctly', () => {
@@ -52,13 +46,14 @@ describe('@web-router/create-routes', () => {
     ];
     const $routes = createRoutes(routes);
 
-    expect(resolve('/', $routes)).toBe(null);
-    expect(resolve('', $routes)).toBe(null);
-    expect(resolve('/xxx', $routes)).toBe(null);
+    expect(() => resolve('/', $routes)).toThrowError();
+    expect(() => resolve('', $routes)).toThrowError();
+    expect(() => resolve('/xxx', $routes)).toThrowError();
     expect(resolve('/second', $routes).path).toBe('second');
-    expect(resolve('/second/1', $routes)).toBe(null);
-    expect(resolve('/first/1/xxx', $routes)).toBe(null);
-    expect(resolve('/some/broken/url', $routes)).toBe(null);
+    expect(() => resolve('/second/1', $routes)).toThrowError();
+    expect(() => resolve('/first/1/xxx', $routes)).toThrowError();
+    expect(() => resolve('/some/broken/url', $routes)).toThrowError();
+    expect(resolve('/first', $routes).path).toBe('first');
   });
 
   test('can match nested routes correctly', () => {
@@ -92,7 +87,7 @@ describe('@web-router/create-routes', () => {
     expect(resolve('/second', $routes).path).toBe('second');
     expect(resolve('/second/a', $routes).path).toBe('second/a');
     expect(resolve('/second/b', $routes).path).toBe('second/b');
-    expect(resolve('/second/b/some/broken/route', $routes)).toBe(null);
+    expect(() => resolve('/second/b/some/broken/route', $routes)).toThrowError();
     expect(resolve('/third', $routes).path).toBe('third');
   });
 
@@ -280,9 +275,9 @@ describe('@web-router/create-routes', () => {
     ];
     const $routes = createRoutes(routes);
 
-    expect(resolve('/', $routes).path).toBe(`${ROOT_MARK}`);
-    expect(resolve('', $routes).path).toBe(`${ROOT_MARK}`);
-    expect(resolve('/broken', $routes).path).toBe(`${ROOT_MARK}`);
+    expect(resolve('/', $routes).path).toBe('');
+    expect(resolve('', $routes).path).toBe('');
+    expect(resolve('/broken', $routes).path).toBe('');
     expect(resolve('/second', $routes).path).toBe(`second`);
     expect(resolve('/third', $routes).path).toBe(`third`);
   });
@@ -724,13 +719,112 @@ describe('@web-router/create-routes', () => {
     ];
     const $routes = createRoutes(routes);
 
-    expect(resolve('/', $routes).path).toBe(`first/${ROOT_MARK}`);
-    expect(resolve('/first', $routes).path).toBe(`first/${ROOT_MARK}`);
+    expect(resolve('/', $routes).path).toBe(`first`);
+    expect(resolve('/first', $routes).path).toBe(`first`);
     expect(resolve('/first/nested', $routes).path).toBe('first/nested');
     expect(resolve('/first/666', $routes).path).toBe(`first/:id`);
-    expect(resolve('/first/666/broken', $routes).path).toBe(`first/${ROOT_MARK}`);
+    expect(resolve('/first/666/broken', $routes).path).toBe(`first`);
     expect(resolve('/second', $routes).path).toBe('second');
     expect(resolve('/third/', $routes).path).toBe('third');
-    expect(resolve('/broken/url', $routes).path).toBe(`first/${ROOT_MARK}`);
+    expect(resolve('/broken/url', $routes).path).toBe(`first`);
+  });
+
+  test('can resolve nested indexed routes', () => {
+    // https://github.com/atellmer/dark/issues/53
+    const routes: Routes = [
+      {
+        path: '/',
+        component: Fragment,
+        children: [
+          {
+            path: '/',
+            component: Fragment,
+          },
+          {
+            path: 'contact',
+            component: Fragment,
+          },
+          {
+            path: 'de',
+            component: Fragment,
+            children: [
+              {
+                path: '/',
+                component: Fragment,
+              },
+              {
+                path: 'contact',
+                component: Fragment,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: '**',
+        redirectTo: '/',
+      },
+    ];
+    const $routes = createRoutes(routes);
+
+    expect(resolve('/', $routes).path).toBe(``);
+    expect(resolve('/contact', $routes).path).toBe(`contact`);
+    expect(resolve('/de', $routes).path).toBe('de');
+    expect(resolve('/de/contact', $routes).path).toBe(`de/contact`);
+    expect(resolve('/broken', $routes).path).toBe(``);
+    expect(resolve('/de/broken', $routes).path).toBe(``);
+    expect(resolve('/de/contact/broken', $routes).path).toBe(``);
+  });
+
+  test('can resolve i18n static routes', () => {
+    // https://github.com/atellmer/dark/issues/53
+    const routes: Routes = [
+      ...['en', 'it', 'fr'].map(lang => ({
+        path: lang,
+        component: Fragment,
+        children: [
+          {
+            path: 'contact',
+            component: Fragment,
+          },
+          {
+            path: '**',
+            pathMatch: 'full',
+            redirectTo: '/not-found',
+          },
+        ],
+      })),
+      {
+        path: '',
+        component: Fragment,
+        children: [
+          {
+            path: 'contact',
+            component: Fragment,
+          },
+          {
+            path: 'not-found',
+            component: Fragment,
+          },
+        ],
+      },
+      {
+        path: '**',
+        redirectTo: 'not-found',
+      },
+    ] as Routes;
+    const $routes = createRoutes(routes);
+
+    expect(resolve('/', $routes).path).toBe(``);
+    expect(resolve('/contact', $routes).path).toBe(`contact`);
+    expect(resolve('/en', $routes).path).toBe('en');
+    expect(resolve('/en/contact', $routes).path).toBe(`en/contact`);
+    expect(resolve('/it', $routes).path).toBe('it');
+    expect(resolve('/it/contact', $routes).path).toBe(`it/contact`);
+    expect(resolve('/fr', $routes).path).toBe('fr');
+    expect(resolve('/fr/contact', $routes).path).toBe(`fr/contact`);
+    expect(resolve('/broken', $routes).path).toBe(`not-found`);
+    expect(resolve('/en/broken', $routes).path).toBe(`not-found`);
+    expect(resolve('/en/contact/broken', $routes).path).toBe(`not-found`);
   });
 });
