@@ -144,10 +144,9 @@ function chunk(fiber: Fiber<NativeElement>) {
         inst.name === TEXTAREA_TAG
           ? (inst.attrs[VALUE_ATTR] as string) || ''
           : (inst.attrs[DANGER_HTML_CONTENT] as string) || '';
-      const close = inst.children.length === 0 && !content;
 
       addAttributes(tagElement, inst);
-      chunk = tagElement.render(true, close, content);
+      chunk = tagElement.render(true, content);
     } else if (detectIsPlainVirtualNode(fiber.inst)) {
       chunk = fiber.element.render();
     }

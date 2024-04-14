@@ -18,7 +18,7 @@ abstract class NativeElement {
   }
 
   abstract render(): string;
-  abstract render(start: boolean, close?: boolean, content?: string): string;
+  abstract render(isOpening: boolean, content?: string): string;
 }
 
 class TagNativeElement extends NativeElement {
@@ -49,14 +49,13 @@ class TagNativeElement extends NativeElement {
   }
 
   override render(...args: Array<unknown>) {
-    const start = args[0] as boolean;
-    const close = args[1] as boolean;
-    const content = args[2] as string;
+    const isOpening = args[0] as boolean;
+    const content = args[1] as string;
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
-    const chunk = start
-      ? close
-        ? `<${this.name}${attrs}></${this.name}>`
+    const chunk = isOpening
+      ? isVoid
+        ? `<${this.name}${attrs}>`
         : `<${this.name}${attrs}>${content || ''}`
       : isVoid
       ? ''

@@ -1,6 +1,6 @@
 import { component, useInsertionEffect, useLayoutEffect, useEffect, useState } from '@dark-engine/core';
 
-import { click, dom, createBrowserEnv } from '@test-utils';
+import { click, dom, createBrowserEnv, replacer } from '@test-utils';
 import { hydrateRoot } from './hydrate-root';
 
 let { host } = createBrowserEnv();
@@ -17,6 +17,8 @@ describe('@platform-browser/hydrate-root', () => {
     const App = component(() => {
       return null;
     });
+    host.innerHTML = replacer;
+
     const root = hydrateRoot(host, <App />);
 
     expect(root.unmount).toBeInstanceOf(Function);
@@ -60,6 +62,14 @@ describe('@platform-browser/hydrate-root', () => {
         </div>
       );
     });
+
+    host.innerHTML = dom`
+      <div>
+        <div>child</div>
+        <div>child</div>
+        <div>child</div>
+      </div>
+    `;
 
     const root = hydrateRoot(host, <App />);
 
