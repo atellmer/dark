@@ -284,6 +284,10 @@ function commitCreation(fiber: Fiber<NativeElement>) {
       nativeElement.splitText(fiber.inst.value.length);
     }
 
+    if (fiber.element.nodeName !== nativeElement.nodeName) {
+      throw Error('[platform-browser]: inconsistent element for hydration!');
+    }
+
     fiber.element = nativeElement;
   } else {
     if (!(fiber.mask & SHADOW_MASK)) {
