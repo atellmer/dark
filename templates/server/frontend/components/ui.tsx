@@ -43,7 +43,7 @@ const GlobalStyle = createGlobalStyle`
     text-decoration: underline;
   }
 
-  .router-link-active, .router-link-active:hover {
+  .active-link, .active-link:hover {
     text-decoration: underline;
   }
 `;

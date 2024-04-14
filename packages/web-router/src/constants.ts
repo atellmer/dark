@@ -6,4 +6,4 @@ export const PROTOCOL_MARK = '://';
 export const SEARCH_MARK = '?';
 export const HASH_MARK = '#';
 export const ROOT_MARK = '__ROOT__';
-export const ACTIVE_LINK_CLASSNAME = 'router-link-active';
+export const ACTIVE_LINK_CLASSNAME = 'active-link';

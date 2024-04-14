@@ -1,11 +1,10 @@
 import { component } from '@dark-engine/core';
 import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
-import { createBrowserEnv, replacer, click, dom, resetBrowserHistory } from '@test-utils';
+import { createBrowserEnv, click, resetBrowserHistory } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { Router } from '../router';
-import { ACTIVE_LINK_CLASSNAME } from '../constants';
-import { RouterLink } from './router-link';
+import { Link } from './link';
 
 let { host, render } = createBrowserEnv();
 
@@ -17,17 +16,8 @@ afterEach(() => {
   resetBrowserHistory();
 });
 
-describe('@web-router/router-link', () => {
+describe('@web-router/link', () => {
   test('can navigate by routes correctly', () => {
-    const content = (active: string, value: string) => dom`
-      <header>
-        <a href="/first"${active === '/first' ? ` class="${ACTIVE_LINK_CLASSNAME}"` : ''}>first</a>
-        <a href="/second"${active === '/second' ? ` class="${ACTIVE_LINK_CLASSNAME}"` : ''}>second</a>
-        <a href="/third"${active === '/third' ? ` class="${ACTIVE_LINK_CLASSNAME}"` : ''}>third</a>
-      </header>
-      <main>${value}</main>
-    `;
-
     const routes: Routes = [
       {
         path: 'first',
@@ -54,9 +44,9 @@ describe('@web-router/router-link', () => {
             return (
               <>
                 <header>
-                  <RouterLink to='/first'>first</RouterLink>
-                  <RouterLink to='/second'>second</RouterLink>
-                  <RouterLink to='/third'>third</RouterLink>
+                  <Link to='/first'>first</Link>
+                  <Link to='/second'>second</Link>
+                  <Link to='/third'>third</Link>
                 </header>
                 <main>{slot}</main>
               </>
@@ -67,23 +57,33 @@ describe('@web-router/router-link', () => {
     });
 
     render(<App />);
-    expect(host.innerHTML).toBe(content('', replacer));
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<header><a href="/first">first</a><a href="/second">second</a><a href="/third">third</a></header><main><!--dark:matter--></main>"`,
+    );
 
     const link1 = host.querySelector('a[href="/first"]');
     const link2 = host.querySelector('a[href="/second"]');
     const link3 = host.querySelector('a[href="/third"]');
 
     click(link1);
-    expect(host.innerHTML).toBe(content('/first', `<div>first</div>`));
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<header><a href="/first">first</a><a href="/second">second</a><a href="/third">third</a></header><main><div>first</div></main>"`,
+    );
 
     click(link1);
-    expect(host.innerHTML).toBe(content('/first', `<div>first</div>`));
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<header><a href="/first">first</a><a href="/second">second</a><a href="/third">third</a></header><main><div>first</div></main>"`,
+    );
 
     click(link2);
-    expect(host.innerHTML).toBe(content('/second', `<div>second</div>`));
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<header><a href="/first">first</a><a href="/second">second</a><a href="/third">third</a></header><main><div>second</div></main>"`,
+    );
 
     click(link3);
-    expect(host.innerHTML).toBe(content('/third', `<div>third</div>`));
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<header><a href="/first">first</a><a href="/second">second</a><a href="/third">third</a></header><main><div>third</div></main>"`,
+    );
   });
 
   test('can work with custom classes correctly', () => {
@@ -99,9 +99,9 @@ describe('@web-router/router-link', () => {
         <Router routes={routes}>
           {() => {
             return (
-              <RouterLink to='/' className='my-link' activeClassName='custom-active-link'>
+              <Link to='/' className='my-link'>
                 first
-              </RouterLink>
+              </Link>
             );
           }}
         </Router>
@@ -109,7 +109,7 @@ describe('@web-router/router-link', () => {
     });
 
     render(<App />);
-    expect(host.innerHTML).toBe(`<a href="/" class="my-link custom-active-link">first</a>`);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<a href="/" class="my-link">first</a>"`);
   });
 
   test('prevent default click event', () => {
@@ -131,9 +131,9 @@ describe('@web-router/router-link', () => {
         <Router routes={routes}>
           {() => {
             return (
-              <RouterLink to='/' onClick={handleClick}>
+              <Link to='/' onClick={handleClick}>
                 first
-              </RouterLink>
+              </Link>
             );
           }}
         </Router>
@@ -141,7 +141,7 @@ describe('@web-router/router-link', () => {
     });
 
     render(<App />);
-    expect(host.innerHTML).toBe(`<a href="/" class="${ACTIVE_LINK_CLASSNAME}">first</a>`);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<a href="/">first</a>"`);
 
     click(host.querySelector('a'));
     expect(defaultPrevented).toBe(true);

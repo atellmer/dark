@@ -1,5 +1,5 @@
 import { type DarkElement, component } from '@dark-engine/core';
-import { RouterLink, useMatch } from '@dark-engine/web-router';
+import { NavLink, useMatch } from '@dark-engine/web-router';
 
 import { AnimationFade, Menu, Sticky } from './ui';
 
@@ -15,9 +15,9 @@ const Products = component<ProductsProps>(({ slot }) => {
       <Sticky>
         <h1>Products 📈</h1>
         <Menu $isSecondary>
-          <RouterLink to={`${url}/list`}>List</RouterLink>
-          <RouterLink to={`${url}/analytics`}>Analytics</RouterLink>
-          <RouterLink to={`${url}/balance`}>Balance</RouterLink>
+          <NavLink to={`${url}/list`}>List</NavLink>
+          <NavLink to={`${url}/analytics`}>Analytics</NavLink>
+          <NavLink to={`${url}/balance`}>Balance</NavLink>
         </Menu>
       </Sticky>
       {slot}

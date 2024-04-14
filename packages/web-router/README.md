@@ -39,7 +39,8 @@ import {
   type Routes,
   type RouterRef,
   Router,
-  RouterLink,
+  Link,
+  NavLink,
   useLocation,
   useHistory,
   useParams,
@@ -63,8 +64,8 @@ const App = component(() => {
         return (
           <>
             <header>
-              <RouterLink to='/first-component'>first-component</RouterLink>
-              <RouterLink to='/second-component'>second-component</RouterLink>
+              <NavLink to='/first-component'>first-component</NavLink>
+              <NavLink to='/second-component'>second-component</NavLink>
             </header>
             <main>{slot}</main> {/*<-- a route content will be placed here*/}
           </>
@@ -222,11 +223,17 @@ const routes: Routes = [
 
 ## Navigation
 
-### via `RouterLink`
+### via `Link` or `NavLink`
 
 ```tsx
-<RouterLink to='/home'>Home</RouterLink>
+<Link to='/user/50'>Go to profile</Link>
+<NavLink to='/home'>Home</NavLink>
 ```
+
+`NavLink` internally uses `Link`, but at the same time provides a CSS class `.active-link` if the current URL is equal to or contains the `to` parameter of `NavLink`.
+`NavLink` can be used for headers and menus, which will continue to be on the page when it is clicked and the content is changed.
+`Link` means that it will disappear from the screen after you click it and go to another page. Of course you can create your own logic based on `Link`, using it as a base component.
+
 
 ### via `history`
 
@@ -317,7 +324,7 @@ const App = component<AppProps>(({ url, routes }) => {
 
 ## Server-Side Rendering (SSR)
 
-If you are rendering the application on the server, then you must pass the request url to the router to emulate routing when rendering to a string.
+If you are rendering the application on the server, then you must pass the request URL to the router to emulate routing when rendering to a string.
 
 ```tsx
 server.get('*', async (req, res) => {

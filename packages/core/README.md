@@ -936,7 +936,7 @@ Allows you to avoid reloading the entire interface when changing code in develop
 
 ```tsx
 // index.tsx
-import { h, hot } from '@dark-engine/core';
+import { hot } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 import { App } from './app';

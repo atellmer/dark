@@ -1,5 +1,5 @@
 import { type DarkElement, component } from '@dark-engine/core';
-import { RouterLink, useMatch, useParams } from '@dark-engine/web-router';
+import { Link, useMatch, useParams } from '@dark-engine/web-router';
 
 import { useProduct } from '../hooks';
 import { Spinner, Error, Card, Button } from './ui';
@@ -29,10 +29,10 @@ const ProductCard = component<{ slot: DarkElement }>(({ slot }) => {
     <Card>
       <h3>{data.name}</h3>
       <p>{data.description}</p>
-      <Button as={RouterLink} {...{ to: urlToEdit }}>
+      <Button as={Link} {...{ to: urlToEdit }}>
         Edit
       </Button>
-      <Button as={RouterLink} {...{ to: urlToRemove }}>
+      <Button as={Link} {...{ to: urlToRemove }}>
         Remove
       </Button>
     </Card>
