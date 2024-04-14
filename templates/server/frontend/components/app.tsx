@@ -1,5 +1,5 @@
 import { component, Suspense, lazy, useMemo, useEffect } from '@dark-engine/core';
-import { type Routes, Router, RouterLink } from '@dark-engine/web-router';
+import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { DataClient, DataClientProvider, InMemoryCache } from '@dark-engine/data';
 
 import { type Api, Key } from '../../contract';
@@ -51,9 +51,9 @@ const App = component<AppProps>(({ url, api }) => {
                 <Root>
                   <Header>
                     <Menu>
-                      <RouterLink to='/products'>Products</RouterLink>
-                      <RouterLink to='/operations'>Operations</RouterLink>
-                      <RouterLink to='/invoices'>Invoices</RouterLink>
+                      <NavLink to='/products'>Products</NavLink>
+                      <NavLink to='/operations'>Operations</NavLink>
+                      <NavLink to='/invoices'>Invoices</NavLink>
                     </Menu>
                   </Header>
                   <Content>{slot}</Content>

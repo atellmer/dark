@@ -1,6 +1,6 @@
 import { component, lazy, Suspense, type DarkElement } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
-import { type Routes, Router, RouterLink, useLocation } from '@dark-engine/web-router';
+import { type Routes, Router, NavLink, useLocation } from '@dark-engine/web-router';
 import { createGlobalStyle, keyframes } from '@dark-engine/styled';
 
 const Home = lazy(() => import('./home'));
@@ -35,9 +35,9 @@ const Shell = component<ShellProps>(({ slot }) => {
   return (
     <>
       <header>
-        <RouterLink to='/home'>Home</RouterLink>
-        <RouterLink to='/about'>About</RouterLink>
-        <RouterLink to='/contacts'>Contacts</RouterLink>
+        <NavLink to='/home'>Home</NavLink>
+        <NavLink to='/about'>About</NavLink>
+        <NavLink to='/contacts'>Contacts</NavLink>
       </header>
       <Suspense fallback={<Spinner />}>
         <main key={key} class='fade'>
@@ -162,12 +162,12 @@ const GlobalStyle = createGlobalStyle`
     grid-template-rows: 48px 1fr;
   }
 
-  .router-link-active {
+  .active-link {
     color: #ffeb3b;
     text-decoration: underline;
   }
 
-  .router-link-active:hover {
+  .active-link:hover {
     color: #ffeb3b;
   }
 

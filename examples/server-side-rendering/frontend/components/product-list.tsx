@@ -1,5 +1,5 @@
 import { type DarkElement, component } from '@dark-engine/core';
-import { RouterLink, useMatch, useLocation } from '@dark-engine/web-router';
+import { Link, useMatch, useLocation } from '@dark-engine/web-router';
 import { styled } from '@dark-engine/styled';
 
 import { useProducts } from '../hooks';
@@ -21,7 +21,7 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
         {[...data].reverse().map(x => {
           return (
             <ListItem key={x.id}>
-              <RouterLink to={`${url}/${x.id}`}>{x.name}</RouterLink>
+              <Link to={`${url}/${x.id}`}>{x.name}</Link>
             </ListItem>
           );
         })}
@@ -36,7 +36,7 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
     <AnimationFade>
       <Header>
         {isList ? (
-          <Button as={RouterLink} {...{ to: urlToAdd }}>
+          <Button as={Link} {...{ to: urlToAdd }}>
             Add product
           </Button>
         ) : (
