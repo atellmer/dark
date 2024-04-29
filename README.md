@@ -79,6 +79,7 @@ npm start
 - [Working with standard HTML input elements](https://stackblitz.com/edit/darkapp-ccz57rk-wqitdr?file=index.tsx)
 - [SPA with lazy routes](https://stackblitz.com/edit/darkapp-ccz57rk-hu65rp?file=index.tsx)
 - [Concurrent tabs](https://stackblitz.com/edit/darkapp-ccz57rk-g8ppbn?file=index.tsx)
+- [Spring page transitions](https://stackblitz.com/edit/darkapp-ccz57rk-ccf2wq?file=page-transition.tsx)
 - [SSR+PWA app](https://stackblitz.com/edit/darkapp-ccz57rk-wrfqdk?file=backend%2Fapp.ts,frontend%2Fcomponents%2Fapp.tsx)
 
 ## Motivation
