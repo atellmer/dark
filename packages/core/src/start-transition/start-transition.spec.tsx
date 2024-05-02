@@ -78,8 +78,6 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
-    expect(host.innerHTML).toBe(content(0));
-
     await sleep(1);
     expect(host.innerHTML).toBe(content(0));
 
@@ -90,8 +88,6 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
-    expect(host.innerHTML).toBe(content(0));
-
     await sleep(1);
     expect(host.innerHTML).toBe(content(0));
 
@@ -112,8 +108,6 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
-    expect(host.innerHTML).toBe(content(0));
-
     await sleep(1);
     expect(host.innerHTML).toBe(content(0));
 
@@ -190,9 +184,6 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
-    expect(host.innerHTML).toBe(content(0));
-
-    await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
     await sleep(100);
@@ -202,9 +193,6 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
-    expect(host.innerHTML).toBe(content(0));
-
-    await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
     setIdx(1);
@@ -224,9 +212,6 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
-    expect(host.innerHTML).toBe(content(0));
-
-    await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
     await sleep(100);
@@ -296,7 +281,7 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content('d'));
   });
 
-  test('cancels the transition after child updates', async () => {
+  test('cancels the transition after child updates and reruns the task after', async () => {
     const size = 20;
     const content = (marker1: string, marker2: string) => dom`
       <div>${marker1}:${marker2}:${Array(size)
@@ -346,13 +331,14 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content('a', '[a]'));
 
     startTransition(() => setMarker1('b'));
-    expect(host.innerHTML).toBe(content('a', '[a]'));
-
     await sleep(1);
     expect(host.innerHTML).toBe(content('a', '[a]'));
 
     setMarker2('[b]');
-    await sleep(100);
+    await sleep(1);
     expect(host.innerHTML).toBe(content('a', '[b]'));
+
+    await sleep(100);
+    expect(host.innerHTML).toBe(content('b', '[b]'));
   });
 });

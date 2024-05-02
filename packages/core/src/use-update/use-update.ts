@@ -19,7 +19,7 @@ function createUpdate(rootId: number, hook: Hook) {
     const isEvent = $scope.getIsEventZone();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
-    const setPendingStatus = $scope.getPendingStatusSetter();
+    const onTransitionCompleted = $scope.getOnTransitionCompleted();
     const callback = createCallback({
       rootId,
       hook,
@@ -32,7 +32,7 @@ function createUpdate(rootId: number, hook: Hook) {
       forceAsync,
       isTransition,
       createLocation,
-      setPendingStatus,
+      onTransitionCompleted,
     };
 
     if (isBatch) {

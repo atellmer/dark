@@ -16,9 +16,9 @@ const PageTransition = component<PageTransitionProps>(({ slot }) => {
     items,
     x => x,
     () => ({
-      from: { y: 100, opacity: 0, scale: 1 },
+      from: { y: 150, opacity: 0, scale: 1.4 },
       enter: { y: 0, opacity: 0, scale: 1 },
-      leave: { y: 0, opacity: 0.4, scale: 0.8 },
+      leave: { y: 0, opacity: 0.5, scale: 0.7 },
       config: () => ({ tension: 45, friction: 28, mass: 5 }),
     }),
   );

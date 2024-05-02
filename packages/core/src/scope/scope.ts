@@ -1,5 +1,4 @@
 import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
-import { type SetPendingStatus } from '../start-transition';
 import { platform, detectIsServer } from '../platform';
 import { EventEmitter } from '../emitter';
 import { type Fiber } from '../fiber';
@@ -24,7 +23,7 @@ class Scope {
   private resourceId = 0;
   private resources: AppResources = new Map();
   private defers: Array<() => Promise<unknown>> = [];
-  private setPendingStatus: SetPendingStatus = null;
+  private onTransitionCompleted: Callback = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
   private isUpdateZone = false;
@@ -362,12 +361,12 @@ class Scope {
     this.isHot = value;
   }
 
-  getPendingStatusSetter() {
-    return this.setPendingStatus;
+  getOnTransitionCompleted() {
+    return this.onTransitionCompleted;
   }
 
-  setPendingStatusSetter(fn: SetPendingStatus) {
-    this.setPendingStatus = fn;
+  setOnTransitionCompleted(fn: Callback) {
+    this.onTransitionCompleted = fn;
   }
 
   flush() {

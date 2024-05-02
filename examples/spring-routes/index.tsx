@@ -1,7 +1,53 @@
-import { component, lazy, Suspense, type DarkElement } from '@dark-engine/core';
-import { createRoot } from '@dark-engine/platform-browser';
+// import { type DarkElement, component, lazy, Suspense, memo, useState, useTransition } from '@dark-engine/core';
+// import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
+// import { type Routes, Router, NavLink } from '@dark-engine/web-router';
+// import { createGlobalStyle, styled } from '@dark-engine/styled';
+
+// const NormalTab1 = component(() => (console.log('tab 1'), (<normal-tab-1>tab 1</normal-tab-1>)));
+// const NormalTab2 = component(() => (console.log('tab 2'), (<normal-tab-2>tab 2</normal-tab-2>)));
+// const SlowTab = memo(
+//   component(() => {
+//     const items = [];
+
+//     console.log('slow');
+
+//     for (let i = 0; i < 100; i++) {
+//       items.push(<SlowItem key={i} />);
+//     }
+
+//     return <slow-tab>slow {items}</slow-tab>;
+//   }),
+// );
+// const SlowItem = component(() => {
+//   const t = performance.now() + 10;
+
+//   while (performance.now() < t) {
+//     //
+//   }
+
+//   return null;
+// });
+// const App = component(() => {
+//   const [isPending, startTransition] = useTransition();
+//   const [idx, setIdx] = useState(0);
+
+//   return (
+//     <div style={isPending ? 'background-color: red' : undefined}>
+//       <button onClick={() => setIdx(0)}>tab 1</button>
+//       <button onClick={() => setIdx(1)}>tab 2</button>
+//       <button onClick={() => startTransition(() => setIdx(2))}>slow tab</button>
+//       <br />
+//       {idx === 0 && <NormalTab1 />}
+//       {idx === 1 && <NormalTab2 />}
+//       {idx === 2 && <SlowTab />}
+//     </div>
+//   );
+// });
+
+import { type DarkElement, component, lazy, Suspense, memo } from '@dark-engine/core';
+import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
-import { createGlobalStyle } from '@dark-engine/styled';
+import { createGlobalStyle, styled } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
 
@@ -27,22 +73,56 @@ const routes: Routes = [
   },
 ];
 
-type ShellProps = {
+const Item = component(() => {
+  const t = performance.now() + 5;
+
+  while (performance.now() < t) {
+    //
+  }
+
+  return null;
+});
+
+type ContentProps = {
+  isPending: boolean;
   slot: DarkElement;
 };
 
-const Shell = component<ShellProps>(({ slot }) => {
+const Content = memo(
+  component<ContentProps>(({ slot }) => {
+    return (
+      <>
+        <header>
+          <NavLink to='/home'>Home</NavLink>
+          <NavLink to='/about'>About</NavLink>
+          <NavLink to='/contacts'>Contacts</NavLink>
+        </header>
+        <Suspense fallback={<Spinner />}>
+          <main>{slot}</main>
+        </Suspense>
+        {Array(100)
+          .fill(null)
+          .map(() => (
+            <Item />
+          ))}
+      </>
+    );
+  }),
+  (p, n) => p.isPending === n.isPending,
+);
+
+type ShellProps = {
+  isPending: boolean;
+  slot: DarkElement;
+};
+
+const Shell = component<ShellProps>(({ isPending, slot }) => {
   return (
-    <PageTransition>
-      <header>
-        <NavLink to='/home'>Home</NavLink>
-        <NavLink to='/about'>About</NavLink>
-        <NavLink to='/contacts'>Contacts</NavLink>
-      </header>
-      <Suspense fallback={<Spinner />}>
-        <main>{slot}</main>
-      </Suspense>
-    </PageTransition>
+    <>
+      <Root $isPending={isPending}>
+        <Content isPending={isPending}>{slot}</Content>
+      </Root>
+    </>
   );
 });
 
@@ -50,12 +130,19 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes}>{slot => <Shell>{slot}</Shell>}</Router>
+      <Router routes={routes} mode='concurrent'>
+        {(slot, isPending) => <Shell isPending={isPending}>{slot}</Shell>}
+      </Router>
     </>
   );
 });
 
 const Spinner = component(() => <div>Loading...</div>);
+
+const Root = styled.div<{ $isPending: boolean } & DarkJSX.Elements['div']>`
+  opacity: ${p => (p.$isPending ? 0.5 : 1)};
+  transition: opacity 0.3s ease-in-out;
+`;
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -75,7 +162,7 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: 'Roboto';
-    background-color: #3949AB;
+    background-color: #fff;
     overflow-y: scroll;
     overflow-x: hidden;
   }
@@ -153,5 +240,7 @@ const GlobalStyle = createGlobalStyle`
     line-height: 2;
   }
 `;
+
+createRoot(document.getElementById('root')).render(<App />);
 
 createRoot(document.getElementById('root')).render(<App />);

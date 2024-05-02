@@ -3,8 +3,6 @@ import { useState } from '../use-state';
 import { type Callback } from '../shared';
 import { useEvent } from '../use-event';
 
-export type SetPendingStatus = (value: boolean) => void;
-
 function startTransition(callback: Callback) {
   const $scope = $$scope();
 
@@ -17,9 +15,10 @@ function useTransition(): [boolean, typeof startTransition] {
   const [isPending, setIsPending] = useState(false);
   const $scope = $$scope();
   const $startTransition = useEvent((callback: Callback) => {
-    $scope.setPendingStatusSetter(setIsPending);
+    setIsPending(true);
+    $scope.setOnTransitionCompleted(() => setIsPending(false));
     startTransition(callback);
-    $scope.setPendingStatusSetter(null);
+    $scope.setOnTransitionCompleted(null);
   });
 
   return [isPending, $startTransition];

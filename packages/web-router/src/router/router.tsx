@@ -9,6 +9,7 @@ import {
   useImperativeHandle,
   nextTick,
   detectIsString,
+  useTransition,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
@@ -28,7 +29,8 @@ export type RouterProps = {
   routes: Routes;
   url?: string; // for server-side rendering
   baseURL?: string;
-  slot: (slot: DarkElement) => DarkElement;
+  mode?: 'concurrent'; // experimental
+  slot: (slot: DarkElement, isPending: boolean) => DarkElement;
 };
 
 export type RouterRef = {
@@ -38,9 +40,10 @@ export type RouterRef = {
 
 const Router = forwardRef<RouterProps, RouterRef>(
   component(
-    ({ url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, slot }, ref) => {
+    ({ url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, slot }, ref) => {
       if (useActiveRouteContext()) throw new Error(`[web-router]: the parent active route's context detected!`);
       const sourceURL = fullURL || window.location.href;
+      const [isPending, startTransition] = useTransition();
       const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
       const history = useMemo(() => createRouterHistory(sourceURL), []);
       const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
@@ -49,6 +52,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
       const scope = useMemo(() => ({ location }), []);
       const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
       const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
+      const isConcurrent = mode === 'concurrent';
 
       scope.location = location;
 
@@ -72,7 +76,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
             const href = join(protocol, PROTOCOL_MARK, host, nextURL);
             const location = createRouterLocation(href);
 
-            setLocation(location);
+            isConcurrent ? startTransition(() => setLocation(location)) : setLocation(location);
             isDifferent && !detectIsWildcard(nextRoute) && history.replace(nextURL);
           }
         });
@@ -101,7 +105,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
 
       return (
         <RouterHistoryContext.Provider value={historyContext}>
-          <ActiveRouteContext.Provider value={routerContext}>{slot($slot)}</ActiveRouteContext.Provider>
+          <ActiveRouteContext.Provider value={routerContext}>{slot($slot, isPending)}</ActiveRouteContext.Provider>
         </RouterHistoryContext.Provider>
       );
     },

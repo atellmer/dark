@@ -69,7 +69,11 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       $scope.setNextUnitOfWork(unit);
       hasMoreWork = Boolean(unit);
       shouldYield = isAsync && scheduler.shouldYield();
-      if (shouldYield && scheduler.hasPrimaryTask()) return fork($scope);
+      if (shouldYield && scheduler.hasPrimaryTask()) {
+        fork($scope);
+
+        return false;
+      }
     }
 
     if (!unit && wipFiber) {
@@ -510,7 +514,7 @@ function sync(fiber: Fiber) {
   });
 }
 
-function fork($scope: Scope): false {
+function fork($scope: Scope) {
   const $fork = $scope.copy();
   const wipFiber = $scope.getWorkInProgress();
   const child = wipFiber.child;
@@ -542,8 +546,6 @@ function fork($scope: Scope): false {
   $scope.applyCancels();
   flush($scope, true);
   scheduler.cancelTask(restore);
-
-  return false;
 }
 
 export type CreateCallbackOptions = {
