@@ -10,6 +10,7 @@ import {
   nextTick,
   detectIsString,
   useTransition,
+  memo,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
@@ -22,6 +23,7 @@ import {
   type ActiveRouteContextValue,
   RouterHistoryContext,
   ActiveRouteContext,
+  PendingContext,
   useActiveRouteContext,
 } from '../context';
 
@@ -30,7 +32,7 @@ export type RouterProps = {
   url?: string; // for server-side rendering
   baseURL?: string;
   mode?: 'concurrent'; // experimental
-  slot: (slot: DarkElement, isPending: boolean) => DarkElement;
+  slot: (slot: DarkElement) => DarkElement;
 };
 
 export type RouterRef = {
@@ -48,7 +50,7 @@ const Router = forwardRef<RouterProps, RouterRef>(
       const history = useMemo(() => createRouterHistory(sourceURL), []);
       const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
       const { protocol, host, pathname: url, search, hash } = location;
-      const { route, slot: $slot, params } = useMemo(() => resolveRoute(url, routes), [url]);
+      const { route, slot: content, params } = useMemo(() => resolveRoute(url, routes), [url]);
       const scope = useMemo(() => ({ location }), []);
       const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
       const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
@@ -103,14 +105,30 @@ const Router = forwardRef<RouterProps, RouterRef>(
         location,
       }));
 
+      //console.log('router', isPending);
+
       return (
         <RouterHistoryContext.Provider value={historyContext}>
-          <ActiveRouteContext.Provider value={routerContext}>{slot($slot, isPending)}</ActiveRouteContext.Provider>
+          <ActiveRouteContext.Provider value={routerContext}>
+            <PendingContext.Provider value={isPending}>
+              <Slot isPending={isPending}>{slot(content)}</Slot>
+            </PendingContext.Provider>
+          </ActiveRouteContext.Provider>
         </RouterHistoryContext.Provider>
       );
     },
     { displayName: 'Router' },
   ),
+);
+
+type SlotProps = {
+  isPending: boolean;
+  slot: DarkElement;
+};
+
+const Slot = memo(
+  component<SlotProps>(({ slot }) => slot),
+  (p, n) => p.isPending === n.isPending,
 );
 
 export { Router };

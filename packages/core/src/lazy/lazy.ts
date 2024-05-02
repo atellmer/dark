@@ -21,7 +21,9 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
         const id = useId();
         const factory = factories.get(module);
         const fiber = $scope.getCursorFiber();
-        const $update = () => (detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update());
+        const $update = () => {
+          detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update();
+        };
 
         if (detectIsUndefined(factory)) {
           suspense.register(id);

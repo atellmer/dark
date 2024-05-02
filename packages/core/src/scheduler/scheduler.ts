@@ -89,17 +89,13 @@ class Scheduler {
       const loc = this.task.loc();
 
       if (hasPrimary) {
-        const { hasSameOrNested, hasSame } = Task.detectHasRelatedUpdate(loc, [...high, ...normal], true);
+        const { hasSameOrNested, hasSame, hasNested } = Task.detectHasRelatedUpdate(loc, [...high, ...normal], true);
 
         if (hasSameOrNested) {
-          if (hasLow && lowTask.loc() === loc) {
+          if (hasSame || (hasLow && lowTask.loc() === loc)) {
             this.complete(this.task);
-          } else {
-            if (hasSame) {
-              this.complete(this.task);
-            } else {
-              this.defer(this.task.clone());
-            }
+          } else if (hasNested) {
+            this.defer(this.task.clone());
           }
 
           this.task.markAsObsolete();
@@ -317,17 +313,19 @@ class Task {
     const [$loc] = loc.split(HOOK_DELIMETER);
     let hasSameOrNested = false;
     let hasSame = false;
+    let hasNested = false;
 
     tasks.some(x => {
       const $$loc = x.createLocation();
 
       hasSame = $$loc === loc;
-      hasSameOrNested = hasSame || (deep && $$loc.length > loc.length && $$loc.indexOf($loc) !== -1);
+      hasNested = deep && $$loc.length > loc.length && $$loc.indexOf($loc) !== -1;
+      hasSameOrNested = hasSame || hasNested;
 
       return hasSameOrNested;
     });
 
-    return { hasSameOrNested, hasSame };
+    return { hasSameOrNested, hasSame, hasNested };
   }
 }
 

@@ -46,7 +46,7 @@
 
 import { type DarkElement, component, lazy, Suspense, memo } from '@dark-engine/core';
 import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
-import { type Routes, Router, NavLink } from '@dark-engine/web-router';
+import { type Routes, Router, NavLink, usePending } from '@dark-engine/web-router';
 import { createGlobalStyle, styled } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
@@ -83,45 +83,38 @@ const Item = component(() => {
   return null;
 });
 
-type ContentProps = {
-  isPending: boolean;
-  slot: DarkElement;
-};
+const Pending = memo(
+  component(() => {
+    const isPending = usePending();
 
-const Content = memo(
-  component<ContentProps>(({ slot }) => {
-    return (
-      <>
-        <header>
-          <NavLink to='/home'>Home</NavLink>
-          <NavLink to='/about'>About</NavLink>
-          <NavLink to='/contacts'>Contacts</NavLink>
-        </header>
-        <Suspense fallback={<Spinner />}>
-          <main>{slot}</main>
-        </Suspense>
-        {Array(100)
-          .fill(null)
-          .map(() => (
-            <Item />
-          ))}
-      </>
-    );
+    console.log('isPending', isPending);
+
+    return <div>{isPending ? 'PENDING...' : 'xxx'}</div>;
   }),
-  (p, n) => p.isPending === n.isPending,
+  () => false,
 );
 
 type ShellProps = {
-  isPending: boolean;
   slot: DarkElement;
 };
 
-const Shell = component<ShellProps>(({ isPending, slot }) => {
+const Shell = component<ShellProps>(({ slot }) => {
   return (
     <>
-      <Root $isPending={isPending}>
-        <Content isPending={isPending}>{slot}</Content>
-      </Root>
+      <header>
+        <NavLink to='/home'>Home</NavLink>
+        <NavLink to='/about'>About</NavLink>
+        <NavLink to='/contacts'>Contacts</NavLink>
+        <Pending />
+      </header>
+      <Suspense fallback={<Spinner />}>
+        <main>{slot}</main>
+      </Suspense>
+      {Array(100)
+        .fill(null)
+        .map(() => (
+          <Item />
+        ))}
     </>
   );
 });
@@ -131,7 +124,7 @@ const App = component(() => {
     <>
       <GlobalStyle />
       <Router routes={routes} mode='concurrent'>
-        {(slot, isPending) => <Shell isPending={isPending}>{slot}</Shell>}
+        {slot => <Shell>{slot}</Shell>}
       </Router>
     </>
   );
@@ -240,7 +233,5 @@ const GlobalStyle = createGlobalStyle`
     line-height: 2;
   }
 `;
-
-createRoot(document.getElementById('root')).render(<App />);
 
 createRoot(document.getElementById('root')).render(<App />);

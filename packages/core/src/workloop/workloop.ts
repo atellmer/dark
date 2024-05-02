@@ -71,7 +71,6 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       shouldYield = isAsync && scheduler.shouldYield();
       if (shouldYield && scheduler.hasPrimaryTask()) {
         fork($scope);
-
         return false;
       }
     }
@@ -518,7 +517,6 @@ function fork($scope: Scope) {
   const $fork = $scope.copy();
   const wipFiber = $scope.getWorkInProgress();
   const child = wipFiber.child;
-  child && (child.parent = null);
   const restore = (options: RestoreOptions) => {
     const { fiber: wipFiber, setValue, resetValue } = options;
     const $scope = $$scope();

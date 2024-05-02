@@ -12,11 +12,7 @@ export type ActiveRouteContextValue = {
 
 const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });
 
-function useActiveRouteContext() {
-  const value = useContext(ActiveRouteContext);
-
-  return value;
-}
+const useActiveRouteContext = () => useContext(ActiveRouteContext);
 
 export type RouterHistoryContextValue = {
   history: RouterHistory;
@@ -24,19 +20,15 @@ export type RouterHistoryContextValue = {
 
 const RouterHistoryContext = createContext<RouterHistoryContextValue>(null, { displayName: 'RouterHistory' });
 
-function useRouterHistoryContext() {
-  const value = useContext(RouterHistoryContext);
-
-  return value;
-}
+const useRouterHistoryContext = () => useContext(RouterHistoryContext);
 
 const CurrentPathContext = createContext<string>(null, { displayName: 'CurrentPath' });
 
-function useCurrentPathContext() {
-  const value = useContext(CurrentPathContext);
+const useCurrentPathContext = () => useContext(CurrentPathContext);
 
-  return value;
-}
+const PendingContext = createContext(false, { displayName: 'Pending' });
+
+const usePendingContext = () => useContext(PendingContext);
 
 function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
   if (!value) {
@@ -48,8 +40,10 @@ export {
   ActiveRouteContext,
   useActiveRouteContext,
   RouterHistoryContext,
+  PendingContext,
   useRouterHistoryContext,
   CurrentPathContext,
   useCurrentPathContext,
+  usePendingContext,
   checkContextValue,
 };
