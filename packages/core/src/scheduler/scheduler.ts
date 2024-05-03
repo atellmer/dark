@@ -78,8 +78,11 @@ class Scheduler {
     this.execute();
   }
 
+  detectIsTransition() {
+    return this.task.getIsTransition();
+  }
+
   hasPrimaryTask() {
-    if (!this.task.getIsTransition()) return false;
     const { high, normal, low } = this.getQueues();
     const hasPrimary = high.length > 0 || normal.length > 0;
     const hasAnotherTransition = low.length > 0;
@@ -270,7 +273,7 @@ class Task {
 
   run() {
     if (this.isTransition) {
-      nextTick(() => {
+      platform.spawn(() => {
         detectIsFunction(this.onTransitionStart) && this.onTransitionStart();
         this.onTransitionStart = null;
       });
