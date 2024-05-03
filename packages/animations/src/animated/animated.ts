@@ -4,7 +4,7 @@ import {
   type Callback,
   component,
   useMemo,
-  useInsertionEffect,
+  useLayoutEffect,
   $$scope,
   walk,
   nextTick,
@@ -19,40 +19,43 @@ type AnimatedProps<E = unknown, T extends string = string> = {
   slot: Component | TagVirtualNodeFactory;
 };
 
-const Animated = component<AnimatedProps>(({ spring, fn, slot }) => {
-  const cursor = $$scope().getCursorFiber();
-  const scope = useMemo<Scope>(() => ({ element: null, notify: null }), []);
-  const notify = () => scope.element && fn(scope.element, spring.value());
+const Animated = component<AnimatedProps>(
+  ({ spring, fn, slot }) => {
+    const cursor = $$scope().getCursorFiber();
+    const scope = useMemo<Scope>(() => ({ element: null, notify: null }), []);
+    const notify = () => scope.element && fn(scope.element, spring.value());
 
-  scope.notify = notify;
+    scope.notify = notify;
 
-  useInsertionEffect(() => {
-    const make = () => {
-      const fiber = cursor.hook.owner;
+    useLayoutEffect(() => {
+      const make = () => {
+        const fiber = cursor.hook.owner;
 
-      walk(fiber.child, (fiber, _, stop) => {
-        if (fiber.element) {
-          scope.element = fiber.element;
-          return stop();
-        }
-      });
+        walk(fiber.child, (fiber, _, stop) => {
+          if (fiber.element) {
+            scope.element = fiber.element;
+            return stop();
+          }
+        });
 
-      notify();
-    };
+        notify();
+      };
 
-    if ($$scope().getIsHydrateZone()) {
-      nextTick(make);
-    } else {
-      make();
-    }
+      if ($$scope().getIsHydrateZone()) {
+        nextTick(make);
+      } else {
+        make();
+      }
 
-    return spring.on(() => scope.notify());
-  }, [spring]);
+      return spring.on(() => scope.notify());
+    }, [spring]);
 
-  notify();
+    notify();
 
-  return slot;
-});
+    return slot;
+  },
+  { displayName: 'Animated' },
+);
 
 type Scope = { element: unknown; notify: Callback };
 type StyleFn<E = unknown, T extends string = string> = (element: E, value: SpringValue<T>) => void;

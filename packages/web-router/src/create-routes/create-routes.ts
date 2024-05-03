@@ -57,9 +57,11 @@ class Route {
 
     while (nextRoute) {
       const value = nextRoute.getPath();
-      const component = nextRoute.component as ComponentFactory<SlotProps>;
+      const factory = nextRoute.component as ComponentFactory<SlotProps>;
+      const component = factory({ slot });
 
-      slot = CurrentPathContext.Provider({ value, slot: [component({ slot })] });
+      component.displayName = `Route(${nextRoute.getPath()})`;
+      slot = CurrentPathContext.Provider({ value, slot: [component] });
       nextRoute = nextRoute.parent;
     }
 

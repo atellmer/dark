@@ -7,7 +7,7 @@ type GuardProps = {
 };
 
 const Guard = memo(
-  component<GuardProps>(({ slot }) => slot),
+  component<GuardProps>(({ slot }) => slot, { displayName: 'Guard' }),
   () => false,
 );
 

@@ -38,7 +38,7 @@ const Shadow = component<ShadowProps>(
 
     return slot || null;
   },
-  { token: $$shadow },
+  { token: $$shadow, displayName: 'Shadow' },
 );
 
 export { Shadow };

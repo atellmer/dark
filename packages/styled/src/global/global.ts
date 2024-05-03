@@ -30,36 +30,39 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
   const fns = filterArgs<P>(args);
   const sheet = css<P>(source, ...args);
   const factory = forwardRef<P, unknown>(
-    component(props => {
-      const theme = useTheme();
-      const id = useId();
-      const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapRecord(props), theme]);
+    component(
+      props => {
+        const theme = useTheme();
+        const id = useId();
+        const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapRecord(props), theme]);
 
-      useInsertionEffect(() => {
-        if (!tag) {
-          tag = getTag() || createTag(); // after hydration
+        useInsertionEffect(() => {
+          if (!tag) {
+            tag = getTag() || createTag(); // after hydration
+          }
+
+          cache.set(id, css);
+          reinject(tag, cache);
+        }, [css]);
+
+        useInsertionEffect(() => {
+          return () => {
+            cache.delete(id);
+            reinject(tag, cache);
+          };
+        }, []);
+
+        if (detectIsServer()) {
+          const manager = useManager(); // special case of hook using, should be last in order
+
+          manager.collectGlobalStyle(css);
+          manager.reset(setupGlobal);
         }
 
-        cache.set(id, css);
-        reinject(tag, cache);
-      }, [css]);
-
-      useInsertionEffect(() => {
-        return () => {
-          cache.delete(id);
-          reinject(tag, cache);
-        };
-      }, []);
-
-      if (detectIsServer()) {
-        const manager = useManager(); // special case of hook using, should be last in order
-
-        manager.collectGlobalStyle(css);
-        manager.reset(setupGlobal);
-      }
-
-      return null;
-    }),
+        return null;
+      },
+      { displayName: 'GlobalStyle' },
+    ),
   );
 
   return factory;

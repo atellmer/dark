@@ -16,11 +16,9 @@ function useTransition(): [boolean, typeof startTransition] {
   const $scope = $$scope();
   const $startTransition = useEvent((callback: Callback) => {
     $scope.setOnTransitionStart(() => {
-      //console.log('start pending');
       setIsPending(true);
     });
     $scope.setOnTransitionEnd(() => {
-      //console.log('stop pending');
       setIsPending(false);
     });
     startTransition(callback);

@@ -47,6 +47,7 @@ function component<P extends object, R = unknown>(type: CreateElement<P, R>, opt
 
     return new Component(type, token, props, ref, shouldUpdate, displayName);
   };
+  factory.displayName = displayName;
 
   return factory as ComponentFactory<Prettify<Props>, R>;
 }
@@ -67,6 +68,7 @@ type ComponentOptions = Readonly<{
 type ComponentFactoryWithPossiblyInject<P extends object = {}, R = unknown> = {
   (props?: P, ref?: Ref<R>): Component<P, R>;
   [$$inject]?: ComponentInject<P>;
+  displayName: string;
 };
 
 type CreateElement<P extends StandardComponentProps, R = unknown> = (props: P, ref?: Ref<R>) => DarkElement;
@@ -80,6 +82,9 @@ export type ShouldUpdate<P> = (prevProps: P, nextProps: P) => boolean;
 
 export type StandardComponentProps = KeyProps & RefProps;
 
-export type ComponentFactory<P extends object = {}, R = unknown> = (props?: P, ref?: Ref<R>) => Component<P, R>;
+export type ComponentFactory<P extends object = {}, R = unknown> = {
+  (props?: P, ref?: Ref<R>): Component<P, R>;
+  displayName: string;
+};
 
 export { Component, component, $$inject, detectIsComponent, getComponentKey, hasComponentFlag };

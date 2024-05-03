@@ -10,7 +10,6 @@ import {
   nextTick,
   detectIsString,
   useTransition,
-  memo,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
@@ -105,30 +104,16 @@ const Router = forwardRef<RouterProps, RouterRef>(
         location,
       }));
 
-      //console.log('router', isPending);
-
       return (
         <RouterHistoryContext.Provider value={historyContext}>
           <ActiveRouteContext.Provider value={routerContext}>
-            <PendingContext.Provider value={isPending}>
-              <Slot isPending={isPending}>{slot(content)}</Slot>
-            </PendingContext.Provider>
+            <PendingContext.Provider value={isPending}>{slot(content)}</PendingContext.Provider>
           </ActiveRouteContext.Provider>
         </RouterHistoryContext.Provider>
       );
     },
     { displayName: 'Router' },
   ),
-);
-
-type SlotProps = {
-  isPending: boolean;
-  slot: DarkElement;
-};
-
-const Slot = memo(
-  component<SlotProps>(({ slot }) => slot),
-  (p, n) => p.isPending === n.isPending,
 );
 
 export { Router };

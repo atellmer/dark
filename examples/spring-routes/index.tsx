@@ -73,51 +73,83 @@ const routes: Routes = [
   },
 ];
 
-const Item = component(() => {
-  const t = performance.now() + 5;
+const SlowItem = component(
+  () => {
+    const t = performance.now() + 50;
 
-  while (performance.now() < t) {
-    //
-  }
+    while (performance.now() < t) {
+      //
+    }
 
-  return null;
-});
+    return null;
+  },
+  { displayName: 'SlowItem' },
+);
 
 const Pending = memo(
-  component(() => {
-    const isPending = usePending();
+  component(
+    () => {
+      const isPending = usePending();
 
-    //console.log('isPending', isPending);
-
-    return <div>{isPending ? 'PENDING...' : 'xxx'}</div>;
-  }),
+      return (
+        <>
+          <div>{isPending ? 'PENDING...' : 'xxx'}</div>
+          <Root $isPending={isPending} />
+        </>
+      );
+    },
+    { displayName: 'Pending' },
+  ),
   () => false,
+);
+
+type SlowContentProps = {
+  isPending: boolean;
+};
+
+const SlowContent = memo(
+  component<SlowContentProps>(
+    () => {
+      return (
+        <>
+          {Array(10)
+            .fill(null)
+            .map(() => (
+              <SlowItem />
+            ))}
+        </>
+      );
+    },
+    { displayName: 'SlowContent' },
+  ),
+  (p, n) => p.isPending === n.isPending,
 );
 
 type ShellProps = {
   slot: DarkElement;
 };
 
-const Shell = component<ShellProps>(({ slot }) => {
-  return (
-    <>
-      <header>
-        <NavLink to='/home'>Home</NavLink>
-        <NavLink to='/about'>About</NavLink>
-        <NavLink to='/contacts'>Contacts</NavLink>
-        <Pending />
-      </header>
-      <Suspense fallback={<Spinner />}>
-        <main>{slot}</main>
-      </Suspense>
-      {Array(100)
-        .fill(null)
-        .map(() => (
-          <Item />
-        ))}
-    </>
-  );
-});
+const Shell = component<ShellProps>(
+  ({ slot }) => {
+    const isPending = usePending();
+
+    return (
+      <PageTransition>
+        <header>
+          <NavLink to='/home'>Home</NavLink>
+          <NavLink to='/about'>About</NavLink>
+          <NavLink to='/contacts'>Contacts</NavLink>
+          <Pending />
+        </header>
+        <Suspense fallback={<Spinner />}>
+          <main>{slot}</main>
+        </Suspense>
+        <SlowContent isPending={isPending} />
+      </PageTransition>
+    );
+  },
+  { displayName: 'Shell' },
+);
 
 const App = component(() => {
   return (
@@ -130,11 +162,15 @@ const App = component(() => {
   );
 });
 
-const Spinner = component(() => <div>Loading...</div>);
+const Spinner = component(() => <div>Loading...</div>, { displayName: 'Spinner' });
 
 const Root = styled.div<{ $isPending: boolean } & DarkJSX.Elements['div']>`
-  opacity: ${p => (p.$isPending ? 0.5 : 1)};
+  position: fixed;
+  inset: 0;
+  background-color: #fff;
+  opacity: ${p => (p.$isPending ? 0.5 : 0)};
   transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
 `;
 
 const GlobalStyle = createGlobalStyle`

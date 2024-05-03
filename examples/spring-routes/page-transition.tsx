@@ -7,51 +7,54 @@ type PageTransitionProps = {
   slot: DarkElement;
 };
 
-const PageTransition = component<PageTransitionProps>(({ slot }) => {
-  const { pathname } = useLocation();
-  const scope = useMemo(() => ({ pathname, slots: {} }), []);
-  const items = useMemo(() => [pathname], [pathname]);
-  const rootRef = useRef<HTMLDivElement>();
-  const [transition, api] = useTransition(
-    items,
-    x => x,
-    () => ({
-      from: { y: 150, opacity: 0, scale: 1.4 },
-      enter: { y: 0, opacity: 0, scale: 1 },
-      leave: { y: 0, opacity: 0.5, scale: 0.7 },
-      config: () => ({ tension: 45, friction: 28, mass: 5 }),
-    }),
-  );
-
-  scope.pathname = pathname;
-  scope.slots[pathname] = slot;
-
-  useLayoutEffect(() => {
-    const node = rootRef.current;
-    const fns = [
-      api.on('series-start', () => node.style.setProperty('pointer-events', 'none')),
-      api.on('item-change', x => {
-        if (scope.pathname === x.key && x.value.y < 5) {
-          node.removeAttribute('style');
-        }
+const PageTransition = component<PageTransitionProps>(
+  ({ slot }) => {
+    const { pathname } = useLocation();
+    const scope = useMemo(() => ({ pathname, slots: {} }), []);
+    const items = useMemo(() => [pathname], [pathname]);
+    const rootRef = useRef<HTMLDivElement>();
+    const [transition, api] = useTransition(
+      items,
+      x => x,
+      () => ({
+        from: { y: 150, opacity: 0, scale: 1.4 },
+        enter: { y: 0, opacity: 0, scale: 1 },
+        leave: { y: 0, opacity: 0.5, scale: 0.7 },
+        config: () => ({ tension: 45, friction: 28, mass: 5 }),
       }),
-    ];
+    );
 
-    return () => fns.forEach(x => x());
-  }, []);
+    scope.pathname = pathname;
+    scope.slots[pathname] = slot;
 
-  return (
-    <div ref={rootRef}>
-      {transition(({ spring, item }) => {
-        return (
-          <Animated spring={spring} fn={styleFn}>
-            <Item>{scope.slots[item]}</Item>
-          </Animated>
-        );
-      })}
-    </div>
-  );
-});
+    // useLayoutEffect(() => {
+    //   const node = rootRef.current;
+    //   const fns = [
+    //     api.on('series-start', () => node.style.setProperty('pointer-events', 'none')),
+    //     api.on('item-change', x => {
+    //       if (scope.pathname === x.key && x.value.y < 5) {
+    //         node.removeAttribute('style');
+    //       }
+    //     }),
+    //   ];
+
+    //   return () => fns.forEach(x => x());
+    // }, []);
+
+    return (
+      <div ref={rootRef}>
+        {transition(({ spring, item }) => {
+          return (
+            <Animated spring={spring} fn={styleFn}>
+              <Item>{scope.slots[item]}</Item>
+            </Animated>
+          );
+        })}
+      </div>
+    );
+  },
+  { displayName: 'PageTransition' },
+);
 
 const styleFn = (element: HTMLDivElement, value: SpringValue<'y' | 'opacity' | 'scale'>) => {
   element.style.setProperty('transform', `translate3d(0, ${value.y}vh, 0) scale(${value.scale})`);

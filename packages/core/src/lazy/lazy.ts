@@ -45,7 +45,7 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
 
         return factory ? factory(props, ref) : suspense.isLoaded ? suspense.fallback : null;
       },
-      { token: $$lazy },
+      { token: $$lazy, displayName: 'Lazy' },
     ),
   );
 }

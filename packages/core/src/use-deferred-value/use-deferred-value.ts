@@ -4,12 +4,10 @@ import { useMemo } from '../use-memo';
 
 function useDeferredValue<T>(value: T): T {
   const [deferredValue, setDeferredValue] = useState(value);
-  const scope = useMemo(() => ({ value }), []);
 
-  if (scope.value !== value) {
-    scope.value = value;
+  useMemo(() => {
     startTransition(() => setDeferredValue(value));
-  }
+  }, [value]);
 
   return deferredValue;
 }
