@@ -184,6 +184,7 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
+    await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
     await sleep(100);
@@ -193,6 +194,7 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
+    await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
     setIdx(1);
@@ -212,6 +214,7 @@ describe('@core/start-transition', () => {
     expect(host.innerHTML).toBe(content(0));
 
     startTransition(() => setIdx(2));
+    await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
     await sleep(100);

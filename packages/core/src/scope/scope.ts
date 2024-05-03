@@ -23,7 +23,8 @@ class Scope {
   private resourceId = 0;
   private resources: AppResources = new Map();
   private defers: Array<() => Promise<unknown>> = [];
-  private onTransitionCompleted: Callback = null;
+  private onTransitionStart: Callback = null;
+  private onTransitionEnd: Callback = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
   private isUpdateZone = false;
@@ -361,12 +362,20 @@ class Scope {
     this.isHot = value;
   }
 
-  getOnTransitionCompleted() {
-    return this.onTransitionCompleted;
+  getOnTransitionStart() {
+    return this.onTransitionStart;
   }
 
-  setOnTransitionCompleted(fn: Callback) {
-    this.onTransitionCompleted = fn;
+  setOnTransitionStart(fn: Callback) {
+    this.onTransitionStart = fn;
+  }
+
+  getOnTransitionEnd() {
+    return this.onTransitionEnd;
+  }
+
+  setOnTransitionEnd(fn: Callback) {
+    this.onTransitionEnd = fn;
   }
 
   flush() {

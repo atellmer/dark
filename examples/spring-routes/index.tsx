@@ -87,7 +87,7 @@ const Pending = memo(
   component(() => {
     const isPending = usePending();
 
-    console.log('isPending', isPending);
+    //console.log('isPending', isPending);
 
     return <div>{isPending ? 'PENDING...' : 'xxx'}</div>;
   }),

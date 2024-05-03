@@ -1,5 +1,5 @@
-import { ROOT, HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
-import { getTime, detectIsPromise, detectIsFunction } from '../utils';
+import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
+import { getTime, detectIsPromise, detectIsFunction, nextTick } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
 import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';
@@ -72,7 +72,7 @@ class Scheduler {
     return getTime() >= this.deadline;
   }
 
-  schedule(callback: TaskCallback, options: ScheduleCallbackOptions = {}) {
+  schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
     options.createLocation = options.createLocation || createRootLocation;
     this.put(createTask(callback, options));
     this.execute();
@@ -82,46 +82,43 @@ class Scheduler {
     if (!this.task.getIsTransition()) return false;
     const { high, normal, low } = this.getQueues();
     const hasPrimary = high.length > 0 || normal.length > 0;
-    const hasLow = low.length > 0;
-    const [lowTask] = low;
+    const hasAnotherTransition = low.length > 0;
+    const hasSameTransition = hasAnotherTransition && detectHasSameTransition(this.task, low);
 
-    if (hasPrimary || hasLow) {
-      const loc = this.task.loc();
+    if (hasPrimary) {
+      const tasks = [...high, ...normal];
+      const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, tasks);
 
-      if (hasPrimary) {
-        const { hasSameOrNested, hasSame, hasNested } = Task.detectHasRelatedUpdate(loc, [...high, ...normal], true);
+      if (hasHostUpdate || hasChildUpdate) {
+        const hasExact = detectHasExact(this.task, tasks);
 
-        if (hasSameOrNested) {
-          if (hasSame || (hasLow && lowTask.loc() === loc)) {
-            this.complete(this.task);
-          } else if (hasNested) {
-            this.defer(this.task.clone());
-          }
-
-          this.task.markAsObsolete();
+        if (hasSameTransition || hasExact) {
+          this.complete(this.task);
+        } else {
+          this.defer(this.task.clone());
         }
 
-        return true;
+        this.task.markAsObsolete();
       }
 
-      if (hasLow) {
-        const { hasSame } = Task.detectHasRelatedUpdate(loc, low);
+      return true;
+    }
 
-        if (hasSame) {
-          this.task.markAsObsolete();
+    if (hasSameTransition) {
+      this.complete(this.task);
+      this.task.markAsObsolete();
 
-          return true;
-        }
-      }
+      return true;
     }
 
     return false;
   }
 
-  cancelTask(fn: OnRestoreTask) {
-    if (this.task.getIsObsolete()) return;
-    this.task.setOnRestoreTask(fn);
-    this.defer(this.task);
+  retain(fn: OnRestore) {
+    if (!this.task.getIsObsolete()) {
+      this.task.setOnRestore(fn);
+      this.defer(this.task);
+    }
   }
 
   private complete(task: Task) {
@@ -222,20 +219,17 @@ class Scheduler {
   }
 }
 
-type TaskCallback = (fn: OnRestoreTask) => void;
-type OnRestoreTask = (options: RestoreOptions) => void;
-type CreateLocation = () => string;
-
 class Task {
   private __id: number;
   private priority: TaskPriority;
-  private forceAsync: boolean;
-  private isTransition: boolean;
-  private isObsolete: boolean;
-  private callback: TaskCallback;
+  private forceAsync = false;
+  private isTransition = false;
+  private isObsolete = false;
+  private callback: TaskCallback = null;
   private createLocation?: CreateLocation = null;
-  private onRestoreTask?: OnRestoreTask = null;
-  private onTransitionCompleted?: Callback = null;
+  private onRestore?: OnRestore = null;
+  private onTransitionStart?: Callback = null;
+  private onTransitionEnd?: Callback = null;
   private static nextTaskId = 0;
 
   constructor(callback: TaskCallback, priority: TaskPriority, forceAsync: boolean) {
@@ -250,8 +244,9 @@ class Task {
       priority: this.priority,
       forceAsync: this.forceAsync,
       isTransition: this.isTransition,
-      onTransitionCompleted: this.onTransitionCompleted,
       createLocation: this.createLocation,
+      onTransitionStart: this.onTransitionStart,
+      onTransitionEnd: this.onTransitionEnd,
     });
 
     return task;
@@ -274,15 +269,19 @@ class Task {
   }
 
   run() {
-    this.callback(this.onRestoreTask);
-    this.onRestoreTask = null;
+    if (this.isTransition) {
+      nextTick(() => {
+        detectIsFunction(this.onTransitionStart) && this.onTransitionStart();
+        this.onTransitionStart = null;
+      });
+    }
+
+    this.callback(this.onRestore);
+    this.onRestore = null;
   }
 
   complete() {
-    this.isTransition &&
-      !this.isObsolete &&
-      detectIsFunction(this.onTransitionCompleted) &&
-      this.onTransitionCompleted();
+    this.isTransition && !this.isObsolete && detectIsFunction(this.onTransitionEnd) && this.onTransitionEnd();
   }
 
   markAsObsolete() {
@@ -293,40 +292,72 @@ class Task {
     return this.isObsolete;
   }
 
-  setOnRestoreTask(fn: OnRestoreTask) {
-    this.onRestoreTask = fn;
+  setOnRestore(fn: OnRestore) {
+    this.onRestore = fn;
   }
 
-  setLocationCreator(fn: CreateLocation) {
+  setCreateLocation(fn: CreateLocation) {
     this.createLocation = fn;
   }
 
   loc() {
+    const [loc] = this.createLocation().split(HOOK_DELIMETER);
+
+    return loc;
+  }
+
+  $loc() {
     return this.createLocation();
   }
 
-  setOnTransitionCompleted(fn: Callback) {
-    this.onTransitionCompleted = fn;
+  setOnTransitionStart(fn: Callback) {
+    this.onTransitionStart = fn;
   }
 
-  static detectHasRelatedUpdate(loc: string, tasks: Array<Task>, deep = false) {
-    const [$loc] = loc.split(HOOK_DELIMETER);
-    let hasSameOrNested = false;
-    let hasSame = false;
-    let hasNested = false;
-
-    tasks.some(x => {
-      const $$loc = x.createLocation();
-
-      hasSame = $$loc === loc;
-      hasNested = deep && $$loc.length > loc.length && $$loc.indexOf($loc) !== -1;
-      hasSameOrNested = hasSame || hasNested;
-
-      return hasSameOrNested;
-    });
-
-    return { hasSameOrNested, hasSame, hasNested };
+  setOnTransitionEnd(fn: Callback) {
+    this.onTransitionEnd = fn;
   }
+}
+
+function collectFlags(task: Task, tasks: Array<Task>) {
+  const loc = task.loc();
+  let hasTopUpdate = false;
+  let hasHostUpdate = false;
+  let hasChildUpdate = false;
+
+  for (let i = 0; i < tasks.length; i++) {
+    const task = tasks[i];
+    const $loc = task.loc();
+
+    if ($loc.length < loc.length && loc.indexOf($loc) === 0) {
+      hasTopUpdate = true;
+    } else if ($loc === loc) {
+      hasHostUpdate = true;
+    } else if ($loc.length > loc.length && $loc.indexOf(loc) === 0) {
+      hasChildUpdate = true;
+    }
+  }
+
+  return {
+    hasTopUpdate,
+    hasHostUpdate,
+    hasChildUpdate,
+  };
+}
+
+function detectHasSameTransition(task: Task, tasks: Array<Task>) {
+  if (tasks.length === 0) return false;
+  const loc = task.loc();
+  const $loc = tasks[0].loc();
+
+  return loc === $loc;
+}
+
+function detectHasExact(task: Task, tasks: Array<Task>) {
+  const $loc = task.$loc();
+  const hasExact = tasks.some(x => x.$loc() === $loc);
+
+  return hasExact;
 }
 
 function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOptions, 'onCompleted'>) {
@@ -335,34 +366,42 @@ function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOption
     forceAsync = false,
     isTransition = false,
     createLocation,
-    onTransitionCompleted,
+    onTransitionStart,
+    onTransitionEnd,
   } = options;
   const task = new Task(callback, priority, forceAsync);
 
   task.setIsTransition(isTransition);
-  task.setOnTransitionCompleted(onTransitionCompleted);
-  task.setLocationCreator(createLocation || createRootLocation);
+  task.setOnTransitionStart(onTransitionStart);
+  task.setOnTransitionEnd(onTransitionEnd);
+  task.setCreateLocation(createLocation || createRootLocation);
 
   return task;
 }
 
-const createRootLocation: CreateLocation = () => ROOT;
+const createRootLocation: CreateLocation = () => '>';
 
 type PortEvent = 'message';
 type PortListener = (value: unknown) => void;
 
-export type RestoreOptions = {
+type TaskCallback = (fn: OnRestore) => void;
+type CreateLocation = () => string;
+
+export type OnRestoreOptions = {
   fiber: Fiber;
   setValue?: Callback;
   resetValue?: Callback;
 };
 
+export type OnRestore = (options: OnRestoreOptions) => void;
+
 export type ScheduleCallbackOptions = {
-  priority?: TaskPriority;
+  priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
   createLocation?: () => string;
-  onTransitionCompleted?: Callback;
+  onTransitionStart?: Callback;
+  onTransitionEnd?: Callback;
 };
 
 const scheduler = new Scheduler();

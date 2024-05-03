@@ -50,7 +50,7 @@ import {
   tryOptStaticSlot,
   tryOptMemoSlot,
 } from '../walk';
-import { type RestoreOptions, scheduler } from '../scheduler';
+import { type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
 import { unmountFiber } from '../unmount';
 
@@ -515,35 +515,35 @@ function sync(fiber: Fiber) {
 
 function fork($scope: Scope) {
   const $fork = $scope.copy();
-  const wipFiber = $scope.getWorkInProgress();
-  const child = wipFiber.child;
-  const restore = (options: RestoreOptions) => {
-    const { fiber: wipFiber, setValue, resetValue } = options;
+  const wip = $scope.getWorkInProgress();
+  const child = wip.child;
+  const fn: OnRestore = options => {
+    const { fiber: wip, setValue, resetValue } = options;
     const $scope = $$scope();
 
     detectIsFunction(setValue) && setValue();
     detectIsFunction(resetValue) && $fork.addCancel(resetValue);
 
-    wipFiber.alt = new Fiber().mutate(wipFiber);
-    wipFiber.tag = UPDATE_EFFECT_TAG;
-    wipFiber.child = child;
-    child && (child.parent = wipFiber);
+    wip.alt = new Fiber().mutate(wip);
+    wip.tag = UPDATE_EFFECT_TAG;
+    wip.child = child;
+    child && (child.parent = wip);
 
     if (process.env.NODE_ENV !== 'production') {
-      wipFiber.marker = '✌️';
+      wip.marker = '✌️';
     }
 
     $fork.setRoot($scope.getRoot());
-    $fork.setWorkInProgress(wipFiber);
+    $fork.setWorkInProgress(wip);
     replaceScope($fork);
   };
 
-  wipFiber.child = wipFiber.alt.child;
-  wipFiber.alt = null;
+  wip.child = wip.alt.child;
+  wip.alt = null;
   $scope.runInsertionEffects(); // !
   $scope.applyCancels();
   flush($scope, true);
-  scheduler.cancelTask(restore);
+  scheduler.retain(fn);
 }
 
 export type CreateCallbackOptions = {
@@ -555,16 +555,16 @@ export type CreateCallbackOptions = {
 
 function createCallback(options: CreateCallbackOptions) {
   const { rootId, hook, isTransition, tools = $tools } = options;
-  const callback = (restore?: (options: RestoreOptions) => void) => {
+  const callback = (onRestore?: OnRestore) => {
     setRootId(rootId); // !
-    const fromRestore = detectIsFunction(restore);
+    const isRetain = detectIsFunction(onRestore);
     const { shouldUpdate, setValue, resetValue } = tools();
     const $scope = $$scope();
     const owner = hook.owner;
     const fiber = owner.alt || owner;
 
-    if (!shouldUpdate() || !detectIsFiberAlive(fiber) || fromRestore) {
-      fromRestore && restore({ fiber, setValue, resetValue });
+    if (!shouldUpdate() || !detectIsFiberAlive(fiber) || isRetain) {
+      isRetain && onRestore({ fiber, setValue, resetValue });
       return;
     }
 
@@ -594,7 +594,7 @@ function createCallback(options: CreateCallbackOptions) {
 
 export type Tools = {
   shouldUpdate: () => boolean;
-} & Pick<RestoreOptions, 'setValue' | 'resetValue'>;
+} & Pick<OnRestoreOptions, 'setValue' | 'resetValue'>;
 
 const $tools = (): Tools => ({
   shouldUpdate: trueFn,
