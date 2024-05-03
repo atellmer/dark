@@ -130,6 +130,7 @@ function useTransition<T extends string, I = unknown>(
       scope.items = items; // !
       scope.itemsMap = itemsMap;
       scope.fromApi = false;
+
       hasChanges && forceUpdate(); // !
     };
 

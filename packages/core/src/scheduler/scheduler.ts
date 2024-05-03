@@ -144,6 +144,18 @@ class Scheduler {
   private pick(queue: Array<Task>) {
     if (queue.length === 0) return false;
     this.task = queue.shift();
+
+    if (this.task.getIsTransition() && this.task.getOnTransitionStart()) {
+      const task = this.task;
+      const start = task.getOnTransitionStart();
+
+      this.defer(task);
+      task.setOnTransitionStart(null);
+      start();
+
+      return false;
+    }
+
     this.task.run();
     this.task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
 
@@ -272,13 +284,6 @@ class Task {
   }
 
   run() {
-    if (this.isTransition) {
-      platform.spawn(() => {
-        detectIsFunction(this.onTransitionStart) && this.onTransitionStart();
-        this.onTransitionStart = null;
-      });
-    }
-
     this.callback(this.onRestore);
     this.onRestore = null;
   }
@@ -311,6 +316,10 @@ class Task {
 
   $loc() {
     return this.createLocation();
+  }
+
+  getOnTransitionStart() {
+    return this.onTransitionStart;
   }
 
   setOnTransitionStart(fn: Callback) {

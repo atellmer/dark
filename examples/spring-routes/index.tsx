@@ -135,7 +135,7 @@ const Shell = component<ShellProps>(
     const isPending = usePending();
 
     return (
-      <>
+      <PageTransition>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
@@ -146,7 +146,7 @@ const Shell = component<ShellProps>(
           <main>{slot}</main>
         </Suspense>
         <SlowContent isPending={isPending} />
-      </>
+      </PageTransition>
     );
   },
   { displayName: 'Shell' },
