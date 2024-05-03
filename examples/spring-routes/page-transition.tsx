@@ -1,4 +1,4 @@
-import { type DarkElement, component, useMemo, useRef, useLayoutEffect } from '@dark-engine/core';
+import { type DarkElement, component, useMemo, useRef, scheduler } from '@dark-engine/core';
 import { useLocation } from '@dark-engine/web-router';
 import { styled } from '@dark-engine/styled';
 import { type SpringValue, Animated, useTransition } from '@dark-engine/animations';
@@ -11,9 +11,10 @@ const PageTransition = component<PageTransitionProps>(
   ({ slot }) => {
     const { pathname } = useLocation();
     const scope = useMemo(() => ({ pathname, slots: {} }), []);
-    const items = useMemo(() => [pathname], [pathname]);
+    const key = `${scheduler.detectIsTransition()}:${pathname}`;
+    const items = useMemo(() => [pathname], [key]);
     const rootRef = useRef<HTMLDivElement>();
-    const [transition, api] = useTransition(
+    const [transition] = useTransition(
       items,
       x => x,
       () => ({
@@ -26,20 +27,6 @@ const PageTransition = component<PageTransitionProps>(
 
     scope.pathname = pathname;
     scope.slots[pathname] = slot;
-
-    // useLayoutEffect(() => {
-    //   const node = rootRef.current;
-    //   const fns = [
-    //     api.on('series-start', () => node.style.setProperty('pointer-events', 'none')),
-    //     api.on('item-change', x => {
-    //       if (scope.pathname === x.key && x.value.y < 5) {
-    //         node.removeAttribute('style');
-    //       }
-    //     }),
-    //   ];
-
-    //   return () => fns.forEach(x => x());
-    // }, []);
 
     return (
       <div ref={rootRef}>

@@ -1,5 +1,5 @@
 import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
-import { getTime, detectIsPromise, detectIsFunction, nextTick } from '../utils';
+import { getTime, detectIsPromise, detectIsFunction } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
 import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';

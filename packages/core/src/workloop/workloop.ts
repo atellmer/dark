@@ -88,6 +88,7 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       $scope.keepRoot(); // !
       emitter.emit('error', String(err));
 
+      error('err', err);
       if (!isAsync) {
         throw err;
       }
@@ -490,6 +491,7 @@ function commit($scope: Scope) {
 }
 
 function flush($scope: Scope, cancel = false) {
+  !cancel && $scope.getEmitter().emit('prefinish');
   $scope.flush();
   !cancel && $scope.getEmitter().emit('finish');
   $scope.runAfterCommit(); // !

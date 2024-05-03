@@ -63,7 +63,7 @@ const Suspense = forwardRef<SuspenseProps, unknown>(
       ].filter(Boolean);
 
       useLayoutEffect(() => {
-        const off = emitter.on('finish', () => {
+        const off = emitter.on('prefinish', () => {
           const { store, isLoaded } = scope;
 
           if (store.size === 0 && !isLoaded) {

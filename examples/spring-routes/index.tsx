@@ -75,7 +75,7 @@ const routes: Routes = [
 
 const SlowItem = component(
   () => {
-    const t = performance.now() + 50;
+    const t = performance.now() + 5;
 
     while (performance.now() < t) {
       //
@@ -93,7 +93,7 @@ const Pending = memo(
 
       return (
         <>
-          <div>{isPending ? 'PENDING...' : 'xxx'}</div>
+          <div>{isPending ? 'PENDING...' : ''}</div>
           <Root $isPending={isPending} />
         </>
       );
@@ -110,9 +110,10 @@ type SlowContentProps = {
 const SlowContent = memo(
   component<SlowContentProps>(
     () => {
+      console.log('slow');
       return (
         <>
-          {Array(10)
+          {Array(100)
             .fill(null)
             .map(() => (
               <SlowItem />
@@ -134,7 +135,7 @@ const Shell = component<ShellProps>(
     const isPending = usePending();
 
     return (
-      <PageTransition>
+      <>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
@@ -145,7 +146,7 @@ const Shell = component<ShellProps>(
           <main>{slot}</main>
         </Suspense>
         <SlowContent isPending={isPending} />
-      </PageTransition>
+      </>
     );
   },
   { displayName: 'Shell' },
