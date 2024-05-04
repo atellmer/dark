@@ -73,7 +73,7 @@ class Scheduler {
   }
 
   schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
-    options.createLocation = options.createLocation || createRootLocation;
+    options.createLoc = options.createLoc || createRootLoc;
     this.put(createTask(callback, options));
     this.execute();
   }
@@ -86,7 +86,7 @@ class Scheduler {
     const { high, normal, low } = this.getQueues();
     const hasPrimary = high.length > 0 || normal.length > 0;
     const hasAnotherTransition = low.length > 0;
-    const hasSameTransition = hasAnotherTransition && detectHasSameTransition(this.task, low);
+    const hasSameTransition = hasAnotherTransition && detectHasExact(this.task, low);
 
     if (hasPrimary) {
       const tasks = [...high, ...normal];
@@ -98,7 +98,7 @@ class Scheduler {
         if (hasSameTransition || hasExact) {
           this.complete(this.task);
         } else {
-          this.defer(this.task.clone());
+          this.defer(this.task);
         }
 
         this.task.markAsObsolete();
@@ -242,7 +242,7 @@ class Task {
   private isTransition = false;
   private isObsolete = false;
   private callback: TaskCallback = null;
-  private createLocation?: CreateLocation = null;
+  private createLoc?: CreateLocation = null;
   private onRestore?: OnRestore = null;
   private onTransitionStart?: Callback = null;
   private onTransitionEnd?: Callback = null;
@@ -253,19 +253,6 @@ class Task {
     this.callback = callback;
     this.priority = priority;
     this.forceAsync = forceAsync;
-  }
-
-  clone() {
-    const task = createTask(this.callback, {
-      priority: this.priority,
-      forceAsync: this.forceAsync,
-      isTransition: this.isTransition,
-      createLocation: this.createLocation,
-      onTransitionStart: this.onTransitionStart,
-      onTransitionEnd: this.onTransitionEnd,
-    });
-
-    return task;
   }
 
   getPriority() {
@@ -285,6 +272,7 @@ class Task {
   }
 
   run() {
+    this.isObsolete = false; // !
     this.callback(this.onRestore);
     this.onRestore = null;
   }
@@ -306,17 +294,17 @@ class Task {
   }
 
   setCreateLocation(fn: CreateLocation) {
-    this.createLocation = fn;
+    this.createLoc = fn;
   }
 
   loc() {
-    const [loc] = this.createLocation().split(HOOK_DELIMETER);
+    const [loc] = this.createLoc().split(HOOK_DELIMETER);
 
     return loc;
   }
 
   $loc() {
-    return this.createLocation();
+    return this.createLoc();
   }
 
   getOnTransitionStart() {
@@ -358,14 +346,6 @@ function collectFlags(task: Task, tasks: Array<Task>) {
   };
 }
 
-function detectHasSameTransition(task: Task, tasks: Array<Task>) {
-  if (tasks.length === 0) return false;
-  const loc = task.loc();
-  const $loc = tasks[0].loc();
-
-  return loc === $loc;
-}
-
 function detectHasExact(task: Task, tasks: Array<Task>) {
   const $loc = task.$loc();
   const hasExact = tasks.some(x => x.$loc() === $loc);
@@ -378,7 +358,7 @@ function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOption
     priority = TaskPriority.NORMAL,
     forceAsync = false,
     isTransition = false,
-    createLocation,
+    createLoc,
     onTransitionStart,
     onTransitionEnd,
   } = options;
@@ -387,12 +367,12 @@ function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOption
   task.setIsTransition(isTransition);
   task.setOnTransitionStart(onTransitionStart);
   task.setOnTransitionEnd(onTransitionEnd);
-  task.setCreateLocation(createLocation || createRootLocation);
+  task.setCreateLocation(createLoc || createRootLoc);
 
   return task;
 }
 
-const createRootLocation: CreateLocation = () => '>';
+const createRootLoc: CreateLocation = () => '>';
 
 type PortEvent = 'message';
 type PortListener = (value: unknown) => void;
@@ -412,7 +392,7 @@ export type ScheduleCallbackOptions = {
   priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
-  createLocation?: () => string;
+  createLoc?: () => string;
   onTransitionStart?: Callback;
   onTransitionEnd?: Callback;
 };

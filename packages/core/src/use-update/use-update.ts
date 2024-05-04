@@ -1,7 +1,7 @@
 import { type ScheduleCallbackOptions, scheduler } from '../scheduler';
 import { type Tools, createCallback } from '../workloop';
 import { getRootId, $$scope } from '../scope';
-import { createHookLocation } from '../walk';
+import { createHookLoc } from '../walk';
 import { detectIsFunction } from '../utils';
 import { TaskPriority } from '../constants';
 import { addBatch } from '../batch';
@@ -27,12 +27,12 @@ function createUpdate(rootId: number, hook: Hook) {
       isTransition,
       tools: hasTools ? tools : undefined,
     });
-    const createLocation = () => createHookLocation(rootId, idx, owner);
+    const createLoc = () => createHookLoc(rootId, idx, hook);
     const callbackOptions: ScheduleCallbackOptions = {
       priority,
       forceAsync,
       isTransition,
-      createLocation,
+      createLoc,
       onTransitionStart,
       onTransitionEnd,
     };

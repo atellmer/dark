@@ -124,14 +124,9 @@ type ShellProps = {
 
 const Shell = component<ShellProps>(
   ({ slot }) => {
-    //const isPending = usePending();
-    const isTransition = scheduler.detectIsTransition();
-
-    console.log('isTransition', isTransition);
-
     return (
       <PageTransition>
-        <>
+        <Concurrent>
           <header>
             <NavLink to='/home'>Home</NavLink>
             <NavLink to='/about'>About</NavLink>
@@ -141,8 +136,8 @@ const Shell = component<ShellProps>(
           <Suspense fallback={<Spinner />}>
             <main>{slot}</main>
           </Suspense>
-          {/* <SlowContent /> */}
-        </>
+          <SlowContent />
+        </Concurrent>
       </PageTransition>
     );
   },
@@ -153,7 +148,7 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes}>
+      <Router routes={routes} mode='concurrent'>
         {slot => <Shell>{slot}</Shell>}
       </Router>
     </>

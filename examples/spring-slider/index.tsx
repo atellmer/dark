@@ -1,7 +1,7 @@
 import { component, useState, startTransition } from '@dark-engine/core';
 import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
 import { styled } from '@dark-engine/styled';
-import { SpringValue, Animated, useTransition } from '@dark-engine/animations';
+import { SpringValue, Animated, useTransition, preset } from '@dark-engine/animations';
 
 const next = (current: string) => {
   const map = {
@@ -68,7 +68,8 @@ const App = component(() => {
       </button>
       {items[0]}
       <br />
-      {/* <SlowContent /> */}
+      <br />
+      <SlowContent />
       <Container>
         {transition(({ spring, item }) => {
           return (
@@ -93,8 +94,7 @@ const SlowItem = component(
       //
     }
 
-    return null;
-
+    //return null;
     return <div>{performance.now()}</div>;
   },
   { displayName: 'SlowItem' },
@@ -102,7 +102,7 @@ const SlowItem = component(
 
 const SlowContent = component(
   () => {
-    console.log('SLOW CONTENT');
+    //console.log('SLOW CONTENT');
     return (
       <>
         {Array(100)

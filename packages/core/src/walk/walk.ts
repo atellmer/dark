@@ -10,14 +10,14 @@ import {
   MOVE_MASK,
   HOOK_DELIMETER,
 } from '../constants';
-import { Fiber } from '../fiber';
-import { platform } from '../platform';
 import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
-import { type Scope } from '../scope';
-import { type Component } from '../component';
-import { detectIsMemo } from '../memo';
 import { type Instance, type ElementKey } from '../shared';
+import { type Component } from '../component';
+import { type Hook, Fiber } from '../fiber';
 import { createIndexKey } from '../utils';
+import { detectIsMemo } from '../memo';
+import { platform } from '../platform';
+import { type Scope } from '../scope';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
   let shouldDeep = true;
@@ -72,7 +72,8 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
-function createHookLocation(rootId: number, idx: number, fiber: Fiber) {
+function createHookLoc(rootId: number, idx: number, hook: Hook) {
+  const fiber = hook.owner;
   let $fiber = fiber;
   let loc = `${fiber.idx}${HOOK_DELIMETER}${idx}`;
 
@@ -219,7 +220,7 @@ export {
   collectElements,
   getFiberWithElement,
   detectIsFiberAlive,
-  createHookLocation,
+  createHookLoc,
   tryOptStaticSlot,
   tryOptMemoSlot,
   notifyParents,
