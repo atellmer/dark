@@ -44,7 +44,7 @@
 //   );
 // });
 
-import { type DarkElement, component, lazy, Suspense, memo } from '@dark-engine/core';
+import { type DarkElement, component, lazy, Suspense, memo, scheduler } from '@dark-engine/core';
 import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink, usePending } from '@dark-engine/web-router';
 import { createGlobalStyle, styled } from '@dark-engine/styled';
@@ -86,6 +86,32 @@ const SlowItem = component(
   { displayName: 'SlowItem' },
 );
 
+type SlowContentProps = {
+  isTransition: boolean;
+};
+
+const SlowContent = memo(
+  component<SlowContentProps>(
+    () => {
+      console.log('---SLOW---');
+      return (
+        <>
+          {Array(100)
+            .fill(null)
+            .map(() => (
+              <SlowItem />
+            ))}
+        </>
+      );
+    },
+    { displayName: 'SlowContent' },
+  ),
+  (p, n) => {
+    console.log('CHECK', { ...p }, { ...n });
+    return n.isTransition;
+  },
+);
+
 const Pending = memo(
   component(
     () => {
@@ -103,36 +129,16 @@ const Pending = memo(
   () => false,
 );
 
-type SlowContentProps = {
-  isPending: boolean;
-};
-
-const SlowContent = memo(
-  component<SlowContentProps>(
-    () => {
-      console.log('slow');
-      return (
-        <>
-          {Array(100)
-            .fill(null)
-            .map(() => (
-              <SlowItem />
-            ))}
-        </>
-      );
-    },
-    { displayName: 'SlowContent' },
-  ),
-  (p, n) => p.isPending === n.isPending,
-);
-
 type ShellProps = {
   slot: DarkElement;
 };
 
 const Shell = component<ShellProps>(
   ({ slot }) => {
-    const isPending = usePending();
+    //const isPending = usePending();
+    const isTransition = scheduler.detectIsTransition();
+
+    console.log('isTransition', isTransition);
 
     return (
       <PageTransition>
@@ -145,7 +151,7 @@ const Shell = component<ShellProps>(
         <Suspense fallback={<Spinner />}>
           <main>{slot}</main>
         </Suspense>
-        <SlowContent isPending={isPending} />
+        <SlowContent isTransition={isTransition} />
       </PageTransition>
     );
   },
@@ -216,7 +222,7 @@ const GlobalStyle = createGlobalStyle`
   header a:hover {
     color: #fff59d;
   }
-  
+
   main {
     width: 100%;
     padding: 16px;

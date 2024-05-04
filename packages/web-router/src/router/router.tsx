@@ -104,8 +104,6 @@ const Router = forwardRef<RouterProps, RouterRef>(
         location,
       }));
 
-      console.log('router', isPending);
-
       return (
         <RouterHistoryContext.Provider value={historyContext}>
           <ActiveRouteContext.Provider value={routerContext}>

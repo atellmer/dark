@@ -4,7 +4,7 @@ import {
   type Callback,
   component,
   useMemo,
-  useLayoutEffect,
+  useInsertionEffect,
   $$scope,
   walk,
   nextTick,
@@ -27,7 +27,8 @@ const Animated = component<AnimatedProps>(
 
     scope.notify = notify;
 
-    useLayoutEffect(() => {
+    // !
+    useInsertionEffect(() => {
       const make = () => {
         const fiber = cursor.hook.owner;
 

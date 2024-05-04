@@ -11,7 +11,7 @@ const App = component(() => {
     {
       from: { opacity: val(isOpen), scale: val(isOpen) },
       to: { opacity: val(isOpen), scale: val(isOpen) },
-      config: key => ({ tension: key === 'scale' ? 200 : isOpen ? 100 : 400, precision: 4 }),
+      config: key => ({ tension: key === 'scale' ? 200 : isOpen ? 100 : 400 }),
     },
     [isOpen],
   );
@@ -48,6 +48,7 @@ const Box = styled.div`
   transform-origin: 0 0;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  will-change: opacity, transform; // very useful!
 `;
 
 createRoot(document.getElementById('root')).render(<App />);

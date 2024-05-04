@@ -152,6 +152,7 @@ class Scheduler {
       this.defer(task);
       task.setOnTransitionStart(null);
       start();
+      this.execute();
 
       return false;
     }

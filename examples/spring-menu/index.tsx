@@ -28,8 +28,6 @@ const App = component(() => {
 
   useChain(isOpen ? [springApi, transitionApi] : [transitionApi, springApi], [0, isOpen ? 0.1 : 0.6]);
 
-  //console.log('render');
-
   return (
     <>
       <div class='wrapper'>

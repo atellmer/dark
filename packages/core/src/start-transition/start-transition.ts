@@ -17,12 +17,12 @@ function useTransition(): [boolean, typeof startTransition] {
   const $startTransition = useEvent((callback: Callback) => {
     $scope.setOnTransitionStart(() => {
       $scope.setIsTransitionZone(false);
-      console.log('start pending');
+      //console.log('start pending');
       setIsPending(true);
       $scope.setIsTransitionZone(true);
     });
     $scope.setOnTransitionEnd(() => {
-      console.log('stop pending');
+      //console.log('stop pending');
       setIsPending(false);
     });
     startTransition(callback);

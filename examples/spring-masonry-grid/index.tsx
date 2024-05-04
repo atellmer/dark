@@ -119,7 +119,7 @@ const App = component(() => {
 
   return (
     <>
-      <div ref={ref} class='list' style={{ height: Math.max(...heights) + 'px' }}>
+      <div ref={ref} class='list' style={{ height: Math.max(...heights) + 100 + 'px' }}>
         {transition(({ spring, item }) => {
           return (
             <Animated spring={spring} fn={styleFn}>

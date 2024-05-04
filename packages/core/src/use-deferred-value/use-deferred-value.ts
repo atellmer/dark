@@ -1,11 +1,11 @@
 import { useState } from '../use-state';
 import { startTransition } from '../start-transition';
-import { useMemo } from '../use-memo';
+import { useLayoutEffect } from '../use-layout-effect';
 
 function useDeferredValue<T>(value: T): T {
   const [deferredValue, setDeferredValue] = useState(value);
 
-  useMemo(() => {
+  useLayoutEffect(() => {
     startTransition(() => setDeferredValue(value));
   }, [value]);
 

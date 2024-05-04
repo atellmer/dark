@@ -78,9 +78,9 @@ class Controller<T extends string, I = unknown> {
     this.right = x;
   }
 
-  notify() {
+  notify(skip = false) {
     this.sync();
-    this.event('item-change');
+    !skip && this.event('item-change');
   }
 
   setConfigurator(fn: ConfiguratorFn<T>) {

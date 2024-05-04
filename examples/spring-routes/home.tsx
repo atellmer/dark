@@ -2,6 +2,7 @@ import { type DarkElement, component } from '@dark-engine/core';
 
 const Home = component<{ slot: DarkElement }>(
   ({ slot }) => {
+    console.log('HOME');
     return (
       <article>
         <h1>Home</h1>

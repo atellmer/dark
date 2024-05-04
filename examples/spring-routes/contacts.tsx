@@ -2,6 +2,7 @@ import { component } from '@dark-engine/core';
 
 const Contacts = component(
   () => {
+    console.log('CONTACTS');
     return (
       <article>
         <h1>Contacts</h1>
