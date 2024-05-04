@@ -1,4 +1,4 @@
-import { type ElementKey, type TimerId, detectIsEmpty } from '@dark-engine/core';
+import { type ElementKey, type TimerId, EventEmitter, detectIsEmpty } from '@dark-engine/core';
 
 import { type Controller, type StartFn } from '../controller';
 import { type SpringValue } from '../shared';
@@ -12,7 +12,7 @@ class SharedState<T extends string = string> {
   private isCanceled = false;
   private timeout = 0;
   private timerId: TimerId = null;
-  private events = new Map<AnimationEventName, Set<AnimationEventHandler<T>>>();
+  private emitter: EventEmitter<AnimationEventName, AnimationEventValue<T>> = new EventEmitter();
 
   getCtrls() {
     return this.ctrls;
@@ -96,19 +96,11 @@ class SharedState<T extends string = string> {
   }
 
   on(event: AnimationEventName, handler: AnimationEventHandler<T>) {
-    if (!this.events.has(event)) {
-      this.events.set(event, new Set());
-    }
-
-    const subs = this.events.get(event);
-
-    subs.add(handler);
-
-    return () => subs.delete(handler);
+    return this.emitter.on(event, handler);
   }
 
-  event(name: AnimationEventName, value: AnimationEventValue<T> = null) {
-    this.events.has(name) && this.events.get(name).forEach(x => x(value));
+  event(event: AnimationEventName, value: AnimationEventValue<T> = null) {
+    this.emitter.emit(event, value);
   }
 
   completeSeries() {

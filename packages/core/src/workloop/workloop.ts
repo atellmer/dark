@@ -533,6 +533,7 @@ function fork($scope: Scope) {
     wip.alt = new Fiber().mutate(wip);
     wip.tag = UPDATE_EFFECT_TAG;
     wip.child = child;
+    wip.wip = true;
     child && (child.parent = wip);
 
     if (process.env.NODE_ENV !== 'production') {

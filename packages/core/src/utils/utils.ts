@@ -25,6 +25,8 @@ const detectIsFalsy = (o: any) => detectIsEmpty(o) || o === false;
 
 const detectIsPromise = <T = unknown>(o: any): o is Promise<T> => o instanceof Promise;
 
+const detectIsEqual = (a: any, b: any) => Object.is(a, b);
+
 const getTime = () => Date.now();
 
 const dummyFn = () => {};
@@ -80,7 +82,7 @@ function detectAreDepsDifferent(prevDeps: Array<unknown>, nextDeps: Array<unknow
   const max = Math.max(prevDeps.length, nextDeps.length);
 
   for (let i = 0; i < max; i++) {
-    if (!Object.is(prevDeps[i], nextDeps[i])) return true;
+    if (!detectIsEqual(prevDeps[i], nextDeps[i])) return true;
   }
 
   return false;
@@ -105,6 +107,7 @@ export {
   detectIsEmpty,
   detectIsFalsy,
   detectIsPromise,
+  detectIsEqual,
   getTime,
   dummyFn,
   trueFn,
