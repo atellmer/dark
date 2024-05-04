@@ -1,14 +1,12 @@
-import { render } from '@dark-engine/platform-browser';
+import { createBrowserEnv } from '@test-utils';
 
 import { component } from '../component';
 import { useSyncExternalStore } from './use-sync-external-store';
 
-let host: HTMLElement = null;
-
-jest.useFakeTimers();
+let { render } = createBrowserEnv();
 
 beforeEach(() => {
-  host = document.createElement('div');
+  ({ render } = createBrowserEnv());
 });
 
 function createStore<T>(initialState: T) {
@@ -44,18 +42,15 @@ describe('@core/use-sync-external-store', () => {
       return null;
     });
 
-    render(App(), host);
-    jest.runAllTimers();
+    render(<App />);
     expect(state).toBe(store.getState());
     expect(state).toBe(0);
 
     store.setState(x => x + 1);
-    jest.runAllTimers();
     expect(state).toBe(store.getState());
     expect(state).toBe(1);
 
     store.setState(x => x + 1);
-    jest.runAllTimers();
     expect(state).toBe(store.getState());
     expect(state).toBe(2);
   });

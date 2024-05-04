@@ -44,13 +44,33 @@
 //   );
 // });
 
-import { type DarkElement, component, lazy, Suspense, memo, scheduler } from '@dark-engine/core';
+import { type DarkElement, component, lazy, Suspense, memo, scheduler, useSyncExternalStore } from '@dark-engine/core';
 import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { createGlobalStyle, styled } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
 import { Pending } from './pending';
+
+function getSnapshot() {
+  return navigator.onLine;
+}
+
+function subscribe(callback) {
+  window.addEventListener('online', callback);
+  window.addEventListener('offline', callback);
+
+  return () => {
+    window.removeEventListener('online', callback);
+    window.removeEventListener('offline', callback);
+  };
+}
+
+function useOnlineStatus() {
+  const isOnline = useSyncExternalStore(subscribe, getSnapshot);
+
+  return isOnline;
+}
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -124,8 +144,11 @@ type ShellProps = {
 
 const Shell = component<ShellProps>(
   ({ slot }) => {
+    const isOnline = useOnlineStatus();
+
     return (
       <PageTransition>
+        {isOnline ? 'Online' : 'Offline'}
         <Concurrent>
           <header>
             <NavLink to='/home'>Home</NavLink>
@@ -136,7 +159,7 @@ const Shell = component<ShellProps>(
           <Suspense fallback={<Spinner />}>
             <main>{slot}</main>
           </Suspense>
-          <SlowContent />
+          {/* <SlowContent /> */}
         </Concurrent>
       </PageTransition>
     );

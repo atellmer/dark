@@ -1,11 +1,27 @@
-import type { Subscribe, Subscriber } from '../shared';
+import { type Subscribe, type SubscriberWithValue } from '../shared';
+import { useLayoutEffect } from '../use-layout-effect';
+import { detectIsServer } from '../platform';
+import { detectIsFunction } from '../utils';
 import { useState } from '../use-state';
-import { useEffect } from '../use-effect';
+import { $$scope } from '../scope';
 
-function useSyncExternalStore<T>(subscribe: Subscribe<Subscriber>, getSnapshot: () => T) {
-  const [state, setState] = useState(getSnapshot());
+function useSyncExternalStore<T>(
+  subscribe: Subscribe<SubscriberWithValue<T>>,
+  getSnapshot: () => T,
+  getServerSnapshot?: () => T,
+) {
+  const $scope = $$scope();
+  const isServer = detectIsServer();
+  const isHydrateZone = $scope.getIsHydrateZone();
+  const isSSR = isServer || isHydrateZone;
 
-  useEffect(() => subscribe(() => setState(getSnapshot())), [getSnapshot]);
+  if (isSSR && !detectIsFunction(getServerSnapshot)) {
+    throw new Error('[Dark]: getServerSnapshot was not found!');
+  }
+
+  const [state, setState] = useState(isSSR ? getServerSnapshot() : getSnapshot());
+
+  useLayoutEffect(() => subscribe(() => setState(getSnapshot())), [getSnapshot]);
 
   return state;
 }
