@@ -86,30 +86,20 @@ const SlowItem = component(
   { displayName: 'SlowItem' },
 );
 
-type SlowContentProps = {
-  isTransition: boolean;
-};
-
-const SlowContent = memo(
-  component<SlowContentProps>(
-    () => {
-      console.log('---SLOW---');
-      return (
-        <>
-          {Array(100)
-            .fill(null)
-            .map(() => (
-              <SlowItem />
-            ))}
-        </>
-      );
-    },
-    { displayName: 'SlowContent' },
-  ),
-  (p, n) => {
-    //console.log('CHECK', { ...p }, { ...n });
-    return n.isTransition;
+const SlowContent = component(
+  () => {
+    console.log('---SLOW---');
+    return (
+      <>
+        {Array(100)
+          .fill(null)
+          .map(() => (
+            <SlowItem />
+          ))}
+      </>
+    );
   },
+  { displayName: 'SlowContent' },
 );
 
 const Pending = memo(
@@ -129,6 +119,21 @@ const Pending = memo(
   () => false,
 );
 
+type ConcurrentProps = {
+  slot: DarkElement;
+};
+
+const Concurrent = memo(
+  component<ConcurrentProps>(
+    ({ slot }) => {
+      console.log('---CONCURRENT---');
+      return slot;
+    },
+    { displayName: 'Concurrent' },
+  ),
+  () => scheduler.detectIsTransition(),
+);
+
 type ShellProps = {
   slot: DarkElement;
 };
@@ -142,16 +147,18 @@ const Shell = component<ShellProps>(
 
     return (
       <PageTransition>
-        <header>
-          <NavLink to='/home'>Home</NavLink>
-          <NavLink to='/about'>About</NavLink>
-          <NavLink to='/contacts'>Contacts</NavLink>
-          <Pending />
-        </header>
-        <Suspense fallback={<Spinner />}>
-          <main>{slot}</main>
-        </Suspense>
-        <SlowContent isTransition={isTransition} />
+        <Concurrent>
+          <header>
+            <NavLink to='/home'>Home</NavLink>
+            <NavLink to='/about'>About</NavLink>
+            <NavLink to='/contacts'>Contacts</NavLink>
+            <Pending />
+          </header>
+          <Suspense fallback={<Spinner />}>
+            <main>{slot}</main>
+          </Suspense>
+          <SlowContent />
+        </Concurrent>
       </PageTransition>
     );
   },

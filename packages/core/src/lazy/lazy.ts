@@ -63,9 +63,7 @@ function run<P extends object>(loader: LoaderFn<P>) {
         }
       }
 
-      setTimeout(() => {
-        resolve(module.default);
-      }, 1000);
+      resolve(module.default);
     });
   });
 }
