@@ -9,9 +9,9 @@ import { $$scope } from '../scope';
 import { useId } from '../use-id';
 
 const $$lazy = Symbol('lazy');
-const factories = new Map<Function, ComponentFactory>();
+const factories = new Map<LoaderFn, ComponentFactory>();
 
-function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => void = dummyFn) {
+function lazy<P extends object, R = unknown>(loader: LoaderFn<P>, done: () => void = dummyFn) {
   return forwardRef(
     component<P, R>(
       (props, ref) => {
@@ -19,19 +19,23 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
         const suspense = useSuspense();
         const update = useUpdate();
         const id = useId();
-        const factory = factories.get(module);
+        const factory = factories.get(loader);
         const fiber = $scope.getCursorFiber();
         const $update = () => {
-          detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update();
+          if (fiber.alt) {
+            suspense.update && suspense.update(); //!
+          } else {
+            detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update();
+          }
         };
 
         if (detectIsUndefined(factory)) {
           suspense.register(id);
-          factories.set(module, null);
+          factories.set(loader, null);
           const isServer = detectIsServer();
           const isHydrateZone = $scope.getIsHydrateZone();
           const make = async () => {
-            factories.set(module, await load(module));
+            factories.set(loader, await run(loader));
             suspense.unregister(id);
             done();
           };
@@ -50,21 +54,23 @@ function lazy<P extends object, R = unknown>(module: ModuleFn<P>, done: () => vo
   );
 }
 
-function load<P extends object>(module: ModuleFn<P>) {
-  return new Promise<ComponentFactory<P>>(resolve => {
-    module().then(module => {
+function run<P extends object>(loader: LoaderFn<P>) {
+  return new Promise<ComponentFactory<P>>((resolve, reject) => {
+    loader().then(module => {
       if (process.env.NODE_ENV !== 'production') {
         if (!module.default) {
-          throw new Error('[Dark]: the lazy loaded component should be exported as default!');
+          return reject(new Error('[Dark]: the lazy loaded component should be exported as default!'));
         }
       }
 
-      resolve(module.default);
+      setTimeout(() => {
+        resolve(module.default);
+      }, 1000);
     });
   });
 }
 
-type ModuleFn<P extends object> = () => Promise<Module<P>>;
+type LoaderFn<P extends object = {}> = () => Promise<Module<P>>;
 
 export type Module<P extends object = {}> = { default: ComponentFactory<P> };
 

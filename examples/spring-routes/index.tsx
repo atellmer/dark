@@ -107,7 +107,7 @@ const SlowContent = memo(
     { displayName: 'SlowContent' },
   ),
   (p, n) => {
-    console.log('CHECK', { ...p }, { ...n });
+    //console.log('CHECK', { ...p }, { ...n });
     return n.isTransition;
   },
 );

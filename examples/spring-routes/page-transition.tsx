@@ -12,7 +12,7 @@ const PageTransition = component<PageTransitionProps>(
     const { pathname } = useLocation();
     const scope = useMemo(() => ({ pathname, slots: {} }), []);
     const key = `${scheduler.detectIsTransition()}:${pathname}`;
-    const items = useMemo(() => [pathname], [key]);
+    const items = useMemo(() => [pathname], [pathname]);
     const rootRef = useRef<HTMLDivElement>();
     const [transition] = useTransition(
       items,
