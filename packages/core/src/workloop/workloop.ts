@@ -211,8 +211,10 @@ function createFiber(alt: Fiber, inst: Instance, idx: number) {
 
 function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
   const isChild = idx === 0;
-  const key = getElementKey(inst);
+  const parent = isChild ? fiber : fiber.parent;
+  if (!fiber.wip && parent.tag === CREATE_EFFECT_TAG) return null; // !
   const parentId = isChild ? fiber.id : fiber.parent.id;
+  const key = getElementKey(inst);
   const actions = $scope.getActionsById(parentId);
   let alt: Fiber = null;
 
@@ -457,7 +459,7 @@ function commit($scope: Scope) {
     process.env.NODE_ENV === 'development' && $scope.setIsHot(false);
   }
 
-  const wipFiber = $scope.getWorkInProgress();
+  const wip = $scope.getWorkInProgress();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
   const isUpdateZone = $scope.getIsUpdateZone();
@@ -466,14 +468,14 @@ function commit($scope: Scope) {
 
   // !
   for (const fiber of deletions) {
-    const withNextTick = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & combinedMask);
+    const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & combinedMask);
 
-    withNextTick ? unmounts.push(fiber) : unmountFiber(fiber);
+    canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = DELETE_EFFECT_TAG;
     platform.commit(fiber);
   }
 
-  isUpdateZone && sync(wipFiber);
+  isUpdateZone && sync(wip);
   $scope.runInsertionEffects();
 
   for (const fiber of candidates) {
@@ -482,7 +484,8 @@ function commit($scope: Scope) {
     hasChildrenProp(fiber.inst) && (fiber.inst.children = null);
   }
 
-  wipFiber.alt = null;
+  wip.alt = null;
+  wip.wip = false;
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
@@ -579,6 +582,7 @@ function createCallback(options: CreateCallbackOptions) {
     fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
+    fiber.wip = true;
 
     if (process.env.NODE_ENV !== 'production') {
       fiber.marker = '🔥';

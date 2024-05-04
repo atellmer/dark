@@ -1,4 +1,4 @@
-import { type DarkElement, component, useMemo, useRef, scheduler } from '@dark-engine/core';
+import { type DarkElement, component, useMemo, useRef } from '@dark-engine/core';
 import { useLocation } from '@dark-engine/web-router';
 import { styled } from '@dark-engine/styled';
 import { type SpringValue, Animated, useTransition } from '@dark-engine/animations';
@@ -11,7 +11,6 @@ const PageTransition = component<PageTransitionProps>(
   ({ slot }) => {
     const { pathname } = useLocation();
     const scope = useMemo(() => ({ pathname, slots: {} }), []);
-    const key = `${scheduler.detectIsTransition()}:${pathname}`;
     const items = useMemo(() => [pathname], [pathname]);
     const rootRef = useRef<HTMLDivElement>();
     const [transition] = useTransition(

@@ -23,6 +23,7 @@ class Fiber<N = NativeElement> {
   hook: Hook | null = null; // hook
   provider: Map<Context, ContextProviderValue> = null; // provider of context
   atoms: Map<Atom, Callback> = null;
+  wip = false; // work in progress fiber
   marker: string; // for dev
   batch: Batch;
   catch: (error: Error) => void;

@@ -1,11 +1,15 @@
 import { component } from '@dark-engine/core';
 
+import { Pending } from './pending';
+
 const Contacts = component(
   () => {
-    console.log('CONTACTS');
+    //console.log('CONTACTS');
     return (
       <article>
-        <h1>Contacts</h1>
+        <h1>
+          Contacts <Pending />
+        </h1>
         <p>
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quaerat molestias possimus qui expedita. Porro ipsam
           minima magnam neque incidunt consequuntur, commodi ab repudiandae maxime aliquam quod exercitationem, at

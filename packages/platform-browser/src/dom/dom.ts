@@ -313,7 +313,7 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
   const nextInstance = fiber.inst as VirtualNode;
 
   detectIsPlainVirtualNode(nextInstance)
-    ? (prevInstance as PlainVirtualNode).value !== nextInstance.value && (element.textContent = nextInstance.value)
+    ? (prevInstance as PlainVirtualNode).value !== nextInstance.value && (element.nodeValue = nextInstance.value)
     : updateAttributes(element, prevInstance as TagVirtualNode, nextInstance as TagVirtualNode);
 }
 

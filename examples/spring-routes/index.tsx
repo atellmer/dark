@@ -46,10 +46,11 @@
 
 import { type DarkElement, component, lazy, Suspense, memo, scheduler } from '@dark-engine/core';
 import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
-import { type Routes, Router, NavLink, usePending } from '@dark-engine/web-router';
+import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { createGlobalStyle, styled } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
+import { Pending } from './pending';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -102,23 +103,6 @@ const SlowContent = component(
   { displayName: 'SlowContent' },
 );
 
-const Pending = memo(
-  component(
-    () => {
-      const isPending = usePending();
-
-      return (
-        <>
-          <div>{isPending ? 'PENDING...' : ''}</div>
-          <Root $isPending={isPending} />
-        </>
-      );
-    },
-    { displayName: 'Pending' },
-  ),
-  () => false,
-);
-
 type ConcurrentProps = {
   slot: DarkElement;
 };
@@ -147,18 +131,18 @@ const Shell = component<ShellProps>(
 
     return (
       <PageTransition>
-        <Concurrent>
+        <>
           <header>
             <NavLink to='/home'>Home</NavLink>
             <NavLink to='/about'>About</NavLink>
             <NavLink to='/contacts'>Contacts</NavLink>
-            <Pending />
+            <Pending overlay />
           </header>
           <Suspense fallback={<Spinner />}>
             <main>{slot}</main>
           </Suspense>
-          <SlowContent />
-        </Concurrent>
+          {/* <SlowContent /> */}
+        </>
       </PageTransition>
     );
   },
@@ -169,7 +153,7 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes} mode='concurrent'>
+      <Router routes={routes}>
         {slot => <Shell>{slot}</Shell>}
       </Router>
     </>
@@ -177,15 +161,6 @@ const App = component(() => {
 });
 
 const Spinner = component(() => <div>Loading...</div>, { displayName: 'Spinner' });
-
-const Root = styled.div<{ $isPending: boolean } & DarkJSX.Elements['div']>`
-  position: fixed;
-  inset: 0;
-  background-color: #fff;
-  opacity: ${p => (p.$isPending ? 0.5 : 0)};
-  transition: opacity 0.3s ease-in-out;
-  pointer-events: none;
-`;
 
 const GlobalStyle = createGlobalStyle`
   * {

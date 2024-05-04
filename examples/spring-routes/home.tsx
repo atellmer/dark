@@ -1,11 +1,15 @@
 import { type DarkElement, component } from '@dark-engine/core';
 
+import { Pending } from './pending';
+
 const Home = component<{ slot: DarkElement }>(
   ({ slot }) => {
-    console.log('HOME');
+    //console.log('HOME');
     return (
       <article>
-        <h1>Home</h1>
+        <h1>
+          Home <Pending />
+        </h1>
         {slot}
         <p>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium voluptatum et odio, ipsum cum distinctio,
