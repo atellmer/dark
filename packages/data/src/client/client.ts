@@ -5,9 +5,11 @@ import {
   createContext,
   useContext,
   illegal,
+  formatErrorMsg,
 } from '@dark-engine/core';
 
 import { type CacheEventData, type MonitorEventData, InMemoryCache } from '../cache';
+import { LIB } from '../constants';
 
 class DataClient<A extends object = {}, K extends string = string> {
   private api: A;
@@ -52,7 +54,7 @@ type DataClientProviderProps = {
 };
 
 const DataClientProvider = component<DataClientProviderProps>(({ client, slot }) => {
-  if (useClient()) illegal('[data]: Illegal nested data client provider!');
+  if (useClient()) illegal(formatErrorMsg(LIB, 'Illegal nested data client provider!'));
   return DataClientContext.Provider({ value: client, slot });
 });
 

@@ -30,6 +30,7 @@ import {
   $$scope,
   applyRef,
   illegal,
+  formatErrorMsg,
 } from '@dark-engine/core';
 
 import { detectIsSvgElement, detectIsVoidElement } from '../utils';
@@ -45,6 +46,7 @@ import {
   AS_ATTR,
   EXCLUDE_ATTR_MARK,
   DANGER_HTML_CONTENT,
+  LIB,
 } from '../constants';
 import type {
   NativeElement,
@@ -286,14 +288,14 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (fiber.element.nodeName !== nativeElement.nodeName) {
-      illegal('[platform-browser]: Inconsistent element for hydration!');
+      illegal(formatErrorMsg(LIB, 'Inconsistent element for hydration!'));
     }
 
     fiber.element = nativeElement;
   } else {
     if (!(fiber.mask & SHADOW_MASK)) {
       if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
-        illegal(`[platform-browser]: An element with danger content can't have a children!`);
+        illegal(formatErrorMsg(LIB, `The element with danger content can't have a children!`));
       }
 
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {

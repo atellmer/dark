@@ -1,4 +1,5 @@
 export const VERSION = '1.2.0';
+export const LIB = '@dark-engine/styled';
 export const STYLE_TAG = 'style';
 export const STYLED_ATTR = 'dark-styled';
 export const GLOBAL_ATTR_VALUE = 'g';

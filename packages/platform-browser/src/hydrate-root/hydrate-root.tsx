@@ -1,8 +1,16 @@
-import { type DarkElement, type AppResource, STATE_SCRIPT_TYPE, $$scope, illegal } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type AppResource,
+  STATE_SCRIPT_TYPE,
+  $$scope,
+  illegal,
+  formatErrorMsg,
+} from '@dark-engine/core';
 
 import { render } from '../render';
 import { unmount } from '../create-root';
 import type { TagNativeElement } from '../native-element';
+import { LIB } from '../constants';
 
 function hydrateRoot(container: TagNativeElement | Document, element: DarkElement) {
   const tag = container as TagNativeElement;
@@ -28,7 +36,7 @@ function hydrate() {
 
     element.remove();
   } catch (error) {
-    illegal(`[platform-browser]: Can't hydrate app state from the server!`);
+    illegal(formatErrorMsg(LIB, `Can't hydrate app state from the server!`));
   }
 }
 

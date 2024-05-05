@@ -1,7 +1,8 @@
-import { type Fiber } from '../fiber';
+import { illegal, formatErrorMsg } from '../utils';
 import { type VirtualNode } from '../view';
 import { type Callback } from '../shared';
-import { illegal } from '../utils';
+import { type Fiber } from '../fiber';
+import { LIB } from '../constants';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
@@ -17,7 +18,7 @@ export type Platform = {
   chunk: (fiber: Fiber) => void;
 };
 
-const realisation = () => illegal('[Dark]: The function not installed by renderer!') as any;
+const realisation = () => illegal(formatErrorMsg(LIB, 'The function was not installed by renderer!')) as any;
 
 const platform: Platform = {
   createElement: realisation,

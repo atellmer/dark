@@ -1,4 +1,4 @@
-import { illegal } from '@dark-engine/core';
+import { illegal, formatErrorMsg } from '@dark-engine/core';
 
 import {
   OPENING_CURLY_BRACE_MARK,
@@ -16,6 +16,7 @@ import {
   OPENING_PARENTHESIS_MARK,
   CLOSING_PARENTHESIS_MARK,
   URL_FN_MARK,
+  LIB,
 } from '../constants';
 import {
   type Children,
@@ -118,7 +119,7 @@ function parse<P extends object>(css: string) {
               : false;
 
           if (!canNest) {
-            illegal('[styled]: Illegal style nesting!');
+            illegal(formatErrorMsg(LIB, 'Illegal style nesting!'));
           }
 
           token.value = sub(buffer);
@@ -126,7 +127,7 @@ function parse<P extends object>(css: string) {
           token.parent = parent;
 
           if (!token.value) {
-            illegal('[styled]: Empty style nesting!');
+            illegal(formatErrorMsg(LIB, 'Empty style nesting!'));
           }
 
           parent.children.push(token);
@@ -152,7 +153,7 @@ function parse<P extends object>(css: string) {
         break;
       case SEMICOLON_MARK:
         if (!last) {
-          illegal('[styled]: Incorrect style!');
+          illegal(formatErrorMsg(LIB, 'Incorrect style!'));
         }
 
         if (detectIsFunctionRule(last)) {

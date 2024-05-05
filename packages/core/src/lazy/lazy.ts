@@ -1,5 +1,5 @@
+import { detectIsUndefined, dummyFn, illegal, formatErrorMsg } from '../utils';
 import { type ComponentFactory, component } from '../component';
-import { detectIsUndefined, dummyFn, illegal } from '../utils';
 import { detectIsServer } from '../platform';
 import { detectIsFiberAlive } from '../walk';
 import { useSuspense } from '../suspense';
@@ -7,6 +7,7 @@ import { useUpdate } from '../use-update';
 import { forwardRef } from '../ref';
 import { $$scope } from '../scope';
 import { useId } from '../use-id';
+import { LIB } from '../constants';
 
 const $$lazy = Symbol('lazy');
 const factories = new Map<LoaderFn, ComponentFactory>();
@@ -60,7 +61,7 @@ function run<P extends object>(loader: LoaderFn<P>) {
       .then(module => {
         if (process.env.NODE_ENV !== 'production') {
           if (!module.default) {
-            return reject(illegal('[Dark]: The lazy loaded component should be exported as default!'));
+            return reject(illegal(formatErrorMsg(LIB, 'The lazy loaded component should be exported as default!')));
           }
         }
 

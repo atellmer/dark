@@ -1,4 +1,5 @@
 export const VERSION = '1.2.0';
+export const LIB = '@dark-engine/core';
 export const ROOT = 'dark:root';
 export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';

@@ -39,6 +39,8 @@ const sameFn = <T = any>(x: T) => x;
 
 const logError = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
 
+const formatErrorMsg = (lib: string, x: string) => `[${lib}]: ${x}`;
+
 function throwThis(x: Error | Promise<unknown>) {
   throw x;
 }
@@ -119,6 +121,7 @@ export {
   trueFn,
   falseFn,
   logError,
+  formatErrorMsg,
   throwThis,
   illegal,
   flatten,

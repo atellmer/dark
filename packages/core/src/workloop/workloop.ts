@@ -13,6 +13,7 @@ import {
   FLUSH_MASK,
   SHADOW_MASK,
   Flag,
+  LIB,
 } from '../constants';
 import {
   flatten,
@@ -23,6 +24,7 @@ import {
   detectIsFunction,
   detectIsTextBased,
   detectIsPromise,
+  formatErrorMsg,
   createIndexKey,
   trueFn,
 } from '../utils';
@@ -425,7 +427,7 @@ function extractKeys(alt: Fiber, children: Array<Instance>) {
 
       if (process.env.NODE_ENV !== 'production') {
         if (usedKeysMap[nextKey]) {
-          logError(`[Dark]: The key of node [${nextKey}] already has been used!`, [inst]);
+          logError(formatErrorMsg(LIB, `The key of node [${nextKey}] already has been used!`), [inst]);
         }
       }
 

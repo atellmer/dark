@@ -13,10 +13,11 @@ import {
   $$scope,
   nextTick,
   illegal,
+  formatErrorMsg,
   __useSuspense as useSuspense,
 } from '@dark-engine/core';
 
-import { ROOT_ID } from '../constants';
+import { ROOT_ID, LIB } from '../constants';
 
 import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
@@ -144,7 +145,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         $scope.defer(make);
       }
     } else if (isHydrateZone) {
-      if (!res) illegal(`[data]: Can't read app state from the server!`);
+      if (!res) illegal(formatErrorMsg(LIB, `Can't read app state from the server!`));
       const [data] = res;
 
       mutate(state, res);

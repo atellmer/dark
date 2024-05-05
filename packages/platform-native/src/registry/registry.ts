@@ -7,9 +7,10 @@ import {
   type Span,
   Page,
 } from '@nativescript/core';
-import { ROOT, illegal } from '@dark-engine/core';
+import { ROOT, illegal, formatErrorMsg } from '@dark-engine/core';
 
 import { type TagNativeElement } from '../native-element';
+import { LIB } from '../constants';
 
 export const enum NSViewFlag {
   CONTENT_VIEW = 'CONTENT_VIEW',
@@ -48,7 +49,7 @@ function getElementFactory(name: string): NSElementFactory {
   const factory = viewMap[name] || null;
 
   if (!factory) {
-    illegal(`[platform-native]: The element with name "${name}" is not registered!`);
+    illegal(formatErrorMsg(LIB, `The element with name "${name}" is not registered!`));
   }
 
   return factory;
@@ -66,7 +67,7 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
         frame.navigate(() => page);
       }
     } else {
-      illegal('[platform-native]: A frame must contain only a Page!');
+      illegal(formatErrorMsg(LIB, 'The frame must contain only a Page!'));
     }
   },
 });

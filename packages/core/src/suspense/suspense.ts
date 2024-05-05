@@ -1,4 +1,5 @@
 import type { DarkElement, SlotProps, TextBased } from '../shared';
+import { dummyFn, illegal, formatErrorMsg } from '../utils';
 import { createContext, useContext } from '../context';
 import { useLayoutEffect } from '../use-layout-effect';
 import { detectIsServer } from '../platform';
@@ -11,7 +12,7 @@ import { useMemo } from '../use-memo';
 import { forwardRef } from '../ref';
 import { $$scope } from '../scope';
 import { Shadow } from '../shadow';
-import { dummyFn } from '../utils';
+import { LIB } from '../constants';
 
 type SuspenseContextValue = {
   isLoaded: boolean;
@@ -43,7 +44,7 @@ const Suspense = forwardRef<SuspenseProps, unknown>(
     ({ fallback, slot }) => {
       if (process.env.NODE_ENV !== 'production') {
         if (!fallback) {
-          throw new Error(`[Dark]: Suspense fallback not found!`);
+          illegal(formatErrorMsg(LIB, `The fallback was not found!`));
         }
       }
       const $scope = $$scope();

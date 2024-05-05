@@ -1,6 +1,7 @@
-import { ROOT, illegal } from '@dark-engine/core';
+import { ROOT, illegal, formatErrorMsg } from '@dark-engine/core';
 
 import { type QElement } from '../shared';
+import { LIB } from '../constants';
 
 type QElementFactory = {
   create?: () => QElement;
@@ -22,7 +23,7 @@ function getElementFactory(name: string): QElementFactory {
   const factory = viewMap[name] || null;
 
   if (!factory) {
-    illegal(`[platform-desktop]: The element with name "${name}" is not registered!`);
+    illegal(formatErrorMsg(LIB, `The element with name "${name}" was not registered!`));
   }
 
   return factory;
