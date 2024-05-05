@@ -37,7 +37,13 @@ const falseFn = () => false;
 
 const sameFn = <T = any>(x: T) => x;
 
-const error = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
+const logError = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
+
+function throwThis(x: Error | Promise<unknown>) {
+  throw x;
+}
+
+const illegal = (x: string) => throwThis(new Error(x));
 
 function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => any = sameFn): Array<T> {
   if (detectIsArray(source)) {
@@ -112,7 +118,9 @@ export {
   dummyFn,
   trueFn,
   falseFn,
-  error,
+  logError,
+  throwThis,
+  illegal,
   flatten,
   keyBy,
   detectAreDepsDifferent,

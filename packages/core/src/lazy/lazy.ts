@@ -1,5 +1,5 @@
 import { type ComponentFactory, component } from '../component';
-import { detectIsUndefined, dummyFn } from '../utils';
+import { detectIsUndefined, dummyFn, illegal } from '../utils';
 import { detectIsServer } from '../platform';
 import { detectIsFiberAlive } from '../walk';
 import { useSuspense } from '../suspense';
@@ -56,15 +56,17 @@ function lazy<P extends object, R = unknown>(loader: LoaderFn<P>, done: () => vo
 
 function run<P extends object>(loader: LoaderFn<P>) {
   return new Promise<ComponentFactory<P>>((resolve, reject) => {
-    loader().then(module => {
-      if (process.env.NODE_ENV !== 'production') {
-        if (!module.default) {
-          return reject(new Error('[Dark]: the lazy loaded component should be exported as default!'));
+    loader()
+      .then(module => {
+        if (process.env.NODE_ENV !== 'production') {
+          if (!module.default) {
+            return reject(illegal('[Dark]: The lazy loaded component should be exported as default!'));
+          }
         }
-      }
 
-      resolve(module.default);
-    });
+        resolve(module.default);
+      })
+      .catch(reject);
   });
 }
 

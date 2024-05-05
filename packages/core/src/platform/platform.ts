@@ -1,6 +1,7 @@
 import { type Fiber } from '../fiber';
 import { type VirtualNode } from '../view';
 import { type Callback } from '../shared';
+import { illegal } from '../utils';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
@@ -16,22 +17,20 @@ export type Platform = {
   chunk: (fiber: Fiber) => void;
 };
 
-const defaultRealisation = () => {
-  throw new Error('Function not installed by renderer!');
-};
+const realisation = () => illegal('[Dark]: The function not installed by renderer!') as any;
 
 const platform: Platform = {
-  createElement: defaultRealisation,
-  insertElement: defaultRealisation,
-  raf: defaultRealisation,
-  caf: defaultRealisation,
-  spawn: defaultRealisation,
-  commit: defaultRealisation,
-  finishCommit: defaultRealisation,
-  detectIsDynamic: defaultRealisation,
-  detectIsPortal: defaultRealisation,
-  unmountPortal: defaultRealisation,
-  chunk: defaultRealisation,
+  createElement: realisation,
+  insertElement: realisation,
+  raf: realisation,
+  caf: realisation,
+  spawn: realisation,
+  commit: realisation,
+  finishCommit: realisation,
+  detectIsDynamic: realisation,
+  detectIsPortal: realisation,
+  unmountPortal: realisation,
+  chunk: realisation,
 };
 
 const detectIsServer = () => !platform.detectIsDynamic();

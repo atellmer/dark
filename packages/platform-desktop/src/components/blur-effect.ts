@@ -10,6 +10,7 @@ import {
   useLayoutEffect,
   useImperativeHandle,
   detectIsArray,
+  illegal,
 } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps } from '../shared';
@@ -38,7 +39,7 @@ const BlurEffect = forwardRef<BlurEffectProps, BlurEffectRef>(
       const gfx = useMemo(() => new QGraphicsBlurEffect(), []);
 
       if (detectIsArray(slot)) {
-        throw new Error(`BlurEffect supports only one child node!`);
+        illegal(`[platform-desktop]: BlurEffect supports only one child node!`);
       }
 
       useLayoutEffect(() => {

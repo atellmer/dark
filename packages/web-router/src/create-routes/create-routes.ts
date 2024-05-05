@@ -1,4 +1,11 @@
-import { type DarkElement, type ComponentFactory, type SlotProps, keyBy, detectIsString } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type ComponentFactory,
+  type SlotProps,
+  keyBy,
+  detectIsString,
+  illegal,
+} from '@dark-engine/core';
 
 import { pipe, splitBySlash, normalizePath, trimSlashes, detectIsParam, getParamName, sort, join } from '../utils';
 import { SLASH_MARK, WILDCARD_MARK, ROOT_MARK } from '../constants';
@@ -137,7 +144,7 @@ function root(route: Route) {
 
 function canRender(route: Route) {
   if (route?.component) return route;
-  throw new Error('[web-router]: the route was not found or it has no component!');
+  illegal('[web-router]: The route was not found or it has no component!');
 }
 
 const pick = (route: Route): Route | null => route || null;

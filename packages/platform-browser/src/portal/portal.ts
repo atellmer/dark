@@ -1,4 +1,12 @@
-import { type DarkElement, type Fiber, component, useMemo, $$scope, detectIsComponent } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type Fiber,
+  component,
+  useMemo,
+  $$scope,
+  detectIsComponent,
+  illegal,
+} from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 
@@ -7,7 +15,7 @@ const $$portal = Symbol('portal');
 function createPortal(slot: DarkElement, container: TagNativeElement) {
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
-      throw new Error(`[Dark]: createPortal only gets an Element as container!`);
+      illegal(`[platform-browser]: createPortal only gets an Element as container!`);
     }
   }
 

@@ -1,4 +1,4 @@
-import { NodeType, detectIsBoolean, detectIsString } from '@dark-engine/core';
+import { NodeType, detectIsBoolean, detectIsString, illegal } from '@dark-engine/core';
 import {
   type AttributeValue,
   AS_ATTR,
@@ -33,7 +33,7 @@ class TagNativeElement extends NativeElement {
 
   appendChild(element: NativeElement) {
     if (this.attrs[DANGER_HTML_CONTENT]) {
-      throw new Error(`[platform-server]: element with danger content can't have a children!`);
+      illegal(`[platform-server]: An element with danger content can't have a children!`);
     }
 
     element.parentElement = this;

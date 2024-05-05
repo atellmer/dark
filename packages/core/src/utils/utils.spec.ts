@@ -14,7 +14,7 @@ import {
   dummyFn,
   trueFn,
   falseFn,
-  error,
+  logError,
   flatten,
   keyBy,
   detectAreDepsDifferent,
@@ -156,11 +156,11 @@ describe('@core/utils', () => {
     expect(getTime()).toBe(TIME);
   });
 
-  test('the error function works correctly', () => {
+  test('the logError function works correctly', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(jest.fn());
 
-    expect(typeof error).toBe('function');
-    error('Error!');
+    expect(typeof logError).toBe('function');
+    logError('Error!');
     expect(spy).toHaveBeenCalledWith('Error!');
     spy.mockRestore();
   });

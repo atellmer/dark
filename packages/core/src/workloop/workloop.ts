@@ -16,7 +16,7 @@ import {
 } from '../constants';
 import {
   flatten,
-  error,
+  logError,
   detectIsEmpty,
   detectIsFalsy,
   detectIsArray,
@@ -88,7 +88,7 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       $scope.keepRoot(); // !
       emitter.emit('error', String(err));
 
-      error('err', err);
+      logError('err', err);
       if (!isAsync) {
         throw err;
       }
@@ -425,7 +425,7 @@ function extractKeys(alt: Fiber, children: Array<Instance>) {
 
       if (process.env.NODE_ENV !== 'production') {
         if (usedKeysMap[nextKey]) {
-          error(`[Dark]: the key of node [${nextKey}] already has been used!`, [inst]);
+          logError(`[Dark]: The key of node [${nextKey}] already has been used!`, [inst]);
         }
       }
 

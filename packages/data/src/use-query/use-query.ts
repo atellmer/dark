@@ -2,7 +2,7 @@ import {
   type TextBased,
   type AppResource,
   type Callback,
-  error,
+  logError,
   detectIsFunction,
   detectIsEmpty,
   mapRecord,
@@ -12,6 +12,7 @@ import {
   useMemo,
   $$scope,
   nextTick,
+  illegal,
   __useSuspense as useSuspense,
 } from '@dark-engine/core';
 
@@ -84,7 +85,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
 
       return data;
     } catch (err) {
-      error(err);
+      logError(err);
       cache.__emit({ type: 'query', phase: 'error', key, data: err });
       detectIsFunction(onError) && onError(err);
 
@@ -143,7 +144,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         $scope.defer(make);
       }
     } else if (isHydrateZone) {
-      if (!res) throw new Error('[data]: can not read app state from the server!');
+      if (!res) illegal(`[data]: Can't read app state from the server!`);
       const [data] = res;
 
       mutate(state, res);

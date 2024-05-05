@@ -29,6 +29,7 @@ import {
   dummyFn,
   $$scope,
   applyRef,
+  illegal,
 } from '@dark-engine/core';
 
 import { detectIsSvgElement, detectIsVoidElement } from '../utils';
@@ -285,14 +286,14 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (fiber.element.nodeName !== nativeElement.nodeName) {
-      throw Error('[platform-browser]: inconsistent element for hydration!');
+      illegal('[platform-browser]: Inconsistent element for hydration!');
     }
 
     fiber.element = nativeElement;
   } else {
     if (!(fiber.mask & SHADOW_MASK)) {
       if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
-        throw new Error(`[platform-browser]: element with danger content can't have a children!`);
+        illegal(`[platform-browser]: An element with danger content can't have a children!`);
       }
 
       if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {

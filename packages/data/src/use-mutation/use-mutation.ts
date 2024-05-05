@@ -1,4 +1,4 @@
-import { error, detectIsFunction, useUpdate, useMemo } from '@dark-engine/core';
+import { logError, detectIsFunction, useUpdate, useMemo } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
@@ -36,7 +36,7 @@ function useMutation<M extends Mutation>(
       detectIsFunction(onSuccess) && onSuccess({ cache, args, data });
       refetchQueries.forEach(key => cache.invalidate(key));
     } catch (err) {
-      error(err);
+      logError(err);
       state.error = String(err);
       cache.__emit({ type: 'mutation', phase: 'error', key, data: err });
       detectIsFunction(onError) && onError(err);

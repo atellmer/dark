@@ -1,4 +1,4 @@
-import { detectIsFalsy } from '@dark-engine/core';
+import { detectIsFalsy, illegal } from '@dark-engine/core';
 
 import { parseURL } from '../utils';
 
@@ -12,7 +12,7 @@ class RouterLocation {
   key: string;
 
   constructor(url: string) {
-    if (detectIsFalsy(url)) throw new Error('[web-router]: RouterLocation must have an initial url!');
+    if (detectIsFalsy(url)) illegal('[web-router]: A RouterLocation must have an initial url!');
     const { protocol, host, pathname, hash, search } = parseURL(url);
 
     this.url = url;

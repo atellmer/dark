@@ -10,6 +10,7 @@ import {
   nextTick,
   detectIsString,
   useTransition,
+  illegal,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
@@ -42,7 +43,7 @@ export type RouterRef = {
 const Router = forwardRef<RouterProps, RouterRef>(
   component(
     ({ url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, slot }, ref) => {
-      if (useActiveRouteContext()) throw new Error(`[web-router]: the parent active route's context detected!`);
+      if (useActiveRouteContext()) illegal(`[web-router]: The parent active route's context detected!`);
       const sourceURL = fullURL || window.location.href;
       const [isPending, startTransition] = useTransition();
       const [location, setLocation] = useState(() => createRouterLocation(sourceURL));

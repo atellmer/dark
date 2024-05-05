@@ -7,7 +7,7 @@ import {
   type Span,
   Page,
 } from '@nativescript/core';
-import { ROOT } from '@dark-engine/core';
+import { ROOT, illegal } from '@dark-engine/core';
 
 import { type TagNativeElement } from '../native-element';
 
@@ -48,7 +48,7 @@ function getElementFactory(name: string): NSElementFactory {
   const factory = viewMap[name] || null;
 
   if (!factory) {
-    throw new Error(`[Dark]: the element with name "${name}" is not registered!`);
+    illegal(`[platform-native]: The element with name "${name}" is not registered!`);
   }
 
   return factory;
@@ -66,7 +66,7 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
         frame.navigate(() => page);
       }
     } else {
-      throw Error('[Dark]: Frame must contain only Page!');
+      illegal('[platform-native]: A frame must contain only a Page!');
     }
   },
 });

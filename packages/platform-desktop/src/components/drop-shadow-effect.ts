@@ -9,6 +9,7 @@ import {
   useLayoutEffect,
   useImperativeHandle,
   detectIsArray,
+  illegal,
 } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps } from '../shared';
@@ -39,7 +40,7 @@ const DropShadowEffect = forwardRef<DropShadowEffectProps, DropShadowEffectRef>(
       const gfx = useMemo(() => new QGraphicsDropShadowEffect(), []);
 
       if (detectIsArray(slot)) {
-        throw new Error(`DropShadowEffect supports only one child node!`);
+        illegal(`[platform-desktop]: DropShadowEffect supports only one child node!`);
       }
 
       useLayoutEffect(() => {

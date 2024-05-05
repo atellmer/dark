@@ -1,4 +1,11 @@
-import { type DarkElement, type SubscriberWithValue, component, createContext, useContext } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type SubscriberWithValue,
+  component,
+  createContext,
+  useContext,
+  illegal,
+} from '@dark-engine/core';
 
 import { type CacheEventData, type MonitorEventData, InMemoryCache } from '../cache';
 
@@ -45,7 +52,7 @@ type DataClientProviderProps = {
 };
 
 const DataClientProvider = component<DataClientProviderProps>(({ client, slot }) => {
-  if (useClient()) throw new Error('[data]: illegal nested data client provider!');
+  if (useClient()) illegal('[data]: Illegal nested data client provider!');
   return DataClientContext.Provider({ value: client, slot });
 });
 

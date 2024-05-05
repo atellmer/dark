@@ -1,4 +1,4 @@
-import { type DarkElement, type AppResource, STATE_SCRIPT_TYPE, $$scope } from '@dark-engine/core';
+import { type DarkElement, type AppResource, STATE_SCRIPT_TYPE, $$scope, illegal } from '@dark-engine/core';
 
 import { render } from '../render';
 import { unmount } from '../create-root';
@@ -28,7 +28,7 @@ function hydrate() {
 
     element.remove();
   } catch (error) {
-    throw Error('[Dark]: can not hydrate app state from the server!');
+    illegal(`[platform-browser]: Can't hydrate app state from the server!`);
   }
 }
 

@@ -17,6 +17,7 @@ import {
   $$scope,
   dummyFn,
   scheduler,
+  illegal,
 } from '@dark-engine/core';
 
 import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
@@ -50,7 +51,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
   !isInjected && inject();
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element) && !((container as unknown) instanceof Document)) {
-      throw new Error(`[Dark]: render receives a valid element as container!`);
+      illegal(`[platform-browser]: The render receives a valid element as container!`);
     }
   }
 

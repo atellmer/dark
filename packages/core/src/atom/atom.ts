@@ -1,4 +1,4 @@
-import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, error } from '../utils';
+import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, logError } from '../utils';
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
 import { ATOM_HOST_MASK } from '../constants';
@@ -26,7 +26,7 @@ class Atom<T = unknown> {
       this.__connect(fn, key);
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
-        error('[Dark]: illegal invocation atom.val() outside render process!');
+        logError('[Dark]: Illegal invocation atom.val() outside render process!');
       }
     }
 

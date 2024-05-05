@@ -1,4 +1,4 @@
-import { createContext, useContext } from '@dark-engine/core';
+import { createContext, useContext, illegal } from '@dark-engine/core';
 
 import { type RouterLocation } from '../location';
 import { type RouterHistory } from '../history';
@@ -32,7 +32,7 @@ const usePendingContext = () => useContext(PendingContext);
 
 function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
   if (!value) {
-    throw new Error('[web-router]: illegal invoke hook outside router!');
+    illegal(`[web-router]: Illegal hook's invoke outside router!`);
   }
 }
 

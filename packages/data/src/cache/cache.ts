@@ -1,4 +1,4 @@
-import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTick } from '@dark-engine/core';
+import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTick, illegal } from '@dark-engine/core';
 
 import { ROOT_ID } from '../constants';
 
@@ -106,7 +106,7 @@ export type CacheRecord<T = unknown> = {
 };
 
 function checkCache(cache: InMemoryCache) {
-  if (!cache) throw new Error('[data]: the hook requires a provider with a client!');
+  if (!cache) illegal('[data]: The hook requires a provider with a client!');
 }
 
 export { InMemoryCache, checkCache };
