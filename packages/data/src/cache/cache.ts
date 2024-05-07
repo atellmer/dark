@@ -92,18 +92,21 @@ class InMemoryCache<K extends string = string> {
 }
 
 type State = Record<string, Record<string, CacheRecord>>;
-type MethodOptions = { id?: TextBased };
+type MethodOptions = { id?: TextBased; isPending?: boolean };
 
 type EventName = 'change';
 export type CacheEventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
 export type CacheEventData<K extends string> = { type: CacheEventType; key: K; id?: TextBased; record?: CacheRecord };
 export type MonitorEventType = 'query' | 'mutation';
-export type MonitorEventPhase = 'start' | 'finish' | 'error';
+export type MonitorEventPhase = 'promise' | 'start' | 'finish' | 'error';
 export type MonitorEventData<K extends string> = {
   type: MonitorEventType;
   phase: MonitorEventPhase;
   key: K;
   data?: unknown;
+  id?: TextBased;
+  promise?: Promise<unknown>;
+  initiator?: TextBased;
 };
 
 export type CacheRecord<T = unknown> = {

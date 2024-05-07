@@ -207,4 +207,4 @@ const insertNativeElementByIndex = (element: NativeElement, idx: number, parent:
 
 const removeNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.removeChild(element);
 
-export { createNativeElement, commit, finishCommit, insertNativeElementByIndex };
+export { createNativeElement, commit, finishCommit, insertNativeElementByIndex, removeNativeElement };

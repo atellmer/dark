@@ -1,12 +1,13 @@
-import { illegal, formatErrorMsg } from '../utils';
+import { illegalFromPackage } from '../utils';
 import { type VirtualNode } from '../view';
 import { type Callback } from '../shared';
 import { type Fiber } from '../fiber';
-import { LIB } from '../constants';
+import { $$scope } from '../scope';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
-  insertElement: <N>(node: N, idx: number, parent: N) => void;
+  insertElement: <N>(element: N, idx: number, parentElement: N) => void;
+  removeElement: <N>(element: N, parentElement: N) => void;
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
   spawn: (callback: Callback) => void;
@@ -18,11 +19,12 @@ export type Platform = {
   chunk: (fiber: Fiber) => void;
 };
 
-const realisation = () => illegal(formatErrorMsg(LIB, 'The function was not installed by renderer!')) as any;
+const realisation = () => illegalFromPackage('The function was not installed by renderer!') as any;
 
 const platform: Platform = {
   createElement: realisation,
   insertElement: realisation,
+  removeElement: realisation,
   raf: realisation,
   caf: realisation,
   spawn: realisation,
@@ -36,4 +38,8 @@ const platform: Platform = {
 
 const detectIsServer = () => !platform.detectIsDynamic();
 
-export { platform, detectIsServer };
+const detectIsHydration = () => $$scope().getIsHydrateZone();
+
+const detectIsSSR = () => detectIsServer() || detectIsHydration();
+
+export { platform, detectIsServer, detectIsHydration, detectIsSSR };

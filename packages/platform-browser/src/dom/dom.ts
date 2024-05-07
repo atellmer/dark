@@ -27,10 +27,10 @@ import {
   collectElements,
   walk,
   dummyFn,
-  $$scope,
   applyRef,
   illegal,
   formatErrorMsg,
+  detectIsHydration,
 } from '@dark-engine/core';
 
 import { detectIsSvgElement, detectIsVoidElement } from '../utils';
@@ -92,7 +92,7 @@ function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
   }
 }
 
-function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZone: boolean) {
+function addAttributes(element: NativeElement, node: TagVirtualNode, isHydration: boolean) {
   const attrNames = Object.keys(node.attrs);
   const tagElement = element as TagNativeElement;
 
@@ -108,7 +108,7 @@ function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZo
 
     if (detectIsEvent(attrName)) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
-    } else if (!isHydrateZone && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
+    } else if (!isHydration && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       const stop = patchProperties({
         tagName: node.name,
         element: tagElement,
@@ -270,9 +270,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
   const parentElement = parentFiber.element;
   const childNodes = parentElement.childNodes;
-  const isHydrateZone = $$scope().getIsHydrateZone();
+  const isHydration = detectIsHydration();
 
-  if (isHydrateZone) {
+  if (isHydration) {
     let nativeElement = childNodes[fiber.eidx] as NativeElement;
 
     if (nativeElement instanceof DocumentType) {
@@ -307,7 +307,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
   }
 
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydrateZone);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydration);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
@@ -402,6 +402,7 @@ const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent
 
 const canRemoveNativeElement = (element: NativeNode, parent: NativeNode) => element.parentElement === parent;
 
-const removeNativeElement = (element: NativeNode, parent: TagNativeElement) => parent.removeChild(element);
+const removeNativeElement = (element: NativeNode, parent: TagNativeElement) =>
+  element.parentElement === parent && parent.removeChild(element);
 
-export { createNativeElement, commit, finishCommit, setTrackUpdate, insertNativeElementByIndex };
+export { createNativeElement, commit, finishCommit, setTrackUpdate, insertNativeElementByIndex, removeNativeElement };

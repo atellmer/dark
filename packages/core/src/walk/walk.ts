@@ -72,6 +72,20 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
+function getSuspense(fiber: Fiber, isPending: boolean) {
+  let suspense = fiber;
+  while (suspense) {
+    if (suspense.hook && suspense.hook.isSuspense && (isPending ? suspense.hook.isPending : true)) return suspense;
+    suspense = suspense.parent;
+  }
+
+  return null;
+}
+
+function resolveSuspense(fiber: Fiber): Fiber {
+  return getSuspense(fiber, true) || getSuspense(fiber, false) || null;
+}
+
 function createHookLoc(rootId: number, idx: number, hook: Hook) {
   const fiber = hook.owner;
   let $fiber = fiber;
@@ -220,6 +234,7 @@ export {
   collectElements,
   getFiberWithElement,
   detectIsFiberAlive,
+  resolveSuspense,
   createHookLoc,
   tryOptStaticSlot,
   tryOptMemoSlot,

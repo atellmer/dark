@@ -3,10 +3,10 @@ import {
   type Fiber,
   component,
   useMemo,
-  $$scope,
   detectIsComponent,
   illegal,
   formatErrorMsg,
+  __useCursor as useCursor,
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
@@ -31,17 +31,17 @@ type PortalProps = {
 
 const Portal = component<PortalProps>(
   props => {
+    const cursor = useCursor();
     const element = props.container;
-    const fiber = $$scope().getCursorFiber();
 
     useMemo(() => (element.innerHTML = ''), []);
 
-    fiber.element = element;
+    cursor.element = element;
     props.container = null;
 
     return props.slot;
   },
-  { token: $$portal },
+  { token: $$portal, displayName: 'Portal' },
 );
 
 const detectIsPortal = (instance: unknown) => detectIsComponent(instance) && instance.token === $$portal;

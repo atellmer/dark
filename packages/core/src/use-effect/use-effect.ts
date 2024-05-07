@@ -1,4 +1,5 @@
 import { INSERTION_EFFECT_HOST_MASK, LAYOUT_EFFECT_HOST_MASK, ASYNC_EFFECT_HOST_MASK } from '../constants';
+import { __useCursor as useCursor } from '../internal';
 import { type Hook, type HookValue } from '../fiber';
 import { detectIsFiberAlive } from '../walk';
 import { detectIsFunction } from '../utils';
@@ -15,21 +16,21 @@ type UseEffectValue = {
 function createEffect(token: Symbol, type: EffectType) {
   function useEffect(effect: Effect, deps: Array<any> = [{}]) {
     const $scope = $$scope();
-    const fiber = $scope.getCursorFiber();
+    const cursor = useCursor();
     const scope = useMemo<UseEffectValue>(() => ({ token, cleanup: undefined }), []);
     const isInsertionEffect = type === EffectType.INSERTION;
     const isLayoutEffect = type === EffectType.LAYOUT;
     const isAsyncEffect = type === EffectType.ASYNC;
 
-    isInsertionEffect && fiber.markHost(INSERTION_EFFECT_HOST_MASK);
-    isLayoutEffect && fiber.markHost(LAYOUT_EFFECT_HOST_MASK);
-    isAsyncEffect && fiber.markHost(ASYNC_EFFECT_HOST_MASK);
+    isInsertionEffect && cursor.markHost(INSERTION_EFFECT_HOST_MASK);
+    isLayoutEffect && cursor.markHost(LAYOUT_EFFECT_HOST_MASK);
+    isAsyncEffect && cursor.markHost(ASYNC_EFFECT_HOST_MASK);
 
     useMemo(() => {
       const runEffect = () => {
         scope.cleanup = effect();
 
-        if (isAsyncEffect && detectIsFunction(scope.cleanup) && !detectIsFiberAlive(fiber)) {
+        if (isAsyncEffect && detectIsFunction(scope.cleanup) && !detectIsFiberAlive(cursor)) {
           scope.cleanup();
         }
       };

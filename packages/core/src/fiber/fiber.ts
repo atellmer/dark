@@ -1,5 +1,5 @@
 import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponentTypesWithSameKeys } from '../view';
-import { type Instance, type Callback, type TimerId } from '../shared';
+import { type Instance, type Callback, type CallbackWithValue, type TimerId } from '../shared';
 import { type Context, type ContextProviderValue } from '../context';
 import { detectIsComponent } from '../component';
 import { detectIsFunction, logError } from '../utils';
@@ -96,10 +96,44 @@ class Hook<T = any> {
   idx = 0;
   values: Array<T> = [];
   owner: Fiber = null;
+  isSuspense = false;
+  isPending = false;
+  pendings = 0;
   private static nextId = 0;
 
   constructor() {
     this.id = ++Hook.nextId;
+  }
+}
+
+class Awaiter {
+  store = new Map<Hook, Set<Promise<unknown>>>();
+
+  add(hook: Hook, promise: Promise<unknown>) {
+    !this.store.has(hook) && this.store.set(hook, new Set());
+    this.store.get(hook).add(promise);
+  }
+
+  resolve(cb: (hook: Hook) => void) {
+    for (const [hook, promises] of this.store) {
+      const $promises = Array.from(promises);
+
+      this.store.delete(hook);
+
+      if ($promises.length > 0) {
+        hook.isPending = true;
+        hook.pendings++;
+        const { pendings } = hook;
+        cb(hook);
+
+        Promise.allSettled($promises).then(() => {
+          if (pendings === hook.pendings) {
+            hook.isPending = false;
+            cb(hook);
+          }
+        });
+      }
+    }
   }
 }
 
@@ -118,4 +152,4 @@ type Batch = {
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };
 
-export { Fiber, Hook, getHook };
+export { Fiber, Hook, Awaiter, getHook };

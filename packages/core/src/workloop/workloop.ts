@@ -1,4 +1,4 @@
-import { platform } from '../platform';
+import { platform, detectIsSSR } from '../platform';
 import {
   CREATE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,
@@ -14,6 +14,7 @@ import {
   SHADOW_MASK,
   Flag,
   LIB,
+  TaskPriority,
 } from '../constants';
 import {
   flatten,
@@ -28,7 +29,7 @@ import {
   createIndexKey,
   trueFn,
 } from '../utils';
-import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
+import { type Scope, getRootId, setRootId, $$scope, replaceScope } from '../scope';
 import { type Component, detectIsComponent } from '../component';
 import { type ElementKey, type Instance } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
@@ -48,13 +49,16 @@ import {
   walk,
   getFiberWithElement,
   detectIsFiberAlive,
+  resolveSuspense,
   notifyParents,
   tryOptStaticSlot,
   tryOptMemoSlot,
+  createHookLoc,
 } from '../walk';
-import { type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
+import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
 import { unmountFiber } from '../unmount';
+import { addBatch } from '../batch';
 
 export type WorkLoop = (isAsync: boolean) => boolean | Promise<unknown> | null;
 
@@ -136,6 +140,7 @@ function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
 
 function mountChild(parent: Fiber, $scope: Scope) {
   $scope.navToChild();
+  parent.child = null;
   const $inst = parent.inst;
   const idx = 0;
   const inst = hasChildrenProp($inst) ? $inst.children[idx] : null;
@@ -153,6 +158,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
 
 function mountSibling(left: Fiber, $scope: Scope) {
   $scope.navToSibling();
+  left.next = null;
   const $inst = left.parent.inst;
   const idx = $scope.getMountIndex();
   const inst = hasChildrenProp($inst) && $inst.children ? $inst.children[idx] : null;
@@ -214,7 +220,9 @@ function createFiber(alt: Fiber, inst: Instance, idx: number) {
 function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
   const isChild = idx === 0;
   const parent = isChild ? fiber : fiber.parent;
-  if (!fiber.wip && parent.tag === CREATE_EFFECT_TAG) return null; // !
+  if (!fiber.wip && parent.tag === CREATE_EFFECT_TAG) {
+    return null; // !
+  }
   const parentId = isChild ? fiber.id : fiber.parent.id;
   const key = getElementKey(inst);
   const actions = $scope.getActionsById(parentId);
@@ -298,7 +306,7 @@ function setup(fiber: Fiber, alt: Fiber) {
   let isUpdate = false;
 
   fiber.parent.tag === CREATE_EFFECT_TAG && (fiber.tag = fiber.parent.tag);
-  fiber.parent.mask & SHADOW_MASK && !fiber.parent.element && !detectIsReplacer(inst) && (fiber.mask |= SHADOW_MASK);
+  fiber.parent.mask & SHADOW_MASK && !fiber.parent.element && (fiber.mask |= SHADOW_MASK);
   isUpdate =
     alt &&
     fiber.tag !== CREATE_EFFECT_TAG &&
@@ -353,24 +361,11 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   let inst = fiber.inst;
   const isComponent = detectIsComponent(inst);
   const component = inst as Component;
+  const id = $scope.getResourceId();
 
   if (isComponent) {
     try {
-      const id = $scope.getResourceId();
       let result = component.type(component.props, component.ref);
-      const defers = $scope.getDefers();
-
-      if (defers.length > 0) {
-        const promise = Promise.all(defers.map(x => x()));
-
-        $scope.setResourceId(id);
-        $scope.resetDefers();
-        $scope.navToPrev();
-        $scope.setNextUnitOfWork(prev);
-        Fiber.setNextId(prev.id);
-
-        throw promise;
-      }
 
       if (detectIsArray(result)) {
         !detectIsFragment(component) && (result = Fragment({ slot: result }));
@@ -381,9 +376,40 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
       component.children = result as Array<Instance>;
       platform.detectIsPortal(inst) && fiber.markHost(PORTAL_HOST_MASK);
     } catch (err) {
-      if (detectIsPromise(err)) throw err;
-      component.children = [];
-      fiber.setError(err);
+      if (detectIsPromise(err)) {
+        const promise = err;
+        const isSSR = detectIsSSR();
+        const reset = () => {
+          $scope.setResourceId(id);
+
+          if (prev) {
+            $scope.navToPrev();
+            $scope.setNextUnitOfWork(prev);
+            Fiber.setNextId(prev.id);
+          } else {
+            fiber.id++;
+            Fiber.setNextId(fiber.id);
+          }
+        };
+
+        if (!isSSR) {
+          const suspense = resolveSuspense(fiber);
+
+          if (suspense) {
+            suspense.hook.isPending = true;
+            $scope.getAwaiter().add(suspense.hook, promise);
+          } else {
+            reset();
+            throw err;
+          }
+        } else {
+          reset();
+          throw err;
+        }
+      } else {
+        component.children = [];
+        fiber.setError(err);
+      }
     }
   } else if (detectIsVirtualNodeFactory(inst)) {
     inst = inst();
@@ -461,10 +487,12 @@ function commit($scope: Scope) {
     process.env.NODE_ENV === 'development' && $scope.setIsHot(false);
   }
 
+  const rootId = getRootId();
   const wip = $scope.getWorkInProgress();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
   const isUpdateZone = $scope.getIsUpdateZone();
+  const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
   const combinedMask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | PORTAL_HOST_MASK;
 
@@ -491,14 +519,15 @@ function commit($scope: Scope) {
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
+  awaiter.resolve(hook => createUpdate(rootId, hook)());
   unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));
   flush($scope);
 }
 
-function flush($scope: Scope, cancel = false) {
-  !cancel && $scope.getEmitter().emit('prefinish');
+function flush($scope: Scope, fromFork = false) {
+  !fromFork && $scope.getEmitter().emit('prefinish');
   $scope.flush();
-  !cancel && $scope.getEmitter().emit('finish');
+  !fromFork && $scope.getEmitter().emit('finish');
   $scope.runAfterCommit(); // !
 }
 
@@ -571,8 +600,9 @@ function createCallback(options: CreateCallbackOptions) {
     const $scope = $$scope();
     const owner = hook.owner;
     const fiber = owner.alt || owner;
+    const isBroken = !fiber.tag;
 
-    if (!shouldUpdate() || !detectIsFiberAlive(fiber) || isRetain) {
+    if (isBroken || !shouldUpdate() || !detectIsFiberAlive(fiber) || isRetain) {
       isRetain && onRestore({ fiber, setValue, resetValue });
       return;
     }
@@ -581,11 +611,15 @@ function createCallback(options: CreateCallbackOptions) {
     detectIsFunction(resetValue) && isTransition && $scope.addCancel(resetValue);
 
     fiber.alt = new Fiber().mutate(fiber);
+    fiber.alt.alt = null;
     fiber.tag = UPDATE_EFFECT_TAG;
     fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
     fiber.wip = true;
+
+    hook.idx = 0; // !
+    hook.owner = fiber;
 
     if (process.env.NODE_ENV !== 'production') {
       fiber.marker = '🔥';
@@ -602,6 +636,50 @@ function createCallback(options: CreateCallbackOptions) {
   return callback;
 }
 
+function createUpdate(rootId: number, hook: Hook) {
+  const { idx } = hook;
+  const update = (tools?: () => Tools) => {
+    const $scope = $$scope();
+    if ($scope.getIsInsertionEffectsZone()) return;
+    const { owner } = hook;
+    const hasTools = detectIsFunction(tools);
+    const isTransition = $scope.getIsTransitionZone();
+    const isBatch = $scope.getIsBatchZone();
+    const isEvent = $scope.getIsEventZone();
+    const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
+    const forceAsync = isTransition;
+    const onTransitionStart = $scope.getOnTransitionStart();
+    const onTransitionEnd = $scope.getOnTransitionEnd();
+    const callback = createCallback({
+      rootId,
+      hook,
+      isTransition,
+      tools: hasTools ? tools : undefined,
+    });
+    const createLoc = () => createHookLoc(rootId, idx, hook);
+    const callbackOptions: ScheduleCallbackOptions = {
+      priority,
+      forceAsync,
+      isTransition,
+      createLoc,
+      onTransitionStart,
+      onTransitionEnd,
+    };
+
+    if (isBatch) {
+      addBatch(
+        owner,
+        () => scheduler.schedule(callback, callbackOptions),
+        () => hasTools && tools().setValue(),
+      );
+    } else {
+      scheduler.schedule(callback, callbackOptions);
+    }
+  };
+
+  return update;
+}
+
 export type Tools = {
   shouldUpdate: () => boolean;
 } & Pick<OnRestoreOptions, 'setValue' | 'resetValue'>;
@@ -614,4 +692,4 @@ const $tools = (): Tools => ({
 
 const detectIsBusy = () => Boolean($$scope()?.getWorkInProgress());
 
-export { Fiber, workLoop, createCallback, detectIsBusy };
+export { Fiber, workLoop, createUpdate, detectIsBusy };

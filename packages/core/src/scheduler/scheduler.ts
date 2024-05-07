@@ -157,10 +157,22 @@ class Scheduler {
       return false;
     }
 
-    this.task.run();
-    this.task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
+    this.run(this.task);
 
     return true;
+  }
+
+  private run(task: Task) {
+    try {
+      task.run();
+      task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
+    } catch (something) {
+      if (detectIsPromise(something)) {
+        something.finally(() => {
+          this.run(task);
+        });
+      }
+    }
   }
 
   private execute() {
@@ -183,10 +195,10 @@ class Scheduler {
   }
 
   private requestCallback(callback: WorkLoop) {
-    const result = callback(false);
+    const something = callback(false);
 
-    if (detectIsPromise(result)) {
-      result.finally(() => {
+    if (detectIsPromise(something)) {
+      something.finally(() => {
         this.requestCallback(callback);
       });
     } else {
@@ -198,13 +210,13 @@ class Scheduler {
   private performWorkUntilDeadline() {
     if (this.scheduledCallback) {
       this.deadline = getTime() + YIELD_INTERVAL;
-      const result = this.scheduledCallback(true);
+      const something = this.scheduledCallback(true);
 
-      if (detectIsPromise(result)) {
-        result.finally(() => {
+      if (detectIsPromise(something)) {
+        something.finally(() => {
           this.port.postMessage(null);
         });
-      } else if (result) {
+      } else if (something) {
         this.port.postMessage(null);
       } else {
         this.complete(this.task);

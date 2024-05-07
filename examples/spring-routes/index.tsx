@@ -79,7 +79,7 @@ type ShellProps = {
 const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
-      <>
+      <PageTransition>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
@@ -89,7 +89,7 @@ const Shell = component<ShellProps>(
         <Suspense fallback={<Spinner />}>
           <main>{slot}</main>
         </Suspense>
-      </>
+      </PageTransition>
     );
   },
   { displayName: 'Shell' },

@@ -1,7 +1,7 @@
 import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
 import { EventEmitter } from '../emitter';
-import { type Fiber } from '../fiber';
+import { type Fiber, Awaiter } from '../fiber';
 
 class Scope {
   private root: Fiber = null;
@@ -22,7 +22,7 @@ class Scope {
   private insertionEffects = new Set<Callback>();
   private resourceId = 0;
   private resources: AppResources = new Map();
-  private defers: Array<() => Promise<unknown>> = [];
+  private awaiter: Awaiter = new Awaiter();
   private onTransitionStart: Callback = null;
   private onTransitionEnd: Callback = null;
   private isLayoutEffectsZone = false;
@@ -101,6 +101,7 @@ class Scope {
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
+    scope.awaiter = this.awaiter;
 
     return scope;
   }
@@ -399,18 +400,6 @@ class Scope {
     return this.emitter;
   }
 
-  defer(fn: () => Promise<unknown>) {
-    this.defers.push(fn);
-  }
-
-  getDefers() {
-    return this.defers;
-  }
-
-  resetDefers() {
-    this.defers = [];
-  }
-
   getResource(id: number) {
     return this.resources.get(id);
   }
@@ -433,6 +422,10 @@ class Scope {
 
   getNextResourceId() {
     return ++this.resourceId;
+  }
+
+  getAwaiter() {
+    return this.awaiter;
   }
 
   runAfterCommit() {

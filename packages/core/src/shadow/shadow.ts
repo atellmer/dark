@@ -1,42 +1,49 @@
-import type { DarkElement } from '../shared';
-import { component } from '../component';
-import { SHADOW_MASK } from '../constants';
-import { useLayoutEffect } from '../use-layout-effect';
-import { $$scope } from '../scope';
+import { __useCursor as useCursor, __useSSR as useSSR } from '../internal';
 import { collectElements, getFiberWithElement } from '../walk';
-import { platform, detectIsServer } from '../platform';
+import { useLayoutEffect } from '../use-layout-effect';
+import type { DarkElement } from '../shared';
+import { SHADOW_MASK } from '../constants';
+import { component } from '../component';
+import { platform } from '../platform';
 
 const $$shadow = Symbol('shadow');
 
 type ShadowProps = {
-  isInserted: boolean;
+  isOpen: boolean;
   slot: DarkElement;
 };
 
 const Shadow = component<ShadowProps>(
-  ({ isInserted, slot }) => {
-    const isEnabled = !detectIsServer() && !$$scope().getIsHydrateZone();
-    const fiber = $$scope().getCursorFiber();
+  ({ isOpen, slot }) => {
+    const { isSSR } = useSSR();
+    const cursor = useCursor();
 
-    if (isEnabled) {
-      if (isInserted) {
-        fiber.mask &= ~SHADOW_MASK;
+    if (!isSSR) {
+      if (isOpen) {
+        cursor.mask &= ~SHADOW_MASK;
       } else {
-        !(fiber.mask & SHADOW_MASK) && (fiber.mask |= SHADOW_MASK);
+        cursor.mask |= SHADOW_MASK;
       }
     }
 
     useLayoutEffect(() => {
-      if (!isEnabled || !isInserted) return;
-      const $fiber = getFiberWithElement(fiber);
-      const fibers = collectElements(fiber, x => x);
+      if (isSSR) return;
+      const $fiber = getFiberWithElement(cursor);
+      const fibers = collectElements(cursor, x => x);
+
+
+      console.log('$fiber', isOpen, $fiber, fibers, fibers[0].eidx);
 
       for (const fiber of fibers) {
-        platform.insertElement(fiber.element, fiber.eidx, $fiber.element);
+        if (isOpen) {
+          platform.insertElement(fiber.element, fiber.eidx, $fiber.element);
+        } else {
+          platform.removeElement(fiber.element, $fiber.element);
+        }
       }
-    }, [isInserted]);
+    }, [isOpen]);
 
-    return slot || null;
+    return slot;
   },
   { token: $$shadow, displayName: 'Shadow' },
 );

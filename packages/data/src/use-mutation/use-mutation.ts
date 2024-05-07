@@ -1,10 +1,18 @@
-import { logError, detectIsFunction, useUpdate, useMemo } from '@dark-engine/core';
+import {
+  logError,
+  detectIsFunction,
+  useUpdate,
+  useMemo,
+  throwThis,
+  __useInSuspense as useInSuspense,
+} from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
 
 type UseMutationOptions<T, P> = {
   refetchQueries?: Array<string>;
+  onStart?: () => void;
   onSuccess?: (x: OnSuccessOptions<T, P>) => void;
   onError?: (err: any) => void;
 };
@@ -12,24 +20,26 @@ type UseMutationOptions<T, P> = {
 function useMutation<M extends Mutation>(
   key: string,
   mutation: M,
-  options: UseMutationOptions<Awaited<ReturnType<M>>, Parameters<M>>,
+  options?: UseMutationOptions<Awaited<ReturnType<M>>, Parameters<M>>,
 ) {
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
-  const { refetchQueries = [], onSuccess, onError } = options || {};
+  const { refetchQueries = [], onStart, onSuccess, onError } = options || {};
   const update = useUpdate();
+  const scope = useMemo<Scope<ReturnType<M>>>(() => ({ promise: null }), []);
   const cache = useCache();
   checkCache(cache);
+  const inSuspense = useInSuspense();
   const state = useMemo<State<AwaitedResult>>(() => ({ isFetching: false, data: null, error: null }), []);
   const make = async (...args: Params) => {
     let data: AwaitedResult = null;
 
+    state.isFetching = true;
+    state.error = null;
     cache.__emit({ type: 'mutation', phase: 'start', key, data: args });
+    detectIsFunction(onStart) && onStart();
 
     try {
-      state.isFetching = true;
-      state.error = null;
-      update();
       data = (await mutation(...args)) as AwaitedResult;
       state.data = data;
       cache.__emit({ type: 'mutation', phase: 'finish', key, data });
@@ -47,14 +57,37 @@ function useMutation<M extends Mutation>(
 
     return data;
   };
+
+  const mutate = (...args: Params) => {
+    const promise = make(...args);
+
+    if (inSuspense) {
+      scope.promise = promise;
+    }
+
+    update();
+    return promise;
+  };
+
   const result: MutationResult<AwaitedResult> = {
     isFetching: state.isFetching,
     data: state.data,
     error: state.error,
   };
 
-  return [make, result] as [(...args: Params) => ReturnType<M>, MutationResult<AwaitedResult>];
+  if (scope.promise) {
+    const { promise } = scope;
+
+    scope.promise = null;
+    throwThis(promise);
+  }
+
+  return [mutate, result] as [(...args: Params) => ReturnType<M>, MutationResult<AwaitedResult>];
 }
+
+type Scope<T> = {
+  promise: Promise<T>;
+};
 
 type OnSuccessOptions<T, P> = { cache: InMemoryCache; data: T; args: P };
 type State<T> = { isFetching: boolean; data: T; error: string };

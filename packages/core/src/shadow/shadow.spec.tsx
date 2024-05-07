@@ -35,10 +35,10 @@ describe('@core/shadow', () => {
         </>
       );
     });
-    const App = component<{ isInserted?: boolean }>(({ isInserted }) => {
+    const App = component<{ isOpen?: boolean }>(({ isOpen }) => {
       return (
         <div>
-          <Shadow isInserted={isInserted}>
+          <Shadow isOpen={isOpen}>
             <>
               <Child />
             </>
@@ -51,13 +51,13 @@ describe('@core/shadow', () => {
     expect(host.innerHTML).toBe(content());
     expect(spy).toHaveBeenCalled();
 
-    render(<App isInserted />);
+    render(<App isOpen />);
     expect(host.innerHTML).toBe(content(true));
 
-    render(<App isInserted />);
+    render(<App isOpen />);
     expect(host.innerHTML).toBe(content(true));
 
     render(<App />);
-    expect(host.innerHTML).toBe(content(true));
+    expect(host.innerHTML).toBe(content());
   });
 });

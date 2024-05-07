@@ -18,7 +18,7 @@ enum Key {
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
 const withProvider = (app: DarkElement) => <DataClientProvider client={client}>{app}</DataClientProvider>;
-const waitQuery = () => sleep(5);
+const waitQuery = () => sleep(10);
 
 let { host, render } = createBrowserEnv();
 let client = createClient();

@@ -1,5 +1,5 @@
 import type { NestedArray } from '../shared';
-import { INDEX_KEY } from '../constants';
+import { INDEX_KEY, LIB } from '../constants';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
 
@@ -46,6 +46,8 @@ function throwThis(x: Error | Promise<unknown>) {
 }
 
 const illegal = (x: string) => throwThis(new Error(x));
+
+const illegalFromPackage = (x: string, prefix = LIB) => illegal(formatErrorMsg(prefix, x));
 
 function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => any = sameFn): Array<T> {
   if (detectIsArray(source)) {
@@ -124,6 +126,7 @@ export {
   formatErrorMsg,
   throwThis,
   illegal,
+  illegalFromPackage,
   flatten,
   keyBy,
   detectAreDepsDifferent,

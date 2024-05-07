@@ -1,77 +1,55 @@
-import { detectIsUndefined, dummyFn, illegal, formatErrorMsg } from '../utils';
+import { detectIsUndefined, detectIsFunction, illegalFromPackage, throwThis } from '../utils';
 import { type ComponentFactory, component } from '../component';
-import { detectIsServer } from '../platform';
-import { detectIsFiberAlive } from '../walk';
-import { useSuspense } from '../suspense';
-import { useUpdate } from '../use-update';
+import { useMemo } from '../use-memo';
 import { forwardRef } from '../ref';
-import { $$scope } from '../scope';
-import { useId } from '../use-id';
-import { LIB } from '../constants';
 
 const $$lazy = Symbol('lazy');
-const factories = new Map<LoaderFn, ComponentFactory>();
+const factories = new Map<Loader, ComponentFactory>();
 
-function lazy<P extends object, R = unknown>(loader: LoaderFn<P>, done: () => void = dummyFn) {
+function lazy<P extends object, R = unknown>(loader: Loader<P>, done?: () => void) {
   return forwardRef(
     component<P, R>(
       (props, ref) => {
-        const $scope = $$scope();
-        const suspense = useSuspense();
-        const update = useUpdate();
-        const id = useId();
+        const scope = useMemo(() => ({ isDirty: false }), []);
         const factory = factories.get(loader);
-        const fiber = $scope.getCursorFiber();
-        const $update = () => {
-          if (fiber.alt) {
-            suspense.update && suspense.update(); //!
-          } else {
-            detectIsFiberAlive(fiber) ? update() : suspense.update && suspense.update();
-          }
-        };
 
-        if (detectIsUndefined(factory)) {
-          suspense.register(id);
-          factories.set(loader, null);
-          const isServer = detectIsServer();
-          const isHydrateZone = $scope.getIsHydrateZone();
+        if (detectIsUndefined(factory) && !scope.isDirty) {
           const make = async () => {
             factories.set(loader, await run(loader));
-            suspense.unregister(id);
-            done();
+            detectIsFunction(done) && done();
           };
 
-          if (isServer || isHydrateZone) {
-            $scope.defer(make);
-          } else {
-            make().then($update);
-          }
+          scope.isDirty = true;
+          throwThis(make());
         }
 
-        return factory ? factory(props, ref) : suspense.isLoaded ? suspense.fallback : null;
+        return factory ? factory(props, ref) : null;
       },
       { token: $$lazy, displayName: 'Lazy' },
     ),
   );
 }
 
-function run<P extends object>(loader: LoaderFn<P>) {
+function run<P extends object>(loader: Loader<P>) {
   return new Promise<ComponentFactory<P>>((resolve, reject) => {
     loader()
       .then(module => {
-        if (process.env.NODE_ENV !== 'production') {
-          if (!module.default) {
-            return reject(illegal(formatErrorMsg(LIB, 'The lazy loaded component should be exported as default!')));
-          }
-        }
-
+        check(module);
         resolve(module.default);
       })
       .catch(reject);
   });
 }
 
-type LoaderFn<P extends object = {}> = () => Promise<Module<P>>;
+function check(module: Module) {
+  if (process.env.NODE_ENV !== 'production') {
+    if (!module.default) {
+      illegalFromPackage('The lazy loaded component should be exported as default!');
+    }
+  }
+}
+
+type Loader<P extends object = {}> = () => Promise<Module<P>>;
 
 export type Module<P extends object = {}> = { default: ComponentFactory<P> };
 

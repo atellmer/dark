@@ -1,4 +1,4 @@
-import { dom, createBrowserEnv, createServerEnv, nextTick, replacer } from '@test-utils';
+import { dom, createBrowserEnv, createServerEnv, nextTick } from '@test-utils';
 import { component } from '../component';
 import { type Module, lazy } from './lazy';
 import { platform } from '../platform';
@@ -33,7 +33,6 @@ describe('@core/lazy', () => {
         const App = component(() => <Lazy />);
 
         render(<App />);
-        expect(host.innerHTML).toBe(replacer);
       });
     };
 

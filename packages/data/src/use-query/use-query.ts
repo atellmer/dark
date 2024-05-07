@@ -1,24 +1,24 @@
 import {
   type TextBased,
   type AppResource,
-  type Callback,
   logError,
   detectIsFunction,
+  detectIsPromise,
   detectIsEmpty,
   mapRecord,
-  detectIsServer,
   useEffect,
   useUpdate,
   useMemo,
+  useId,
   $$scope,
-  nextTick,
   illegal,
   formatErrorMsg,
-  __useSuspense as useSuspense,
+  throwThis,
+  __useSSR as useSSR,
+  __useInSuspense as useInSuspense,
 } from '@dark-engine/core';
 
 import { ROOT_ID, LIB } from '../constants';
-
 import { type InMemoryCache, checkCache } from '../cache';
 import { useCache } from '../client';
 
@@ -26,6 +26,7 @@ export type UseQueryOptions<T, V extends Variables> = {
   variables?: V;
   extractId?: (x: V) => TextBased;
   lazy?: boolean;
+  onStart?: () => void;
   onSuccess?: (x: OnSuccessOptions<T, V>) => void;
   onError?: (err: any) => void;
 };
@@ -35,46 +36,45 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     variables = {} as V,
     extractId = () => ROOT_ID,
     lazy = false,
+    onStart,
     onSuccess,
     onError,
   } = options || { variables: {} as V };
   const $scope = $$scope();
+  const { isServer, isHydration, isSSR } = useSSR();
   const cache = useCache();
   checkCache(cache);
+  const inSuspense = useInSuspense();
   const cacheId = extractId(variables);
   const id = useMemo(() => $scope.getNextResourceId(), []);
   const state = useMemo<State<T>>(() => createState<T>(cache, key, cacheId, lazy), []);
-  const { register, unregister } = useSuspense();
-  const [mounted, firstTime] = useMounted();
+  const scope = useMemo<Scope<T>>(() => ({ isDirty: false, promise: null }), []);
   const update = useUpdate();
-  const $update = () => mounted() && update();
-  const isServer = detectIsServer();
-  const isHydrateZone = $scope.getIsHydrateZone();
-  const { isLoaded } = state;
+  const initiator = useId();
+  const record = cache.read(key, { id: cacheId });
+  const isPending = record && detectIsPromise(record.data);
+  const pending = isPending ? (record.data as Promise<unknown>) : null;
 
   state.cacheId = cacheId;
 
   const make = async ($variables?: V) => {
     const $$variables = $variables || variables;
     const $cacheId = extractId($$variables);
+    let data: Awaited<T> = null;
 
-    cache.__emit({ type: 'query', phase: 'start', key, data: $$variables });
+    state.isFetching = true;
+    state.error = null;
+    cache.__emit({ type: 'query', phase: 'start', key, id: $cacheId, data: $$variables, initiator });
+    detectIsFunction(onStart) && onStart();
 
     try {
-      if (!isServer && !firstTime()) {
-        state.isFetching = true;
-        $update();
-      }
-
-      const data = await query($$variables);
-
-      cache.__emit({ type: 'query', phase: 'finish', key, data });
+      data = await query($$variables);
+      cache.__emit({ type: 'query', phase: 'finish', key, id: $cacheId, data, initiator });
       detectIsFunction(onSuccess) && onSuccess({ cache, args: $$variables, data });
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
       } else {
-        unregister(id);
         state.data = data;
         state.isFetching = false;
         state.error = null;
@@ -82,69 +82,56 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
 
       if (!detectIsEmpty(data)) {
         cache.write(key, data, { id: $cacheId });
+      } else if (pending) {
+        cache.delete(key, { id: $cacheId });
       }
 
       return data;
-    } catch (err) {
-      logError(err);
-      cache.__emit({ type: 'query', phase: 'error', key, data: err });
-      detectIsFunction(onError) && onError(err);
+    } catch (error) {
+      logError(error);
+      cache.__emit({ type: 'query', phase: 'error', key, id: $cacheId, data: error, initiator });
+      detectIsFunction(onError) && onError(error);
 
       if (isServer) {
-        $scope.setResource(id, [null, String(err)]);
+        $scope.setResource(id, [null, String(error)]);
       } else {
-        unregister(id);
         state.isFetching = false;
-        state.error = String(err);
+        state.error = String(error);
       }
     } finally {
       if (!isServer) {
+        state.isFetching = false;
         state.isLoaded = true;
-        $update();
+        update();
       }
     }
+
+    return data;
   };
 
-  useEffect(() => {
-    if (isHydrateZone) return;
-    if (lazy) return;
-    const record = cache.read(key, { id: cacheId });
+  const refetch = ($variables?: V) => {
+    const $$variables = $variables || variables;
+    const $cacheId = extractId($$variables);
+    const promise = make(variables);
 
-    if (record?.valid) return;
+    cache.__emit({ type: 'query', phase: 'promise', key, id: $cacheId, initiator, promise });
+    scope.promise = promise;
+    update();
 
-    make();
-  }, [...mapRecord(variables)]);
+    return promise;
+  };
 
-  useEffect(() => {
-    const $key = key;
-    let off: Callback = null;
-
-    off = cache.subscribe(({ type, key, id }) => {
-      if (key === $key && id === state.cacheId) {
-        if (type === 'invalidate' || type === 'optimistic') {
-          if (cache.__canUpdate(key)) {
-            make();
-          }
-        }
-      }
-    });
-
-    return () => {
-      unregister(id);
-      detectIsFunction(off) && off();
-    };
-  }, []);
-
-  if (isServer || isHydrateZone) {
+  // !
+  if (isSSR) {
     const res = $scope.getResource(id) as AppResource<T>;
 
     if (isServer) {
       if (res) {
         mutate(state, res);
       } else {
-        $scope.defer(make);
+        throwThis(make());
       }
-    } else if (isHydrateZone) {
+    } else if (isHydration) {
       if (!res) illegal(formatErrorMsg(LIB, `Can't read app state from the server!`));
       const [data] = res;
 
@@ -154,15 +141,76 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         cache.write(key, data, { id: cacheId });
       }
     }
-  } else {
-    firstTime() && !isLoaded && !lazy && register(id);
+  } else if (!lazy && !scope.isDirty) {
+    scope.isDirty = true;
+
+    if (pending) {
+      throwThis(pending);
+    } else {
+      const promise = make();
+      cache.write(key, promise, { id: cacheId });
+      throwThis(promise);
+    }
+  } else if (inSuspense && scope.promise) {
+    const { promise } = scope;
+
+    scope.promise = null;
+    throwThis(promise);
   }
+
+  useEffect(() => {
+    if (isHydration || lazy || pending || state.isFetching || record?.valid) return;
+    refetch();
+  }, [...mapRecord(variables)]);
+
+  useEffect(() => {
+    const $key = key;
+    const $initiator = initiator;
+    const offs = [
+      cache.subscribe(({ type, key, id }) => {
+        if (key === $key && id === state.cacheId) {
+          if (type === 'invalidate' || type === 'optimistic') {
+            if (cache.__canUpdate(key)) {
+              refetch();
+            }
+          }
+        }
+      }),
+      cache.monitor(async ({ type, phase, key, id, initiator, promise, data }) => {
+        if ($initiator !== initiator && type === 'query' && key === $key && id === state.cacheId) {
+          if (phase === 'promise' && promise) {
+            state.isFetching = true;
+            state.error = null;
+            scope.promise = promise as Promise<T>;
+
+            update();
+
+            try {
+              state.data = (await promise) as T;
+              state.error = null;
+            } catch (error) {
+              state.error = String(error);
+            }
+          } else if (phase === 'finish') {
+            state.data = data as T;
+            state.error = null;
+          }
+
+          state.isFetching = false;
+          state.isLoaded = true;
+          update();
+        }
+      }),
+    ];
+
+    return () => offs.forEach(x => x());
+  }, []);
 
   const result: QueryResult<T> = {
     isFetching: state.isFetching,
     data: state.data,
     error: state.error,
-    refetch: make,
+    refetch: x => refetch(x as V),
   };
 
   return result;
@@ -196,19 +244,6 @@ function mutate<T>(state: State<T>, res: AppResource<T>) {
   state.error = error;
 }
 
-function useMounted() {
-  const scope = useMemo(() => ({ isMounted: true, isFirstTime: true }), []);
-
-  useEffect(() => {
-    nextTick(() => {
-      scope.isFirstTime = false;
-    });
-    return () => (scope.isMounted = false);
-  }, []);
-
-  return [() => scope.isMounted, () => scope.isFirstTime] as [BooleanFn, BooleanFn];
-}
-
 type State<T> = {
   isFetching: boolean;
   isLoaded: boolean;
@@ -217,7 +252,11 @@ type State<T> = {
   cacheId: TextBased;
 };
 
-type BooleanFn = () => boolean;
+type Scope<T> = {
+  isDirty: boolean;
+  promise: Promise<T>;
+};
+
 type OnSuccessOptions<T, V extends Variables> = { cache: InMemoryCache; data: T; args: V };
 export type QueryResult<T> = { refetch: Query<T> } & Pick<State<T>, 'isFetching' | 'data' | 'error'>;
 export type Variables<K extends string = string, V = any> = Record<K, V>;

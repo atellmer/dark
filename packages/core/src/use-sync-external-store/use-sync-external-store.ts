@@ -1,9 +1,8 @@
 import { type Subscribe, type SubscriberWithValue } from '../shared';
 import { detectIsFunction, illegal, formatErrorMsg } from '../utils';
 import { useLayoutEffect } from '../use-layout-effect';
-import { detectIsServer } from '../platform';
+import { __useSSR as useSSR } from '../internal';
 import { useState } from '../use-state';
-import { $$scope } from '../scope';
 import { LIB } from '../constants';
 
 function useSyncExternalStore<T>(
@@ -11,10 +10,7 @@ function useSyncExternalStore<T>(
   getSnapshot: () => T,
   getServerSnapshot?: () => T,
 ) {
-  const $scope = $$scope();
-  const isServer = detectIsServer();
-  const isHydrateZone = $scope.getIsHydrateZone();
-  const isSSR = isServer || isHydrateZone;
+  const { isSSR } = useSSR();
 
   if (isSSR && !detectIsFunction(getServerSnapshot)) {
     illegal(formatErrorMsg(LIB, 'getServerSnapshot was not found!'));

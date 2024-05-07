@@ -5,9 +5,10 @@ import {
   component,
   useMemo,
   useInsertionEffect,
-  $$scope,
   walk,
   nextTick,
+  __useCursor as useCursor,
+  __useSSR as useSSR,
 } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
@@ -21,7 +22,8 @@ type AnimatedProps<E = unknown, T extends string = string> = {
 
 const Animated = component<AnimatedProps>(
   ({ spring, fn, slot }) => {
-    const cursor = $$scope().getCursorFiber();
+    const cursor = useCursor();
+    const { isHydration } = useSSR();
     const scope = useMemo<Scope>(() => ({ element: null, notify: null }), []);
     const notify = () => scope.element && fn(scope.element, spring.value());
 
@@ -42,7 +44,7 @@ const Animated = component<AnimatedProps>(
         notify();
       };
 
-      if ($$scope().getIsHydrateZone()) {
+      if (isHydration) {
         nextTick(make);
       } else {
         make();
