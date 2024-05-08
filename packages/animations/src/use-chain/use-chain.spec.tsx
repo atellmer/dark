@@ -112,17 +112,14 @@ describe('@animations/use-chain', () => {
       expect(host.innerHTML).toBe(content(true, 1, 0, 0, 0));
     });
     off2 = api2.on('series-end', () => {
-      console.log('api 2');
       off2();
       expect(host.innerHTML).toBe(content(true, 1, 1, 0, 0));
     });
     off3 = api3.on('series-end', () => {
-      console.log('api 3');
       off3();
       expect(host.innerHTML).toBe(content(true, 1, 1, 1, 0));
     });
     off4 = api4.on('series-end', () => {
-      console.log('api 4');
       off4();
       expect(host.innerHTML).toBe(content(true, 1, 1, 1, 1));
     });
