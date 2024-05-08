@@ -92,9 +92,10 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       $scope.keepRoot(); // !
       emitter.emit('error', String(err));
 
-      logError('err', err);
       if (!isAsync) {
         throw err;
+      } else {
+        logError('err', err);
       }
 
       return false;

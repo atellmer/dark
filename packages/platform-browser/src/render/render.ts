@@ -17,15 +17,12 @@ import {
   $$scope,
   dummyFn,
   scheduler,
-  illegal,
-  formatErrorMsg,
 } from '@dark-engine/core';
 
 import { createNativeElement, toggle, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import type { TagNativeElement } from '../native-element';
-import { detectIsBrowser } from '../utils';
-import { LIB } from '../constants';
+import { detectIsBrowser, illegalFromPackage } from '../utils';
 
 const isBrowser = detectIsBrowser();
 const roots = new Map<Element, number>();
@@ -53,7 +50,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
   !isInjected && inject();
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element) && !((container as unknown) instanceof Document)) {
-      illegal(formatErrorMsg(LIB, `The render receives a valid element as container!`));
+      illegalFromPackage(`The render receives a valid element as container!`);
     }
   }
 

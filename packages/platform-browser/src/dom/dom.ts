@@ -27,12 +27,10 @@ import {
   walk,
   dummyFn,
   applyRef,
-  illegal,
-  formatErrorMsg,
   detectIsHydration,
 } from '@dark-engine/core';
 
-import { detectIsSvgElement, detectIsVoidElement } from '../utils';
+import { detectIsSvgElement, detectIsVoidElement, illegalFromPackage } from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { detectIsPortal } from '../portal';
 import {
@@ -45,7 +43,6 @@ import {
   AS_ATTR,
   EXCLUDE_ATTR_MARK,
   DANGER_HTML_CONTENT,
-  LIB,
 } from '../constants';
 import type {
   NativeElement,
@@ -287,13 +284,13 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (fiber.element.nodeName !== nativeElement.nodeName) {
-      illegal(formatErrorMsg(LIB, 'Inconsistent element for hydration!'));
+      illegalFromPackage('Inconsistent element for hydration!');
     }
 
     fiber.element = nativeElement;
   } else {
     if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
-      illegal(formatErrorMsg(LIB, `The element with danger content can't have a children!`));
+      illegalFromPackage(`The element with danger content can't have a children!`);
     }
 
     if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
@@ -320,9 +317,8 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  if (fiber.mask & FLUSH_MASK) {
-    parentFiber.element.innerHTML && (parentFiber.element.innerHTML = '');
-    return;
+  if (fiber.mask & FLUSH_MASK && parentFiber.element.innerHTML) {
+    return (parentFiber.element.innerHTML = '');
   }
 
   walk<NativeElement>(fiber, (fiber, skip) => {

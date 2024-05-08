@@ -1,4 +1,6 @@
-import { detectIsUndefined } from '@dark-engine/core';
+import { detectIsUndefined, illegalFromPackage as $illegalFromPackage } from '@dark-engine/core';
+
+import { LIB } from '../constants';
 
 const svgTagNames = new Set([
   'svg',
@@ -83,4 +85,6 @@ const detectIsVoidElement = (name: string) => voidTagNames.has(name);
 
 const detectIsBrowser = () => !detectIsUndefined(globalThis.window);
 
-export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser };
+const illegalFromPackage = (x: string) => $illegalFromPackage(LIB, x);
+
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegalFromPackage };

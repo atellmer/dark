@@ -4,20 +4,18 @@ import {
   component,
   useMemo,
   detectIsComponent,
-  illegal,
-  formatErrorMsg,
   __useCursor as useCursor,
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
-import { LIB } from '../constants';
+import { illegalFromPackage } from '../utils';
 
 const $$portal = Symbol('portal');
 
 function createPortal(slot: DarkElement, container: TagNativeElement) {
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
-      illegal(formatErrorMsg(LIB, `The createPortal only gets a valid element as container!`));
+      illegalFromPackage(`The createPortal only gets a valid element as container!`);
     }
   }
 

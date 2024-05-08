@@ -171,6 +171,8 @@ class Scheduler {
         something.finally(() => {
           this.run(task);
         });
+      } else {
+        throw something;
       }
     }
   }

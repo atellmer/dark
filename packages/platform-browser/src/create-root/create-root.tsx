@@ -1,7 +1,7 @@
 import { type DarkElement, unmountRoot } from '@dark-engine/core';
 
-import { render, roots } from '../render';
 import type { TagNativeElement } from '../native-element';
+import { render, roots } from '../render';
 
 function createRoot(container: TagNativeElement) {
   return {
