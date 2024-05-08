@@ -1,6 +1,6 @@
 import { dom, replacer, createBrowserEnv, nextTick, sleep } from '@test-utils';
-import { component } from '../component';
 import { type Module, lazy } from '../lazy';
+import { component } from '../component';
 import { Suspense } from './suspense';
 
 let { host, render } = createBrowserEnv();

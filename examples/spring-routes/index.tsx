@@ -80,15 +80,18 @@ const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
       <PageTransition>
-        <header>
-          <NavLink to='/home'>Home</NavLink>
-          <NavLink to='/about'>About</NavLink>
-          <NavLink to='/contacts'>Contacts</NavLink>
-          <Pending overlay />
-        </header>
-        <Suspense fallback={<Spinner />}>
-          <main>{slot}</main>
-        </Suspense>
+        <Concurrent>
+          <header>
+            <NavLink to='/home'>Home</NavLink>
+            <NavLink to='/about'>About</NavLink>
+            <NavLink to='/contacts'>Contacts</NavLink>
+            <Pending overlay />
+          </header>
+          <Suspense fallback={<Spinner />}>
+            <main>{slot}</main>
+          </Suspense>
+          <SlowContent />
+        </Concurrent>
       </PageTransition>
     );
   },
@@ -99,7 +102,7 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes}>{slot => <Shell>{slot}</Shell>}</Router>
+      <Router routes={routes} mode='concurrent'>{slot => <Shell>{slot}</Shell>}</Router>
     </>
   );
 });
