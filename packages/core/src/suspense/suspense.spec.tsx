@@ -10,10 +10,10 @@ beforeEach(() => {
   ({ host, render } = createBrowserEnv());
 });
 
-describe.skip('@core/suspense', () => {
-  test.only('shows fallback correctly', async () => {
+describe('@core/suspense', () => {
+  test('shows fallback correctly', async () => {
     const make = () => {
-      const content1 = () => dom`${replacer}<div>loading...</div>`;
+      const content1 = () => dom`<div>loading...</div>${replacer}`;
       const content2 = () => dom`<div>lazy</div>`;
 
       return new Promise(async resolve => {
@@ -22,15 +22,15 @@ describe.skip('@core/suspense', () => {
             new Promise<Module>(resolve => {
               setTimeout(() => {
                 resolve({ default: component(() => <div>lazy</div>) });
-              }, 3);
+              }, 10);
             }),
-          () => {
-            setTimeout(() => {
-              expect(host.innerHTML).toMatchInlineSnapshot(`"<div>lazy</div>"`);
-              render(App());
-              expect(host.innerHTML).toMatchInlineSnapshot(`"<div>lazy</div>"`);
-              resolve(null);
-            }, 10);
+          async () => {
+            expect(host.innerHTML).toBe(content1());
+            await nextTick();
+            expect(host.innerHTML).toBe(content2());
+            render(<App />);
+            expect(host.innerHTML).toBe(content2());
+            resolve(null);
           },
         );
         const App = component(() => {
@@ -41,10 +41,10 @@ describe.skip('@core/suspense', () => {
           );
         });
 
-        render(App());
-        expect(host.innerHTML).toMatchInlineSnapshot(`"<!--dark:matter-->"`);
+        render(<App />);
+        expect(host.innerHTML).toBe(content1());
         await sleep(1);
-        expect(host.innerHTML).toMatchInlineSnapshot(`"<div>loading...</div>"`);
+        expect(host.innerHTML).toBe(content1());
       });
     };
 
@@ -53,7 +53,7 @@ describe.skip('@core/suspense', () => {
 
   test('can work with conditional rendering', async () => {
     const make = () => {
-      const content1 = () => dom`${replacer}<div>loading...</div>`;
+      const content1 = () => dom`<div>loading...</div>${replacer}`;
       const content2 = () => dom`<div>lazy</div>`;
       const content3 = () => replacer;
 
@@ -68,9 +68,9 @@ describe.skip('@core/suspense', () => {
           async () => {
             await nextTick();
             expect(host.innerHTML).toBe(content2());
-            render(App({ isOpen: false }));
+            render(<App isOpen={false} />);
             expect(host.innerHTML).toBe(content3());
-            render(App({ isOpen: true }));
+            render(<App isOpen={true} />);
             expect(host.innerHTML).toBe(content2());
             resolve(null);
           },
@@ -83,7 +83,7 @@ describe.skip('@core/suspense', () => {
           ) : null;
         });
 
-        render(App({ isOpen: true }));
+        render(<App isOpen={true} />);
         expect(host.innerHTML).toBe(content1());
       });
     };
@@ -94,15 +94,11 @@ describe.skip('@core/suspense', () => {
   test('can render and wait more than one lazy components correctly', async () => {
     const make = () => {
       const content1 = () => dom`
-        ${replacer}
-        ${replacer}
         <div>loading...</div>
-      `;
-      const content2 = () => dom`
         ${replacer}
-        <div>loading...</div>
+        ${replacer}
       `;
-      const content3 = () =>
+      const content2 = () =>
         dom`
         <div>lazy 1</div>
         <div>lazy 2</div>
@@ -117,7 +113,7 @@ describe.skip('@core/suspense', () => {
             }),
           async () => {
             await nextTick();
-            expect(host.innerHTML).toBe(content2());
+            expect(host.innerHTML).toBe(content1());
           },
         );
         const Lazy2 = lazy(
@@ -129,7 +125,7 @@ describe.skip('@core/suspense', () => {
             }),
           async () => {
             await nextTick();
-            expect(host.innerHTML).toBe(content3());
+            expect(host.innerHTML).toBe(content2());
             resolve(null);
           },
         );
@@ -143,7 +139,7 @@ describe.skip('@core/suspense', () => {
           );
         });
 
-        render(App());
+        render(<App />);
         expect(host.innerHTML).toBe(content1());
       });
     };
@@ -154,11 +150,12 @@ describe.skip('@core/suspense', () => {
   test('can render and wait nested lazy components correctly', async () => {
     const make = () => {
       const content1 = () => dom`
-        ${replacer}
         <div>loading...</div>
+        ${replacer}
       `;
       const content2 = () => dom`
         <div>loading...</div>
+        <div style="display: none;">lazy 1</div>
         ${replacer}
       `;
       const content3 = () => dom`
@@ -208,7 +205,7 @@ describe.skip('@core/suspense', () => {
           );
         });
 
-        render(App());
+        render(<App />);
         expect(host.innerHTML).toBe(content1());
       });
     };
@@ -219,14 +216,17 @@ describe.skip('@core/suspense', () => {
   test('can render and wait nested lazy components with many root tags correctly', async () => {
     const make = () => {
       const content1 = () => dom`
-        ${replacer}
         <div>loading 1...</div>
         <div>loading 2...</div>
+        ${replacer}
       `;
       const content2 = () => dom`
         <div>loading 1...</div>
         <div>loading 2...</div>
+        <div style=\"display: none;\">lazy 1</div>
+        <div style=\"display: none;\">lazy 11</div>
         ${replacer}
+        <div style=\"display: none;\">lazy 111</div>
       `;
       const content3 = () => dom`
         <div>lazy 1</div>
@@ -294,7 +294,7 @@ describe.skip('@core/suspense', () => {
           );
         });
 
-        render(App());
+        render(<App />);
         expect(host.innerHTML).toBe(content1());
       });
     };
@@ -305,23 +305,25 @@ describe.skip('@core/suspense', () => {
   test('can render nested suspenses correctly', async () => {
     const make = () => {
       const content1 = () => dom`
-        ${replacer}
         <div>loading 1...</div>
         <div>loading 2...</div>
+        ${replacer}
       `;
       const content2 = () => dom`
         <div>loading 1...</div>
         <div>loading 2...</div>
+        <div style="display: none;">lazy 1</div>
+        <div style="display: none;">lazy 11</div>
         ${replacer}
+        <div style="display: none;">lazy 111</div>
       `;
       const content3 = () => dom`
         <div>lazy 1</div>
         <div>lazy 11</div>
-        ${replacer}
         <div>nested loading...</div>
+        ${replacer}
         <div>lazy 111</div>
       `;
-
       const content4 = () => dom`
         <div>lazy 1</div>
         <div>lazy 11</div>
@@ -330,6 +332,7 @@ describe.skip('@core/suspense', () => {
         <div>lazy 333</div>
         <div>lazy 111</div>
       `;
+
       return new Promise(resolve => {
         const Lazy1 = lazy(
           () =>
@@ -406,7 +409,7 @@ describe.skip('@core/suspense', () => {
           );
         });
 
-        render(App());
+        render(<App />);
         expect(host.innerHTML).toBe(content1());
       });
     };
