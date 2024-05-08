@@ -145,9 +145,15 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     scope.isDirty = true;
 
     if (pending) {
+      pending.then(x => {
+        state.data = x as T;
+        state.isFetching = false;
+        state.isLoaded = true;
+      });
       throwThis(pending);
     } else {
       const promise = make();
+
       cache.write(key, promise, { id: cacheId });
       throwThis(promise);
     }
