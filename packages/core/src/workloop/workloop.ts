@@ -513,7 +513,10 @@ function commit($scope: Scope) {
   for (const fiber of candidates) {
     fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
     fiber.alt = null;
-    //hasChildrenProp(fiber.inst) && (fiber.inst.children = null);
+
+    if (hasChildrenProp(fiber.inst) && (!fiber.hook || !fiber.hook.isUpdateHost)) {
+      fiber.inst.children = null;
+    }
   }
 
   wip.alt = null;
@@ -679,6 +682,8 @@ function createUpdate(rootId: number, hook: Hook) {
       scheduler.schedule(callback, callbackOptions);
     }
   };
+
+  hook.isUpdateHost = true;
 
   return update;
 }

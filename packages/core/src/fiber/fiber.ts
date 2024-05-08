@@ -87,6 +87,7 @@ class Hook<T = any> {
   owner: Fiber = null;
   isSuspense = false;
   isPending = false;
+  isUpdateHost = false;
   pendings = 0;
   private static nextId = 0;
 
