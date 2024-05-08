@@ -24,8 +24,9 @@ import {
   applyRef as $applyRef,
 } from '@dark-engine/core';
 
-import { type EventHandler, detectIsEvent } from '../events';
 import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
+import { type EventHandler, detectIsEvent } from '../events';
+import { HIDDEN_ATTR } from '../constants';
 import { type QElement } from '../shared';
 
 type PlainNativeElement = TextNativeElement | CommentNativeElement;
@@ -228,17 +229,8 @@ const insertNativeElement = (element: NativeElement, sibling: NativeElement, par
   parent.insertBefore(element, sibling);
 };
 
-const insertNativeElementByIndex = (element: NativeElement, idx: number, parent: TagNativeElement) => {
-  parent.insertBefore(element, parent.children[idx]);
-};
-
 const removeNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.removeChild(element);
 
-export {
-  createNativeElement,
-  commit,
-  finishCommit,
-  runAtTheEndOfCommit,
-  insertNativeElementByIndex,
-  removeNativeElement,
-};
+const toggle = (element: TagNativeElement, isVisible: boolean) => element.setAttribute(HIDDEN_ATTR, isVisible);
+
+export { createNativeElement, commit, finishCommit, runAtTheEndOfCommit, toggle };

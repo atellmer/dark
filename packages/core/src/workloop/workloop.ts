@@ -11,7 +11,6 @@ import {
   PORTAL_HOST_MASK,
   MOVE_MASK,
   FLUSH_MASK,
-  SHADOW_MASK,
   Flag,
   LIB,
   TaskPriority,
@@ -40,7 +39,6 @@ import {
   getElementKey,
   hasElementFlag,
   hasChildrenProp,
-  detectIsReplacer,
   createReplacer,
   detectAreSameInstanceTypes,
 } from '../view';
@@ -140,13 +138,14 @@ function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
 
 function mountChild(parent: Fiber, $scope: Scope) {
   $scope.navToChild();
-  parent.child = null;
+  const $hook = parent.child ? parent.child.hook || null : null; // from previous fiber after throwing promise
   const $inst = parent.inst;
   const idx = 0;
   const inst = hasChildrenProp($inst) ? $inst.children[idx] : null;
   const alt = getAlternate(parent, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
 
+  fiber.hook = $hook || fiber.hook;
   fiber.parent = parent;
   parent.child = fiber;
   fiber.eidx = parent.element ? 0 : parent.eidx;
@@ -158,7 +157,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
 
 function mountSibling(left: Fiber, $scope: Scope) {
   $scope.navToSibling();
-  left.next = null;
+  const $hook = left.next ? left.next.hook || null : null; // from previous fiber after throwing promise
   const $inst = left.parent.inst;
   const idx = $scope.getMountIndex();
   const inst = hasChildrenProp($inst) && $inst.children ? $inst.children[idx] : null;
@@ -175,6 +174,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   const alt = getAlternate(left, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
 
+  fiber.hook = $hook || fiber.hook;
   fiber.parent = left.parent;
   left.next = fiber;
   fiber.eidx = left.eidx + (left.element ? 1 : left.cec);
@@ -209,8 +209,11 @@ function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
   $scope.addCandidate(fiber); // !
 }
 
-function createFiber(alt: Fiber, inst: Instance, idx: number) {
-  const fiber = new Fiber(getHook(alt, alt ? alt.inst : null, inst), alt ? alt.provider : null, idx);
+function createFiber(alt: Fiber, next: Instance, idx: number) {
+  const provider = alt ? alt.provider : null;
+  const prev = alt ? alt.inst : null;
+  const hook = getHook(alt, prev, next);
+  const fiber = new Fiber(hook, provider, idx);
 
   fiber.alt = alt || null;
 
@@ -220,9 +223,7 @@ function createFiber(alt: Fiber, inst: Instance, idx: number) {
 function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
   const isChild = idx === 0;
   const parent = isChild ? fiber : fiber.parent;
-  if (!fiber.wip && parent.tag === CREATE_EFFECT_TAG) {
-    return null; // !
-  }
+  if (!fiber.wip && parent.tag === CREATE_EFFECT_TAG) return null; // !
   const parentId = isChild ? fiber.id : fiber.parent.id;
   const key = getElementKey(inst);
   const actions = $scope.getActionsById(parentId);
@@ -306,7 +307,6 @@ function setup(fiber: Fiber, alt: Fiber) {
   let isUpdate = false;
 
   fiber.parent.tag === CREATE_EFFECT_TAG && (fiber.tag = fiber.parent.tag);
-  fiber.parent.mask & SHADOW_MASK && !fiber.parent.element && (fiber.mask |= SHADOW_MASK);
   isUpdate =
     alt &&
     fiber.tag !== CREATE_EFFECT_TAG &&
@@ -314,7 +314,6 @@ function setup(fiber: Fiber, alt: Fiber) {
     getElementKey(alt.inst) === getElementKey(inst);
   isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
   fiber.tag = isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG;
-  hasChildrenProp(fiber.inst) && (fiber.cc = fiber.inst.children.length);
   !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
   fiber.element && fiber.increment();
 }
@@ -383,12 +382,14 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
           $scope.setResourceId(id);
 
           if (prev) {
+            fiber.hook.owner = null;
+            fiber.hook.idx = 0;
             $scope.navToPrev();
             $scope.setNextUnitOfWork(prev);
             Fiber.setNextId(prev.id);
           } else {
-            fiber.id++;
-            Fiber.setNextId(fiber.id);
+            fiber.id = Fiber.incrementId();
+            fiber.cec = fiber.alt.cec;
           }
         };
 
@@ -418,6 +419,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   if (hasChildrenProp(inst)) {
     inst.children = flatten(inst.children, x => (detectIsTextBased(x) ? Text(x) : x || supportConditional(x)));
     isComponent && component.children.length === 0 && component.children.push(createReplacer());
+    fiber.cc = inst.children.length;
   }
 
   return inst;
@@ -511,7 +513,7 @@ function commit($scope: Scope) {
   for (const fiber of candidates) {
     fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
     fiber.alt = null;
-    hasChildrenProp(fiber.inst) && (fiber.inst.children = null);
+    //hasChildrenProp(fiber.inst) && (fiber.inst.children = null);
   }
 
   wip.alt = null;
@@ -537,7 +539,8 @@ function sync(fiber: Fiber) {
   const parentFiber = getFiberWithElement(fiber.parent);
   let isRight = false;
 
-  fiber.increment(diff, true);
+  fiber.wip = false;
+  fiber.increment(diff);
 
   walk(parentFiber.child, ($fiber, skip) => {
     if ($fiber === fiber) {
@@ -610,8 +613,8 @@ function createCallback(options: CreateCallbackOptions) {
     detectIsFunction(setValue) && setValue();
     detectIsFunction(resetValue) && isTransition && $scope.addCancel(resetValue);
 
+    fiber.alt = null; // !
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.alt.alt = null;
     fiber.tag = UPDATE_EFFECT_TAG;
     fiber.cc = 0;
     fiber.cec = 0;

@@ -18,7 +18,7 @@ import {
 } from '@dark-engine/core';
 
 import { TagNativeElement } from '../native-element';
-import { createNativeElement, insertNativeElementByIndex, removeNativeElement, commit, finishCommit } from '../dom';
+import { createNativeElement, toggle, commit, finishCommit } from '../dom';
 
 const raf = setTimeout.bind(this);
 const caf = clearTimeout.bind(this);
@@ -27,8 +27,7 @@ let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
-  platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
-  platform.removeElement = removeNativeElement as typeof platform.removeElement;
+  platform.toggle = toggle as typeof platform.toggle;
   platform.raf = raf;
   platform.caf = caf;
   platform.spawn = spawn;

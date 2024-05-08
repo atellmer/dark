@@ -15,8 +15,8 @@ const Suspense = forwardRef<SuspenseProps, unknown>(
       const cursor = useCursor();
       const isPending = cursor.hook.isPending;
       const content = [
-        isPending ? Fragment({ key: FALLBACK, slot: fallback }) : null,
-        Shadow({ key: CONTENT, isOpen: !isPending, slot }),
+        isPending ? Fragment({ key: 1, slot: fallback }) : null,
+        Shadow({ key: 2, isOpen: !isPending, slot }),
       ].filter(Boolean);
 
       cursor.hook.isSuspense = true;
@@ -26,8 +26,5 @@ const Suspense = forwardRef<SuspenseProps, unknown>(
     { displayName: 'Suspense' },
   ),
 );
-
-const CONTENT = 1;
-const FALLBACK = 2;
 
 export { Suspense };

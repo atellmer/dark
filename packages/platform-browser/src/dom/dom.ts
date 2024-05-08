@@ -15,7 +15,6 @@ import {
   SKIP_EFFECT_TAG,
   MOVE_MASK,
   FLUSH_MASK,
-  SHADOW_MASK,
   detectIsUndefined,
   detectIsBoolean,
   detectIsObject,
@@ -293,17 +292,15 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (!(fiber.mask & SHADOW_MASK)) {
-      if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
-        illegal(formatErrorMsg(LIB, `The element with danger content can't have a children!`));
-      }
+    if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
+      illegal(formatErrorMsg(LIB, `The element with danger content can't have a children!`));
+    }
 
-      if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-        !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
-          appendNativeElement(fiber.element, parentElement);
-      } else {
-        insertNativeElement(fiber.element, parentElement.childNodes[fiber.eidx], parentElement);
-      }
+    if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
+      !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
+        appendNativeElement(fiber.element, parentElement);
+    } else {
+      insertNativeElement(fiber.element, parentElement.childNodes[fiber.eidx], parentElement);
     }
   }
 
@@ -394,9 +391,6 @@ const appendNativeElement = (element: NativeNode, parent: NativeNode) => parent.
 const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: TagNativeElement) =>
   parent.insertBefore(element, sibling);
 
-const insertNativeElementByIndex = (element: NativeNode, idx: number, parent: TagNativeElement) =>
-  parent.insertBefore(element, parent.childNodes[idx]);
-
 const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) =>
   parent.replaceChild(element, candidate);
 
@@ -405,4 +399,10 @@ const canRemoveNativeElement = (element: NativeNode, parent: NativeNode) => elem
 const removeNativeElement = (element: NativeNode, parent: TagNativeElement) =>
   element.parentElement === parent && parent.removeChild(element);
 
-export { createNativeElement, commit, finishCommit, setTrackUpdate, insertNativeElementByIndex, removeNativeElement };
+const toggle = (element: HTMLElement | SVGElement, isVisible: boolean) => {
+  isVisible
+    ? element.hasAttribute(STYLE_ATTR) && element.removeAttribute(STYLE_ATTR)
+    : element.style.setProperty('display', 'none', 'important');
+};
+
+export { createNativeElement, commit, finishCommit, setTrackUpdate, toggle };

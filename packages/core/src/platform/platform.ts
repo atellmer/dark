@@ -6,8 +6,7 @@ import { $$scope } from '../scope';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
-  insertElement: <N>(element: N, idx: number, parentElement: N) => void;
-  removeElement: <N>(element: N, parentElement: N) => void;
+  toggle: <N>(element: N, isVisible: boolean) => void;
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
   spawn: (callback: Callback) => void;
@@ -23,8 +22,7 @@ const realisation = () => illegalFromPackage('The function was not installed by 
 
 const platform: Platform = {
   createElement: realisation,
-  insertElement: realisation,
-  removeElement: realisation,
+  toggle: realisation,
   raf: realisation,
   caf: realisation,
   spawn: realisation,

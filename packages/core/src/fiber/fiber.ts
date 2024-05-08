@@ -1,10 +1,9 @@
-import { detectIsTagVirtualNode, detectIsPlainVirtualNode, detectAreSameComponentTypesWithSameKeys } from '../view';
-import { type Instance, type Callback, type CallbackWithValue, type TimerId } from '../shared';
+import { type Instance, type Callback, type TimerId } from '../shared';
 import { type Context, type ContextProviderValue } from '../context';
-import { detectIsComponent } from '../component';
+import { detectAreSameComponentTypesWithSameKeys } from '../view';
 import { detectIsFunction, logError } from '../utils';
+import { detectIsComponent } from '../component';
 import { type Atom } from '../atom';
-import { $$scope } from '../scope';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -29,7 +28,7 @@ class Fiber<N = NativeElement> {
   catch: (error: Error) => void;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
-    this.id = ++Fiber.nextId;
+    this.id = Fiber.incrementId();
     this.idx = idx;
     hook && (this.hook = hook);
     provider && (this.provider = provider);
@@ -50,25 +49,11 @@ class Fiber<N = NativeElement> {
     this.parent && !(this.parent.mask & mask) && this.parent.markHost(mask);
   }
 
-  increment(count = 1, force = false) {
+  increment(count = 1) {
     if (!this.parent) return;
-    const $scope = $$scope();
-    const isUpdateZone = $scope.getIsUpdateZone();
-    const wipFiber = $scope.getWorkInProgress();
-    const stop = isUpdateZone && wipFiber.parent === this.parent;
-
-    if (
-      detectIsPlainVirtualNode(this.inst) ||
-      (detectIsTagVirtualNode(this.inst) && this.inst.children?.length === 0)
-    ) {
-      this.cec = 1;
-    }
-
-    if (isUpdateZone && stop && !force) return;
-
     this.parent.cec += count;
 
-    if (!this.parent.element) {
+    if (!this.parent.element && !this.parent.wip) {
       this.parent.increment(count);
     }
   }
@@ -82,6 +67,10 @@ class Fiber<N = NativeElement> {
     } else {
       throw err;
     }
+  }
+
+  static incrementId() {
+    return ++Fiber.nextId;
   }
 
   static setNextId(id: number) {

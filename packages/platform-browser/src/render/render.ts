@@ -21,7 +21,7 @@ import {
   formatErrorMsg,
 } from '@dark-engine/core';
 
-import { createNativeElement, insertNativeElementByIndex, removeNativeElement, commit, finishCommit } from '../dom';
+import { createNativeElement, toggle, commit, finishCommit } from '../dom';
 import { detectIsPortal, unmountPortal } from '../portal';
 import type { TagNativeElement } from '../native-element';
 import { detectIsBrowser } from '../utils';
@@ -36,8 +36,7 @@ let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
-  platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
-  platform.removeElement = removeNativeElement as typeof platform.removeElement;
+  platform.toggle = toggle as typeof platform.toggle;
   platform.raf = raf;
   platform.caf = caf;
   platform.spawn = spawn;
