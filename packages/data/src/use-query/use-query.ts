@@ -18,8 +18,8 @@ import {
   __useInSuspense as useInSuspense,
 } from '@dark-engine/core';
 
-import { ROOT_ID, LIB } from '../constants';
 import { type InMemoryCache, checkCache } from '../cache';
+import { ROOT_ID, LIB } from '../constants';
 import { useCache } from '../client';
 
 export type UseQueryOptions<T, V extends Variables> = {
@@ -51,9 +51,9 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   const scope = useMemo<Scope<T>>(() => ({ isDirty: false, promise: null }), []);
   const update = useUpdate();
   const initiator = useId();
-  const record = cache.read(key, { id: cacheId });
+  const record = cache.read<T>(key, { id: cacheId });
   const isPending = record && detectIsPromise(record.data);
-  const pending = isPending ? (record.data as Promise<unknown>) : null;
+  const pending = isPending ? (record.data as Promise<T>) : null;
 
   state.cacheId = cacheId;
 
@@ -144,13 +144,19 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   } else if (!lazy && !scope.isDirty) {
     scope.isDirty = true;
 
-    if (pending) {
-      pending.then(x => {
-        state.data = x as T;
+    if (record) {
+      if (pending) {
+        pending.then(x => {
+          state.data = x;
+          state.isFetching = false;
+          state.isLoaded = true;
+        });
+        throwThis(pending);
+      } else {
+        state.data = record.data;
         state.isFetching = false;
         state.isLoaded = true;
-      });
-      throwThis(pending);
+      }
     } else {
       const promise = make();
 
