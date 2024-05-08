@@ -5,21 +5,22 @@ import {
   detectIsFunction,
   detectIsPromise,
   detectIsEmpty,
+  detectIsObject,
+  hasKeys,
   mapRecord,
   useEffect,
   useUpdate,
   useMemo,
   useId,
   $$scope,
-  illegal,
-  formatErrorMsg,
   throwThis,
   __useSSR as useSSR,
   __useInSuspense as useInSuspense,
 } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
-import { ROOT_ID, LIB } from '../constants';
+import { illegalFromPackage, stringify } from '../utils';
+import { ROOT_ID } from '../constants';
 import { useCache } from '../client';
 
 export type UseQueryOptions<T, V extends Variables> = {
@@ -34,7 +35,7 @@ export type UseQueryOptions<T, V extends Variables> = {
 function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, options?: UseQueryOptions<T, V>) {
   const {
     variables = {} as V,
-    extractId = () => ROOT_ID,
+    extractId = $extractId,
     lazy = false,
     onStart,
     onSuccess,
@@ -48,7 +49,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   const cacheId = extractId(variables);
   const id = useMemo(() => $scope.getNextResourceId(), []);
   const state = useMemo<State<T>>(() => createState<T>(cache, key, cacheId, lazy), []);
-  const scope = useMemo<Scope<T>>(() => ({ isDirty: false, promise: null }), []);
+  const scope = useMemo<Scope<T>>(() => ({ isDirty: false, fromRefetch: false, promise: null }), []);
   const update = useUpdate();
   const initiator = useId();
   const record = cache.read<T>(key, { id: cacheId });
@@ -65,18 +66,17 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     state.isFetching = true;
     state.error = null;
     cache.__emit({ type: 'query', phase: 'start', key, id: $cacheId, data: $$variables, initiator });
-    detectIsFunction(onStart) && onStart();
+    !isServer && detectIsFunction(onStart) && onStart();
 
     try {
       data = await query($$variables);
       cache.__emit({ type: 'query', phase: 'finish', key, id: $cacheId, data, initiator });
-      detectIsFunction(onSuccess) && onSuccess({ cache, args: $$variables, data });
+      !isServer && detectIsFunction(onSuccess) && onSuccess({ cache, args: $$variables, data });
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
       } else {
         state.data = data;
-        state.isFetching = false;
         state.error = null;
       }
 
@@ -90,19 +90,22 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     } catch (error) {
       logError(error);
       cache.__emit({ type: 'query', phase: 'error', key, id: $cacheId, data: error, initiator });
-      detectIsFunction(onError) && onError(error);
+      !isServer && detectIsFunction(onError) && onError(error);
 
       if (isServer) {
         $scope.setResource(id, [null, String(error)]);
       } else {
-        state.isFetching = false;
         state.error = String(error);
       }
     } finally {
+      state.isFetching = false;
+      state.isLoaded = true;
+
       if (!isServer) {
-        state.isFetching = false;
-        state.isLoaded = true;
-        update();
+        if (scope.fromRefetch) {
+          scope.fromRefetch = false;
+          update();
+        }
       }
     }
 
@@ -110,9 +113,10 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   };
 
   const refetch = ($variables?: V) => {
+    scope.fromRefetch = true;
     const $$variables = $variables || variables;
     const $cacheId = extractId($$variables);
-    const promise = make(variables);
+    const promise = make($$variables);
 
     cache.__emit({ type: 'query', phase: 'promise', key, id: $cacheId, initiator, promise });
     scope.promise = promise;
@@ -132,7 +136,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         throwThis(make());
       }
     } else if (isHydration) {
-      if (!res) illegal(formatErrorMsg(LIB, `Can't read app state from the server!`));
+      if (!res) illegalFromPackage(`Can't read app state from the server!`);
       const [data] = res;
 
       mutate(state, res);
@@ -163,11 +167,11 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
       cache.write(key, promise, { id: cacheId });
       throwThis(promise);
     }
-  } else if (inSuspense && scope.promise) {
+  } else if (scope.promise) {
     const { promise } = scope;
 
     scope.promise = null;
-    throwThis(promise);
+    inSuspense && throwThis(promise);
   }
 
   useEffect(() => {
@@ -242,6 +246,11 @@ function createState<T>(cache: InMemoryCache, key: string, cacheId: TextBased, l
     state.isFetching = false;
     state.isLoaded = true;
     state.data = record.data as T;
+
+    if (detectIsPromise(state.data)) {
+      state.isFetching = true;
+      state.isLoaded = false;
+    }
   }
 
   return state;
@@ -256,6 +265,10 @@ function mutate<T>(state: State<T>, res: AppResource<T>) {
   state.error = error;
 }
 
+function $extractId<V extends Variables>(v: V) {
+  return !detectIsEmpty(v) && hasKeys(v) ? stringify(v) : ROOT_ID;
+}
+
 type State<T> = {
   isFetching: boolean;
   isLoaded: boolean;
@@ -266,6 +279,7 @@ type State<T> = {
 
 type Scope<T> = {
   isDirty: boolean;
+  fromRefetch: boolean;
   promise: Promise<T>;
 };
 

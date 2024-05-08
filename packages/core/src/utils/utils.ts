@@ -27,6 +27,10 @@ const detectIsPromise = <T = unknown>(o: any): o is Promise<T> => o instanceof P
 
 const detectIsEqual = (a: any, b: any) => Object.is(a, b);
 
+const keys = (o: object) => Object.keys(o);
+
+const hasKeys = (o: object) => keys(o).length > 0;
+
 const getTime = () => Date.now();
 
 const dummyFn = () => {};
@@ -102,7 +106,7 @@ const nextTick = (callback: () => void) => Promise.resolve().then(callback);
 
 const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
-const mapRecord = <T extends object>(record: T) => Object.keys(record).map(x => record[x]);
+const mapRecord = <T extends object>(record: T) => keys(record).map(x => record[x]);
 
 export {
   detectIsFunction,
@@ -118,6 +122,8 @@ export {
   detectIsFalsy,
   detectIsPromise,
   detectIsEqual,
+  keys,
+  hasKeys,
   getTime,
   dummyFn,
   trueFn,

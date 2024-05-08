@@ -361,7 +361,6 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   let inst = fiber.inst;
   const isComponent = detectIsComponent(inst);
   const component = inst as Component;
-  const id = $scope.getResourceId();
 
   if (isComponent) {
     try {
@@ -380,8 +379,6 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
         const promise = err;
         const isSSR = detectIsSSR();
         const reset = () => {
-          $scope.setResourceId(id);
-
           if (prev) {
             fiber.hook.owner = null;
             fiber.hook.idx = 0;

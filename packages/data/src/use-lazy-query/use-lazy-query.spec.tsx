@@ -32,7 +32,7 @@ const api = {
 };
 
 describe('@data/use-lazy-query', () => {
-  test('makes a query correctly', async () => {
+  test.only('makes a query correctly', async () => {
     const spy1 = jest.fn();
     const spy2 = jest.fn();
     let getData: Query<number, { x: number }> = null;

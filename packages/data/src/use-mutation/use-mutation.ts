@@ -4,6 +4,7 @@ import {
   useUpdate,
   useMemo,
   throwThis,
+  __useSSR as useSSR,
   __useInSuspense as useInSuspense,
 } from '@dark-engine/core';
 
@@ -25,10 +26,11 @@ function useMutation<M extends Mutation>(
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
   const { refetchQueries = [], onStart, onSuccess, onError } = options || {};
-  const update = useUpdate();
   const scope = useMemo<Scope<ReturnType<M>>>(() => ({ promise: null }), []);
   const cache = useCache();
+  const update = useUpdate();
   checkCache(cache);
+  const { isServer } = useSSR();
   const inSuspense = useInSuspense();
   const state = useMemo<State<AwaitedResult>>(() => ({ isFetching: false, data: null, error: null }), []);
   const make = async (...args: Params) => {
@@ -37,22 +39,25 @@ function useMutation<M extends Mutation>(
     state.isFetching = true;
     state.error = null;
     cache.__emit({ type: 'mutation', phase: 'start', key, data: args });
-    detectIsFunction(onStart) && onStart();
+    !isServer && detectIsFunction(onStart) && onStart();
 
     try {
       data = (await mutation(...args)) as AwaitedResult;
       state.data = data;
       cache.__emit({ type: 'mutation', phase: 'finish', key, data });
-      detectIsFunction(onSuccess) && onSuccess({ cache, args, data });
+      !isServer && detectIsFunction(onSuccess) && onSuccess({ cache, args, data });
       refetchQueries.forEach(key => cache.invalidate(key));
     } catch (err) {
       logError(err);
       state.error = String(err);
       cache.__emit({ type: 'mutation', phase: 'error', key, data: err });
-      detectIsFunction(onError) && onError(err);
+      !isServer && detectIsFunction(onError) && onError(err);
     } finally {
       state.isFetching = false;
-      update();
+
+      if (!isServer) {
+        update();
+      }
     }
 
     return data;

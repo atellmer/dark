@@ -136,11 +136,6 @@ function useTransition<T extends string, I = unknown>(
     if (scope.transitions.length === 0) return;
     const { inChain } = scope;
     const start = () => {
-      console.log(
-        'TRANSITIONS',
-        scope.transitions.map(x => x.key),
-      );
-
       state.event('series-start');
       scope.transitions.forEach(x => x.fn());
       scope.transitions = [];
@@ -416,7 +411,6 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
     ctrls.push(ctrl);
   }
 
-  console.log('END');
   state.setCtrls(ctrls);
   update();
 }

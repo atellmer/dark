@@ -116,7 +116,6 @@ describe('@data/use-mutation', () => {
     expect(spy.mock.calls).toEqual([
       [false, 0],
       [false, 0],
-      [false, 0],
       [true, 0],
       [true, 0],
       [false, 10],
