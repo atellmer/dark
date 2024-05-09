@@ -76,7 +76,7 @@ const Navigator = component<StackNavigatorProps>(
 
       syncNavigation(pathname);
 
-      const unsubscribe = subscribe(pathname => syncNavigation(pathname));
+      const unsubscribe = subscribe('change', ({ pathname }) => syncNavigation(pathname));
 
       return () => unsubscribe();
     }, []);

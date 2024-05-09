@@ -1,7 +1,7 @@
-import { type DarkElement, component, lazy, Suspense, memo, scheduler, useSyncExternalStore } from '@dark-engine/core';
-import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
+import { type DarkElement, component, lazy, Suspense, memo, scheduler } from '@dark-engine/core';
+import { createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
-import { createGlobalStyle, styled } from '@dark-engine/styled';
+import { createGlobalStyle } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
 import { Pending } from './pending';
@@ -80,18 +80,15 @@ const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
       <PageTransition>
-        <Concurrent>
-          <header>
-            <NavLink to='/home'>Home</NavLink>
-            <NavLink to='/about'>About</NavLink>
-            <NavLink to='/contacts'>Contacts</NavLink>
-            <Pending overlay />
-          </header>
-          <Suspense fallback={<Spinner />}>
-            <main>{slot}</main>
-          </Suspense>
-          <SlowContent />
-        </Concurrent>
+        <header>
+          <NavLink to='/home'>Home</NavLink>
+          <NavLink to='/about'>About</NavLink>
+          <NavLink to='/contacts'>Contacts</NavLink>
+          {/* <Pending overlay /> */}
+        </header>
+        <Suspense fallback={<Spinner />}>
+          <main>{slot}</main>
+        </Suspense>
       </PageTransition>
     );
   },
@@ -102,12 +99,14 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes} mode='concurrent'>{slot => <Shell>{slot}</Shell>}</Router>
+      <Router routes={routes} mode='concurrent'>
+        {slot => <Shell>{slot}</Shell>}
+      </Router>
     </>
   );
 });
 
-const Spinner = component(() => <div>Loading...</div>, { displayName: 'Spinner' });
+const Spinner = component(() => <div class='spinner'>LOADING...</div>, { displayName: 'Spinner' });
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -126,7 +125,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    font-family: 'Roboto';
+    font-family: arial;
     background-color: #fff;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -199,6 +198,11 @@ const GlobalStyle = createGlobalStyle`
 
   .active-link:hover {
     color: #ffeb3b;
+  }
+
+  .spinner {
+    font-size: 60px;
+    padding: 20px;
   }
 
   p {

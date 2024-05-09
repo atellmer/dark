@@ -2,6 +2,7 @@ import { CoreTypes } from '@nativescript/core';
 import {
   type DarkElement,
   type Ref,
+  type SubscriberWithValue,
   component,
   useRef,
   useEffect,
@@ -17,7 +18,8 @@ import {
 import { type FrameRef, type PageRef, Frame, Page } from '@dark-engine/platform-native';
 
 import {
-  type HistorySubscriber,
+  type HistoryEvent,
+  type HistoryValue,
   type ParamsMap,
   type ParamsObject,
   createNavigationHistory,
@@ -61,7 +63,7 @@ const NavigationContainer = component<NavigationContainerProps>(
 
     useLayoutEffect(() => {
       const history = createNavigationHistory(pathname, frameRef.current, pageRef.current);
-      const unsubscribe = history.subscribe((pathname, action, options) => {
+      const unsubscribe = history.subscribe('change', ({ pathname, action, options }) => {
         const isReplace = action === HistoryAction.REPLACE;
         const isBack = action === HistoryAction.BACK;
 
@@ -134,7 +136,9 @@ const NavigationContainer = component<NavigationContainerProps>(
 
     const getParams = useEvent((pathname: string) => (scope.history ? scope.history.getParams(pathname) : null));
 
-    const subscribe = useEvent((subscriber: HistorySubscriber) => scope.history.subscribe(subscriber));
+    const subscribe = useEvent((event: HistoryEvent, subscriber: SubscriberWithValue<HistoryValue>) =>
+      scope.history.subscribe(event, subscriber),
+    );
 
     const contextValue = useMemo<NavigationContextValue>(
       () => ({ pathname, transition, push, replace, back, getParams, subscribe }),
@@ -203,7 +207,7 @@ type NavigationContextValue = {
   replace: Replace;
   back: Back;
   getParams: (pathname: string) => ParamsMap;
-  subscribe: (subscriber: HistorySubscriber) => () => void;
+  subscribe: (event: HistoryEvent, subscriber: SubscriberWithValue<HistoryValue>) => () => boolean;
 };
 
 const NavigationContext = createContext<NavigationContextValue>(null);

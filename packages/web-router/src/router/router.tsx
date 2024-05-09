@@ -64,7 +64,7 @@ const Router = component<RouterProps>(
     }, [sourceURL]);
 
     useLayoutEffect(() => {
-      const unsubscribe = history.subscribe(candidateURL => {
+      const unsubscribe = history.subscribe('change', candidateURL => {
         const { pathname: url1, search: search1, hash: hash1 } = scope.location;
         const { pathname: url2, search: search2, hash: hash2 } = parseURL(candidateURL);
         const { route: nextRoute } = resolveRoute(url2, routes);

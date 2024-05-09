@@ -53,23 +53,23 @@ const App = component(() => {
       <button
         onClick={() => {
           isNext = false;
-          //setItems([prev(items[0])]);
-          startTransition(() => setItems([prev(items[0])]));
+          setItems([prev(items[0])]);
+          //startTransition(() => setItems([prev(items[0])]));
         }}>
         prev
       </button>
       <button
         onClick={() => {
           isNext = true;
-          //setItems([next(items[0])]);
-          startTransition(() => setItems([next(items[0])]));
+          setItems([next(items[0])]);
+          //startTransition(() => setItems([next(items[0])]));
         }}>
         next
       </button>
       {items[0]}
       <br />
       <br />
-      <SlowContent />
+      {/* <SlowContent /> */}
       <Container>
         {transition(({ spring, item }) => {
           return (

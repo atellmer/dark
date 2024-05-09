@@ -1,4 +1,5 @@
 import { type Frame, type Page, isAndroid, Application } from '@nativescript/core';
+import { type SubscriberWithValue, EventEmitter } from '@dark-engine/core';
 
 import { normalizePathname } from '../utils';
 import { type NavigationOptions } from '../navigation-container';
@@ -6,7 +7,7 @@ import { type NavigationOptions } from '../navigation-container';
 class NavigationHistory {
   private stack: Array<string> = [];
   private cursor = -1;
-  private subscribers: Set<HistorySubscriber> = new Set();
+  private emitter = new EventEmitter<HistoryEvent, HistoryValue>();
   private frame: Frame;
   private page: Page;
   private params: Record<string, Record<string, ParamsMap>> = {};
@@ -24,14 +25,14 @@ class NavigationHistory {
       Application.android.on(Application.android.activityBackPressedEvent, handleBack);
 
       this.dispose = () => {
-        this.subscribers.clear();
+        this.emitter = new EventEmitter();
         this.stack = [];
         this.cursor = -1;
         Application.android.off(Application.android.activityBackPressedEvent, handleBack);
       };
     } else {
       this.dispose = () => {
-        this.subscribers.clear();
+        this.emitter = new EventEmitter();
         this.stack = [];
         this.cursor = -1;
       };
@@ -39,9 +40,7 @@ class NavigationHistory {
   }
 
   private mapSubscribers(action: HistoryAction, options?: NavigationOptions) {
-    for (const subscriber of this.subscribers) {
-      subscriber(this.getValue(), action, options);
-    }
+    this.emitter.emit('change', { pathname: this.getValue(), action, options });
   }
 
   private getValue() {
@@ -70,10 +69,8 @@ class NavigationHistory {
     return this.params[pathname] ? this.params[pathname][this.cursor] || null : null;
   }
 
-  subscribe(subscriber: HistorySubscriber) {
-    this.subscribers.add(subscriber);
-
-    return () => this.subscribers.delete(subscriber);
+  subscribe(event: HistoryEvent, subscriber: SubscriberWithValue<HistoryValue>) {
+    return this.emitter.on(event, subscriber);
   }
 
   push(pathname: string, options?: NavigationOptions) {
@@ -130,7 +127,13 @@ class NavigationHistory {
   }
 }
 
-export type HistorySubscriber = (pathname: string, action: HistoryAction, options?: NavigationOptions) => void;
+export type HistoryEvent = 'change';
+
+export type HistoryValue = {
+  pathname: string;
+  action: HistoryAction;
+  options?: NavigationOptions;
+};
 
 export enum HistoryAction {
   PUSH = 'PUSH',

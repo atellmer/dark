@@ -1,4 +1,4 @@
-import { type SubscriberWithValue, detectIsFalsy, detectIsUndefined } from '@dark-engine/core';
+import { type SubscriberWithValue, detectIsFalsy, detectIsUndefined, EventEmitter } from '@dark-engine/core';
 
 import { normalizePath, parseURL, join, illegal } from '../utils';
 
@@ -6,7 +6,7 @@ const history = globalThis.history;
 class RouterHistory {
   private stack: Array<string> = [];
   private cursor = -1;
-  private subscribers: Set<SubscriberWithValue<string>> = new Set();
+  private emitter = new EventEmitter<HistoryEvent, string>();
   private fromHistory = false;
   dispose: () => void = null;
 
@@ -32,6 +32,12 @@ class RouterHistory {
         const state = this.getState();
 
         if (state) {
+          if (this.stack.length < state.stack.length) {
+            this.emitter.emit('forward', this.getValue());
+          } else if (this.stack.length > state.stack.length) {
+            this.emitter.emit('back', this.getValue());
+          }
+
           this.stack = state.stack;
           this.cursor = state.cursor;
         }
@@ -47,7 +53,7 @@ class RouterHistory {
 
       this.dispose = () => {
         window.removeEventListener('popstate', handleEvent);
-        this.subscribers.clear();
+        this.emitter = new EventEmitter();
         this.stack = [];
         this.cursor = -1;
       };
@@ -55,9 +61,7 @@ class RouterHistory {
   }
 
   private mapSubscribers() {
-    for (const subscriber of this.subscribers) {
-      subscriber(this.getValue());
-    }
+    this.emitter.emit('change', this.getValue());
   }
 
   private getValue = () => {
@@ -87,10 +91,8 @@ class RouterHistory {
     }
   }
 
-  subscribe = (subscriber: SubscriberWithValue<string>) => {
-    this.subscribers.add(subscriber);
-
-    return () => this.subscribers.delete(subscriber);
+  subscribe = (event: HistoryEvent, subscriber: SubscriberWithValue<string>) => {
+    return this.emitter.on(event, subscriber);
   };
 
   push(url: string) {
@@ -133,6 +135,8 @@ class RouterHistory {
     this.mapSubscribers();
   }
 }
+
+type HistoryEvent = 'change' | 'forward' | 'back';
 
 enum HistoryAction {
   PUSH = 'PUSH',
