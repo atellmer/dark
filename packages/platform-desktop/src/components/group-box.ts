@@ -6,7 +6,7 @@ import {
   QBoxLayout,
   Direction,
 } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qGroupBox } from '../factory';
@@ -20,6 +20,7 @@ import { detectIsDialog } from './dialog';
 
 export type GroupBoxProps = WithSlotProps<
   {
+    ref?: Ref<GroupBoxRef>;
     title?: string;
     flat?: boolean;
     direction?: Direction;
@@ -29,9 +30,9 @@ export type GroupBoxProps = WithSlotProps<
 export type GroupBoxRef = QDarkGroupBox;
 export type GroupBoxSignals = QGroupBoxSignals;
 
-const GroupBox = forwardRef<GroupBoxProps, GroupBoxRef>(
-  component((props, ref) => qGroupBox({ ref, ...props }), { displayName: 'GroupBox' }),
-) as ComponentFactory<GroupBoxProps, GroupBoxRef>;
+const GroupBox = component<GroupBoxProps>(props => qGroupBox(props), {
+  displayName: 'GroupBox',
+}) as ComponentFactory<GroupBoxProps>;
 
 class QDarkGroupBox extends QGroupBox implements Container {
   private boxLayout = new QBoxLayout(Direction.TopToBottom);

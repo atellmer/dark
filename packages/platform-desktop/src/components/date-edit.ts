@@ -1,5 +1,5 @@
 import { type QDate, type QDateTimeEditSignals, QDateEdit } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qDateEdit } from '../factory';
@@ -15,6 +15,7 @@ import { qDateEdit } from '../factory';
 
 export type DateEditProps = WithStandardProps<
   {
+    ref?: Ref<DateEditRef>;
     date: QDate;
     displayFormat?: string;
   } & WidgetProps
@@ -22,9 +23,9 @@ export type DateEditProps = WithStandardProps<
 export type DateEditRef = QDarkDateEdit;
 export type DateEditSignals = QDateTimeEditSignals;
 
-const DateEdit = forwardRef<DateEditProps, DateEditRef>(
-  component((props, ref) => qDateEdit({ ref, ...props }), { displayName: 'DateEdit' }),
-) as ComponentFactory<DateEditProps, DateEditRef>;
+const DateEdit = component<DateEditProps>(props => qDateEdit(props), {
+  displayName: 'DateEdit',
+}) as ComponentFactory<DateEditProps>;
 
 class QDarkDateEdit extends QDateEdit {}
 

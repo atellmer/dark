@@ -1,5 +1,5 @@
 import { type QTableWidgetSignals, QWidget, QTableWidget } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qTable } from '../factory';
@@ -16,6 +16,7 @@ import { throwUnsupported } from '../utils';
 
 export type TableProps = WithSlotProps<
   {
+    ref?: Ref<TableRef>;
     columnCount: number;
     rowCount: number;
     horizontalHeaderLabels?: Array<string>;
@@ -27,9 +28,7 @@ export type TableProps = WithSlotProps<
 export type TableRef = QDarkTable;
 export type TableSignals = QTableWidgetSignals;
 
-const Table = forwardRef<TableProps, TableRef>(
-  component((props, ref) => qTable({ ref, ...props }), { displayName: 'Table' }),
-) as ComponentFactory<TableProps, TableRef>;
+const Table = component<TableProps>(props => qTable(props), { displayName: 'Table' }) as ComponentFactory<TableProps>;
 
 class QDarkTable extends QTableWidget implements Container {
   detectIsContainer() {

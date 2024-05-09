@@ -1,5 +1,5 @@
 import { type QSystemTrayIconSignals, type QIcon, QWidget, QSystemTrayIcon } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qSystemTrayIcon } from '../factory';
@@ -18,6 +18,7 @@ import { detectIsMenu } from './menu';
 
 export type SystemTrayIconProps = WithSlotProps<
   {
+    ref?: Ref<SystemTrayIconRef>;
     visible: boolean;
     icon: QIcon;
     toolTip?: string;
@@ -26,9 +27,9 @@ export type SystemTrayIconProps = WithSlotProps<
 export type SystemTrayIconRef = QDarkSystemTrayIcon;
 export type SystemTrayIconSignals = QSystemTrayIconSignals;
 
-const SystemTrayIcon = forwardRef<SystemTrayIconProps, SystemTrayIconRef>(
-  component((props, ref) => qSystemTrayIcon({ ref, ...props }), { displayName: 'SystemTrayIcon' }),
-) as ComponentFactory<SystemTrayIconProps, SystemTrayIconRef>;
+const SystemTrayIcon = component<SystemTrayIconProps>(props => qSystemTrayIcon(props), {
+  displayName: 'SystemTrayIcon',
+}) as ComponentFactory<SystemTrayIconProps>;
 
 class QDarkSystemTrayIcon extends QSystemTrayIcon implements Container {
   constructor() {

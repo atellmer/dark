@@ -2,8 +2,8 @@ import { QGraphicsDropShadowEffect, type QWidget, type QColor } from '@nodegui/n
 import {
   type ComponentFactory,
   type Component,
+  type Ref,
   component,
-  forwardRef,
   useRef,
   useMemo,
   useLayoutEffect,
@@ -22,6 +22,7 @@ import { LIB } from '../constants';
 
 export type DropShadowEffectProps = WithSlotProps<
   {
+    ref?: Ref<DropShadowEffectRef>;
     blurRadius: number;
     xOffset?: number;
     yOffset?: number;
@@ -33,38 +34,36 @@ export type DropShadowEffectRef<T = QWidget> = {
   node: T;
 };
 
-const DropShadowEffect = forwardRef<DropShadowEffectProps, DropShadowEffectRef>(
-  component(
-    (props, ref) => {
-      const { blurRadius, xOffset = 1, yOffset = 1, color, disabled = false, slot } = props;
-      const component = slot as Component;
-      const rootRef = useRef<QWidget>(null);
-      const gfx = useMemo(() => new QGraphicsDropShadowEffect(), []);
+const DropShadowEffect = component<DropShadowEffectProps>(
+  props => {
+    const { ref, blurRadius, xOffset = 1, yOffset = 1, color, disabled = false, slot } = props;
+    const component = slot as Component;
+    const rootRef = useRef<QWidget>(null);
+    const gfx = useMemo(() => new QGraphicsDropShadowEffect(), []);
 
-      if (detectIsArray(slot)) {
-        illegal(formatErrorMsg(LIB, `The DropShadowEffect supports only one child node!`));
-      }
+    if (detectIsArray(slot)) {
+      illegal(formatErrorMsg(LIB, `The DropShadowEffect supports only one child node!`));
+    }
 
-      useLayoutEffect(() => {
-        rootRef.current.setGraphicsEffect(gfx);
-      }, []);
+    useLayoutEffect(() => {
+      rootRef.current.setGraphicsEffect(gfx);
+    }, []);
 
-      useLayoutEffect(() => {
-        gfx.setBlurRadius(blurRadius);
-        gfx.setXOffset(xOffset);
-        gfx.setYOffset(yOffset);
-        color && gfx.setColor(color);
-        gfx.setEnabled(!disabled);
-      }, [blurRadius, xOffset, yOffset, color, disabled]);
+    useLayoutEffect(() => {
+      gfx.setBlurRadius(blurRadius);
+      gfx.setXOffset(xOffset);
+      gfx.setYOffset(yOffset);
+      color && gfx.setColor(color);
+      gfx.setEnabled(!disabled);
+    }, [blurRadius, xOffset, yOffset, color, disabled]);
 
-      useImperativeHandle(ref, () => ({ node: rootRef.current }));
+    useImperativeHandle(ref, () => ({ node: rootRef.current }));
 
-      component.props.ref = rootRef;
+    component.props.ref = rootRef;
 
-      return component;
-    },
-    { displayName: 'DropShadowEffect' },
-  ),
-) as ComponentFactory<DropShadowEffectProps, DropShadowEffectRef>;
+    return component;
+  },
+  { displayName: 'DropShadowEffect' },
+) as ComponentFactory<DropShadowEffectProps>;
 
 export { DropShadowEffect };

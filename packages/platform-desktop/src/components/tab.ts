@@ -1,5 +1,5 @@
 import { type QTabWidgetSignals, type TabPosition, QTabWidget } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qTab } from '../factory';
@@ -20,6 +20,7 @@ import { runAtTheEndOfCommit } from '../dom';
 
 export type TabProps = WithSlotProps<
   {
+    ref?: Ref<TabRef>;
     currentIndex: number;
     tabPosition?: TabPosition;
     tabsClosable?: boolean;
@@ -28,9 +29,7 @@ export type TabProps = WithSlotProps<
 export type TabRef = QDarkTab;
 export type TabSignals = QTabWidgetSignals;
 
-const Tab = forwardRef<TabProps, TabRef>(
-  component((props, ref) => qTab({ ref, ...props }), { displayName: 'Tab' }),
-) as ComponentFactory<TabProps, TabRef>;
+const Tab = component<TabProps>(props => qTab(props), { displayName: 'Tab' }) as ComponentFactory<TabProps>;
 
 class QDarkTab extends QTabWidget implements Container {
   detectIsContainer() {

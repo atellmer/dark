@@ -1,5 +1,5 @@
 import { QSvgWidget } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSvg } from '../factory';
@@ -14,15 +14,14 @@ import { qSvg } from '../factory';
 
 export type SvgProps = WithStandardProps<
   {
+    ref?: Ref<SvgRef>;
     source?: string;
     path?: string;
   } & WidgetProps
 >;
 export type SvgRef = QDarkSvg;
 
-const Svg = forwardRef<SvgProps, SvgRef>(
-  component((props, ref) => qSvg({ ref, ...props }), { displayName: 'Svg' }),
-) as ComponentFactory<SvgProps, SvgRef>;
+const Svg = component<SvgProps>(props => qSvg(props), { displayName: 'Svg' }) as ComponentFactory<SvgProps>;
 
 class QDarkSvg extends QSvgWidget {
   setSource(value: string) {

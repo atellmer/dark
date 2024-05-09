@@ -1,5 +1,5 @@
 import { type QColorDialogSignals, QColorDialog, QColor } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qColorDialog } from '../factory';
@@ -13,6 +13,7 @@ import { qColorDialog } from '../factory';
 
 export type ColorDialogProps = WithStandardProps<
   {
+    ref?: Ref<ColorDialogRef>;
     open: boolean;
     currentColor?: QColor;
   } & WidgetProps
@@ -20,9 +21,9 @@ export type ColorDialogProps = WithStandardProps<
 export type ColorDialogRef = QDarkColorDialog;
 export type ColorDialogSignals = QColorDialogSignals;
 
-const ColorDialog = forwardRef<ColorDialogProps, ColorDialogRef>(
-  component((props, ref) => qColorDialog({ ref, ...props }), { displayName: 'ColorDialog' }),
-) as ComponentFactory<ColorDialogProps, ColorDialogRef>;
+const ColorDialog = component<ColorDialogProps>(props => qColorDialog(props), {
+  displayName: 'ColorDialog',
+}) as ComponentFactory<ColorDialogProps>;
 
 class QDarkColorDialog extends QColorDialog {
   setOpen(value: boolean) {

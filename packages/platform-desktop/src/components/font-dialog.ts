@@ -1,5 +1,5 @@
 import { type QFontDialogSignals, type QFont, QFontDialog } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qFontDialog } from '../factory';
@@ -13,6 +13,7 @@ import { qFontDialog } from '../factory';
 
 export type FontDialogProps = WithStandardProps<
   {
+    ref?: Ref<FontDialogRef>;
     open: boolean;
     currentFont?: QFont;
   } & WidgetProps
@@ -20,9 +21,9 @@ export type FontDialogProps = WithStandardProps<
 export type FontDialogRef = QDarkFontDialog;
 export type FontDialogSignals = QFontDialogSignals;
 
-const FontDialog = forwardRef<FontDialogProps, FontDialogRef>(
-  component((props, ref) => qFontDialog({ ref, ...props }), { displayName: 'FontDialog' }),
-) as ComponentFactory<FontDialogProps, FontDialogRef>;
+const FontDialog = component<FontDialogProps>(props => qFontDialog(props), {
+  displayName: 'FontDialog',
+}) as ComponentFactory<FontDialogProps>;
 
 class QDarkFontDialog extends QFontDialog {
   setOpen(value: boolean) {

@@ -1,5 +1,5 @@
 import { type QSpinBoxSignals, QSpinBox } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSpinBox } from '../factory';
@@ -13,6 +13,7 @@ import { qSpinBox } from '../factory';
 
 export type SpinBoxProps = WithStandardProps<
   {
+    ref?: Ref<SpinBoxRef>;
     value: number;
     maximum?: number;
     minimum?: number;
@@ -24,9 +25,9 @@ export type SpinBoxProps = WithStandardProps<
 export type SpinBoxRef = QDarkSpinBox;
 export type SpinBoxSignals = QSpinBoxSignals;
 
-const SpinBox = forwardRef<SpinBoxProps, SpinBoxRef>(
-  component((props, ref) => qSpinBox({ ref, ...props }), { displayName: 'SpinBox' }),
-) as ComponentFactory<SpinBoxProps, SpinBoxRef>;
+const SpinBox = component<SpinBoxProps>(props => qSpinBox(props), {
+  displayName: 'SpinBox',
+}) as ComponentFactory<SpinBoxProps>;
 
 class QDarkSpinBox extends QSpinBox {}
 

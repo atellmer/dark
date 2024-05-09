@@ -1,7 +1,7 @@
 import { render } from '@dark-engine/platform-browser';
 
 import { component } from '../component';
-import { type MutableRef, forwardRef, useRef } from '../ref';
+import { type MutableRef, useRef } from '../ref';
 import { useLayoutEffect } from '../use-layout-effect';
 import { useImperativeHandle } from './use-imperative-handle';
 
@@ -19,15 +19,13 @@ describe('@core/use-imperative-handle', () => {
 
     let ref: MutableRef<MyRef> = null;
 
-    const Child = forwardRef<{}, MyRef>(
-      component((_, ref) => {
-        useImperativeHandle(ref as MutableRef<MyRef>, () => ({
-          run: mockFn,
-        }));
+    const Child = component<{ ref?: MutableRef<MyRef> }>(({ ref }) => {
+      useImperativeHandle(ref, () => ({
+        run: mockFn,
+      }));
 
-        return null;
-      }),
-    );
+      return null;
+    });
 
     const App = component(() => {
       ref = useRef<MyRef>(null);

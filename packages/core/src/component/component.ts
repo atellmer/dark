@@ -1,6 +1,5 @@
 import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, Prettify } from '../shared';
-import { logError, formatErrorMsg } from '../utils';
-import { KEY_ATTR, LIB } from '../constants';
+import { KEY_ATTR } from '../constants';
 import { type Ref } from '../ref';
 
 const $$inject = Symbol('inject');
@@ -30,26 +29,18 @@ class Component<P extends StandardComponentProps = any, R = any> {
   }
 }
 
-function component<P extends object, R = unknown>(type: CreateElement<P, R>, options: ComponentOptions = {}) {
+function component<P extends object>(type: CreateElement<P>, options: ComponentOptions = {}) {
   const { token: $token, displayName } = options;
   type Props = P & StandardComponentProps;
-  const factory: ComponentFactoryWithPossiblyInject<Props, R> = (props = {} as Props, ref?: Ref<R>) => {
+  const factory: ComponentFactoryWithPossiblyInject<Props> = (props = {} as Props) => {
     const { token = $token, shouldUpdate } = factory[$$inject] || defaultInject;
 
-    if (props.ref) {
-      delete props.ref;
-
-      if (process.env.NODE_ENV !== 'production') {
-        process.env.NODE_ENV === 'development' &&
-          logError(formatErrorMsg(LIB, 'To use ref you need to wrap the component with forwardRef!'));
-      }
-    }
-
-    return new Component(type, token, props, ref, shouldUpdate, displayName);
+    return new Component(type, token, props, props.ref, shouldUpdate, displayName);
   };
+
   factory.displayName = displayName;
 
-  return factory as ComponentFactory<Prettify<Props>, R>;
+  return factory as ComponentFactory<Prettify<Props>>;
 }
 
 const defaultInject: ComponentInject = {};
@@ -65,13 +56,13 @@ type ComponentOptions = Readonly<{
   token?: Symbol;
 }>;
 
-type ComponentFactoryWithPossiblyInject<P extends object = {}, R = unknown> = {
-  (props?: P, ref?: Ref<R>): Component<P, R>;
+type ComponentFactoryWithPossiblyInject<P extends object = {}> = {
+  (props?: P): Component<P>;
   [$$inject]?: ComponentInject<P>;
   displayName: string;
 };
 
-type CreateElement<P extends StandardComponentProps, R = unknown> = (props: P, ref?: Ref<R>) => DarkElement;
+type CreateElement<P extends StandardComponentProps> = (props: P) => DarkElement;
 
 export type ComponentInject<P extends object = {}> = Readonly<{
   token?: Symbol;
@@ -82,9 +73,9 @@ export type ShouldUpdate<P> = (prevProps: P, nextProps: P) => boolean;
 
 export type StandardComponentProps = KeyProps & RefProps;
 
-export type ComponentFactory<P extends object = {}, R = unknown> = {
-  (props?: P, ref?: Ref<R>): Component<P, R>;
-  displayName: string;
+export type ComponentFactory<P extends object = {}> = {
+  (props?: P): Component<P>;
+  displayName?: string;
 };
 
 export { Component, component, $$inject, detectIsComponent, getComponentKey, hasComponentFlag };

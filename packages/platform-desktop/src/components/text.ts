@@ -1,5 +1,5 @@
 import { QLabel } from '@nodegui/nodegui';
-import { type ComponentFactory, type TextBased, component, forwardRef, detectIsArray } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, type TextBased, component, detectIsArray } from '@dark-engine/core';
 
 import type { WidgetProps, WithPartialSlotProps } from '../shared';
 import { qText } from '../factory';
@@ -9,20 +9,23 @@ import { qText } from '../factory';
 //   {`<h1>Hello world</h1><p>Rich text</p>`}
 // </Text>
 
-export type TextProps = WithPartialSlotProps<{} & WidgetProps, TextBased | Array<TextBased>>;
+export type TextProps = WithPartialSlotProps<
+  {
+    ref?: Ref<TextRef>;
+  } & WidgetProps,
+  TextBased | Array<TextBased>
+>;
 export type TextRef = QDarkText;
 
-const Text = forwardRef<TextProps, TextRef>(
-  component(
-    (props, ref) => {
-      const { slot, ...rest } = props;
-      const text = detectIsArray(slot) ? slot.join('') : slot;
+const Text = component<TextProps>(
+  props => {
+    const { slot, ...rest } = props;
+    const text = detectIsArray(slot) ? slot.join('') : slot;
 
-      return qText({ ref, text, ...rest });
-    },
-    { displayName: 'Text' },
-  ),
-) as ComponentFactory<TextProps, TextRef>;
+    return qText({ text, ...rest });
+  },
+  { displayName: 'Text' },
+) as ComponentFactory<TextProps>;
 
 class QDarkText extends QLabel {}
 

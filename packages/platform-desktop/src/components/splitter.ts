@@ -1,5 +1,5 @@
 import { type QWidget, type QSplitterSignals, QSplitter, Orientation } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithPartialSlotProps, Container } from '../shared';
 import { qSplitter } from '../factory';
@@ -16,6 +16,7 @@ import { detectIsDialog } from './dialog';
 
 export type SplitterProps = WithPartialSlotProps<
   {
+    ref?: Ref<SplitterRef>;
     orientation?: Orientation;
     collapse?: Array<boolean>;
   } & WidgetProps
@@ -23,9 +24,9 @@ export type SplitterProps = WithPartialSlotProps<
 export type SplitterRef = QDarkSplitter;
 export type SplitterSignals = QSplitterSignals;
 
-const Splitter = forwardRef<SplitterProps, SplitterRef>(
-  component((props, ref) => qSplitter({ ref, ...props }), { displayName: 'Splitter' }),
-) as ComponentFactory<SplitterProps, SplitterRef>;
+const Splitter = component<SplitterProps>(props => qSplitter(props), {
+  displayName: 'Splitter',
+}) as ComponentFactory<SplitterProps>;
 
 class QDarkSplitter extends QSplitter implements Container {
   constructor() {

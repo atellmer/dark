@@ -1,5 +1,5 @@
 import { QWidget, type AlignmentFlag } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WithSlotProps, Container } from '../shared';
 import { qGridItem } from '../factory';
@@ -21,6 +21,7 @@ import { throwUnsupported } from '../utils';
 // </GridLayout>
 
 export type GridItemProps = WithSlotProps<{
+  ref?: Ref<GridItemRef>;
   row: number;
   col: number;
   rowSpan?: number;
@@ -29,9 +30,9 @@ export type GridItemProps = WithSlotProps<{
 }>;
 export type GridItemRef = QDarkGridItem;
 
-const GridItem = forwardRef<GridItemProps, GridItemRef>(
-  component((props, ref) => qGridItem({ ref, ...props }), { displayName: 'GridItem' }),
-) as ComponentFactory<GridItemProps, GridItemRef>;
+const GridItem = component<GridItemProps>(props => qGridItem(props), {
+  displayName: 'GridItem',
+}) as ComponentFactory<GridItemProps>;
 
 class QDarkGridItem extends QWidget implements Container {
   private child: QWidget = null;

@@ -1,32 +1,29 @@
 import { detectIsUndefined, detectIsFunction, illegalFromPackage, throwThis } from '../utils';
 import { type ComponentFactory, component } from '../component';
 import { useMemo } from '../use-memo';
-import { forwardRef } from '../ref';
 
 const $$lazy = Symbol('lazy');
 const factories = new Map<Loader, ComponentFactory>();
 
-function lazy<P extends object, R = unknown>(loader: Loader<P>, done?: () => void) {
-  return forwardRef(
-    component<P, R>(
-      (props, ref) => {
-        const scope = useMemo(() => ({ isDirty: false }), []);
-        const factory = factories.get(loader);
+function lazy<P extends object>(loader: Loader<P>, done?: () => void) {
+  return component<P>(
+    props => {
+      const scope = useMemo(() => ({ isDirty: false }), []);
+      const factory = factories.get(loader);
 
-        if (detectIsUndefined(factory) && !scope.isDirty) {
-          const make = async () => {
-            factories.set(loader, await run(loader));
-            detectIsFunction(done) && done();
-          };
+      if (detectIsUndefined(factory) && !scope.isDirty) {
+        const make = async () => {
+          factories.set(loader, await run(loader));
+          detectIsFunction(done) && done();
+        };
 
-          scope.isDirty = true;
-          throwThis(make());
-        }
+        scope.isDirty = true;
+        throwThis(make());
+      }
 
-        return factory ? factory(props, ref) : null;
-      },
-      { token: $$lazy, displayName: 'Lazy' },
-    ),
+      return factory ? factory(props) : null;
+    },
+    { token: $$lazy, displayName: 'Lazy' },
   );
 }
 

@@ -1,19 +1,5 @@
 import { detectIsObject, detectIsNull, detectIsFunction } from '../utils';
-import type { Component, ComponentFactory } from '../component';
-import type { RefProps, KeyProps, Prettify } from '../shared';
 import { useMemo } from '../use-memo';
-
-function forwardRef<P extends object, R>(
-  component: ComponentFactory<Prettify<P>, R>,
-): ComponentFactory<Prettify<P & RefProps<R> & KeyProps>, R> {
-  type Props = P & RefProps<R> & KeyProps;
-
-  return (props: Props) => {
-    const { ref, ...rest } = (props || {}) as Props;
-
-    return component(rest as P, ref) as Component<Props, R>;
-  };
-}
 
 function detectIsMutableRef(ref: unknown): ref is MutableRef {
   if (!detectIsObject(ref) || detectIsNull(ref)) return false;
@@ -50,4 +36,4 @@ export type FunctionRef<T = unknown> = (ref: T) => void;
 
 export type Ref<T = unknown> = MutableRef<T> | FunctionRef<T>;
 
-export { forwardRef, detectIsMutableRef, applyRef, useRef };
+export { detectIsMutableRef, applyRef, useRef };

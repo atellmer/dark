@@ -1,5 +1,5 @@
 import { QLabel, QMovie } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 import fetch from 'node-fetch';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
@@ -10,15 +10,16 @@ import { detectisValidURL } from '../utils';
 
 export type AnimatedImageProps = WithStandardProps<
   {
+    ref?: Ref<AnimatedImageRef>;
     src?: string;
     buffer?: Buffer;
   } & WidgetProps
 >;
 export type AnimatedImageRef = QDarkAnimatedImage;
 
-const AnimatedImage = forwardRef<AnimatedImageProps, AnimatedImageRef>(
-  component((props, ref) => qAnimatedImage({ ref, ...props }), { displayName: 'AnimatedImage' }),
-) as ComponentFactory<AnimatedImageProps, AnimatedImageRef>;
+const AnimatedImage = component<AnimatedImageProps>(props => qAnimatedImage(props), {
+  displayName: 'AnimatedImage',
+}) as ComponentFactory<AnimatedImageProps>;
 
 class QDarkAnimatedImage extends QLabel {
   constructor() {

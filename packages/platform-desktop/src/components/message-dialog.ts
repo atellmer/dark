@@ -1,5 +1,5 @@
 import { type QMessageBoxSignals, QMessageBox, QPushButton, ButtonRole } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qMessageDialog } from '../factory';
@@ -8,6 +8,7 @@ import { qMessageDialog } from '../factory';
 
 export type MessageDialogProps = WithStandardProps<
   {
+    ref?: Ref<MessageDialogRef>;
     open: boolean;
     text: string;
     informativeText?: string;
@@ -18,9 +19,9 @@ export type MessageDialogProps = WithStandardProps<
 export type MessageDialogRef = QDarkMessageDialog;
 export type MessageDialogSignals = QMessageBoxSignals;
 
-const MessageDialog = forwardRef<MessageDialogProps, MessageDialogRef>(
-  component((props, ref) => qMessageDialog({ ref, ...props }), { displayName: 'MessageDialog' }),
-) as ComponentFactory<MessageDialogProps, MessageDialogRef>;
+const MessageDialog = component<MessageDialogProps>(props => qMessageDialog(props), {
+  displayName: 'MessageDialog',
+}) as ComponentFactory<MessageDialogProps>;
 
 class QDarkMessageDialog extends QMessageBox {
   private button = new QPushButton();

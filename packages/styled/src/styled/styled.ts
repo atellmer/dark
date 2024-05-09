@@ -6,7 +6,6 @@ import {
   type DarkElement,
   View,
   component,
-  forwardRef,
   useMemo,
   detectIsString,
   detectIsFunction,
@@ -75,69 +74,67 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
     const fns = filterArgs<T>($args);
     const [sheet, sheets] = slice<T>(css($source, ...$args));
     const [baseName, baseStyle, baseKeyframes] = generate({ sheet, cache });
-    const styled = forwardRef<T, unknown>(
-      component(
-        (props, ref) => {
-          const { as: component, ...rest } = props;
-          const theme = useTheme();
-          const isSwap = detectIsFunction(component);
-          const $props = (isSwap ? rest : props) as unknown as T;
-          const $factory = isSwap ? component : isExtending ? config.factory : factory;
-          const [className, styles, keyframes] = useMemo(() => {
-            const [names, styles, keyframes] = sheets.reduce(
-              (acc, sheet) => {
-                const [className, style, keyframes] = generate({ sheet, cache, props: { ...props, theme }, fns });
-                const [names, styles, keyframesList] = acc;
+    const styled = component<T>(
+      props => {
+        const { as: component, ...rest } = props;
+        const theme = useTheme();
+        const isSwap = detectIsFunction(component);
+        const $props = (isSwap ? rest : props) as unknown as T;
+        const $factory = isSwap ? component : isExtending ? config.factory : factory;
+        const [className, styles, keyframes] = useMemo(() => {
+          const [names, styles, keyframes] = sheets.reduce(
+            (acc, sheet) => {
+              const [className, style, keyframes] = generate({ sheet, cache, props: { ...props, theme }, fns });
+              const [names, styles, keyframesList] = acc;
 
-                names.push(className);
-                styles.push(style);
-                keyframesList.push(keyframes);
+              names.push(className);
+              styles.push(style);
+              keyframesList.push(keyframes);
 
-                return acc;
-              },
-              [[], [baseStyle], [baseKeyframes]] as [Array<string>, Array<string>, Array<string>],
-            );
-            const className = mergeClassNames([...getClassNamesFrom(props), baseName, ...names]);
+              return acc;
+            },
+            [[], [baseStyle], [baseKeyframes]] as [Array<string>, Array<string>, Array<string>],
+          );
+          const className = mergeClassNames([...getClassNamesFrom(props), baseName, ...names]);
 
-            return [className, filter(styles, injections), filter(keyframes, injections)] as [
-              string,
-              Array<string>,
-              Array<string>,
-            ];
-          }, [...mapRecord(props), theme]);
+          return [className, filter(styles, injections), filter(keyframes, injections)] as [
+            string,
+            Array<string>,
+            Array<string>,
+          ];
+        }, [...mapRecord(props), theme]);
 
-          useInsertionEffect(() => {
-            if (!tag) {
-              const $tag = getTag();
+        useInsertionEffect(() => {
+          if (!tag) {
+            const $tag = getTag();
 
-              if ($tag) {
-                tag = $tag; // after hydration
-                return;
-              } else {
-                tag = createTag();
-              }
+            if ($tag) {
+              tag = $tag; // after hydration
+              return;
+            } else {
+              tag = createTag();
             }
-
-            styles.forEach(css => inject(css, tag));
-            keyframes.forEach(css => inject(css, tag));
-          }, [...styles, ...keyframes]);
-
-          if (detectIsServer()) {
-            const manager = useManager(); // special case of hook using, should be last in order
-
-            styles.forEach(css => manager.collectComponentStyle(css));
-            keyframes.forEach(css => manager.collectComponentStyle(css));
-            manager.reset(setupGlobal);
           }
 
-          if (detectIsFunction($props.slot)) {
-            $props.slot = $props.slot((x: string) => `${className}_${x}`);
-          }
+          styles.forEach(css => inject(css, tag));
+          keyframes.forEach(css => inject(css, tag));
+        }, [...styles, ...keyframes]);
 
-          return $factory({ ...$transform($props), ref, className });
-        },
-        { displayName },
-      ),
+        if (detectIsServer()) {
+          const manager = useManager(); // special case of hook using, should be last in order
+
+          styles.forEach(css => manager.collectComponentStyle(css));
+          keyframes.forEach(css => manager.collectComponentStyle(css));
+          manager.reset(setupGlobal);
+        }
+
+        if (detectIsFunction($props.slot)) {
+          $props.slot = $props.slot((x: string) => `${className}_${x}`);
+        }
+
+        return $factory({ ...$transform($props), className });
+      },
+      { displayName },
     ) as StyledComponentFactory<T>;
 
     styled[$$styled] = {

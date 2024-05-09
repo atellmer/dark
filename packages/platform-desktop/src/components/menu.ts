@@ -1,5 +1,5 @@
 import { type QMenuSignals, type QIcon, QWidget, QMenu } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMenu } from '../factory';
@@ -14,6 +14,7 @@ import { throwUnsupported } from '../utils';
 
 export type MenuProps = WithSlotProps<
   {
+    ref?: Ref<MenuRef>;
     title?: string;
     icon?: QIcon;
   } & WidgetProps
@@ -21,9 +22,7 @@ export type MenuProps = WithSlotProps<
 export type MenuRef = QDarkMenu;
 export type MenuSignals = QMenuSignals;
 
-const Menu = forwardRef<MenuProps, MenuRef>(
-  component((props, ref) => qMenu({ ref, ...props }), { displayName: 'Menu' }),
-) as ComponentFactory<MenuProps, MenuRef>;
+const Menu = component<MenuProps>(props => qMenu(props), { displayName: 'Menu' }) as ComponentFactory<MenuProps>;
 
 class QDarkMenu extends QMenu implements Container {
   detectIsContainer() {

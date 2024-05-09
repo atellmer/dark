@@ -1,5 +1,5 @@
 import { type QTabWidget, QIcon } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WithSlotProps } from '../shared';
 import { qTabItem } from '../factory';
@@ -18,14 +18,15 @@ import { QDarkFlexLayout } from './flex-layout';
 // </Tab>
 
 export type TabItemProps = WithSlotProps<{
+  ref?: Ref<TabItemRef>;
   text: string;
   icon?: QIcon;
 }>;
 export type TabItemRef = QDarkTabItem;
 
-const TabItem = forwardRef<TabItemProps, TabItemRef>(
-  component((props, ref) => qTabItem({ ref, ...props }), { displayName: 'TabItem' }),
-) as ComponentFactory<TabItemProps, TabItemRef>;
+const TabItem = component<TabItemProps>(props => qTabItem(props), {
+  displayName: 'TabItem',
+}) as ComponentFactory<TabItemProps>;
 
 class QDarkTabItem extends QDarkFlexLayout {
   private tab: QTabWidget = null;

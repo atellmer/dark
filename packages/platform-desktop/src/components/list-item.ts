@@ -1,5 +1,5 @@
 import { QListWidgetItem, QIcon, CheckState, ItemFlag } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qListItem } from '../factory';
@@ -12,6 +12,7 @@ import { qListItem } from '../factory';
 
 export type ListItemProps = WithStandardProps<
   {
+    ref?: Ref<ListItemRef>;
     text?: string;
     icon?: QIcon;
     checkState?: CheckState;
@@ -22,9 +23,9 @@ export type ListItemProps = WithStandardProps<
 >;
 export type ListItemRef = QListWidgetItem;
 
-const ListItem = forwardRef<ListItemProps, ListItemRef>(
-  component((props, ref) => qListItem({ ref, ...props }), { displayName: 'ListItem' }),
-) as ComponentFactory<ListItemProps, ListItemRef>;
+const ListItem = component<ListItemProps>(props => qListItem(props), {
+  displayName: 'ListItem',
+}) as ComponentFactory<ListItemProps>;
 
 class QDarkListItem extends QListWidgetItem {}
 

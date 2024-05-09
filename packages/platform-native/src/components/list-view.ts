@@ -8,7 +8,6 @@ import {
   useRef,
   useEvent,
   useImperativeHandle,
-  forwardRef,
   detectIsUndefined,
 } from '@dark-engine/core';
 
@@ -19,6 +18,7 @@ import { renderSubRoot } from '../render';
 import { NSElement } from '../registry';
 
 export type ListViewProps<T = any> = {
+  ref?: Ref<ListViewRef>;
   items: Array<T> | ObservableArray<T>;
   slot: (options: SlotOptions<T>) => DarkElement;
   onItemTap?: (e: SyntheticEvent<ItemEventData>) => void;
@@ -35,44 +35,42 @@ export type ListViewRef = {
   isItemAtIndexVisible: (idx: number) => boolean;
 };
 
-const ListView: ListView = forwardRef<ListViewProps, ListViewRef>(
-  component(
-    ({ items, slot, ...rest }, ref) => {
-      const rootRef = useRef<NSListView>(null);
+const ListView: ListView = component<ListViewProps>(
+  ({ ref, items, slot, ...rest }) => {
+    const rootRef = useRef<NSListView>(null);
 
-      useImperativeHandle(ref, () => ({
-        refresh: () => rootRef.current.refresh(),
-        scrollToIndex: (idx: number) => rootRef.current.scrollToIndex(idx),
-        scrollToIndexAnimated: (idx: number) => rootRef.current.scrollToIndexAnimated(idx),
-        isItemAtIndexVisible: (idx: number) => rootRef.current.isItemAtIndexVisible(idx),
-      }));
+    useImperativeHandle(ref, () => ({
+      refresh: () => rootRef.current.refresh(),
+      scrollToIndex: (idx: number) => rootRef.current.scrollToIndex(idx),
+      scrollToIndexAnimated: (idx: number) => rootRef.current.scrollToIndexAnimated(idx),
+      isItemAtIndexVisible: (idx: number) => rootRef.current.isItemAtIndexVisible(idx),
+    }));
 
-      const handleItemLoading = useEvent((e: SyntheticEvent<ItemEventData>) => {
-        const data = e.sourceEvent;
-        const idx = data.index;
-        const item = items[idx];
-        const element = slot({ item, idx, items });
+    const handleItemLoading = useEvent((e: SyntheticEvent<ItemEventData>) => {
+      const data = e.sourceEvent;
+      const idx = data.index;
+      const item = items[idx];
+      const element = slot({ item, idx, items });
 
-        renderSubRoot(element, template => {
-          const view = data.view || template;
+      renderSubRoot(element, template => {
+        const view = data.view || template;
 
-          patchElement(view, template, idx);
+        patchElement(view, template, idx);
 
-          data.view = view;
-        });
+        data.view = view;
       });
+    });
 
-      return listView({
-        ...rest,
-        ref: rootRef,
-        items,
-        itemTemplates,
-        itemTemplateSelector,
-        onItemLoading: handleItemLoading,
-      });
-    },
-    { displayName: 'ListView' },
-  ),
+    return listView({
+      ...rest,
+      ref: rootRef,
+      items,
+      itemTemplates,
+      itemTemplateSelector,
+      onItemLoading: handleItemLoading,
+    });
+  },
+  { displayName: 'ListView' },
 );
 
 const DEFAULT_TEMPLATE = 'default';

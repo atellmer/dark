@@ -1,5 +1,5 @@
 import { type QTreeWidgetSignals, QWidget, QTreeWidget } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qTree } from '../factory';
@@ -17,6 +17,7 @@ import { throwUnsupported } from '../utils';
 
 export type TreeProps = WithSlotProps<
   {
+    ref?: Ref<TreeRef>;
     headerLabels: Array<string>;
     sortingEnabled?: boolean;
     colWidth?: Array<number>;
@@ -25,9 +26,7 @@ export type TreeProps = WithSlotProps<
 export type TreeRef = QDarkTree;
 export type TreeSignals = QTreeWidgetSignals;
 
-const Tree = forwardRef<TreeProps, TreeRef>(
-  component((props, ref) => qTree({ ref, ...props }), { displayName: 'Tree' }),
-) as ComponentFactory<TreeProps, TreeRef>;
+const Tree = component<TreeProps>(props => qTree(props), { displayName: 'Tree' }) as ComponentFactory<TreeProps>;
 
 class QDarkTree extends QTreeWidget implements Container {
   detectIsContainer() {

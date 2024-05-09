@@ -1,5 +1,5 @@
 import { type QIcon, type QMainWindowSignals, QMainWindow, QWidget, WindowState } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qMainWindow } from '../factory';
@@ -17,6 +17,7 @@ import { throwUnsupported } from '../utils';
 
 export type WindowProps = WithSlotProps<
   {
+    ref?: Ref<WindowRef>;
     windowTitle?: string;
     windowOpacity?: number;
     windowIcon?: QIcon;
@@ -27,9 +28,9 @@ export type WindowProps = WithSlotProps<
 export type WindowRef = QDarkMainWindow;
 export type MainWindowSignals = QMainWindowSignals;
 
-const Window = forwardRef<WindowProps, WindowRef>(
-  component((props, ref) => qMainWindow({ ref, ...props }), { displayName: 'Window' }),
-) as ComponentFactory<WindowProps, WindowRef>;
+const Window = component<WindowProps>(props => qMainWindow(props), {
+  displayName: 'Window',
+}) as ComponentFactory<WindowProps>;
 
 class QDarkMainWindow extends QMainWindow implements Container {
   constructor() {

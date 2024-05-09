@@ -1,14 +1,14 @@
 import type { Label as NSLabel } from '@nativescript/core';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { LabelAttributes } from '../jsx';
 import { label } from '../factory';
 
-export type TextProps = LabelAttributes;
+export type TextProps = {
+  ref?: Ref<TextRef>;
+} & LabelAttributes;
 export type TextRef = NSLabel;
 
-const Text = forwardRef<TextProps, TextRef>(
-  component((props, ref) => label({ ref, ...props }), { displayName: ':Text' }),
-) as ComponentFactory<TextProps, TextRef>;
+const Text = component<TextProps>(props => label(props), { displayName: ':Text' }) as ComponentFactory<TextProps>;
 
 export { Text };

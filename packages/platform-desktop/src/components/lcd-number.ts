@@ -1,5 +1,5 @@
 import { type QLCDNumberSignals, type Mode, type SegmentStyle, QLCDNumber } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qLCDNumber } from '../factory';
@@ -8,6 +8,7 @@ import { qLCDNumber } from '../factory';
 
 export type LCDNumberProps = WithStandardProps<
   {
+    ref?: Ref<LCDNumberRef>;
     display: number;
     digitCount: number;
     mode?: Mode;
@@ -18,9 +19,9 @@ export type LCDNumberProps = WithStandardProps<
 export type LCDNumberRef = QDarkLCDNumber;
 export type LCDNumberSignals = QLCDNumberSignals;
 
-const LCDNumber = forwardRef<LCDNumberProps, LCDNumberRef>(
-  component((props, ref) => qLCDNumber({ ref, ...props }), { displayName: 'LCDNumber' }),
-) as ComponentFactory<LCDNumberProps, LCDNumberRef>;
+const LCDNumber = component<LCDNumberProps>(props => qLCDNumber(props), {
+  displayName: 'LCDNumber',
+}) as ComponentFactory<LCDNumberProps>;
 
 class QDarkLCDNumber extends QLCDNumber {
   setDisplay(value: number) {

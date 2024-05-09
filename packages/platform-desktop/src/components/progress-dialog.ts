@@ -1,5 +1,5 @@
 import { type QProgressDialogSignals, QProgressDialog } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qProgressDialog } from '../factory';
@@ -8,6 +8,7 @@ import { qProgressDialog } from '../factory';
 
 export type ProgressDialogProps = WithStandardProps<
   {
+    ref?: Ref<ProgressDialogRef>;
     open: boolean;
     value: number;
     autoClose?: boolean;
@@ -27,9 +28,9 @@ export type ProgressRange = {
   minimum: number;
 };
 
-const ProgressDialog = forwardRef<ProgressDialogProps, ProgressDialogRef>(
-  component((props, ref) => qProgressDialog({ ref, ...props }), { displayName: 'ProgressDialog' }),
-) as ComponentFactory<ProgressDialogProps, ProgressDialogRef>;
+const ProgressDialog = component<ProgressDialogProps>(props => qProgressDialog(props), {
+  displayName: 'ProgressDialog',
+}) as ComponentFactory<ProgressDialogProps>;
 
 class QDarkProgressDialog extends QProgressDialog {
   setOpen(value: boolean) {

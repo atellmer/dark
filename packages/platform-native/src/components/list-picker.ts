@@ -1,14 +1,16 @@
 import type { ListPicker as NSListPicker } from '@nativescript/core';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { ListPickerAttributes } from '../jsx';
 import { listPicker } from '../factory';
 
-export type ListPickerProps = ListPickerAttributes;
+export type ListPickerProps = {
+  ref?: Ref<ListPickerRef>;
+} & ListPickerAttributes;
 export type ListPickerRef = NSListPicker;
 
-const ListPicker = forwardRef<ListPickerProps, ListPickerRef>(
-  component((props, ref) => listPicker({ ref, ...props }), { displayName: 'ListPicker' }),
-) as ComponentFactory<ListPickerProps, ListPickerRef>;
+const ListPicker = component<ListPickerProps>(props => listPicker(props), {
+  displayName: 'ListPicker',
+}) as ComponentFactory<ListPickerProps>;
 
 export { ListPicker };
