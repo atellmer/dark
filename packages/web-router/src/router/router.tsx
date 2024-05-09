@@ -9,13 +9,12 @@ import {
   nextTick,
   detectIsString,
   useTransition,
-  illegal,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
 import { type RouterLocation, createRouterLocation } from '../location';
 import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
-import { normalizePath, join, parseURL } from '../utils';
+import { normalizePath, join, parseURL, illegal } from '../utils';
 import { createRouterHistory } from '../history';
 import {
   type RouterHistoryContextValue,
@@ -42,7 +41,7 @@ export type RouterRef = {
 
 const Router = component<RouterProps>(
   ({ ref, url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, slot }) => {
-    if (useActiveRouteContext()) illegal(`[web-router]: The parent active route's context detected!`);
+    if (useActiveRouteContext()) illegal(`The parent active route's context detected!`);
     const sourceURL = fullURL || window.location.href;
     const [isPending, startTransition] = useTransition();
     const [location, setLocation] = useState(() => createRouterLocation(sourceURL));

@@ -12,7 +12,6 @@ import {
   MOVE_MASK,
   FLUSH_MASK,
   Flag,
-  LIB,
   TaskPriority,
 } from '../constants';
 import {
@@ -453,7 +452,7 @@ function extractKeys(alt: Fiber, children: Array<Instance>) {
 
       if (process.env.NODE_ENV !== 'production') {
         if (usedKeysMap[nextKey]) {
-          logError(formatErrorMsg(LIB, `The key of node [${nextKey}] already has been used!`), [inst]);
+          logError(formatErrorMsg(`The key of node [${nextKey}] already has been used!`), [inst]);
         }
       }
 

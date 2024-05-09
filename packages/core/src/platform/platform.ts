@@ -1,4 +1,4 @@
-import { illegalFromPackage } from '../utils';
+import { illegal } from '../utils';
 import { type VirtualNode } from '../view';
 import { type Callback } from '../shared';
 import { type Fiber } from '../fiber';
@@ -18,7 +18,7 @@ export type Platform = {
   chunk: (fiber: Fiber) => void;
 };
 
-const realisation = () => illegalFromPackage('The function was not installed by renderer!') as any;
+const realisation = () => illegal('The function was not installed by renderer!') as any;
 
 const platform: Platform = {
   createElement: realisation,

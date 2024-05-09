@@ -6,7 +6,7 @@ import {
   $$inject,
   detectIsComponent,
 } from '../component';
-import type { SlotProps } from '../shared';
+import { type SlotProps, type Prettify } from '../shared';
 
 const $$memo = Symbol('memo');
 
@@ -31,7 +31,7 @@ function memo<P extends object>(
     shouldUpdate,
   } as ComponentInject<P1>;
 
-  return factory as ComponentFactory<P1>;
+  return factory as ComponentFactory<Prettify<P1>>;
 }
 
 const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;

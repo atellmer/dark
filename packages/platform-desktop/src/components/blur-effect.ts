@@ -10,12 +10,10 @@ import {
   useLayoutEffect,
   useImperativeHandle,
   detectIsArray,
-  illegal,
-  formatErrorMsg,
 } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps } from '../shared';
-import { LIB } from '../constants';
+import { illegal } from '../utils';
 
 // <BlurEffect blurRadius={10}>
 //   <Image src='https://placehold.co/600x400' />
@@ -36,12 +34,12 @@ export type BlurEffectRef<T = QWidget> = {
 const BlurEffect = component<BlurEffectProps>(
   props => {
     const { ref, blurRadius, blurHint = BlurHint.PerformanceHint, disabled = false, slot } = props;
-    const component = slot as Component;
+    const component = slot as Component<BlurEffectProps>;
     const rootRef = useRef<QWidget>(null);
     const gfx = useMemo(() => new QGraphicsBlurEffect(), []);
 
     if (detectIsArray(slot)) {
-      illegal(formatErrorMsg(LIB, `The BlurEffect supports only one child node!`));
+      illegal(`The BlurEffect supports only one child node!`);
     }
 
     useLayoutEffect(() => {
@@ -56,7 +54,7 @@ const BlurEffect = component<BlurEffectProps>(
 
     useImperativeHandle(ref, () => ({ node: rootRef.current }));
 
-    component.props.ref = rootRef;
+    component.props.ref = ref;
 
     return component;
   },

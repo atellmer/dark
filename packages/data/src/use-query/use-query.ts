@@ -18,7 +18,7 @@ import {
 } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
-import { illegalFromPackage, stringify } from '../utils';
+import { illegal, stringify } from '../utils';
 import { ROOT_ID } from '../constants';
 import { useCache } from '../client';
 
@@ -142,7 +142,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         throwThis(make());
       }
     } else if (isHydration) {
-      if (!res) illegalFromPackage(`Can't read app state from the server!`);
+      if (!res) illegal(`Can't read app state from the server!`);
       const [data] = res;
 
       mutate(state, res);
@@ -291,11 +291,14 @@ const strategies = new Set<Strategy>(['suspense-only', 'hybrid', 'state-only']);
 
 function checkStrategy(strategy: Strategy) {
   if (!strategies.has(strategy)) {
-    illegalFromPackage('Wrong use-query strategy!');
+    illegal('Wrong use-query strategy!');
   }
 }
 
-type Strategy = 'suspense-only' | 'hybrid' | 'state-only';
+type Strategy =
+  | 'suspense-only' // Always uses the fallback of the nearest Suspense in the tree
+  | 'hybrid' // Uses Suspense fallback only during the mount phase, then uses its isFetching flag to show the loading UI.
+  | 'state-only'; // Always uses its isFetching flag and never uses Suspense fallback
 
 type State<T> = {
   isFetching: boolean;

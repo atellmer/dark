@@ -8,14 +8,14 @@ import {
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
-import { illegalFromPackage } from '../utils';
+import { illegal } from '../utils';
 
 const $$portal = Symbol('portal');
 
 function createPortal(slot: DarkElement, container: TagNativeElement) {
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
-      illegalFromPackage(`The createPortal only gets a valid element as container!`);
+      illegal(`The createPortal only gets a valid element as container!`);
     }
   }
 

@@ -1,6 +1,6 @@
-import { type SubscriberWithValue, detectIsFalsy, detectIsUndefined, illegal } from '@dark-engine/core';
+import { type SubscriberWithValue, detectIsFalsy, detectIsUndefined } from '@dark-engine/core';
 
-import { normalizePath, parseURL, join } from '../utils';
+import { normalizePath, parseURL, join, illegal } from '../utils';
 
 const history = globalThis.history;
 class RouterHistory {
@@ -11,7 +11,7 @@ class RouterHistory {
   dispose: () => void = null;
 
   constructor(url: string) {
-    if (detectIsFalsy(url)) illegal('[web-router]: A RouterHistory must have an initial url!');
+    if (detectIsFalsy(url)) illegal('The RouterHistory must have an initial url!');
     const { pathname, search, hash } = parseURL(url);
     const $url = join(pathname, search, hash);
 

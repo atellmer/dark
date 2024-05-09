@@ -1,13 +1,11 @@
-import { SLASH_MARK } from '../constants';
+import { illegal as $illegal } from '@dark-engine/core';
 
-const createPathname = (name: string, prefix: string) => {
-  return normalizePathname(`${prefix}${name}`);
-};
+import { SLASH_MARK, LIB } from '../constants';
+
+const createPathname = (name: string, prefix: string) => normalizePathname(`${prefix}${name}`);
 
 function normalizePathname(pathname: string) {
-  const normal = prependSlash(pathname.split(SLASH_MARK).filter(Boolean).join(SLASH_MARK) + SLASH_MARK);
-
-  return normal;
+  return prependSlash(pathname.split(SLASH_MARK).filter(Boolean).join(SLASH_MARK) + SLASH_MARK);
 }
 
 function prependSlash(pathname: string) {
@@ -15,9 +13,7 @@ function prependSlash(pathname: string) {
 }
 
 function getSegments(pathname: string, prefix: string) {
-  const segments = pathname.replace(prefix, '').split(SLASH_MARK).filter(Boolean);
-
-  return segments;
+  return pathname.replace(prefix, '').split(SLASH_MARK).filter(Boolean);
 }
 
 function detectIsVisited(map: Record<string, boolean>, pathname: string) {
@@ -32,9 +28,9 @@ function detectIsVisited(map: Record<string, boolean>, pathname: string) {
 }
 
 function detectIsMatch(currentPathname: string, pathname: string) {
-  const isMatch = currentPathname.indexOf(pathname) !== -1;
-
-  return isMatch;
+  return currentPathname.indexOf(pathname) !== -1;
 }
 
-export { createPathname, normalizePathname, prependSlash, getSegments, detectIsVisited, detectIsMatch };
+const illegal = (x: string) => $illegal(x, LIB);
+
+export { createPathname, normalizePathname, prependSlash, getSegments, detectIsVisited, detectIsMatch, illegal };

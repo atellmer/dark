@@ -1,3 +1,7 @@
+import { illegal as $illegal } from '@dark-engine/core';
+
+import { LIB } from '../constants';
+
 const fix = (x: number, precision = 4) => Number(x.toFixed(precision));
 
 const range = (x: number) =>
@@ -19,4 +23,6 @@ const uniq = <T>(items: Array<T>, selector: (x: T) => unknown) => {
   return arr;
 };
 
-export { fix, range, uniq };
+const illegal = (x: string) => $illegal(x, LIB);
+
+export { fix, range, uniq, illegal };

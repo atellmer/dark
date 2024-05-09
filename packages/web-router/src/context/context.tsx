@@ -1,8 +1,9 @@
-import { createContext, useContext, illegal } from '@dark-engine/core';
+import { createContext, useContext } from '@dark-engine/core';
 
 import { type RouterLocation } from '../location';
 import { type RouterHistory } from '../history';
 import { type Route } from '../create-routes';
+import { illegal } from '../utils';
 
 export type ActiveRouteContextValue = {
   location: RouterLocation;
@@ -32,7 +33,7 @@ const usePendingContext = () => useContext(PendingContext);
 
 function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
   if (!value) {
-    illegal(`[web-router]: Illegal hook's invoke outside router!`);
+    illegal(`Illegal hook's invoke outside router!`);
   }
 }
 

@@ -1,5 +1,7 @@
-import { detectIsObject, detectIsFunction } from '@dark-engine/core';
+import { detectIsObject, detectIsFunction, illegal as $illegal } from '@dark-engine/core';
+
 import { type Container } from '../shared';
+import { LIB } from '../constants';
 
 function capitalize<T extends string>(value: T): Capitalize<T> {
   return (value.charAt(0).toUpperCase() + value.substring(1)) as Capitalize<T>;
@@ -31,4 +33,6 @@ function detectIsContainer(element: unknown): element is Container {
   );
 }
 
-export { capitalize, createSetterName, detectisValidURL, throwUnsupported, detectIsContainer };
+const illegal = (x: string) => $illegal(x, LIB);
+
+export { capitalize, createSetterName, detectisValidURL, throwUnsupported, detectIsContainer, illegal };

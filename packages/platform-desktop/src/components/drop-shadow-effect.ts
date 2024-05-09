@@ -9,12 +9,10 @@ import {
   useLayoutEffect,
   useImperativeHandle,
   detectIsArray,
-  illegal,
-  formatErrorMsg,
 } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps } from '../shared';
-import { LIB } from '../constants';
+import { illegal } from '../utils';
 
 // <DropShadowEffect blurRadius={10} xOffset={2} yOffset={2}>
 //   <Image src='https://placehold.co/600x400' />
@@ -37,12 +35,12 @@ export type DropShadowEffectRef<T = QWidget> = {
 const DropShadowEffect = component<DropShadowEffectProps>(
   props => {
     const { ref, blurRadius, xOffset = 1, yOffset = 1, color, disabled = false, slot } = props;
-    const component = slot as Component;
+    const component = slot as Component<DropShadowEffectProps>;
     const rootRef = useRef<QWidget>(null);
     const gfx = useMemo(() => new QGraphicsDropShadowEffect(), []);
 
     if (detectIsArray(slot)) {
-      illegal(formatErrorMsg(LIB, `The DropShadowEffect supports only one child node!`));
+      illegal(`The DropShadowEffect supports only one child node!`);
     }
 
     useLayoutEffect(() => {
@@ -59,7 +57,7 @@ const DropShadowEffect = component<DropShadowEffectProps>(
 
     useImperativeHandle(ref, () => ({ node: rootRef.current }));
 
-    component.props.ref = rootRef;
+    component.props.ref = ref;
 
     return component;
   },

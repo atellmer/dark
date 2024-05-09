@@ -1,4 +1,6 @@
-import { SLASH_MARK, PARAMETER_MARK, PROTOCOL_MARK, HASH_MARK, SEARCH_MARK } from '../constants';
+import { illegal as $illegal } from '@dark-engine/core';
+
+import { SLASH_MARK, PARAMETER_MARK, PROTOCOL_MARK, HASH_MARK, SEARCH_MARK, LIB } from '../constants';
 
 function pipe<T>(...fns: Array<Function>): (...args: Array<any>) => T {
   const [fn, ...rest] = fns;
@@ -91,6 +93,8 @@ function sort<T>(type: 'asc' | 'desc', list: Array<T>, selector: (x: T) => numbe
 
 const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim() || undefined;
 
+const illegal = (x: string) => $illegal(x, LIB);
+
 export {
   pipe,
   parseURL,
@@ -103,4 +107,5 @@ export {
   join,
   sort,
   cm,
+  illegal,
 };

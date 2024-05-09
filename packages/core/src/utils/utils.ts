@@ -43,15 +43,13 @@ const sameFn = <T = any>(x: T) => x;
 
 const logError = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
 
-const formatErrorMsg = (lib: string, x: string) => `[${lib}]: ${x}`;
+const formatErrorMsg = (x: string, prefix = LIB) => `[${prefix}]: ${x}`;
 
 function throwThis(x: Error | Promise<unknown>) {
   throw x;
 }
 
-const illegal = (x: string) => throwThis(new Error(x));
-
-const illegalFromPackage = (x: string, prefix = LIB) => illegal(formatErrorMsg(prefix, x));
+const illegal = (x: string, prefix = LIB) => throwThis(new Error(formatErrorMsg(x, prefix)));
 
 function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => any = sameFn): Array<T> {
   if (detectIsArray(source)) {
@@ -132,7 +130,6 @@ export {
   formatErrorMsg,
   throwThis,
   illegal,
-  illegalFromPackage,
   flatten,
   keyBy,
   detectAreDepsDifferent,

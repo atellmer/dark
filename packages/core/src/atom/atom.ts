@@ -2,7 +2,7 @@ import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, logErr
 import { createUpdate, useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
-import { ATOM_HOST_MASK, LIB } from '../constants';
+import { ATOM_HOST_MASK } from '../constants';
 import { $$scope, getRootId } from '../scope';
 import { createTools } from '../use-state';
 import { EventEmitter } from '../emitter';
@@ -26,7 +26,7 @@ class Atom<T = unknown> {
       this.__connect(fn, key);
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
-        logError(formatErrorMsg(LIB, `Illegal invocation atom.val() outside render process!`));
+        logError(formatErrorMsg(`Illegal invocation atom.val() outside render process!`));
       }
     }
 

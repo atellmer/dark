@@ -1,4 +1,4 @@
-import { detectIsUndefined, illegalFromPackage as $illegalFromPackage } from '@dark-engine/core';
+import { detectIsUndefined, illegal as $illegal } from '@dark-engine/core';
 
 import { LIB } from '../constants';
 
@@ -85,6 +85,6 @@ const detectIsVoidElement = (name: string) => voidTagNames.has(name);
 
 const detectIsBrowser = () => !detectIsUndefined(globalThis.window);
 
-const illegalFromPackage = (x: string) => $illegalFromPackage(LIB, x);
+const illegal = (x: string) => $illegal(LIB, x);
 
-export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegalFromPackage };
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal };

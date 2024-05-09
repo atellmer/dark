@@ -1,4 +1,4 @@
-import { detectIsUndefined, detectIsFunction, illegalFromPackage, throwThis } from '../utils';
+import { detectIsUndefined, detectIsFunction, illegal, throwThis } from '../utils';
 import { type ComponentFactory, component } from '../component';
 import { useMemo } from '../use-memo';
 
@@ -41,7 +41,7 @@ function run<P extends object>(loader: Loader<P>) {
 function check(module: Module) {
   if (process.env.NODE_ENV !== 'production') {
     if (!module.default) {
-      illegalFromPackage('The lazy loaded component should be exported as default!');
+      illegal('The lazy loaded component should be exported as default!');
     }
   }
 }

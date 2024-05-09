@@ -30,7 +30,7 @@ import {
   detectIsHydration,
 } from '@dark-engine/core';
 
-import { detectIsSvgElement, detectIsVoidElement, illegalFromPackage } from '../utils';
+import { detectIsSvgElement, detectIsVoidElement, illegal } from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import { detectIsPortal } from '../portal';
 import {
@@ -284,13 +284,13 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (fiber.element.nodeName !== nativeElement.nodeName) {
-      illegalFromPackage('Inconsistent element for hydration!');
+      illegal('Inconsistent element for hydration!');
     }
 
     fiber.element = nativeElement;
   } else {
     if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
-      illegalFromPackage(`The element with danger content can't have a children!`);
+      illegal(`The element with danger content can't have a children!`);
     }
 
     if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {

@@ -9,7 +9,7 @@ import {
 } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
-import { illegalFromPackage } from '../utils';
+import { illegal } from '../utils';
 import { useCache } from '../client';
 
 type UseMutationOptions<T, P> = {
@@ -97,11 +97,13 @@ const strategies = new Set<Strategy>(['suspense-only', 'state-only']);
 
 function checkStrategy(strategy: Strategy) {
   if (!strategies.has(strategy)) {
-    illegalFromPackage('Wrong use-mutation strategy!');
+    illegal('Wrong use-mutation strategy!');
   }
 }
 
-type Strategy = 'suspense-only' | 'state-only';
+type Strategy =
+  | 'suspense-only' // Always uses the fallback of the nearest Suspense in the tree
+  | 'state-only'; // Always uses its isFetching flag and never uses Suspense fallback
 
 type Scope<T> = {
   promise: Promise<T>;

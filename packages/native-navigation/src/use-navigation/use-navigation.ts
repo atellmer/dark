@@ -1,8 +1,8 @@
 import { useMemo } from '@dark-engine/core';
 
-import { type ParamsMap } from '../history';
 import { useNavigationContext, type Push, type Back } from '../navigation-container';
 import { useScreenNavigatorContext } from '../stack-navigator';
+import { type ParamsMap } from '../history';
 
 type Navigation = {
   match: {

@@ -1,6 +1,6 @@
 import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTick } from '@dark-engine/core';
 
-import { illegalFromPackage } from '../utils';
+import { illegal } from '../utils';
 import { ROOT_ID } from '../constants';
 
 class InMemoryCache<K extends string = string> {
@@ -110,7 +110,7 @@ export type CacheRecord<T = unknown> = {
 };
 
 function checkCache(cache: InMemoryCache) {
-  if (!cache) illegalFromPackage('The hook requires a provider with a client!');
+  if (!cache) illegal('The hook requires a provider with a client!');
 }
 
 export { InMemoryCache, checkCache };
