@@ -26,7 +26,7 @@ export type UseQueryOptions<T, V extends Variables> = {
   variables?: V;
   extractId?: (x: V) => TextBased;
   lazy?: boolean;
-  skipSuspense?: boolean;
+  strategy?: Strategy;
   onStart?: () => void;
   onSuccess?: (x: OnSuccessOptions<T, V>) => void;
   onError?: (err: any) => void;
@@ -37,11 +37,12 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     variables = {} as V,
     extractId = $extractId,
     lazy = false,
-    skipSuspense = false,
+    strategy = 'suspense-only',
     onStart,
     onSuccess,
     onError,
   } = options || { variables: {} as V };
+  checkStrategy(strategy);
   const $scope = $$scope();
   const { isServer, isHydration, isSSR } = useSSR();
   const cache = useCache();
@@ -56,6 +57,9 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   const record = cache.read<T>(key, { id: cacheId });
   const isPending = record && detectIsPromise(record.data);
   const pending = isPending ? (record.data as Promise<T>) : null;
+  const isSuspenseOnly = strategy === 'suspense-only';
+  const isHybrid = strategy === 'hybrid';
+  const isStateOnly = strategy === 'state-only';
 
   state.cacheId = cacheId;
 
@@ -147,33 +151,46 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         cache.write(key, data, { id: cacheId });
       }
     }
-  } else if (!lazy && !scope.isDirty) {
-    scope.isDirty = true;
+  } else {
+    if (!lazy && !scope.isDirty) {
+      scope.isDirty = true;
 
-    if (record) {
-      if (pending) {
-        pending.then(x => {
-          state.data = x;
+      if (record) {
+        if (pending) {
+          pending.then(x => {
+            state.data = x;
+            state.isFetching = false;
+            state.isLoaded = true;
+          });
+
+          if (isSuspenseOnly || isHybrid) {
+            throwThis(pending);
+          } else if (isStateOnly) {
+            update();
+          }
+        } else {
+          state.data = record.data;
           state.isFetching = false;
           state.isLoaded = true;
-        });
-        throwThis(pending);
+        }
       } else {
-        state.data = record.data;
-        state.isFetching = false;
-        state.isLoaded = true;
+        const promise = make();
+
+        cache.write(key, promise, { id: cacheId });
+
+        if (isSuspenseOnly || isHybrid) {
+          throwThis(promise);
+        } else if (isStateOnly) {
+          scope.fromRefetch = true;
+          update();
+        }
       }
-    } else {
-      const promise = make();
+    } else if (scope.promise) {
+      const { promise } = scope;
 
-      cache.write(key, promise, { id: cacheId });
-      throwThis(promise);
+      scope.promise = null;
+      isSuspenseOnly && inSuspense && throwThis(promise);
     }
-  } else if (scope.promise) {
-    const { promise } = scope;
-
-    scope.promise = null;
-    !skipSuspense && inSuspense && throwThis(promise);
   }
 
   useEffect(() => {
@@ -226,12 +243,9 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     return () => offs.forEach(x => x());
   }, []);
 
-  const result: QueryResult<T> = {
-    isFetching: state.isFetching,
-    data: state.data,
-    error: state.error,
-    refetch,
-  };
+  // !
+  const { isFetching, data, error } = state;
+  const result: QueryResult<T> = { isFetching, data, error, refetch };
 
   return result;
 }
@@ -272,6 +286,16 @@ function mutate<T>(state: State<T>, res: AppResource<T>) {
 function $extractId<V extends Variables>(v: V) {
   return !detectIsEmpty(v) && hasKeys(v) ? stringify(v) : ROOT_ID;
 }
+
+const strategies = new Set<Strategy>(['suspense-only', 'hybrid', 'state-only']);
+
+function checkStrategy(strategy: Strategy) {
+  if (!strategies.has(strategy)) {
+    illegalFromPackage('Wrong use-query strategy!');
+  }
+}
+
+type Strategy = 'suspense-only' | 'hybrid' | 'state-only';
 
 type State<T> = {
   isFetching: boolean;

@@ -9,11 +9,12 @@ import {
 } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
+import { illegalFromPackage } from '../utils';
 import { useCache } from '../client';
 
 type UseMutationOptions<T, P> = {
   refetchQueries?: Array<string>;
-  skipSuspense?: boolean;
+  strategy?: Strategy;
   onStart?: () => void;
   onSuccess?: (x: OnSuccessOptions<T, P>) => void;
   onError?: (err: any) => void;
@@ -26,7 +27,8 @@ function useMutation<M extends Mutation>(
 ) {
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
-  const { refetchQueries = [], skipSuspense, onStart, onSuccess, onError } = options || {};
+  const { refetchQueries = [], strategy = 'suspense-only', onStart, onSuccess, onError } = options || {};
+  checkStrategy(strategy);
   const scope = useMemo<Scope<ReturnType<M>>>(() => ({ promise: null }), []);
   const cache = useCache();
   const update = useUpdate();
@@ -34,6 +36,8 @@ function useMutation<M extends Mutation>(
   const { isServer } = useSSR();
   const inSuspense = useInSuspense();
   const state = useMemo<State<AwaitedResult>>(() => ({ isFetching: false, data: null, error: null }), []);
+  const isSuspenseOnly = strategy === 'suspense-only';
+
   const make = async (...args: Params) => {
     let data: AwaitedResult = null;
 
@@ -83,11 +87,21 @@ function useMutation<M extends Mutation>(
     const { promise } = scope;
 
     scope.promise = null;
-    !skipSuspense && inSuspense && throwThis(promise);
+    isSuspenseOnly && inSuspense && throwThis(promise);
   }
 
   return [mutate, result] as [(...args: Params) => ReturnType<M>, MutationResult<AwaitedResult>];
 }
+
+const strategies = new Set<Strategy>(['suspense-only', 'state-only']);
+
+function checkStrategy(strategy: Strategy) {
+  if (!strategies.has(strategy)) {
+    illegalFromPackage('Wrong use-mutation strategy!');
+  }
+}
+
+type Strategy = 'suspense-only' | 'state-only';
 
 type Scope<T> = {
   promise: Promise<T>;
