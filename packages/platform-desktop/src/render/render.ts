@@ -13,7 +13,6 @@ import {
   $$scope,
   dummyFn,
   trueFn,
-  falseFn,
   scheduler,
 } from '@dark-engine/core';
 
@@ -34,8 +33,6 @@ function inject() {
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = trueFn;
-  platform.detectIsPortal = falseFn;
-  platform.unmountPortal = dummyFn;
   platform.chunk = dummyFn;
   isInjected = true;
 }

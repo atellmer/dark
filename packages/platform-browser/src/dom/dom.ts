@@ -30,9 +30,8 @@ import {
   detectIsHydration,
 } from '@dark-engine/core';
 
-import { detectIsSvgElement, detectIsVoidElement, illegal } from '../utils';
+import { detectIsSvgElement, detectIsVoidElement, illegal, removeContent } from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { detectIsPortal } from '../portal';
 import {
   INPUT_TAG,
   TEXTAREA_TAG,
@@ -317,15 +316,11 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  if (fiber.mask & FLUSH_MASK && parentFiber.element.innerHTML) {
-    return (parentFiber.element.innerHTML = '');
-  }
+  if (fiber.mask & FLUSH_MASK && parentFiber.element.innerHTML) return removeContent(parentFiber.element);
 
   walk<NativeElement>(fiber, (fiber, skip) => {
     if (fiber.element) {
-      !detectIsPortal(fiber.inst) &&
-        canRemoveNativeElement(fiber.element, parentFiber.element) &&
-        removeNativeElement(fiber.element, parentFiber.element);
+      !fiber.isPortal && removeNativeElement(fiber.element, parentFiber.element);
       return skip();
     }
   });
@@ -357,13 +352,13 @@ function move(fiber: Fiber<NativeElement>) {
 
 const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
   [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
-    if (!fiber.element || detectIsPortal(fiber.inst)) return;
+    if (!fiber.element || fiber.isPortal) return;
     trackUpdate && trackUpdate(fiber.element);
     commitCreation(fiber);
   },
   [UPDATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
     fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-    if (!fiber.element || detectIsPortal(fiber.inst)) return;
+    if (!fiber.element || fiber.isPortal) return;
     trackUpdate && trackUpdate(fiber.element);
     commitUpdate(fiber);
   },
@@ -389,8 +384,6 @@ const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: T
 
 const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) =>
   parent.replaceChild(element, candidate);
-
-const canRemoveNativeElement = (element: NativeNode, parent: NativeNode) => element.parentElement === parent;
 
 const removeNativeElement = (element: NativeNode, parent: TagNativeElement) =>
   element.parentElement === parent && parent.removeChild(element);

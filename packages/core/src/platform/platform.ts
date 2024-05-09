@@ -13,8 +13,6 @@ export type Platform = {
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
-  detectIsPortal: (instance: unknown) => boolean;
-  unmountPortal: (fiber: Fiber) => void;
   chunk: (fiber: Fiber) => void;
 };
 
@@ -29,8 +27,6 @@ const platform: Platform = {
   commit: realisation,
   finishCommit: realisation,
   detectIsDynamic: realisation,
-  detectIsPortal: realisation,
-  unmountPortal: realisation,
   chunk: realisation,
 };
 

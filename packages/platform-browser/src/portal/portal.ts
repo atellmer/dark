@@ -1,25 +1,25 @@
 import {
   type DarkElement,
-  type Fiber,
+  type ElementKey,
   component,
   useMemo,
-  detectIsComponent,
+  useLayoutEffect,
   __useCursor as useCursor,
 } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
-import { illegal } from '../utils';
+import { illegal, removeContent } from '../utils';
 
 const $$portal = Symbol('portal');
 
-function createPortal(slot: DarkElement, container: TagNativeElement) {
+function createPortal(slot: DarkElement, container: TagNativeElement, key?: ElementKey) {
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
       illegal(`The createPortal only gets a valid element as container!`);
     }
   }
 
-  return Portal({ container, slot });
+  return Portal({ key, container, slot });
 }
 
 type PortalProps = {
@@ -31,26 +31,22 @@ const Portal = component<PortalProps>(
   props => {
     const cursor = useCursor();
     const element = props.container;
+    const scope = useMemo(() => {
+      removeContent(element);
+      return { element };
+    }, []);
 
-    useMemo(() => (element.innerHTML = ''), []);
+    useLayoutEffect(() => {
+      return () => removeContent(scope.element);
+    }, []);
 
+    cursor.isPortal = true;
     cursor.element = element;
-    props.container = null;
+    scope.element = element;
 
     return props.slot;
   },
   { token: $$portal, displayName: 'Portal' },
 );
 
-const detectIsPortal = (instance: unknown) => detectIsComponent(instance) && instance.token === $$portal;
-
-const getPortalContainer = (fiber: Fiber<TagNativeElement>): TagNativeElement | null =>
-  detectIsPortal(fiber.inst) ? fiber.element : null;
-
-function unmountPortal(fiber: Fiber<TagNativeElement>) {
-  const element = getPortalContainer(fiber);
-
-  element && (element.innerHTML = '');
-}
-
-export { createPortal, unmountPortal, detectIsPortal };
+export { createPortal };

@@ -6,7 +6,6 @@ import {
   LAYOUT_EFFECT_HOST_MASK,
   ASYNC_EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
-  PORTAL_HOST_MASK,
   MOVE_MASK,
   HOOK_DELIMETER,
 } from '../constants';
@@ -16,7 +15,6 @@ import { type Component } from '../component';
 import { type Hook, Fiber } from '../fiber';
 import { createIndexKey } from '../utils';
 import { detectIsMemo } from '../memo';
-import { platform } from '../platform';
 import { type Scope } from '../scope';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
@@ -42,7 +40,7 @@ function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>)
 
   walk<T>(fiber, (fiber, skip) => {
     if (fiber.element) {
-      !platform.detectIsPortal(fiber.inst) && elements.push(transform(fiber));
+      !fiber.isPortal && elements.push(transform(fiber));
       return skip();
     }
   });
@@ -226,7 +224,6 @@ function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   alt.mask & LAYOUT_EFFECT_HOST_MASK && fiber.markHost(LAYOUT_EFFECT_HOST_MASK);
   alt.mask & ASYNC_EFFECT_HOST_MASK && fiber.markHost(ASYNC_EFFECT_HOST_MASK);
   alt.mask & ATOM_HOST_MASK && fiber.markHost(ATOM_HOST_MASK);
-  alt.mask & PORTAL_HOST_MASK && fiber.markHost(PORTAL_HOST_MASK);
 }
 
 export {

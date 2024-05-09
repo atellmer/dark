@@ -8,7 +8,6 @@ import {
   LAYOUT_EFFECT_HOST_MASK,
   ASYNC_EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
-  PORTAL_HOST_MASK,
   MOVE_MASK,
   FLUSH_MASK,
   Flag,
@@ -372,7 +371,6 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
       }
 
       component.children = result as Array<Instance>;
-      platform.detectIsPortal(inst) && fiber.markHost(PORTAL_HOST_MASK);
     } catch (err) {
       if (detectIsPromise(err)) {
         const promise = err;
@@ -493,11 +491,11 @@ function commit($scope: Scope) {
   const isUpdateZone = $scope.getIsUpdateZone();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
-  const combinedMask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | PORTAL_HOST_MASK;
+  const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
 
   // !
   for (const fiber of deletions) {
-    const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & combinedMask);
+    const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & mask);
 
     canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = DELETE_EFFECT_TAG;

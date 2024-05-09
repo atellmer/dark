@@ -20,9 +20,8 @@ import {
 } from '@dark-engine/core';
 
 import { createNativeElement, toggle, commit, finishCommit } from '../dom';
-import { detectIsPortal, unmountPortal } from '../portal';
-import type { TagNativeElement } from '../native-element';
-import { detectIsBrowser, illegal } from '../utils';
+import { detectIsBrowser, illegal, removeContent } from '../utils';
+import { type TagNativeElement } from '../native-element';
 
 const isBrowser = detectIsBrowser();
 const roots = new Map<Element, number>();
@@ -40,8 +39,6 @@ function inject() {
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = trueFn;
-  platform.detectIsPortal = detectIsPortal;
-  platform.unmountPortal = unmountPortal;
   platform.chunk = dummyFn;
   isInjected = true;
 }
@@ -61,7 +58,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
   if (!isMounted) {
     rootId = roots.size;
     roots.set(container, rootId);
-    !isHydration && (container.innerHTML = '');
+    !isHydration && removeContent(container);
   } else {
     rootId = roots.get(container);
   }

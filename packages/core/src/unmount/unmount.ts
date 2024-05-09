@@ -3,7 +3,6 @@ import { dropLayoutEffects } from '../use-layout-effect';
 import { removeScope, $$scope } from '../scope';
 import { detectIsUndefined } from '../utils';
 import { dropEffects } from '../use-effect';
-import { platform } from '../platform';
 import { type Fiber } from '../fiber';
 import { walk } from '../walk';
 import {
@@ -11,11 +10,9 @@ import {
   LAYOUT_EFFECT_HOST_MASK,
   ASYNC_EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
-  PORTAL_HOST_MASK,
 } from '../constants';
 
-const combinedMask =
-  INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | ATOM_HOST_MASK | PORTAL_HOST_MASK;
+const combinedMask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | ATOM_HOST_MASK;
 
 const shouldUnmountFiber = (fiber: Fiber) => fiber.mask & combinedMask;
 
@@ -35,8 +32,6 @@ function unmountFiber(fiber: Fiber) {
       }
       fiber.atoms = null;
     }
-
-    fiber.mask & PORTAL_HOST_MASK && platform.unmountPortal(fiber);
   });
 }
 
