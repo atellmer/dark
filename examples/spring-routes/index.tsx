@@ -1,4 +1,4 @@
-import { type DarkElement, component, lazy, Suspense, memo, scheduler } from '@dark-engine/core';
+import { type DarkElement, component, lazy, Suspense } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { createGlobalStyle } from '@dark-engine/styled';
@@ -69,7 +69,9 @@ const Shell = component<ShellProps>(
           <NavLink to='/about'>About</NavLink>
           <NavLink to='/contacts'>Contacts</NavLink>
         </header>
-        <main>{slot}</main>
+        <Suspense fallback={<Spinner />}>
+          <main>{slot}</main>
+        </Suspense>
         <SlowContent />
       </>
     );

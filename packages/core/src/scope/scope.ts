@@ -23,7 +23,6 @@ class Scope {
   private resourceId = 0;
   private resources: AppResources = new Map();
   private awaiter: Awaiter = new Awaiter();
-  private onTransitionStart: Callback = null;
   private onTransitionEnd: Callback = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
@@ -361,14 +360,6 @@ class Scope {
 
   setIsHot(value: boolean) {
     this.isHot = value;
-  }
-
-  getOnTransitionStart() {
-    return this.onTransitionStart;
-  }
-
-  setOnTransitionStart(fn: Callback) {
-    this.onTransitionStart = fn;
   }
 
   getOnTransitionEnd() {

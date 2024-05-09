@@ -144,19 +144,6 @@ class Scheduler {
   private pick(queue: Array<Task>) {
     if (queue.length === 0) return false;
     this.task = queue.shift();
-
-    if (this.task.getIsTransition() && this.task.getOnTransitionStart()) {
-      const task = this.task;
-      const start = task.getOnTransitionStart();
-
-      this.defer(task);
-      task.setOnTransitionStart(null);
-      start();
-      this.execute();
-
-      return false;
-    }
-
     this.run(this.task);
 
     return true;
@@ -258,7 +245,6 @@ class Task {
   private callback: TaskCallback = null;
   private createLoc?: CreateLocation = null;
   private onRestore?: OnRestore = null;
-  private onTransitionStart?: Callback = null;
   private onTransitionEnd?: Callback = null;
   private static nextTaskId = 0;
 
@@ -321,14 +307,6 @@ class Task {
     return this.createLoc();
   }
 
-  getOnTransitionStart() {
-    return this.onTransitionStart;
-  }
-
-  setOnTransitionStart(fn: Callback) {
-    this.onTransitionStart = fn;
-  }
-
   setOnTransitionEnd(fn: Callback) {
     this.onTransitionEnd = fn;
   }
@@ -373,13 +351,11 @@ function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOption
     forceAsync = false,
     isTransition = false,
     createLoc,
-    onTransitionStart,
     onTransitionEnd,
   } = options;
   const task = new Task(callback, priority, forceAsync);
 
   task.setIsTransition(isTransition);
-  task.setOnTransitionStart(onTransitionStart);
   task.setOnTransitionEnd(onTransitionEnd);
   task.setCreateLocation(createLoc || createRootLoc);
 
@@ -407,7 +383,6 @@ export type ScheduleCallbackOptions = {
   forceAsync?: boolean;
   isTransition?: boolean;
   createLoc?: () => string;
-  onTransitionStart?: Callback;
   onTransitionEnd?: Callback;
 };
 

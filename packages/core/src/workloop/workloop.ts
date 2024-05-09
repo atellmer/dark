@@ -649,8 +649,7 @@ function createUpdate(rootId: number, hook: Hook) {
     const isEvent = $scope.getIsEventZone();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
-    const onTransitionStart = $scope.getOnTransitionStart();
-    const onTransitionEnd = $scope.getOnTransitionEnd();
+    const onTransitionEnd = isTransition ? $scope.getOnTransitionEnd() : null;
     const callback = createCallback({
       rootId,
       hook,
@@ -663,7 +662,6 @@ function createUpdate(rootId: number, hook: Hook) {
       forceAsync,
       isTransition,
       createLoc,
-      onTransitionStart,
       onTransitionEnd,
     };
 
