@@ -408,16 +408,15 @@ If you want to include a third party plugin for NodeGui that you want to use in 
 
 ```tsx
 import { QAwesome } from 'some-awesome-nodegui-plugin';
-import { forwardRef, component } from '@dark-engine/core';
+import { type Ref, component } from '@dark-engine/core';
 import { factory, registerElement } from '@dark-engine/platform-desktop';
 
-export type AwesomeProps = {};
+export type AwesomeProps = { ref?: Ref<AwesomeRef> };
 export type AwesomeRef = QDarkAwesome;
 
 const qAwesome = factory('q:awesome'); // creates tag
-const Awesome = forwardRef<AwesomeProps, AwesomeRef>(
-  component((props, ref) => qAwesome({ ref, ...props }), { displayName: 'Awesome' }),
-);
+const Awesome = component<AwesomeProps>(props => qAwesome(props), { displayName: 'Awesome' });
+
 class QDarkAwesome extends QAwesome {} // here you can change something if you want 
 
 registerElement('q:awesome', () => QDarkAwesome); // registers in the system

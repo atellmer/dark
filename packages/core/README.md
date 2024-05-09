@@ -77,7 +77,6 @@ import {
   detectIsReadableAtom,
   detectIsServer,
   Fragment,
-  forwardRef,
   Guard,
   h,
   hot,
@@ -601,28 +600,30 @@ Also there is support function refs
 <input ref={ref => console.log(ref)} />;
 ```
 
-#### `forwardRef` and `useImperativeHandle`
+#### `useImperativeHandle`
 
 They are needed to create an object inside the reference to the component in order to access the component from outside:
 
 ```tsx
+type ChildProps = {
+  ref?: Ref<ChildRef>;
+}
+
 type ChildRef = {
   hello: () => void;
 };
 
-const Child = forwardRef<{}, ChildRef>(
-  component((_, ref) => {
-    useImperativeHandle(
-      ref,
-      () => ({
-        hello: () => console.log('hello!'),
-      }),
-      [],
-    );
+const Child = component<ChildProps>(({ ref }) => {
+  useImperativeHandle(
+    ref,
+    () => ({
+      hello: () => console.log('hello!'),
+    }),
+    [],
+  );
 
-    return <div>I'm Child</div>;
-  }),
-);
+  return <div>I'm Child</div>;
+});
 
 const App = component(() => {
   const childRef = useRef<ChildRef>(null);
