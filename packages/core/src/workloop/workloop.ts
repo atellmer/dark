@@ -364,7 +364,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
   if (isComponent) {
     try {
-      let result = component.type(component.props, component.ref);
+      let result = component.type(component.props);
 
       if (detectIsArray(result)) {
         !detectIsFragment(component) && (result = Fragment({ slot: result }));

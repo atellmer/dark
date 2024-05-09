@@ -1,28 +1,18 @@
 import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, Prettify } from '../shared';
 import { KEY_ATTR } from '../constants';
-import { type Ref } from '../ref';
 
 const $$inject = Symbol('inject');
-class Component<P extends StandardComponentProps = any, R = any> {
-  type: CreateElement<P>;
-  props: P;
-  ref?: Ref<R>;
-  token?: Symbol;
-  displayName?: string;
-  shouldUpdate?: ShouldUpdate<P>;
+class Component<P extends StandardComponentProps = {}> {
+  type: CreateElement<P> = null;
+  props: P = null;
+  token?: Symbol = null;
+  displayName?: string = null;
+  shouldUpdate?: ShouldUpdate<P> = null;
   children: Array<Instance> = [];
 
-  constructor(
-    type: CreateElement<P>,
-    token: Symbol,
-    props: P,
-    ref: Ref<R>,
-    shouldUpdate: ShouldUpdate<P>,
-    displayName: string,
-  ) {
+  constructor(type: CreateElement<P>, token: Symbol, props: P, shouldUpdate: ShouldUpdate<P>, displayName: string) {
     this.type = type;
     this.props = props;
-    ref && (this.ref = ref);
     token && (this.token = token);
     shouldUpdate && (this.shouldUpdate = shouldUpdate);
     displayName && (this.displayName = displayName);
@@ -35,7 +25,7 @@ function component<P extends object>(type: CreateElement<P>, options: ComponentO
   const factory: ComponentFactoryWithPossiblyInject<Props> = (props = {} as Props) => {
     const { token = $token, shouldUpdate } = factory[$$inject] || defaultInject;
 
-    return new Component(type, token, props, props.ref, shouldUpdate, displayName);
+    return new Component(type, token, props, shouldUpdate, displayName);
   };
 
   factory.displayName = displayName;

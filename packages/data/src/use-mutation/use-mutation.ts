@@ -13,6 +13,7 @@ import { useCache } from '../client';
 
 type UseMutationOptions<T, P> = {
   refetchQueries?: Array<string>;
+  skipSuspense?: boolean;
   onStart?: () => void;
   onSuccess?: (x: OnSuccessOptions<T, P>) => void;
   onError?: (err: any) => void;
@@ -25,7 +26,7 @@ function useMutation<M extends Mutation>(
 ) {
   type Params = Parameters<M>;
   type AwaitedResult = Awaited<ReturnType<M>>;
-  const { refetchQueries = [], onStart, onSuccess, onError } = options || {};
+  const { refetchQueries = [], skipSuspense, onStart, onSuccess, onError } = options || {};
   const scope = useMemo<Scope<ReturnType<M>>>(() => ({ promise: null }), []);
   const cache = useCache();
   const update = useUpdate();
@@ -66,9 +67,7 @@ function useMutation<M extends Mutation>(
   const mutate = (...args: Params) => {
     const promise = make(...args);
 
-    if (inSuspense) {
-      scope.promise = promise;
-    }
+    scope.promise = promise;
 
     update();
     return promise;
@@ -84,7 +83,7 @@ function useMutation<M extends Mutation>(
     const { promise } = scope;
 
     scope.promise = null;
-    throwThis(promise);
+    !skipSuspense && inSuspense && throwThis(promise);
   }
 
   return [mutate, result] as [(...args: Params) => ReturnType<M>, MutationResult<AwaitedResult>];

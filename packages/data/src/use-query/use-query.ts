@@ -5,7 +5,6 @@ import {
   detectIsFunction,
   detectIsPromise,
   detectIsEmpty,
-  detectIsObject,
   hasKeys,
   mapRecord,
   useEffect,
@@ -27,6 +26,7 @@ export type UseQueryOptions<T, V extends Variables> = {
   variables?: V;
   extractId?: (x: V) => TextBased;
   lazy?: boolean;
+  skipSuspense?: boolean;
   onStart?: () => void;
   onSuccess?: (x: OnSuccessOptions<T, V>) => void;
   onError?: (err: any) => void;
@@ -37,6 +37,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     variables = {} as V,
     extractId = $extractId,
     lazy = false,
+    skipSuspense = false,
     onStart,
     onSuccess,
     onError,
@@ -120,6 +121,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
 
     cache.__emit({ type: 'query', phase: 'promise', key, id: $cacheId, initiator, promise });
     scope.promise = promise;
+
     update();
 
     return promise;
@@ -171,11 +173,13 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     const { promise } = scope;
 
     scope.promise = null;
-    inSuspense && throwThis(promise);
+    !skipSuspense && inSuspense && throwThis(promise);
   }
 
   useEffect(() => {
-    if (isHydration || lazy || pending || state.isFetching || record?.valid) return;
+    const shouldSkip = isHydration || lazy || pending || state.isFetching || record?.valid;
+
+    if (shouldSkip) return;
     refetch();
   }, [...mapRecord(variables)]);
 
@@ -226,7 +230,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     isFetching: state.isFetching,
     data: state.data,
     error: state.error,
-    refetch: x => refetch(x as V),
+    refetch,
   };
 
   return result;
