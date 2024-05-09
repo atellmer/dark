@@ -1,15 +1,11 @@
 import { component } from '@dark-engine/core';
 
-import { Pending } from './pending';
-
 const About = component(
   () => {
     //console.log('ABOUT');
     return (
       <article>
-        <h1>
-          About <Pending />
-        </h1>
+        <h1>About</h1>
         <p>
           Esse vel provident fugit explicabo corrupti fugiat ducimus, hic eius ea repudiandae repellendus! Nisi
           aspernatur mollitia laudantium vitae non libero minus ipsum repellat. Libero eaque, saepe maxime laudantium,

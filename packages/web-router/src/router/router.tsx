@@ -8,7 +8,7 @@ import {
   useImperativeHandle,
   nextTick,
   detectIsString,
-  useTransition,
+  startTransition,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
@@ -21,7 +21,6 @@ import {
   type ActiveRouteContextValue,
   RouterHistoryContext,
   ActiveRouteContext,
-  PendingContext,
   useActiveRouteContext,
 } from '../context';
 
@@ -43,7 +42,6 @@ const Router = component<RouterProps>(
   ({ ref, url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, slot }) => {
     if (useActiveRouteContext()) illegal(`The parent active route's context detected!`);
     const sourceURL = fullURL || window.location.href;
-    const [isPending, startTransition] = useTransition();
     const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
     const history = useMemo(() => createRouterHistory(sourceURL), []);
     const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
@@ -56,10 +54,16 @@ const Router = component<RouterProps>(
 
     scope.location = location;
 
+    const set = (location: RouterLocation) => {
+      isConcurrent ? startTransition(() => setLocation(location)) : setLocation(location);
+    };
+
     useLayoutEffect(() => {
       if (!detectIsString(fullURL)) return;
       if (sourceURL !== scope.location.url) {
-        setLocation(createRouterLocation(sourceURL));
+        const location = createRouterLocation(sourceURL);
+
+        set(location);
       }
     }, [sourceURL]);
 
@@ -76,7 +80,7 @@ const Router = component<RouterProps>(
           const href = join(protocol, PROTOCOL_MARK, host, nextURL);
           const location = createRouterLocation(href);
 
-          isConcurrent ? startTransition(() => setLocation(location)) : setLocation(location);
+          set(location);
           isDifferent && !detectIsWildcard(nextRoute) && history.replace(nextURL);
         }
       });
@@ -105,9 +109,7 @@ const Router = component<RouterProps>(
 
     return (
       <RouterHistoryContext.Provider value={historyContext}>
-        <ActiveRouteContext.Provider value={routerContext}>
-          <PendingContext.Provider value={isPending}>{slot(content)}</PendingContext.Provider>
-        </ActiveRouteContext.Provider>
+        <ActiveRouteContext.Provider value={routerContext}>{slot(content)}</ActiveRouteContext.Provider>
       </RouterHistoryContext.Provider>
     );
   },

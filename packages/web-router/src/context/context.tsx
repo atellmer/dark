@@ -27,10 +27,6 @@ const CurrentPathContext = createContext<string>(null, { displayName: 'CurrentPa
 
 const useCurrentPathContext = () => useContext(CurrentPathContext);
 
-const PendingContext = createContext(false, { displayName: 'Pending' });
-
-const usePendingContext = () => useContext(PendingContext);
-
 function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
   if (!value) {
     illegal(`Illegal hook's invoke outside router!`);
@@ -41,10 +37,8 @@ export {
   ActiveRouteContext,
   useActiveRouteContext,
   RouterHistoryContext,
-  PendingContext,
   useRouterHistoryContext,
   CurrentPathContext,
   useCurrentPathContext,
-  usePendingContext,
   checkContextValue,
 };

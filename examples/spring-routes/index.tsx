@@ -4,7 +4,6 @@ import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { createGlobalStyle } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
-import { Pending } from './pending';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -57,21 +56,6 @@ const SlowContent = component(
   { displayName: 'SlowContent' },
 );
 
-type ConcurrentProps = {
-  slot: DarkElement;
-};
-
-const Concurrent = memo(
-  component<ConcurrentProps>(
-    ({ slot }) => {
-      console.log('---CONCURRENT---');
-      return slot;
-    },
-    { displayName: 'Concurrent' },
-  ),
-  () => scheduler.detectIsTransition(),
-);
-
 type ShellProps = {
   slot: DarkElement;
 };
@@ -79,17 +63,15 @@ type ShellProps = {
 const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
-      <PageTransition>
+      <>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
           <NavLink to='/contacts'>Contacts</NavLink>
-          {/* <Pending overlay /> */}
         </header>
-        <Suspense fallback={<Spinner />}>
-          <main>{slot}</main>
-        </Suspense>
-      </PageTransition>
+        <main>{slot}</main>
+        <SlowContent />
+      </>
     );
   },
   { displayName: 'Shell' },
