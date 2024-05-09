@@ -9,6 +9,8 @@ import {
   useLayoutEffect,
   detectIsArray,
   detectIsNumber,
+  startTransition,
+  scheduler,
 } from '@dark-engine/core';
 
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
@@ -31,7 +33,8 @@ function useTransition<T extends string, I = unknown>(
   getKey: KeyExtractor<I>,
   configurator: TransitionConfiguratorFn<T, I>,
 ): [TransitionFn<T, I>, TransitionApi<T>] {
-  const update = useUpdate();
+  const forceUpdate = useUpdate();
+  const update = () => (scope.isNonBlocking ? startTransition(forceUpdate) : forceUpdate());
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(
     () => ({
@@ -44,6 +47,7 @@ function useTransition<T extends string, I = unknown>(
       hasReplaces: false,
       fromApi: false,
       inChain: false,
+      isNonBlocking: false,
       pending: null,
       configurator,
     }),
@@ -51,6 +55,7 @@ function useTransition<T extends string, I = unknown>(
   );
 
   scope.configurator = configurator;
+  scope.isNonBlocking = scheduler.detectIsTransition();
 
   useMemo(() => {
     const make = (items: Array<I>) => {
@@ -71,6 +76,7 @@ function useTransition<T extends string, I = unknown>(
         ...animate({ action: Action.UPDATE, space: stabMap, state, scope }),
       );
 
+      state.setHasTransitions(transitions.length > 0);
       scope.items = items; // !
       scope.itemsMap = itemsMap;
       scope.fromApi = false;
@@ -139,6 +145,7 @@ function useTransition<T extends string, I = unknown>(
       state.event('series-start');
       scope.transitions.forEach(x => x.fn());
       scope.transitions = [];
+      state.setHasTransitions(false);
     };
 
     if (inChain) {
@@ -146,7 +153,7 @@ function useTransition<T extends string, I = unknown>(
     } else {
       start();
     }
-  });
+  }, [...scope.transitions]);
 
   useLayoutEffect(() => {
     const offs: Array<Callback> = [
@@ -430,6 +437,7 @@ type Scope<T extends string, I = unknown> = {
   hasReplaces: boolean;
   fromApi: boolean;
   inChain: boolean;
+  isNonBlocking: boolean;
   pending: Callback;
 };
 

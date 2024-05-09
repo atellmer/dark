@@ -13,6 +13,11 @@ class SharedState<T extends string = string> {
   private timeout = 0;
   private timerId: TimerId = null;
   private emitter: EventEmitter<AnimationEventName, AnimationEventValue<T>> = new EventEmitter();
+  private hasTransitions = false;
+
+  setHasTransitions(x: boolean) {
+    this.hasTransitions = x;
+  }
 
   getCtrls() {
     return this.ctrls;
@@ -106,7 +111,7 @@ class SharedState<T extends string = string> {
   completeSeries() {
     const isCompleted = !this.detectIsPlaying();
 
-    isCompleted && this.event('series-end');
+    isCompleted && !this.hasTransitions && this.event('series-end');
   }
 
   defer(fn: () => void) {

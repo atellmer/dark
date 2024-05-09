@@ -63,17 +63,15 @@ type ShellProps = {
 const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
-      <>
+      <PageTransition>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
           <NavLink to='/contacts'>Contacts</NavLink>
         </header>
-        <Suspense fallback={<Spinner />}>
-          <main>{slot}</main>
-        </Suspense>
+        <main>{slot}</main>
         <SlowContent />
-      </>
+      </PageTransition>
     );
   },
   { displayName: 'Shell' },

@@ -73,8 +73,9 @@ class Scheduler {
   }
 
   schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
-    options.createLoc = options.createLoc || createRootLoc;
-    this.put(createTask(callback, options));
+    const task = createTask(callback, options);
+
+    this.put(task);
     this.execute();
   }
 
