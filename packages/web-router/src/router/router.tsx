@@ -52,8 +52,6 @@ const Router = component<RouterProps>(
     const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
     const isConcurrent = mode === 'concurrent';
 
-    scope.location = location;
-
     const set = (location: RouterLocation) => {
       isConcurrent ? startTransition(() => setLocation(location)) : setLocation(location);
     };
@@ -63,6 +61,7 @@ const Router = component<RouterProps>(
       if (sourceURL !== scope.location.url) {
         const location = createRouterLocation(sourceURL);
 
+        scope.location = location; // !
         set(location);
       }
     }, [sourceURL]);
@@ -80,6 +79,7 @@ const Router = component<RouterProps>(
           const href = join(protocol, PROTOCOL_MARK, host, nextURL);
           const location = createRouterLocation(href);
 
+          scope.location = location; // !
           set(location);
           isDifferent && !detectIsWildcard(nextRoute) && history.replace(nextURL);
         }

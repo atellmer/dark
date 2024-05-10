@@ -52,6 +52,7 @@ import type {
 
 export type CSSProperties = Record<string, string | number>;
 
+const cache: Record<string, NativeElement> = {};
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
@@ -59,13 +60,16 @@ let trackUpdate: (nativeElement: NativeElement) => void = null;
 function createNativeElement(vNode: VirtualNode): NativeElement {
   switch (vNode.type) {
     case NodeType.TAG:
-      const tagNode = vNode as TagVirtualNode;
-      const name = tagNode.name;
-      const element = detectIsSvgElement(name)
+      const name = (vNode as TagVirtualNode).name;
+      const tag = cache[name]
+        ? cache[name].cloneNode(false)
+        : detectIsSvgElement(name)
         ? document.createElementNS('http://www.w3.org/2000/svg', name)
         : document.createElement(name);
 
-      return element as TagNativeElement;
+      !cache[name] && (cache[name] = tag.cloneNode(false) as NativeElement);
+
+      return tag as TagNativeElement;
     case NodeType.TEXT:
       return document.createTextNode((vNode as TextVirtualNode).value) as TextNativeElement;
     case NodeType.COMMENT:

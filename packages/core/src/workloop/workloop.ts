@@ -661,7 +661,6 @@ function createUpdate(rootId: number, hook: Hook) {
   const update = (tools?: () => Tools) => {
     const $scope = $$scope();
     if ($scope.getIsInsertionEffectsZone()) return;
-    const { owner } = hook;
     const hasTools = detectIsFunction(tools);
     const isTransition = $scope.getIsTransitionZone();
     const isBatch = $scope.getIsBatchZone();
@@ -686,7 +685,7 @@ function createUpdate(rootId: number, hook: Hook) {
 
     if (isBatch) {
       addBatch(
-        owner,
+        hook,
         () => scheduler.schedule(callback, options),
         () => hasTools && tools().setValue(),
       );

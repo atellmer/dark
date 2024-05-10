@@ -1,6 +1,6 @@
-import { $$scope } from '../scope';
-import { type Fiber } from '../fiber';
 import { type Callback } from '../shared';
+import { type Hook } from '../fiber';
+import { $$scope } from '../scope';
 
 function batch(callback: () => void) {
   const $scope = $$scope();
@@ -10,12 +10,13 @@ function batch(callback: () => void) {
   $scope.setIsBatchZone(false);
 }
 
-function addBatch(fiber: Fiber, callback: Callback, change: Callback) {
+function addBatch(hook: Hook, callback: Callback, change: Callback) {
   const $scope = $$scope();
 
   if ($scope.getIsTransitionZone()) {
     callback();
   } else {
+    const fiber = hook.owner;
     const batch = fiber.batch || { timer: null, changes: [] };
 
     fiber.batch = batch;

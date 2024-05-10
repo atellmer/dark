@@ -84,44 +84,30 @@ class Scheduler {
   }
 
   hasPrimaryTask() {
-    const { high, normal, low } = this.getQueues();
+    const { high, normal } = this.getQueues();
     const hasPrimary = high.length > 0 || normal.length > 0;
-    const hasAnotherTransition = low.length > 0;
-    const hasSameTransition = hasAnotherTransition && detectHasExact(this.task, low);
 
-    if (hasPrimary) {
-      const tasks = [...high, ...normal];
-      const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, tasks);
-
-      if (hasHostUpdate || hasChildUpdate) {
-        const hasExact = detectHasExact(this.task, tasks);
-
-        if (hasSameTransition || hasExact) {
-          this.complete(this.task);
-        } else {
-          this.defer(this.task);
-        }
-
-        this.task.markAsObsolete();
-      }
-
-      return true;
-    }
-
-    if (hasSameTransition) {
-      this.complete(this.task);
-      this.task.markAsObsolete();
-
-      return true;
-    }
-
-    return false;
+    return hasPrimary;
   }
 
   retain(fn: OnRestore) {
-    if (!this.task.getIsObsolete()) {
+    const { high, normal, low } = this.getQueues();
+    const priorityTasks = [...high, ...normal];
+    const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, priorityTasks);
+
+    if (hasHostUpdate || hasChildUpdate) {
+      const hasExact = detectHasExact(this.task, [...priorityTasks, ...low]);
+
+      if (hasExact) {
+        this.complete(this.task); // cancels the task
+      } else {
+        this.defer(this.task); // cancels and restarts the task from the beginning
+      }
+
+      this.task.markAsObsolete();
+    } else {
       this.task.setOnRestore(fn);
-      this.defer(this.task);
+      this.defer(this.task); // runs the task from the same place
     }
   }
 
