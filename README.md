@@ -157,6 +157,17 @@ A [small application](https://github.com/atellmer/dark/tree/master/examples/serv
 
 <img src="./assets/lighthouse.png">
 
+## Concurrent feature
+
+Dark can split large rendering tasks automatically.
+
+### Turn this...
+
+<img src="./assets/blocking.png">
+
+### into this
+
+<img src="./assets/non-blocking.png">
 
 # LICENSE
 

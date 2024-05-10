@@ -13,6 +13,7 @@ The isomorphic Dark router designed for rendering universal web applications tha
 - 🔢 Parameters
 - 📈 Hooks
 - 💽 SSR
+- 🔀 Concurrent transitions
 - ✂️ No deps
 - 📦 Small size (4 kB gzipped)
 
