@@ -153,7 +153,7 @@ function useTransition<T extends string, I = unknown>(
     } else {
       start();
     }
-  }, [...scope.transitions]);
+  }); // !
 
   useLayoutEffect(() => {
     const offs: Array<Callback> = [
