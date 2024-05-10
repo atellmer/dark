@@ -244,7 +244,7 @@ class Task {
   private isTransition = false;
   private isObsolete = false;
   private callback: TaskCallback = null;
-  private createLoc?: CreateLocation = null;
+  private createLoc?: CreateLoc = null;
   private onRestore?: OnRestore = null;
   private onTransitionEnd?: Callback = null;
   private static nextTaskId = 0;
@@ -294,7 +294,7 @@ class Task {
     this.onRestore = fn;
   }
 
-  setCreateLocation(fn: CreateLocation) {
+  setCreateLoc(fn: CreateLoc) {
     this.createLoc = fn;
   }
 
@@ -347,29 +347,23 @@ function detectHasExact(task: Task, tasks: Array<Task>) {
 }
 
 function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOptions, 'onCompleted'>) {
-  const {
-    priority = TaskPriority.NORMAL,
-    forceAsync = false,
-    isTransition = false,
-    createLoc,
-    onTransitionEnd,
-  } = options;
+  const { priority = TaskPriority.NORMAL, forceAsync = false, isTransition = false, loc, onTransitionEnd } = options;
   const task = new Task(callback, priority, forceAsync);
 
   task.setIsTransition(isTransition);
   task.setOnTransitionEnd(onTransitionEnd);
-  task.setCreateLocation(createLoc || createRootLoc);
+  task.setCreateLoc(loc || rootLoc);
 
   return task;
 }
 
-const createRootLoc: CreateLocation = () => '>';
+const rootLoc: CreateLoc = () => '>';
 
 type PortEvent = 'message';
 type PortListener = (value: unknown) => void;
 
 type TaskCallback = (fn: OnRestore) => void;
-type CreateLocation = () => string;
+type CreateLoc = () => string;
 
 export type OnRestoreOptions = {
   fiber: Fiber;
@@ -383,7 +377,7 @@ export type ScheduleCallbackOptions = {
   priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
-  createLoc?: () => string;
+  loc?: () => string;
   onTransitionEnd?: Callback;
 };
 

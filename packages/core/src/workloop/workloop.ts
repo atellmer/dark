@@ -28,7 +28,7 @@ import {
 } from '../utils';
 import { type Scope, getRootId, setRootId, $$scope, replaceScope } from '../scope';
 import { type Component, detectIsComponent } from '../component';
-import { type ElementKey, type Instance } from '../shared';
+import { type ElementKey, type Instance, type Callback } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
 import {
   Text,
@@ -53,6 +53,7 @@ import {
 } from '../walk';
 import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
+import { startTransition } from '../start-transition';
 import { unmountFiber } from '../unmount';
 import { addBatch } from '../batch';
 
@@ -311,9 +312,16 @@ function setup(fiber: Fiber, alt: Fiber) {
     fiber.tag !== CREATE_EFFECT_TAG &&
     detectAreSameInstanceTypes(alt.inst, inst) &&
     getElementKey(alt.inst) === getElementKey(inst);
-  isUpdate && !fiber.element && alt.element && (fiber.element = alt.element);
   fiber.tag = isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG;
-  !fiber.element && detectIsVirtualNode(fiber.inst) && (fiber.element = platform.createElement(fiber.inst));
+
+  if (!fiber.element) {
+    if (isUpdate && alt.element) {
+      fiber.element = alt.element;
+    } else if (detectIsVirtualNode(fiber.inst)) {
+      fiber.element = platform.createElement(fiber.inst);
+    }
+  }
+
   fiber.element && fiber.increment();
 }
 
@@ -343,17 +351,16 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;
 
-  if (deep) {
-    walk(fiber.child, ($fiber, skip) => {
-      $fiber.eidx += diff;
-      if ($fiber.element) return skip();
-    });
-  }
-
+  deep && walk(fiber.child, onWalkInShouldUpdate(diff));
   notifyParents(fiber, alt);
 
   return false;
 }
+
+const onWalkInShouldUpdate = (diff: number) => ($fiber: Fiber, skip: Callback) => {
+  $fiber.eidx += diff;
+  if ($fiber.element) return skip();
+};
 
 function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   let inst = fiber.inst;
@@ -375,18 +382,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
       if (detectIsPromise(err)) {
         const promise = err;
         const isSSR = detectIsSSR();
-        const reset = () => {
-          if (prev) {
-            fiber.hook.owner = null;
-            fiber.hook.idx = 0;
-            $scope.navToPrev();
-            $scope.setNextUnitOfWork(prev);
-            Fiber.setNextId(prev.id);
-          } else {
-            fiber.id = Fiber.incrementId();
-            fiber.cec = fiber.alt.cec;
-          }
-        };
+        const reset = createResetClosure(fiber, prev, $scope);
 
         if (!isSSR) {
           const suspense = resolveSuspense(fiber);
@@ -419,6 +415,19 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
   return inst;
 }
+
+const createResetClosure = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
+  if (prev) {
+    fiber.hook.owner = null;
+    fiber.hook.idx = 0;
+    $scope.navToPrev();
+    $scope.setNextUnitOfWork(prev);
+    Fiber.setNextId(prev.id);
+  } else {
+    fiber.id = Fiber.incrementId();
+    fiber.cec = fiber.alt.cec;
+  }
+};
 
 function extractKeys(alt: Fiber, children: Array<Instance>) {
   let nextFiber = alt;
@@ -492,6 +501,7 @@ function commit($scope: Scope) {
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
   const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
+  const isTransition = scheduler.detectIsTransition();
 
   // !
   for (const fiber of deletions) {
@@ -519,13 +529,20 @@ function commit($scope: Scope) {
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
-  awaiter.resolve(hook => createUpdate(rootId, hook)());
-  unmounts.length > 0 && setTimeout(() => unmounts.forEach(x => unmountFiber(x)));
+  awaiter.resolve(onResolve(rootId, isTransition));
+  unmounts.length > 0 && platform.raf(onUnmount(unmounts));
   flush($scope);
 }
 
+const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(x => unmountFiber(x));
+
+const onResolve = (rootId: number, isTransition: boolean) => (hook: Hook) => {
+  const update = createUpdate(rootId, hook);
+
+  isTransition ? startTransition(update) : update();
+};
+
 function flush($scope: Scope, fromFork = false) {
-  !fromFork && $scope.getEmitter().emit('prefinish');
   $scope.flush();
   !fromFork && $scope.getEmitter().emit('finish');
   $scope.runAfterCommit(); // !
@@ -534,56 +551,58 @@ function flush($scope: Scope, fromFork = false) {
 function sync(fiber: Fiber) {
   const diff = fiber.cec - fiber.alt.cec;
   if (diff === 0) return;
-  const parentFiber = getFiberWithElement(fiber.parent);
-  let isRight = false;
+  const parent = getFiberWithElement(fiber.parent);
+  const scope = { isRight: false };
 
   fiber.wip = false;
   fiber.increment(diff);
-
-  walk(parentFiber.child, ($fiber, skip) => {
-    if ($fiber === fiber) {
-      isRight = true;
-      return skip();
-    }
-
-    $fiber.element && skip();
-    isRight && ($fiber.eidx += diff);
-  });
+  walk(parent.child, onWalkInSync(diff, fiber, scope));
 }
 
+const onWalkInSync = (diff: number, fiber: Fiber, scope: { isRight: boolean }) => ($fiber: Fiber, skip: Callback) => {
+  if ($fiber === fiber) {
+    scope.isRight = true;
+    return skip();
+  }
+
+  $fiber.element && skip();
+  scope.isRight && ($fiber.eidx += diff);
+};
+
 function fork($scope: Scope) {
-  const $fork = $scope.copy();
+  const $fork = $scope.fork();
   const wip = $scope.getWorkInProgress();
-  const child = wip.child;
-  const fn: OnRestore = options => {
-    const { fiber: wip, setValue, resetValue } = options;
-    const $scope = $$scope();
-
-    detectIsFunction(setValue) && setValue();
-    detectIsFunction(resetValue) && $fork.addCancel(resetValue);
-
-    wip.alt = new Fiber().mutate(wip);
-    wip.tag = UPDATE_EFFECT_TAG;
-    wip.child = child;
-    wip.wip = true;
-    child && (child.parent = wip);
-
-    if (process.env.NODE_ENV !== 'production') {
-      wip.marker = '✌️';
-    }
-
-    $fork.setRoot($scope.getRoot());
-    $fork.setWorkInProgress(wip);
-    replaceScope($fork);
-  };
+  const onRestore = createOnRestore($fork, wip.child);
 
   wip.child = wip.alt.child;
   wip.alt = null;
   $scope.runInsertionEffects(); // !
   $scope.applyCancels();
   flush($scope, true);
-  scheduler.retain(fn);
+  scheduler.retain(onRestore);
 }
+
+const createOnRestore = ($fork: Scope, child: Fiber) => (options: OnRestoreOptions) => {
+  const { fiber: wip, setValue, resetValue } = options;
+  const $scope = $$scope();
+
+  detectIsFunction(setValue) && setValue();
+  detectIsFunction(resetValue) && $fork.addCancel(resetValue);
+
+  wip.alt = new Fiber().mutate(wip);
+  wip.tag = UPDATE_EFFECT_TAG;
+  wip.child = child;
+  wip.wip = true;
+  child && (child.parent = wip);
+
+  if (process.env.NODE_ENV !== 'production') {
+    wip.marker = '🔀';
+  }
+
+  $fork.setRoot($scope.getRoot());
+  $fork.setWorkInProgress(wip);
+  replaceScope($fork);
+};
 
 export type CreateCallbackOptions = {
   rootId: number;
@@ -656,23 +675,23 @@ function createUpdate(rootId: number, hook: Hook) {
       isTransition,
       tools: hasTools ? tools : undefined,
     });
-    const createLoc = () => createHookLoc(rootId, idx, hook);
-    const callbackOptions: ScheduleCallbackOptions = {
+    const loc = createLoc(rootId, idx, hook);
+    const options: ScheduleCallbackOptions = {
       priority,
       forceAsync,
       isTransition,
-      createLoc,
+      loc,
       onTransitionEnd,
     };
 
     if (isBatch) {
       addBatch(
         owner,
-        () => scheduler.schedule(callback, callbackOptions),
+        () => scheduler.schedule(callback, options),
         () => hasTools && tools().setValue(),
       );
     } else {
-      scheduler.schedule(callback, callbackOptions);
+      scheduler.schedule(callback, options);
     }
   };
 
@@ -680,6 +699,8 @@ function createUpdate(rootId: number, hook: Hook) {
 
   return update;
 }
+
+const createLoc = (rootId: number, idx: number, hook: Hook) => () => createHookLoc(rootId, idx, hook);
 
 export type Tools = {
   shouldUpdate: () => boolean;

@@ -95,6 +95,14 @@ const cm = (...args: Array<string>) => [...args].filter(Boolean).join(' ').trim(
 
 const illegal = (x: string) => $illegal(x, LIB);
 
+function keyBy<T = any>(
+  list: Array<T>,
+  fn: (o: T) => string | number,
+  value = false,
+): Record<string | number, T | boolean> {
+  return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
+}
+
 export {
   pipe,
   parseURL,
@@ -108,4 +116,5 @@ export {
   sort,
   cm,
   illegal,
+  keyBy,
 };

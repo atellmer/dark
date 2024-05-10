@@ -244,4 +244,6 @@ export type AttributeValue = string | number | boolean | object;
 
 export const INITIAL_ATTR_VALUE = '_INITIAL_ATTR_VALUE';
 
+export type PlainNativeElement = TextNativeElement | CommentNativeElement;
+
 export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement, createAttrSetter };

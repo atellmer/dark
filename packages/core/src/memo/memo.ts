@@ -11,9 +11,7 @@ import { type SlotProps, type Prettify } from '../shared';
 const $$memo = Symbol('memo');
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
-  const keys = Object.keys(nextProps);
-
-  for (const key of keys) {
+  for (const key in nextProps) {
     if (key !== 'slot' && nextProps[key] !== props[key]) return true;
   }
 

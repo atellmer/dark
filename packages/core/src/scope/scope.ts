@@ -81,7 +81,7 @@ class Scope {
     this.actions[id].stable[nextKey] = true;
   }
 
-  copy() {
+  fork() {
     const scope = new Scope();
 
     scope.root = null;

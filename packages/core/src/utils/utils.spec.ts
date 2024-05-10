@@ -16,7 +16,6 @@ import {
   falseFn,
   logError,
   flatten,
-  keyBy,
   detectAreDepsDifferent,
   nextTick,
   createIndexKey,
@@ -124,22 +123,6 @@ describe('@core/utils', () => {
     expect(flatten([])).toEqual([]);
     expect(flatten([1, 2, 3])).toEqual([1, 2, 3]);
     expect(flatten([1, 2, 3, [4, [5, [6, 7, [8]]]]])).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-  });
-
-  test('the keyBy function works correctly', () => {
-    const data = [
-      { a: 1, b: 2 },
-      { a: 10, b: 20 },
-    ];
-    expect(typeof keyBy).toBe('function');
-    expect(keyBy(data, x => x.a)).toEqual({
-      1: true,
-      10: true,
-    });
-    expect(keyBy(data, x => x.a, true)).toEqual({
-      1: data[0],
-      10: data[1],
-    });
   });
 
   test('the detectAreDepsDifferent function works correctly', () => {

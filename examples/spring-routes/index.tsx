@@ -69,7 +69,9 @@ const Shell = component<ShellProps>(
           <NavLink to='/about'>About</NavLink>
           <NavLink to='/contacts'>Contacts</NavLink>
         </header>
-        <main>{slot}</main>
+        <Suspense fallback={<Spinner />}>
+          <main>{slot}</main>
+        </Suspense>
         <SlowContent />
       </PageTransition>
     );

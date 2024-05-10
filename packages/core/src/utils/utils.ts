@@ -57,6 +57,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => an
   } else {
     return [transform(source)];
   }
+
   const list: Array<T> = [];
   const stack = [source[0]];
   let idx = 0;
@@ -79,14 +80,6 @@ function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => an
   }
 
   return list;
-}
-
-function keyBy<T = any>(
-  list: Array<T>,
-  fn: (o: T) => string | number,
-  value = false,
-): Record<string | number, T | boolean> {
-  return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
 }
 
 function detectAreDepsDifferent(prevDeps: Array<unknown>, nextDeps: Array<unknown>): boolean {
@@ -131,7 +124,6 @@ export {
   throwThis,
   illegal,
   flatten,
-  keyBy,
   detectAreDepsDifferent,
   nextTick,
   createIndexKey,

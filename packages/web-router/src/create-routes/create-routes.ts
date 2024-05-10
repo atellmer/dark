@@ -1,4 +1,4 @@
-import { type DarkElement, type ComponentFactory, type SlotProps, keyBy, detectIsString } from '@dark-engine/core';
+import { type DarkElement, type ComponentFactory, type SlotProps, detectIsString } from '@dark-engine/core';
 
 import {
   pipe,
@@ -10,6 +10,7 @@ import {
   sort,
   join,
   illegal,
+  keyBy,
 } from '../utils';
 import { SLASH_MARK, WILDCARD_MARK, ROOT_MARK } from '../constants';
 import { CurrentPathContext } from '../context';

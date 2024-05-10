@@ -5,13 +5,13 @@ import {
   type TextVirtualNode,
   type CommentVirtualNode,
   type PlainVirtualNode,
+  type Callback,
   type Ref,
   REF_ATTR,
   ATTR_BLACK_LIST,
   CREATE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,
   DELETE_EFFECT_TAG,
-  SKIP_EFFECT_TAG,
   MOVE_MASK,
   detectIsFunction,
   detectIsUndefined,
@@ -24,38 +24,28 @@ import {
   applyRef as $applyRef,
 } from '@dark-engine/core';
 
-import { type NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
+import {
+  type NativeElement,
+  type PlainNativeElement,
+  TagNativeElement,
+  TextNativeElement,
+  CommentNativeElement,
+} from '../native-element';
 import { detectIsEvent, getEventName } from '../events';
 import { type NSElement } from '../registry';
 import { HIDDEN_ATTR } from '../constants';
 
-type PlainNativeElement = TextNativeElement | CommentNativeElement;
-
 let moves: Array<() => void> = [];
 
-const createNativeElementMap = {
-  [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
-    const tagNode = vNode as TagVirtualNode;
-    const node = new TagNativeElement(tagNode.name);
-
-    return node;
-  },
-  [NodeType.TEXT]: (vNode: VirtualNode): TextNativeElement => {
-    const textNode = vNode as TextVirtualNode;
-    const node = new TextNativeElement(textNode.value);
-
-    return node;
-  },
-  [NodeType.COMMENT]: (vNode: VirtualNode): CommentNativeElement => {
-    const commentNode = vNode as CommentVirtualNode;
-    const node = new CommentNativeElement(commentNode.value);
-
-    return node;
-  },
-};
-
 function createNativeElement(vNode: VirtualNode): NativeElement {
-  return createNativeElementMap[vNode.type](vNode);
+  switch (vNode.type) {
+    case NodeType.TAG:
+      return new TagNativeElement((vNode as TagVirtualNode).name);
+    case NodeType.TEXT:
+      return new TextNativeElement((vNode as TextVirtualNode).value);
+    case NodeType.COMMENT:
+      return new CommentNativeElement((vNode as CommentVirtualNode).value);
+  }
 }
 
 function applyRef(ref: Ref<NSElement>, element: TagNativeElement) {
@@ -63,11 +53,9 @@ function applyRef(ref: Ref<NSElement>, element: TagNativeElement) {
 }
 
 function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
-  if (!vNode.attrs) return;
-  const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
-  for (const attrName of attrNames) {
+  for (const attrName in vNode.attrs) {
     const attrValue = vNode.attrs[attrName];
 
     if (attrName === REF_ATTR) {
@@ -83,13 +71,12 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
   }
 }
 
-function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNode: TagVirtualNode) {
-  if (!nextVNode.attrs) return;
-  const attrNames = Object.keys(nextVNode.attrs);
+function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
+  const attrNames = getAttributeNames(prevVNode, nextVNode);
   const tagElement = element as TagNativeElement;
 
   for (const attrName of attrNames) {
-    const prevAttrValue = vNode.attrs[attrName];
+    const prevAttrValue = prevVNode.attrs[attrName];
     const nextAttrValue = nextVNode.attrs[attrName];
 
     if (attrName === REF_ATTR) {
@@ -116,8 +103,8 @@ function updateAttributes(element: NativeElement, vNode: TagVirtualNode, nextVNo
 }
 
 function commitCreation(fiber: Fiber<NativeElement>) {
-  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parentFiber.element;
+  const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
+  const parentElement = parent.element;
   const children = parentElement.children;
 
   if (children.length === 0 || fiber.eidx > children.length - 1) {
@@ -131,24 +118,39 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
   const element = fiber.element;
-  const prevInstance = fiber.alt.inst as VirtualNode;
-  const nextInstance = fiber.inst as VirtualNode;
+  const prevInst = fiber.alt.inst as VirtualNode;
+  const nextInst = fiber.inst as VirtualNode;
 
-  detectIsPlainVirtualNode(nextInstance)
-    ? (prevInstance as PlainVirtualNode).value !== nextInstance.value &&
-      ((element as PlainNativeElement).value = nextInstance.value)
-    : updateAttributes(element, prevInstance as TagVirtualNode, nextInstance as TagVirtualNode);
+  detectIsPlainVirtualNode(nextInst)
+    ? (prevInst as PlainVirtualNode).value !== nextInst.value &&
+      ((element as PlainNativeElement).value = nextInst.value)
+    : updateAttributes(element, prevInst as TagVirtualNode, nextInst as TagVirtualNode);
 }
 
 function commitDeletion(fiber: Fiber<NativeElement>) {
-  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
+  const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  walk<NativeElement>(fiber, (fiber, skip) => {
-    if (fiber.element) {
-      removeNativeElement(fiber.element, parentFiber.element);
-      return skip();
-    }
-  });
+  walk<NativeElement>(fiber, onWalkInCommitDeletion(parent.element));
+}
+
+const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
+  if (fiber.element) {
+    !fiber.isPortal && removeNativeElement(fiber.element, parentElement);
+    return skip();
+  }
+};
+
+function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
+  const attrNames = new Set<string>();
+  const prevAttrs = Object.keys(prevVNode.attrs);
+  const nextAttrs = Object.keys(nextVNode.attrs);
+  const size = Math.max(prevAttrs.length, nextAttrs.length);
+
+  for (let i = 0; i < size; i++) {
+    attrNames.add(prevAttrs[i] || nextAttrs[i]);
+  }
+
+  return attrNames;
 }
 
 function move(fiber: Fiber<NativeElement>) {
@@ -173,22 +175,21 @@ function move(fiber: Fiber<NativeElement>) {
   moves.push(move);
 }
 
-const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
-  [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
-    if (!fiber.element) return;
-    commitCreation(fiber);
-  },
-  [UPDATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
-    fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-    if (!fiber.element) return;
-    commitUpdate(fiber);
-  },
-  [DELETE_EFFECT_TAG]: commitDeletion,
-  [SKIP_EFFECT_TAG]: () => {},
-};
-
 function commit(fiber: Fiber<NativeElement>) {
-  commitMap[fiber.tag](fiber);
+  switch (fiber.tag) {
+    case CREATE_EFFECT_TAG:
+      fiber.element && commitCreation(fiber);
+      break;
+    case UPDATE_EFFECT_TAG:
+      fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
+      fiber.element && commitUpdate(fiber);
+      break;
+    case DELETE_EFFECT_TAG:
+      commitDeletion(fiber);
+      break;
+    default:
+      break;
+  }
 }
 
 function finishCommit() {
@@ -198,9 +199,8 @@ function finishCommit() {
 
 const appendNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.appendChild(element);
 
-const insertNativeElement = (element: NativeElement, sibling: NativeElement, parent: TagNativeElement) => {
+const insertNativeElement = (element: NativeElement, sibling: NativeElement, parent: TagNativeElement) =>
   parent.insertBefore(element, sibling);
-};
 
 const removeNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.removeChild(element);
 
