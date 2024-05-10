@@ -1,6 +1,7 @@
 import {
   type DarkElement,
   type Ref,
+  atom,
   component,
   useMemo,
   useLayoutEffect,
@@ -9,12 +10,13 @@ import {
   nextTick,
   detectIsString,
   startTransition,
+  $$scope,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
 import { type RouterLocation, createRouterLocation } from '../location';
-import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
 import { normalizePath, join, parseURL, illegal } from '../utils';
+import { SLASH_MARK, PROTOCOL_MARK } from '../constants';
 import { createRouterHistory } from '../history';
 import {
   type RouterHistoryContextValue,
@@ -22,6 +24,7 @@ import {
   RouterHistoryContext,
   ActiveRouteContext,
   useActiveRouteContext,
+  PendingContext,
 } from '../context';
 
 export type RouterProps = {
@@ -42,18 +45,31 @@ const Router = component<RouterProps>(
   ({ ref, url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, slot }) => {
     if (useActiveRouteContext()) illegal(`The parent active route's context detected!`);
     const sourceURL = fullURL || window.location.href;
+    const $scope = $$scope();
     const [location, setLocation] = useState(() => createRouterLocation(sourceURL));
     const history = useMemo(() => createRouterHistory(sourceURL), []);
     const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
     const { protocol, host, pathname: url, search, hash } = location;
     const { route, slot: content, params } = useMemo(() => resolveRoute(url, routes), [url]);
-    const scope = useMemo(() => ({ location }), []);
+    const scope = useMemo(() => ({ location, pending$: atom(false) }), []);
     const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
     const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
     const isConcurrent = mode === 'concurrent';
+    const { pending$ } = scope;
 
     const set = (location: RouterLocation) => {
-      isConcurrent ? startTransition(() => setLocation(location)) : setLocation(location);
+      if (isConcurrent) {
+        startTransition(() => pending$.set(true));
+        $scope.setOnTransitionEnd(() => {
+          if (scope.location === location) {
+            startTransition(() => pending$.set(false));
+          }
+        });
+        startTransition(() => setLocation(location));
+        $scope.setOnTransitionEnd(null);
+      } else {
+        setLocation(location);
+      }
     };
 
     useLayoutEffect(() => {
@@ -109,7 +125,9 @@ const Router = component<RouterProps>(
 
     return (
       <RouterHistoryContext.Provider value={historyContext}>
-        <ActiveRouteContext.Provider value={routerContext}>{slot(content)}</ActiveRouteContext.Provider>
+        <ActiveRouteContext.Provider value={routerContext}>
+          <PendingContext.Provider value={pending$}>{slot(content)}</PendingContext.Provider>
+        </ActiveRouteContext.Provider>
       </RouterHistoryContext.Provider>
     );
   },

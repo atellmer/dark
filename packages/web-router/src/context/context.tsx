@@ -1,4 +1,4 @@
-import { createContext, useContext } from '@dark-engine/core';
+import { type WritableAtom, createContext, useContext } from '@dark-engine/core';
 
 import { type RouterLocation } from '../location';
 import { type RouterHistory } from '../history';
@@ -27,7 +27,11 @@ const CurrentPathContext = createContext<string>(null, { displayName: 'CurrentPa
 
 const useCurrentPathContext = () => useContext(CurrentPathContext);
 
-function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
+const PendingContext = createContext<WritableAtom<boolean>>(null, { displayName: 'Pending' });
+
+const usePendingContext = () => useContext(PendingContext);
+
+function checkContextValue(value: unknown) {
   if (!value) {
     illegal(`Illegal hook's invoke outside router!`);
   }
@@ -40,5 +44,7 @@ export {
   useRouterHistoryContext,
   CurrentPathContext,
   useCurrentPathContext,
+  PendingContext,
+  usePendingContext,
   checkContextValue,
 };

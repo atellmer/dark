@@ -4,6 +4,7 @@ import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { createGlobalStyle } from '@dark-engine/styled';
 
 import { PageTransition } from './page-transition';
+import { Pending } from './pending';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -68,6 +69,7 @@ const Shell = component<ShellProps>(
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
           <NavLink to='/contacts'>Contacts</NavLink>
+          <Pending />
         </header>
         <Suspense fallback={<Spinner />}>
           <main>{slot}</main>
