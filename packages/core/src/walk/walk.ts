@@ -14,6 +14,7 @@ import { type Instance, type ElementKey } from '../shared';
 import { type Component } from '../component';
 import { type Hook, Fiber } from '../fiber';
 import { createIndexKey } from '../utils';
+import { type Callback } from '../shared';
 import { detectIsMemo } from '../memo';
 import { type Scope } from '../scope';
 
@@ -38,14 +39,18 @@ function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () =
 function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>) => P): Array<P> {
   const elements: Array<P> = [];
 
-  walk<T>(fiber, (fiber, skip) => {
+  walk<T>(fiber, onWalkInCollectElements(elements, transform));
+
+  return elements;
+}
+
+function onWalkInCollectElements<T, P = T>(elements: Array<P>, transform: (fiber: Fiber<T>) => P) {
+  return (fiber: Fiber<T>, skip: Callback) => {
     if (fiber.element) {
       !fiber.isPortal && elements.push(transform(fiber));
       return skip();
     }
-  });
-
-  return elements;
+  };
 }
 
 function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
@@ -146,7 +151,7 @@ function tryOptMemoSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
   if (!canOptimize || !detectIsStableMemoTree(fiber, $scope)) return;
 
   hasMove && tryOptMov(fiber, alt, $scope);
-  hasRemove && tryOptRem(fiber, alt, $scope);
+  hasRemove && buildChildNodes(fiber, alt, $scope);
 }
 
 function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
@@ -159,10 +164,6 @@ function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
     fiber.mask |= MOVE_MASK;
     $scope.addCandidate(fiber);
   });
-}
-
-function tryOptRem(fiber: Fiber, alt: Fiber, $scope: Scope) {
-  buildChildNodes(fiber, alt, $scope);
 }
 
 function buildChildNodes(fiber: Fiber, alt: Fiber, $scope: Scope, onNode?: (fiber: Fiber, key: ElementKey) => void) {

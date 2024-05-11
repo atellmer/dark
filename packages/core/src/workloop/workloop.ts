@@ -31,14 +31,15 @@ import { type Component, detectIsComponent } from '../component';
 import { type ElementKey, type Instance, type Callback } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
 import {
+  type CanHasChildren,
   Text,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
   getElementKey,
   hasElementFlag,
-  hasChildrenProp,
   createReplacer,
   detectAreSameInstanceTypes,
+  hasChildrenProp,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import {
@@ -108,7 +109,8 @@ function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
   const wipFiber = $scope.getWorkInProgress();
   const isDeepWalking = $scope.getMountDeep();
   const isStream = $scope.getIsStreamZone();
-  const hasChildren = isDeepWalking && hasChildrenProp(fiber.inst) && fiber.inst.children.length > 0;
+  const children = (fiber.inst as CanHasChildren).children;
+  const hasChildren = isDeepWalking && children && children.length > 0;
 
   fiber.hook && (fiber.hook.idx = 0);
 
@@ -141,7 +143,8 @@ function mountChild(parent: Fiber, $scope: Scope) {
   const $hook = parent.child ? parent.child.hook || null : null; // from previous fiber after throwing promise
   const $inst = parent.inst;
   const idx = 0;
-  const inst = hasChildrenProp($inst) ? $inst.children[idx] : null;
+  const children = ($inst as CanHasChildren).children;
+  const inst = children ? children[idx] : null;
   const alt = getAlternate(parent, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
 
@@ -160,7 +163,8 @@ function mountSibling(left: Fiber, $scope: Scope) {
   const $hook = left.next ? left.next.hook || null : null; // from previous fiber after throwing promise
   const $inst = left.parent.inst;
   const idx = $scope.getMountIndex();
-  const inst = hasChildrenProp($inst) && $inst.children ? $inst.children[idx] : null;
+  const children = ($inst as CanHasChildren).children;
+  const inst = children ? children[idx] : null;
   const hasSibling = Boolean(inst);
 
   if (!hasSibling) {
@@ -251,15 +255,16 @@ function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) 
 function reconcile(fiber: Fiber, alt: Fiber, $scope: Scope) {
   const { id, inst } = fiber;
   const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
+  const nextChildren = (inst as CanHasChildren).children;
 
   if (!areSameTypes) {
     $scope.addDeletion(alt);
-  } else if (hasChildrenProp(alt.inst) && hasChildrenProp(inst) && alt.cc !== 0) {
-    const hasSameCount = alt.cc === inst.children.length;
+  } else if (hasChildrenProp(alt.inst) && nextChildren && alt.cc !== 0) {
+    const hasSameCount = alt.cc === nextChildren.length;
     const check = hasElementFlag(inst, Flag.SKIP_SCAN_OPT) ? !hasSameCount : true;
 
     if (check) {
-      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, inst.children);
+      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, nextChildren);
       const flush = nextKeys.length === 0;
       let size = Math.max(prevKeys.length, nextKeys.length);
       let p = 0;
@@ -408,13 +413,15 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   }
 
   if (hasChildrenProp(inst)) {
-    inst.children = flatten(inst.children, x => (detectIsTextBased(x) ? Text(x) : x || supportConditional(x)));
+    inst.children = flatten(inst.children, onTransform);
     isComponent && component.children.length === 0 && component.children.push(createReplacer());
     fiber.cc = inst.children.length;
   }
 
   return inst;
 }
+
+const onTransform = (x: Instance) => (detectIsTextBased(x) ? Text(x) : x || supportConditional(x));
 
 const createResetClosure = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
   if (prev) {
@@ -516,11 +523,13 @@ function commit($scope: Scope) {
   $scope.runInsertionEffects();
 
   for (const fiber of candidates) {
+    const item = fiber.inst as CanHasChildren;
+
     fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
     fiber.alt = null;
 
-    if (hasChildrenProp(fiber.inst) && (!fiber.hook || !fiber.hook.isUpdateHost)) {
-      fiber.inst.children = null;
+    if (item.children && (!fiber.hook || !fiber.hook.isUpdateHost)) {
+      item.children = null;
     }
   }
 
@@ -531,7 +540,7 @@ function commit($scope: Scope) {
   $scope.runAsyncEffects();
   awaiter.resolve(onResolve(rootId, isTransition));
   unmounts.length > 0 && platform.raf(onUnmount(unmounts));
-  cleanp($scope);
+  cleanup($scope);
 }
 
 const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(x => unmountFiber(x));
@@ -542,7 +551,7 @@ const onResolve = (rootId: number, isTransition: boolean) => (hook: Hook) => {
   isTransition ? startTransition(update) : update();
 };
 
-function cleanp($scope: Scope, fromFork = false) {
+function cleanup($scope: Scope, fromFork = false) {
   $scope.cleanup();
   !fromFork && $scope.getEmitter().emit('finish');
   $scope.runAfterCommit(); // !
@@ -586,7 +595,7 @@ function fork($scope: Scope) {
 
   $scope.runInsertionEffects(); // !
   $scope.applyCancels();
-  cleanp($scope, true);
+  cleanup($scope, true);
   scheduler.retain(onRestore);
 }
 
