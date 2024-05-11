@@ -1,7 +1,7 @@
-import { component, useState, startTransition } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { type DarkJSX, createRoot } from '@dark-engine/platform-browser';
 import { styled } from '@dark-engine/styled';
-import { SpringValue, Animated, useTransition, preset } from '@dark-engine/animations';
+import { SpringValue, Animated, useTransition } from '@dark-engine/animations';
 
 const next = (current: string) => {
   const map = {
@@ -53,31 +53,25 @@ const App = component(() => {
       <button
         onClick={() => {
           isNext = false;
-          //setItems([prev(items[0])]);
-          startTransition(() => setItems([prev(items[0])]));
+          setItems([prev(items[0])]);
         }}>
         prev
       </button>
       <button
         onClick={() => {
           isNext = true;
-          //setItems([next(items[0])]);
-          startTransition(() => setItems([next(items[0])]));
+          setItems([next(items[0])]);
         }}>
         next
       </button>
       {items[0]}
       <br />
       <br />
-      <SlowContent />
       <Container>
         {transition(({ spring, item }) => {
           return (
             <Animated spring={spring} fn={styleFn}>
-              <Item $color={colors[item]}>
-                {item}
-                {/* <SlowContent /> */}
-              </Item>
+              <Item $color={colors[item]}>{item}</Item>
             </Animated>
           );
         })}
@@ -85,36 +79,6 @@ const App = component(() => {
     </>
   );
 });
-
-const SlowItem = component(
-  () => {
-    const t = performance.now() + 15;
-
-    while (performance.now() < t) {
-      //
-    }
-
-    //return null;
-    return <div>{performance.now()}</div>;
-  },
-  { displayName: 'SlowItem' },
-);
-
-const SlowContent = component(
-  () => {
-    console.log('SLOW CONTENT');
-    return (
-      <>
-        {Array(100)
-          .fill(null)
-          .map(() => (
-            <SlowItem />
-          ))}
-      </>
-    );
-  },
-  { displayName: 'SlowContent' },
-);
 
 const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
   element.style.setProperty('opacity', `${value.opacity}`);

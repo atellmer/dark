@@ -117,7 +117,7 @@ export type SpringApi<T extends string = string> = {
   resume: () => void;
   reset: () => void;
   cancel: () => void;
-  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
+  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => boolean;
   isCanceled: () => void;
 };
 

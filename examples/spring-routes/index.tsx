@@ -74,7 +74,7 @@ const Shell = component<ShellProps>(
         <Suspense fallback={<Spinner />}>
           <main>{slot}</main>
         </Suspense>
-        {/* <SlowContent /> */}
+        <SlowContent />
       </PageTransition>
     );
   },
