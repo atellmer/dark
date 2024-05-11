@@ -1,6 +1,6 @@
 import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
-import { detectIsArray, detectIsFunction } from '../utils';
+import { detectIsArray, detectIsFunction, detectIsEmpty } from '../utils';
 import { REPLACER, KEY_ATTR } from '../constants';
 import { $$scope } from '../scope';
 
@@ -49,7 +49,9 @@ class CommentVirtualNode extends VirtualNode {
 function View(options: ViewOptions) {
   const factory: TagVirtualNodeFactory = () => {
     const { as: name, slot, _void = false, ...attrs } = options;
-    const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
+    const children = (
+      _void ? [] : detectIsArray(slot) ? slot : !detectIsEmpty(slot) ? [slot] : []
+    ) as TagVirtualNode['children'];
 
     return new TagVirtualNode(name, attrs, children);
   };

@@ -3,7 +3,7 @@ import type { VirtualNode, VirtualNodeFactory } from '../view';
 import { type Ref } from '../ref';
 import { FLAGS } from '../constants';
 
-export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | TextBased>;
+export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | TextBased | boolean>;
 
 export type Nullable = null | false | undefined;
 
