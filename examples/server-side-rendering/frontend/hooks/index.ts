@@ -7,13 +7,14 @@ const useApi = () => $useApi<Api>();
 function useProducts() {
   const api = useApi();
 
-  return useQuery(Key.FETCH_PRODUCTS, () => api.fetchProducts());
+  return useQuery(Key.FETCH_PRODUCTS, () => api.fetchProducts(), { strategy: 'hybrid' });
 }
 
 function useProduct(id: number) {
   const api = useApi();
 
   return useQuery(Key.FETCH_PRODUCT, ({ id }) => api.fetchProduct(id), {
+    strategy: 'hybrid',
     variables: { id },
     extractId: x => x.id,
   });
@@ -23,6 +24,7 @@ function useAddProductMutation() {
   const api = useApi();
 
   return useMutation(Key.ADD_PRODUCT, api.addProduct, {
+    strategy: 'state-only',
     onSuccess: ({ cache, data: product }) => {
       const record = cache.read<Array<ProductBrief>>(Key.FETCH_PRODUCTS);
 
@@ -40,6 +42,7 @@ function useChangeProductMutation() {
   const api = useApi();
 
   return useMutation(Key.CHANGE_PRODUCT, api.changeProduct, {
+    strategy: 'state-only',
     onSuccess: ({ cache, data: product }) => {
       const record = cache.read<Array<ProductBrief>>(Key.FETCH_PRODUCTS);
 
@@ -59,6 +62,7 @@ function useRemoveProductMutation() {
   const api = useApi();
 
   return useMutation(Key.REMOVE_PRODUCT, api.removeProduct, {
+    strategy: 'state-only',
     onSuccess: ({ cache, args: [id] }) => {
       const record = cache.read<Array<ProductBrief>>(Key.FETCH_PRODUCTS);
 
