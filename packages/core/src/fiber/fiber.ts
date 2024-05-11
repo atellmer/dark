@@ -24,9 +24,9 @@ class Fiber<N = NativeElement> {
   atoms: Map<Atom, Callback> = null;
   isPortal = false; // portal host
   wip = false; // work in progress fiber
-  marker: string; // for dev
-  batch: Batch;
-  catch: (error: Error) => void;
+  marker: string = null; // for dev
+  batch: Batch = null;
+  catch: (error: Error) => void = null;
 
   constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
     this.id = Fiber.incrementId();

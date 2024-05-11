@@ -1,4 +1,4 @@
-import { type DarkElement, component, useMemo, useRef } from '@dark-engine/core';
+import { type DarkElement, component, useMemo } from '@dark-engine/core';
 import { useLocation } from '@dark-engine/web-router';
 import { styled } from '@dark-engine/styled';
 import { type SpringValue, Animated, useTransition } from '@dark-engine/animations';
@@ -12,7 +12,6 @@ const PageTransition = component<PageTransitionProps>(
     const { pathname } = useLocation();
     const scope = useMemo(() => ({ pathname, slots: {} }), []);
     const items = useMemo(() => [pathname], [pathname]);
-    const rootRef = useRef<HTMLDivElement>();
     const [transition] = useTransition(
       items,
       x => x,
@@ -20,24 +19,20 @@ const PageTransition = component<PageTransitionProps>(
         from: { y: 150, opacity: 0, scale: 1.4 },
         enter: { y: 0, opacity: 0, scale: 1 },
         leave: { y: 0, opacity: 0.5, scale: 0.7 },
-        config: () => ({ tension: 45, friction: 28, mass: 5 }),
+        config: () => ({ tension: 400, friction: 100, mass: 5 }),
       }),
     );
 
     scope.pathname = pathname;
     scope.slots[pathname] = slot;
 
-    return (
-      <div ref={rootRef}>
-        {transition(({ spring, item }) => {
-          return (
-            <Animated spring={spring} fn={styleFn}>
-              <Item>{scope.slots[item]}</Item>
-            </Animated>
-          );
-        })}
-      </div>
-    );
+    return transition(({ spring, item }) => {
+      return (
+        <Animated spring={spring} fn={styleFn}>
+          <Item>{scope.slots[item]}</Item>
+        </Animated>
+      );
+    });
   },
   { displayName: 'PageTransition' },
 );
@@ -62,6 +57,7 @@ const Item = styled.div`
     height: 100%;
     background-color: rgba(0, 0, 0, var(--opacity));
     pointer-events: none;
+    will-change: background-color;
   }
 `;
 

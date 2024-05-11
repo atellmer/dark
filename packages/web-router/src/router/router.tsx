@@ -32,7 +32,7 @@ export type RouterProps = {
   routes: Routes;
   url?: string; // for server-side rendering
   baseURL?: string;
-  mode?: 'concurrent'; // experimental
+  mode?: 'sync' | 'concurrent'; // experimental
   slot: (slot: DarkElement) => DarkElement;
 };
 

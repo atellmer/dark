@@ -74,7 +74,7 @@ const Shell = component<ShellProps>(
         <Suspense fallback={<Spinner />}>
           <main>{slot}</main>
         </Suspense>
-        <SlowContent />
+        {/* <SlowContent /> */}
       </PageTransition>
     );
   },
@@ -112,7 +112,7 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: arial;
-    background-color: #fff;
+    background-color: #303F9F;
     overflow-y: scroll;
     overflow-x: hidden;
   }

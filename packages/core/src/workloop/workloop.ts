@@ -177,7 +177,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   fiber.hook = $hook || fiber.hook;
   fiber.parent = left.parent;
   left.next = fiber;
-  fiber.eidx = left.eidx + (left.element ? 1 : left.cec);
+  fiber.eidx = left.eidx + (left.element ? (left.isPortal ? 0 : 1) : left.cec);
 
   share(fiber, left, inst, $scope);
 
@@ -322,7 +322,7 @@ function setup(fiber: Fiber, alt: Fiber) {
     }
   }
 
-  fiber.element && fiber.increment();
+  fiber.element && !fiber.isPortal && fiber.increment();
 }
 
 function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
@@ -531,7 +531,7 @@ function commit($scope: Scope) {
   $scope.runAsyncEffects();
   awaiter.resolve(onResolve(rootId, isTransition));
   unmounts.length > 0 && platform.raf(onUnmount(unmounts));
-  flush($scope);
+  cleanp($scope);
 }
 
 const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(x => unmountFiber(x));
@@ -542,8 +542,8 @@ const onResolve = (rootId: number, isTransition: boolean) => (hook: Hook) => {
   isTransition ? startTransition(update) : update();
 };
 
-function flush($scope: Scope, fromFork = false) {
-  $scope.flush();
+function cleanp($scope: Scope, fromFork = false) {
+  $scope.cleanup();
   !fromFork && $scope.getEmitter().emit('finish');
   $scope.runAfterCommit(); // !
 }
@@ -573,12 +573,20 @@ function fork($scope: Scope) {
   const $fork = $scope.fork();
   const wip = $scope.getWorkInProgress();
   const onRestore = createOnRestore($fork, wip.child);
+  const { alt } = wip;
 
-  wip.child = wip.alt.child;
+  wip.child = alt.child;
+  wip.cc = alt.cc;
+  wip.cec = alt.cec;
+  wip.wip = false;
   wip.alt = null;
+
+  wip.hook.idx = 0;
+  wip.hook.owner = wip;
+
   $scope.runInsertionEffects(); // !
   $scope.applyCancels();
-  flush($scope, true);
+  cleanp($scope, true);
   scheduler.retain(onRestore);
 }
 
@@ -593,7 +601,7 @@ const createOnRestore = ($fork: Scope, child: Fiber) => (options: OnRestoreOptio
   wip.tag = UPDATE_EFFECT_TAG;
   wip.child = child;
   wip.wip = true;
-  child && (child.parent = wip);
+  child.parent = wip;
 
   if (process.env.NODE_ENV !== 'production') {
     wip.marker = '🔀';

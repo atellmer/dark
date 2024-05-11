@@ -370,7 +370,7 @@ class Scope {
     this.onTransitionEnd = fn;
   }
 
-  flush() {
+  cleanup() {
     this.keepRoot(); // !
     this.setWorkInProgress(null);
     this.setNextUnitOfWork(null);
