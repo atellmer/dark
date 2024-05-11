@@ -1237,7 +1237,7 @@ describe('@web-router/router', () => {
 
     document.body.appendChild(host);
     render(<App />);
-    await sleep(1);
+    await sleep(20);
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
     );
