@@ -17,7 +17,7 @@ This approach also eliminates the need to parse the request url on the server in
 - 🔄 Auto refetches
 - 🌟 Optimistic updates
 - 🥱 lazy queries support
-- 🧨 Working with Suspense
+- 🎀 Working with Suspense
 - 🦾 All platforms: server, browser, native, desktop
 - ✂️ No deps
 - 📦 Small size (3 kB gzipped)
@@ -240,13 +240,13 @@ client.subscribe(x => console.log(x)); //{ type: 'write', key: 'posts', record: 
 
 ## Fallback strategies
 
-Fallback strategies are options for hooks that allow you to activate fallback interface. Suspense is fun when you're working with skeletons, but sometimes you don't want to hide the interface while loading, but, for example, change its transparency. You can do this using strategies.
+Fallback strategies are options for hooks that allow you to activate fallback interface. `Suspense` is fun when you're working with skeletons, but sometimes you don't want to hide the interface while loading, but, for example, change its transparency. You can do this using strategies.
 
 | Name                 | Description                                                                                                              |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------|
-| `suspense-only`      | always uses the fallback of the nearest `Suspense` in the tree. (default)                                                |
-| `hybrid`             | uses `Suspense` fallback only during the mount phase, then uses its `isFetching` flag to show the loading UI.            |
-| `state-only`         | always uses its `isFetching` flag and never uses `Suspense` fallback.                                                    |
+| `suspense-only`      | Always uses the fallback of the nearest `Suspense` in the tree. (default)                                                |
+| `hybrid`             | Uses `Suspense` fallback only during the mount phase, then uses its `isFetching` flag to show the loading UI.            |
+| `state-only`         | Always uses its `isFetching` flag and never uses `Suspense` fallback.                                                    |
 
 
 ```tsx

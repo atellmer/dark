@@ -27,6 +27,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 🔄 Async rendering
 - 🔀 Concurrent rendering
 - 🥱 Lazy loading modules
+- 🎀 Suspense fallbacks
 - ☄️ Hot module replacement
 - 💅 Styled components
 - 💃🏼 Spring animations
