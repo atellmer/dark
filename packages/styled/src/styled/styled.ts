@@ -24,6 +24,7 @@ import {
   COMPONENTS_ATTR_VALUE,
   INTERLEAVE_COMPONENTS_ATTR_VALUE,
   BLANK_SPACE,
+  NULL_MARK,
 } from '../constants';
 import {
   detectIsBrowser,
@@ -197,9 +198,16 @@ function generate<P extends object>(options: GenerateOptions<P>): [string, strin
   const key = sheet.generate({ className: FUNCTION_MARK, props, fns });
   const item = cache.get(key);
   const className = item ? item[0] : genClassName(key);
-  const css = item ? item[1] : key.replaceAll(FUNCTION_MARK, className);
+  let css = '';
   let style = '';
   let keyframes = '';
+
+  if (item) {
+    css = item[1];
+  } else {
+    css = key.replaceAll(FUNCTION_MARK, className);
+    css = css.replaceAll(`${DOT_MARK}${NULL_MARK}`, `${DOT_MARK}${className}`);
+  }
 
   style += css;
   cache.set(key, [className, css]);

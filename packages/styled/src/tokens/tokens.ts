@@ -251,7 +251,7 @@ class StyleSheet<P extends object = {}> {
 
 type GenerateProps<P extends object> = {
   token: Token;
-  className?: string | null;
+  className?: string;
   props?: P;
   fns?: Array<Function>;
 };

@@ -27,3 +27,4 @@ export const SINGLE_LINE_COMMENT_END_MARK = '\n';
 export const MULTI_LINE_COMMENT_START_MARK = '/*';
 export const MULTI_LINE_COMMENT_END_MARK = '*/';
 export const URL_FN_MARK = 'url';
+export const NULL_MARK = 'null';

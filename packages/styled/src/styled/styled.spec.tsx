@@ -1,4 +1,5 @@
 import { type DarkElement, component } from '@dark-engine/core';
+import { type DarkJSX } from '@dark-engine/platform-browser';
 import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';
@@ -817,6 +818,43 @@ describe('@styled/styled', () => {
       style(
         '.dk-ifejde{display:grid;grid-template-columns:1fr;grid-template-rows:50px minmax(50px, 1fr) 50px;height:100vh;}.dk-ifejde_header{background-color:deepskyblue;border:1px solid #fff;}.dk-ifejde_body{background-color:limegreen;border:1px solid #fff;}.dk-ifejde_footer{background-color:salmon;border:1px solid #fff;}',
       ),
+    );
+  });
+
+  test(`can call a css function within another a css function's call correctly`, () => {
+    // https://github.com/atellmer/dark/issues/63
+    const size = (s = 100) => css`
+      width: ${s}px;
+      height: ${s}px;
+    `;
+    const hover = () => css`
+      transition: background-color 0.2s ease-in-out;
+
+      &:hover {
+        background-color: red;
+      }
+    `;
+    const color = (c = '#fff') => css`
+      background-color: ${c};
+      ${hover()}
+    `;
+    const Box = styled.div<{ $size: number; $color: string } & DarkJSX.Elements['div']>`
+      ${({ $size }) => size($size)}
+      ${({ $color }) => color($color)}
+    `;
+
+    render(
+      <>
+        <Box $size={100} $color='green' />
+        <Box $size={100} $color='yellow' />
+      </>,
+    );
+
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<div class="dk-cagiea dk-igjghg dk-bahfjd"></div><div class="dk-cagiea dk-igjghg dk-jbjabb"></div>"`,
+    );
+    expect(document.head.querySelector('style').innerHTML).toMatchInlineSnapshot(
+      `".dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
     );
   });
 });
