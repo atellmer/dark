@@ -95,17 +95,17 @@ describe('@web-router/use-pending', () => {
     const content = document.querySelector('#content');
     const link = document.querySelector('a[href="/second"]');
 
-    await sleep(20);
+    await sleep(1);
     expect(content.innerHTML).toMatchInlineSnapshot(`"<div>PENDING...</div><div>first</div>"`);
-    await sleep(50);
+    await sleep(100);
     expect(content.innerHTML).toMatchInlineSnapshot(`"<div></div><div>first</div>"`);
     expect(spy.mock.calls).toEqual([[false], [true], [true], [false]]);
     spy.mockClear();
 
     click(link);
-    await sleep(20);
+    await sleep(1);
     expect(content.innerHTML).toMatchInlineSnapshot(`"<div>PENDING...</div><div>first</div>"`);
-    await sleep(50);
+    await sleep(100);
     expect(content.innerHTML).toMatchInlineSnapshot(`"<div></div><div>second</div>"`);
     expect(spy.mock.calls).toEqual([[true], [true], [false]]);
     spy.mockClear();

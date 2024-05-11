@@ -1250,7 +1250,7 @@ describe('@web-router/router', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
     );
-    await sleep(20);
+    await sleep(100);
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first">first</a><a href="/second" class="active-link">second</a><a href="/third">third</a><div><div>second</div></div>"`,
     );
@@ -1259,7 +1259,7 @@ describe('@web-router/router', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first">first</a><a href="/second" class="active-link">second</a><a href="/third">third</a><div><div>second</div></div>"`,
     );
-    await sleep(20);
+    await sleep(100);
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first">first</a><a href="/second">second</a><a href="/third" class="active-link">third</a><div><div>third</div></div>"`,
     );
@@ -1268,7 +1268,7 @@ describe('@web-router/router', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first">first</a><a href="/second">second</a><a href="/third" class="active-link">third</a><div><div>third</div></div>"`,
     );
-    await sleep(20);
+    await sleep(100);
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
     );
