@@ -2,7 +2,6 @@ import { component } from '@dark-engine/core';
 
 const About = component(
   () => {
-    //console.log('ABOUT');
     return (
       <article>
         <h1>About</h1>

@@ -1,9 +1,8 @@
 import { type DarkElement, component, lazy, Suspense } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
-import { createGlobalStyle } from '@dark-engine/styled';
+import { createGlobalStyle, styled } from '@dark-engine/styled';
 
-import { PageTransition } from './page-transition';
 import { Pending } from './pending';
 
 const Home = lazy(() => import('./home'));
@@ -30,7 +29,7 @@ const routes: Routes = [
 
 const SlowItem = component(
   () => {
-    const t = performance.now() + 5;
+    const t = performance.now() + 3;
 
     while (performance.now() < t) {
       //
@@ -43,7 +42,7 @@ const SlowItem = component(
 
 const SlowContent = component(
   () => {
-    console.log('---SLOW---');
+    //console.log('---SLOW---');
     return (
       <>
         {Array(100)
@@ -64,7 +63,7 @@ type ShellProps = {
 const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
-      <PageTransition>
+      <>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
@@ -72,10 +71,10 @@ const Shell = component<ShellProps>(
           <Pending />
         </header>
         <Suspense fallback={<Spinner />}>
-          <main>{slot}</main>
+          <Content>{slot}</Content>
         </Suspense>
         <SlowContent />
-      </PageTransition>
+      </>
     );
   },
   { displayName: 'Shell' },
@@ -92,7 +91,7 @@ const App = component(() => {
   );
 });
 
-const Spinner = component(() => <div class='spinner'>LOADING...</div>, { displayName: 'Spinner' });
+const Spinner = component(() => <div>LOADING...</div>);
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -186,14 +185,13 @@ const GlobalStyle = createGlobalStyle`
     color: #ffeb3b;
   }
 
-  .spinner {
-    font-size: 60px;
-    padding: 20px;
-  }
-
   p {
     line-height: 2;
   }
+`;
+
+const Content = styled.main`
+  background-color: #fff;
 `;
 
 createRoot(document.getElementById('root')).render(<App />);
