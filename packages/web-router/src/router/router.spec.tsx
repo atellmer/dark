@@ -1,8 +1,9 @@
 import { type DarkElement, type MutableRef, component, useRef, Fragment } from '@dark-engine/core';
+import { createBrowserEnv, replacer, resetBrowserHistory, sleep, click } from '@test-utils';
 
-import { createBrowserEnv, replacer, resetBrowserHistory, sleep } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { type RouterRef, Router } from './router';
+import { NavLink } from '../nav-link';
 
 type AppProps = {
   url: string;
@@ -16,6 +17,7 @@ beforeEach(() => {
 
 afterEach(() => {
   resetBrowserHistory();
+  host.parentElement === document.body && document.body.removeChild(host);
 });
 
 describe('@web-router/router', () => {
@@ -1195,5 +1197,80 @@ describe('@web-router/router', () => {
 
     render(<App url='/en/contact/broken' />);
     expect(host.innerHTML).toMatchInlineSnapshot(`"<root><not-found>/</not-found></root>"`);
+  });
+
+  test('can render in concurrent mode correctly', async () => {
+    jest.useRealTimers();
+    const routes: Routes = [
+      {
+        path: 'first',
+        component: component(() => <div>first</div>),
+      },
+      {
+        path: 'second',
+        component: component(() => <div>second</div>),
+      },
+      {
+        path: 'third',
+        component: component(() => <div>third</div>),
+      },
+      {
+        path: '**',
+        redirectTo: 'first',
+      },
+    ];
+
+    const App = component(() => {
+      return (
+        <Router routes={routes} mode='concurrent'>
+          {slot => (
+            <>
+              <NavLink to='/first'>first</NavLink>
+              <NavLink to='/second'>second</NavLink>
+              <NavLink to='/third'>third</NavLink>
+              <div>{slot}</div>
+            </>
+          )}
+        </Router>
+      );
+    });
+
+    document.body.appendChild(host);
+    render(<App />);
+    await sleep(1);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
+    );
+
+    const linkToFirst = document.querySelector('a[href="/first"]');
+    const linkToSecond = document.querySelector('a[href="/second"]');
+    const linkToThird = document.querySelector('a[href="/third"]');
+
+    click(linkToSecond);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
+    );
+    await sleep(20);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first">first</a><a href="/second" class="active-link">second</a><a href="/third">third</a><div><div>second</div></div>"`,
+    );
+
+    click(linkToThird);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first">first</a><a href="/second" class="active-link">second</a><a href="/third">third</a><div><div>second</div></div>"`,
+    );
+    await sleep(20);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first">first</a><a href="/second">second</a><a href="/third" class="active-link">third</a><div><div>third</div></div>"`,
+    );
+
+    click(linkToFirst);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first">first</a><a href="/second">second</a><a href="/third" class="active-link">third</a><div><div>third</div></div>"`,
+    );
+    await sleep(20);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
+    );
   });
 });
