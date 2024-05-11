@@ -6,7 +6,6 @@ import { Keyframes, keyframes } from '../keyframes';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
   setupGlobal();
 });
@@ -49,7 +48,6 @@ describe('@styled/keyframes', () => {
     `;
 
     render(<Spinner />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-cafcji"></div>');
     expect(document.head.innerHTML).toBe(
@@ -77,7 +75,6 @@ describe('@styled/keyframes', () => {
     `;
 
     render(<Spinner />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bjeead"></div>');
     expect(document.head.innerHTML).toBe(
@@ -108,7 +105,6 @@ describe('@styled/keyframes', () => {
     `;
 
     render(<Spinner $to={90} />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-dhfaea dk-biihcd"></div>');
     expect(document.head.innerHTML).toBe(
@@ -118,7 +114,6 @@ describe('@styled/keyframes', () => {
     );
 
     render(<Spinner $to={360} />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-dhfaea dk-caiifh"></div>');
     expect(document.head.innerHTML).toBe(

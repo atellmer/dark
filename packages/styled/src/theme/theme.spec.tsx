@@ -22,7 +22,6 @@ type ThemeProps = {
 };
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
   setupGlobal();
 });
@@ -55,7 +54,6 @@ describe('@styled/theme', () => {
     });
 
     render(<App theme={{ backgroundColor: 'white', color: 'black' }} />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(
       '<div class="dk-igjghg dk-efcefj dk-baacag"></div><div class="dk-igjghg dk-efcefj dk-baacag"></div><div class="dk-igjghg dk-efcefj dk-baacag"></div>',
@@ -65,7 +63,6 @@ describe('@styled/theme', () => {
     );
 
     render(<App theme={{ backgroundColor: 'black', color: 'white' }} />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(
       '<div class="dk-igjghg dk-hhjdef dk-gjgeac"></div><div class="dk-igjghg dk-hhjdef dk-gjgeac"></div><div class="dk-igjghg dk-hhjdef dk-gjgeac"></div>',
@@ -98,7 +95,6 @@ describe('@styled/theme', () => {
     });
 
     render(<App theme={{ backgroundColor: 'white', color: 'black' }} />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(globalStyle('body{background-color:white;color:black;}'));
@@ -127,13 +123,11 @@ describe('@styled/theme', () => {
     });
 
     render(<App theme={{ backgroundColor: 'white', color: 'black' }} />);
-    jest.runAllTimers();
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({ backgroundColor: 'white', color: 'black' });
 
     render(<App theme={{ backgroundColor: 'black', color: 'white' }} />);
-    jest.runAllTimers();
 
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy).toHaveBeenLastCalledWith({ backgroundColor: 'black', color: 'white' });

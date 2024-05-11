@@ -14,7 +14,6 @@ import { ServerStyleSheet } from './sheet';
 let { renderToString, renderToStream } = createServerEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ renderToString, renderToStream } = createServerEnv());
   setupGlobal1();
   setupGlobal2();
@@ -63,7 +62,6 @@ describe('@styled/server', () => {
     const make = async () => {
       const sheet = new ServerStyleSheet();
       const content = await renderToString(sheet.collectStyles(<App />));
-      jest.runAllTimers();
       const tags = sheet.getStyleTags();
 
       sheet.seal();
@@ -132,7 +130,6 @@ describe('@styled/server', () => {
             { bootstrapScripts: ['./build.js'] },
           ),
         );
-        jest.runAllTimers();
 
         let data = '';
         stream.on('data', chunk => {
