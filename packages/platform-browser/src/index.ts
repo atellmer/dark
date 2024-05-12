@@ -7,6 +7,7 @@ export { createRoot } from './create-root';
 export { render, inject } from './render';
 export { createPortal } from './portal';
 export type { DarkJSX } from './jsx';
+export { Head } from './head';
 export * from './constants';
 export * from './factory';
 export * from './utils';

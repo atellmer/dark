@@ -86,8 +86,10 @@ const detectIsVoidElement = (name: string) => voidTagNames.has(name);
 
 const detectIsBrowser = () => !detectIsUndefined(globalThis.window);
 
-const illegal = (x: string) => $illegal(LIB, x);
+const illegal = (x: string) => $illegal(x, LIB);
 
 const removeContent = (element: TagNativeElement) => (element.innerHTML = '');
 
-export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent };
+const capitalize = (x: string) => x[0].toUpperCase() + x.slice(1);
+
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent, capitalize };

@@ -727,7 +727,7 @@ export declare namespace DarkJSX {
   } & HTMLProps<T>;
 
   type HTMLMetaProps<T> = {
-    charSet?: string;
+    charset?: string;
     httpequiv?: string;
     name?: string;
     media?: string;
