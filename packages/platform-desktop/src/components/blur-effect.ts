@@ -3,8 +3,8 @@ import { BlurHint } from '@nodegui/nodegui/dist/lib/QtWidgets/QGraphicsBlurEffec
 import {
   type ComponentFactory,
   type Component,
+  type Ref,
   component,
-  forwardRef,
   useRef,
   useMemo,
   useLayoutEffect,
@@ -13,6 +13,7 @@ import {
 } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps } from '../shared';
+import { illegal } from '../utils';
 
 // <BlurEffect blurRadius={10}>
 //   <Image src='https://placehold.co/600x400' />
@@ -20,6 +21,7 @@ import type { WidgetProps, WithSlotProps } from '../shared';
 
 export type BlurEffectProps = WithSlotProps<
   {
+    ref?: Ref<BlurEffectRef>;
     blurRadius: number;
     blurHint?: BlurHint;
     disabled?: boolean;
@@ -29,36 +31,34 @@ export type BlurEffectRef<T = QWidget> = {
   node: T;
 };
 
-const BlurEffect = forwardRef<BlurEffectProps, BlurEffectRef>(
-  component(
-    (props, ref) => {
-      const { blurRadius, blurHint = BlurHint.PerformanceHint, disabled = false, slot } = props;
-      const component = slot as Component;
-      const rootRef = useRef<QWidget>(null);
-      const gfx = useMemo(() => new QGraphicsBlurEffect(), []);
+const BlurEffect = component<BlurEffectProps>(
+  props => {
+    const { ref, blurRadius, blurHint = BlurHint.PerformanceHint, disabled = false, slot } = props;
+    const component = slot as Component<BlurEffectProps>;
+    const rootRef = useRef<QWidget>(null);
+    const gfx = useMemo(() => new QGraphicsBlurEffect(), []);
 
-      if (detectIsArray(slot)) {
-        throw new Error(`BlurEffect supports only one child node!`);
-      }
+    if (detectIsArray(slot)) {
+      illegal(`The BlurEffect supports only one child node!`);
+    }
 
-      useLayoutEffect(() => {
-        rootRef.current.setGraphicsEffect(gfx);
-      }, []);
+    useLayoutEffect(() => {
+      rootRef.current.setGraphicsEffect(gfx);
+    }, []);
 
-      useLayoutEffect(() => {
-        gfx.setBlurRadius(blurRadius);
-        gfx.setBlurHints(blurHint);
-        gfx.setEnabled(!disabled);
-      }, [blurRadius, blurHint, disabled]);
+    useLayoutEffect(() => {
+      gfx.setBlurRadius(blurRadius);
+      gfx.setBlurHints(blurHint);
+      gfx.setEnabled(!disabled);
+    }, [blurRadius, blurHint, disabled]);
 
-      useImperativeHandle(ref, () => ({ node: rootRef.current }));
+    useImperativeHandle(ref, () => ({ node: rootRef.current }));
 
-      component.props.ref = rootRef;
+    component.props.ref = ref;
 
-      return component;
-    },
-    { displayName: 'BlurEffect' },
-  ),
-) as ComponentFactory<BlurEffectProps, BlurEffectRef>;
+    return component;
+  },
+  { displayName: 'BlurEffect' },
+) as ComponentFactory<BlurEffectProps>;
 
 export { BlurEffect };

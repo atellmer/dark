@@ -6,32 +6,30 @@ import {
   $$inject,
   detectIsComponent,
 } from '../component';
-import type { SlotProps, RefProps } from '../shared';
+import { type SlotProps, type Prettify } from '../shared';
 
 const $$memo = Symbol('memo');
 
 const defaultShouldUpdate = (props: {}, nextProps: {}): boolean => {
-  const keys = Object.keys(nextProps);
-
-  for (const key of keys) {
+  for (const key in nextProps) {
     if (key !== 'slot' && nextProps[key] !== props[key]) return true;
   }
 
   return false;
 };
 
-function memo<P extends object, R = unknown>(
-  factory: ComponentFactory<P, R>,
+function memo<P extends object>(
+  factory: ComponentFactory<P>,
   shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
 ) {
-  type P1 = P & Omit<StandardComponentProps, 'ref'> & RefProps<R>;
+  type P1 = P & StandardComponentProps;
 
   factory[$$inject] = {
     token: $$memo,
     shouldUpdate,
   } as ComponentInject<P1>;
 
-  return factory as ComponentFactory<P1, R>;
+  return factory as ComponentFactory<Prettify<P1>>;
 }
 
 const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;

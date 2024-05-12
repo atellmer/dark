@@ -27,6 +27,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 🔄 Async rendering
 - 🔀 Concurrent rendering
 - 🥱 Lazy loading modules
+- 🎀 Suspense fallbacks
 - ☄️ Hot module replacement
 - 💅 Styled components
 - 💃🏼 Spring animations
@@ -153,10 +154,21 @@ Based on the benchmark results (on the my machine), Dark is approximately 24% sl
 
 ## Lighthouse
 
-A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
+A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `caching`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
 
 <img src="./assets/lighthouse.png">
 
+## Concurrent feature
+
+Dark can split large rendering tasks automatically.
+
+### Turn this...
+
+<img src="./assets/blocking.png">
+
+### into this
+
+<img src="./assets/non-blocking.png">
 
 # LICENSE
 

@@ -7,7 +7,6 @@ import { css } from '../styled';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
   setupGlobal();
 });
@@ -38,7 +37,6 @@ describe('@styled/global', () => {
     });
 
     render(<App />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -67,7 +65,6 @@ describe('@styled/global', () => {
     `;
 
     render(<GlobalStyle $backgroundColor='white' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -77,7 +74,6 @@ describe('@styled/global', () => {
     );
 
     render(<GlobalStyle $backgroundColor='black' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -87,7 +83,6 @@ describe('@styled/global', () => {
     );
 
     render(<GlobalStyle $backgroundColor='white' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -120,7 +115,6 @@ describe('@styled/global', () => {
     `;
 
     render(<GlobalStyle $backgroundColor='white' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -130,7 +124,6 @@ describe('@styled/global', () => {
     );
 
     render(<GlobalStyle $backgroundColor='black' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -140,7 +133,6 @@ describe('@styled/global', () => {
     );
 
     render(<GlobalStyle $backgroundColor='white' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -168,7 +160,6 @@ describe('@styled/global', () => {
     `;
 
     render(<GlobalStyle />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
@@ -178,7 +169,6 @@ describe('@styled/global', () => {
     );
 
     render(null);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(style(''));

@@ -1,5 +1,5 @@
 import { type QIcon, type QVariant, type QComboBoxSignals, type QSize, QComboBox } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qComboBox } from '../factory';
@@ -14,6 +14,7 @@ import { qComboBox } from '../factory';
 
 export type ComboBoxProps = WithStandardProps<
   {
+    ref?: Ref<ComboBoxRef>;
     items: Array<ComboBoxItem>;
     currentIndex: number;
     iconSize?: QSize;
@@ -30,9 +31,9 @@ export type ComboBoxItem = {
   userData?: QVariant;
 };
 
-const ComboBox = forwardRef<ComboBoxProps, ComboBoxRef>(
-  component((props, ref) => qComboBox({ ref, ...props }), { displayName: 'ComboBox' }),
-) as ComponentFactory<ComboBoxProps, ComboBoxRef>;
+const ComboBox = component<ComboBoxProps>(props => qComboBox(props), {
+  displayName: 'ComboBox',
+}) as ComponentFactory<ComboBoxProps>;
 
 class QDarkComboBox extends QComboBox {
   setItems(items: Array<ComboBoxItem>) {

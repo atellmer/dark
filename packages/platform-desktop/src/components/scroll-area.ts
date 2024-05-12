@@ -1,5 +1,5 @@
 import { type QScrollAreaSignals, type ScrollBarPolicy, QWidget, QScrollArea } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps, Container } from '../shared';
 import { qScrollArea } from '../factory';
@@ -11,6 +11,7 @@ import { throwUnsupported } from '../utils';
 
 export type ScrollAreaProps = WithStandardProps<
   {
+    ref?: Ref<ScrollAreaRef>;
     resizable?: boolean;
     horizontalScrollBarPolicy?: ScrollBarPolicy;
     verticalScrollBarPolicy?: ScrollBarPolicy;
@@ -19,9 +20,9 @@ export type ScrollAreaProps = WithStandardProps<
 export type ScrollAreaRef = QDarkScrollArea;
 export type ScrollAreaSignals = QScrollAreaSignals;
 
-const ScrollArea = forwardRef<ScrollAreaProps, ScrollAreaRef>(
-  component((props, ref) => qScrollArea({ ref, ...props }), { displayName: 'ScrollArea' }),
-) as ComponentFactory<ScrollAreaProps, ScrollAreaRef>;
+const ScrollArea = component<ScrollAreaProps>(props => qScrollArea(props), {
+  displayName: 'ScrollArea',
+}) as ComponentFactory<ScrollAreaProps>;
 
 class QDarkScrollArea extends QScrollArea implements Container {
   constructor() {

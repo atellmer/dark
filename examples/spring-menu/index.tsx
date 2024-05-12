@@ -28,8 +28,6 @@ const App = component(() => {
 
   useChain(isOpen ? [springApi, transitionApi] : [transitionApi, springApi], [0, isOpen ? 0.1 : 0.6]);
 
-  //console.log('render');
-
   return (
     <>
       <div class='wrapper'>
@@ -37,8 +35,8 @@ const App = component(() => {
           <div class='container' onClick={() => setIsOpen(x => !x)}>
             {transition(({ spring, item }) => {
               return (
-                <Animated spring={spring} fn={transitionStyleFn(item)}>
-                  <div class='item' />
+                <Animated spring={spring} fn={transitionStyleFn}>
+                  <div class='item' style={`background-image: ${item.css}`} />
                 </Animated>
               );
             })}
@@ -58,13 +56,12 @@ const springStyleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>)
   setProp('background-color', `rgb(255, ${green}, ${blue})`);
 };
 
-const transitionStyleFn = (item: DataItem) => (element: HTMLDivElement, value: SpringValue<TransitionProps>) => {
+const transitionStyleFn = (element: HTMLDivElement, value: SpringValue<TransitionProps>) => {
   const { opacity, scale } = value;
   const setProp = setPropOf(element);
 
   setProp('opacity', `${opacity}`);
   setProp('transform', `scale(${scale})`);
-  setProp('background-image', `${item.css}`);
 };
 
 const setPropOf = (element: HTMLDivElement) => (k: string, v: string) => element.style.setProperty(k, v);

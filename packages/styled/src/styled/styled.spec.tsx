@@ -1,4 +1,5 @@
 import { type DarkElement, component } from '@dark-engine/core';
+import { type DarkJSX } from '@dark-engine/platform-browser';
 import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';
@@ -6,7 +7,6 @@ import { setupGlobal, styled, css, detectIsStyled } from './styled';
 let { host, render } = createBrowserEnv();
 
 beforeEach(() => {
-  jest.useFakeTimers();
   ({ host, render } = createBrowserEnv());
   setupGlobal();
 });
@@ -34,7 +34,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Layout />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bccjif"></div>');
     expect(document.head.innerHTML).toBe(style('.dk-bccjif{background-color:aqua;color:black;}'));
@@ -51,7 +50,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Layout />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bcjdcc"></div>');
     expect(document.head.innerHTML).toBe(
@@ -76,7 +74,6 @@ describe('@styled/styled', () => {
         <span class='item'>content</span>
       </Layout>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-cbcbei"><span class="item">content</span></div>');
     expect(document.head.innerHTML).toBe(
@@ -103,7 +100,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bgdcea"></div>');
     expect(document.head.innerHTML).toBe(
@@ -136,7 +132,6 @@ describe('@styled/styled', () => {
         <span class='item'>content</span>
       </Layout>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bagcdh"><span class="item">content</span></div>');
     expect(document.head.innerHTML).toBe(
@@ -161,7 +156,6 @@ describe('@styled/styled', () => {
         <Button>Click me</Button>
       </Layout>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-gfaebb"><button class="dk-jbdicb">Click me</button></div>');
     expect(document.head.innerHTML).toBe(
@@ -188,7 +182,6 @@ describe('@styled/styled', () => {
         <Button>Click me</Button>
       </Layout>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-caagaf"><button class="dk-jbdicb">Click me</button></div>');
     expect(document.head.innerHTML).toBe(
@@ -209,7 +202,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box $backgroudColor='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb"></div>');
     expect(document.head.innerHTML).toBe(
@@ -217,7 +209,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $backgroudColor='blue' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bicagj"></div>');
     expect(document.head.innerHTML).toBe(
@@ -225,7 +216,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $backgroudColor='green' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bhbbdd"></div>');
     expect(document.head.innerHTML).toBe(
@@ -235,7 +225,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $backgroudColor='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb"></div>');
     expect(document.head.innerHTML).toBe(
@@ -257,7 +246,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box $color='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb dk-bfiehd"></div>');
     expect(document.head.innerHTML).toBe(
@@ -265,7 +253,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $color='#222' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-iiehgg dk-bfbcdd"></div>');
     expect(document.head.innerHTML).toBe(
@@ -275,7 +262,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $color='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb dk-bfiehd"></div>');
     expect(document.head.innerHTML).toBe(
@@ -297,7 +283,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box $color='red' $borderType='solid' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bfiehd"></div>');
     expect(document.head.innerHTML).toBe(
@@ -320,7 +305,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box $color='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-egbggh"></div>');
     expect(document.head.innerHTML).toBe(
@@ -328,7 +312,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $color='green ' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-eehgaf"></div>');
     expect(document.head.innerHTML).toBe(
@@ -338,7 +321,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $color='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-egbggh"></div>');
     expect(document.head.innerHTML).toBe(
@@ -365,7 +347,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box $color='red' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-egbggh"></div>');
     expect(document.head.innerHTML).toBe(
@@ -373,7 +354,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $color='orange' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-biaaih"></div>');
     expect(document.head.innerHTML).toBe(
@@ -402,7 +382,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box $backgroundColor='red' $borderColor='orange' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb dk-bgciah"></div>');
     expect(document.head.innerHTML).toBe(
@@ -412,7 +391,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $backgroundColor='yellow' $borderColor='orange' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-dhehda dk-bgciah"></div>');
     expect(document.head.innerHTML).toBe(
@@ -422,7 +400,6 @@ describe('@styled/styled', () => {
     );
 
     render(<Box $backgroundColor='orange' $borderColor='yellow' />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bgdgjb dk-gccdce"></div>');
     expect(document.head.innerHTML).toBe(
@@ -446,7 +423,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<SmallButton>Click</SmallButton>);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<button class="dk-caeefb">Click</button>');
     expect(document.head.innerHTML).toBe(
@@ -454,7 +430,6 @@ describe('@styled/styled', () => {
     );
 
     render(<BigButton>Click</BigButton>);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<button class="dk-hfgadd">Click</button>');
     expect(document.head.innerHTML).toBe(
@@ -471,7 +446,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Input />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<input type="text" class="dk-bjgffe">');
     expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
@@ -485,7 +459,6 @@ describe('@styled/styled', () => {
     const PasswordInput = styled(Input).attrs(p => ({ ...p, type: 'password' }))``;
 
     render(<PasswordInput />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<input type="password" class="dk-bjgffe">');
     expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
@@ -502,7 +475,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<GreenPasswordInput />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<input type="password" data-color="green" class="dk-ccfddd">');
     expect(document.head.innerHTML).toBe(
@@ -523,7 +495,6 @@ describe('@styled/styled', () => {
         Click
       </Button>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<a href="www.example.com" class="dk-bgehcj">Click</a>');
     expect(document.head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
@@ -542,7 +513,6 @@ describe('@styled/styled', () => {
     ));
 
     render(<Button as={Item}>Click</Button>);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bgehcj"><span>Click</span></div>');
     expect(document.head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
@@ -559,7 +529,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Button as={StyledItem}>Click</Button>);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-bgehcj dk-bfdfeb">Click</div>');
     expect(document.head.innerHTML).toBe(
@@ -578,7 +547,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Button as={BorderedButton}>Click</Button>);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<button class="dk-bgehcj dk-ihjajd">Click</button>');
     expect(document.head.innerHTML).toBe(
@@ -619,7 +587,6 @@ describe('@styled/styled', () => {
         <Button>Click</Button>
       </>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(
       '<a class="dk-bgehcj">Click</a><button class="dk-bgehcj dk-gbfaed">Click</button><button class="dk-bgehcj dk-cgddii">Click</button><button class="dk-bgehcj dk-bgcgba">Click</button><main class="dk-bgehcj dk-bfdfeb">Click</main><div class="dk-bgehcj">Click</div><button class="dk-bgehcj">Click</button>',
@@ -677,7 +644,6 @@ describe('@styled/styled', () => {
         <Button $backgroundColor='blue'>Click</Button>
       </>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(
       '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
@@ -740,7 +706,6 @@ describe('@styled/styled', () => {
         <Button $backgroundColor='blue'>Click</Button>
       </>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(
       '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj dk-cbbfgc">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
@@ -768,7 +733,6 @@ describe('@styled/styled', () => {
     `;
 
     render(<Box />);
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe('<div class="dk-ccaacd"></div>');
     expect(document.head.innerHTML).toBe(style('.dk-ccaacd{width:100px;height:100px;background-color:#11ed74;}'));
@@ -808,7 +772,6 @@ describe('@styled/styled', () => {
         )}
       </Root>,
     );
-    jest.runAllTimers();
 
     expect(host.innerHTML).toBe(
       '<main class="dk-ifejde"><div class="dk-ifejde_header"></div><div class="dk-ifejde_body"></div><div class="dk-ifejde_footer"></div></main>',
@@ -817,6 +780,43 @@ describe('@styled/styled', () => {
       style(
         '.dk-ifejde{display:grid;grid-template-columns:1fr;grid-template-rows:50px minmax(50px, 1fr) 50px;height:100vh;}.dk-ifejde_header{background-color:deepskyblue;border:1px solid #fff;}.dk-ifejde_body{background-color:limegreen;border:1px solid #fff;}.dk-ifejde_footer{background-color:salmon;border:1px solid #fff;}',
       ),
+    );
+  });
+
+  test(`can call a css function within another a css function's call correctly`, () => {
+    // https://github.com/atellmer/dark/issues/63
+    const size = (s = 100) => css`
+      width: ${s}px;
+      height: ${s}px;
+    `;
+    const hover = () => css`
+      transition: background-color 0.2s ease-in-out;
+
+      &:hover {
+        background-color: red;
+      }
+    `;
+    const color = (c = '#fff') => css`
+      background-color: ${c};
+      ${hover()}
+    `;
+    const Box = styled.div<{ $size: number; $color: string } & DarkJSX.Elements['div']>`
+      ${({ $size }) => size($size)}
+      ${({ $color }) => color($color)}
+    `;
+
+    render(
+      <>
+        <Box $size={100} $color='green' />
+        <Box $size={100} $color='yellow' />
+      </>,
+    );
+
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<div class="dk-cagiea dk-igjghg dk-bahfjd"></div><div class="dk-cagiea dk-igjghg dk-jbjabb"></div>"`,
+    );
+    expect(document.head.querySelector('style').innerHTML).toMatchInlineSnapshot(
+      `".dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
     );
   });
 });

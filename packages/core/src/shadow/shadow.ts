@@ -1,44 +1,37 @@
-import type { DarkElement } from '../shared';
-import { component } from '../component';
-import { SHADOW_MASK } from '../constants';
+import { __useCursor as useCursor, __useSSR as useSSR } from '../internal';
 import { useLayoutEffect } from '../use-layout-effect';
-import { $$scope } from '../scope';
-import { collectElements, getFiberWithElement } from '../walk';
-import { platform, detectIsServer } from '../platform';
+import { detectIsTagVirtualNode } from '../view';
+import type { DarkElement } from '../shared';
+import { collectElements } from '../walk';
+import { component } from '../component';
+import { platform } from '../platform';
 
 const $$shadow = Symbol('shadow');
 
 type ShadowProps = {
-  isInserted: boolean;
+  isOpen: boolean;
   slot: DarkElement;
 };
 
 const Shadow = component<ShadowProps>(
-  ({ isInserted, slot }) => {
-    const isEnabled = !detectIsServer() && !$$scope().getIsHydrateZone();
-    const fiber = $$scope().getCursorFiber();
-
-    if (isEnabled) {
-      if (isInserted) {
-        fiber.mask &= ~SHADOW_MASK;
-      } else {
-        !(fiber.mask & SHADOW_MASK) && (fiber.mask |= SHADOW_MASK);
-      }
-    }
+  ({ isOpen, slot }) => {
+    const { isSSR } = useSSR();
+    const cursor = useCursor();
 
     useLayoutEffect(() => {
-      if (!isEnabled || !isInserted) return;
-      const $fiber = getFiberWithElement(fiber);
-      const fibers = collectElements(fiber, x => x);
+      if (isSSR) return;
+      const fibers = collectElements(cursor, x => x);
 
       for (const fiber of fibers) {
-        platform.insertElement(fiber.element, fiber.eidx, $fiber.element);
+        if (detectIsTagVirtualNode(fiber.inst)) {
+          platform.toggle(fiber.element, isOpen);
+        }
       }
-    }, [isInserted]);
+    }, [isOpen]);
 
-    return slot || null;
+    return slot;
   },
-  { token: $$shadow },
+  { token: $$shadow, displayName: 'Shadow' },
 );
 
 export { Shadow };

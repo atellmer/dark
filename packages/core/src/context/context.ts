@@ -1,11 +1,12 @@
-import type { DarkElement, Subscribe, SubscriberWithValue, SlotProps, KeyProps } from '../shared';
+import { type DarkElement, type SlotProps, type KeyProps } from '../shared';
 import { type ComponentFactory, component } from '../component';
-import type { Fiber } from '../fiber';
-import { detectIsFunction } from '../utils';
-import { $$scope } from '../scope';
-import { useEffect } from '../use-effect';
-import { useMemo } from '../use-memo';
+import { detectIsFunction, detectIsEqual } from '../utils';
+import { useLayoutEffect } from '../use-layout-effect';
+import { __useCursor as useCursor } from '../internal';
+import { EventEmitter } from '../emitter';
 import { useUpdate } from '../use-update';
+import { type Fiber } from '../fiber';
+import { useMemo } from '../use-memo';
 
 type CreateContextOptions = {
   displayName?: string;
@@ -29,27 +30,20 @@ function createContext<T>(defaultValue: T, options?: CreateContextOptions): Cont
 function createProvider<T>(context: Context<T>, defaultValue: T, displayName: string) {
   return component<ContexProviderProps<T>>(
     ({ value = defaultValue, slot }) => {
-      const fiber = $$scope().getCursorFiber();
+      const cursor = useCursor();
 
-      if (!fiber.provider) {
-        const providerValue: ContextProviderValue<T> = {
-          value,
-          subscribers: new Set(),
-          subscribe: (subscriber: (value: T) => void) => {
-            providerValue.subscribers.add(subscriber);
+      if (!cursor.provider) {
+        const providerValue: ContextProviderValue<T> = { value, emitter: new EventEmitter() };
 
-            return () => providerValue.subscribers.delete(subscriber);
-          },
-        };
-
-        fiber.provider = new Map();
-        fiber.provider.set(context, providerValue);
+        cursor.provider = new Map();
+        cursor.provider.set(context, providerValue);
       }
 
-      const provider = fiber.provider.get(context);
+      const provider = cursor.provider.get(context);
 
-      useEffect(() => {
-        provider.subscribers.forEach(fn => fn(value));
+      // should be sync
+      useLayoutEffect(() => {
+        provider.emitter.emit('publish', value);
       }, [value]);
 
       provider.value = value;
@@ -77,23 +71,19 @@ function createConsumer<T>(context: Context<T>, displayName: string) {
 
 function useContext<T>(context: Context<T>): T {
   const { defaultValue } = context;
-  const fiber = $$scope().getCursorFiber();
-  const provider = useMemo(() => getProvider<T>(context, fiber), []);
-  const value = provider ? provider.value : defaultValue;
+  const cursor = useCursor();
+  const scope = useMemo(() => ({ value: null, provider: getProvider<T>(context, cursor) }), []);
   const update = useUpdate();
-  const scope = useMemo(() => ({ value }), []);
-  const hasProvider = Boolean(provider);
+  const { provider } = scope;
+  const value = provider ? provider.value : defaultValue;
 
-  useEffect(() => {
-    if (!hasProvider) return;
-    const unsubscribe = provider.subscribe((value: T) => {
-      if (!Object.is(scope.value, value)) {
-        update();
-      }
+  // !
+  useLayoutEffect(() => {
+    if (!provider) return;
+    return provider.emitter.on('publish', (value: T) => {
+      !detectIsEqual(scope.value, value) && update();
     });
-
-    return unsubscribe;
-  }, [hasProvider]);
+  }, []);
 
   scope.value = value;
 
@@ -101,14 +91,14 @@ function useContext<T>(context: Context<T>): T {
 }
 
 function getProvider<T>(context: Context<T>, fiber: Fiber): ContextProviderValue<T> {
-  let nextFiber = fiber;
+  let $fiber = fiber;
 
-  while (nextFiber) {
-    if (nextFiber.provider && nextFiber.provider.get(context)) {
-      return nextFiber.provider.get(context) as ContextProviderValue<T>;
+  while ($fiber) {
+    if ($fiber.provider && $fiber.provider.get(context)) {
+      return $fiber.provider.get(context) as ContextProviderValue<T>;
     }
 
-    nextFiber = nextFiber.parent;
+    $fiber = $fiber.parent;
   }
 
   return null;
@@ -128,8 +118,7 @@ export type Context<T = unknown> = {
 
 export type ContextProviderValue<T = unknown> = {
   value: T;
-  subscribers: Set<(value: T) => void>;
-  subscribe: Subscribe<SubscriberWithValue<T>>;
+  emitter: EventEmitter<'publish'>;
 };
 
 export { createContext, useContext };

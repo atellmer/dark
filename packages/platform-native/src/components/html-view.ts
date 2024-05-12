@@ -1,14 +1,16 @@
 import type { HtmlView as NSHtmlView } from '@nativescript/core';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { HtmlViewAttributes } from '../jsx';
 import { htmlView } from '../factory';
 
-export type HtmlViewProps = HtmlViewAttributes;
+export type HtmlViewProps = {
+  ref?: Ref<HtmlViewRef>;
+} & HtmlViewAttributes;
 export type HtmlViewRef = NSHtmlView;
 
-const HtmlView = forwardRef<HtmlViewProps, HtmlViewRef>(
-  component((props, ref) => htmlView({ ref, ...props }), { displayName: 'HtmlView' }),
-) as ComponentFactory<HtmlViewProps, HtmlViewRef>;
+const HtmlView = component<HtmlViewProps>(props => htmlView(props), {
+  displayName: 'HtmlView',
+}) as ComponentFactory<HtmlViewProps>;
 
 export { HtmlView };

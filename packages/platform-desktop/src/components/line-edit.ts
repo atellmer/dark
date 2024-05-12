@@ -1,5 +1,5 @@
 import { QLineEdit, EchoMode, type QLineEditSignals } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qLineEdit } from '../factory';
@@ -13,6 +13,7 @@ import { qLineEdit } from '../factory';
 
 export type LineEditProps = WithStandardProps<
   {
+    ref?: Ref<LineEditRef>;
     text?: string;
     placeholder?: string;
     inputMask?: string;
@@ -25,9 +26,9 @@ export type LineEditProps = WithStandardProps<
 export type LineEditRef = QDarkLineEdit;
 export type LineEditSignals = QLineEditSignals;
 
-const LineEdit = forwardRef<LineEditProps, LineEditRef>(
-  component((props, ref) => qLineEdit({ ref, ...props }), { displayName: 'LineEdit' }),
-) as ComponentFactory<LineEditProps, LineEditRef>;
+const LineEdit = component<LineEditProps>(props => qLineEdit(props), {
+  displayName: 'LineEdit',
+}) as ComponentFactory<LineEditProps>;
 
 class QDarkLineEdit extends QLineEdit {
   setPlaceholder(value: string) {

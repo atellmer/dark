@@ -1,7 +1,7 @@
 import { createBrowserEnv } from '@test-utils';
 
 import { component } from '../component';
-import { type MutableRef, forwardRef, useRef } from './ref';
+import { type MutableRef, useRef } from './ref';
 
 let { render } = createBrowserEnv();
 
@@ -30,7 +30,7 @@ describe('@core/ref', () => {
   test('can forward ref', () => {
     let ref: MutableRef<HTMLDivElement> = null;
 
-    const Child = forwardRef<{}, HTMLDivElement>(component((_, ref) => <div ref={ref} />));
+    const Child = component<{ ref?: MutableRef<HTMLDivElement> }>(({ ref }) => <div ref={ref} />);
 
     const App = component(() => {
       ref = useRef(null);

@@ -1,4 +1,6 @@
-import { STYLE_TAG, BLANK_SPACE } from '../constants';
+import { illegal as $illegal } from '@dark-engine/core';
+
+import { STYLE_TAG, BLANK_SPACE, LIB } from '../constants';
 
 const uniq = <T>(items: Array<T>, selector: (x: T) => unknown = x => x) => {
   const arr: Array<T> = [];
@@ -52,6 +54,8 @@ const mergeTemplates = (t1: TemplateStringsArray, t2: TemplateStringsArray) => {
 
 const detectIsBrowser = () => typeof globalThis.window !== 'undefined';
 
+const illegal = (x: string) => $illegal(x, LIB);
+
 export {
   uniq,
   mapProps,
@@ -64,4 +68,5 @@ export {
   insertBefore,
   mergeTemplates,
   detectIsBrowser,
+  illegal,
 };

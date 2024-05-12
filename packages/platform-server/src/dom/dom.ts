@@ -8,9 +8,6 @@ import {
   REF_ATTR,
   ATTR_BLACK_LIST,
   CREATE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
-  DELETE_EFFECT_TAG,
-  SKIP_EFFECT_TAG,
   detectIsFunction,
   detectIsUndefined,
   NodeType,
@@ -31,61 +28,32 @@ import { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElemen
 
 let chunkIds: Record<string, boolean> = {};
 
-const createNativeElementMap = {
-  [NodeType.TAG]: (vNode: VirtualNode) => {
-    const tagNode = vNode as TagVirtualNode;
-    const node = new TagNativeElement(tagNode.name);
-
-    return node;
-  },
-  [NodeType.TEXT]: (vNode: VirtualNode) => {
-    const textNode = vNode as TextVirtualNode;
-    const node = new TextNativeElement(textNode.value);
-
-    return node;
-  },
-  [NodeType.COMMENT]: (vNode: VirtualNode) => {
-    const commentNode = vNode as CommentVirtualNode;
-    const node = new CommentNativeElement(commentNode.value);
-
-    return node;
-  },
-};
-
 function createNativeElement(vNode: VirtualNode): NativeElement {
-  return createNativeElementMap[vNode.type](vNode);
+  switch (vNode.type) {
+    case NodeType.TAG:
+      return new TagNativeElement((vNode as TagVirtualNode).name);
+    case NodeType.TEXT:
+      return new TextNativeElement((vNode as TextVirtualNode).value);
+    case NodeType.COMMENT:
+      return new CommentNativeElement((vNode as CommentVirtualNode).value);
+  }
 }
 
 function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
-  if (!vNode.attrs) return;
-  const attrNames = Object.keys(vNode.attrs);
   const tagElement = element as TagNativeElement;
 
-  for (const attrName of attrNames) {
+  for (const attrName in vNode.attrs) {
     const attrValue = vNode.attrs[attrName];
 
     if (attrName === REF_ATTR || detectIsFunction(attrValue)) {
       continue;
     } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
-      const stop = patchProperties({
-        element: tagElement,
-        attrValue,
-        attrName,
-      });
-
-      !stop && tagElement.setAttribute(attrName, attrValue);
+      !patchAttributes(tagElement, attrName, attrValue) && tagElement.setAttribute(attrName, attrValue);
     }
   }
 }
 
-type PatchPropertiesOptions = {
-  element: TagNativeElement;
-  attrName: string;
-  attrValue: AttributeValue;
-};
-
-function patchProperties(options: PatchPropertiesOptions): boolean {
-  const { element, attrName, attrValue } = options;
+function patchAttributes(element: TagNativeElement, attrName: string, attrValue: AttributeValue): boolean {
   const fn = specialCasesMap[element.name];
   const stop = fn ? fn(element, attrName, attrValue) : false;
 
@@ -111,24 +79,27 @@ const specialCasesMap: Record<
 };
 
 function commitCreation(fiber: Fiber<NativeElement>) {
-  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parentFiber.element;
-  const vNode = parentFiber.inst as TagVirtualNode;
+  const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
+  const parentElement = parent.element;
+  const vNode = parent.inst as TagVirtualNode;
 
   !detectIsVoidElement(vNode.name) && appendNativeElement(fiber.element, parentElement);
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
-const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
-  [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => fiber.element && commitCreation(fiber),
-  [UPDATE_EFFECT_TAG]: () => {},
-  [DELETE_EFFECT_TAG]: () => {},
-  [SKIP_EFFECT_TAG]: () => {},
-};
-
 function commit(fiber: Fiber<NativeElement>) {
-  commitMap[fiber.tag](fiber);
+  switch (fiber.tag) {
+    case CREATE_EFFECT_TAG:
+      fiber.element && commitCreation(fiber);
+      break;
+    default:
+      break;
+  }
 }
+
+const finishCommit = () => {
+  chunkIds = {};
+};
 
 function chunk(fiber: Fiber<NativeElement>) {
   let chunk = '';
@@ -157,10 +128,6 @@ function chunk(fiber: Fiber<NativeElement>) {
   chunkIds[fiber.id] = true;
   $$scope().getEmitter().emit('chunk', chunk);
 }
-
-const finishCommit = () => {
-  chunkIds = {};
-};
 
 const appendNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.appendChild(element);
 

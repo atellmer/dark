@@ -1,5 +1,5 @@
 import { type Orientation, type TickPosition, type QSliderSignals, QSlider } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qSlider } from '../factory';
@@ -13,6 +13,7 @@ import { qSlider } from '../factory';
 
 export type SliderProps = WithStandardProps<
   {
+    ref?: Ref<SliderRef>;
     value: number;
     maximum?: number;
     minimum?: number;
@@ -24,9 +25,9 @@ export type SliderProps = WithStandardProps<
 export type SliderRef = QDarkSlider;
 export type SliderSignals = QSliderSignals;
 
-const Slider = forwardRef<SliderProps, SliderRef>(
-  component((props, ref) => qSlider({ ref, ...props }), { displayName: 'Slider' }),
-) as ComponentFactory<SliderProps, SliderRef>;
+const Slider = component<SliderProps>(props => qSlider(props), {
+  displayName: 'Slider',
+}) as ComponentFactory<SliderProps>;
 
 class QDarkSlider extends QSlider {}
 

@@ -1,14 +1,16 @@
 import type { WrapLayout as NSWrapLayout } from '@nativescript/core';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WrapLayoutAttributes } from '../jsx';
 import { wrapLayout } from '../factory';
 
-export type WrapLayoutProps = WrapLayoutAttributes;
+export type WrapLayoutProps = {
+  ref?: Ref<WrapLayoutRef>;
+} & WrapLayoutAttributes;
 export type WrapLayoutRef = NSWrapLayout;
 
-const WrapLayout = forwardRef<WrapLayoutProps, WrapLayoutRef>(
-  component((props, ref) => wrapLayout({ ref, ...props }), { displayName: 'WrapLayout' }),
-) as ComponentFactory<WrapLayoutProps, WrapLayoutRef>;
+const WrapLayout = component<WrapLayoutProps>(props => wrapLayout(props), {
+  displayName: 'WrapLayout',
+}) as ComponentFactory<WrapLayoutProps>;
 
 export { WrapLayout };

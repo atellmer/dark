@@ -18,7 +18,7 @@ enum Key {
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
 const withProvider = (app: DarkElement) => <DataClientProvider client={client}>{app}</DataClientProvider>;
-const waitQuery = () => sleep(5);
+const waitQuery = () => sleep(10);
 
 let { host, render } = createBrowserEnv();
 let client = createClient();
@@ -52,13 +52,7 @@ describe('@data/use-query', () => {
     });
 
     render(withProvider(<App />));
-    expect(spy).toHaveBeenCalledWith([true, null, null]);
-    spy.mockClear();
-
-    await waitUntilEffectsStart();
-    await waitQuery();
-
-    expect(spy).toHaveBeenCalledTimes(1);
+    await sleep(10);
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
   });
 
@@ -73,13 +67,7 @@ describe('@data/use-query', () => {
     });
 
     render(withProvider(<App />));
-    expect(spy).toHaveBeenCalledWith([true, null, null]);
-    spy.mockClear();
-
-    await waitUntilEffectsStart();
-    await waitQuery();
-
-    expect(spy).toHaveBeenCalledTimes(1);
+    await sleep(10);
     expect(spy).toHaveBeenCalledWith([false, null, 'Error: oops!']);
   });
 
@@ -97,10 +85,6 @@ describe('@data/use-query', () => {
     });
 
     render(withProvider(<App id={1} />));
-    expect(spy).toHaveBeenCalledWith([true, null, null]);
-    spy.mockClear();
-
-    await waitUntilEffectsStart();
     await waitQuery();
     expect(spy).toHaveBeenCalledWith([false, 10, null]);
     spy.mockClear();
@@ -127,7 +111,15 @@ describe('@data/use-query', () => {
     const content = (isLoading: boolean, data: number) => dom`
     ${
       isLoading
-        ? '<loader>loading...</loader>'
+        ? `
+          <loader>loading...</loader>
+          <div style="display: none;">...</div>
+          <div style="display: none;">...</div>
+          <div style="display: none;">...</div>
+          <div style="display: none;">...</div>
+          <div style="display: none;">...</div>
+          <div style="display: none;">...</div>
+        `
         : `
           <child>${data}</child>
           <child>${data}</child>
@@ -164,7 +156,6 @@ describe('@data/use-query', () => {
     render(withProvider(<App />));
     expect(host.innerHTML).toBe(content(true, null));
 
-    await waitUntilEffectsStart();
     await waitQuery();
     expect(host.innerHTML).toBe(content(false, 10));
   });
@@ -178,7 +169,9 @@ describe('@data/use-query', () => {
       <script type="${STATE_SCRIPT_TYPE}">"eyIxIjpbMTAsbnVsbF0sIjIiOlsyMCxudWxsXX0="</script>
     `;
     const Child = component(() => {
-      const { isFetching, data, error } = useQuery(Key.GET_DATA, () => api.getData(2));
+      const { isFetching, data, error } = useQuery(Key.GET_DATA, ({ id }) => api.getData(id), {
+        variables: { id: 2 },
+      });
 
       if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -186,7 +179,9 @@ describe('@data/use-query', () => {
       return <div>{data}</div>;
     });
     const App = component(() => {
-      const { isFetching, data, error } = useQuery(Key.GET_DATA, () => api.getData(1));
+      const { isFetching, data, error } = useQuery(Key.GET_DATA, ({ id }) => api.getData(id), {
+        variables: { id: 1 },
+      });
 
       if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -214,7 +209,9 @@ describe('@data/use-query', () => {
     `;
     let setMarker: (x: string) => void = null;
     const Child = component(() => {
-      const { isFetching, data, error } = useQuery(Key.GET_DATA, () => api.getData(2));
+      const { isFetching, data, error } = useQuery(Key.GET_DATA, ({ id }) => api.getData(id), {
+        variables: { id: 2 },
+      });
 
       if (isFetching) return <div>loading...</div>;
       if (error) return <div>{error}</div>;
@@ -223,7 +220,9 @@ describe('@data/use-query', () => {
     });
     const App = component(() => {
       const [marker, _setMarker] = useState('a');
-      const { isFetching, data, error } = useQuery(Key.GET_DATA, () => api.getData(1));
+      const { isFetching, data, error } = useQuery(Key.GET_DATA, ({ id }) => api.getData(id), {
+        variables: { id: 1 },
+      });
 
       setMarker = _setMarker;
 

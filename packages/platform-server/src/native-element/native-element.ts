@@ -9,6 +9,8 @@ import {
   detectIsVoidElement,
 } from '@dark-engine/platform-browser';
 
+import { illegal } from '../utils';
+
 abstract class NativeElement {
   type: NodeType;
   parentElement: TagNativeElement = null;
@@ -33,7 +35,7 @@ class TagNativeElement extends NativeElement {
 
   appendChild(element: NativeElement) {
     if (this.attrs[DANGER_HTML_CONTENT]) {
-      throw new Error(`[platform-server]: element with danger content can't have a children!`);
+      illegal(`The element with danger content can't have a children!`);
     }
 
     element.parentElement = this;

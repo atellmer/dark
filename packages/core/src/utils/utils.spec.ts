@@ -14,9 +14,8 @@ import {
   dummyFn,
   trueFn,
   falseFn,
-  error,
+  logError,
   flatten,
-  keyBy,
   detectAreDepsDifferent,
   nextTick,
   createIndexKey,
@@ -126,22 +125,6 @@ describe('@core/utils', () => {
     expect(flatten([1, 2, 3, [4, [5, [6, 7, [8]]]]])).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
-  test('the keyBy function works correctly', () => {
-    const data = [
-      { a: 1, b: 2 },
-      { a: 10, b: 20 },
-    ];
-    expect(typeof keyBy).toBe('function');
-    expect(keyBy(data, x => x.a)).toEqual({
-      1: true,
-      10: true,
-    });
-    expect(keyBy(data, x => x.a, true)).toEqual({
-      1: data[0],
-      10: data[1],
-    });
-  });
-
   test('the detectAreDepsDifferent function works correctly', () => {
     expect(typeof detectAreDepsDifferent).toBe('function');
     expect(detectAreDepsDifferent([], [])).toBe(false);
@@ -156,11 +139,11 @@ describe('@core/utils', () => {
     expect(getTime()).toBe(TIME);
   });
 
-  test('the error function works correctly', () => {
+  test('the logError function works correctly', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(jest.fn());
 
-    expect(typeof error).toBe('function');
-    error('Error!');
+    expect(typeof logError).toBe('function');
+    logError('Error!');
     expect(spy).toHaveBeenCalledWith('Error!');
     spy.mockRestore();
   });

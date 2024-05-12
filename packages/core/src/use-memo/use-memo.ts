@@ -1,8 +1,8 @@
 import { type VirtualNodeFactory, detectIsVirtualNodeFactory } from '../view';
 import { type Component, detectIsComponent, component } from '../component';
+import { __useCursor as useCursor } from '../internal';
 import { type Hook, type HookValue } from '../fiber';
 import { detectAreDepsDifferent } from '../utils';
-import { $$scope } from '../scope';
 import { memo } from '../memo';
 
 type GetMemoValue = () => Component | VirtualNodeFactory;
@@ -22,8 +22,8 @@ function detectIsElement<T>(value: T) {
 }
 
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
-  const fiber = $$scope().getCursorFiber();
-  const { hook } = fiber;
+  const cursor = useCursor();
+  const { hook } = cursor;
   const { idx, values } = hook as Hook<HookValue<T>>;
   const state =
     values[idx] ||

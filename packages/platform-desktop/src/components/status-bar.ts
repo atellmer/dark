@@ -1,5 +1,5 @@
 import { type QWidget, type QStatusBarSignals, QStatusBar } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qStatusBar } from '../factory';
@@ -13,15 +13,16 @@ import { detectIsDialog } from './dialog';
 
 export type StatusBarProps = WithSlotProps<
   {
+    ref?: Ref<StatusBarRef>;
     sizeGripEnabled?: boolean;
   } & WidgetProps
 >;
 export type StatusBarRef = QDarkStatusBar;
 export type StatusBarSignals = QStatusBarSignals;
 
-const StatusBar = forwardRef<StatusBarProps, StatusBarRef>(
-  component((props, ref) => qStatusBar({ ref, ...props }), { displayName: 'StatusBar' }),
-) as ComponentFactory<StatusBarProps, StatusBarRef>;
+const StatusBar = component<StatusBarProps>(props => qStatusBar(props), {
+  displayName: 'StatusBar',
+}) as ComponentFactory<StatusBarProps>;
 
 class QDarkStatusBar extends QStatusBar implements Container {
   constructor() {

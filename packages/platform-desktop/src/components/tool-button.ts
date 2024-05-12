@@ -8,7 +8,7 @@ import {
   type ArrowType,
   QToolButton,
 } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithPartialSlotProps, Container } from '../shared';
 import { qToolButton } from '../factory';
@@ -25,6 +25,7 @@ import { detectIsMenu } from './menu';
 
 export type ToolButtonProps = WithPartialSlotProps<
   {
+    ref?: Ref<ToolButtonRef>;
     text?: string;
     icon?: QIcon;
     iconSize?: QSize;
@@ -37,9 +38,9 @@ export type ToolButtonProps = WithPartialSlotProps<
 export type ToolButtonRef = QDarkToolButton;
 export type ToolButtonSignals = QToolButtonSignals;
 
-const ToolButton = forwardRef<ToolButtonProps, ToolButtonRef>(
-  component((props, ref) => qToolButton({ ref, ...props }), { displayName: 'ToolButton' }),
-) as ComponentFactory<ToolButtonProps, ToolButtonRef>;
+const ToolButton = component<ToolButtonProps>(props => qToolButton(props), {
+  displayName: 'ToolButton',
+}) as ComponentFactory<ToolButtonProps>;
 
 class QDarkToolButton extends QToolButton implements Container {
   detectIsContainer() {

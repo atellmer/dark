@@ -6,18 +6,17 @@ import {
   LAYOUT_EFFECT_HOST_MASK,
   ASYNC_EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
-  PORTAL_HOST_MASK,
   MOVE_MASK,
   HOOK_DELIMETER,
 } from '../constants';
-import { Fiber } from '../fiber';
-import { platform } from '../platform';
 import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
-import { type Scope } from '../scope';
-import { type Component } from '../component';
-import { detectIsMemo } from '../memo';
 import { type Instance, type ElementKey } from '../shared';
+import { type Component } from '../component';
+import { type Hook, Fiber } from '../fiber';
 import { createIndexKey } from '../utils';
+import { type Callback } from '../shared';
+import { detectIsMemo } from '../memo';
+import { type Scope } from '../scope';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
   let shouldDeep = true;
@@ -40,14 +39,18 @@ function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () =
 function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>) => P): Array<P> {
   const elements: Array<P> = [];
 
-  walk<T>(fiber, (fiber, skip) => {
-    if (fiber.element) {
-      !platform.detectIsPortal(fiber.inst) && elements.push(transform(fiber));
-      return skip();
-    }
-  });
+  walk<T>(fiber, onWalkInCollectElements(elements, transform));
 
   return elements;
+}
+
+function onWalkInCollectElements<T, P = T>(elements: Array<P>, transform: (fiber: Fiber<T>) => P) {
+  return (fiber: Fiber<T>, skip: Callback) => {
+    if (fiber.element) {
+      !fiber.isPortal && elements.push(transform(fiber));
+      return skip();
+    }
+  };
 }
 
 function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
@@ -72,7 +75,22 @@ function detectIsFiberAlive(fiber: Fiber) {
   return Boolean(fiber);
 }
 
-function createHookLocation(rootId: number, idx: number, fiber: Fiber) {
+function getSuspense(fiber: Fiber, isPending: boolean) {
+  let suspense = fiber;
+  while (suspense) {
+    if (suspense.hook && suspense.hook.isSuspense && (isPending ? suspense.hook.isPending : true)) return suspense;
+    suspense = suspense.parent;
+  }
+
+  return null;
+}
+
+function resolveSuspense(fiber: Fiber): Fiber {
+  return getSuspense(fiber, true) || getSuspense(fiber, false) || null;
+}
+
+function createHookLoc(rootId: number, idx: number, hook: Hook) {
+  const fiber = hook.owner;
   let $fiber = fiber;
   let loc = `${fiber.idx}${HOOK_DELIMETER}${idx}`;
 
@@ -133,7 +151,7 @@ function tryOptMemoSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
   if (!canOptimize || !detectIsStableMemoTree(fiber, $scope)) return;
 
   hasMove && tryOptMov(fiber, alt, $scope);
-  hasRemove && tryOptRem(fiber, alt, $scope);
+  hasRemove && buildChildNodes(fiber, alt, $scope);
 }
 
 function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
@@ -146,10 +164,6 @@ function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
     fiber.mask |= MOVE_MASK;
     $scope.addCandidate(fiber);
   });
-}
-
-function tryOptRem(fiber: Fiber, alt: Fiber, $scope: Scope) {
-  buildChildNodes(fiber, alt, $scope);
 }
 
 function buildChildNodes(fiber: Fiber, alt: Fiber, $scope: Scope, onNode?: (fiber: Fiber, key: ElementKey) => void) {
@@ -211,7 +225,6 @@ function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   alt.mask & LAYOUT_EFFECT_HOST_MASK && fiber.markHost(LAYOUT_EFFECT_HOST_MASK);
   alt.mask & ASYNC_EFFECT_HOST_MASK && fiber.markHost(ASYNC_EFFECT_HOST_MASK);
   alt.mask & ATOM_HOST_MASK && fiber.markHost(ATOM_HOST_MASK);
-  alt.mask & PORTAL_HOST_MASK && fiber.markHost(PORTAL_HOST_MASK);
 }
 
 export {
@@ -219,7 +232,8 @@ export {
   collectElements,
   getFiberWithElement,
   detectIsFiberAlive,
-  createHookLocation,
+  resolveSuspense,
+  createHookLoc,
   tryOptStaticSlot,
   tryOptMemoSlot,
   notifyParents,

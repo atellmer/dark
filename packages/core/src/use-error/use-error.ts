@@ -1,4 +1,4 @@
-import { $$scope } from '../scope';
+import { __useCursor as useCursor } from '../internal';
 import { useEffect } from '../use-effect';
 import { useUpdate } from '../use-update';
 import { useMemo } from '../use-memo';
@@ -8,11 +8,11 @@ type ErrorScope = {
 };
 
 function useError(): Error | null {
-  const fiber = $$scope().getCursorFiber();
+  const cursor = useCursor();
   const update = useUpdate();
   const scope: ErrorScope = useMemo(() => ({ error: null }), []);
 
-  fiber.catch = (error: Error) => {
+  cursor.catch = (error: Error) => {
     scope.error = error;
     update();
   };

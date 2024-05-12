@@ -1,5 +1,5 @@
 import { type QListWidgetSignals, QWidget, QListWidget } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { QDarkListItem } from './list-item';
@@ -11,13 +11,15 @@ import { qList } from '../factory';
 //   <ListItem text='Item 3' />
 // </List>
 
-export type ListProps = WithSlotProps<{} & WidgetProps>;
+export type ListProps = WithSlotProps<
+  {
+    ref?: Ref<ListRef>;
+  } & WidgetProps
+>;
 export type ListRef = QDarkList;
 export type ListSignals = QListWidgetSignals;
 
-const List = forwardRef<ListProps, ListRef>(
-  component((props, ref) => qList({ ref, ...props }), { displayName: 'List' }),
-) as ComponentFactory<ListProps, ListRef>;
+const List = component<ListProps>(props => qList(props), { displayName: 'List' }) as ComponentFactory<ListProps>;
 
 class QDarkList extends QListWidget implements Container {
   detectIsContainer() {

@@ -1,4 +1,4 @@
-import { type Callback, useMemo, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { type Callback, useMemo, useLayoutEffect } from '@dark-engine/core';
 
 import { type AnimationEventName, type AnimationEventHandler, SharedState, getSharedState } from '../state';
 import { type BaseItemConfig, type StartFn, Controller } from '../controller';
@@ -10,7 +10,7 @@ export type SpringItemConfig<T extends string> = BaseItemConfig<T>;
 function useSprings<T extends string>(
   count: number,
   configurator: SpringConfiguratorFn<T>,
-  deps?: Array<any>,
+  deps: Array<any> = [],
 ): [Array<Spring<T>>, SpringApi<T>] {
   const state = useMemo(() => getSharedState() || new SharedState(), []);
   const scope = useMemo<Scope<T>>(() => {
@@ -46,6 +46,7 @@ function useSprings<T extends string>(
 
   const api = useMemo<SpringApi<T>>(() => {
     return {
+      marker: 'spring-api',
       start: fn => {
         if (scope.inChain) {
           scope.pending && scope.pending();
@@ -65,8 +66,8 @@ function useSprings<T extends string>(
     };
   }, []);
 
-  useEffect(() => {
-    if (!deps) return;
+  useLayoutEffect(() => {
+    if (deps.length === 0) return;
     const { inChain } = scope;
 
     if (inChain) {
@@ -74,7 +75,7 @@ function useSprings<T extends string>(
     } else {
       state.start();
     }
-  }, deps || []);
+  }, [...deps]);
 
   useLayoutEffect(() => () => api.cancel(), []);
 
@@ -108,6 +109,7 @@ type Scope<T extends string> = {
 };
 
 export type SpringApi<T extends string = string> = {
+  marker: string;
   start: (fn?: StartFn<T>) => void;
   chain: (value: boolean) => void;
   delay: (timeout: number) => void;
@@ -115,7 +117,7 @@ export type SpringApi<T extends string = string> = {
   resume: () => void;
   reset: () => void;
   cancel: () => void;
-  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => void;
+  on: (event: AnimationEventName, handler: AnimationEventHandler<T>) => () => boolean;
   isCanceled: () => void;
 };
 

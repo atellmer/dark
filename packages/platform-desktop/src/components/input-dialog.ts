@@ -5,7 +5,7 @@ import {
   type EchoMode,
   QInputDialog,
 } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qInputDialog } from '../factory';
@@ -19,6 +19,7 @@ import { qInputDialog } from '../factory';
 
 export type InputDialogProps = WithStandardProps<
   {
+    ref?: Ref<InputDialogRef>;
     open: boolean;
     inputMode: InputMode;
     doubleDecimals?: number;
@@ -41,9 +42,9 @@ export type InputDialogProps = WithStandardProps<
 export type InputDialogRef = QDarkInputDialog;
 export type InputDialogSignals = QInputDialogSignals;
 
-const InputDialog = forwardRef<InputDialogProps, InputDialogRef>(
-  component((props, ref) => qInputDialog({ ref, ...props }), { displayName: 'InputDialog' }),
-) as ComponentFactory<InputDialogProps, InputDialogRef>;
+const InputDialog = component<InputDialogProps>(props => qInputDialog(props), {
+  displayName: 'InputDialog',
+}) as ComponentFactory<InputDialogProps>;
 
 class QDarkInputDialog extends QInputDialog {
   setOpen(value: boolean) {

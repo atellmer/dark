@@ -1,7 +1,8 @@
 import { type DarkElement, unmountRoot } from '@dark-engine/core';
 
-import { render, roots } from '../render';
 import type { TagNativeElement } from '../native-element';
+import { render, roots } from '../render';
+import { removeContent } from '../utils';
 
 function createRoot(container: TagNativeElement) {
   return {
@@ -15,7 +16,7 @@ function unmount(container: TagNativeElement) {
 
   unmountRoot(rootId, () => {
     roots.delete(container);
-    container.innerHTML = '';
+    removeContent(container);
   });
 }
 

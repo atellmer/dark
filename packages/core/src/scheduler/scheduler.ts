@@ -1,7 +1,6 @@
-import { ROOT, HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
-import { getTime, detectIsFunction, detectIsPromise, nextTick } from '../utils';
+import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
+import { getTime, detectIsPromise, detectIsFunction } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
-import { type SetPendingStatus } from '../start-transition';
 import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
@@ -73,72 +72,55 @@ class Scheduler {
     return getTime() >= this.deadline;
   }
 
-  schedule(callback: Callback, options?: ScheduleCallbackOptions) {
-    const {
-      priority = TaskPriority.NORMAL,
-      forceAsync = false,
-      isTransition = false,
-      createLocation,
-      setPendingStatus,
-    } = options || {};
-    const task = new Task(callback, priority, forceAsync);
+  schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
+    const task = createTask(callback, options);
 
-    task.setIsTransition(isTransition);
-    task.setPendingSetter(setPendingStatus);
-    task.setLocationCreator(createLocation || createRootLocation);
     this.put(task);
     this.execute();
   }
 
-  hasPrimaryTask() {
-    if (!this.task.getIsTransition()) return false;
-    const { high, normal, low } = this.getQueues();
-    const hasPrimary = high.length > 0 || normal.length > 0;
-    const hasLow = low.length > 0;
-
-    if (hasPrimary || hasLow) {
-      const loc = this.task.createLocation();
-
-      if (hasPrimary) {
-        const has = Task.detectHasRelatedUpdate(loc, high, true) || Task.detectHasRelatedUpdate(loc, normal, true);
-
-        if (has) {
-          this.task.markAsUnnecessary();
-        }
-
-        return true;
-      }
-
-      if (hasLow) {
-        const has = Task.detectHasRelatedUpdate(loc, low);
-
-        if (has) {
-          this.task.markAsUnnecessary();
-
-          return true;
-        }
-      }
-    }
-
-    return false;
+  detectIsTransition() {
+    return this.task.getIsTransition();
   }
 
-  cancelTask(fn: TaskRestorer) {
-    if (this.task.getIsUnnecessary()) return this.complete(this.task);
-    this.task.setTaskRestorer(fn);
-    this.defer(this.task);
+  hasPrimaryTask() {
+    const { high, normal } = this.getQueues();
+    const hasPrimary = high.length > 0 || normal.length > 0;
+
+    return hasPrimary;
+  }
+
+  retain(fn: OnRestore) {
+    const { high, normal, low } = this.getQueues();
+    const priorityTasks = [...high, ...normal];
+    const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, priorityTasks);
+
+    if (hasHostUpdate || hasChildUpdate) {
+      const hasExact = detectHasExact(this.task, [...priorityTasks, ...low]);
+
+      if (hasExact) {
+        this.complete(this.task); // cancels the task
+      } else {
+        this.defer(this.task); // cancels and restarts the task from the beginning
+      }
+
+      this.task.markAsObsolete();
+    } else {
+      this.task.setOnRestore(fn);
+      this.defer(this.task); // runs the task from the same place
+    }
   }
 
   private complete(task: Task) {
-    task.pending(false);
+    task.complete();
   }
 
   private put(task: Task) {
     const queue = this.queue[task.getPriority()];
 
     if (task.getIsTransition()) {
-      const loc = task.createLocation();
-      const tasks = queue.filter(x => x.createLocation() !== loc);
+      const loc = task.loc();
+      const tasks = queue.filter(x => x.loc() !== loc);
 
       queue.splice(0, queue.length, ...tasks);
     }
@@ -149,23 +131,24 @@ class Scheduler {
   private pick(queue: Array<Task>) {
     if (queue.length === 0) return false;
     this.task = queue.shift();
-
-    if (this.task.getIsTransition() && this.task.canPending()) {
-      const task = this.task;
-
-      task.markAsPending();
-      this.defer(this.task);
-      this.task = null;
-
-      nextTick(() => task.pending(true));
-
-      return true;
-    }
-
-    this.task.run();
-    this.task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
+    this.run(this.task);
 
     return true;
+  }
+
+  private run(task: Task) {
+    try {
+      task.run();
+      task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
+    } catch (something) {
+      if (detectIsPromise(something)) {
+        something.finally(() => {
+          this.run(task);
+        });
+      } else {
+        throw something;
+      }
+    }
   }
 
   private execute() {
@@ -188,10 +171,10 @@ class Scheduler {
   }
 
   private requestCallback(callback: WorkLoop) {
-    const result = callback(false);
+    const something = callback(false);
 
-    if (detectIsPromise(result)) {
-      result.finally(() => {
+    if (detectIsPromise(something)) {
+      something.finally(() => {
         this.requestCallback(callback);
       });
     } else {
@@ -203,13 +186,13 @@ class Scheduler {
   private performWorkUntilDeadline() {
     if (this.scheduledCallback) {
       this.deadline = getTime() + YIELD_INTERVAL;
-      const result = this.scheduledCallback(true);
+      const something = this.scheduledCallback(true);
 
-      if (detectIsPromise(result)) {
-        result.finally(() => {
+      if (detectIsPromise(something)) {
+        something.finally(() => {
           this.port.postMessage(null);
         });
-      } else if (result) {
+      } else if (something) {
         this.port.postMessage(null);
       } else {
         this.complete(this.task);
@@ -240,25 +223,20 @@ class Scheduler {
   }
 }
 
-type TaskCallback = (fn: TaskRestorer) => void;
-type TaskRestorer = (options: RestoreOptions) => void;
-type LocationCreator = () => string;
-
 class Task {
-  private id: number;
+  private __id: number;
   private priority: TaskPriority;
-  private forceAsync: boolean;
-  private isTransition: boolean;
-  private isPending: boolean;
-  private isUnnecessary: boolean;
-  private callback: TaskCallback;
-  private taskRestorer?: TaskRestorer = null;
-  private locationCreator?: LocationCreator;
-  private pendingSetter?: SetPendingStatus = null;
+  private forceAsync = false;
+  private isTransition = false;
+  private isObsolete = false;
+  private callback: TaskCallback = null;
+  private createLoc?: CreateLoc = null;
+  private onRestore?: OnRestore = null;
+  private onTransitionEnd?: Callback = null;
   private static nextTaskId = 0;
 
   constructor(callback: TaskCallback, priority: TaskPriority, forceAsync: boolean) {
-    this.id = ++Task.nextTaskId;
+    this.__id = ++Task.nextTaskId;
     this.callback = callback;
     this.priority = priority;
     this.forceAsync = forceAsync;
@@ -281,76 +259,112 @@ class Task {
   }
 
   run() {
-    this.callback(this.taskRestorer);
-    this.taskRestorer = null;
+    this.isObsolete = false; // !
+    this.callback(this.onRestore);
+    this.onRestore = null;
   }
 
-  pending(value: boolean) {
-    this.isTransition && this.pendingSetter && this.pendingSetter(value);
+  complete() {
+    this.isTransition && !this.isObsolete && detectIsFunction(this.onTransitionEnd) && this.onTransitionEnd();
   }
 
-  markAsPending() {
-    this.isPending = true;
+  markAsObsolete() {
+    this.isObsolete = true;
   }
 
-  canPending() {
-    return !this.isPending && detectIsFunction(this.pendingSetter);
+  getIsObsolete() {
+    return this.isObsolete;
   }
 
-  markAsUnnecessary() {
-    this.isUnnecessary = true;
+  setOnRestore(fn: OnRestore) {
+    this.onRestore = fn;
   }
 
-  getIsUnnecessary() {
-    return this.isUnnecessary;
+  setCreateLoc(fn: CreateLoc) {
+    this.createLoc = fn;
   }
 
-  setTaskRestorer(fn: TaskRestorer) {
-    this.taskRestorer = fn;
+  loc() {
+    const [loc] = this.createLoc().split(HOOK_DELIMETER);
+
+    return loc;
   }
 
-  setLocationCreator(fn: LocationCreator) {
-    this.locationCreator = fn;
+  $loc() {
+    return this.createLoc();
   }
 
-  createLocation() {
-    return this.locationCreator();
-  }
-
-  setPendingSetter(fn: SetPendingStatus) {
-    this.pendingSetter = fn;
-  }
-
-  static detectHasRelatedUpdate(loc: string, tasks: Array<Task>, deep = false) {
-    const [$loc] = loc.split(HOOK_DELIMETER);
-
-    return tasks.some(x => {
-      const $$loc = x.createLocation();
-      const has = $$loc === loc || (deep && $$loc.length > loc.length && $$loc.indexOf($loc) !== -1);
-
-      return has;
-    });
+  setOnTransitionEnd(fn: Callback) {
+    this.onTransitionEnd = fn;
   }
 }
 
-const createRootLocation: LocationCreator = () => ROOT;
+function collectFlags(task: Task, tasks: Array<Task>) {
+  const loc = task.loc();
+  let hasTopUpdate = false;
+  let hasHostUpdate = false;
+  let hasChildUpdate = false;
+
+  for (let i = 0; i < tasks.length; i++) {
+    const task = tasks[i];
+    const $loc = task.loc();
+
+    if ($loc.length < loc.length && loc.indexOf($loc) === 0) {
+      hasTopUpdate = true;
+    } else if ($loc === loc) {
+      hasHostUpdate = true;
+    } else if ($loc.length > loc.length && $loc.indexOf(loc) === 0) {
+      hasChildUpdate = true;
+    }
+  }
+
+  return {
+    hasTopUpdate,
+    hasHostUpdate,
+    hasChildUpdate,
+  };
+}
+
+function detectHasExact(task: Task, tasks: Array<Task>) {
+  const $loc = task.$loc();
+  const hasExact = tasks.some(x => x.$loc() === $loc);
+
+  return hasExact;
+}
+
+function createTask(callback: TaskCallback, options: Omit<ScheduleCallbackOptions, 'onCompleted'>) {
+  const { priority = TaskPriority.NORMAL, forceAsync = false, isTransition = false, loc, onTransitionEnd } = options;
+  const task = new Task(callback, priority, forceAsync);
+
+  task.setIsTransition(isTransition);
+  task.setOnTransitionEnd(onTransitionEnd);
+  task.setCreateLoc(loc || rootLoc);
+
+  return task;
+}
+
+const rootLoc: CreateLoc = () => '>';
 
 type PortEvent = 'message';
 type PortListener = (value: unknown) => void;
 
-export type RestoreOptions = {
+type TaskCallback = (fn: OnRestore) => void;
+type CreateLoc = () => string;
+
+export type OnRestoreOptions = {
   fiber: Fiber;
-  setValue?: () => void;
-  resetValue?: () => void;
+  setValue?: Callback;
+  resetValue?: Callback;
 };
 
+export type OnRestore = (options: OnRestoreOptions) => void;
+
 export type ScheduleCallbackOptions = {
-  priority?: TaskPriority;
+  priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
-  createLocation?: () => string;
-  setPendingStatus?: SetPendingStatus;
-  onCompleted?: () => void;
+  loc?: () => string;
+  onTransitionEnd?: Callback;
 };
 
 const scheduler = new Scheduler();

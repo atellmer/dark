@@ -6,8 +6,8 @@ import {
 } from '@nodegui/nodegui';
 import {
   type ComponentFactory,
+  type Ref,
   component,
-  forwardRef,
   detectIsFunction,
   useRef,
   useImperativeHandle,
@@ -21,6 +21,7 @@ import { qPlainTextEdit } from '../factory';
 
 export type PlainTextEditProps = WithStandardProps<
   {
+    ref?: Ref<PlainTextEditRef>;
     text?: string;
     placeholder?: string;
     readOnly?: boolean;
@@ -34,30 +35,28 @@ export type PlainTextEditRef = {
 };
 export type PlainTextEditSignals = QPlainTextEditSignals;
 
-const PlainTextEdit = forwardRef<PlainTextEditProps, PlainTextEditRef>(
-  component(
-    (props, ref) => {
-      const { onTextChanged } = props;
-      const rootRef = useRef<QDarkPlainTextEdit>(null);
+const PlainTextEdit = component<PlainTextEditProps>(
+  props => {
+    const { ref, onTextChanged } = props;
+    const rootRef = useRef<QDarkPlainTextEdit>(null);
 
-      useImperativeHandle(ref, () => ({ node: rootRef.current }));
+    useImperativeHandle(ref, () => ({ node: rootRef.current }));
 
-      useLayoutEffect(() => {
-        const { current } = rootRef;
-        const handler = () => {
-          detectIsFunction(onTextChanged) && onTextChanged(current.toPlainText());
-        };
+    useLayoutEffect(() => {
+      const { current } = rootRef;
+      const handler = () => {
+        detectIsFunction(onTextChanged) && onTextChanged(current.toPlainText());
+      };
 
-        current.addEventListener('textChanged', handler);
+      current.addEventListener('textChanged', handler);
 
-        return () => current.removeEventListener('textChanged', handler);
-      }, []);
+      return () => current.removeEventListener('textChanged', handler);
+    }, []);
 
-      return qPlainTextEdit({ ref: rootRef, ...props });
-    },
-    { displayName: 'PlainTextEdit' },
-  ),
-) as ComponentFactory<PlainTextEditProps, PlainTextEditRef>;
+    return qPlainTextEdit({ ref: rootRef, ...props });
+  },
+  { displayName: 'PlainTextEdit' },
+) as ComponentFactory<PlainTextEditProps>;
 
 class QDarkPlainTextEdit extends QPlainTextEdit {
   setText(value: string) {

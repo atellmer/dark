@@ -10,6 +10,7 @@ import {
   splitBySlash,
   sort,
   cm,
+  keyBy,
 } from './utils';
 
 describe('@web-router/utils', () => {
@@ -143,5 +144,21 @@ describe('@web-router/utils', () => {
 
   test('the cm works correctly', () => {
     expect(cm(undefined, 'some', null, '', 'class')).toBe('some class');
+  });
+
+  test('the keyBy function works correctly', () => {
+    const data = [
+      { a: 1, b: 2 },
+      { a: 10, b: 20 },
+    ];
+    expect(typeof keyBy).toBe('function');
+    expect(keyBy(data, x => x.a)).toEqual({
+      1: true,
+      10: true,
+    });
+    expect(keyBy(data, x => x.a, true)).toEqual({
+      1: data[0],
+      10: data[1],
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { component, forwardRef, useMemo } from '@dark-engine/core';
+import { component, useMemo } from '@dark-engine/core';
 
 import { SLASH_MARK, ACTIVE_LINK_CLASSNAME } from '../constants';
 import { type LinkProps, Link } from '../link';
@@ -7,27 +7,25 @@ import { cm, parseURL } from '../utils';
 
 export type NavLinkProps = LinkProps;
 
-const NavLink = forwardRef<NavLinkProps, HTMLAnchorElement>(
-  component(
-    (props, ref) => {
-      const { to, class: cn1, className: cn2, slot, ...rest } = props;
-      const { pathname: url, hash } = useLocation();
-      const className = useMemo(() => {
-        const isMatch = detectIsMatch(url, to, hash);
+const NavLink = component<NavLinkProps>(
+  props => {
+    const { to, class: cn1, className: cn2, slot, ...rest } = props;
+    const { pathname: url, hash } = useLocation();
+    const className = useMemo(() => {
+      const isMatch = detectIsMatch(url, to, hash);
 
-        return cm(cn1 || cn2, isMatch ? ACTIVE_LINK_CLASSNAME : '');
-      }, [cn1, cn2, url, hash, to]);
+      return cm(cn1 || cn2, isMatch ? ACTIVE_LINK_CLASSNAME : '');
+    }, [cn1, cn2, url, hash, to]);
 
-      return (
-        <Link ref={ref} {...rest} to={to} class={className}>
-          {slot}
-        </Link>
-      );
-    },
-    {
-      displayName: 'NavLink',
-    },
-  ),
+    return (
+      <Link {...rest} to={to} class={className}>
+        {slot}
+      </Link>
+    );
+  },
+  {
+    displayName: 'NavLink',
+  },
 );
 
 function detectIsMatch(url: string, to: string, hash: string) {

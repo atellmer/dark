@@ -1,5 +1,5 @@
 import { type QDialogSignals, QDialog, QWidget, FlexLayout } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qDialog } from '../factory';
@@ -10,15 +10,16 @@ import { qDialog } from '../factory';
 
 export type DialogProps = WithSlotProps<
   {
+    ref?: Ref<DialogRef>;
     open: boolean;
   } & WidgetProps
 >;
 export type DialogRef = QDarkDialog;
 export type DialogSignals = QDialogSignals;
 
-const Dialog = forwardRef<DialogProps, DialogRef>(
-  component((props, ref) => qDialog({ ref, ...props }), { displayName: 'Dialog' }),
-) as ComponentFactory<DialogProps, DialogRef>;
+const Dialog = component<DialogProps>(props => qDialog(props), {
+  displayName: 'Dialog',
+}) as ComponentFactory<DialogProps>;
 
 class QDarkDialog extends QDialog implements Container {
   private flexLayout = new FlexLayout();

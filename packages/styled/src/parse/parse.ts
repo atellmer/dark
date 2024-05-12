@@ -14,6 +14,7 @@ import {
   OPENING_PARENTHESIS_MARK,
   CLOSING_PARENTHESIS_MARK,
   URL_FN_MARK,
+  LIB,
 } from '../constants';
 import {
   type Children,
@@ -32,6 +33,7 @@ import {
   detectIsNestingRule,
   detectIsFunctionRule,
 } from '../tokens';
+import { illegal } from '../utils';
 
 function parse<P extends object>(css: string) {
   const stylesheet = new StyleSheet<P>();
@@ -116,7 +118,7 @@ function parse<P extends object>(css: string) {
               : false;
 
           if (!canNest) {
-            throw new Error('Illegal style nesting!');
+            illegal('Illegal style nesting!');
           }
 
           token.value = sub(buffer);
@@ -124,7 +126,7 @@ function parse<P extends object>(css: string) {
           token.parent = parent;
 
           if (!token.value) {
-            throw new Error('Empty style nesting!');
+            illegal('Empty style nesting!');
           }
 
           parent.children.push(token);
@@ -150,7 +152,7 @@ function parse<P extends object>(css: string) {
         break;
       case SEMICOLON_MARK:
         if (!last) {
-          throw new Error('Incorrect style!');
+          illegal('Incorrect style!');
         }
 
         if (detectIsFunctionRule(last)) {

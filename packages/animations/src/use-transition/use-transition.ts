@@ -4,19 +4,19 @@ import {
   type Callback,
   type ElementKey,
   Fragment,
-  batch,
   useMemo,
   useUpdate,
-  useEffect,
   useLayoutEffect,
   detectIsArray,
   detectIsNumber,
+  startTransition,
+  scheduler,
 } from '@dark-engine/core';
 
-import { type SpringValue } from '../shared';
-import { type AnimationEventValue, SharedState } from '../state';
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
+import { type AnimationEventValue, SharedState } from '../state';
 import { type SpringApi } from '../use-springs';
+import { type SpringValue } from '../shared';
 import { type Spring } from '../spring';
 import { uniq } from '../utils';
 
@@ -34,10 +34,11 @@ function useTransition<T extends string, I = unknown>(
   configurator: TransitionConfiguratorFn<T, I>,
 ): [TransitionFn<T, I>, TransitionApi<T>] {
   const forceUpdate = useUpdate();
-  const update = () => batch(forceUpdate);
+  const update = () => (scope.isNonBlocking ? startTransition(forceUpdate) : forceUpdate());
   const state = useMemo(() => new SharedState<T>(), []);
   const scope = useMemo<Scope<T, I>>(
     () => ({
+      transitions: [],
       ctrlsMap: new Map(),
       itemsMap: new Map(),
       fakesMap: new Map(),
@@ -46,6 +47,7 @@ function useTransition<T extends string, I = unknown>(
       hasReplaces: false,
       fromApi: false,
       inChain: false,
+      isNonBlocking: false,
       pending: null,
       configurator,
     }),
@@ -53,8 +55,35 @@ function useTransition<T extends string, I = unknown>(
   );
 
   scope.configurator = configurator;
+  scope.isNonBlocking = scheduler.detectIsTransition();
 
-  useMemo(() => setup({ items, getKey, configurator, state, ctrlsMap: scope.ctrlsMap }), []);
+  useMemo(() => {
+    const make = (items: Array<I>) => {
+      const { transitions, ctrlsMap, fakesMap, items: $items } = scope;
+      const configurator: TransitionConfiguratorFn<T, I> = (idx, item) => scope.configurator(idx, item);
+      const { ctrls, itemsMap } = setup({ items, getKey, configurator, state, ctrlsMap });
+      const { insMap, remMap, movMap, stabMap, replaced } = diff($items, items, getKey);
+
+      scope.hasReplaces = replaced.size > 0;
+      state.setCtrls(ctrls);
+      replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
+
+      transitions.push(
+        ...animate({ action: Action.LEAVE, space: fakesMap, state, scope }), // !
+        ...animate({ action: Action.ENTER, space: insMap, state, scope }),
+        ...animate({ action: Action.LEAVE, space: remMap, state, scope }),
+        ...animate({ action: Action.UPDATE, space: movMap, state, scope }),
+        ...animate({ action: Action.UPDATE, space: stabMap, state, scope }),
+      );
+
+      state.setHasTransitions(transitions.length > 0);
+      scope.items = items; // !
+      scope.itemsMap = itemsMap;
+      scope.fromApi = false;
+    };
+
+    make(uniq(items, getKey));
+  }, [items]);
 
   const transition = useMemo<TransitionFn<T, I>>(
     () => (render: TransitionRenderFn<T, I>) => {
@@ -87,12 +116,14 @@ function useTransition<T extends string, I = unknown>(
 
   const api = useMemo<TransitionApi<T>>(() => {
     return {
+      marker: 'transition-api',
       start: fn => {
         scope.fromApi = true;
 
         if (scope.inChain) {
           scope.pending && scope.pending();
           scope.pending = null;
+          update();
         } else {
           state.start(fn);
         }
@@ -107,51 +138,34 @@ function useTransition<T extends string, I = unknown>(
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (scope.transitions.length === 0) return;
     const { inChain } = scope;
-    const nextItems = uniq(items, getKey);
-    const start = (items: Array<I>) => {
-      const { ctrlsMap, fakesMap, items: $items } = scope;
-      const configurator: TransitionConfiguratorFn<T, I> = (idx, item) => scope.configurator(idx, item);
-      const { ctrls, itemsMap } = setup({ items, getKey, configurator, state, ctrlsMap });
-      const { hasChanges, insMap, remMap, movMap, stabMap, replaced } = diff($items, items, getKey);
-
-      scope.hasReplaces = replaced.size > 0;
-      state.setCtrls(ctrls);
-      replaced.forEach(key => ctrlsMap.get(key).setIsReplaced(true));
-
+    const start = () => {
       state.event('series-start');
-      animate({ action: Action.LEAVE, space: fakesMap, state, scope }); // !
-      animate({ action: Action.ENTER, space: insMap, state, scope });
-      animate({ action: Action.LEAVE, space: remMap, state, scope });
-      animate({ action: Action.UPDATE, space: movMap, state, scope });
-      animate({ action: Action.UPDATE, space: stabMap, state, scope });
-
-      scope.items = items; // !
-      scope.itemsMap = itemsMap;
-      scope.fromApi = false;
-      hasChanges && forceUpdate(); // !
+      scope.transitions.forEach(x => x.fn());
+      scope.transitions = [];
+      state.setHasTransitions(false);
     };
 
     if (inChain) {
-      scope.pending = () => state.defer(() => start(nextItems));
+      scope.pending = () => state.defer(start);
     } else {
-      start(nextItems);
+      start();
     }
-  }, [items]);
+  }); // !
 
   useLayoutEffect(() => {
-    const offs: Array<Callback> = [];
-
-    offs.push(
+    const offs: Array<Callback> = [
       api.on('item-end', e => handleItemEnd(e, scope)),
       api.on('series-end', () => handleSeriesEnd(update, state, scope)),
-    );
+    ];
 
-    return () => offs.forEach(x => x());
+    return () => {
+      offs.forEach(x => x());
+      api.cancel();
+    };
   }, []);
-
-  useLayoutEffect(() => () => api.cancel(), []);
 
   return [transition, api];
 }
@@ -235,7 +249,6 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: Key
   let size = Math.max(prevKeys.length, nextKeys.length);
   let p = 0;
   let n = 0;
-  let hasChanges = false;
   const insMap = new Map<ElementKey, number>();
   const remMap = new Map<ElementKey, number>();
   const movMap = new Map<ElementKey, number>();
@@ -252,21 +265,17 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: Key
           insMap.set(nextKey, i);
           remMap.set(prevKey, i);
           replaced.add(prevKey);
-          hasChanges = true;
         } else {
           insMap.set(nextKey, i);
-          hasChanges = true;
           p++;
           size++;
         }
       } else if (!nextKeysMap[prevKey]) {
         remMap.set(prevKey, i);
-        hasChanges = true;
         n++;
         size++;
       } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
         movMap.set(nextKey, i);
-        hasChanges = true;
       }
     } else if (nextKey !== null) {
       stabMap.set(nextKey, i);
@@ -274,7 +283,6 @@ function diff<I = unknown>(prevItems: Array<I>, nextItems: Array<I>, getKey: Key
   }
 
   return {
-    hasChanges,
     insMap,
     remMap,
     movMap,
@@ -291,6 +299,7 @@ type AnimateOptions<T extends string, I = unknown> = {
 };
 
 function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
+  const transitions: Array<Transition> = [];
   const { space, action, state, scope } = options;
   const { configurator, ctrlsMap, fakesMap } = scope;
   const ctrls = state.getCtrls();
@@ -305,6 +314,7 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
     const { trail } = config;
     const to = isLeave && !config[action] ? config.from : config[action];
     let $ctrl = ctrl;
+    let $key = key;
 
     if (isEnter) {
       const isReplaced = ctrl.getIsReplaced();
@@ -316,6 +326,7 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
           const fakeKey = fake.markAsFake(key);
 
           $ctrl = fake;
+          $key = fakeKey;
           prepare({ ctrl: fake, key: fakeKey, idx, item, configurator });
           ctrlsMap.set(fakeKey, fake);
           fakesMap.set(fakeKey, idx);
@@ -326,17 +337,28 @@ function animate<T extends string, I = unknown>(options: AnimateOptions<T, I>) {
       }
     }
 
-    to && withTrail(() => $ctrl.start(() => ({ to })), $idx, trail);
+    const start = () => $ctrl.start(() => ({ to }));
+    const fn = to && withTrail(start, $idx, $ctrl, trail);
+
+    fn && transitions.push(new Transition($key, fn));
     $idx++;
   }
+
+  return transitions;
 }
 
-function withTrail(fn: () => void, idx: number, trail?: number) {
+function withTrail<T extends string, I = unknown>(
+  start: () => void,
+  idx: number,
+  ctrl: Controller<T, I>,
+  trail?: number,
+) {
   if (detectIsNumber(trail)) {
-    setTimeout(fn, idx * trail);
-  } else {
-    fn();
+    ctrl.setIsPlaying(true);
+    return () => setTimeout(start, idx * trail);
   }
+
+  return start;
 }
 
 type PrepareOptions<T extends string, I = unknown> = {
@@ -392,7 +414,7 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
     const { enter } = configurator(ctrl.getIdx(), ctrl.getItem());
 
     ctrl.replaceValue({ ...enter });
-    ctrl.notify();
+    ctrl.notify(true);
     ctrls.push(ctrl);
   }
 
@@ -400,7 +422,12 @@ function handleSeriesEnd<T extends string, I = unknown>(update: () => void, stat
   update();
 }
 
+class Transition {
+  constructor(public key: ElementKey, public fn: Callback) {}
+}
+
 type Scope<T extends string, I = unknown> = {
+  transitions: Array<Transition>;
   items: Array<I>;
   configurator: TransitionConfiguratorFn<T, I>;
   ctrlsMap: Map<ElementKey, Controller<T, I>>;
@@ -410,6 +437,7 @@ type Scope<T extends string, I = unknown> = {
   hasReplaces: boolean;
   fromApi: boolean;
   inChain: boolean;
+  isNonBlocking: boolean;
   pending: Callback;
 };
 

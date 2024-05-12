@@ -1,17 +1,25 @@
-import { type DarkElement, type Fiber, component, useMemo, $$scope, detectIsComponent } from '@dark-engine/core';
+import {
+  type DarkElement,
+  type ElementKey,
+  component,
+  useMemo,
+  useLayoutEffect,
+  __useCursor as useCursor,
+} from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
+import { illegal, removeContent } from '../utils';
 
 const $$portal = Symbol('portal');
 
-function createPortal(slot: DarkElement, container: TagNativeElement) {
+function createPortal(slot: DarkElement, container: TagNativeElement, key?: ElementKey) {
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element)) {
-      throw new Error(`[Dark]: createPortal only gets an Element as container!`);
+      illegal(`The createPortal only gets a valid element as container!`);
     }
   }
 
-  return Portal({ container, slot });
+  return Portal({ key, container, slot });
 }
 
 type PortalProps = {
@@ -21,28 +29,24 @@ type PortalProps = {
 
 const Portal = component<PortalProps>(
   props => {
+    const cursor = useCursor();
     const element = props.container;
-    const fiber = $$scope().getCursorFiber();
+    const scope = useMemo(() => {
+      removeContent(element);
+      return { element };
+    }, []);
 
-    useMemo(() => (element.innerHTML = ''), []);
+    useLayoutEffect(() => {
+      return () => removeContent(scope.element);
+    }, []);
 
-    fiber.element = element;
-    props.container = null;
+    cursor.isPortal = true;
+    cursor.element = element;
+    scope.element = element;
 
     return props.slot;
   },
-  { token: $$portal },
+  { token: $$portal, displayName: 'Portal' },
 );
 
-const detectIsPortal = (instance: unknown) => detectIsComponent(instance) && instance.token === $$portal;
-
-const getPortalContainer = (fiber: Fiber<TagNativeElement>): TagNativeElement | null =>
-  detectIsPortal(fiber.inst) ? fiber.element : null;
-
-function unmountPortal(fiber: Fiber<TagNativeElement>) {
-  const element = getPortalContainer(fiber);
-
-  element && (element.innerHTML = '');
-}
-
-export { createPortal, unmountPortal, detectIsPortal };
+export { createPortal };

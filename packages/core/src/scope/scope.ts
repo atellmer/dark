@@ -1,8 +1,7 @@
 import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
-import { type SetPendingStatus } from '../start-transition';
 import { platform, detectIsServer } from '../platform';
 import { EventEmitter } from '../emitter';
-import { type Fiber } from '../fiber';
+import { type Fiber, Awaiter } from '../fiber';
 
 class Scope {
   private root: Fiber = null;
@@ -23,8 +22,8 @@ class Scope {
   private insertionEffects = new Set<Callback>();
   private resourceId = 0;
   private resources: AppResources = new Map();
-  private defers: Array<() => Promise<unknown>> = [];
-  private setPendingStatus: SetPendingStatus = null;
+  private awaiter: Awaiter = new Awaiter();
+  private onTransitionEnd: Callback = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
   private isUpdateZone = false;
@@ -82,7 +81,7 @@ class Scope {
     this.actions[id].stable[nextKey] = true;
   }
 
-  copy() {
+  fork() {
     const scope = new Scope();
 
     scope.root = null;
@@ -101,6 +100,7 @@ class Scope {
     scope.layoutEffects = new Set([...this.layoutEffects]);
     scope.isUpdateZone = this.isUpdateZone;
     scope.emitter = this.emitter;
+    scope.awaiter = this.awaiter;
 
     return scope;
   }
@@ -362,15 +362,15 @@ class Scope {
     this.isHot = value;
   }
 
-  getPendingStatusSetter() {
-    return this.setPendingStatus;
+  getOnTransitionEnd() {
+    return this.onTransitionEnd;
   }
 
-  setPendingStatusSetter(fn: SetPendingStatus) {
-    this.setPendingStatus = fn;
+  setOnTransitionEnd(fn: Callback) {
+    this.onTransitionEnd = fn;
   }
 
-  flush() {
+  cleanup() {
     this.keepRoot(); // !
     this.setWorkInProgress(null);
     this.setNextUnitOfWork(null);
@@ -389,18 +389,6 @@ class Scope {
 
   getEmitter() {
     return this.emitter;
-  }
-
-  defer(fn: () => Promise<unknown>) {
-    this.defers.push(fn);
-  }
-
-  getDefers() {
-    return this.defers;
-  }
-
-  resetDefers() {
-    this.defers = [];
   }
 
   getResource(id: number) {
@@ -425,6 +413,10 @@ class Scope {
 
   getNextResourceId() {
     return ++this.resourceId;
+  }
+
+  getAwaiter() {
+    return this.awaiter;
   }
 
   runAfterCommit() {

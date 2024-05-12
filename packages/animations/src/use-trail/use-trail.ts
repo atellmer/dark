@@ -21,6 +21,7 @@ function useTrail<T extends string>(
   const api = useMemo<TrailApi<T>>(() => {
     return {
       ..._api,
+      marker: 'trail-api',
       reverse: (value: boolean) => (value ? state.setFlow(Flow.LEFT) : state.setFlow(Flow.RIGHT)),
     };
   }, []);

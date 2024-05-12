@@ -1,3 +1,5 @@
+import { detectIsPromise } from '@dark-engine/core';
+
 function getItem(key: string, emit?: string) {
   try {
     return JSON.parse(localStorage.getItem(key));
@@ -11,6 +13,7 @@ function getItem(key: string, emit?: string) {
 }
 
 function setItem(key: string, data: any) {
+  if (detectIsPromise(data)) return;
   localStorage.setItem(key, JSON.stringify(data));
 }
 

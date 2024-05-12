@@ -1,5 +1,5 @@
 import { type QFileDialogSignals, type FileMode, type AcceptMode, QFileDialog } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qFileDialog } from '../factory';
@@ -13,6 +13,7 @@ import { qFileDialog } from '../factory';
 
 export type FileDialogProps = WithStandardProps<
   {
+    ref?: Ref<FileDialogRef>;
     open: boolean;
     fileMode?: FileMode;
     acceptMode?: AcceptMode;
@@ -24,9 +25,9 @@ export type FileDialogProps = WithStandardProps<
 export type FileDialogRef = QDarkFileDialog;
 export type FileDialogSignals = QFileDialogSignals;
 
-const FileDialog = forwardRef<FileDialogProps, FileDialogRef>(
-  component((props, ref) => qFileDialog({ ref, ...props }), { displayName: 'FileDialog' }),
-) as ComponentFactory<FileDialogProps, FileDialogRef>;
+const FileDialog = component<FileDialogProps>(props => qFileDialog(props), {
+  displayName: 'FileDialog',
+}) as ComponentFactory<FileDialogProps>;
 
 class QDarkFileDialog extends QFileDialog {
   setOpen(value: boolean) {

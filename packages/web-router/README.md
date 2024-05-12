@@ -13,6 +13,7 @@ The isomorphic Dark router designed for rendering universal web applications tha
 - 🔢 Parameters
 - 📈 Hooks
 - 💽 SSR
+- 🔀 Concurrent transitions
 - ✂️ No deps
 - 📦 Small size (4 kB gzipped)
 
@@ -45,6 +46,7 @@ import {
   useHistory,
   useParams,
   useMatch,
+  usePending,
   VERSION,
 } from '@dark-engine/web-router';
 ```
@@ -84,7 +86,7 @@ You must add the <base href> element to the application's index.html for pushSta
 <base href="/">
 ```
 
-Also you must pass the baseUrl to Router if it is different from '/'.
+Also you must pass the baseUrl to Router if it is different from `/`.
 
 ```tsx
 <Router routes={routes} baseUrl={YOUR_BASE_URL}>{slot => slot}</Router>
@@ -344,6 +346,25 @@ const App = component(({ url }) => {
 ```
 
 Full example SSR routing you can see in `/examples`.
+
+## Concurrent mode
+
+In this mode, the router will automatically render through non-blocking transitions, using `startTransition` under the hood. To track the `isPending` flag and show the waiting UI you can use the special `usePending` hook.
+
+```tsx
+<Router routes={routes} mode='concurrent'>
+  {slot => slot}
+</Router>
+```
+
+```tsx
+const Pending = component(() => {
+  const isPending = usePending();
+
+  // Makes the content on the screen a little transparent while the transition is in progress.
+  return <Overlay isPending={isPending} />;
+});
+```
 
 # LICENSE
 

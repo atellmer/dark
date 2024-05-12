@@ -1,5 +1,5 @@
 import { QLabel, QPixmap, AspectRatioMode, TransformationMode } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 import fetch from 'node-fetch';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
@@ -10,6 +10,7 @@ import { detectisValidURL } from '../utils';
 
 export type ImageProps = WithStandardProps<
   {
+    ref?: Ref<ImageRef>;
     src?: string;
     buffer?: Buffer;
     aspectRatioMode?: AspectRatioMode;
@@ -18,9 +19,7 @@ export type ImageProps = WithStandardProps<
 >;
 export type ImageRef = QDarkImage;
 
-const Image = forwardRef<ImageProps, ImageRef>(
-  component((props, ref) => qImage({ ref, ...props }), { displayName: 'Image' }),
-) as ComponentFactory<ImageProps, ImageRef>;
+const Image = component<ImageProps>(props => qImage(props), { displayName: 'Image' }) as ComponentFactory<ImageProps>;
 
 class QDarkImage extends QLabel {
   private aspectRatioMode: AspectRatioMode = AspectRatioMode.KeepAspectRatio;

@@ -7,14 +7,12 @@ import {
   component,
   createContext,
   detectIsFunction,
-  forwardRef,
   memo,
   useContext,
   useMemo,
   useEffect,
   useLayoutEffect,
   useRef,
-  useImperativeHandle,
 } from '@dark-engine/core';
 import { type AbsoluteLayoutRef, type StackLayoutRef, AbsoluteLayout, StackLayout } from '@dark-engine/platform-native';
 
@@ -30,85 +28,79 @@ export type StackNavigatorProps = {
   onNavigate?: (pathname: string) => void;
 };
 
-export type StackNavigatorRef = {};
+const Navigator = component<StackNavigatorProps>(
+  ({ slot, onNavigate }) => {
+    const { pathname, transition, replace, subscribe } = useNavigationContext();
+    const { prefix } = useScreenNavigatorContext();
+    const rootRef = useRef<AbsoluteLayoutRef>(null);
+    const names = slot.map(x => x.props.name);
+    const pathnames = names.map(x => createPathname(x, prefix));
+    const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
+    const hiddensMap = useMemo(() => createHiddensMap({ transition, pathnames, pathname, prefix }), [transition]);
 
-const Navigator = forwardRef<StackNavigatorProps, StackNavigatorRef>(
-  component(
-    ({ slot, onNavigate }, ref) => {
-      const { pathname, transition, replace, subscribe } = useNavigationContext();
-      const { prefix } = useScreenNavigatorContext();
-      const rootRef = useRef<AbsoluteLayoutRef>(null);
-      const names = slot.map(x => x.props.name);
-      const pathnames = names.map(x => createPathname(x, prefix));
-      const scope = useMemo<Scope>(() => ({ refsMap: {} }), []);
-      const hiddensMap = useMemo(() => createHiddensMap({ transition, pathnames, pathname, prefix }), [transition]);
+    visitedMap[pathname] = true;
 
-      visitedMap[pathname] = true;
+    useLayoutEffect(() => {
+      const entry = pathnames[0];
 
-      useLayoutEffect(() => {
-        const entry = pathnames[0];
+      detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
+    }, [pathname]);
 
-        detectCanReplacePathname(pathname, entry, prefix) && replace(entry);
-      }, [pathname]);
+    useLayoutEffect(() => {
+      const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
+      if (!canStartTransition || !transition.options.animated) return;
+      const targetFrom = matchRef(scope.refsMap, transition.from);
+      const targetTo = matchRef(scope.refsMap, transition.to);
+      const size = rootRef.current.getActualSize();
+      const animation = createAnimation({ targetFrom, targetTo, transition, size });
 
-      useLayoutEffect(() => {
-        const canStartTransition = detectCanStartTransition(transition, pathnames, prefix);
-        if (!canStartTransition || !transition.options.animated) return;
-        const targetFrom = matchRef(scope.refsMap, transition.from);
-        const targetTo = matchRef(scope.refsMap, transition.to);
-        const size = rootRef.current.getActualSize();
-        const animation = createAnimation({ targetFrom, targetTo, transition, size });
+      setTimeout(() => {
+        animation.play().then(() => {
+          targetFrom.opacity = 0;
+          targetFrom.translateX = 0;
+          targetFrom.hidden = true;
 
-        setTimeout(() => {
-          animation.play().then(() => {
-            targetFrom.opacity = 0;
-            targetFrom.translateX = 0;
-            targetFrom.hidden = true;
+          targetTo.opacity = 1;
+          targetTo.translateX = 0;
+          targetTo.hidden = false;
 
-            targetTo.opacity = 1;
-            targetTo.translateX = 0;
-            targetTo.hidden = false;
-
-            setTimeout(() => {
-              targetFrom.opacity = 1;
-            });
+          setTimeout(() => {
+            targetFrom.opacity = 1;
           });
         });
-      }, [transition]);
+      });
+    }, [transition]);
 
-      useEffect(() => {
-        const syncNavigation = (pathname: string) => detectIsFunction(onNavigate) && onNavigate(pathname);
+    useEffect(() => {
+      const syncNavigation = (pathname: string) => detectIsFunction(onNavigate) && onNavigate(pathname);
 
-        syncNavigation(pathname);
+      syncNavigation(pathname);
 
-        const unsubscribe = subscribe(pathname => syncNavigation(pathname));
+      const unsubscribe = subscribe('change', ({ pathname }) => syncNavigation(pathname));
 
-        return () => unsubscribe();
-      }, []);
+      return () => unsubscribe();
+    }, []);
 
-      useImperativeHandle(ref, () => ({}));
+    return (
+      <AbsoluteLayout ref={rootRef} width={FULL} height={FULL}>
+        {slot.map(x => {
+          const name = x.props.name;
+          const key = createPathname(name, prefix);
+          const isHidden = Boolean(hiddensMap[key]);
+          const setRef = (ref: StackLayoutRef) => {
+            scope.refsMap[key] = ref;
+          };
 
-      return (
-        <AbsoluteLayout ref={rootRef} width={FULL} height={FULL}>
-          {slot.map(x => {
-            const name = x.props.name;
-            const key = createPathname(name, prefix);
-            const isHidden = Boolean(hiddensMap[key]);
-            const setRef = (ref: StackLayoutRef) => {
-              scope.refsMap[key] = ref;
-            };
-
-            return (
-              <StackLayout ref={setRef} key={key} width={FULL} height={FULL} hidden={isHidden}>
-                {x}
-              </StackLayout>
-            );
-          })}
-        </AbsoluteLayout>
-      );
-    },
-    { displayName: 'StackNavigator.Root' },
-  ),
+          return (
+            <StackLayout ref={setRef} key={key} width={FULL} height={FULL} hidden={isHidden}>
+              {x}
+            </StackLayout>
+          );
+        })}
+      </AbsoluteLayout>
+    );
+  },
+  { displayName: 'StackNavigator.Root' },
 );
 
 export type StackScreenProps = {

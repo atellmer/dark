@@ -1,4 +1,5 @@
 import { component, Suspense, lazy, useMemo, useEffect } from '@dark-engine/core';
+import { detectIsBrowser } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { DataClient, DataClientProvider, InMemoryCache } from '@dark-engine/data';
 
@@ -77,18 +78,21 @@ export type AppProps = {
 };
 
 const App = component<AppProps>(({ url, api }) => {
-  const client = useMemo(() => new DataClient<Api, Key>({ api, cache: new InMemoryCache() }), []);
+  const client = useMemo(() => {
+    const client = new DataClient<Api, Key>({ api, cache: new InMemoryCache() });
+
+    detectIsBrowser() &&
+      client.subscribe(({ key, record }) => {
+        if (key === Key.FETCH_PRODUCTS && record.data) {
+          setItem(key, record.data);
+        }
+      });
+
+    return client;
+  }, []);
 
   useEffect(() => {
-    client.subscribe(({ key, record }) => {
-      if (key === Key.FETCH_PRODUCTS && record.data) {
-        setItem(key, record.data);
-      }
-    });
-  });
-
-  useEffect(() => {
-    client.monitor(x => console.log(x));
+    client.monitor(x => x.phase !== 'promise' && console.log(x));
   }, []);
 
   return (
@@ -98,18 +102,18 @@ const App = component<AppProps>(({ url, api }) => {
         <Router routes={routes} url={url}>
           {slot => {
             return (
-              <Suspense fallback={<Spinner />}>
-                <Root>
-                  <Header>
-                    <Menu>
-                      <NavLink to='/products'>Products</NavLink>
-                      <NavLink to='/operations'>Operations</NavLink>
-                      <NavLink to='/invoices'>Invoices</NavLink>
-                    </Menu>
-                  </Header>
-                  <Content>{slot}</Content>
-                </Root>
-              </Suspense>
+              <Root>
+                <Header>
+                  <Menu>
+                    <NavLink to='/products'>Products</NavLink>
+                    <NavLink to='/operations'>Operations</NavLink>
+                    <NavLink to='/invoices'>Invoices</NavLink>
+                  </Menu>
+                </Header>
+                <Content>
+                  <Suspense fallback={<Spinner />}>{slot}</Suspense>
+                </Content>
+              </Root>
             );
           }}
         </Router>

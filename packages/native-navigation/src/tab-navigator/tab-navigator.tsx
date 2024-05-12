@@ -15,18 +15,13 @@ import {
 } from '@dark-engine/core';
 import {
   type AbsoluteLayoutRef,
-  type StackLayoutRef,
+  type FlexboxLayoutRef,
   AbsoluteLayout,
   StackLayout,
   FlexboxLayout,
 } from '@dark-engine/platform-native';
 
-import {
-  type StackNavigatorRef,
-  type StackScreenProps,
-  StackNavigator,
-  useScreenNavigatorContext,
-} from '../stack-navigator';
+import { type StackScreenProps, StackNavigator, useScreenNavigatorContext } from '../stack-navigator';
 import { useNavigationContext } from '../navigation-container';
 import { createPathname, detectIsMatch } from '../utils';
 
@@ -37,9 +32,8 @@ type TabNavigatorProps = {
 
 const Navigator = component<TabNavigatorProps>(
   ({ bottomNavigationOptions, slot }) => {
-    const navRef = useRef<StackNavigatorRef>(null);
     const layoutRef = useRef<AbsoluteLayoutRef>(null);
-    const bottomRef = useRef<StackLayoutRef>(null);
+    const bottomRef = useRef<FlexboxLayoutRef>(null);
     const update = useUpdate();
     const {
       height = 64,
@@ -80,7 +74,7 @@ const Navigator = component<TabNavigatorProps>(
         <AbsoluteLayout ref={layoutRef} onLayoutChanged={handleLayoutChange}>
           <StackLayout width='100%' height='100%'>
             {descriptorKeys.length > 0 && (
-              <StackNavigator.Root ref={navRef}>
+              <StackNavigator.Root>
                 {descriptorKeys.map(key => {
                   const { component, slot } = descriptorsMap[key];
 

@@ -1,9 +1,9 @@
-import { component, lazy, Suspense, type DarkElement } from '@dark-engine/core';
+import { type DarkElement, component, lazy, Suspense } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
-import { createGlobalStyle } from '@dark-engine/styled';
+import { createGlobalStyle, styled } from '@dark-engine/styled';
 
-import { PageTransition } from './page-transition';
+import { Pending } from './pending';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -27,35 +27,71 @@ const routes: Routes = [
   },
 ];
 
+const SlowItem = component(
+  () => {
+    const t = performance.now() + 3;
+
+    while (performance.now() < t) {
+      //
+    }
+
+    return null;
+  },
+  { displayName: 'SlowItem' },
+);
+
+const SlowContent = component(
+  () => {
+    //console.log('---SLOW---');
+    return (
+      <>
+        {Array(100)
+          .fill(null)
+          .map(() => (
+            <SlowItem />
+          ))}
+      </>
+    );
+  },
+  { displayName: 'SlowContent' },
+);
+
 type ShellProps = {
   slot: DarkElement;
 };
 
-const Shell = component<ShellProps>(({ slot }) => {
-  return (
-    <PageTransition>
-      <header>
-        <NavLink to='/home'>Home</NavLink>
-        <NavLink to='/about'>About</NavLink>
-        <NavLink to='/contacts'>Contacts</NavLink>
-      </header>
-      <Suspense fallback={<Spinner />}>
-        <main>{slot}</main>
-      </Suspense>
-    </PageTransition>
-  );
-});
+const Shell = component<ShellProps>(
+  ({ slot }) => {
+    return (
+      <>
+        <header>
+          <NavLink to='/home'>Home</NavLink>
+          <NavLink to='/about'>About</NavLink>
+          <NavLink to='/contacts'>Contacts</NavLink>
+          <Pending />
+        </header>
+        <Suspense fallback={<Spinner />}>
+          <Content>{slot}</Content>
+        </Suspense>
+        <SlowContent />
+      </>
+    );
+  },
+  { displayName: 'Shell' },
+);
 
 const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes}>{slot => <Shell>{slot}</Shell>}</Router>
+      <Router routes={routes} mode='concurrent'>
+        {slot => <Shell>{slot}</Shell>}
+      </Router>
     </>
   );
 });
 
-const Spinner = component(() => <div>Loading...</div>);
+const Spinner = component(() => <div>LOADING...</div>);
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -74,8 +110,8 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    font-family: 'Roboto';
-    background-color: #3949AB;
+    font-family: arial;
+    background-color: #303F9F;
     overflow-y: scroll;
     overflow-x: hidden;
   }
@@ -99,7 +135,7 @@ const GlobalStyle = createGlobalStyle`
   header a:hover {
     color: #fff59d;
   }
-  
+
   main {
     width: 100%;
     padding: 16px;
@@ -152,6 +188,10 @@ const GlobalStyle = createGlobalStyle`
   p {
     line-height: 2;
   }
+`;
+
+const Content = styled.main`
+  background-color: #fff;
 `;
 
 createRoot(document.getElementById('root')).render(<App />);

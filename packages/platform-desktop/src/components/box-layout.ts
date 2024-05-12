@@ -1,5 +1,5 @@
 import { QWidget, QBoxLayout, Direction } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef, detectIsNumber, detectIsArray } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component, detectIsNumber, detectIsArray } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qBoxLayout } from '../factory';
@@ -14,6 +14,7 @@ import { runAtTheEndOfCommit } from '../dom';
 
 export type BoxLayoutProps = WithSlotProps<
   {
+    ref?: Ref<BoxLayoutRef>;
     direction: Direction;
     spacing?: number;
     stretch?: Array<number>;
@@ -22,9 +23,9 @@ export type BoxLayoutProps = WithSlotProps<
 >;
 export type BoxLayoutRef = QDarkBoxLayout;
 
-const BoxLayout = forwardRef<BoxLayoutProps, BoxLayoutRef>(
-  component((props, ref) => qBoxLayout({ ref, ...props }), { displayName: 'BoxLayout' }),
-) as ComponentFactory<BoxLayoutProps, BoxLayoutRef>;
+const BoxLayout = component<BoxLayoutProps>(props => qBoxLayout(props), {
+  displayName: 'BoxLayout',
+}) as ComponentFactory<BoxLayoutProps>;
 
 class QDarkBoxLayout extends QWidget implements Container {
   private boxLayout = new QBoxLayout(Direction.LeftToRight);

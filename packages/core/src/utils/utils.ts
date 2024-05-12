@@ -1,5 +1,5 @@
 import type { NestedArray } from '../shared';
-import { INDEX_KEY } from '../constants';
+import { INDEX_KEY, LIB } from '../constants';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
 
@@ -25,6 +25,12 @@ const detectIsFalsy = (o: any) => detectIsEmpty(o) || o === false;
 
 const detectIsPromise = <T = unknown>(o: any): o is Promise<T> => o instanceof Promise;
 
+const detectIsEqual = (a: any, b: any) => Object.is(a, b);
+
+const keys = (o: object) => Object.keys(o);
+
+const hasKeys = (o: object) => keys(o).length > 0;
+
 const getTime = () => Date.now();
 
 const dummyFn = () => {};
@@ -35,7 +41,15 @@ const falseFn = () => false;
 
 const sameFn = <T = any>(x: T) => x;
 
-const error = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
+const logError = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
+
+const formatErrorMsg = (x: string, prefix = LIB) => `[${prefix}]: ${x}`;
+
+function throwThis(x: Error | Promise<unknown>) {
+  throw x;
+}
+
+const illegal = (x: string, prefix = LIB) => throwThis(new Error(formatErrorMsg(x, prefix)));
 
 function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => any = sameFn): Array<T> {
   if (detectIsArray(source)) {
@@ -43,6 +57,7 @@ function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => an
   } else {
     return [transform(source)];
   }
+
   const list: Array<T> = [];
   const stack = [source[0]];
   let idx = 0;
@@ -67,20 +82,12 @@ function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => an
   return list;
 }
 
-function keyBy<T = any>(
-  list: Array<T>,
-  fn: (o: T) => string | number,
-  value = false,
-): Record<string | number, T | boolean> {
-  return list.reduce((acc, x) => ((acc[fn(x)] = value ? x : true), acc), {});
-}
-
 function detectAreDepsDifferent(prevDeps: Array<unknown>, nextDeps: Array<unknown>): boolean {
   if (prevDeps === nextDeps || (prevDeps.length === 0 && nextDeps.length === 0)) return false;
   const max = Math.max(prevDeps.length, nextDeps.length);
 
   for (let i = 0; i < max; i++) {
-    if (!Object.is(prevDeps[i], nextDeps[i])) return true;
+    if (!detectIsEqual(prevDeps[i], nextDeps[i])) return true;
   }
 
   return false;
@@ -90,7 +97,7 @@ const nextTick = (callback: () => void) => Promise.resolve().then(callback);
 
 const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
-const mapRecord = <T extends object>(record: T) => Object.keys(record).map(x => record[x]);
+const mapRecord = <T extends object>(record: T) => keys(record).map(x => record[x]);
 
 export {
   detectIsFunction,
@@ -105,13 +112,18 @@ export {
   detectIsEmpty,
   detectIsFalsy,
   detectIsPromise,
+  detectIsEqual,
+  keys,
+  hasKeys,
   getTime,
   dummyFn,
   trueFn,
   falseFn,
-  error,
+  logError,
+  formatErrorMsg,
+  throwThis,
+  illegal,
   flatten,
-  keyBy,
   detectAreDepsDifferent,
   nextTick,
   createIndexKey,

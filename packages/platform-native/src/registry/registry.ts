@@ -10,6 +10,7 @@ import {
 import { ROOT } from '@dark-engine/core';
 
 import { type TagNativeElement } from '../native-element';
+import { illegal } from '../utils';
 
 export const enum NSViewFlag {
   CONTENT_VIEW = 'CONTENT_VIEW',
@@ -48,7 +49,7 @@ function getElementFactory(name: string): NSElementFactory {
   const factory = viewMap[name] || null;
 
   if (!factory) {
-    throw new Error(`[Dark]: the element with name "${name}" is not registered!`);
+    illegal(`The element with name "${name}" is not registered!`);
   }
 
   return factory;
@@ -66,7 +67,7 @@ registerElement('frame', () => require('@nativescript/core').Frame, {
         frame.navigate(() => page);
       }
     } else {
-      throw Error('[Dark]: Frame must contain only Page!');
+      illegal('The frame must contain only a Page!');
     }
   },
 });

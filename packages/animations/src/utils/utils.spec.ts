@@ -1,4 +1,4 @@
-import { fix, illegal, range, uniq } from './utils';
+import { fix, range, uniq } from './utils';
 
 describe('@animations/utils', () => {
   test('the fix function works correctly', () => {
@@ -9,10 +9,6 @@ describe('@animations/utils', () => {
     expect(fix(0.123456)).toBe(0.1235);
     expect(fix(0.123456, 2)).toBe(0.12);
     expect(fix(10.123456, 0)).toBe(10);
-  });
-  test('the illegal function works correctly', () => {
-    expect(typeof illegal).toBe('function');
-    expect(() => illegal('ohh')).toThrowError('ohh');
   });
   test('the range function works correctly', () => {
     expect(typeof range).toBe('function');

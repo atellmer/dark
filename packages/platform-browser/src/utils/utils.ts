@@ -1,4 +1,7 @@
-import { detectIsUndefined } from '@dark-engine/core';
+import { detectIsUndefined, illegal as $illegal } from '@dark-engine/core';
+
+import { type TagNativeElement } from '../native-element';
+import { LIB } from '../constants';
 
 const svgTagNames = new Set([
   'svg',
@@ -83,4 +86,8 @@ const detectIsVoidElement = (name: string) => voidTagNames.has(name);
 
 const detectIsBrowser = () => !detectIsUndefined(globalThis.window);
 
-export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser };
+const illegal = (x: string) => $illegal(LIB, x);
+
+const removeContent = (element: TagNativeElement) => (element.innerHTML = '');
+
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent };

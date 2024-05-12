@@ -1,39 +1,39 @@
-import { type Fiber } from '../fiber';
+import { illegal } from '../utils';
 import { type VirtualNode } from '../view';
 import { type Callback } from '../shared';
+import { type Fiber } from '../fiber';
+import { $$scope } from '../scope';
 
 export type Platform = {
   createElement: <N>(vNode: VirtualNode) => N;
-  insertElement: <N>(node: N, idx: number, parent: N) => void;
+  toggle: <N>(element: N, isVisible: boolean) => void;
   raf: typeof requestAnimationFrame;
   caf: typeof cancelAnimationFrame;
   spawn: (callback: Callback) => void;
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
-  detectIsPortal: (instance: unknown) => boolean;
-  unmountPortal: (fiber: Fiber) => void;
   chunk: (fiber: Fiber) => void;
 };
 
-const defaultRealisation = () => {
-  throw new Error('Function not installed by renderer!');
-};
+const realisation = () => illegal('The function was not installed by renderer!') as any;
 
 const platform: Platform = {
-  createElement: defaultRealisation,
-  insertElement: defaultRealisation,
-  raf: defaultRealisation,
-  caf: defaultRealisation,
-  spawn: defaultRealisation,
-  commit: defaultRealisation,
-  finishCommit: defaultRealisation,
-  detectIsDynamic: defaultRealisation,
-  detectIsPortal: defaultRealisation,
-  unmountPortal: defaultRealisation,
-  chunk: defaultRealisation,
+  createElement: realisation,
+  toggle: realisation,
+  raf: realisation,
+  caf: realisation,
+  spawn: realisation,
+  commit: realisation,
+  finishCommit: realisation,
+  detectIsDynamic: realisation,
+  chunk: realisation,
 };
 
 const detectIsServer = () => !platform.detectIsDynamic();
 
-export { platform, detectIsServer };
+const detectIsHydration = () => $$scope().getIsHydrateZone();
+
+const detectIsSSR = () => detectIsServer() || detectIsHydration();
+
+export { platform, detectIsServer, detectIsHydration, detectIsSSR };

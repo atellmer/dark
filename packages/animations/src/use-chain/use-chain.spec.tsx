@@ -1,9 +1,9 @@
 import { component, useState } from '@dark-engine/core';
 import { dom, createBrowserEnv, replacer } from '@test-utils';
 
+import { type SpringApi } from '../use-springs';
 import { type SpringValue } from '../shared';
 import { Animated } from '../animated';
-import { type SpringApi } from '../use-springs';
 import { useSpring } from '../use-spring';
 import { useTrail } from '../use-trail';
 import { useSprings } from '../use-springs';
@@ -104,15 +104,16 @@ describe('@animations/use-chain', () => {
     };
 
     render(<App />);
+    jest.runAllTimers();
     expect(host.innerHTML).toBe(content(false, 0, 0, 0, 0));
 
     off1 = api1.on('series-end', () => {
       off1();
-      expect(host.innerHTML).toBe(content(false, 1, 0, 0, 0));
+      expect(host.innerHTML).toBe(content(true, 1, 0, 0, 0));
     });
     off2 = api2.on('series-end', () => {
       off2();
-      expect(host.innerHTML).toBe(content(false, 1, 1, 0, 0));
+      expect(host.innerHTML).toBe(content(true, 1, 1, 0, 0));
     });
     off3 = api3.on('series-end', () => {
       off3();
@@ -132,7 +133,7 @@ describe('@animations/use-chain', () => {
     });
     off3 = api3.on('series-end', () => {
       off3();
-      expect(host.innerHTML).toBe(content(true, 1, 1, 0, 0));
+      expect(host.innerHTML).toBe(content(false, 1, 1, 0, 0));
     });
     off2 = api2.on('series-end', () => {
       off2();
@@ -226,16 +227,16 @@ describe('@animations/use-chain', () => {
 
     setIsOpen(true);
     jest.advanceTimersByTime(50);
-    expect(host.innerHTML).toBe(content(false, 0.1884, 0, 0, 0));
+    expect(host.innerHTML).toBe(content(true, 0.1884, 0, 0, 0));
 
     jest.advanceTimersByTime(50);
-    expect(host.innerHTML).toBe(content(false, 0.4227, 0.1884, 0, 0));
+    expect(host.innerHTML).toBe(content(true, 0.4227, 0.1884, 0, 0));
 
     jest.advanceTimersByTime(50);
     expect(host.innerHTML).toBe(content(true, 0.6093, 0.4227, 0.1884, 0));
 
     jest.advanceTimersByTime(50);
-    expect(host.innerHTML).toBe(content(true, 0.7412, 0.6093, 0.4227, 0.1106));
+    expect(host.innerHTML).toBe(content(true, 0.7412, 0.6093, 0.4227, 0.1884));
 
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(true, 1, 1, 1, 1));
@@ -251,7 +252,7 @@ describe('@animations/use-chain', () => {
     expect(host.innerHTML).toBe(content(true, 1, 0.8116, 0.5773, 0.3907));
 
     jest.advanceTimersByTime(50);
-    expect(host.innerHTML).toBe(content(true, 0.8894, 0.5773, 0.3907, 0.2588));
+    expect(host.innerHTML).toBe(content(true, 0.8116, 0.5773, 0.3907, 0.2588));
 
     jest.runAllTimers();
     expect(host.innerHTML).toBe(content(false, 0, 0, 0, 0));

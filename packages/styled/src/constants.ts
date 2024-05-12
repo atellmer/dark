@@ -1,4 +1,5 @@
 export const VERSION = '1.2.0';
+export const LIB = '@dark-engine/styled';
 export const STYLE_TAG = 'style';
 export const STYLED_ATTR = 'dark-styled';
 export const GLOBAL_ATTR_VALUE = 'g';
@@ -26,3 +27,4 @@ export const SINGLE_LINE_COMMENT_END_MARK = '\n';
 export const MULTI_LINE_COMMENT_START_MARK = '/*';
 export const MULTI_LINE_COMMENT_END_MARK = '*/';
 export const URL_FN_MARK = 'url';
+export const NULL_MARK = 'null';

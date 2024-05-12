@@ -3,6 +3,7 @@ import { type DarkElement, type AppResource, STATE_SCRIPT_TYPE, $$scope } from '
 import { render } from '../render';
 import { unmount } from '../create-root';
 import type { TagNativeElement } from '../native-element';
+import { illegal } from '../utils';
 
 function hydrateRoot(container: TagNativeElement | Document, element: DarkElement) {
   const tag = container as TagNativeElement;
@@ -28,7 +29,7 @@ function hydrate() {
 
     element.remove();
   } catch (error) {
-    throw Error('[Dark]: can not hydrate app state from the server!');
+    illegal(`Can't hydrate app state from the server!`);
   }
 }
 

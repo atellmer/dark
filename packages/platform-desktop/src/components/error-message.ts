@@ -1,5 +1,5 @@
 import { type QErrorMessageSignals, QErrorMessage } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qErrorMessage } from '../factory';
@@ -8,6 +8,7 @@ import { qErrorMessage } from '../factory';
 
 export type ErrorMessageProps = WithStandardProps<
   {
+    ref?: Ref<ErrorMessageRef>;
     open: boolean;
     message: string;
   } & WidgetProps
@@ -15,9 +16,9 @@ export type ErrorMessageProps = WithStandardProps<
 export type ErrorMessageRef = QErrorMessage;
 export type ErrorMessageSignals = QErrorMessageSignals;
 
-const ErrorMessage = forwardRef<ErrorMessageProps, ErrorMessageRef>(
-  component((props, ref) => qErrorMessage({ ref, ...props }), { displayName: 'ErrorMessage' }),
-) as ComponentFactory<ErrorMessageProps, ErrorMessageRef>;
+const ErrorMessage = component<ErrorMessageProps>(props => qErrorMessage(props), {
+  displayName: 'ErrorMessage',
+}) as ComponentFactory<ErrorMessageProps>;
 
 class QDarkErrorMessage extends QErrorMessage {
   setOpen(value: boolean) {

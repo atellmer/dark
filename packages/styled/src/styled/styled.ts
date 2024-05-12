@@ -6,7 +6,6 @@ import {
   type DarkElement,
   View,
   component,
-  forwardRef,
   useMemo,
   detectIsString,
   detectIsFunction,
@@ -25,6 +24,7 @@ import {
   COMPONENTS_ATTR_VALUE,
   INTERLEAVE_COMPONENTS_ATTR_VALUE,
   BLANK_SPACE,
+  NULL_MARK,
 } from '../constants';
 import {
   detectIsBrowser,
@@ -51,17 +51,20 @@ const $$styled = Symbol('styled');
 
 setupGlobal();
 function styled<P extends object, T extends object = {}>(tagName: string | ComponentFactory<P>) {
-  const factory = detectIsString(tagName) ? (props: P) => View({ as: tagName, ...props }) : tagName;
+  const isString = detectIsString(tagName);
+  const factory = isString ? (props: P) => View({ as: tagName, ...props }) : tagName;
+  const targetName = isString ? tagName : (factory as ComponentFactory<P>).displayName || 'Component';
+  const displayName = `Styled.${targetName}`;
 
   if (!isLoaded && detectIsBrowser()) {
     reuse(getInterleavedElements(), createTag);
     isLoaded = true;
   }
 
-  return createStyledComponent<P & T>(factory as Factory<P & T>);
+  return createStyledComponent<P & T>(factory as Factory<P & T>, displayName);
 }
 
-function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
+function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displayName: string) {
   let transform: TransformFn<P> = x => x;
   const isExtending = detectIsStyled(factory);
   const config = isExtending ? getExtendingConfig(factory as StyledComponentFactory<P>) : null;
@@ -72,8 +75,8 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
     const fns = filterArgs<T>($args);
     const [sheet, sheets] = slice<T>(css($source, ...$args));
     const [baseName, baseStyle, baseKeyframes] = generate({ sheet, cache });
-    const styled = forwardRef<T, unknown>(
-      component((props, ref) => {
+    const styled = component<T>(
+      props => {
         const { as: component, ...rest } = props;
         const theme = useTheme();
         const isSwap = detectIsFunction(component);
@@ -130,8 +133,9 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>) {
           $props.slot = $props.slot((x: string) => `${className}_${x}`);
         }
 
-        return $factory({ ...$transform($props), ref, className });
-      }),
+        return $factory({ ...$transform($props), className });
+      },
+      { displayName },
     ) as StyledComponentFactory<T>;
 
     styled[$$styled] = {
@@ -194,9 +198,16 @@ function generate<P extends object>(options: GenerateOptions<P>): [string, strin
   const key = sheet.generate({ className: FUNCTION_MARK, props, fns });
   const item = cache.get(key);
   const className = item ? item[0] : genClassName(key);
-  const css = item ? item[1] : key.replaceAll(FUNCTION_MARK, className);
+  let css = '';
   let style = '';
   let keyframes = '';
+
+  if (item) {
+    css = item[1];
+  } else {
+    css = key.replaceAll(FUNCTION_MARK, className);
+    css = css.replaceAll(`${DOT_MARK}${NULL_MARK}`, `${DOT_MARK}${className}`);
+  }
 
   style += css;
   cache.set(key, [className, css]);

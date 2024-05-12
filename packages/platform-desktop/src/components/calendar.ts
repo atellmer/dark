@@ -4,7 +4,7 @@ import {
   SelectionMode,
   VerticalHeaderFormat,
 } from '@nodegui/nodegui/dist/lib/QtWidgets/QCalendarWidget';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qCalendar } from '../factory';
@@ -18,6 +18,7 @@ import { qCalendar } from '../factory';
 
 export type CalendarProps = WithStandardProps<
   {
+    ref?: Ref<CalendarRef>;
     gridHidden?: boolean;
     navigationBarHidden?: boolean;
     firstDayOfWeek?: DayOfWeek;
@@ -29,9 +30,9 @@ export type CalendarProps = WithStandardProps<
 export type CalendarRef = QDarkCalendar;
 export type CalendarSignals = QCalendarWidgetSignals;
 
-const Calendar = forwardRef<CalendarProps, CalendarRef>(
-  component((props, ref) => qCalendar({ ref, ...props }), { displayName: 'Calendar' }),
-) as ComponentFactory<CalendarProps, CalendarRef>;
+const Calendar = component<CalendarProps>(props => qCalendar(props), {
+  displayName: 'Calendar',
+}) as ComponentFactory<CalendarProps>;
 
 class QDarkCalendar extends QCalendarWidget {
   constructor() {

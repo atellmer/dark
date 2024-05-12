@@ -93,7 +93,6 @@ const App = component(() => {
   const [name, setName] = useState('');
   const deferredName = useDeferredValue(name);
   const isStale = name !== deferredName;
-
   const handleInput = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => setName(e.target.value);
 
   return (

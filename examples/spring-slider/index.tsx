@@ -65,6 +65,8 @@ const App = component(() => {
         next
       </button>
       {items[0]}
+      <br />
+      <br />
       <Container>
         {transition(({ spring, item }) => {
           return (
@@ -104,6 +106,7 @@ const Item = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
   transform-origin: 0 0;
   background-color: ${p => p.$color};
   color: #fff;
+  will-change: opacity, transform;
 `;
 
 createRoot(document.getElementById('root')).render(<App />);

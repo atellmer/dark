@@ -19,10 +19,9 @@ import {
   scheduler,
 } from '@dark-engine/core';
 
-import { createNativeElement, insertNativeElementByIndex, commit, finishCommit } from '../dom';
-import { detectIsPortal, unmountPortal } from '../portal';
-import type { TagNativeElement } from '../native-element';
-import { detectIsBrowser } from '../utils';
+import { createNativeElement, toggle, commit, finishCommit } from '../dom';
+import { detectIsBrowser, illegal, removeContent } from '../utils';
+import { type TagNativeElement } from '../native-element';
 
 const isBrowser = detectIsBrowser();
 const roots = new Map<Element, number>();
@@ -33,15 +32,13 @@ let isInjected = false;
 
 function inject() {
   platform.createElement = createNativeElement as typeof platform.createElement;
-  platform.insertElement = insertNativeElementByIndex as typeof platform.insertElement;
+  platform.toggle = toggle as typeof platform.toggle;
   platform.raf = raf;
   platform.caf = caf;
   platform.spawn = spawn;
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = trueFn;
-  platform.detectIsPortal = detectIsPortal;
-  platform.unmountPortal = unmountPortal;
   platform.chunk = dummyFn;
   isInjected = true;
 }
@@ -50,18 +47,18 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
   !isInjected && inject();
   if (process.env.NODE_ENV !== 'production') {
     if (!(container instanceof Element) && !((container as unknown) instanceof Document)) {
-      throw new Error(`[Dark]: render receives a valid element as container!`);
+      illegal(`The render receives a valid element as container!`);
     }
   }
 
   const isMounted = !detectIsUndefined(roots.get(container));
-  const isHydrate = detectIsFunction(hydrate);
+  const isHydration = detectIsFunction(hydrate);
   let rootId: number = null;
 
   if (!isMounted) {
     rootId = roots.size;
     roots.set(container, rootId);
-    !isHydrate && (container.innerHTML = '');
+    !isHydration && removeContent(container);
   } else {
     rootId = roots.get(container);
   }
@@ -85,9 +82,9 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
 
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setIsHydrateZone(isHydrate);
+    $scope.setIsHydrateZone(isHydration);
     $scope.setNextUnitOfWork(fiber);
-    isHydrate && hydrate();
+    isHydration && hydrate();
   };
 
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL });

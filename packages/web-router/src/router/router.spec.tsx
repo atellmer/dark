@@ -1,8 +1,9 @@
-import { type DarkElement, type MutableRef, component, useRef, Fragment } from '@dark-engine/core';
+import { type DarkElement, type MutableRef, component, useRef, Fragment, useLayoutEffect } from '@dark-engine/core';
+import { createBrowserEnv, replacer, resetBrowserHistory, sleep, click } from '@test-utils';
 
-import { createBrowserEnv, replacer, resetBrowserHistory, sleep } from '@test-utils';
 import { type Routes } from '../create-routes';
 import { type RouterRef, Router } from './router';
+import { NavLink } from '../nav-link';
 
 type AppProps = {
   url: string;
@@ -16,6 +17,7 @@ beforeEach(() => {
 
 afterEach(() => {
   resetBrowserHistory();
+  host.parentElement === document.body && document.body.removeChild(host);
 });
 
 describe('@web-router/router', () => {
@@ -1195,5 +1197,90 @@ describe('@web-router/router', () => {
 
     render(<App url='/en/contact/broken' />);
     expect(host.innerHTML).toMatchInlineSnapshot(`"<root><not-found>/</not-found></root>"`);
+  });
+
+  test('can render in concurrent mode correctly', async () => {
+    jest.useRealTimers();
+    let x = 0;
+    const routes: Routes = [
+      {
+        path: 'first',
+        component: component(() => <div>first</div>),
+      },
+      {
+        path: 'second',
+        component: component(() => <div>second</div>),
+      },
+      {
+        path: 'third',
+        component: component(() => <div>third</div>),
+      },
+      {
+        path: '**',
+        redirectTo: 'first',
+      },
+    ];
+
+    const Content = component<{ slot: DarkElement }>(({ slot }) => {
+      useLayoutEffect(() => {
+        const linkToFirst = document.querySelector('a[href="/first"]');
+        const linkToSecond = document.querySelector('a[href="/second"]');
+        const linkToThird = document.querySelector('a[href="/third"]');
+        const map = {
+          1: () => {
+            expect(host.innerHTML).toMatchInlineSnapshot(
+              `"<a href="/first">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
+            );
+          },
+          2: () => {
+            expect(host.innerHTML).toMatchInlineSnapshot(
+              `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
+            );
+            click(linkToSecond);
+          },
+          3: () => {
+            expect(host.innerHTML).toMatchInlineSnapshot(
+              `"<a href="/first">first</a><a href="/second" class="active-link">second</a><a href="/third">third</a><div><div>second</div></div>"`,
+            );
+            click(linkToThird);
+          },
+          4: () => {
+            expect(host.innerHTML).toMatchInlineSnapshot(
+              `"<a href="/first">first</a><a href="/second">second</a><a href="/third" class="active-link">third</a><div><div>third</div></div>"`,
+            );
+            click(linkToFirst);
+          },
+          5: () => {
+            expect(host.innerHTML).toMatchInlineSnapshot(
+              `"<a href="/first" class="active-link">first</a><a href="/second">second</a><a href="/third">third</a><div><div>first</div></div>"`,
+            );
+          },
+        };
+
+        x++;
+        map[x]();
+      });
+
+      return (
+        <>
+          <NavLink to='/first'>first</NavLink>
+          <NavLink to='/second'>second</NavLink>
+          <NavLink to='/third'>third</NavLink>
+          <div>{slot}</div>
+        </>
+      );
+    });
+
+    const App = component(() => {
+      return (
+        <Router routes={routes} mode='concurrent'>
+          {slot => <Content>{slot}</Content>}
+        </Router>
+      );
+    });
+
+    document.body.appendChild(host);
+    render(<App />);
+    await sleep(200);
   });
 });

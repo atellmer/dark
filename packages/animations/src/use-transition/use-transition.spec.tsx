@@ -94,7 +94,7 @@ describe('@animations/use-transition', () => {
     items = generate(1);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(spy).toHaveBeenCalledTimes(58);
+    expect(spy).toHaveBeenCalledTimes(56);
     expect(spy).toHaveBeenCalledWith({ opacity: 0 });
     expect(spy).toHaveBeenCalledWith({ opacity: 0.1884 });
     expect(spy).toHaveBeenCalledWith({ opacity: 0.7749 });
@@ -158,8 +158,8 @@ describe('@animations/use-transition', () => {
     sync(items);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
-    expect(spies[0]).toHaveBeenCalledTimes(58);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
+    expect(spies[0]).toHaveBeenCalledTimes(56);
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0 });
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.1884 });
     expect(spies[0]).toHaveBeenCalledWith({ scale: 0.7749 });
@@ -173,8 +173,8 @@ describe('@animations/use-transition', () => {
     sync(items);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
-    expect(spies[0]).toHaveBeenCalledTimes(59);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
+    expect(spies[0]).toHaveBeenCalledTimes(57);
     expect(spies[1]).toHaveBeenCalledTimes(56);
     expect(spies[2]).toHaveBeenCalledTimes(56);
     expect(spies[1]).toHaveBeenCalledWith({ scale: 0 });
@@ -196,11 +196,11 @@ describe('@animations/use-transition', () => {
     sync(items);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
     expect(host.innerHTML).toBe(content(items, 1));
-    expect(spies[0]).toHaveBeenCalledTimes(59);
-    expect(spies[1]).toHaveBeenCalledTimes(59);
-    expect(spies[2]).toHaveBeenCalledTimes(59);
+    expect(spies[0]).toHaveBeenCalledTimes(57);
+    expect(spies[1]).toHaveBeenCalledTimes(57);
+    expect(spies[2]).toHaveBeenCalledTimes(57);
     expect(spies[0]).toHaveBeenCalledWith({ scale: 2 });
     expect(spies[0]).toHaveBeenLastCalledWith({ scale: 1 });
     expect(spies[1]).toHaveBeenCalledWith({ scale: 2 });
@@ -213,10 +213,10 @@ describe('@animations/use-transition', () => {
     sync(items);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
-    expect(spies[0]).toHaveBeenCalledTimes(59);
-    expect(spies[1]).toHaveBeenCalledTimes(59);
-    expect(spies[2]).toHaveBeenCalledTimes(55);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
+    expect(spies[0]).toHaveBeenCalledTimes(57);
+    expect(spies[1]).toHaveBeenCalledTimes(57);
+    expect(spies[2]).toHaveBeenCalledTimes(53);
     expect(spies[2]).toHaveBeenCalledWith({ scale: 1 });
     expect(spies[2]).toHaveBeenCalledWith({ scale: 0.7308 });
     expect(spies[2]).toHaveBeenLastCalledWith({ scale: 0 });
@@ -242,7 +242,7 @@ describe('@animations/use-transition', () => {
     sync(items);
     render(<App items={items} />);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
     expect(spies[0]).toHaveBeenLastCalledWith({ scale: 0 });
     expect(spies[1]).toHaveBeenLastCalledWith({ scale: 0 });
     expect(host.innerHTML).toBe(replacer);
@@ -298,7 +298,7 @@ describe('@animations/use-transition', () => {
 
     setIsOpen(true);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
     expect(styleSpy).toHaveBeenCalledTimes(56);
     expect(styleSpy).toHaveBeenCalledWith({ scale: 0 });
     expect(styleSpy).toHaveBeenCalledWith({ scale: 0.7412 });
@@ -309,8 +309,8 @@ describe('@animations/use-transition', () => {
 
     setIsOpen(false);
     jest.runAllTimers();
-    expect(renderSpy).toHaveBeenCalledTimes(3);
-    expect(styleSpy).toHaveBeenCalledTimes(55);
+    expect(renderSpy).toHaveBeenCalledTimes(2);
+    expect(styleSpy).toHaveBeenCalledTimes(53);
     expect(styleSpy).toHaveBeenCalledWith({ scale: 1 });
     expect(styleSpy).toHaveBeenCalledWith({ scale: 0.8116 });
     expect(styleSpy).toHaveBeenLastCalledWith({ scale: 0 });
@@ -372,7 +372,7 @@ describe('@animations/use-transition', () => {
 
     setIsOpen(false);
     jest.runAllTimers();
-    expect(styleSpy).toHaveBeenCalledTimes(121);
+    expect(styleSpy).toHaveBeenCalledTimes(119);
     expect(styleSpy).toHaveBeenCalledWith({ scale: 1 });
     expect(styleSpy).toHaveBeenLastCalledWith({ scale: 0 });
     expect(host.innerHTML).toBe(content(false));
@@ -435,7 +435,7 @@ describe('@animations/use-transition', () => {
 
     setIsOpen(false);
     jest.runAllTimers();
-    expect(styleSpy).toHaveBeenCalledTimes(120);
+    expect(styleSpy).toHaveBeenCalledTimes(118);
     expect(styleSpy).toHaveBeenCalledWith({ scale: 1, opacity: 1 });
     expect(styleSpy).toHaveBeenCalledWith({ scale: 0, opacity: 0.1134 });
     expect(styleSpy).toHaveBeenLastCalledWith({ scale: 0, opacity: 0 });
@@ -499,7 +499,7 @@ describe('@animations/use-transition', () => {
 
     setIsOpen(false);
     jest.runAllTimers();
-    expect(styleSpy).toHaveBeenCalledTimes(56);
+    expect(styleSpy).toHaveBeenCalledTimes(54);
     expect(styleSpy).toHaveBeenCalledWith({ scale: 1, zIndex: 1 });
     expect(styleSpy).toHaveBeenCalledWith({ scale: 0, zIndex: 1 });
     expect(styleSpy).toHaveBeenLastCalledWith({ scale: 0, zIndex: 0 });
@@ -545,7 +545,7 @@ describe('@animations/use-transition', () => {
 
     render(<App />);
     jest.runAllTimers();
-    expect(spy).toHaveBeenCalledTimes(58);
+    expect(spy).toHaveBeenCalledTimes(56);
     expect(host.innerHTML).toBe(content(true, 1));
     spy.mockClear();
 
@@ -725,17 +725,6 @@ describe('@animations/use-transition', () => {
     let itemEndTime = null;
     let seriesEndTime = null;
     const App = component<AppProps>(({ items }) => {
-      const [transition, api] = useTransition<SpringProps, Item>(
-        items,
-        x => x.id,
-        () => ({
-          from: { opacity: 0 },
-          enter: { opacity: 1 },
-          leave: { opacity: 0 },
-          update: { opacity: 1 },
-        }),
-      );
-
       useLayoutEffect(() => {
         api.on('series-start', () => {
           seriesStartTime = time();
@@ -755,6 +744,16 @@ describe('@animations/use-transition', () => {
           seriesEndSpy();
         });
       }, []);
+      const [transition, api] = useTransition<SpringProps, Item>(
+        items,
+        x => x.id,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+          update: { opacity: 1 },
+        }),
+      );
 
       return transition(({ spring, item }) => {
         return (
@@ -775,10 +774,9 @@ describe('@animations/use-transition', () => {
 
     expect(seriesStartSpy).toHaveBeenCalledTimes(1);
     expect(itemStartSpy).toHaveBeenCalledTimes(1);
-    expect(itemChangeSpy).toHaveBeenCalledTimes(52);
+    expect(itemChangeSpy).toHaveBeenCalledTimes(51);
     expect(itemEndSpy).toHaveBeenCalledTimes(1);
     expect(seriesEndSpy).toHaveBeenCalledTimes(1);
-    expect(seriesStartSpy).toHaveBeenCalledTimes(1);
     expect(seriesEndTime).toBeGreaterThan(seriesStartTime);
     expect(itemEndTime).toBeGreaterThan(itemStartTime);
   });
@@ -1085,7 +1083,7 @@ describe('@animations/use-transition', () => {
     jest.runAllTimers();
 
     expect(host.innerHTML).toBe(content(items, 1));
-    expect(spy).toHaveBeenCalledTimes(174);
+    expect(spy).toHaveBeenCalledTimes(168);
     spy.mockClear();
 
     items = generate(5);
@@ -1093,6 +1091,6 @@ describe('@animations/use-transition', () => {
     jest.runAllTimers();
 
     expect(host.innerHTML).toBe(content(items, 1));
-    expect(spy).toHaveBeenCalledTimes(139);
+    expect(spy).toHaveBeenCalledTimes(133);
   });
 });

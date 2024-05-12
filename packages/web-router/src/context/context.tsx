@@ -1,8 +1,9 @@
-import { createContext, useContext } from '@dark-engine/core';
+import { type WritableAtom, createContext, useContext } from '@dark-engine/core';
 
 import { type RouterLocation } from '../location';
 import { type RouterHistory } from '../history';
 import { type Route } from '../create-routes';
+import { illegal } from '../utils';
 
 export type ActiveRouteContextValue = {
   location: RouterLocation;
@@ -12,11 +13,7 @@ export type ActiveRouteContextValue = {
 
 const ActiveRouteContext = createContext<ActiveRouteContextValue>(null, { displayName: 'ActiveRoute' });
 
-function useActiveRouteContext() {
-  const value = useContext(ActiveRouteContext);
-
-  return value;
-}
+const useActiveRouteContext = () => useContext(ActiveRouteContext);
 
 export type RouterHistoryContextValue = {
   history: RouterHistory;
@@ -24,23 +21,19 @@ export type RouterHistoryContextValue = {
 
 const RouterHistoryContext = createContext<RouterHistoryContextValue>(null, { displayName: 'RouterHistory' });
 
-function useRouterHistoryContext() {
-  const value = useContext(RouterHistoryContext);
-
-  return value;
-}
+const useRouterHistoryContext = () => useContext(RouterHistoryContext);
 
 const CurrentPathContext = createContext<string>(null, { displayName: 'CurrentPath' });
 
-function useCurrentPathContext() {
-  const value = useContext(CurrentPathContext);
+const useCurrentPathContext = () => useContext(CurrentPathContext);
 
-  return value;
-}
+const PendingContext = createContext<WritableAtom<boolean>>(null, { displayName: 'Pending' });
 
-function checkContextValue(value: ActiveRouteContextValue | RouterHistoryContextValue) {
+const usePendingContext = () => useContext(PendingContext);
+
+function checkContextValue(value: unknown) {
   if (!value) {
-    throw new Error('[web-router]: illegal invoke hook outside router!');
+    illegal(`Illegal hook's invoke outside router!`);
   }
 }
 
@@ -51,5 +44,7 @@ export {
   useRouterHistoryContext,
   CurrentPathContext,
   useCurrentPathContext,
+  PendingContext,
+  usePendingContext,
   checkContextValue,
 };

@@ -1,6 +1,6 @@
-import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
 import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
-import { detectIsArray, detectIsFunction } from '../utils';
+import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
+import { detectIsArray, detectIsFunction, detectIsEmpty } from '../utils';
 import { REPLACER, KEY_ATTR } from '../constants';
 import { $$scope } from '../scope';
 
@@ -18,7 +18,7 @@ class VirtualNode {
 class TagVirtualNode extends VirtualNode {
   name: string;
   attrs: Record<string, any>;
-  children: Array<TextVirtualNode | CommentVirtualNode | TagVirtualNode | VirtualNodeFactory | Component>;
+  children: Array<Instance>;
 
   constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
@@ -49,7 +49,9 @@ class CommentVirtualNode extends VirtualNode {
 function View(options: ViewOptions) {
   const factory: TagVirtualNodeFactory = () => {
     const { as: name, slot, _void = false, ...attrs } = options;
-    const children = (_void ? [] : detectIsArray(slot) ? slot : slot ? [slot] : []) as TagVirtualNode['children'];
+    const children = (
+      _void ? [] : detectIsArray(slot) ? slot : !detectIsEmpty(slot) ? [slot] : []
+    ) as TagVirtualNode['children'];
 
     return new TagVirtualNode(name, attrs, children);
   };
@@ -81,7 +83,7 @@ const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFac
 const getTagVirtualNodeKey = (vNode: TagVirtualNode): ElementKey | null =>
   vNode.attrs ? vNode.attrs[KEY_ATTR] ?? null : null;
 
-const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs && vNode.attrs[flag]);
+const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs[flag]);
 
 const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): ElementKey | null => factory[KEY_ATTR] ?? null;
 
@@ -139,28 +141,18 @@ function detectAreSameInstanceTypes(prevInst: Instance, nextInst: Instance, isCo
     }
   }
 
-  if (isComponentFactories) {
-    const pc = prevInst as Component;
-    const nc = nextInst as Component;
-
-    return pc.type === nc.type;
-  }
-
-  return getElementType(prevInst) === getElementType(nextInst);
+  return isComponentFactories
+    ? (prevInst as Component).type === (nextInst as Component).type
+    : getElementType(prevInst) === getElementType(nextInst);
 }
 
 function detectAreSameComponentTypesWithSameKeys(prevInst: Instance | null, nextInst: Instance | null) {
-  if (
-    prevInst &&
-    nextInst &&
+  return (
     detectIsComponent(prevInst) &&
     detectIsComponent(nextInst) &&
-    detectAreSameInstanceTypes(prevInst, nextInst, true)
-  ) {
-    return getElementKey(prevInst) === getElementKey(nextInst);
-  }
-
-  return false;
+    detectAreSameInstanceTypes(prevInst, nextInst, true) &&
+    getElementKey(prevInst) === getElementKey(nextInst)
+  );
 }
 
 type TextSource = string | number;
@@ -170,6 +162,8 @@ export type VirtualNodeFactory = () => VirtualNode;
 export type TagVirtualNodeFactory = () => TagVirtualNode;
 
 export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
+
+export type CanHasChildren = TagVirtualNode | Component;
 
 export type ViewOptions = {
   as: string;

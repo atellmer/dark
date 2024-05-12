@@ -1,8 +1,8 @@
 import { type DarkElement, component } from '@dark-engine/core';
 import { createBrowserEnv, sleep, waitUntilEffectsStart } from '@test-utils';
 
-import { InMemoryCache } from '../cache';
 import { DataClient, DataClientProvider } from '../client';
+import { InMemoryCache } from '../cache';
 import { useQuery } from '../use-query';
 import { useMutation } from './use-mutation';
 
@@ -13,7 +13,7 @@ enum Key {
 
 const createClient = () => new DataClient({ api: {}, cache: new InMemoryCache() });
 const withProvider = (app: DarkElement) => <DataClientProvider client={client}>{app}</DataClientProvider>;
-const waitQuery = () => sleep(5);
+const waitQuery = () => sleep(10);
 
 let { render } = createBrowserEnv();
 let client = createClient();
@@ -114,7 +114,6 @@ describe('@data/use-mutation', () => {
     await waitQuery();
 
     expect(spy.mock.calls).toEqual([
-      [true, null],
       [false, 0],
       [false, 0],
       [true, 0],

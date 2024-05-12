@@ -1,14 +1,14 @@
 import type { Frame as NSFrame } from '@nativescript/core';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { FrameAttributes } from '../jsx';
 import { frame } from '../factory';
 
-export type FrameProps = FrameAttributes;
+export type FrameProps = {
+  ref?: Ref<FrameRef>;
+} & FrameAttributes;
 export type FrameRef = NSFrame;
 
-const Frame = forwardRef<FrameProps, FrameRef>(
-  component((props, ref) => frame({ ref, ...props }), { displayName: 'Frame' }),
-) as ComponentFactory<FrameProps, FrameRef>;
+const Frame = component<FrameProps>(props => frame(props), { displayName: 'Frame' }) as ComponentFactory<FrameProps>;
 
 export { Frame };

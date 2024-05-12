@@ -12,10 +12,8 @@ import {
   CREATE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,
   DELETE_EFFECT_TAG,
-  SKIP_EFFECT_TAG,
   MOVE_MASK,
   FLUSH_MASK,
-  SHADOW_MASK,
   detectIsUndefined,
   detectIsBoolean,
   detectIsObject,
@@ -26,14 +24,12 @@ import {
   getFiberWithElement,
   collectElements,
   walk,
-  dummyFn,
-  $$scope,
   applyRef,
+  detectIsHydration,
 } from '@dark-engine/core';
 
-import { detectIsSvgElement, detectIsVoidElement } from '../utils';
+import { detectIsSvgElement, detectIsVoidElement, illegal, removeContent } from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
-import { detectIsPortal } from '../portal';
 import {
   INPUT_TAG,
   TEXTAREA_TAG,
@@ -56,45 +52,42 @@ import type {
 
 export type CSSProperties = Record<string, string | number>;
 
+const cache: Record<string, NativeElement> = {};
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
 
-const createNativeElementMap = {
-  [NodeType.TAG]: (vNode: VirtualNode): TagNativeElement => {
-    const tagNode = vNode as TagVirtualNode;
-    const name = tagNode.name;
+function createNativeElement(vNode: VirtualNode): NativeElement {
+  switch (vNode.type) {
+    case NodeType.TAG:
+      const name = (vNode as TagVirtualNode).name;
+      const tag = cache[name]
+        ? cache[name].cloneNode(false)
+        : detectIsSvgElement(name)
+        ? document.createElementNS('http://www.w3.org/2000/svg', name)
+        : document.createElement(name);
 
-    return detectIsSvgElement(name)
-      ? document.createElementNS('http://www.w3.org/2000/svg', name)
-      : document.createElement(name);
-  },
-  [NodeType.TEXT]: (vNode: VirtualNode): TextNativeElement => {
-    return document.createTextNode((vNode as TextVirtualNode).value);
-  },
-  [NodeType.COMMENT]: (vNode: VirtualNode): CommentNativeElement => {
-    return document.createComment((vNode as CommentVirtualNode).value);
-  },
-};
+      !cache[name] && (cache[name] = tag.cloneNode(false) as NativeElement);
 
-function createNativeElement(node: VirtualNode): NativeElement {
-  return createNativeElementMap[node.type](node);
+      return tag as TagNativeElement;
+    case NodeType.TEXT:
+      return document.createTextNode((vNode as TextVirtualNode).value) as TextNativeElement;
+    case NodeType.COMMENT:
+      return document.createComment((vNode as CommentVirtualNode).value) as CommentNativeElement;
+  }
 }
 
 function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
-  const keys = Object.keys(style);
-
-  for (const key of keys) {
+  for (const key in style) {
     (element as HTMLElement).style.setProperty(key, String(style[key]));
   }
 }
 
-function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZone: boolean) {
-  const attrNames = Object.keys(node.attrs);
+function addAttributes(element: NativeElement, vNode: TagVirtualNode, isHydration: boolean) {
   const tagElement = element as TagNativeElement;
 
-  for (let attrName of attrNames) {
-    const attrValue = node.attrs[attrName];
+  for (let attrName in vNode.attrs) {
+    const attrValue = vNode.attrs[attrName];
     const attribute = performAttribute(tagElement, attrName, attrValue);
 
     if (attribute === null) {
@@ -105,26 +98,19 @@ function addAttributes(element: NativeElement, node: TagVirtualNode, isHydrateZo
 
     if (detectIsEvent(attrName)) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
-    } else if (!isHydrateZone && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
-      const stop = patchProperties({
-        tagName: node.name,
-        element: tagElement,
-        attrValue,
-        attrName,
-      });
-
-      !stop && tagElement.setAttribute(attrName, attrValue);
+    } else if (!isHydration && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
+      !patchAttributes(tagElement, vNode.name, attrName, attrValue) && tagElement.setAttribute(attrName, attrValue);
     }
   }
 }
 
-function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
-  const attrNames = getAttributeNames(prevNode, nextNode);
+function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
+  const attrNames = getAttributeNames(prevVNode, nextVNode);
   const tagElement = element as TagNativeElement;
 
   for (let attrName of attrNames) {
-    const prevAttrValue = prevNode.attrs[attrName];
-    const nextAttrValue = nextNode.attrs[attrName];
+    const prevAttrValue = prevVNode.attrs[attrName];
+    const nextAttrValue = nextVNode.attrs[attrName];
     const attribute = performAttribute(tagElement, attrName, nextAttrValue, prevAttrValue);
 
     if (attribute === null) {
@@ -137,14 +123,8 @@ function updateAttributes(element: NativeElement, prevNode: TagVirtualNode, next
       if (detectIsEvent(attrName)) {
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
       } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
-        const stop = patchProperties({
-          tagName: nextNode.name,
-          element: tagElement,
-          attrValue: nextAttrValue,
-          attrName,
-        });
-
-        !stop && tagElement.setAttribute(attrName, nextAttrValue);
+        !patchAttributes(tagElement, nextVNode.name, attrName, nextAttrValue) &&
+          tagElement.setAttribute(attrName, nextAttrValue);
       }
     } else {
       tagElement.removeAttribute(attrName);
@@ -191,10 +171,10 @@ function toggleAttribute(element: TagNativeElement, name: string, value: string)
   value ? element.setAttribute(name, value) : element.removeAttribute(name);
 }
 
-function getAttributeNames(prevNode: TagVirtualNode, nextNode: TagVirtualNode) {
+function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
   const attrNames = new Set<string>();
-  const prevAttrs = Object.keys(prevNode.attrs);
-  const nextAttrs = Object.keys(nextNode.attrs);
+  const prevAttrs = Object.keys(prevVNode.attrs);
+  const nextAttrs = Object.keys(nextVNode.attrs);
   const size = Math.max(prevAttrs.length, nextAttrs.length);
 
   for (let i = 0; i < size; i++) {
@@ -208,15 +188,12 @@ const ATTR_TRANSFORM_MAP = {
   readonly: 'readOnly',
 };
 
-type PatchPropertiesOptions = {
-  tagName: string;
-  element: TagNativeElement;
-  attrName: string;
-  attrValue: AttributeValue;
-};
-
-function patchProperties(options: PatchPropertiesOptions): boolean {
-  const { tagName, element, attrName, attrValue } = options;
+function patchAttributes(
+  element: TagNativeElement,
+  tagName: string,
+  attrName: string,
+  attrValue: AttributeValue,
+): boolean {
   const fn = specialCasesMap[tagName];
   const $attrName = ATTR_TRANSFORM_MAP[attrName] || attrName;
   let stop = fn ? fn(element, attrName, attrValue) : false;
@@ -264,12 +241,12 @@ const specialCasesMap: Record<
 };
 
 function commitCreation(fiber: Fiber<NativeElement>) {
-  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parentFiber.element;
+  const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
+  const parentElement = parent.element;
   const childNodes = parentElement.childNodes;
-  const isHydrateZone = $$scope().getIsHydrateZone();
+  const isHydration = detectIsHydration();
 
-  if (isHydrateZone) {
+  if (isHydration) {
     let nativeElement = childNodes[fiber.eidx] as NativeElement;
 
     if (nativeElement instanceof DocumentType) {
@@ -285,55 +262,51 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (fiber.element.nodeName !== nativeElement.nodeName) {
-      throw Error('[platform-browser]: inconsistent element for hydration!');
+      illegal('Inconsistent element for hydration!');
     }
 
     fiber.element = nativeElement;
   } else {
-    if (!(fiber.mask & SHADOW_MASK)) {
-      if (detectIsTagVirtualNode(parentFiber.inst) && parentFiber.inst.attrs[DANGER_HTML_CONTENT]) {
-        throw new Error(`[platform-browser]: element with danger content can't have a children!`);
-      }
+    if (detectIsTagVirtualNode(parent.inst) && parent.inst.attrs[DANGER_HTML_CONTENT]) {
+      illegal(`The element with danger content can't have a children!`);
+    }
 
-      if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-        !detectIsVoidElement((parentFiber.inst as TagVirtualNode).name) &&
-          appendNativeElement(fiber.element, parentElement);
-      } else {
-        insertNativeElement(fiber.element, parentElement.childNodes[fiber.eidx], parentElement);
-      }
+    if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
+      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && appendNativeElement(fiber.element, parentElement);
+    } else {
+      insertNativeElement(fiber.element, parentElement.childNodes[fiber.eidx], parentElement);
     }
   }
 
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydrateZone);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydration);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
   const element = fiber.element;
-  const prevInstance = fiber.alt.inst as VirtualNode;
-  const nextInstance = fiber.inst as VirtualNode;
+  const prevInst = fiber.alt.inst as VirtualNode;
+  const nextInst = fiber.inst as VirtualNode;
 
-  detectIsPlainVirtualNode(nextInstance)
-    ? (prevInstance as PlainVirtualNode).value !== nextInstance.value && (element.textContent = nextInstance.value)
-    : updateAttributes(element, prevInstance as TagVirtualNode, nextInstance as TagVirtualNode);
+  detectIsPlainVirtualNode(nextInst)
+    ? (prevInst as PlainVirtualNode).value !== nextInst.value && (element.nodeValue = nextInst.value)
+    : updateAttributes(element, prevInst as TagVirtualNode, nextInst as TagVirtualNode);
 }
 
 function commitDeletion(fiber: Fiber<NativeElement>) {
-  const parentFiber = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
+  const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
   if (fiber.mask & FLUSH_MASK) {
-    parentFiber.element.innerHTML && (parentFiber.element.innerHTML = '');
-    return;
+    parent.element.children.length > 0 && removeContent(parent.element);
+  } else {
+    walk<NativeElement>(fiber, onWalkInCommitDeletion(parent.element));
   }
-
-  walk<NativeElement>(fiber, (fiber, skip) => {
-    if (fiber.element) {
-      !detectIsPortal(fiber.inst) &&
-        canRemoveNativeElement(fiber.element, parentFiber.element) &&
-        removeNativeElement(fiber.element, parentFiber.element);
-      return skip();
-    }
-  });
 }
+
+const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
+  if (fiber.element) {
+    !fiber.isPortal && removeNativeElement(fiber.element, parentElement);
+    return skip();
+  }
+};
 
 function move(fiber: Fiber<NativeElement>) {
   const sourceNodes = collectElements(fiber, x => x.element);
@@ -341,7 +314,6 @@ function move(fiber: Fiber<NativeElement>) {
   const parentElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
   const elementIdx = fiber.eidx;
-  let idx = 0;
   const move = () => {
     for (let i = 1; i < sourceNodes.length; i++) {
       removeNativeElement(parentElement.childNodes[elementIdx + 1], parentElement);
@@ -349,6 +321,7 @@ function move(fiber: Fiber<NativeElement>) {
 
     replaceNativeElement(sourceFragment, parentElement.childNodes[elementIdx], parentElement);
   };
+  let idx = 0;
 
   for (const node of sourceNodes) {
     insertNativeElement(document.createComment(`${elementIdx}:${idx}`), node, parentElement);
@@ -359,21 +332,26 @@ function move(fiber: Fiber<NativeElement>) {
   moves.push(move);
 }
 
-const commitMap: Record<string, (fiber: Fiber<NativeElement>) => void> = {
-  [CREATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
-    if (!fiber.element || detectIsPortal(fiber.inst)) return;
-    trackUpdate && trackUpdate(fiber.element);
-    commitCreation(fiber);
-  },
-  [UPDATE_EFFECT_TAG]: (fiber: Fiber<NativeElement>) => {
-    fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-    if (!fiber.element || detectIsPortal(fiber.inst)) return;
-    trackUpdate && trackUpdate(fiber.element);
-    commitUpdate(fiber);
-  },
-  [DELETE_EFFECT_TAG]: commitDeletion,
-  [SKIP_EFFECT_TAG]: dummyFn,
-};
+function commit(fiber: Fiber<NativeElement>) {
+  switch (fiber.tag) {
+    case CREATE_EFFECT_TAG:
+      if (!fiber.element || fiber.isPortal) return;
+      trackUpdate && trackUpdate(fiber.element);
+      commitCreation(fiber);
+      break;
+    case UPDATE_EFFECT_TAG:
+      fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
+      if (!fiber.element || fiber.isPortal) return;
+      trackUpdate && trackUpdate(fiber.element);
+      commitUpdate(fiber);
+      break;
+    case DELETE_EFFECT_TAG:
+      commitDeletion(fiber);
+      break;
+    default:
+      break;
+  }
+}
 
 function finishCommit() {
   moves.forEach(x => x());
@@ -382,8 +360,6 @@ function finishCommit() {
   patches = [];
 }
 
-const commit = (fiber: Fiber<NativeElement>) => commitMap[fiber.tag](fiber);
-
 const setTrackUpdate = (fn: typeof trackUpdate) => (trackUpdate = fn);
 
 const appendNativeElement = (element: NativeNode, parent: NativeNode) => parent.appendChild(element);
@@ -391,14 +367,16 @@ const appendNativeElement = (element: NativeNode, parent: NativeNode) => parent.
 const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: TagNativeElement) =>
   parent.insertBefore(element, sibling);
 
-const insertNativeElementByIndex = (element: NativeNode, idx: number, parent: TagNativeElement) =>
-  parent.insertBefore(element, parent.childNodes[idx]);
-
 const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) =>
   parent.replaceChild(element, candidate);
 
-const canRemoveNativeElement = (element: NativeNode, parent: NativeNode) => element.parentElement === parent;
+const removeNativeElement = (element: NativeNode, parent: TagNativeElement) =>
+  element.parentElement === parent && parent.removeChild(element);
 
-const removeNativeElement = (element: NativeNode, parent: TagNativeElement) => parent.removeChild(element);
+const toggle = (element: HTMLElement | SVGElement, isVisible: boolean) => {
+  isVisible
+    ? element.hasAttribute(STYLE_ATTR) && element.removeAttribute(STYLE_ATTR)
+    : element.style.setProperty('display', 'none', 'important');
+};
 
-export { createNativeElement, commit, finishCommit, setTrackUpdate, insertNativeElementByIndex };
+export { createNativeElement, commit, finishCommit, setTrackUpdate, toggle };

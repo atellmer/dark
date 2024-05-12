@@ -1,5 +1,5 @@
 import { type QCheckBoxSignals, QCheckBox } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qCheckBox } from '../factory';
@@ -13,6 +13,7 @@ import { qCheckBox } from '../factory';
 
 export type CheckBoxProps = WithStandardProps<
   {
+    ref?: Ref<CheckBoxRef>;
     checked: boolean;
     text?: string;
   } & WidgetProps
@@ -20,9 +21,9 @@ export type CheckBoxProps = WithStandardProps<
 export type CheckBoxRef = QDarkCheckBox;
 export type CheckBoxSignals = QCheckBoxSignals;
 
-const CheckBox = forwardRef<CheckBoxProps, CheckBoxRef>(
-  component((props, ref) => qCheckBox({ ref, ...props }), { displayName: 'CheckBox' }),
-) as ComponentFactory<CheckBoxProps, CheckBoxRef>;
+const CheckBox = component<CheckBoxProps>(props => qCheckBox(props), {
+  displayName: 'CheckBox',
+}) as ComponentFactory<CheckBoxProps>;
 
 class QDarkCheckBox extends QCheckBox {}
 

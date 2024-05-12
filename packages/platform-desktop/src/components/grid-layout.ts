@@ -1,5 +1,5 @@
 import { QWidget, QGridLayout } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef, detectIsArray, detectIsNumber } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component, detectIsArray, detectIsNumber } from '@dark-engine/core';
 
 import type { WidgetProps, WithSlotProps, Container } from '../shared';
 import { qGridLayout } from '../factory';
@@ -24,6 +24,7 @@ import { runAtTheEndOfCommit } from '../dom';
 
 export type GridLayoutProps = WithSlotProps<
   {
+    ref?: Ref<GridLayoutRef>;
     horizontalSpacing?: number;
     verticalSpacing?: number;
     margin?: number | [number, number, number, number];
@@ -37,9 +38,9 @@ export type GridLayoutRef = QDarkGridLayout;
 
 type ValueVariant = number | undefined;
 
-const GridLayout = forwardRef<GridLayoutProps, GridLayoutRef>(
-  component((props, ref) => qGridLayout({ ref, ...props }), { displayName: 'GridLayout' }),
-) as ComponentFactory<GridLayoutProps, GridLayoutRef>;
+const GridLayout = component<GridLayoutProps>(props => qGridLayout(props), {
+  displayName: 'GridLayout',
+}) as ComponentFactory<GridLayoutProps>;
 
 class QDarkGridLayout extends QWidget implements Container {
   private gridLayout = new QGridLayout();

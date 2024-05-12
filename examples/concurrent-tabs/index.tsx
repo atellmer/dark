@@ -8,6 +8,8 @@ const AboutTab = component(() => {
 const PostsTab = memo(
   component(() => {
     const items = [];
+
+    console.log('posts');
     for (let i = 0; i < 500; i++) {
       items.push(<SlowPost key={i} index={i} />);
     }

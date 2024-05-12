@@ -7,11 +7,15 @@ import { Fragment } from './fragment';
 
 function jsx(
   element: string | ComponentFactory,
-  props: { children?: unknown },
+  props: { children?: unknown; slot?: unknown },
   key?: ElementKey,
 ): TagVirtualNodeFactory | Component | null {
-  const { children, ...$props } = props;
-  const slot = children || !detectIsUndefined(children) ? [children as DarkElement] : [];
+  const { children, slot: $slot, ...$props } = props;
+  const slot = !detectIsUndefined(children)
+    ? [children as DarkElement]
+    : !detectIsUndefined($slot)
+    ? [$slot as DarkElement]
+    : [];
 
   if (key || !detectIsEmpty(key)) {
     $props[KEY_ATTR] = key;

@@ -1,5 +1,5 @@
+import { detectIsFunction, detectIsEqual } from '../utils';
 import { useCallback } from '../use-callback';
-import { detectIsFunction } from '../utils';
 import { useUpdate } from '../use-update';
 import { type Tools } from '../workloop';
 import { useMemo } from '../use-memo';
@@ -47,7 +47,7 @@ function useState<T = unknown>(initialValue: T | (() => T)): [T, (value: Value<T
       get: () => scope.value,
       set: (x: T) => (scope.value = x),
       reset: (x: T) => (scope.value = x),
-      shouldUpdate: (p: T, n: T) => !Object.is(p, n),
+      shouldUpdate: (p: T, n: T) => !detectIsEqual(p, n),
     });
 
     update(tools);

@@ -1,5 +1,6 @@
 import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTick } from '@dark-engine/core';
 
+import { illegal } from '../utils';
 import { ROOT_ID } from '../constants';
 
 class InMemoryCache<K extends string = string> {
@@ -84,18 +85,21 @@ class InMemoryCache<K extends string = string> {
 }
 
 type State = Record<string, Record<string, CacheRecord>>;
-type MethodOptions = { id?: TextBased };
+type MethodOptions = { id?: TextBased; isPending?: boolean };
 
 type EventName = 'change';
 export type CacheEventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
 export type CacheEventData<K extends string> = { type: CacheEventType; key: K; id?: TextBased; record?: CacheRecord };
 export type MonitorEventType = 'query' | 'mutation';
-export type MonitorEventPhase = 'start' | 'finish' | 'error';
+export type MonitorEventPhase = 'promise' | 'start' | 'finish' | 'error';
 export type MonitorEventData<K extends string> = {
   type: MonitorEventType;
   phase: MonitorEventPhase;
   key: K;
   data?: unknown;
+  id?: TextBased;
+  promise?: Promise<unknown>;
+  initiator?: TextBased;
 };
 
 export type CacheRecord<T = unknown> = {
@@ -106,7 +110,7 @@ export type CacheRecord<T = unknown> = {
 };
 
 function checkCache(cache: InMemoryCache) {
-  if (!cache) throw new Error('[data]: the hook requires a provider with a client!');
+  if (!cache) illegal('The hook requires a provider with a client!');
 }
 
 export { InMemoryCache, checkCache };

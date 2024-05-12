@@ -1,5 +1,5 @@
 import { type QRadioButtonSignals, QRadioButton } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qRadioButton } from '../factory';
@@ -12,15 +12,16 @@ import { qRadioButton } from '../factory';
 
 export type RadioButtonProps = WithStandardProps<
   {
+    ref?: Ref<RadioButtonRef>;
     text: string;
   } & WidgetProps
 >;
 export type RadioButtonRef = QDarkRadioButton;
 export type RadioButtonSignals = QRadioButtonSignals;
 
-const RadioButton = forwardRef<RadioButtonProps, RadioButtonRef>(
-  component((props, ref) => qRadioButton({ ref, ...props }), { displayName: 'RadioButton' }),
-) as ComponentFactory<RadioButtonProps, RadioButtonRef>;
+const RadioButton = component<RadioButtonProps>(props => qRadioButton(props), {
+  displayName: 'RadioButton',
+}) as ComponentFactory<RadioButtonProps>;
 
 class QDarkRadioButton extends QRadioButton {}
 

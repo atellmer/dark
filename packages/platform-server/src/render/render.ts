@@ -39,8 +39,6 @@ function inject() {
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = falseFn;
-  platform.detectIsPortal = falseFn;
-  platform.unmountPortal = dummyFn;
   platform.chunk = chunk;
   isInjected = true;
 }

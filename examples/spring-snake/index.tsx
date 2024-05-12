@@ -71,6 +71,7 @@ const Item = styled.div`
   background-color: purple;
   border: 2px solid #fff;
   touch-action: none;
+  will-change: transform;
 `;
 
 createRoot(document.getElementById('root')).render(<App />);

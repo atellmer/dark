@@ -1,5 +1,5 @@
 import { type QActionSignals, type QIcon, type QKeySequence, type ShortcutContext, QAction } from '@nodegui/nodegui';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { WidgetProps, WithStandardProps } from '../shared';
 import { qAction } from '../factory';
@@ -17,6 +17,7 @@ import { qAction } from '../factory';
 
 export type ActionProps = WithStandardProps<
   {
+    ref?: Ref<ActionRef>;
     text?: string;
     icon?: QIcon;
     disabled?: boolean;
@@ -28,9 +29,9 @@ export type ActionProps = WithStandardProps<
 export type ActionRef = QDarkAction;
 export type ActionSignals = QActionSignals;
 
-const Action = forwardRef<ActionProps, ActionRef>(
-  component((props, ref) => qAction({ ref, ...props }), { displayName: 'Action' }),
-) as ComponentFactory<ActionProps, ActionRef>;
+const Action = component<ActionProps>(props => qAction(props), {
+  displayName: 'Action',
+}) as ComponentFactory<ActionProps>;
 
 class QDarkAction extends QAction {
   setDisabled(value: boolean) {

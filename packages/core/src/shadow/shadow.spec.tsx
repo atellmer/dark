@@ -1,4 +1,4 @@
-import { createBrowserEnv, dom } from '@test-utils';
+import { createBrowserEnv } from '@test-utils';
 
 import { component } from '../component';
 import { Shadow } from './shadow';
@@ -11,19 +11,6 @@ beforeEach(() => {
 
 describe('@core/shadow', () => {
   test('works correctly', () => {
-    const content = (isVisible = false) => dom`
-      ${
-        !isVisible
-          ? '<div></div>'
-          : `
-            <div>
-              <div>1</div>
-              <div>2</div>
-              <div>3</div>
-            </div>
-          `
-      }
-    `;
     const spy = jest.fn();
     const Child = component(() => {
       spy();
@@ -35,10 +22,10 @@ describe('@core/shadow', () => {
         </>
       );
     });
-    const App = component<{ isInserted?: boolean }>(({ isInserted }) => {
+    const App = component<{ isOpen: boolean }>(({ isOpen }) => {
       return (
         <div>
-          <Shadow isInserted={isInserted}>
+          <Shadow isOpen={isOpen}>
             <>
               <Child />
             </>
@@ -47,17 +34,21 @@ describe('@core/shadow', () => {
       );
     });
 
-    render(<App />);
-    expect(host.innerHTML).toBe(content());
+    render(<App isOpen={false} />);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<div><div style="display: none;">1</div><div style="display: none;">2</div><div style="display: none;">3</div></div>"`,
+    );
     expect(spy).toHaveBeenCalled();
 
-    render(<App isInserted />);
-    expect(host.innerHTML).toBe(content(true));
+    render(<App isOpen={true} />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div><div>1</div><div>2</div><div>3</div></div>"`);
 
-    render(<App isInserted />);
-    expect(host.innerHTML).toBe(content(true));
+    render(<App isOpen={true} />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div><div>1</div><div>2</div><div>3</div></div>"`);
 
-    render(<App />);
-    expect(host.innerHTML).toBe(content(true));
+    render(<App isOpen={false} />);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<div><div style="display: none;">1</div><div style="display: none;">2</div><div style="display: none;">3</div></div>"`,
+    );
   });
 });

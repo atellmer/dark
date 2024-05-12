@@ -1,14 +1,16 @@
 import type { FormattedString as NSFormattedString } from '@nativescript/core';
-import { type ComponentFactory, component, forwardRef } from '@dark-engine/core';
+import { type ComponentFactory, type Ref, component } from '@dark-engine/core';
 
 import type { FormattedStringAttributes } from '../jsx';
 import { formattedString } from '../factory';
 
-export type FormattedStringProps = FormattedStringAttributes;
+export type FormattedStringProps = {
+  ref?: Ref<FormattedStringRef>;
+} & FormattedStringAttributes;
 export type FormattedStringRef = NSFormattedString;
 
-const FormattedString = forwardRef<FormattedStringProps, FormattedStringRef>(
-  component((props, ref) => formattedString({ ref, ...props }), { displayName: 'FormattedString' }),
-) as ComponentFactory<FormattedStringProps, FormattedStringRef>;
+const FormattedString = component<FormattedStringProps>(props => formattedString(props), {
+  displayName: 'FormattedString',
+}) as ComponentFactory<FormattedStringProps>;
 
 export { FormattedString };

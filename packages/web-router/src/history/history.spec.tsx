@@ -19,7 +19,7 @@ describe('@web-router/history', () => {
     const subscriber = jest.fn();
     const history = createRouterHistory('/');
 
-    history.subscribe(subscriber);
+    history.subscribe('change', subscriber);
     expect(location.href).toBe('http://localhost/');
 
     history.push('/first');
@@ -91,7 +91,7 @@ describe('@web-router/history', () => {
   test('can unsubscribe correctly', () => {
     const subscriber = jest.fn();
     const history = createRouterHistory('/');
-    const unsubscribe = history.subscribe(subscriber);
+    const unsubscribe = history.subscribe('change', subscriber);
 
     history.push('/first');
     jest.runAllTimers();

@@ -3,6 +3,8 @@ import { dom, sleep, replacer } from '@test-utils';
 
 import { renderToString, renderToStream, convertStreamToPromise } from './render';
 
+jest.spyOn(console, 'error').mockImplementation(() => {});
+
 describe('@platform-server/render', () => {
   test('can render text correctly', async () => {
     expect(await renderToString(<>hello</>)).toBe('hello');
