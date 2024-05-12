@@ -1,4 +1,4 @@
-import { component } from '@dark-engine/core';
+import { type DarkElement, component, useLayoutEffect } from '@dark-engine/core';
 import { createBrowserEnv, resetBrowserHistory, sleep, click } from '@test-utils';
 
 import { type Routes } from '../create-routes';
@@ -20,6 +20,8 @@ afterEach(() => {
 describe('@web-router/use-pending', () => {
   test('can render in concurrent mode correctly', async () => {
     jest.useRealTimers();
+    let x = 0;
+    const spy = jest.fn();
     const routes: Routes = [
       {
         path: 'first',
@@ -38,8 +40,6 @@ describe('@web-router/use-pending', () => {
         redirectTo: 'first',
       },
     ];
-
-    const spy = jest.fn();
 
     const Pending = component(() => {
       const isPending = usePending();
@@ -71,43 +71,53 @@ describe('@web-router/use-pending', () => {
       );
     });
 
+    const Content = component<{ slot: DarkElement }>(({ slot }) => {
+      useLayoutEffect(() => {
+        const content = document.querySelector('#content');
+        const link = document.querySelector('a[href="/second"]');
+        const map = {
+          1: () => {
+            expect(content.innerHTML).toMatchInlineSnapshot(`"<div></div><div>first</div>"`);
+          },
+          2: () => {
+            expect(content.innerHTML).toMatchInlineSnapshot(`"<div>PENDING...</div><div>first</div>"`);
+            click(link);
+          },
+          3: () => {
+            expect(content.innerHTML).toMatchInlineSnapshot(`"<div>PENDING...</div><div>second</div>"`);
+          },
+        };
+
+        x++;
+        map[x]();
+      });
+
+      return (
+        <>
+          <NavLink to='/first'>first</NavLink>
+          <NavLink to='/second'>second</NavLink>
+          <NavLink to='/third'>third</NavLink>
+          <div id='content'>
+            <Pending />
+            {slot}
+          </div>
+          <SlowContent />
+        </>
+      );
+    });
+
     const App = component(() => {
       return (
         <Router routes={routes} mode='concurrent'>
-          {slot => (
-            <>
-              <NavLink to='/first'>first</NavLink>
-              <NavLink to='/second'>second</NavLink>
-              <NavLink to='/third'>third</NavLink>
-              <div id='content'>
-                <Pending />
-                {slot}
-              </div>
-              <SlowContent />
-            </>
-          )}
+          {slot => <Content>{slot}</Content>}
         </Router>
       );
     });
 
     document.body.appendChild(host);
     render(<App />);
-    const content = document.querySelector('#content');
-    const link = document.querySelector('a[href="/second"]');
 
-    await sleep(1);
-    expect(content.innerHTML).toMatchInlineSnapshot(`"<div>PENDING...</div><div>first</div>"`);
-    await sleep(100);
-    expect(content.innerHTML).toMatchInlineSnapshot(`"<div></div><div>first</div>"`);
-    expect(spy.mock.calls).toEqual([[false], [true], [true], [false]]);
-    spy.mockClear();
-
-    click(link);
-    await sleep(1);
-    expect(content.innerHTML).toMatchInlineSnapshot(`"<div>PENDING...</div><div>first</div>"`);
-    await sleep(100);
-    expect(content.innerHTML).toMatchInlineSnapshot(`"<div></div><div>second</div>"`);
-    expect(spy.mock.calls).toEqual([[true], [true], [false]]);
-    spy.mockClear();
+    await sleep(300);
+    expect(spy.mock.calls).toEqual([[false], [true], [true], [true], [true], [false]]);
   });
 });
