@@ -1,10 +1,14 @@
 import { component } from '@dark-engine/core';
+import { Metatags } from '@dark-engine/platform-browser';
 
 const Contacts = component(
   () => {
     return (
       <article>
         <h1>Contacts</h1>
+        <Metatags>
+          <title>Contacts</title>
+        </Metatags>
         <p>
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quaerat molestias possimus qui expedita. Porro ipsam
           minima magnam neque incidunt consequuntur, commodi ab repudiandae maxime aliquam quod exercitationem, at
