@@ -4,6 +4,8 @@ import {
   type TagVirtualNode,
   type TextVirtualNode,
   type CommentVirtualNode,
+  type TextBased,
+  Text,
   ROOT,
   REF_ATTR,
   ATTR_BLACK_LIST,
@@ -14,7 +16,8 @@ import {
   detectIsTagVirtualNode,
   getFiberWithElement,
   detectIsPlainVirtualNode,
-  $$scope,
+  createReplacer,
+  detectIsTextBased,
 } from '@dark-engine/core';
 import {
   type AttributeValue,
@@ -101,7 +104,7 @@ const finishCommit = () => {
   chunkIds = {};
 };
 
-function chunk(fiber: Fiber<NativeElement>) {
+function createChunk(fiber: Fiber<NativeElement>) {
   let chunk = '';
   const tagNode = fiber?.inst as TagVirtualNode;
   const tagElement = fiber?.element as TagNativeElement;
@@ -126,9 +129,31 @@ function chunk(fiber: Fiber<NativeElement>) {
   }
 
   chunkIds[fiber.id] = true;
-  $$scope().getEmitter().emit('chunk', chunk);
+
+  return chunk;
+}
+
+function createNativeChildrenNodes(children: Array<VirtualNode | TextBased>, parent?: TagNativeElement) {
+  const elements: Array<NativeElement> = [];
+
+  for (const child of children) {
+    const isTag = detectIsTagVirtualNode(child);
+    const content = isTag ? child : detectIsTextBased(child) ? Text(child) : createReplacer();
+    const element = createNativeElement(content);
+
+    isTag && addAttributes(element, child);
+    parent && appendNativeElement(element, parent);
+
+    if (isTag && child.children.length > 0) {
+      createNativeChildrenNodes(child.children as Array<VirtualNode>, element as TagNativeElement);
+    }
+
+    elements.push(element);
+  }
+
+  return elements;
 }
 
 const appendNativeElement = (element: NativeElement, parent: TagNativeElement) => parent.appendChild(element);
 
-export { createNativeElement, commit, finishCommit, chunk };
+export { createNativeElement, commit, finishCommit, createChunk, createNativeChildrenNodes };

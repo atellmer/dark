@@ -1,4 +1,5 @@
 import { Text, Comment, component, useState, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { Metatags } from '@dark-engine/platform-browser';
 import { dom, sleep, replacer } from '@test-utils';
 
 import { renderToString, renderToStream, convertStreamToPromise } from './render';
@@ -258,6 +259,126 @@ describe('@platform-server/render', () => {
 
     expect(await renderToString(<App />)).toMatchInlineSnapshot(
       `"<div><br><input type="text"><textarea></textarea><div></div><span></span><img src="/xxx.jpeg" alt="xxx"></div>"`,
+    );
+  });
+
+  test('can render metatags via renderToString correctly #1', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div class='app'>
+              <Metatags>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+                <meta name='description' content='Some desc' />
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await renderToString(<App />)).toMatchInlineSnapshot(
+      `"<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToString correctly #2', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+            <meta name='description' content='Some desc' />
+          </head>
+          <body>
+            <div class='app'>
+              <Metatags>
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await renderToString(<App />)).toMatchInlineSnapshot(
+      `"<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToStream correctly #1', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div class='app'>
+              <Metatags>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+                <meta name='description' content='Some desc' />
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: true }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToStream correctly #2', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+            <meta name='description' content='Some desc' />
+          </head>
+          <body>
+            <div class='app'>
+              <Metatags>
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: true }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToStream correctly #3', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div class='app'>
+              <Metatags>
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: false }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
     );
   });
 });

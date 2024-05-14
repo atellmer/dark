@@ -1,20 +1,23 @@
 import {
-  type DarkElement,
   type TagVirtualNode,
+  type Fiber,
   component,
   useLayoutEffect,
-  __useSSR as useSSR,
   detectIsArray,
+  useMemo,
   detectIsVirtualNodeFactory,
   keys,
   useRef,
+  $$scope,
+  __useSSR as useSSR,
+  __useCursor as useCursor,
 } from '@dark-engine/core';
 
 import { type TagNativeElement } from '../native-element';
 import { illegal } from '../utils';
 
 type MetatagsProps = {
-  slot: DarkElement;
+  slot: TagVirtualNode | Array<TagVirtualNode>;
 };
 
 const Metatags = component<MetatagsProps>(({ slot }) => {
@@ -23,6 +26,21 @@ const Metatags = component<MetatagsProps>(({ slot }) => {
     .map(x => (detectIsVirtualNodeFactory(x) ? x() : null))
     .filter(Boolean) as Array<TagVirtualNode>;
   const ref = useRef(vNodes);
+  const cursor = useCursor();
+  const scope = useMemo(() => ({ isDirty: false }), []);
+
+  if (isServer && !scope.isDirty) {
+    const $scope = $$scope();
+    const emitter = $scope.getEmitter();
+    const off = emitter.on<Fiber>('chunk', fiber => {
+      if (fiber === cursor) {
+        emitter.emit('box', new MetatagsBox(vNodes));
+        off();
+      }
+    });
+
+    scope.isDirty = true;
+  }
 
   useLayoutEffect(() => {
     const prevVNodes = ref.current;
@@ -50,8 +68,7 @@ function resolveElement(vNode: TagVirtualNode) {
   try {
     tag = document.querySelector(`head ${createSelector(vNode)}`) || createElement(vNode);
   } catch (error) {
-    console.log('error', error);
-    illegal(`Can't resolve an element for metadata!`);
+    illegal(`Can't resolve an element for metadata! ${[error]}`);
   }
 
   return tag;
@@ -96,4 +113,10 @@ function setAttributes(element: TagNativeElement, attrs: Record<string, string>)
   }
 }
 
-export { Metatags };
+export class MetatagsBox {
+  constructor(public vNodes: Array<TagVirtualNode>) {}
+}
+
+const detectIsMetatagsBox = (x: unknown): x is MetatagsBox => x instanceof MetatagsBox;
+
+export { Metatags, detectIsMetatagsBox };

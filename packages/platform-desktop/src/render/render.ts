@@ -11,7 +11,6 @@ import {
   createReplacer,
   setRootId,
   $$scope,
-  dummyFn,
   trueFn,
   scheduler,
 } from '@dark-engine/core';
@@ -33,7 +32,6 @@ function inject() {
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = trueFn;
-  platform.chunk = dummyFn;
   isInjected = true;
 }
 

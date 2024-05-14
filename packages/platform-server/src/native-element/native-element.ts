@@ -21,6 +21,8 @@ abstract class NativeElement {
 
   abstract render(): string;
   abstract render(isOpening: boolean, content?: string): string;
+
+  abstract renderToString(): string;
 }
 
 class TagNativeElement extends NativeElement {
@@ -65,6 +67,12 @@ class TagNativeElement extends NativeElement {
 
     return chunk;
   }
+
+  override renderToString() {
+    const content = this.children.map(x => x.renderToString()).join('');
+
+    return this.render(true, content) + this.render(false);
+  }
 }
 
 class TextNativeElement extends NativeElement {
@@ -78,6 +86,10 @@ class TextNativeElement extends NativeElement {
   override render() {
     return this.value;
   }
+
+  override renderToString() {
+    return this.render();
+  }
 }
 
 class CommentNativeElement extends NativeElement {
@@ -90,6 +102,10 @@ class CommentNativeElement extends NativeElement {
 
   override render() {
     return this.value;
+  }
+
+  override renderToString() {
+    return this.render();
   }
 }
 
