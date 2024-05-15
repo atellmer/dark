@@ -112,7 +112,7 @@ function renderToReadableStream(element: DarkElement, options?: RenderToStreamOp
           content += metadata + stash;
           stash = '';
         } else if (!fromStream) {
-          content = content.replace(HEAD_CLOSED_CHUNK, `${metadata}${HEAD_CLOSED_CHUNK}`);
+          content = content.replace(HEAD_CLOSED_CHUNK, metadata + HEAD_CLOSED_CHUNK);
         }
       }
     });

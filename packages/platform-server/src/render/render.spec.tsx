@@ -381,4 +381,35 @@ describe('@platform-server/render', () => {
       `"<!DOCTYPE html><html><head></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
     );
   });
+
+  test('can render __danger prop via Metatags correctly', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div>
+              <Metatags>
+                <title>Some title</title>
+                <script
+                  type='application/ld+json'
+                  __danger={JSON.stringify({
+                    '@context': 'https://json-ld.org/contexts/person.jsonld',
+                    '@id': 'http://dbpedia.org/resource/John_Lennon',
+                    name: 'John Lennon',
+                    born: '1940-10-09',
+                    spouse: 'http://dbpedia.org/resource/Cynthia_Lennon',
+                  })}
+                />
+              </Metatags>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: true }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head><title>Some title</title><script type="application/ld+json">{"@context":"https://json-ld.org/contexts/person.jsonld","@id":"http://dbpedia.org/resource/John_Lennon","name":"John Lennon","born":"1940-10-09","spouse":"http://dbpedia.org/resource/Cynthia_Lennon"}</script></head><body><div><!--dark:matter--></div></body></html>"`,
+    );
+  });
 });

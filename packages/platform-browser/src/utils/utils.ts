@@ -90,6 +90,7 @@ const illegal = (x: string) => $illegal(x, LIB);
 
 const removeContent = (element: TagNativeElement) => (element.innerHTML = '');
 
-const capitalize = (x: string) => x[0].toUpperCase() + x.slice(1);
+const setInnerHTML = (element: TagNativeElement, html: string) =>
+  element.innerHTML !== html && (element.innerHTML = html);
 
-export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent, capitalize };
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent, setInnerHTML };

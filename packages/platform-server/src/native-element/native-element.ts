@@ -5,11 +5,13 @@ import {
   CLASS_ATTR,
   CLASS_NAME_ATTR,
   EXCLUDE_ATTR_MARK,
+  TEXTAREA_TAG,
+  VALUE_ATTR,
   DANGER_HTML_CONTENT,
   detectIsVoidElement,
 } from '@dark-engine/platform-browser';
 
-import { illegal } from '../utils';
+import { illegal, escape } from '../utils';
 
 abstract class NativeElement {
   type: NodeType;
@@ -20,7 +22,7 @@ abstract class NativeElement {
   }
 
   abstract render(): string;
-  abstract render(isOpening: boolean, content?: string): string;
+  abstract render(isOpening: boolean): string;
 
   abstract renderToString(): string;
 }
@@ -54,7 +56,10 @@ class TagNativeElement extends NativeElement {
 
   override render(...args: Array<unknown>) {
     const isOpening = args[0] as boolean;
-    const content = args[1] as string;
+    const content =
+      this.name === TEXTAREA_TAG
+        ? (this.attrs[VALUE_ATTR] as string) || ''
+        : (this.attrs[DANGER_HTML_CONTENT] as string) || '';
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
     const chunk = isOpening
@@ -71,7 +76,7 @@ class TagNativeElement extends NativeElement {
   override renderToString() {
     const content = this.children.map(x => x.renderToString()).join('');
 
-    return this.render(true, content) + this.render(false);
+    return this.render(true) + content + this.render(false);
   }
 }
 
@@ -120,28 +125,6 @@ function getAttributes(map: TagNativeElement['attrs']) {
   }
 
   return attrs;
-}
-
-function escape(value: string) {
-  return value
-    .split('')
-    .map(x => escapeChar(x))
-    .join('');
-}
-
-function escapeChar(char: string) {
-  switch (char) {
-    case '&':
-      return '&amp;';
-    case '<':
-      return '&lt;';
-    case '>':
-      return '&gt;';
-    case '"':
-      return '&quot;';
-    default:
-      return char;
-  }
 }
 
 export { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement };

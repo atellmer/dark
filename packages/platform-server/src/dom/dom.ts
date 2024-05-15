@@ -16,16 +16,11 @@ import {
   detectIsTagVirtualNode,
   getFiberWithElement,
   detectIsPlainVirtualNode,
+  detectIsTextVirtualNode,
   createReplacer,
   detectIsTextBased,
 } from '@dark-engine/core';
-import {
-  type AttributeValue,
-  VALUE_ATTR,
-  TEXTAREA_TAG,
-  DANGER_HTML_CONTENT,
-  detectIsVoidElement,
-} from '@dark-engine/platform-browser';
+import { type AttributeValue, VALUE_ATTR, TEXTAREA_TAG, detectIsVoidElement } from '@dark-engine/platform-browser';
 
 import { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
 
@@ -113,14 +108,8 @@ function createChunk(fiber: Fiber<NativeElement>) {
 
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
-      const { inst } = fiber;
-      const content =
-        inst.name === TEXTAREA_TAG
-          ? (inst.attrs[VALUE_ATTR] as string) || ''
-          : (inst.attrs[DANGER_HTML_CONTENT] as string) || '';
-
-      addAttributes(tagElement, inst);
-      chunk = tagElement.render(true, content);
+      addAttributes(tagElement, fiber.inst);
+      chunk = tagElement.render(true);
     } else if (detectIsPlainVirtualNode(fiber.inst)) {
       chunk = fiber.element.render();
     }
@@ -138,7 +127,8 @@ function createNativeChildrenNodes(children: Array<VirtualNode | TextBased>, par
 
   for (const child of children) {
     const isTag = detectIsTagVirtualNode(child);
-    const content = isTag ? child : detectIsTextBased(child) ? Text(child) : createReplacer();
+    const isText = detectIsTextVirtualNode(child);
+    const content = isTag || isText ? child : detectIsTextBased(child) ? Text(child) : createReplacer();
     const element = createNativeElement(content);
 
     isTag && addAttributes(element, child);

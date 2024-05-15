@@ -28,7 +28,7 @@ import {
   detectIsHydration,
 } from '@dark-engine/core';
 
-import { detectIsSvgElement, detectIsVoidElement, illegal, removeContent } from '../utils';
+import { detectIsSvgElement, detectIsVoidElement, illegal, removeContent, setInnerHTML } from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import {
   INPUT_TAG,
@@ -140,8 +140,8 @@ function performAttribute(
 ) {
   if (attrName[0] === EXCLUDE_ATTR_MARK) return null;
 
-  if (attrName === DANGER_HTML_CONTENT && tagElement.innerHTML !== nextAttrValue) {
-    tagElement.innerHTML = String(nextAttrValue);
+  if (attrName === DANGER_HTML_CONTENT) {
+    setInnerHTML(tagElement, String(nextAttrValue));
     return null;
   }
 
