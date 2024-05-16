@@ -109,6 +109,7 @@ function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
   const wipFiber = $scope.getWorkInProgress();
   const isDeepWalking = $scope.getMountDeep();
   const isStream = $scope.getIsStreamZone();
+  const emitter = $scope.getEmitter();
   const children = (fiber.inst as CanHasChildren).children;
   const hasChildren = isDeepWalking && children && children.length > 0;
 
@@ -117,17 +118,17 @@ function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
   if (hasChildren) {
     const child = mountChild(fiber, $scope);
 
-    isStream && platform.chunk(child);
+    isStream && emitter.emit('chunk', child);
 
     return child;
   } else {
     while (fiber.parent && fiber !== wipFiber) {
       const next = mountSibling(fiber, $scope);
 
-      isStream && platform.chunk(fiber);
+      isStream && emitter.emit('chunk', fiber);
 
       if (next) {
-        isStream && platform.chunk(next);
+        isStream && emitter.emit('chunk', next);
         return next;
       }
 

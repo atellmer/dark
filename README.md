@@ -33,6 +33,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 💃🏼 Spring animations
 - 💽 Server-side rendering
 - 🏄‍♂️ Isomorphic routing
+- 📖 SEO metadata
 - 💾 Shared state between server and client
 - ⚙️ Server asynchronous code in the app (in SSR)
 - 📬 Declarative queries and mutations
@@ -154,7 +155,7 @@ Based on the benchmark results (on the my machine), Dark is approximately 24% sl
 
 ## Lighthouse
 
-A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `caching`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
+A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `concurrent rendering`, `caching`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
 
 <img src="./assets/lighthouse.png">
 

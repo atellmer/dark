@@ -22,9 +22,10 @@ import {
   falseFn,
   scheduler,
 } from '@dark-engine/core';
+import { type MetatagsBox, detectIsMetatagsBox } from '@dark-engine/platform-browser';
 
-import { createNativeElement, commit, finishCommit, chunk } from '../dom';
-import { TagNativeElement } from '../native-element';
+import { createNativeElement, commit, finishCommit, createChunk, createNativeChildrenNodes } from '../dom';
+import { type NativeElement, TagNativeElement } from '../native-element';
 import { DOCTYPE } from '../constants';
 
 const spawn = nextTick; // !
@@ -39,7 +40,6 @@ function inject() {
   platform.commit = commit;
   platform.finishCommit = finishCommit;
   platform.detectIsDynamic = falseFn;
-  platform.chunk = chunk;
   isInjected = true;
 }
 
@@ -87,27 +87,57 @@ type RenderToStreamOptions = {
   bootstrapScripts?: Array<string>;
   bootstrapModules?: Array<string>;
   chunkSize?: number;
+  awaitMetatags?: boolean;
 };
 
-function renderToReadableStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
-  const { bootstrapScripts = [], bootstrapModules = [], chunkSize = 500 } = options || {};
+function renderToReadableStream(element: DarkElement, options?: RenderToStreamOptions, fromStream?: boolean): Readable {
+  const { bootstrapScripts = [], bootstrapModules = [], chunkSize = 500, awaitMetatags = false } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
+  let canSendChunks = true;
+  let hasMetatags = false;
   let content = '';
+  let stash = '';
 
   const onStart = () => {
     const emitter = $$scope().getEmitter();
 
-    emitter.on<string>('chunk', chunk => {
-      if (chunk === PREPEND_SCRIPTS_CHUNK && (bootstrapScripts.length > 0 || bootstrapModules.length > 0)) {
-        content += addScripts(bootstrapScripts, false);
-        content += addScripts(bootstrapModules, true);
+    emitter.on<MetatagsBox>('box', box => {
+      if (!hasMetatags && detectIsMetatagsBox(box)) {
+        const data = createMetadata(box.vNodes);
+
+        hasMetatags = true;
+
+        if (awaitMetatags) {
+          canSendChunks = true;
+          content += data + stash;
+          stash = '';
+        } else if (!fromStream) {
+          content = content.replace(HEAD_CLOSED_CHUNK, data + HEAD_CLOSED_CHUNK);
+        }
+      }
+    });
+
+    emitter.on<Fiber<NativeElement>>('chunk', fiber => {
+      const chunk = createChunk(fiber);
+
+      if (chunk === HEAD_CLOSED_CHUNK && awaitMetatags && !hasMetatags) {
+        canSendChunks = false;
       }
 
-      content += chunk;
+      if (canSendChunks) {
+        if (chunk === BODY_CLOSED_CHUNK && (bootstrapScripts.length > 0 || bootstrapModules.length > 0)) {
+          content += addScripts(bootstrapScripts, false);
+          content += addScripts(bootstrapModules, true);
+        }
 
-      if (content.length >= chunkSize) {
-        stream.push(content);
-        content = '';
+        content += chunk;
+
+        if (content.length >= chunkSize) {
+          stream.push(content);
+          content = '';
+        }
+      } else {
+        stash += chunk;
       }
     });
   };
@@ -143,7 +173,7 @@ function renderToString(element: DarkElement): Promise<string> {
 }
 
 function renderToStream(element: DarkElement, options?: RenderToStreamOptions): Readable {
-  const stream = renderToReadableStream(element, options);
+  const stream = renderToReadableStream(element, options, true);
 
   stream.push(DOCTYPE);
 
@@ -182,12 +212,18 @@ function withState(content = '') {
   return $content;
 }
 
+const createMetadata = (vNodes: Array<TagVirtualNode>) =>
+  createNativeChildrenNodes(vNodes)
+    .map(x => x.renderToString())
+    .join('');
+
 const createModule = (src: string) => `<script type="module" src="${src}" defer></script>`;
 
 const createScript = (src: string) => `<script src="${src}" defer></script>`;
 
 const getNextRootId = () => ++nextRootId;
 
-const PREPEND_SCRIPTS_CHUNK = '</body>';
+const HEAD_CLOSED_CHUNK = '</head>';
+const BODY_CLOSED_CHUNK = '</body>';
 
 export { renderToString, renderToStream, convertStreamToPromise, inject };

@@ -99,7 +99,7 @@ const App = component<AppProps>(({ url, api }) => {
     <>
       <GlobalStyle />
       <DataClientProvider client={client}>
-        <Router routes={routes} url={url}>
+        <Router routes={routes} url={url} mode='concurrent'>
           {slot => {
             return (
               <Root>

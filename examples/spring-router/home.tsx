@@ -1,11 +1,14 @@
-import { type DarkElement, component } from '@dark-engine/core';
+import { component } from '@dark-engine/core';
+import { Metatags } from '@dark-engine/platform-browser';
 
-const Home = component<{ slot: DarkElement }>(
-  ({ slot }) => {
+const Home = component(
+  () => {
     return (
       <article>
         <h1>Home</h1>
-        {slot}
+        <Metatags>
+          <title>Home</title>
+        </Metatags>
         <p>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Laudantium voluptatum et odio, ipsum cum distinctio,
           facilis consectetur praesentium nam soluta sint, doloremque illo dignissimos nihil. Nesciunt quibusdam

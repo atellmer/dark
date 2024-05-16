@@ -1,10 +1,14 @@
 import { component } from '@dark-engine/core';
+import { Metatags } from '@dark-engine/platform-browser';
 
 const About = component(
   () => {
     return (
       <article>
         <h1>About</h1>
+        <Metatags>
+          <title>About</title>
+        </Metatags>
         <p>
           Esse vel provident fugit explicabo corrupti fugiat ducimus, hic eius ea repudiandae repellendus! Nisi
           aspernatur mollitia laudantium vitae non libero minus ipsum repellat. Libero eaque, saepe maxime laudantium,

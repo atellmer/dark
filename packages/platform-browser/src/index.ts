@@ -8,5 +8,6 @@ export { render, inject } from './render';
 export { createPortal } from './portal';
 export type { DarkJSX } from './jsx';
 export * from './constants';
+export * from './metatags';
 export * from './factory';
 export * from './utils';

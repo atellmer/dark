@@ -86,8 +86,11 @@ const detectIsVoidElement = (name: string) => voidTagNames.has(name);
 
 const detectIsBrowser = () => !detectIsUndefined(globalThis.window);
 
-const illegal = (x: string) => $illegal(LIB, x);
+const illegal = (x: string) => $illegal(x, LIB);
 
 const removeContent = (element: TagNativeElement) => (element.innerHTML = '');
 
-export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent };
+const setInnerHTML = (element: TagNativeElement, html: string) =>
+  element.innerHTML !== html && (element.innerHTML = html);
+
+export { detectIsSvgElement, detectIsVoidElement, detectIsBrowser, illegal, removeContent, setInnerHTML };

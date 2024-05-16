@@ -1,4 +1,5 @@
 import { Text, Comment, component, useState, useInsertionEffect, useLayoutEffect, useEffect } from '@dark-engine/core';
+import { Metatags } from '@dark-engine/platform-browser';
 import { dom, sleep, replacer } from '@test-utils';
 
 import { renderToString, renderToStream, convertStreamToPromise } from './render';
@@ -258,6 +259,157 @@ describe('@platform-server/render', () => {
 
     expect(await renderToString(<App />)).toMatchInlineSnapshot(
       `"<div><br><input type="text"><textarea></textarea><div></div><span></span><img src="/xxx.jpeg" alt="xxx"></div>"`,
+    );
+  });
+
+  test('can render metatags via renderToString correctly #1', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div class='app'>
+              <Metatags>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+                <meta name='description' content='Some desc' />
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await renderToString(<App />)).toMatchInlineSnapshot(
+      `"<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToString correctly #2', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+            <meta name='description' content='Some desc' />
+          </head>
+          <body>
+            <div class='app'>
+              <Metatags>
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await renderToString(<App />)).toMatchInlineSnapshot(
+      `"<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToStream correctly #1', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div class='app'>
+              <Metatags>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+                <meta name='description' content='Some desc' />
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: true }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToStream correctly #2', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+            <meta name='description' content='Some desc' />
+          </head>
+          <body>
+            <div class='app'>
+              <Metatags>
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: true }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Some desc"><title>Some title</title></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render metatags via renderToStream correctly #3', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div class='app'>
+              <Metatags>
+                <title>Some title</title>
+              </Metatags>
+              <div>Hello World</div>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: false }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head></head><body><div class="app"><!--dark:matter--><div>Hello World</div></div></body></html>"`,
+    );
+  });
+
+  test('can render __danger prop via Metatags correctly', async () => {
+    const App = component(() => {
+      return (
+        <html>
+          <head />
+          <body>
+            <div>
+              <Metatags>
+                <title>Some title</title>
+                <script
+                  type='application/ld+json'
+                  __danger={JSON.stringify({
+                    '@context': 'https://json-ld.org/contexts/person.jsonld',
+                    '@id': 'http://dbpedia.org/resource/John_Lennon',
+                    name: 'John Lennon',
+                    born: '1940-10-09',
+                    spouse: 'http://dbpedia.org/resource/Cynthia_Lennon',
+                  })}
+                />
+              </Metatags>
+            </div>
+          </body>
+        </html>
+      );
+    });
+
+    expect(await convertStreamToPromise(renderToStream(<App />, { awaitMetatags: true }))).toMatchInlineSnapshot(
+      `"<!DOCTYPE html><html><head><title>Some title</title><script type="application/ld+json">{"@context":"https://json-ld.org/contexts/person.jsonld","@id":"http://dbpedia.org/resource/John_Lennon","name":"John Lennon","born":"1940-10-09","spouse":"http://dbpedia.org/resource/Cynthia_Lennon"}</script></head><body><div><!--dark:matter--></div></body></html>"`,
     );
   });
 });

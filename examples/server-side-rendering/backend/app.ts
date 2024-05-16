@@ -23,7 +23,7 @@ createRestApi(app);
 app.get('*', (req, res) => {
   const { url } = req;
   console.log('url', url);
-  const stream = bootstrap({ props: { url, api }, title: 'Dark Online' });
+  const stream = bootstrap({ props: { url, api } });
 
   res.statusCode = 200;
   stream.pipe(res);

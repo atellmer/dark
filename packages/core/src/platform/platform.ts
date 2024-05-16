@@ -13,7 +13,6 @@ export type Platform = {
   commit: (fiber: Fiber) => void;
   finishCommit: () => void;
   detectIsDynamic: () => boolean;
-  chunk: (fiber: Fiber) => void;
 };
 
 const realisation = () => illegal('The function was not installed by renderer!') as any;
@@ -27,7 +26,6 @@ const platform: Platform = {
   commit: realisation,
   finishCommit: realisation,
   detectIsDynamic: realisation,
-  chunk: realisation,
 };
 
 const detectIsServer = () => !platform.detectIsDynamic();

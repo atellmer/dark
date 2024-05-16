@@ -136,11 +136,17 @@ server.get('*', (req, res) => {
 ```
 Please see code examples in the `/examples` directory.
 
+If you are using `Metatags` component from `@dark-engine/platform-browser`, you should use option `awaitMetatags` when you are rendering to stream.
+
+```tsx
+const stream = renderToStream(content, { awaitMetatags: true });
+```
+
 ## Lazy modules
 
 Dark is designed to fully support asynchronous lazy code modules during the server-side rendering process. When Dark encounters a lazy module that isn’t yet cached, it halts the rendering process and waits for the module to load and cache before resuming from where it left off. In subsequent renderings, all modules are retrieved from the cache.
 
-This ensures that all lazy modules are fully loaded and the user receives the complete content. If the rendering occurs on the client-side, the lazy module is handled through the Suspense component, which displays a spinner or skeleton screen during loading.
+This ensures that all lazy modules are fully loaded and the user receives the complete content. If the rendering occurs on the client-side, the lazy module is handled through the `Suspense` component, which displays a spinner or skeleton screen during loading.
 
 # LICENSE
 
