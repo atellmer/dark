@@ -65,14 +65,12 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
   const wipFiber = $scope.getWorkInProgress();
   let unit = $scope.getNextUnitOfWork();
   let shouldYield = false;
-  let hasMoreWork = Boolean(unit);
 
   try {
     while (unit && !shouldYield) {
       unit = performUnitOfWork(unit, $scope);
-      $scope.setNextUnitOfWork(unit);
-      hasMoreWork = Boolean(unit);
       shouldYield = isAsync && scheduler.shouldYield();
+      $scope.setNextUnitOfWork(unit);
 
       if (shouldYield && scheduler.detectIsTransition() && scheduler.hasPrimaryTask()) {
         fork($scope);
@@ -102,7 +100,7 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
     }
   }
 
-  return hasMoreWork;
+  return Boolean(unit); // has more work
 }
 
 function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {

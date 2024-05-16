@@ -40,13 +40,13 @@ import {
   AS_ATTR,
   EXCLUDE_ATTR_MARK,
   DANGER_HTML_ATTR,
+  DASH_MARK,
 } from '../constants';
 import type {
   NativeElement,
   TagNativeElement,
   TextNativeElement,
   CommentNativeElement,
-  NativeNode,
   AttributeValue,
 } from '../native-element';
 
@@ -62,12 +62,12 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
     case NodeType.TAG:
       const name = (vNode as TagVirtualNode).name;
       const tag = cache[name]
-        ? cache[name].cloneNode(false)
+        ? cloneNode.call(cache[name], false)
         : detectIsSvgElement(name)
         ? document.createElementNS('http://www.w3.org/2000/svg', name)
         : document.createElement(name);
 
-      !cache[name] && (cache[name] = tag.cloneNode(false) as NativeElement);
+      !cache[name] && (cache[name] = cloneNode.call(tag, false) as NativeElement);
 
       return tag as TagNativeElement;
     case NodeType.TEXT:
@@ -79,7 +79,7 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
 
 function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
   for (const key in style) {
-    (element as HTMLElement).style.setProperty(key, String(style[key]));
+    setStyleProp.call((element as HTMLElement).style, key, String(style[key]));
   }
 }
 
@@ -99,7 +99,8 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode, isHydratio
     if (detectIsEvent(attrName)) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
     } else if (!isHydration && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
-      !patchAttributes(tagElement, vNode.name, attrName, attrValue) && tagElement.setAttribute(attrName, attrValue);
+      !patchAttributes(tagElement, vNode.name, attrName, attrValue) &&
+        setAttribute.call(tagElement, attrName, attrValue);
     }
   }
 }
@@ -124,10 +125,10 @@ function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nex
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
       } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
         !patchAttributes(tagElement, nextVNode.name, attrName, nextAttrValue) &&
-          tagElement.setAttribute(attrName, nextAttrValue);
+          setAttribute.call(tagElement, attrName, nextAttrValue);
       }
     } else {
-      tagElement.removeAttribute(attrName);
+      removeAttribute.call(tagElement, attrName);
     }
   }
 }
@@ -168,7 +169,7 @@ function performAttribute(
 }
 
 function toggleAttribute(element: TagNativeElement, name: string, value: string) {
-  value ? element.setAttribute(name, value) : element.removeAttribute(name);
+  value ? setAttribute.call(element, name, value) : removeAttribute.call(element, name);
 }
 
 function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
@@ -203,7 +204,7 @@ function patchAttributes(
   }
 
   if (!stop && detectIsBoolean(attrValue)) {
-    stop = !$attrName.includes('-');
+    stop = !$attrName.includes(DASH_MARK);
   }
 
   return stop;
@@ -272,9 +273,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && appendNativeElement(fiber.element, parentElement);
+      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && appendElement.call(parentElement, fiber.element);
     } else {
-      insertNativeElement(fiber.element, parentElement.childNodes[fiber.eidx], parentElement);
+      insertElement.call(parentElement, fiber.element, parentElement.childNodes[fiber.eidx]);
     }
   }
 
@@ -303,7 +304,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
   if (fiber.element) {
-    !fiber.isPortal && removeNativeElement(fiber.element, parentElement);
+    !fiber.isPortal && removeElement.call(parentElement, fiber.element);
     return skip();
   }
 };
@@ -316,16 +317,16 @@ function move(fiber: Fiber<NativeElement>) {
   const elementIdx = fiber.eidx;
   const move = () => {
     for (let i = 1; i < sourceNodes.length; i++) {
-      removeNativeElement(parentElement.childNodes[elementIdx + 1], parentElement);
+      removeElement.call(parentElement, parentElement.childNodes[elementIdx + 1]);
     }
 
-    replaceNativeElement(sourceFragment, parentElement.childNodes[elementIdx], parentElement);
+    replaceElement.call(parentElement, sourceFragment, parentElement.childNodes[elementIdx]);
   };
   let idx = 0;
 
   for (const node of sourceNodes) {
-    insertNativeElement(document.createComment(`${elementIdx}:${idx}`), node, parentElement);
-    appendNativeElement(node, sourceFragment);
+    insertElement.call(parentElement, document.createComment(`${elementIdx}:${idx}`), node);
+    appendElement.call(sourceFragment, node);
     idx++;
   }
 
@@ -362,21 +363,28 @@ function finishCommit() {
 
 const setTrackUpdate = (fn: typeof trackUpdate) => (trackUpdate = fn);
 
-const appendNativeElement = (element: NativeNode, parent: NativeNode) => parent.appendChild(element);
+const cloneNode = Node.prototype.cloneNode;
 
-const insertNativeElement = (element: NativeNode, sibling: NativeNode, parent: TagNativeElement) =>
-  parent.insertBefore(element, sibling);
+const appendElement = Node.prototype.appendChild;
 
-const replaceNativeElement = (element: NativeNode, candidate: NativeNode, parent: TagNativeElement) =>
-  parent.replaceChild(element, candidate);
+const insertElement = Node.prototype.insertBefore;
 
-const removeNativeElement = (element: NativeNode, parent: TagNativeElement) =>
-  element.parentElement === parent && parent.removeChild(element);
+const replaceElement = Node.prototype.replaceChild;
+
+const removeElement = Node.prototype.removeChild;
+
+const hasAttribute = Element.prototype.hasAttribute;
+
+const setAttribute = Element.prototype.setAttribute;
+
+const removeAttribute = Element.prototype.removeAttribute;
+
+const setStyleProp = CSSStyleDeclaration.prototype.setProperty;
 
 const toggle = (element: HTMLElement | SVGElement, isVisible: boolean) => {
   isVisible
-    ? element.hasAttribute(STYLE_ATTR) && element.removeAttribute(STYLE_ATTR)
-    : element.style.setProperty('display', 'none', 'important');
+    ? hasAttribute.call(element, STYLE_ATTR) && removeAttribute.call(element, STYLE_ATTR)
+    : setStyleProp.call(element.style, 'display', 'none', 'important');
 };
 
 export { createNativeElement, commit, finishCommit, setTrackUpdate, toggle };
