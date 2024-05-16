@@ -94,6 +94,7 @@ function renderToReadableStream(element: DarkElement, options?: RenderToStreamOp
   const { bootstrapScripts = [], bootstrapModules = [], chunkSize = 500, awaitMetatags = false } = options || {};
   const stream = new Readable({ encoding: 'utf-8', read() {} });
   let canSendChunks = true;
+  let hasMetatags = false;
   let content = '';
   let stash = '';
 
@@ -101,18 +102,17 @@ function renderToReadableStream(element: DarkElement, options?: RenderToStreamOp
     const emitter = $$scope().getEmitter();
 
     emitter.on<MetatagsBox>('box', box => {
-      if (detectIsMetatagsBox(box)) {
-        const { vNodes } = box;
-        const metadata = createNativeChildrenNodes(vNodes)
-          .map(x => x.renderToString())
-          .join('');
+      if (!hasMetatags && detectIsMetatagsBox(box)) {
+        const data = createMetadata(box.vNodes);
+
+        hasMetatags = true;
 
         if (awaitMetatags) {
           canSendChunks = true;
-          content += metadata + stash;
+          content += data + stash;
           stash = '';
         } else if (!fromStream) {
-          content = content.replace(HEAD_CLOSED_CHUNK, metadata + HEAD_CLOSED_CHUNK);
+          content = content.replace(HEAD_CLOSED_CHUNK, data + HEAD_CLOSED_CHUNK);
         }
       }
     });
@@ -120,7 +120,7 @@ function renderToReadableStream(element: DarkElement, options?: RenderToStreamOp
     emitter.on<Fiber<NativeElement>>('chunk', fiber => {
       const chunk = createChunk(fiber);
 
-      if (chunk === HEAD_CLOSED_CHUNK && awaitMetatags) {
+      if (chunk === HEAD_CLOSED_CHUNK && awaitMetatags && !hasMetatags) {
         canSendChunks = false;
       }
 
@@ -211,6 +211,11 @@ function withState(content = '') {
 
   return $content;
 }
+
+const createMetadata = (vNodes: Array<TagVirtualNode>) =>
+  createNativeChildrenNodes(vNodes)
+    .map(x => x.renderToString())
+    .join('');
 
 const createModule = (src: string) => `<script type="module" src="${src}" defer></script>`;
 

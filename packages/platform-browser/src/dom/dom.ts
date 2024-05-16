@@ -39,7 +39,7 @@ import {
   VALUE_ATTR,
   AS_ATTR,
   EXCLUDE_ATTR_MARK,
-  DANGER_HTML_CONTENT,
+  DANGER_HTML_ATTR,
 } from '../constants';
 import type {
   NativeElement,
@@ -140,7 +140,7 @@ function performAttribute(
 ) {
   if (attrName[0] === EXCLUDE_ATTR_MARK) return null;
 
-  if (attrName === DANGER_HTML_CONTENT) {
+  if (attrName === DANGER_HTML_ATTR) {
     setInnerHTML(tagElement, String(nextAttrValue));
     return null;
   }
@@ -267,7 +267,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
     fiber.element = nativeElement;
   } else {
-    if (detectIsTagVirtualNode(parent.inst) && parent.inst.attrs[DANGER_HTML_CONTENT]) {
+    if (detectIsTagVirtualNode(parent.inst) && parent.inst.attrs[DANGER_HTML_ATTR]) {
       illegal(`The element with danger content can't have a children!`);
     }
 

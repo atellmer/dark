@@ -1,10 +1,12 @@
 import { component } from '@dark-engine/core';
 
 import { AnimationFade } from './ui';
+import { Metadata } from './metadata';
 
 const ProductAnalytics = component(() => {
   return (
     <AnimationFade>
+      <Metadata marker='products-analytics' />
       <h2>Analytics 📊</h2>
       <p>
         Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla temporibus amet sed deserunt nostrum molestias,

@@ -4,6 +4,7 @@ import { styled } from '@dark-engine/styled';
 
 import { useProducts } from '../hooks';
 import { Spinner, Error, AnimationFade, Button, List, ListItem } from './ui';
+import { Metadata } from './metadata';
 
 const Header = styled.header`
   padding-bottom: 16px;
@@ -34,6 +35,7 @@ const ProductList = component<{ slot: DarkElement }>(({ slot }) => {
 
   return (
     <AnimationFade>
+      <Metadata marker='products-list' />
       <Header>
         {isList ? (
           <Button as={Link} {...{ to: urlToAdd }}>

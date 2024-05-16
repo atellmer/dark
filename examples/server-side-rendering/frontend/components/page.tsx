@@ -1,27 +1,16 @@
 import { type DarkElement, component } from '@dark-engine/core';
 
 type PageProps = {
-  title: string;
   slot: DarkElement;
 };
 
-const Page = component<PageProps>(({ title, slot }) => {
+const Page = component<PageProps>(({ slot }) => {
   return (
     <html lang='en'>
-      <head>
-        <meta charset='UTF-8' />
-        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-        <meta http-equiv='X-UA-Compatible' content='ie=edge' />
-        <meta name='description' content={title} />
-        <meta name='theme-color' content='#fdd835' />
-        <link rel='manifest' href='/static/assets/manifest.webmanifest' />
-        <link rel='preload' href='/static/assets/fonts/Roboto-Regular.ttf' _as='font' crossorigin='anonymous' />
-        <base href='/' />
-        <title>{title}</title>
-      </head>
+      <head />
       <body>
         <div id='root'>{slot}</div>
-        <script src='/static/build.js' defer></script>
+        <script src='/static/build.js' defer />
       </body>
     </html>
   );

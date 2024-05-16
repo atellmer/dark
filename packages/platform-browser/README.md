@@ -43,6 +43,7 @@ import {
   hydrateRoot,
   createPortal,
   factory,
+  Metatags,
   VERSION,
 } from '@dark-engine/platform-browser';
 ```
@@ -192,6 +193,22 @@ import { App } from './app';
 
 hydrateRoot(document.getElementById('root'), <App />);
 ```
+
+## Metatags
+
+This component can be used to generate metadata for SEO during the SSR process. When rendered on the server, it redirects tags to the head of the document. When rendering on the client, allows you to dynamically update the title.
+
+```tsx
+// somewhere in the app
+<Metatags>
+  <meta name='description' content={description} />
+  <title>{title}</title>
+</Metatags>
+```
+
+- Accepts only tags (not components), because under the hood it does not render, but simply retrieves data from the slot.
+- There must be one instance of the component on the page. If other instances are found, SSR will ignore them.
+- If the application is rendered to a stream on the server, then it is worth placing the component as close as possible to the beginning of the document so that the stream continues to send chunks as quickly as possible.
 
 # LICENSE
 

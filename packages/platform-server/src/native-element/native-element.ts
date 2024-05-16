@@ -7,7 +7,7 @@ import {
   EXCLUDE_ATTR_MARK,
   TEXTAREA_TAG,
   VALUE_ATTR,
-  DANGER_HTML_CONTENT,
+  DANGER_HTML_ATTR,
   detectIsVoidElement,
 } from '@dark-engine/platform-browser';
 
@@ -38,7 +38,7 @@ class TagNativeElement extends NativeElement {
   }
 
   appendChild(element: NativeElement) {
-    if (this.attrs[DANGER_HTML_CONTENT]) {
+    if (this.attrs[DANGER_HTML_ATTR]) {
       illegal(`The element with danger content can't have a children!`);
     }
 
@@ -51,7 +51,7 @@ class TagNativeElement extends NativeElement {
 
     if ($name[0] === EXCLUDE_ATTR_MARK) return;
     if ($name === AS_ATTR) $name = name.slice(1, AS_ATTR.length);
-    this.attrs[$name] = detectIsString(value) && $name !== DANGER_HTML_CONTENT ? escape(value) : value;
+    this.attrs[$name] = detectIsString(value) && $name !== DANGER_HTML_ATTR ? escape(value) : value;
   }
 
   override render(...args: Array<unknown>) {
@@ -59,7 +59,7 @@ class TagNativeElement extends NativeElement {
     const content =
       this.name === TEXTAREA_TAG
         ? (this.attrs[VALUE_ATTR] as string) || ''
-        : (this.attrs[DANGER_HTML_CONTENT] as string) || '';
+        : (this.attrs[DANGER_HTML_ATTR] as string) || '';
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
     const chunk = isOpening
@@ -118,7 +118,7 @@ function getAttributes(map: TagNativeElement['attrs']) {
   let attrs = '';
 
   for (const key of Object.keys(map)) {
-    if (key === DANGER_HTML_CONTENT) continue;
+    if (key === DANGER_HTML_ATTR) continue;
     const attr = ' ' + (detectIsBoolean(map[key]) ? (map[key] === true ? key : '') : `${key}="${map[key]}"`);
 
     attrs += attr;
