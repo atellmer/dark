@@ -7,8 +7,6 @@ let { host } = createBrowserEnv();
 
 beforeEach(() => {
   ({ host } = createBrowserEnv());
-  document.head.innerHTML = '';
-  document.body.innerHTML = '';
   jest.useFakeTimers();
 });
 

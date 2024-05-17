@@ -10,9 +10,9 @@ import {
   detectIsString,
   detectIsFunction,
   detectIsTextBased,
-  detectIsServer,
   useInsertionEffect,
   mapRecord,
+  __useSSR as useSSR,
 } from '@dark-engine/core';
 import { type DarkJSX } from '@dark-engine/platform-browser';
 
@@ -79,6 +79,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
       props => {
         const { as: component, ...rest } = props;
         const theme = useTheme();
+        const { isServer, isHydration } = useSSR();
         const isSwap = detectIsFunction(component);
         const $props = (isSwap ? rest : props) as unknown as T;
         const $factory = isSwap ? component : isExtending ? config.factory : factory;
@@ -106,22 +107,13 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
         }, [...mapRecord(props), theme]);
 
         useInsertionEffect(() => {
-          if (!tag) {
-            const $tag = getTag();
-
-            if ($tag) {
-              tag = $tag; // after hydration
-              return;
-            } else {
-              tag = createTag();
-            }
-          }
-
+          tag = tag || getTag() || createTag();
+          if (isHydration) return;
           styles.forEach(css => inject(css, tag));
           keyframes.forEach(css => inject(css, tag));
         }, [...styles, ...keyframes]);
 
-        if (detectIsServer()) {
+        if (isServer) {
           const manager = useManager(); // special case of hook using, should be last in order
 
           styles.forEach(css => manager.collectComponentStyle(css));

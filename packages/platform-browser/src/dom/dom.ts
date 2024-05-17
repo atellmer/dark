@@ -28,7 +28,14 @@ import {
   detectIsHydration,
 } from '@dark-engine/core';
 
-import { detectIsSvgElement, detectIsVoidElement, illegal, removeContent, setInnerHTML } from '../utils';
+import {
+  detectIsSvgElement,
+  detectIsVoidElement,
+  illegal,
+  removeContent,
+  setInnerHTML,
+  detectIsBrowser,
+} from '../utils';
 import { delegateEvent, detectIsEvent, getEventName } from '../events';
 import {
   INPUT_TAG,
@@ -361,25 +368,34 @@ function finishCommit() {
   patches = [];
 }
 
+function setup() {
+  if (!detectIsBrowser()) return {};
+  return {
+    cloneNode: Node.prototype.cloneNode,
+    appendElement: Node.prototype.appendChild,
+    insertElement: Node.prototype.insertBefore,
+    replaceElement: Node.prototype.replaceChild,
+    removeElement: Node.prototype.removeChild,
+    hasAttribute: Element.prototype.hasAttribute,
+    setAttribute: Element.prototype.setAttribute,
+    removeAttribute: Element.prototype.removeAttribute,
+    setStyleProp: CSSStyleDeclaration.prototype.setProperty,
+  };
+}
+
+const {
+  cloneNode,
+  appendElement,
+  insertElement,
+  replaceElement,
+  removeElement,
+  hasAttribute,
+  setAttribute,
+  removeAttribute,
+  setStyleProp,
+} = setup();
+
 const setTrackUpdate = (fn: typeof trackUpdate) => (trackUpdate = fn);
-
-const cloneNode = Node.prototype.cloneNode;
-
-const appendElement = Node.prototype.appendChild;
-
-const insertElement = Node.prototype.insertBefore;
-
-const replaceElement = Node.prototype.replaceChild;
-
-const removeElement = Node.prototype.removeChild;
-
-const hasAttribute = Element.prototype.hasAttribute;
-
-const setAttribute = Element.prototype.setAttribute;
-
-const removeAttribute = Element.prototype.removeAttribute;
-
-const setStyleProp = CSSStyleDeclaration.prototype.setProperty;
 
 const toggle = (element: HTMLElement | SVGElement, isVisible: boolean) => {
   isVisible

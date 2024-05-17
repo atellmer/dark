@@ -1,6 +1,6 @@
 import { component, useState } from '@dark-engine/core';
 
-import { createBrowserEnv, createBrowserHydrateEnv, replacer } from '@test-utils';
+import { createBrowserEnv, createBrowserHydrateEnv, replacer, dom } from '@test-utils';
 import { hydrateRoot } from '../hydrate-root';
 import { Metatags } from './metatags';
 
@@ -9,11 +9,6 @@ const { head, body } = document;
 
 beforeEach(() => {
   ({ host, render } = createBrowserEnv());
-});
-
-afterEach(() => {
-  head.innerHTML = '';
-  body.innerHTML = '';
 });
 
 describe('@platform-browser/metatags', () => {
@@ -53,9 +48,11 @@ describe('@platform-browser/metatags', () => {
   });
 
   test('can hydrate app correctly #1', () => {
-    head.innerHTML = `<title>Hello</title>`;
     let setTitle: (x: string) => void = null;
-    const { host, hydrate } = createBrowserHydrateEnv(`<div>${replacer}</div>`);
+    const { body, hydrate } = createBrowserHydrateEnv({
+      headHTML: `<title>Hello</title>`,
+      bodyHTML: `<div>${replacer}</div>`,
+    });
     const App = component(() => {
       const [title, _setTitle] = useState('Hello');
 
@@ -72,16 +69,14 @@ describe('@platform-browser/metatags', () => {
 
     hydrate(<App />);
     expect(head.innerHTML).toMatchInlineSnapshot(`"<title>Hello</title>"`);
-    expect(host.innerHTML).toMatchInlineSnapshot(`"<div><!--dark:matter--></div>"`);
+    expect(body.innerHTML).toMatchInlineSnapshot(`"<div><!--dark:matter--></div>"`);
 
     setTitle('World');
     expect(head.innerHTML).toMatchInlineSnapshot(`"<title>World</title>"`);
-    expect(host.innerHTML).toMatchInlineSnapshot(`"<div><!--dark:matter--></div>"`);
+    expect(body.innerHTML).toMatchInlineSnapshot(`"<div><!--dark:matter--></div>"`);
   });
 
   test('can hydrate app correctly #2', () => {
-    head.innerHTML = `<title>Hello</title>`;
-    body.innerHTML = `<div>App</div>${replacer}`;
     let setTitle: (x: string) => void = null;
     const App = component(() => {
       const [title, _setTitle] = useState('Hello');
@@ -103,15 +98,18 @@ describe('@platform-browser/metatags', () => {
       );
     });
 
-    const root = hydrateRoot(document, <App />);
+    const { body, hydrate } = createBrowserHydrateEnv({
+      useDocument: true,
+      headHTML: `<title>Hello</title>`,
+      bodyHTML: `<div>App</div>${replacer}`,
+    });
 
+    hydrate(<App />);
     expect(head.innerHTML).toMatchInlineSnapshot(`"<title>Hello</title>"`);
     expect(body.innerHTML).toMatchInlineSnapshot(`"<div>App</div><!--dark:matter-->"`);
 
     setTitle('World');
     expect(head.innerHTML).toMatchInlineSnapshot(`"<title>World</title>"`);
     expect(body.innerHTML).toMatchInlineSnapshot(`"<div>App</div><!--dark:matter-->"`);
-
-    root.unmount();
   });
 });
