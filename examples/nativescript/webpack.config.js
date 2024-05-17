@@ -26,6 +26,7 @@ module.exports = env => {
       resolve(__dirname, '../../packages/native-navigation/src'),
     );
     config.resolve.alias.set('@dark-engine/animations', resolve(__dirname, '../../packages/animations/src'));
+    config.resolve.alias.set('@dark-engine/data', resolve(__dirname, '../../packages/data/src'));
 
     config.module
       .rule('ts')

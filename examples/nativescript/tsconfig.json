@@ -35,6 +35,9 @@
       "@dark-engine/animations": [
         "../../packages/animations/src/index"
       ],
+      "@dark-engine/data": [
+        "../../packages/data/src/index"
+      ],
       "~/*": [
         "src/*"
       ],
