@@ -134,9 +134,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nodegui/nodegui@npm:0.63.0":
-  version: 0.63.0
-  resolution: "@nodegui/nodegui@npm:0.63.0"
+"@nodegui/nodegui@npm:0.66.0":
+  version: 0.66.0
+  resolution: "@nodegui/nodegui@npm:0.66.0"
   dependencies:
     "@nodegui/artifact-installer": ^1.1.0
     "@nodegui/qode": ^18.12.1
@@ -151,7 +151,7 @@ __metadata:
     tar: ^6.0.1
   bin:
     qode: scripts/qode.js
-  checksum: 474060ab0d53f4468335b8fb4ed9ce4d7abb7fdb6c2c957e46f8dec234f38adaf17b60970d40ec388791d062ecc62bb13204f27459b5bc15b7ea329ac5adf34d
+  checksum: bfb6acb51727a644fe259d471071a2c4a166cd6b91ae8ee39791913cbc68146e345731ce0b2e0475a78cbbdc99ea10d856f5b915e34e64f42308b2179f168907
   languageName: node
   linkType: hard
 
@@ -1039,7 +1039,7 @@ __metadata:
   dependencies:
     "@dark-engine/core": "*"
     "@dark-engine/platform-desktop": "*"
-    "@nodegui/nodegui": 0.63.0
+    "@nodegui/nodegui": 0.66.0
     "@nodegui/packer": ^1.5.0
     "@types/node": ^18.7.14
     file-loader: ^6.2.0

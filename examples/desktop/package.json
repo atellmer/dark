@@ -11,7 +11,7 @@
   "dependencies": {
     "@dark-engine/core": "*",
     "@dark-engine/platform-desktop": "*",
-    "@nodegui/nodegui": "0.63.0"
+    "@nodegui/nodegui": "0.66.0"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.5.0",

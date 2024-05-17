@@ -38,7 +38,7 @@
     "node-fetch": "^3.3.1"
   },
   "devDependencies": {
-    "@nodegui/nodegui": "0.63.0"
+    "@nodegui/nodegui": "0.66.0"
   },
   "peerDependencies": {
     "@dark-engine/core": "*",
