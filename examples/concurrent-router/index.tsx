@@ -111,14 +111,14 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     font-family: arial;
-    background-color: #303F9F;
+    background-color: #fff;
     overflow-y: scroll;
     overflow-x: hidden;
   }
 
   header {
     width: 100%;
-    background-color: #03a9f4;
+    background-color: #4CAF50;
     padding: 6px;
     color: #fff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
