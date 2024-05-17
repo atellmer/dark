@@ -55,8 +55,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   const update = useUpdate();
   const initiator = useId();
   const record = cache.read<T>(key, { id: cacheId });
-  const isPending = record && detectIsPromise(record.data);
-  const pending = isPending ? (record.data as Promise<T>) : null;
+  const pending = getPending<T>(cache, key, cacheId);
   const isSuspenseOnly = strategy === 'suspense-only';
   const isHybrid = strategy === 'hybrid';
   const isStateOnly = strategy === 'state-only';
@@ -76,35 +75,35 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     try {
       data = await query($$variables);
       cache.__emit({ type: 'query', phase: 'finish', key, id: $cacheId, data, initiator });
-      !isServer && detectIsFunction(onSuccess) && onSuccess({ cache, args: $$variables, data });
 
       if (isServer) {
         $scope.setResource(id, [data, null]);
       } else {
+        detectIsFunction(onSuccess) && onSuccess({ cache, args: $$variables, data });
         state.data = data;
         state.error = null;
       }
 
       if (!detectIsEmpty(data)) {
         cache.write(key, data, { id: $cacheId });
-      } else if (pending) {
-        cache.delete(key, { id: $cacheId });
       }
-
-      return data;
     } catch (error) {
       logError(error);
       cache.__emit({ type: 'query', phase: 'error', key, id: $cacheId, data: error, initiator });
-      !isServer && detectIsFunction(onError) && onError(error);
 
       if (isServer) {
         $scope.setResource(id, [null, String(error)]);
       } else {
+        detectIsFunction(onError) && onError(error);
         state.error = String(error);
       }
     } finally {
+      const pending = getPending(cache, key, cacheId);
+
+      pending && cache.delete(key, { id: $cacheId });
       state.isFetching = false;
       state.isLoaded = true;
+      scope.promise = null;
 
       if (!isServer) {
         if (scope.fromRefetch) {
@@ -293,6 +292,13 @@ function checkStrategy(strategy: Strategy) {
   if (!strategies.has(strategy)) {
     illegal('Wrong use-query strategy!');
   }
+}
+
+function getPending<T>(cache: InMemoryCache, key: string, cacheId: TextBased) {
+  const record = cache.read(key, { id: cacheId });
+  const pending = record && detectIsPromise(record.data) ? (record.data as Promise<T>) : null;
+
+  return pending;
 }
 
 type Strategy =
