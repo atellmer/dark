@@ -13,3 +13,4 @@ export const VALUE_ATTR = 'value';
 export const AS_ATTR = '_as';
 export const DANGER_HTML_ATTR = '__danger';
 export const EXCLUDE_ATTR_MARK = '$';
+export const DASH_MARK = '-';

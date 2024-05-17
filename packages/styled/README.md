@@ -536,7 +536,7 @@ try {
   const app = await renderToString(sheet.collectStyles(<App />));
   const tags = sheet.getStyleTags();
   const mark = '__styled__' // somewhere in your <head></head>
-  const page = `<!DOCTYPE html>${app}`.replace(mark, tags.join(''));
+  const page = `<!DOCTYPE html>${app}`.replace(mark, tags);
 
   res.statusCode = 200;
   res.send(page);

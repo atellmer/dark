@@ -69,14 +69,14 @@ describe('@styled/server', () => {
       expect(content).toBe(
         `${replacer}<div class="dk-igjghg dk-fcgdjf">Hello</div><div class="dk-igjghg dk-fcgdjf dk-bejacb">SSR</div><div class="dk-igjghg dk-fcgdjf">!!!</div>`,
       );
-      expect(tags).toEqual([
+      expect(tags).toBe(
         globalStyle(
           '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;}',
-        ),
-        style(
-          '.dk-igjghg{width:100px;height:100px;}.dk-fcgdjf{background-color:blueviolet;}.dk-bejacb{background-color:red;}',
-        ),
-      ]);
+        ) +
+          style(
+            '.dk-igjghg{width:100px;height:100px;}.dk-fcgdjf{background-color:blueviolet;}.dk-bejacb{background-color:red;}',
+          ),
+      );
     };
 
     await make();

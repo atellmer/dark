@@ -238,12 +238,14 @@ describe('@data/use-query', () => {
         </div>
       );
     });
-    const { host, hydrate } = createBrowserHydrateEnv(content('a', 10, 20));
+    const { body, hydrate } = createBrowserHydrateEnv({
+      bodyHTML: content('a', 10, 20),
+    });
 
     hydrate(withProvider(<App />));
-    expect(host.innerHTML).toBe(content('a', 10, 20, true));
+    expect(body.innerHTML).toBe(content('a', 10, 20, true));
 
     setMarker('b');
-    expect(host.innerHTML).toBe(content('b', 10, 20, true));
+    expect(body.innerHTML).toBe(content('b', 10, 20, true));
   });
 });

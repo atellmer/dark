@@ -2,7 +2,6 @@ import * as core from '@dark-engine/core';
 import { type DarkElement, platform, REPLACER } from '@dark-engine/core';
 import { createRoot, hydrateRoot, inject as injectBrowserSupport } from '@dark-engine/platform-browser';
 import { renderToStream, renderToString, inject as injectServerSupport } from '@dark-engine/platform-server';
-
 import { STYLED_ATTR, GLOBAL_ATTR_VALUE, COMPONENTS_ATTR_VALUE } from '@dark-engine/styled/constants';
 
 jest.mock('@dark-engine/core', () => {
@@ -56,49 +55,50 @@ const replacer = createReplacerString();
 let host: HTMLElement = null;
 let unmount: Function = null;
 
-function createBrowserEnv() {
+function setupBrowserEnv() {
   injectBrowserSupport();
   mockBrowserPlatform();
   unmount && unmount();
-  host && host.parentElement === document.body && document.body.removeChild(host);
+  document.head.innerHTML = '';
+  document.body.innerHTML = '';
   host = createTestHostNode();
-  const root = createRoot(host);
+}
 
-  unmount = root.unmount;
+function createBrowserEnv() {
+  setupBrowserEnv();
+  const root = createRoot(host);
   const render = root.render;
 
+  unmount = root.unmount;
   document.body.appendChild(host);
 
   return {
     host,
     unmount,
     render,
-    addEventListener,
   };
 }
 
-function createBrowserHydrateEnv(html: string) {
-  injectBrowserSupport();
-  mockBrowserPlatform();
-  unmount && unmount();
-  host && host.remove();
-  host = createTestHostNode();
-  let $unmount = () => {};
-  const hydrate = (app: DarkElement) => {
-    const root = hydrateRoot(host, app);
+type CreateBrowserHydrateEnvOptions = {
+  useDocument?: boolean;
+  headHTML?: string;
+  bodyHTML?: string;
+};
 
-    $unmount = root.unmount;
-  };
+function createBrowserHydrateEnv(options: CreateBrowserHydrateEnvOptions) {
+  const { useDocument, headHTML = '', bodyHTML = '' } = options;
+  const { head, body } = document;
+  setupBrowserEnv();
+  const hydrate = (app: DarkElement) => ({ unmount } = hydrateRoot(useDocument ? document : body, app));
 
-  unmount = () => $unmount();
-  host.innerHTML = html;
-  document.body.appendChild(host);
+  head.innerHTML = headHTML;
+  body.innerHTML = bodyHTML;
 
   return {
-    host,
     unmount,
     hydrate,
-    addEventListener,
+    head,
+    body,
   };
 }
 

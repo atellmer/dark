@@ -1,18 +1,15 @@
 import { type DarkElement, component } from '@dark-engine/core';
 import { type DarkJSX } from '@dark-engine/platform-browser';
-import { createBrowserEnv, wrapWithStyledTag as style } from '@test-utils';
+import { createBrowserEnv, createBrowserHydrateEnv, wrapWithStyledTag as style } from '@test-utils';
 
 import { setupGlobal, styled, css, detectIsStyled } from './styled';
 
 let { host, render } = createBrowserEnv();
+const { head } = document;
 
 beforeEach(() => {
   ({ host, render } = createBrowserEnv());
   setupGlobal();
-});
-
-afterEach(() => {
-  document.head.innerHTML = '';
 });
 
 describe('@styled/styled', () => {
@@ -36,7 +33,7 @@ describe('@styled/styled', () => {
     render(<Layout />);
 
     expect(host.innerHTML).toBe('<div class="dk-bccjif"></div>');
-    expect(document.head.innerHTML).toBe(style('.dk-bccjif{background-color:aqua;color:black;}'));
+    expect(head.innerHTML).toBe(style('.dk-bccjif{background-color:aqua;color:black;}'));
   });
 
   test('renders a styled component with media query correctly', () => {
@@ -52,7 +49,7 @@ describe('@styled/styled', () => {
     render(<Layout />);
 
     expect(host.innerHTML).toBe('<div class="dk-bcjdcc"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-bcjdcc{background-color:aqua;color:black;}@media (max-width: 600px){.dk-bcjdcc{background-color:bisque;}}',
       ),
@@ -76,9 +73,7 @@ describe('@styled/styled', () => {
     );
 
     expect(host.innerHTML).toBe('<div class="dk-cbcbei"><span class="item">content</span></div>');
-    expect(document.head.innerHTML).toBe(
-      style('.dk-cbcbei{background-color:aqua;color:black;}.dk-cbcbei .item{color:red;}'),
-    );
+    expect(head.innerHTML).toBe(style('.dk-cbcbei{background-color:aqua;color:black;}.dk-cbcbei .item{color:red;}'));
   });
 
   test('renders a styled component with keyframes correctly', () => {
@@ -102,7 +97,7 @@ describe('@styled/styled', () => {
     render(<Box />);
 
     expect(host.innerHTML).toBe('<div class="dk-bgdcea"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-bgdcea{width:100px;height:100px;background-color:darkred;animation:spin 3s infinite;}@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}',
       ),
@@ -134,7 +129,7 @@ describe('@styled/styled', () => {
     );
 
     expect(host.innerHTML).toBe('<div class="dk-bagcdh"><span class="item">content</span></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-bagcdh{background-color:aqua;color:black;}.dk-bagcdh .item{color:red;}@media (max-width: 600px){.dk-bagcdh{background-color:bisque;}.dk-bagcdh .item{color:blue;}}',
       ),
@@ -158,7 +153,7 @@ describe('@styled/styled', () => {
     );
 
     expect(host.innerHTML).toBe('<div class="dk-gfaebb"><button class="dk-jbdicb">Click me</button></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-gfaebb{width:100%;padding:16px;}.dk-jbdicb{background-color:darkcyan;font-size:1rem;}'),
     );
   });
@@ -184,7 +179,7 @@ describe('@styled/styled', () => {
     );
 
     expect(host.innerHTML).toBe('<div class="dk-caagaf"><button class="dk-jbdicb">Click me</button></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-caagaf{width:100%;padding:16px;}.dk-caagaf .dk-jbdicb{font-size:2rem;}.dk-jbdicb{background-color:darkcyan;font-size:1rem;}',
       ),
@@ -204,21 +199,19 @@ describe('@styled/styled', () => {
     render(<Box $backgroudColor='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb"></div>');
-    expect(document.head.innerHTML).toBe(
-      style('.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}'),
-    );
+    expect(head.innerHTML).toBe(style('.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}'));
 
     render(<Box $backgroudColor='blue' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bicagj"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bicagj{background-color:blue;}'),
     );
 
     render(<Box $backgroudColor='green' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bhbbdd"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bicagj{background-color:blue;}.dk-bhbbdd{background-color:green;}',
       ),
@@ -227,7 +220,7 @@ describe('@styled/styled', () => {
     render(<Box $backgroudColor='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bicagj{background-color:blue;}.dk-bhbbdd{background-color:green;}',
       ),
@@ -248,14 +241,14 @@ describe('@styled/styled', () => {
     render(<Box $color='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb dk-bfiehd"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bfiehd{border:1px solid red;}'),
     );
 
     render(<Box $color='#222' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-iiehgg dk-bfbcdd"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bfiehd{border:1px solid red;}.dk-iiehgg{background-color:#222;}.dk-bfbcdd{border:1px solid #222;}',
       ),
@@ -264,7 +257,7 @@ describe('@styled/styled', () => {
     render(<Box $color='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb dk-bfiehd"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bfiehd{border:1px solid red;}.dk-iiehgg{background-color:#222;}.dk-bfbcdd{border:1px solid #222;}',
       ),
@@ -285,9 +278,7 @@ describe('@styled/styled', () => {
     render(<Box $color='red' $borderType='solid' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bfiehd"></div>');
-    expect(document.head.innerHTML).toBe(
-      style('.dk-igjghg{width:100px;height:100px;}.dk-bfiehd{border:1px solid red;}'),
-    );
+    expect(head.innerHTML).toBe(style('.dk-igjghg{width:100px;height:100px;}.dk-bfiehd{border:1px solid red;}'));
   });
 
   test('renders a styled component with dynamic css parts correctly #1', () => {
@@ -307,14 +298,14 @@ describe('@styled/styled', () => {
     render(<Box $color='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-egbggh"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}'),
     );
 
     render(<Box $color='green ' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-eehgaf"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-eehgaf{background-color:green;border:1px solid green;}',
       ),
@@ -323,7 +314,7 @@ describe('@styled/styled', () => {
     render(<Box $color='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-egbggh"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-eehgaf{background-color:green;border:1px solid green;}',
       ),
@@ -349,14 +340,14 @@ describe('@styled/styled', () => {
     render(<Box $color='red' />);
 
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-egbggh"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}'),
     );
 
     render(<Box $color='orange' />);
 
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-biaaih"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-biaaih{background-color:orange;border:1px solid orange;}',
       ),
@@ -384,7 +375,7 @@ describe('@styled/styled', () => {
     render(<Box $backgroundColor='red' $borderColor='orange' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bejacb dk-bgciah"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bgciah{border:1px solid orange;}',
       ),
@@ -393,7 +384,7 @@ describe('@styled/styled', () => {
     render(<Box $backgroundColor='yellow' $borderColor='orange' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-dhehda dk-bgciah"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bgciah{border:1px solid orange;}.dk-dhehda{background-color:yellow;}',
       ),
@@ -402,7 +393,7 @@ describe('@styled/styled', () => {
     render(<Box $backgroundColor='orange' $borderColor='yellow' />);
 
     expect(host.innerHTML).toBe('<div class="dk-igjghg dk-bgdgjb dk-gccdce"></div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-igjghg{width:100px;height:100px;}.dk-bejacb{background-color:red;}.dk-bgciah{border:1px solid orange;}.dk-dhehda{background-color:yellow;}.dk-bgdgjb{background-color:orange;}.dk-gccdce{border:1px solid yellow;}',
       ),
@@ -425,14 +416,14 @@ describe('@styled/styled', () => {
     render(<SmallButton>Click</SmallButton>);
 
     expect(host.innerHTML).toBe('<button class="dk-caeefb">Click</button>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}'),
     );
 
     render(<BigButton>Click</BigButton>);
 
     expect(host.innerHTML).toBe('<button class="dk-hfgadd">Click</button>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-caeefb{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:1rem;}.dk-hfgadd{width:100%;background-color:#11ed74;font-size:1.5rem;font-size:2rem;}',
       ),
@@ -448,7 +439,7 @@ describe('@styled/styled', () => {
     render(<Input />);
 
     expect(host.innerHTML).toBe('<input type="text" class="dk-bjgffe">');
-    expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
+    expect(head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
   });
 
   test('renders a styled component with extended attribute config correctly #1', () => {
@@ -461,7 +452,7 @@ describe('@styled/styled', () => {
     render(<PasswordInput />);
 
     expect(host.innerHTML).toBe('<input type="password" class="dk-bjgffe">');
-    expect(document.head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
+    expect(head.innerHTML).toBe(style('.dk-bjgffe{width:100%;border:1px solid aliceblue;}'));
   });
 
   test('renders a styled component with extended attribute config correctly #2', () => {
@@ -477,9 +468,7 @@ describe('@styled/styled', () => {
     render(<GreenPasswordInput />);
 
     expect(host.innerHTML).toBe('<input type="password" data-color="green" class="dk-ccfddd">');
-    expect(document.head.innerHTML).toBe(
-      style('.dk-ccfddd{width:100%;border:1px solid aliceblue;border-color:green;}'),
-    );
+    expect(head.innerHTML).toBe(style('.dk-ccfddd{width:100%;border:1px solid aliceblue;border-color:green;}'));
   });
 
   test('can replace an instance with an another tag correctly', () => {
@@ -497,7 +486,7 @@ describe('@styled/styled', () => {
     );
 
     expect(host.innerHTML).toBe('<a href="www.example.com" class="dk-bgehcj">Click</a>');
-    expect(document.head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
+    expect(head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
   });
 
   test('can replace an instance with an another component correctly', () => {
@@ -515,7 +504,7 @@ describe('@styled/styled', () => {
     render(<Button as={Item}>Click</Button>);
 
     expect(host.innerHTML).toBe('<div class="dk-bgehcj"><span>Click</span></div>');
-    expect(document.head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
+    expect(head.innerHTML).toBe(style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}'));
   });
 
   test('can replace an instance with an another styled component correctly', () => {
@@ -531,7 +520,7 @@ describe('@styled/styled', () => {
     render(<Button as={StyledItem}>Click</Button>);
 
     expect(host.innerHTML).toBe('<div class="dk-bgehcj dk-bfdfeb">Click</div>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-bfdfeb{border:2px solid purple;}'),
     );
   });
@@ -549,7 +538,7 @@ describe('@styled/styled', () => {
     render(<Button as={BorderedButton}>Click</Button>);
 
     expect(host.innerHTML).toBe('<button class="dk-bgehcj dk-ihjajd">Click</button>');
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-ihjajd{width:100%;background-color:#11ed74;font-size:1.5rem;border:2px solid purple;}',
       ),
@@ -591,7 +580,7 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toBe(
       '<a class="dk-bgehcj">Click</a><button class="dk-bgehcj dk-gbfaed">Click</button><button class="dk-bgehcj dk-cgddii">Click</button><button class="dk-bgehcj dk-bgcgba">Click</button><main class="dk-bgehcj dk-bfdfeb">Click</main><div class="dk-bgehcj">Click</div><button class="dk-bgehcj">Click</button>',
     );
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-bgehcj{width:100%;background-color:#11ed74;font-size:1.5rem;}.dk-gbfaed{width:100%;background-color:#11ed74;font-size:1.5rem;border:2px solid pink;}.dk-cgddii{width:100%;background-color:#11ed74;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-bgcgba{border:2px solid yellow;}.dk-bfdfeb{border:2px solid purple;}',
       ),
@@ -648,7 +637,7 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toBe(
       '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
     );
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-bhbbdd{background-color:green;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-bgdgjb{background-color:orange;}.dk-bgcgba{border:2px solid yellow;}.dk-jdcdef{background-color:purple;}.dk-bfdfeb{border:2px solid purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}',
       ),
@@ -710,7 +699,7 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toBe(
       '<a class="dk-jajadj dk-bejacb">Click</a><button class="dk-jajadj dk-dhehda dk-gjadfc">Click</button><button class="dk-jajadj dk-bhbbdd dk-jijccj dk-cbbfgc">Click</button><button class="dk-jajadj dk-bgdgjb dk-bgcgba">Click</button><main class="dk-jajadj dk-jdcdef dk-bfdfeb">Click</main><div class="dk-jajadj dk-eaigha">Click</div><button class="dk-jajadj dk-bicagj">Click</button>',
     );
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-jajadj{width:100%;font-size:1.5rem;}.dk-bejacb{background-color:red;}.dk-dhehda{background-color:yellow;}.dk-gjadfc{width:100%;font-size:1.5rem;border:2px solid pink;}.dk-bhbbdd{background-color:green;}.dk-jijccj{width:100%;font-size:1.5rem;border:2px solid pink;font-size:2rem;}.dk-cbbfgc{border-color:aliceblue;}.dk-bgdgjb{background-color:orange;}.dk-bgcgba{border:2px solid yellow;}.dk-jdcdef{background-color:purple;}.dk-bfdfeb{border:2px solid purple;}.dk-eaigha{background-color:pink;}.dk-bicagj{background-color:blue;}',
       ),
@@ -735,7 +724,7 @@ describe('@styled/styled', () => {
     render(<Box />);
 
     expect(host.innerHTML).toBe('<div class="dk-ccaacd"></div>');
-    expect(document.head.innerHTML).toBe(style('.dk-ccaacd{width:100px;height:100px;background-color:#11ed74;}'));
+    expect(head.innerHTML).toBe(style('.dk-ccaacd{width:100px;height:100px;background-color:#11ed74;}'));
   });
 
   test('passes the render props function into slot', () => {
@@ -776,7 +765,7 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toBe(
       '<main class="dk-ifejde"><div class="dk-ifejde_header"></div><div class="dk-ifejde_body"></div><div class="dk-ifejde_footer"></div></main>',
     );
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '.dk-ifejde{display:grid;grid-template-columns:1fr;grid-template-rows:50px minmax(50px, 1fr) 50px;height:100vh;}.dk-ifejde_header{background-color:deepskyblue;border:1px solid #fff;}.dk-ifejde_body{background-color:limegreen;border:1px solid #fff;}.dk-ifejde_footer{background-color:salmon;border:1px solid #fff;}',
       ),
@@ -815,8 +804,34 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(
       `"<div class="dk-cagiea dk-igjghg dk-bahfjd"></div><div class="dk-cagiea dk-igjghg dk-jbjabb"></div>"`,
     );
-    expect(document.head.querySelector('style').innerHTML).toMatchInlineSnapshot(
+    expect(head.querySelector('style').innerHTML).toMatchInlineSnapshot(
       `".dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
     );
+  });
+
+  test(`can hydrate styles without duplicates`, () => {
+    // https://github.com/atellmer/dark/issues/63
+    const Box1 = styled.div`
+      color: red;
+    `;
+    const Box2 = styled.div`
+      color: yellow;
+    `;
+    const { head, body, hydrate } = createBrowserHydrateEnv({
+      headHTML: `<style dark-styled="c">.dk-gahced{color:red;}.dk-cibihf{color:yellow;}</style>`,
+      bodyHTML: `<div class="dk-gahced"></div><div class="dk-cibihf"></div>`,
+    });
+
+    hydrate(
+      <>
+        <Box1 />
+        <Box2 />
+      </>,
+    );
+
+    expect(head.innerHTML).toMatchInlineSnapshot(
+      `"<style dark-styled="c">.dk-gahced{color:red;}.dk-cibihf{color:yellow;}</style>"`,
+    );
+    expect(body.innerHTML).toMatchInlineSnapshot(`"<div class="dk-gahced"></div><div class="dk-cibihf"></div>"`);
   });
 });

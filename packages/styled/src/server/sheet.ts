@@ -18,7 +18,7 @@ class ServerStyleSheet {
     return ManagerProvider({ manager: this.manager, slot: app });
   }
 
-  getStyleTags(): Array<string> {
+  getStyleTags() {
     const styles = this.manager.getStyles();
     const tags: Array<string> = [];
     let css1 = '';
@@ -35,7 +35,7 @@ class ServerStyleSheet {
     css1 && tags.push(ServerStyleSheet.wrapWithStyleTag(css1, false, false));
     css2 && tags.push(ServerStyleSheet.wrapWithStyleTag(css2, true, false));
 
-    return tags;
+    return tags.join('');
   }
 
   interleaveWithStream(readable: Readable): Transform {

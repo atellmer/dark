@@ -28,10 +28,7 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
       const css = useMemo(() => sheet.generate({ props: { ...props, theme }, fns }), [...mapRecord(props), theme]);
 
       useInsertionEffect(() => {
-        if (!tag) {
-          tag = getTag() || createTag(); // after hydration
-        }
-
+        tag = tag || getTag() || createTag();
         cache.set(id, css);
         reinject(tag, cache);
       }, [css]);
