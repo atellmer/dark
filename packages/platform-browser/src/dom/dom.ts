@@ -311,7 +311,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
   if (fiber.element) {
-    !fiber.isPortal && m.removeElement.call(parentElement, fiber.element);
+    !fiber.hook?.isPortal && m.removeElement.call(parentElement, fiber.element);
     return skip();
   }
 };
@@ -343,13 +343,13 @@ function move(fiber: Fiber<NativeElement>) {
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
     case CREATE_EFFECT_TAG:
-      if (!fiber.element || fiber.isPortal) return;
+      if (!fiber.element || fiber.hook?.isPortal) return;
       trackUpdate && trackUpdate(fiber.element);
       commitCreation(fiber);
       break;
     case UPDATE_EFFECT_TAG:
       fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-      if (!fiber.element || fiber.isPortal) return;
+      if (!fiber.element || fiber.hook?.isPortal) return;
       trackUpdate && trackUpdate(fiber.element);
       commitUpdate(fiber);
       break;

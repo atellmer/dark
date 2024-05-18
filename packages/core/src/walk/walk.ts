@@ -47,7 +47,7 @@ function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>)
 function onWalkInCollectElements<T, P = T>(elements: Array<P>, transform: (fiber: Fiber<T>) => P) {
   return (fiber: Fiber<T>, skip: Callback) => {
     if (fiber.element) {
-      !fiber.isPortal && elements.push(transform(fiber));
+      !fiber.hook?.isPortal && elements.push(transform(fiber));
       return skip();
     }
   };

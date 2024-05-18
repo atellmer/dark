@@ -179,7 +179,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   fiber.hook = $hook || fiber.hook;
   fiber.parent = left.parent;
   left.next = fiber;
-  fiber.eidx = left.eidx + (left.element ? (left.isPortal ? 0 : 1) : left.cec);
+  fiber.eidx = left.eidx + (left.element ? (left.hook?.isPortal ? 0 : 1) : left.cec);
 
   share(fiber, left, inst, $scope);
 
@@ -340,7 +340,7 @@ function setup(fiber: Fiber, alt: Fiber) {
     }
   }
 
-  fiber.element && !fiber.isPortal && fiber.increment();
+  fiber.element && !fiber.hook?.isPortal && fiber.increment();
 }
 
 function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {

@@ -40,7 +40,7 @@ const Portal = component<PortalProps>(
       return () => removeContent(scope.element);
     }, []);
 
-    cursor.isPortal = true;
+    cursor.hook.isPortal = true;
     cursor.element = element;
     scope.element = element;
 

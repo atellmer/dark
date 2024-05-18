@@ -135,7 +135,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
   if (fiber.element) {
-    !fiber.isPortal && removeNativeElement(fiber.element, parentElement);
+    removeNativeElement(fiber.element, parentElement);
     return skip();
   }
 };
