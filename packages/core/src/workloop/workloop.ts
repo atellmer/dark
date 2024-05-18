@@ -240,7 +240,7 @@ function createFiber(alt: Fiber, next: Instance, idx: number) {
 function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
   const isChild = idx === 0;
   const parent = isChild ? fiber : fiber.parent;
-  if (!fiber.wip && parent.tag === CREATE_EFFECT_TAG) return null; // !
+  if (!fiber.hook?.wip && parent.tag === CREATE_EFFECT_TAG) return null; // !
   const parentId = isChild ? fiber.id : fiber.parent.id;
   const key = getElementKey(inst);
   const actions = $scope.getActionsById(parentId);
@@ -541,7 +541,7 @@ function commit($scope: Scope) {
   }
 
   wip.alt = null;
-  wip.wip = false;
+  wip.hook && (wip.hook.wip = false);
   inst.children = null;
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
@@ -570,7 +570,7 @@ function sync(fiber: Fiber) {
   const parent = getFiberWithElement(fiber.parent);
   const scope = { isRight: false };
 
-  fiber.wip = false;
+  fiber.hook.wip = false;
   fiber.increment(diff);
   walk(parent.child, onWalkInSync(diff, fiber, scope));
 }
@@ -594,7 +594,7 @@ function fork($scope: Scope) {
   wip.child = alt.child;
   wip.cc = alt.cc;
   wip.cec = alt.cec;
-  wip.wip = false;
+  wip.hook && (wip.hook.wip = false);
   wip.alt = null;
 
   wip.hook.idx = 0;
@@ -616,7 +616,7 @@ const createOnRestore = ($fork: Scope, child: Fiber) => (options: OnRestoreOptio
   wip.alt = new Fiber().mutate(wip);
   wip.tag = UPDATE_EFFECT_TAG;
   wip.child = child;
-  wip.wip = true;
+  wip.hook && (wip.hook.wip = true);
   child.parent = wip;
 
   if (process.env.NODE_ENV !== 'production') {
@@ -660,7 +660,7 @@ function createCallback(options: CreateCallbackOptions) {
     fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
-    fiber.wip = true;
+    fiber.hook.wip = true;
 
     hook.idx = 0; // !
     hook.owner = fiber;

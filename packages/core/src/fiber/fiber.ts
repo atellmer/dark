@@ -20,7 +20,6 @@ class Fiber<N = NativeElement> {
   alt: Fiber<N> = null; // alternate fiber (previous)
   inst: Instance = null; // instance of component or virtual node
   hook: Hook | null = null; // hook
-  wip = false; // work in progress fiber
   marker: string = null; // for dev
   batch: Batch = null;
   catch: (error: Error) => void = null;
@@ -48,7 +47,7 @@ class Fiber<N = NativeElement> {
     if (!this.parent) return;
     this.parent.cec += count;
 
-    if (!this.parent.element && !this.parent.wip) {
+    if (!this.parent.element && !this.parent.hook?.wip) {
       this.parent.increment(count);
     }
   }
@@ -80,6 +79,7 @@ class Hook<T = unknown> {
   idx = 0;
   values: Array<T> = [];
   owner: Fiber = null;
+  wip = false;
   atoms: Map<Atom, Callback> = null;
   provider: Map<Context, ContextProviderValue> = null;
   isPortal = false;
