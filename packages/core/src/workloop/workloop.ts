@@ -179,7 +179,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   fiber.hook = $hook || fiber.hook;
   fiber.parent = left.parent;
   left.next = fiber;
-  fiber.eidx = left.eidx + (left.element ? (left.hook?.isPortal ? 0 : 1) : left.cec);
+  fiber.eidx = left.eidx + (left.element ? (left.hook?.getIsPortal() ? 0 : 1) : left.cec);
 
   share(fiber, left, inst, $scope);
 
@@ -240,7 +240,7 @@ function createFiber(alt: Fiber, next: Instance, idx: number) {
 function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
   const isChild = idx === 0;
   const parent = isChild ? fiber : fiber.parent;
-  if (!fiber.hook?.wip && parent.tag === CREATE_EFFECT_TAG) return null; // !
+  if (!fiber.hook?.getIsWip() && parent.tag === CREATE_EFFECT_TAG) return null; // !
   const parentId = isChild ? fiber.id : fiber.parent.id;
   const key = getElementKey(inst);
   const actions = $scope.getActionsById(parentId);
@@ -340,7 +340,7 @@ function setup(fiber: Fiber, alt: Fiber) {
     }
   }
 
-  fiber.element && !fiber.hook?.isPortal && fiber.increment();
+  fiber.element && !fiber.hook?.getIsPortal() && fiber.increment();
 }
 
 function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
@@ -403,7 +403,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
           const suspense = resolveSuspense(fiber);
 
           if (suspense) {
-            suspense.hook.isPending = true;
+            suspense.hook.setIsPeinding(true);
             $scope.getAwaiter().add(suspense.hook, promise);
           } else {
             reset();
@@ -540,7 +540,7 @@ function commit($scope: Scope) {
   }
 
   wip.alt = null;
-  wip.hook && (wip.hook.wip = false);
+  wip.hook?.setIsWip(false);
   inst.children = null;
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
@@ -569,7 +569,7 @@ function sync(fiber: Fiber) {
   const parent = getFiberWithElement(fiber.parent);
   const scope = { isRight: false };
 
-  fiber.hook.wip = false;
+  fiber.hook.setIsWip(false);
   fiber.increment(diff);
   walk(parent.child, onWalkInSync(diff, fiber, scope));
 }
@@ -593,7 +593,7 @@ function fork($scope: Scope) {
   wip.child = alt.child;
   wip.cc = alt.cc;
   wip.cec = alt.cec;
-  wip.hook && (wip.hook.wip = false);
+  wip.hook?.setIsWip(false);
   wip.alt = null;
 
   wip.hook.idx = 0;
@@ -615,12 +615,8 @@ const createOnRestore = ($fork: Scope, child: Fiber) => (options: OnRestoreOptio
   wip.alt = new Fiber().mutate(wip);
   wip.tag = UPDATE_EFFECT_TAG;
   wip.child = child;
-  wip.hook && (wip.hook.wip = true);
+  wip.hook?.setIsWip(true);
   child.parent = wip;
-
-  if (process.env.NODE_ENV !== 'production') {
-    wip.hook && (wip.hook.marker = '🔀');
-  }
 
   $fork.setRoot($scope.getRoot());
   $fork.setWorkInProgress(wip);
@@ -659,14 +655,10 @@ function createCallback(options: CreateCallbackOptions) {
     fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
-    fiber.hook.wip = true;
+    fiber.hook.setIsWip(true);
 
     hook.idx = 0; // !
     hook.owner = fiber;
-
-    if (process.env.NODE_ENV !== 'production') {
-      hook.marker = '🔥';
-    }
 
     $scope.setIsUpdateZone(true);
     $scope.resetMount();

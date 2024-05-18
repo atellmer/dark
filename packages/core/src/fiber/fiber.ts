@@ -1,3 +1,4 @@
+import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_NASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { type Context, type ContextProviderValue } from '../context';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
@@ -44,7 +45,7 @@ class Fiber<N = NativeElement> {
     if (!this.parent) return;
     this.parent.cec += count;
 
-    if (!this.parent.element && !this.parent.hook?.wip) {
+    if (!this.parent.element && !this.parent.hook?.getIsWip()) {
       this.parent.increment(count);
     }
   }
@@ -72,25 +73,54 @@ class Fiber<N = NativeElement> {
 }
 
 class Hook<T = unknown> {
-  id = 0;
   idx = 0;
   values: Array<T> = [];
   owner: Fiber = null;
-  wip = false;
   atoms: Map<Atom, Callback> = null;
   provider: Map<Context, ContextProviderValue> = null;
-  isPortal = false;
-  isSuspense = false;
-  isPending = false;
+  mask = 0;
   pendings = 0;
-  marker: string = null;
   batch: Batch = null;
   catch: (error: Error) => void = null;
-  private static nextId = 0;
 
-  constructor(provider: Hook['provider'] = null) {
-    this.id = ++Hook.nextId;
-    this.provider = provider;
+  __getMask(mask: number) {
+    return Boolean(this.mask & mask);
+  }
+
+  __mark(mask: number, x: boolean) {
+    x ? (this.mask |= mask) : (this.mask &= ~mask);
+  }
+
+  getIsWip() {
+    return this.__getMask(IS_WIP_HOOK_MASK);
+  }
+
+  setIsWip(x: boolean) {
+    this.__mark(IS_WIP_HOOK_MASK, x);
+  }
+
+  getIsPortal() {
+    return this.__getMask(IS_PORTAL_HOOK_NASK);
+  }
+
+  setIsPortal(x: boolean) {
+    this.__mark(IS_PORTAL_HOOK_NASK, x);
+  }
+
+  getIsSuspense() {
+    return this.__getMask(IS_SUSPENSE_HOOK_MASK);
+  }
+
+  setIsSuspense(x: boolean) {
+    this.__mark(IS_SUSPENSE_HOOK_MASK, x);
+  }
+
+  getIsPending() {
+    return this.__getMask(IS_PENDING_HOOK_MASK);
+  }
+
+  setIsPeinding(x: boolean) {
+    this.__mark(IS_PENDING_HOOK_MASK, x);
   }
 }
 
@@ -109,14 +139,14 @@ class Awaiter {
       this.store.delete(hook);
 
       if ($promises.length > 0) {
-        hook.isPending = true;
+        hook.setIsPeinding(true);
         hook.pendings++;
         const { pendings } = hook;
         cb(hook);
 
         Promise.allSettled($promises).then(() => {
           if (pendings === hook.pendings) {
-            hook.isPending = false;
+            hook.setIsPeinding(false);
             cb(hook);
           }
         });

@@ -47,7 +47,7 @@ function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>)
 function onWalkInCollectElements<T, P = T>(elements: Array<P>, transform: (fiber: Fiber<T>) => P) {
   return (fiber: Fiber<T>, skip: Callback) => {
     if (fiber.element) {
-      !fiber.hook?.isPortal && elements.push(transform(fiber));
+      !fiber.hook?.getIsPortal() && elements.push(transform(fiber));
       return skip();
     }
   };
@@ -78,7 +78,7 @@ function detectIsFiberAlive(fiber: Fiber) {
 function getSuspense(fiber: Fiber, isPending: boolean) {
   let suspense = fiber;
   while (suspense) {
-    if (suspense.hook && suspense.hook.isSuspense && (isPending ? suspense.hook.isPending : true)) return suspense;
+    if (suspense.hook?.getIsSuspense() && (isPending ? suspense.hook.getIsPending() : true)) return suspense;
     suspense = suspense.parent;
   }
 

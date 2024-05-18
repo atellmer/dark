@@ -59,7 +59,6 @@ import type {
 
 export type CSSProperties = Record<string, string | number>;
 
-let cache: Record<string, NativeElement> = {};
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
@@ -68,13 +67,9 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
   switch (vNode.type) {
     case NodeType.TAG:
       const name = (vNode as TagVirtualNode).name;
-      const tag = cache[name]
-        ? m.cloneNode.call(cache[name], false)
-        : detectIsSvgElement(name)
+      const tag = detectIsSvgElement(name)
         ? document.createElementNS('http://www.w3.org/2000/svg', name)
         : document.createElement(name);
-
-      !cache[name] && (cache[name] = m.cloneNode.call(tag, false) as NativeElement);
 
       return tag as TagNativeElement;
     case NodeType.TEXT:
@@ -311,7 +306,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
   if (fiber.element) {
-    !fiber.hook?.isPortal && m.removeElement.call(parentElement, fiber.element);
+    !fiber.hook?.getIsPortal() && m.removeElement.call(parentElement, fiber.element);
     return skip();
   }
 };
@@ -343,13 +338,13 @@ function move(fiber: Fiber<NativeElement>) {
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
     case CREATE_EFFECT_TAG:
-      if (!fiber.element || fiber.hook?.isPortal) return;
+      if (!fiber.element || fiber.hook?.getIsPortal()) return;
       trackUpdate && trackUpdate(fiber.element);
       commitCreation(fiber);
       break;
     case UPDATE_EFFECT_TAG:
       fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-      if (!fiber.element || fiber.hook?.isPortal) return;
+      if (!fiber.element || fiber.hook?.getIsPortal()) return;
       trackUpdate && trackUpdate(fiber.element);
       commitUpdate(fiber);
       break;
@@ -366,7 +361,6 @@ function finishCommit() {
   patches.forEach(x => x());
   moves = [];
   patches = [];
-  cache = {};
 }
 
 function setup() {
@@ -375,7 +369,6 @@ function setup() {
   const ep = Element.prototype;
 
   return {
-    cloneNode: np.cloneNode,
     appendElement: np.appendChild,
     insertElement: np.insertBefore,
     replaceElement: np.replaceChild,

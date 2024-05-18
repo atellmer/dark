@@ -11,13 +11,13 @@ type SuspenseProps = {
 const Suspense = component<SuspenseProps>(
   ({ fallback = null, slot }) => {
     const cursor = useCursor();
-    const isPending = cursor.hook.isPending;
+    const isPending = cursor.hook.getIsPending();
     const content = [
       isPending ? Fragment({ key: 1, slot: fallback }) : null,
       Shadow({ key: 2, isOpen: !isPending, slot }),
     ].filter(Boolean);
 
-    cursor.hook.isSuspense = true;
+    cursor.hook.setIsSuspense(true);
 
     return Fragment({ slot: content });
   },
