@@ -1,10 +1,10 @@
+import { type Fiber, type Hook, type HookValue } from '../fiber';
+import { type UseEffectValue, dropEffects } from '../use-effect';
 import { dropInsertionEffects } from '../use-insertion-effect';
 import { dropLayoutEffects } from '../use-layout-effect';
 import { removeScope, $$scope } from '../scope';
 import { detectIsUndefined } from '../utils';
-import { dropEffects } from '../use-effect';
 import { type Callback } from '../shared';
-import { type Fiber } from '../fiber';
 import { walk } from '../walk';
 import {
   INSERTION_EFFECT_HOST_MASK,
@@ -13,27 +13,31 @@ import {
   ATOM_HOST_MASK,
 } from '../constants';
 
-const combinedMask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | ATOM_HOST_MASK;
+const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK | ATOM_HOST_MASK;
 
 function unmountFiber(fiber: Fiber) {
-  if (!(fiber.mask & combinedMask)) return;
+  if (!(fiber.mask & mask)) return;
   walk(fiber, onWalk);
 }
 
 function onWalk(fiber: Fiber, skip: Callback) {
-  if (!(fiber.mask & combinedMask)) return skip();
-  if (fiber.hook && fiber.hook.values.length > 0) {
-    fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects(fiber.hook);
-    fiber.mask & LAYOUT_EFFECT_HOST_MASK && dropLayoutEffects(fiber.hook);
-    fiber.mask & ASYNC_EFFECT_HOST_MASK && dropEffects(fiber.hook);
+  const { hook } = fiber;
+
+  if (!(fiber.mask & mask)) return skip();
+  if (hook?.values.length > 0) {
+    const $hook = hook as Hook<HookValue<UseEffectValue>>;
+
+    fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects($hook);
+    fiber.mask & LAYOUT_EFFECT_HOST_MASK && dropLayoutEffects($hook);
+    fiber.mask & ASYNC_EFFECT_HOST_MASK && dropEffects($hook);
   }
 
-  if (fiber.atoms) {
-    for (const [_, cleanup] of fiber.atoms) {
+  if (hook?.atoms) {
+    for (const [_, cleanup] of hook.atoms) {
       cleanup();
     }
 
-    fiber.atoms = null;
+    hook.atoms = null;
   }
 }
 

@@ -229,10 +229,8 @@ function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
 }
 
 function createFiber(alt: Fiber, next: Instance, idx: number) {
-  const provider = alt ? alt.provider : null;
   const prev = alt ? alt.inst : null;
-  const hook = getHook(alt, prev, next);
-  const fiber = new Fiber(hook, provider, idx);
+  const fiber = new Fiber(idx, getHook(alt, prev, next));
 
   fiber.alt = alt || null;
 
@@ -364,9 +362,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   fiber.cc = alt.cc;
   fiber.cec = alt.cec;
   alt.element && (fiber.element = alt.element);
-  alt.provider && (fiber.provider = alt.provider);
   alt.catch && (fiber.catch = alt.catch);
-  alt.atoms && (fiber.atoms = alt.atoms);
 
   const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;
@@ -721,8 +717,6 @@ function createUpdate(rootId: number, hook: Hook) {
       scheduler.schedule(callback, options);
     }
   };
-
-  hook.isUpdateHost = true;
 
   return update;
 }

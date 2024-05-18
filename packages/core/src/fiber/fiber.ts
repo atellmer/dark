@@ -20,19 +20,16 @@ class Fiber<N = NativeElement> {
   alt: Fiber<N> = null; // alternate fiber (previous)
   inst: Instance = null; // instance of component or virtual node
   hook: Hook | null = null; // hook
-  provider: Map<Context, ContextProviderValue> = null; // provider of context
-  atoms: Map<Atom, Callback> = null;
   isPortal = false; // portal host
   wip = false; // work in progress fiber
   marker: string = null; // for dev
   batch: Batch = null;
   catch: (error: Error) => void = null;
 
-  constructor(hook: Hook = null, provider: Fiber['provider'] = null, idx = 0) {
+  constructor(idx = 0, hook: Hook = null) {
     this.id = Fiber.incrementId();
     this.idx = idx;
-    hook && (this.hook = hook);
-    provider && (this.provider = provider);
+    this.hook = hook;
   }
 
   mutate(fiber: Partial<Fiber<N>>) {
@@ -84,14 +81,16 @@ class Hook<T = unknown> {
   idx = 0;
   values: Array<T> = [];
   owner: Fiber = null;
+  atoms: Map<Atom, Callback> = null;
+  provider: Map<Context, ContextProviderValue> = null;
   isSuspense = false;
   isPending = false;
-  isUpdateHost = false;
   pendings = 0;
   private static nextId = 0;
 
-  constructor() {
+  constructor(provider: Hook['provider'] = null) {
     this.id = ++Hook.nextId;
+    this.provider = provider;
   }
 }
 

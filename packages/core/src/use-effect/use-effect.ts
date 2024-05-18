@@ -8,11 +8,6 @@ import { $$scope } from '../scope';
 
 const $$useEffect = Symbol('use-effect');
 
-type UseEffectValue = {
-  token: Symbol;
-  cleanup: DropEffect;
-};
-
 function createEffect(token: Symbol, type: EffectType) {
   function useEffect(effect: Effect, deps: Array<any> = [{}]) {
     const $scope = $$scope();
@@ -56,6 +51,11 @@ function createEffect(token: Symbol, type: EffectType) {
     dropEffects,
   };
 }
+
+export type UseEffectValue = {
+  token: Symbol;
+  cleanup: DropEffect;
+};
 
 export type DropEffect = void | (() => void);
 

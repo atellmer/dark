@@ -31,15 +31,16 @@ function createProvider<T>(context: Context<T>, defaultValue: T, displayName: st
   return component<ContexProviderProps<T>>(
     ({ value = defaultValue, slot }) => {
       const cursor = useCursor();
+      const { hook } = cursor;
 
-      if (!cursor.provider) {
+      if (!hook.provider) {
         const providerValue: ContextProviderValue<T> = { value, emitter: new EventEmitter() };
 
-        cursor.provider = new Map();
-        cursor.provider.set(context, providerValue);
+        hook.provider = new Map();
+        hook.provider.set(context, providerValue);
       }
 
-      const provider = cursor.provider.get(context);
+      const provider = hook.provider.get(context);
 
       // should be sync
       useLayoutEffect(() => {
@@ -94,10 +95,8 @@ function getProvider<T>(context: Context<T>, fiber: Fiber): ContextProviderValue
   let $fiber = fiber;
 
   while ($fiber) {
-    if ($fiber.provider && $fiber.provider.get(context)) {
-      return $fiber.provider.get(context) as ContextProviderValue<T>;
-    }
-
+    const provider = $fiber.hook?.provider;
+    if (provider?.has(context)) return provider.get(context) as ContextProviderValue<T>;
     $fiber = $fiber.parent;
   }
 
