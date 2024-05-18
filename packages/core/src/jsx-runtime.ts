@@ -1,4 +1,4 @@
-import { detectIsString, detectIsFunction, detectIsEmpty, detectIsUndefined } from './utils';
+import { detectIsString, detectIsFunction, detectIsEmpty, detectIsArray, detectIsUndefined } from './utils';
 import { type TagVirtualNodeFactory, type ViewOptions, View } from './view';
 import { type ComponentFactory, type Component } from './component';
 import { type DarkElement, type ElementKey } from './shared';
@@ -11,11 +11,8 @@ function jsx(
   key?: ElementKey,
 ): TagVirtualNodeFactory | Component | null {
   const { children, slot: $slot, ...$props } = props;
-  const slot = !detectIsUndefined(children)
-    ? [children as DarkElement]
-    : !detectIsUndefined($slot)
-    ? [$slot as DarkElement]
-    : [];
+  const content = !detectIsUndefined(children) ? children : !detectIsUndefined($slot) ? $slot : [];
+  const slot: Array<DarkElement> = detectIsArray(content) ? content : [content];
 
   if (key || !detectIsEmpty(key)) {
     $props[KEY_ATTR] = key;

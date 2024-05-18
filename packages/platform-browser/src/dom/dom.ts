@@ -59,7 +59,7 @@ import type {
 
 export type CSSProperties = Record<string, string | number>;
 
-const cache: Record<string, NativeElement> = {};
+let cache: Record<string, NativeElement> = {};
 let moves: Array<Callback> = [];
 let patches: Array<Callback> = [];
 let trackUpdate: (nativeElement: NativeElement) => void = null;
@@ -69,12 +69,12 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
     case NodeType.TAG:
       const name = (vNode as TagVirtualNode).name;
       const tag = cache[name]
-        ? cloneNode.call(cache[name], false)
+        ? m.cloneNode.call(cache[name], false)
         : detectIsSvgElement(name)
         ? document.createElementNS('http://www.w3.org/2000/svg', name)
         : document.createElement(name);
 
-      !cache[name] && (cache[name] = cloneNode.call(tag, false) as NativeElement);
+      !cache[name] && (cache[name] = m.cloneNode.call(tag, false) as NativeElement);
 
       return tag as TagNativeElement;
     case NodeType.TEXT:
@@ -86,7 +86,7 @@ function createNativeElement(vNode: VirtualNode): NativeElement {
 
 function setObjectStyle(element: TagNativeElement, style: CSSProperties) {
   for (const key in style) {
-    setStyleProp.call((element as HTMLElement).style, key, String(style[key]));
+    m.setStyleProp.call((element as HTMLElement).style, key, String(style[key]));
   }
 }
 
@@ -107,7 +107,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode, isHydratio
       delegateEvent(tagElement, getEventName(attrName), attrValue);
     } else if (!isHydration && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       !patchAttributes(tagElement, vNode.name, attrName, attrValue) &&
-        setAttribute.call(tagElement, attrName, attrValue);
+        m.setAttribute.call(tagElement, attrName, attrValue);
     }
   }
 }
@@ -132,10 +132,10 @@ function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nex
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
       } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
         !patchAttributes(tagElement, nextVNode.name, attrName, nextAttrValue) &&
-          setAttribute.call(tagElement, attrName, nextAttrValue);
+          m.setAttribute.call(tagElement, attrName, nextAttrValue);
       }
     } else {
-      removeAttribute.call(tagElement, attrName);
+      m.removeAttribute.call(tagElement, attrName);
     }
   }
 }
@@ -176,7 +176,7 @@ function performAttribute(
 }
 
 function toggleAttribute(element: TagNativeElement, name: string, value: string) {
-  value ? setAttribute.call(element, name, value) : removeAttribute.call(element, name);
+  value ? m.setAttribute.call(element, name, value) : m.removeAttribute.call(element, name);
 }
 
 function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
@@ -280,9 +280,9 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && appendElement.call(parentElement, fiber.element);
+      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && m.appendElement.call(parentElement, fiber.element);
     } else {
-      insertElement.call(parentElement, fiber.element, parentElement.childNodes[fiber.eidx]);
+      m.insertElement.call(parentElement, fiber.element, parentElement.childNodes[fiber.eidx]);
     }
   }
 
@@ -311,7 +311,7 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
   if (fiber.element) {
-    !fiber.isPortal && removeElement.call(parentElement, fiber.element);
+    !fiber.isPortal && m.removeElement.call(parentElement, fiber.element);
     return skip();
   }
 };
@@ -324,16 +324,16 @@ function move(fiber: Fiber<NativeElement>) {
   const elementIdx = fiber.eidx;
   const move = () => {
     for (let i = 1; i < sourceNodes.length; i++) {
-      removeElement.call(parentElement, parentElement.childNodes[elementIdx + 1]);
+      m.removeElement.call(parentElement, parentElement.childNodes[elementIdx + 1]);
     }
 
-    replaceElement.call(parentElement, sourceFragment, parentElement.childNodes[elementIdx]);
+    m.replaceElement.call(parentElement, sourceFragment, parentElement.childNodes[elementIdx]);
   };
   let idx = 0;
 
   for (const node of sourceNodes) {
-    insertElement.call(parentElement, document.createComment(`${elementIdx}:${idx}`), node);
-    appendElement.call(sourceFragment, node);
+    m.insertElement.call(parentElement, document.createComment(`${elementIdx}:${idx}`), node);
+    m.appendElement.call(sourceFragment, node);
     idx++;
   }
 
@@ -366,41 +366,35 @@ function finishCommit() {
   patches.forEach(x => x());
   moves = [];
   patches = [];
+  cache = {};
 }
 
 function setup() {
   if (!detectIsBrowser()) return {};
+  const np = Node.prototype;
+  const ep = Element.prototype;
+
   return {
-    cloneNode: Node.prototype.cloneNode,
-    appendElement: Node.prototype.appendChild,
-    insertElement: Node.prototype.insertBefore,
-    replaceElement: Node.prototype.replaceChild,
-    removeElement: Node.prototype.removeChild,
-    hasAttribute: Element.prototype.hasAttribute,
-    setAttribute: Element.prototype.setAttribute,
-    removeAttribute: Element.prototype.removeAttribute,
+    cloneNode: np.cloneNode,
+    appendElement: np.appendChild,
+    insertElement: np.insertBefore,
+    replaceElement: np.replaceChild,
+    removeElement: np.removeChild,
+    hasAttribute: ep.hasAttribute,
+    setAttribute: ep.setAttribute,
+    removeAttribute: ep.removeAttribute,
     setStyleProp: CSSStyleDeclaration.prototype.setProperty,
   };
 }
 
-const {
-  cloneNode,
-  appendElement,
-  insertElement,
-  replaceElement,
-  removeElement,
-  hasAttribute,
-  setAttribute,
-  removeAttribute,
-  setStyleProp,
-} = setup();
+const m = setup();
 
 const setTrackUpdate = (fn: typeof trackUpdate) => (trackUpdate = fn);
 
 const toggle = (element: HTMLElement | SVGElement, isVisible: boolean) => {
   isVisible
-    ? hasAttribute.call(element, STYLE_ATTR) && removeAttribute.call(element, STYLE_ATTR)
-    : setStyleProp.call(element.style, 'display', 'none', 'important');
+    ? m.hasAttribute.call(element, STYLE_ATTR) && m.removeAttribute.call(element, STYLE_ATTR)
+    : m.setStyleProp.call(element.style, 'display', 'none', 'important');
 };
 
 export { createNativeElement, commit, finishCommit, setTrackUpdate, toggle };

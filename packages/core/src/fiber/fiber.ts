@@ -36,9 +36,7 @@ class Fiber<N = NativeElement> {
   }
 
   mutate(fiber: Partial<Fiber<N>>) {
-    const keys = Object.keys(fiber);
-
-    for (const key of keys) {
+    for (const key in fiber) {
       this[key] = fiber[key];
     }
 
@@ -81,7 +79,7 @@ class Fiber<N = NativeElement> {
   private static nextId = 0;
 }
 
-class Hook<T = any> {
+class Hook<T = unknown> {
   id = 0;
   idx = 0;
   values: Array<T> = [];

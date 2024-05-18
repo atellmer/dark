@@ -14,7 +14,6 @@ import {
   TaskPriority,
 } from '../constants';
 import {
-  flatten,
   logError,
   detectIsEmpty,
   detectIsFalsy,
@@ -143,7 +142,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
   const $inst = parent.inst;
   const idx = 0;
   const children = ($inst as CanHasChildren).children;
-  const inst = children ? children[idx] : null;
+  const inst = setupInstance(children, idx);
   const alt = getAlternate(parent, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
 
@@ -163,7 +162,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   const $inst = left.parent.inst;
   const idx = $scope.getMountIndex();
   const children = ($inst as CanHasChildren).children;
-  const inst = children ? children[idx] : null;
+  const inst = setupInstance(children, idx);
   const hasSibling = Boolean(inst);
 
   if (!hasSibling) {
@@ -185,6 +184,23 @@ function mountSibling(left: Fiber, $scope: Scope) {
   share(fiber, left, inst, $scope);
 
   return fiber;
+}
+
+function setupInstance(children: Array<Instance>, idx: number): Instance {
+  let inst: Instance = null;
+
+  if (children && idx < children.length) {
+    const child = children[idx];
+
+    children[idx] = detectIsArray(child)
+      ? Fragment({ slot: child })
+      : detectIsTextBased(child)
+      ? Text(child)
+      : child || supportConditional(child);
+    inst = children[idx];
+  }
+
+  return inst;
 }
 
 function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
@@ -412,15 +428,13 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   }
 
   if (hasChildrenProp(inst)) {
-    inst.children = flatten(inst.children, onTransform);
+    inst.children = detectIsArray(inst.children) ? inst.children : [inst.children];
     isComponent && component.children.length === 0 && component.children.push(createReplacer());
     fiber.cc = inst.children.length;
   }
 
   return inst;
 }
-
-const onTransform = (x: Instance) => (detectIsTextBased(x) ? Text(x) : x || supportConditional(x));
 
 const createResetClosure = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
   if (prev) {
@@ -458,7 +472,7 @@ function extractKeys(alt: Fiber, children: Array<Instance>) {
       keyedFibersMap[prevKey] = nextFiber;
     }
 
-    if (children[idx]) {
+    if (idx < children.length) {
       const inst = children[idx];
       const key = getElementKey(inst);
       const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
@@ -506,8 +520,9 @@ function commit($scope: Scope) {
   const isUpdateZone = $scope.getIsUpdateZone();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
-  const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
   const isTransition = scheduler.detectIsTransition();
+  const inst = wip.inst as Component;
+  const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
 
   // !
   for (const fiber of deletions) {
@@ -526,14 +541,12 @@ function commit($scope: Scope) {
 
     fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
     fiber.alt = null;
-
-    if (item.children && (!fiber.hook || !fiber.hook.isUpdateHost)) {
-      item.children = null;
-    }
+    item.children && (item.children = null);
   }
 
   wip.alt = null;
   wip.wip = false;
+  inst.children = null;
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
@@ -542,13 +555,12 @@ function commit($scope: Scope) {
   cleanup($scope);
 }
 
-const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(x => unmountFiber(x));
-
 const onResolve = (rootId: number, isTransition: boolean) => (hook: Hook) => {
   const update = createUpdate(rootId, hook);
-
   isTransition ? startTransition(update) : update();
 };
+
+const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(unmountFiber);
 
 function cleanup($scope: Scope, fromFork = false) {
   $scope.cleanup();
