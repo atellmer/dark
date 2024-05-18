@@ -1,8 +1,8 @@
 import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_NASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
+import { detectIsFunction, detectIsUndefined, logError } from '../utils';
 import { type Instance, type Callback, type TimerId } from '../shared';
-import { type Context, type ContextProviderValue } from '../context';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
-import { detectIsFunction, logError } from '../utils';
+import { type Context, type ContextProvider } from '../context';
 import { detectIsComponent } from '../component';
 import { type Atom } from '../atom';
 
@@ -51,7 +51,7 @@ class Fiber<N = NativeElement> {
   }
 
   setError(err: Error) {
-    if (detectIsFunction(this.hook?.catch)) {
+    if (this.hook?.hasCatch()) {
       this.hook.catch(err);
       logError(err);
     } else if (this.parent) {
@@ -77,11 +77,8 @@ class Hook<T = unknown> {
   values: Array<T> = [];
   owner: Fiber = null;
   atoms: Map<Atom, Callback> = null;
-  provider: Map<Context, ContextProviderValue> = null;
   mask = 0;
-  pendings = 0;
-  batch: Batch = null;
-  catch: (error: Error) => void = null;
+  box?: Box = null;
 
   __getMask(mask: number) {
     return Boolean(this.mask & mask);
@@ -89,6 +86,10 @@ class Hook<T = unknown> {
 
   __mark(mask: number, x: boolean) {
     x ? (this.mask |= mask) : (this.mask &= ~mask);
+  }
+
+  __box() {
+    if (!this.box) this.box = {};
   }
 
   getIsWip() {
@@ -122,6 +123,47 @@ class Hook<T = unknown> {
   setIsPeinding(x: boolean) {
     this.__mark(IS_PENDING_HOOK_MASK, x);
   }
+
+  getProviders() {
+    return this.box?.providers;
+  }
+
+  setProviders(x: Map<Context, ContextProvider>) {
+    this.__box();
+    this.box.providers = x;
+  }
+
+  getBatch() {
+    return this.box?.batch;
+  }
+
+  setBatch(x: Batch) {
+    this.__box();
+    this.box.batch = x;
+  }
+
+  hasCatch() {
+    return detectIsFunction(this.box?.catch);
+  }
+
+  setCatch(x: Catch) {
+    this.__box();
+    this.box.catch = x;
+  }
+
+  catch(x: Error) {
+    this.box?.catch(x);
+  }
+
+  incrementPending() {
+    this.__box();
+    detectIsUndefined(this.box.pendings) && (this.box.pendings = 0);
+    this.box.pendings++;
+  }
+
+  getPendings() {
+    return this.box?.pendings;
+  }
 }
 
 class Awaiter {
@@ -140,12 +182,12 @@ class Awaiter {
 
       if ($promises.length > 0) {
         hook.setIsPeinding(true);
-        hook.pendings++;
-        const { pendings } = hook;
+        hook.incrementPending();
+        const pendings = hook.getPendings();
         cb(hook);
 
         Promise.allSettled($promises).then(() => {
-          if (pendings === hook.pendings) {
+          if (pendings === hook.getPendings()) {
             hook.setIsPeinding(false);
             cb(hook);
           }
@@ -162,10 +204,19 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
   return null;
 }
 
+type Box = {
+  providers?: Map<Context, ContextProvider>;
+  batch?: Batch;
+  catch?: Catch;
+  pendings?: number;
+};
+
 type Batch = {
   timer: TimerId;
   changes: Array<Callback>;
 };
+
+type Catch = (error: Error) => void;
 
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };

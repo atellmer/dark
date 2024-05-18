@@ -32,15 +32,15 @@ function createProvider<T>(context: Context<T>, defaultValue: T, displayName: st
     ({ value = defaultValue, slot }) => {
       const cursor = useCursor();
       const { hook } = cursor;
+      let providers = hook.getProviders();
 
-      if (!hook.provider) {
-        const providerValue: ContextProviderValue<T> = { value, emitter: new EventEmitter() };
-
-        hook.provider = new Map();
-        hook.provider.set(context, providerValue);
+      if (!providers) {
+        providers = new Map();
+        providers.set(context, { value, emitter: new EventEmitter() });
+        hook.setProviders(providers);
       }
 
-      const provider = hook.provider.get(context);
+      const provider = providers.get(context);
 
       // should be sync
       useLayoutEffect(() => {
@@ -91,12 +91,12 @@ function useContext<T>(context: Context<T>): T {
   return value;
 }
 
-function getProvider<T>(context: Context<T>, fiber: Fiber): ContextProviderValue<T> {
+function getProvider<T>(context: Context<T>, fiber: Fiber) {
   let $fiber = fiber;
 
   while ($fiber) {
-    const provider = $fiber.hook?.provider;
-    if (provider?.has(context)) return provider.get(context) as ContextProviderValue<T>;
+    const providers = $fiber.hook?.getProviders();
+    if (providers?.has(context)) return providers.get(context) as ContextProvider<T>;
     $fiber = $fiber.parent;
   }
 
@@ -115,7 +115,7 @@ export type Context<T = unknown> = {
   defaultValue: T;
 };
 
-export type ContextProviderValue<T = unknown> = {
+export type ContextProvider<T = unknown> = {
   value: T;
   emitter: EventEmitter<'publish'>;
 };
