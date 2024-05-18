@@ -20,7 +20,6 @@ class Fiber<N = NativeElement> {
   alt: Fiber<N> = null; // alternate fiber (previous)
   inst: Instance = null; // instance of component or virtual node
   hook: Hook | null = null; // hook
-  catch: (error: Error) => void = null;
 
   constructor(idx = 0, hook: Hook = null) {
     this.id = Fiber.incrementId();
@@ -51,8 +50,8 @@ class Fiber<N = NativeElement> {
   }
 
   setError(err: Error) {
-    if (detectIsFunction(this.catch)) {
-      this.catch(err);
+    if (detectIsFunction(this.hook?.catch)) {
+      this.hook.catch(err);
       logError(err);
     } else if (this.parent) {
       this.parent.setError(err);
@@ -86,6 +85,7 @@ class Hook<T = unknown> {
   pendings = 0;
   marker: string = null;
   batch: Batch = null;
+  catch: (error: Error) => void = null;
   private static nextId = 0;
 
   constructor(provider: Hook['provider'] = null) {

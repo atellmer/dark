@@ -362,7 +362,6 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   fiber.cc = alt.cc;
   fiber.cec = alt.cec;
   alt.element && (fiber.element = alt.element);
-  alt.catch && (fiber.catch = alt.catch);
 
   const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;
