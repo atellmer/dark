@@ -620,7 +620,7 @@ const createOnRestore = ($fork: Scope, child: Fiber) => (options: OnRestoreOptio
   child.parent = wip;
 
   if (process.env.NODE_ENV !== 'production') {
-    wip.marker = '🔀';
+    wip.hook && (wip.hook.marker = '🔀');
   }
 
   $fork.setRoot($scope.getRoot());
@@ -666,7 +666,7 @@ function createCallback(options: CreateCallbackOptions) {
     hook.owner = fiber;
 
     if (process.env.NODE_ENV !== 'production') {
-      fiber.marker = '🔥';
+      hook.marker = '🔥';
     }
 
     $scope.setIsUpdateZone(true);

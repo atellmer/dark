@@ -20,8 +20,6 @@ class Fiber<N = NativeElement> {
   alt: Fiber<N> = null; // alternate fiber (previous)
   inst: Instance = null; // instance of component or virtual node
   hook: Hook | null = null; // hook
-  marker: string = null; // for dev
-  batch: Batch = null;
   catch: (error: Error) => void = null;
 
   constructor(idx = 0, hook: Hook = null) {
@@ -86,6 +84,8 @@ class Hook<T = unknown> {
   isSuspense = false;
   isPending = false;
   pendings = 0;
+  marker: string = null;
+  batch: Batch = null;
   private static nextId = 0;
 
   constructor(provider: Hook['provider'] = null) {

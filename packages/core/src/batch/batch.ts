@@ -16,16 +16,15 @@ function addBatch(hook: Hook, callback: Callback, change: Callback) {
   if ($scope.getIsTransitionZone()) {
     callback();
   } else {
-    const fiber = hook.owner;
-    const batch = fiber.batch || { timer: null, changes: [] };
+    const batch = hook.batch || { timer: null, changes: [] };
 
-    fiber.batch = batch;
+    hook.batch = batch;
     batch.changes.push(change);
     batch.timer && clearTimeout(batch.timer);
     batch.timer = setTimeout(() => {
       batch.changes.splice(-1);
       batch.changes.forEach(x => x());
-      fiber.batch = null;
+      hook.batch = null;
       callback();
     });
   }
