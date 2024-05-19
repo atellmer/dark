@@ -47,7 +47,7 @@ type DataClientProviderProps = {
 
 const DataClientProvider = component<DataClientProviderProps>(({ client, slot }) => {
   if (useClient()) illegal('Illegal nested data client provider!');
-  return DataClientContext.Provider({ value: client, slot });
+  return DataClientContext({ value: client, slot });
 });
 
 export { DataClient, useClient, useApi, useCache, DataClientProvider };

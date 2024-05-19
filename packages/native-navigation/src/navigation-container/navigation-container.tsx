@@ -150,7 +150,7 @@ const NavigationContainer = component<NavigationContainerProps>(
     const hasActionBar = detectIsFunction(renderActionBar);
 
     return (
-      <NavigationContext.Provider value={contextValue}>
+      <NavigationContext value={contextValue}>
         <Frame>
           <Page actionBarHidden={!hasActionBar}>
             {hasActionBar && renderActionBar({ pathname, goBack: back })}
@@ -160,7 +160,7 @@ const NavigationContainer = component<NavigationContainerProps>(
         <Frame ref={frameRef} hidden>
           <Page ref={pageRef} actionBarHidden />
         </Frame>
-      </NavigationContext.Provider>
+      </NavigationContext>
     );
   },
   { displayName: 'NavigationContainer' },

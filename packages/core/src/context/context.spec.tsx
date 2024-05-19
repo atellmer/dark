@@ -1,277 +1,209 @@
-import { render } from '@dark-engine/platform-browser';
+import { createBrowserEnv } from '@test-utils';
 
-import { dom } from '@test-utils';
-import { component } from '../component';
+import { component, detectIsComponent } from '../component';
+import { type DarkElement } from '../shared';
 import { useState } from '../use-state';
 import { memo } from '../memo';
-import { type DarkElement } from '../shared';
+import { detectIsFunction } from '../utils';
 import { createContext, useContext } from './context';
-
-let host: HTMLElement = null;
-
-jest.useFakeTimers();
 
 type Theme = 'light' | 'dark';
 type Lang = 'en' | 'de';
 
+let { host, render } = createBrowserEnv();
+
 beforeEach(() => {
-  host = document.createElement('div');
+  ({ host, render } = createBrowserEnv());
 });
 
 describe('@core/context', () => {
-  test('is created correctly', () => {
-    const ThemeContext = createContext<Theme>('light');
+  test('returns a component factory as context', () => {
+    const Context = createContext<Theme>('light');
 
-    expect(ThemeContext.Provider).toBeTruthy();
-    expect(ThemeContext.Consumer).toBeTruthy();
+    expect(detectIsFunction(Context)).toBe(true);
+    expect(detectIsComponent(Context())).toBe(true);
   });
 
-  test('renders correctly', () => {
-    const content = (theme: Theme) => dom`
-      <div>${theme}</div>
-    `;
-
+  test('works correctly by default', () => {
+    let theme: Theme;
+    let setTheme: (value: Theme) => void;
     const ThemeContext = createContext<Theme>('light');
-
     const Item = component(() => {
-      return <ThemeContext.Consumer>{value => <div>{value}</div>}</ThemeContext.Consumer>;
-    });
+      const value = useContext(ThemeContext);
 
+      return <div>{value}</div>;
+    });
     const Content = component(() => {
       return [<Item />];
     });
-
-    let theme: Theme;
-    let setTheme: (value: Theme) => void;
-
     const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return [
-        <ThemeContext.Provider value={theme}>
+        <ThemeContext value={theme}>
           <Content />
-        </ThemeContext.Provider>,
+        </ThemeContext>,
       ];
     });
 
-    render(App(), host);
-    expect(host.innerHTML).toBe(content(theme));
+    render(<App />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
 
     setTheme('dark');
-    expect(host.innerHTML).toBe(content(theme));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
+
+    setTheme('light');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
+
+    setTheme('dark');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
   });
 
-  test('nested contexts work correctly', () => {
-    const content = (theme: Theme, lang: string) => dom`
-      <div>${theme}:${lang}</div>
-    `;
-
+  test('nested contexts can work together', () => {
+    let theme: Theme;
+    let lang: Lang;
+    let setTheme: (value: Theme) => void;
+    let setLang: (value: Lang) => void;
     const ThemeContext = createContext<Theme>('light');
     const LangContext = createContext('ru');
-
     const Item = component(() => {
+      const theme = useContext(ThemeContext);
+      const lang = useContext(LangContext);
+
       return (
-        <ThemeContext.Consumer>
-          {theme => (
-            <LangContext.Consumer>
-              {lang => (
-                <div>
-                  {theme}:{lang}
-                </div>
-              )}
-            </LangContext.Consumer>
-          )}
-        </ThemeContext.Consumer>
+        <div>
+          {theme}:{lang}
+        </div>
       );
     });
-
-    const Content = component(() => {
-      return [<Item />];
-    });
-
-    let theme: Theme;
-    let setTheme: (value: Theme) => void;
-    let lang: Lang;
-    let setLang: (value: Lang) => void;
-
+    const Content = component(() => <Item />);
     const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
       [lang, setLang] = useState<Lang>('de');
 
       return [
-        <ThemeContext.Provider value={theme}>
-          <LangContext.Provider value={lang}>
+        <ThemeContext value={theme}>
+          <LangContext value={lang}>
             <Content />
-          </LangContext.Provider>
-        </ThemeContext.Provider>,
+          </LangContext>
+        </ThemeContext>,
       ];
     });
 
-    render(App(), host);
-    expect(host.innerHTML).toBe(content(theme, lang));
+    render(<App />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light:de</div>"`);
 
     setTheme('dark');
     setLang('en');
-    expect(host.innerHTML).toBe(content(theme, lang));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark:en</div>"`);
 
     setTheme('light');
-    expect(host.innerHTML).toBe(content(theme, lang));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light:en</div>"`);
   });
 
-  test('same nested context works correctly', () => {
-    const content = (value: number) => dom`
-      <div>${value}</div>
-    `;
-
+  test('the same nested context works correctly', () => {
     const FormContext = createContext(1);
-    const value = 20;
-
     const Item = component(() => {
-      return <FormContext.Consumer>{value => <div>{value}</div>}</FormContext.Consumer>;
-    });
-
-    const Content = component(() => {
-      return [
-        <FormContext.Provider value={value}>
-          <Item />
-        </FormContext.Provider>,
-      ];
-    });
-
-    const App = component(() => {
-      return [
-        <FormContext.Provider value={10}>
-          <Content />
-        </FormContext.Provider>,
-      ];
-    });
-
-    render(App(), host);
-    expect(host.innerHTML).toBe(content(value));
-  });
-});
-
-describe('[use-context]', () => {
-  test('works correctly', () => {
-    const content = (theme: Theme) => dom`
-      <div>${theme}</div>
-    `;
-    const ThemeContext = createContext<Theme>('light');
-
-    const Item = component(() => {
-      const value = useContext(ThemeContext);
+      const value = useContext(FormContext);
 
       return <div>{value}</div>;
     });
-
-    let theme: Theme;
-    let setTheme: (value: Theme) => void;
-
-    const App = component(() => {
-      [theme, setTheme] = useState<Theme>('light');
-
+    const Content = component(() => {
       return [
-        <ThemeContext.Provider value={theme}>
+        <FormContext value={20}>
           <Item />
-        </ThemeContext.Provider>,
+        </FormContext>,
+      ];
+    });
+    const App = component(() => {
+      return [
+        <FormContext value={10}>
+          <Content />
+        </FormContext>,
       ];
     });
 
-    render(App(), host);
-    expect(host.innerHTML).toBe(content(theme));
-
-    setTheme('dark');
-    // In this case, there is no need to wait for timers.
-    expect(host.innerHTML).toBe(content(theme));
-
-    setTheme('light');
-    expect(host.innerHTML).toBe(content(theme));
+    render(<App />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>20</div>"`);
   });
 
-  test('works correctly inside static layout #1', () => {
-    const content = (theme: Theme) => dom`
-      <div>${theme}</div>
-    `;
-
-    type Theme = 'light' | 'dark';
+  test('works inside static layout #1', () => {
+    let theme: Theme;
+    let setTheme: (value: Theme) => void;
     const ThemeContext = createContext<Theme>('light');
-
     const Consumer = component(() => {
       const value = useContext(ThemeContext);
 
       return <div>{value}</div>;
     });
-
     const StaticLayout = memo(component(() => <Consumer />));
-
-    let theme: Theme;
-    let setTheme: (value: Theme) => void;
-
     const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return (
-        <ThemeContext.Provider value={theme}>
+        <ThemeContext value={theme}>
           <StaticLayout />
-        </ThemeContext.Provider>
+        </ThemeContext>
       );
     });
 
-    render(App(), host);
-    expect(host.innerHTML).toBe(content(theme));
+    render(<App />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
 
     setTheme('dark');
-    // Waiting for the execution of the timers is mandatory, since we are in a static layout and the value will be distributed through the effect.
-    jest.runAllTimers();
-    expect(host.innerHTML).toBe(content(theme));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
+
+    setTheme('light');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
+
+    setTheme('light');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
 
     setTheme('dark');
-    jest.runAllTimers();
-    expect(host.innerHTML).toBe(content(theme));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
+
+    setTheme('dark');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
   });
 
-  test('works correctly inside static layout #2', () => {
-    const content = (theme: Theme) => dom`
-      <div>${theme}</div>
-    `;
+  test('works inside static layout #2', () => {
+    let theme: Theme;
+    let setTheme: (value: Theme) => void;
     const ThemeContext = createContext<Theme>('light');
-
     const Consumer = component(() => {
       const value = useContext(ThemeContext);
 
       return <div>{value}</div>;
     });
-
-    type StaticLayoutProps = {
-      slot: DarkElement;
-    };
-
-    const StaticLayout = memo(component<StaticLayoutProps>(({ slot }) => slot));
-
-    let theme: Theme;
-    let setTheme: (value: Theme) => void;
-
+    const StaticLayout = memo(component<{ slot: DarkElement }>(({ slot }) => slot));
     const App = component(() => {
       [theme, setTheme] = useState<Theme>('light');
 
       return (
-        <ThemeContext.Provider value={theme}>
+        <ThemeContext value={theme}>
           <StaticLayout>
             <Consumer />
           </StaticLayout>
-        </ThemeContext.Provider>
+        </ThemeContext>
       );
     });
 
-    render(App(), host);
-    expect(host.innerHTML).toBe(content(theme));
+    render(<App />);
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
 
     setTheme('dark');
-    jest.runAllTimers();
-    expect(host.innerHTML).toBe(content(theme));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
+
+    setTheme('light');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
+
+    setTheme('light');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>light</div>"`);
 
     setTheme('dark');
-    jest.runAllTimers();
-    expect(host.innerHTML).toBe(content(theme));
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
+
+    setTheme('dark');
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>dark</div>"`);
   });
 });

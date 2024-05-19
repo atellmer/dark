@@ -26,7 +26,7 @@ type ThemeProviderProps = {
 };
 
 const ThemeProvider = component<ThemeProviderProps>(({ theme, slot }) => {
-  return ThemeContext.Provider({ value: theme, slot });
+  return ThemeContext({ value: theme, slot });
 });
 
 export { ThemeProvider, useTheme };

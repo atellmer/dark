@@ -121,9 +121,9 @@ const Screen = component<StackScreenProps>(
     const isVisited = detectIsVisited(visitedMap, pathname);
 
     return (
-      <ScreenNavigatorContext.Provider value={contextValue}>
+      <ScreenNavigatorContext value={contextValue}>
         {isVisited && (detectIsFunction(slot) ? slot() : component())}
-      </ScreenNavigatorContext.Provider>
+      </ScreenNavigatorContext>
     );
   },
   {
