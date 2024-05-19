@@ -813,6 +813,7 @@ describe('@styled/parse', () => {
   });
 
   test('minifies a group selector correctly', () => {
+    // https://github.com/atellmer/dark/issues/67
     const style = parse(`
       p,
       h1,
