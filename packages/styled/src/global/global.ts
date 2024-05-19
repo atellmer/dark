@@ -2,7 +2,7 @@ import { component, useInsertionEffect, useMemo, useId, detectIsServer, mapRecor
 
 import { detectIsBrowser, getElement, insertBefore, getElements, createStyleElement, setAttr, append } from '../utils';
 import { STYLED_ATTR, GLOBAL_ATTR_VALUE, INTERLEAVE_GLOBAL_ATTR_VALUE } from '../constants';
-import { css, inject, reuse, getTag as getStyleTag, filterArgs } from '../styled';
+import { ast, inject, reuse, getTag as getStyleTag, filterArgs } from '../styled';
 import { type ThemeProps, useTheme } from '../theme';
 import { useManager } from '../server/manager';
 import { type Args } from '../styled';
@@ -20,7 +20,7 @@ function createGlobalStyle<P extends object = {}>(source: TemplateStringsArray, 
   }
 
   const fns = filterArgs<P>(args);
-  const sheet = css<P>(source, ...args);
+  const sheet = ast<P>(source, ...args);
   const factory = component<P>(
     props => {
       const theme = useTheme();

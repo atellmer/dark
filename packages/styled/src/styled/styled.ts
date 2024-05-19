@@ -35,6 +35,7 @@ import {
   setAttr,
   append,
   mergeTemplates,
+  illegal,
 } from '../utils';
 import { type KeyframesRule, StyleSheet, detectIsStyleSheet, detectIsKeyframesRule } from '../tokens';
 import { type Keyframes, detectIsKeyframes } from '../keyframes';
@@ -73,7 +74,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
     const $args = isExtending ? [...config.args, ...args] : args;
     const $transform = isExtending ? (p: T) => transform(config.transform(p)) : transform;
     const fns = filterArgs<T>($args);
-    const [sheet, sheets] = slice<T>(css($source, ...$args));
+    const [sheet, sheets] = slice<T>(ast($source, ...$args));
     const [baseName, baseStyle, baseKeyframes] = generate({ sheet, cache });
     const styled = component<T>(
       props => {
@@ -255,7 +256,7 @@ function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<S
   return [sheet, sheets];
 }
 
-function join<P>(strings: TemplateStringsArray, args: Args<P>) {
+function join<P>(strings: TemplateStringsArray, args: Args<P>, isFragment = false) {
   let joined = '';
   let keyframes = '';
 
@@ -272,6 +273,7 @@ function join<P>(strings: TemplateStringsArray, args: Args<P>) {
       joined += arg.getName();
       keyframes += arg.getToken().generate();
     } else if (detectIsFunction(arg)) {
+      if (isFragment) illegal('Illegal nesting functions in a CSS fragment!');
       joined += FUNCTION_MARK;
     } else if (detectIsTextBased(arg)) {
       joined += arg;
@@ -318,7 +320,14 @@ function getInterleavedElements() {
 
 const getTag = () => getElement(`[${STYLED_ATTR}="${COMPONENTS_ATTR_VALUE}"]`) as HTMLStyleElement;
 
-const css = <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) => parse<P>(join(strings, args));
+const createParser =
+  (isFragment: boolean) =>
+  <P extends object>(strings: TemplateStringsArray, ...args: Args<P>) =>
+    parse<P>(join(strings, args, isFragment));
+
+const ast = createParser(false);
+
+const css = createParser(true);
 
 const getClassNamesFrom = (props: StyledProps) => (props.class || props.className || '').split(BLANK_SPACE);
 
@@ -530,4 +539,4 @@ styled.tspan = styled('tspan') as FactoryFn<DarkJSX.Elements['tspan']>;
 styled.use = styled('use') as FactoryFn<DarkJSX.Elements['use']>;
 styled.view = styled('view') as FactoryFn<DarkJSX.Elements['view']>;
 
-export { setupGlobal, styled, css, inject, reuse, getTag, filterArgs, detectIsStyled };
+export { setupGlobal, styled, ast, css, inject, reuse, getTag, filterArgs, detectIsStyled };
