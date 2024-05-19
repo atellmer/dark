@@ -6,7 +6,7 @@ import { useMemo } from '../use-memo';
 function useError(): Error | null {
   const cursor = useCursor();
   const update = useUpdate();
-  const scope: ErrorScope = useMemo(() => ({ error: null }), []);
+  const scope = useMemo<ErrorScope>(() => ({ error: null }), []);
 
   cursor.hook.setCatch((error: Error) => {
     scope.error = error;
