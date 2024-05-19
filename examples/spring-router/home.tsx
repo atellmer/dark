@@ -1,8 +1,13 @@
-import { component } from '@dark-engine/core';
+import { component, useEffect } from '@dark-engine/core';
 import { Metatags } from '@dark-engine/platform-browser';
 
 const Home = component(
   () => {
+    useEffect(() => {
+      console.log('mount home');
+      return () => console.log('unmount home');
+    }, []);
+
     return (
       <article>
         <h1>Home</h1>
