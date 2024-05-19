@@ -84,7 +84,7 @@ export type ContexProps<T> = {
 } & SlotProps &
   KeyProps;
 
-export type Context<T> = ComponentFactory<ContexProps<T>> & { defaultValue: T };
+export type Context<T = {}> = ComponentFactory<ContexProps<T>> & { defaultValue: T };
 
 export type ContextProvider<T = unknown> = {
   value: T;
