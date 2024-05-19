@@ -14,6 +14,7 @@ export const OPENING_PARENTHESIS_MARK = '(';
 export const CLOSING_PARENTHESIS_MARK = ')';
 export const COLON_MARK = ':';
 export const SEMICOLON_MARK = ';';
+export const COMMA_MARK = ',';
 export const DOT_MARK = '.';
 export const BLANK_SPACE = ' ';
 export const MEDIA_QUERY_MARK = '@media';

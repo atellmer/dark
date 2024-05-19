@@ -40,7 +40,7 @@ describe('@styled/global', () => {
 
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
-      style('*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;}'),
+      style('*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;}'),
     );
   });
 
@@ -69,7 +69,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
     );
 
@@ -78,7 +78,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:black;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:black;}',
       ),
     );
 
@@ -87,7 +87,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
     );
   });
@@ -119,7 +119,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
     );
 
@@ -128,7 +128,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:black;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:black;}',
       ),
     );
 
@@ -137,7 +137,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
     );
   });
@@ -164,7 +164,7 @@ describe('@styled/global', () => {
     expect(host.innerHTML).toBe(replacer);
     expect(document.head.innerHTML).toBe(
       style(
-        '*, *::after, *::before{box-sizing:border-box;}html, body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
+        '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
     );
 
