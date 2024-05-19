@@ -1,4 +1,4 @@
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
 export const LIB = '@dark-engine/core';
 export const ROOT = 'dark:root';
 export const REPLACER = 'dark:matter';
