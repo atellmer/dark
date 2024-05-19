@@ -834,4 +834,22 @@ describe('@styled/styled', () => {
     );
     expect(body.innerHTML).toMatchInlineSnapshot(`"<div class="dk-gahced"></div><div class="dk-cibihf"></div>"`);
   });
+
+  test(`can hydrate styles with different platform-specific values`, () => {
+    // https://github.com/atellmer/dark/issues/63
+    const Box = styled.div`
+      inset: 0 15px auto 0; // scrollbar width is 0 on the server and 15 in the browser
+    `;
+    const { head, body, hydrate } = createBrowserHydrateEnv({
+      headHTML: `<style dark-styled="c">.dk-bhhfgb{inset:0 0 auto 0;}</style>`,
+      bodyHTML: `<div class="dk-bhhfgb"></div>`,
+    });
+
+    hydrate(<Box />);
+
+    expect(head.innerHTML).toMatchInlineSnapshot(
+      `"<style dark-styled="c">.dk-bhhfgb{inset:0 0 auto 0;}.dk-baebeb{inset:0 15px auto 0;}</style>"`,
+    );
+    expect(body.innerHTML).toMatchInlineSnapshot(`"<div class="dk-baebeb"></div>"`);
+  });
 });

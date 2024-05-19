@@ -107,10 +107,8 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
         }, [...mapRecord(props), theme]);
 
         useInsertionEffect(() => {
-          tag = tag || getTag() || createTag();
-          if (isHydration) return;
-          styles.forEach(css => inject(css, tag));
-          keyframes.forEach(css => inject(css, tag));
+          injectWithHydration(styles, isHydration);
+          injectWithHydration(keyframes, isHydration);
         }, [...styles, ...keyframes]);
 
         if (isServer) {
@@ -148,6 +146,19 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
   };
 
   return fn;
+}
+
+function injectWithHydration(styles: Array<string>, isHydration: boolean) {
+  tag = tag || getTag() || createTag();
+  const content = tag.textContent;
+
+  for (const css of styles) {
+    if (isHydration) {
+      content.indexOf(css) === -1 && inject(css, tag);
+    } else {
+      inject(css, tag);
+    }
+  }
 }
 
 function filter(styles: Array<string>, injections: Set<string>) {

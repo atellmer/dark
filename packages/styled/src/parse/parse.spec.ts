@@ -811,4 +811,29 @@ describe('@styled/parse', () => {
     expect(color.name).toBe('color');
     expect(color.value).toBe('black');
   });
+
+  test('minifies a group selector correctly', () => {
+    // https://github.com/atellmer/dark/issues/67
+    const style = parse(`
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 0;
+        overflow-wrap: break-word;
+      }
+    `);
+    const nsr = style.children[0] as NestingRule;
+    const margin = nsr.children[0] as StyleRule;
+    const overflow = nsr.children[1] as StyleRule;
+
+    expect(nsr.value).toBe('p,h1,h2,h3,h4,h5,h6');
+    expect(margin.name).toBe('margin');
+    expect(margin.value).toBe('0');
+    expect(overflow.name).toBe('overflow-wrap');
+    expect(overflow.value).toBe('break-word');
+  });
 });

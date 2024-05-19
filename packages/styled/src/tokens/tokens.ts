@@ -3,6 +3,7 @@ import {
   CLOSING_CURLY_BRACE_MARK,
   COLON_MARK,
   SEMICOLON_MARK,
+  COMMA_MARK,
   MEDIA_QUERY_MARK,
   CONTAINER_QUERY_MARK,
   KEYFRAMES_MARK,
@@ -45,6 +46,11 @@ class StyleRule extends Token {
 class NestingRule<P extends object = {}> extends Token {
   name = NESTING_MARK;
   children: Children = [];
+
+  override normalize() {
+    super.normalize();
+    this.value = this.value.replace(GROUP_SELECTOR_PATTERN, COMMA_MARK);
+  }
 
   override generate(...args: Array<unknown>): string {
     const className = args[0] as string | null;
@@ -292,6 +298,8 @@ type Tuple = [string, string, string, string, string];
 export type Parent = StyleSheet | Token;
 
 export type Children = Array<Token>;
+
+const GROUP_SELECTOR_PATTERN = new RegExp(`${COMMA_MARK}\\s*`, 'g');
 
 const detectIsToken = (x: unknown): x is Token => x instanceof Token;
 
