@@ -85,7 +85,6 @@ const Container = styled.div`
   height: 100%;
   overflow-y: auto;
   padding: 16px;
-  pointer-events: none;
 `;
 
 const Content = styled.div`

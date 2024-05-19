@@ -11,6 +11,7 @@ import {
   detectIsNumber,
   startTransition,
   scheduler,
+  flatten,
 } from '@dark-engine/core';
 
 import { type BaseItemConfig, type ConfiguratorFn, Controller } from '../controller';
@@ -109,7 +110,7 @@ function useTransition<T extends string, I = unknown>(
         }
       }
 
-      return Fragment({ slot: elements });
+      return Fragment({ slot: flatten(elements) });
     },
     [],
   );

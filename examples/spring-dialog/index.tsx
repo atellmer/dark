@@ -38,7 +38,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: Arial;
     padding: 16px;
-    background-color: #000;
+    background-color: #666;
   }
 `;
 
