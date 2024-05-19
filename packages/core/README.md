@@ -699,10 +699,10 @@ const App = component(() => {
   const handleToggle = () => setTheme(x => (x === 'dark' ? 'light' : 'dark'));
 
   return (
-    <ThemeContext.Provider value={theme}>
+    <ThemeContext value={theme}>
       <CurrentTheme />
       <button onClick={handleToggle}>Toggle: {theme}</button>
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 });
 ```

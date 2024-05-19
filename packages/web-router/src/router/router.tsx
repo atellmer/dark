@@ -124,11 +124,11 @@ const Router = component<RouterProps>(
     }));
 
     return (
-      <RouterHistoryContext.Provider value={historyContext}>
-        <ActiveRouteContext.Provider value={routerContext}>
-          <PendingContext.Provider value={pending$}>{slot(content)}</PendingContext.Provider>
-        </ActiveRouteContext.Provider>
-      </RouterHistoryContext.Provider>
+      <RouterHistoryContext value={historyContext}>
+        <ActiveRouteContext value={routerContext}>
+          <PendingContext value={pending$}>{slot(content)}</PendingContext>
+        </ActiveRouteContext>
+      </RouterHistoryContext>
     );
   },
   { displayName: 'Router' },

@@ -79,14 +79,14 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <ThemeContext.Provider value={context}>
+      <ThemeContext value={context}>
         <Body />
         <Root>
           <StaticLayout>
             <DarkModeSwitch />
           </StaticLayout>
         </Root>
-      </ThemeContext.Provider>
+      </ThemeContext>
     </>
   );
 });

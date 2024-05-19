@@ -1,10 +1,10 @@
-import { type DarkElement, type SlotProps, type KeyProps } from '../shared';
 import { type ComponentFactory, component } from '../component';
-import { detectIsFunction, detectIsEqual } from '../utils';
+import { type SlotProps, type KeyProps } from '../shared';
 import { useLayoutEffect } from '../use-layout-effect';
 import { __useCursor as useCursor } from '../internal';
 import { EventEmitter } from '../emitter';
 import { useUpdate } from '../use-update';
+import { detectIsEqual } from '../utils';
 import { type Fiber } from '../fiber';
 import { useMemo } from '../use-memo';
 
@@ -13,22 +13,8 @@ type CreateContextOptions = {
 };
 
 function createContext<T>(defaultValue: T, options?: CreateContextOptions): Context<T> {
-  const { displayName = 'Context' } = options || {};
-  const context: Context<T> = {
-    displayName,
-    defaultValue,
-    Provider: null,
-    Consumer: null,
-  };
-
-  context.Provider = createProvider(context, defaultValue, displayName);
-  context.Consumer = createConsumer(context, displayName);
-
-  return context;
-}
-
-function createProvider<T>(context: Context<T>, defaultValue: T, displayName: string) {
-  return component<ContexProviderProps<T>>(
+  const { displayName = 'Component' } = options || {};
+  const context = component<ContexProps<T>>(
     ({ value = defaultValue, slot }) => {
       const cursor = useCursor();
       const { hook } = cursor;
@@ -51,23 +37,13 @@ function createProvider<T>(context: Context<T>, defaultValue: T, displayName: st
 
       return slot;
     },
-    { displayName: `${displayName}.Provider` },
-  );
-}
+    { displayName: `Context(${displayName})` },
+  ) as Context<T>;
 
-type ConsumerProps<T> = {
-  slot: (value: T) => DarkElement;
-};
+  context.defaultValue = defaultValue;
+  Object.freeze(context);
 
-function createConsumer<T>(context: Context<T>, displayName: string) {
-  return component<ConsumerProps<T>>(
-    ({ slot }) => {
-      const value = useContext(context);
-
-      return detectIsFunction(slot) ? slot(value) : null;
-    },
-    { displayName: `${displayName}.Consumer` },
-  );
+  return context;
 }
 
 function useContext<T>(context: Context<T>): T {
@@ -103,17 +79,12 @@ function getProvider<T>(context: Context<T>, fiber: Fiber) {
   return null;
 }
 
-type ContexProviderProps<T> = {
+export type ContexProps<T> = {
   value: T;
 } & SlotProps &
   KeyProps;
 
-export type Context<T = unknown> = {
-  Provider: ComponentFactory<ContexProviderProps<T>>;
-  Consumer: ComponentFactory<SlotProps<(value: T) => DarkElement>>;
-  displayName?: string;
-  defaultValue: T;
-};
+export type Context<T> = ComponentFactory<ContexProps<T>> & { defaultValue: T };
 
 export type ContextProvider<T = unknown> = {
   value: T;

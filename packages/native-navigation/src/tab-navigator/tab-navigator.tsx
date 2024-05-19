@@ -70,7 +70,7 @@ const Navigator = component<TabNavigatorProps>(
     });
 
     return (
-      <TabNavigatorContext.Provider value={contextValue}>
+      <TabNavigatorContext value={contextValue}>
         <AbsoluteLayout ref={layoutRef} onLayoutChanged={handleLayoutChange}>
           <StackLayout width='100%' height='100%'>
             {descriptorKeys.length > 0 && (
@@ -98,7 +98,7 @@ const Navigator = component<TabNavigatorProps>(
             {slot}
           </FlexboxLayout>
         </AbsoluteLayout>
-      </TabNavigatorContext.Provider>
+      </TabNavigatorContext>
     );
   },
   { displayName: 'TabNavigator.Root' },

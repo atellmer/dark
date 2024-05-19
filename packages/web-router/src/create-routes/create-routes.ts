@@ -72,7 +72,7 @@ class Route {
       const component = factory({ slot });
 
       component.displayName = `Route(${nextRoute.getPath()})`;
-      slot = CurrentPathContext.Provider({ value, slot: [component] });
+      slot = CurrentPathContext({ value, slot: [component] });
       nextRoute = nextRoute.parent;
     }
 

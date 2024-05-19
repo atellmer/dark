@@ -49,7 +49,7 @@ type ThemeProviderProps = {
 };
 
 const ManagerProvider = component<ThemeProviderProps>(({ manager, slot }) => {
-  return ManagerContext.Provider({ value: manager, slot });
+  return ManagerContext({ value: manager, slot });
 });
 
 export { Manager, useManager, ManagerProvider };
