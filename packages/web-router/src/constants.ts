@@ -1,4 +1,4 @@
-export const VERSION = '1.4.0';
+export const VERSION = '1.4.1';
 export const LIB = '@dark-engine/web-router';
 export const SLASH_MARK = '/';
 export const PARAMETER_MARK = ':';
