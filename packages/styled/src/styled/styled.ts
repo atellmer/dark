@@ -12,6 +12,7 @@ import {
   detectIsTextBased,
   useInsertionEffect,
   mapRecord,
+  detectIsVirtualNodeFactory,
   __useSSR as useSSR,
 } from '@dark-engine/core';
 import { type DarkJSX } from '@dark-engine/platform-browser';
@@ -55,7 +56,7 @@ function styled<P extends object, T extends object = {}>(tagName: string | Compo
   const isString = detectIsString(tagName);
   const factory = isString ? (props: P) => View({ as: tagName, ...props }) : tagName;
   const targetName = isString ? tagName : (factory as ComponentFactory<P>).displayName || 'Component';
-  const displayName = `Styled.${targetName}`;
+  const displayName = `styled.${targetName}`;
 
   if (!isLoaded && detectIsBrowser()) {
     reuse(getInterleavedElements(), createTag);
@@ -120,7 +121,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
           manager.reset(setupGlobal);
         }
 
-        if (detectIsFunction($props.slot)) {
+        if (detectIsFunction($props.slot) && !detectIsVirtualNodeFactory($props.slot)) {
           $props.slot = $props.slot((x: string) => `${className}_${x}`);
         }
 
