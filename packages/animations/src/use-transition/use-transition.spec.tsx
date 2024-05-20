@@ -1093,4 +1093,55 @@ describe('@animations/use-transition', () => {
     expect(host.innerHTML).toBe(content(items, 1));
     expect(spy).toHaveBeenCalledTimes(133);
   });
+
+  test(`doesn't recreate nodes after transition`, () => {
+    type SpringProps = 'opacity';
+    const spy = jest.fn();
+
+    const Content = component<{ item: string }>(({ item }) => {
+      useLayoutEffect(() => {
+        spy([true, item]);
+
+        return () => spy([false, item]);
+      }, []);
+
+      return <div>{item}</div>;
+    });
+
+    const App = component<{ items: Array<string> }>(({ items }) => {
+      const [transition] = useTransition<SpringProps, string>(
+        items,
+        x => x,
+        () => ({
+          from: { opacity: 0 },
+          enter: { opacity: 1 },
+          leave: { opacity: 0 },
+        }),
+      );
+
+      return transition(({ spring, item }) => {
+        return (
+          <Animated spring={spring} fn={styleFn}>
+            <Content item={item} />
+          </Animated>
+        );
+      });
+    });
+
+    const styleFn = (element: HTMLDivElement, value: SpringValue<SpringProps>) => {
+      element.style.setProperty('opacity', `${value.opacity}`);
+    };
+
+    render(<App items={['home']} />);
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith([true, 'home']);
+    spy.mockClear();
+
+    render(<App items={['about']} />);
+    jest.runAllTimers();
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith([true, 'about']);
+    expect(spy).toHaveBeenLastCalledWith([false, 'home']);
+  });
 });
