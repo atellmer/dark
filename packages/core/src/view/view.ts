@@ -163,7 +163,7 @@ export type TagVirtualNodeFactory = () => TagVirtualNode;
 
 export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
 
-export type CanHasChildren = TagVirtualNode | Component;
+export type CanHaveChildren = TagVirtualNode | Component;
 
 export type ViewOptions = {
   as: string;

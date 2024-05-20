@@ -30,7 +30,7 @@ import { type Component, detectIsComponent } from '../component';
 import { type ElementKey, type Instance, type Callback } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
 import {
-  type CanHasChildren,
+  type CanHaveChildren,
   Text,
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
@@ -107,7 +107,7 @@ function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
   const isDeepWalking = $scope.getMountDeep();
   const isStream = $scope.getIsStreamZone();
   const emitter = $scope.getEmitter();
-  const children = (fiber.inst as CanHasChildren).children;
+  const children = (fiber.inst as CanHaveChildren).children;
   const hasChildren = isDeepWalking && children && children.length > 0;
 
   fiber.hook && (fiber.hook.idx = 0);
@@ -141,7 +141,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
   const $hook = parent.child ? parent.child.hook || null : null; // from previous fiber after throwing promise
   const $inst = parent.inst;
   const idx = 0;
-  const children = ($inst as CanHasChildren).children;
+  const children = ($inst as CanHaveChildren).children;
   const inst = setupInstance(children, idx);
   const alt = getAlternate(parent, inst, idx, $scope);
   const fiber = createFiber(alt, inst, idx);
@@ -161,7 +161,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   const $hook = left.next ? left.next.hook || null : null; // from previous fiber after throwing promise
   const $inst = left.parent.inst;
   const idx = $scope.getMountIndex();
-  const children = ($inst as CanHasChildren).children;
+  const children = ($inst as CanHaveChildren).children;
   const inst = setupInstance(children, idx);
   const hasSibling = Boolean(inst);
 
@@ -268,7 +268,7 @@ function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) 
 function reconcile(fiber: Fiber, alt: Fiber, $scope: Scope) {
   const { id, inst } = fiber;
   const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
-  const nextChildren = (inst as CanHasChildren).children;
+  const nextChildren = (inst as CanHaveChildren).children;
 
   if (!areSameTypes) {
     $scope.addDeletion(alt);
@@ -532,7 +532,7 @@ function commit($scope: Scope) {
   $scope.runInsertionEffects();
 
   for (const fiber of candidates) {
-    const item = fiber.inst as CanHasChildren;
+    const item = fiber.inst as CanHaveChildren;
 
     fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
     fiber.alt = null;
