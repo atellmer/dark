@@ -74,6 +74,7 @@ npm start
 - [Spring masonry grid](https://atellmer.github.io/dark/next/spring-masonry-grid/)
 - [Spring slider](https://atellmer.github.io/dark/next/spring-slider/)
 - [Spring menu](https://atellmer.github.io/dark/next/spring-menu/)
+- [Spring dialog window](https://atellmer.github.io/dark/next/spring-dialog/)
 
 ## Stackblitz demos
 
