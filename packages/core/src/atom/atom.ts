@@ -74,8 +74,8 @@ class Atom<T = unknown> {
     const fiber = $$scope().getCursor();
     const { hook } = fiber;
 
-    !hook.getAtoms() && hook.setAtoms(new Map());
-    hook.getAtoms().set(this, this.off.bind(this, hook, key));
+    !hook.atoms && (hook.atoms = new Map());
+    hook.atoms.set(this, this.off.bind(this, hook, key));
     fiber.markHost(ATOM_HOST_MASK);
 
     if (detectIsEmpty(key)) {
@@ -149,7 +149,7 @@ class Atom<T = unknown> {
   }
 
   private off(hook: Hook, key: T) {
-    hook.getAtoms().delete(this);
+    hook.atoms.delete(this);
     this.c1 && this.c1.delete(hook);
     this.c2 && this.c2.delete(key);
   }

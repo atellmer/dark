@@ -78,6 +78,7 @@ class Hook<T = unknown> {
   owner: Fiber = null;
   mask = 0;
   box?: Box = null;
+  atoms?: Map<Atom, Callback> = null;
 
   __getMask(mask: number) {
     return Boolean(this.mask & mask);
@@ -130,15 +131,6 @@ class Hook<T = unknown> {
   setProviders(x: Box['providers']) {
     this.__box();
     this.box.providers = x;
-  }
-
-  getAtoms() {
-    return this.box?.atoms;
-  }
-
-  setAtoms(x: Box['atoms']) {
-    this.__box();
-    this.box.atoms = x;
   }
 
   getBatch() {
@@ -214,7 +206,6 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
 
 type Box = {
   providers?: Map<Context, ContextProvider>;
-  atoms?: Map<Atom, Callback>;
   batch?: Batch;
   catch?: (error: Error) => void;
   pendings?: number;

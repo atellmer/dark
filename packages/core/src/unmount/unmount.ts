@@ -24,7 +24,7 @@ function onWalk(fiber: Fiber, skip: Callback) {
   if (!(fiber.mask & mask)) return skip();
   const hook = fiber.hook as Hook<HookValue<UseEffectValue>>;
   const values = hook?.values;
-  const atoms = hook?.getAtoms();
+  const atoms = hook?.atoms;
 
   if (values && values.length > 0) {
     fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects(hook);
@@ -34,7 +34,7 @@ function onWalk(fiber: Fiber, skip: Callback) {
 
   if (atoms) {
     for (const [_, cleanup] of atoms) cleanup();
-    hook.setAtoms(null);
+    hook.atoms = null;
   }
 }
 
