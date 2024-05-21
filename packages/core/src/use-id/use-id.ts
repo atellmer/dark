@@ -2,9 +2,7 @@ import { useMemo } from '../use-memo';
 import { getRootId } from '../scope';
 
 function useId() {
-  const id = useMemo(() => getNextId(getRootId()), []);
-
-  return id;
+  return useMemo(() => getNextId(getRootId()), []);
 }
 
 let nextId = 1000000;

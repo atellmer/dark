@@ -6,9 +6,7 @@ function detectIsMutableRef(ref: unknown): ref is MutableRef {
   const mutableRef = ref as MutableRef;
 
   for (const key in mutableRef) {
-    if (key === 'current' && mutableRef.hasOwnProperty(key)) {
-      return true;
-    }
+    if (key === 'current' && mutableRef.hasOwnProperty(key)) return true;
   }
 
   return false;
@@ -23,14 +21,10 @@ function applyRef<T>(ref: Ref<T>, current: T) {
 }
 
 function useRef<T>(initialValue: T = null): MutableRef<T> {
-  const ref = useMemo(() => ({ current: initialValue }), []) as MutableRef<T>;
-
-  return ref;
+  return useMemo(() => ({ current: initialValue }), []) as MutableRef<T>;
 }
 
-export type MutableRef<T = unknown> = {
-  current: T;
-};
+export type MutableRef<T = unknown> = { current: T };
 
 export type FunctionRef<T = unknown> = (ref: T) => void;
 
