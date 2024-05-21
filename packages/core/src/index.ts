@@ -2,7 +2,6 @@
 export * from './component';
 export * from './view';
 export { createContext, useContext } from './context';
-export { h } from './element';
 export * from './fiber';
 export * from './workloop';
 export * from './atom';
