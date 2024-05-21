@@ -28,12 +28,12 @@ import { Fiber, getHook, Hook } from '../fiber';
 import {
   type CanHaveChildren,
   Text,
-  detectIsVirtualNode,
-  detectIsVirtualNodeFactory,
   getElementKey,
   createReplacer,
-  detectAreSameInstanceTypes,
   hasChildrenProp,
+  detectIsVirtualNode,
+  detectIsVirtualNodeFactory,
+  detectAreSameInstanceTypes,
 } from '../view';
 import { detectIsMemo } from '../memo';
 import { walk, getFiberWithElement, detectIsFiberAlive, resolveSuspense, notifyParents, createHookLoc } from '../walk';
@@ -43,9 +43,7 @@ import { startTransition } from '../start-transition';
 import { unmountFiber } from '../unmount';
 import { addBatch } from '../batch';
 
-export type WorkLoop = (isAsync: boolean) => boolean | Promise<unknown> | null;
-
-function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
+function workLoop(isAsync: boolean): boolean | Promise<unknown> {
   const $scope = $$scope();
   const wipFiber = $scope.getWip();
   let unit = $scope.getNextUnit();
@@ -602,4 +600,4 @@ const $tools = (): Tools => ({
 
 const detectIsBusy = () => Boolean($$scope()?.getWip());
 
-export { Fiber, workLoop, createUpdate, detectIsBusy };
+export { workLoop, createUpdate, detectIsBusy };

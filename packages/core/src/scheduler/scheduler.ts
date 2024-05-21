@@ -1,6 +1,6 @@
 import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
 import { getTime, detectIsPromise, detectIsFunction } from '../utils';
-import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
+import { workLoop, detectIsBusy } from '../workloop';
 import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
@@ -50,7 +50,7 @@ class Scheduler {
   };
   private deadline = 0;
   private task: Task = null;
-  private scheduledCallback: WorkLoop = null;
+  private scheduledCallback: typeof workLoop = null;
   private isMessageLoopRunning = false;
   private channel: MessageChannel = null;
   private port: MessagePort = null;
@@ -161,7 +161,7 @@ class Scheduler {
     }
   }
 
-  private requestCallbackAsync(callback: WorkLoop) {
+  private requestCallbackAsync(callback: typeof workLoop) {
     this.scheduledCallback = callback;
 
     if (!this.isMessageLoopRunning) {
@@ -170,7 +170,7 @@ class Scheduler {
     }
   }
 
-  private requestCallback(callback: WorkLoop) {
+  private requestCallback(callback: typeof workLoop) {
     const something = callback(false);
 
     if (detectIsPromise(something)) {

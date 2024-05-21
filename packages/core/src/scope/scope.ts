@@ -9,9 +9,9 @@ class Scope {
   private wip: Fiber = null;
   private cursor: Fiber = null;
   private unit: Fiber = null;
-  private mountDeep = true;
-  private mountLevel = 0;
-  private mountNav: Record<number, number> = {};
+  private mDeep = true;
+  private mLevel = 0;
+  private mNav: Record<number, number> = {};
   private events = new Map<string, WeakMap<object, Function>>();
   private unsubs = new Set<Callback>();
   private reconciler = new Reconciler();
@@ -25,7 +25,7 @@ class Scope {
   private resources: AppResources = new Map();
   private awaiter = new Awaiter();
   private onTransitionEnd: Callback = null;
-  private isInsertionEffect = false;
+  private isEffect3 = false;
   private isUpdate = false;
   private isBatch = false;
   private isHydration = false;
@@ -74,16 +74,16 @@ class Scope {
   }
 
   navToChild() {
-    this.mountLevel = this.mountLevel + 1;
-    this.mountNav[this.mountLevel] = 0;
+    this.mLevel = this.mLevel + 1;
+    this.mNav[this.mLevel] = 0;
   }
 
   navToSibling() {
-    this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] + 1;
+    this.mNav[this.mLevel] = this.mNav[this.mLevel] + 1;
   }
 
   navToParent() {
-    this.mountLevel = this.mountLevel - 1;
+    this.mLevel = this.mLevel - 1;
   }
 
   navToPrev() {
@@ -93,27 +93,27 @@ class Scope {
       this.navToParent();
       this.setMountDeep(true);
     } else {
-      this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] - 1;
+      this.mNav[this.mLevel] = this.mNav[this.mLevel] - 1;
       this.setMountDeep(false);
     }
   }
 
   getMountIdx() {
-    return this.mountNav[this.mountLevel];
+    return this.mNav[this.mLevel];
   }
 
   getMountDeep() {
-    return this.mountDeep;
+    return this.mDeep;
   }
 
   setMountDeep(value: boolean) {
-    this.mountDeep = value;
+    this.mDeep = value;
   }
 
   resetMount() {
-    this.mountLevel = 0;
-    this.mountNav = {};
-    this.mountDeep = true;
+    this.mLevel = 0;
+    this.mNav = {};
+    this.mDeep = true;
   }
 
   getEvents() {
@@ -219,11 +219,11 @@ class Scope {
   }
 
   getIsInsertionEffect() {
-    return this.isInsertionEffect;
+    return this.isEffect3;
   }
 
   setIsInsertionEffect(value: boolean) {
-    this.isInsertionEffect = value;
+    this.isEffect3 = value;
   }
 
   getIsUpdate() {
@@ -355,9 +355,9 @@ class Scope {
     scope.wip = null;
     scope.cursor = null;
     scope.unit = this.unit;
-    scope.mountDeep = this.mountDeep;
-    scope.mountLevel = this.mountLevel;
-    scope.mountNav = { ...this.mountNav };
+    scope.mDeep = this.mDeep;
+    scope.mLevel = this.mLevel;
+    scope.mNav = { ...this.mNav };
     scope.events = this.events;
     scope.unsubs = this.unsubs;
     scope.reconciler = this.reconciler.fork();
