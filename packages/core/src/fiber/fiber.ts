@@ -76,7 +76,6 @@ class Hook<T = unknown> {
   idx = 0;
   values: Array<T> = [];
   owner: Fiber = null;
-  atoms: Map<Atom, Callback> = null;
   mask = 0;
   box?: Box = null;
 
@@ -128,16 +127,25 @@ class Hook<T = unknown> {
     return this.box?.providers;
   }
 
-  setProviders(x: Map<Context, ContextProvider>) {
+  setProviders(x: Box['providers']) {
     this.__box();
     this.box.providers = x;
+  }
+
+  getAtoms() {
+    return this.box?.atoms;
+  }
+
+  setAtoms(x: Box['atoms']) {
+    this.__box();
+    this.box.atoms = x;
   }
 
   getBatch() {
     return this.box?.batch;
   }
 
-  setBatch(x: Batch) {
+  setBatch(x: Box['batch']) {
     this.__box();
     this.box.batch = x;
   }
@@ -146,7 +154,7 @@ class Hook<T = unknown> {
     return detectIsFunction(this.box?.catch);
   }
 
-  setCatch(x: Catch) {
+  setCatch(x: Box['catch']) {
     this.__box();
     this.box.catch = x;
   }
@@ -206,8 +214,9 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
 
 type Box = {
   providers?: Map<Context, ContextProvider>;
+  atoms?: Map<Atom, Callback>;
   batch?: Batch;
-  catch?: Catch;
+  catch?: (error: Error) => void;
   pendings?: number;
 };
 
@@ -215,8 +224,6 @@ type Batch = {
   timer: TimerId;
   changes: Array<Callback>;
 };
-
-type Catch = (error: Error) => void;
 
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };

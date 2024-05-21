@@ -19,7 +19,7 @@ function jsx(
   }
 
   if (detectIsString(element)) {
-    const options = ($props || {}) as ViewOptions;
+    const options = $props as ViewOptions;
 
     options.as = element;
     options.slot = slot;
@@ -28,7 +28,7 @@ function jsx(
   }
 
   if (detectIsFunction(element)) {
-    const options = ($props || {}) as { slot: unknown };
+    const options = $props as { slot: unknown };
 
     options.slot = slot.length === 1 ? slot[0] : slot;
 
