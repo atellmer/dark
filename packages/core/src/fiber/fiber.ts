@@ -1,4 +1,4 @@
-import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_NASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
+import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_MASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
 import { detectIsFunction, detectIsUndefined, logError } from '../utils';
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
@@ -101,11 +101,11 @@ class Hook<T = unknown> {
   }
 
   getIsPortal() {
-    return this.__getMask(IS_PORTAL_HOOK_NASK);
+    return this.__getMask(IS_PORTAL_HOOK_MASK);
   }
 
   setIsPortal(x: boolean) {
-    this.__mark(IS_PORTAL_HOOK_NASK, x);
+    this.__mark(IS_PORTAL_HOOK_MASK, x);
   }
 
   getIsSuspense() {
