@@ -1,4 +1,4 @@
-import { createBrowserEnv, dom } from '@test-utils';
+import { createBrowserEnv } from '@test-utils';
 
 import { component } from '../component';
 import { Fragment } from './fragment';
@@ -11,11 +11,6 @@ beforeEach(() => {
 
 describe('@core/fragment', () => {
   test('can render children correctly', () => {
-    const content = () => dom`
-      <div>1</div>
-      <div>2</div>
-      <div>3</div>
-    `;
     const App = component(() => {
       return (
         <Fragment>
@@ -27,6 +22,6 @@ describe('@core/fragment', () => {
     });
 
     render(<App />);
-    expect(host.innerHTML).toBe(content());
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>1</div><div>2</div><div>3</div>"`);
   });
 });
