@@ -2,7 +2,6 @@ import { detectIsUndefined, detectIsFunction, illegal, throwThis } from '../util
 import { type ComponentFactory, component } from '../component';
 import { useMemo } from '../use-memo';
 
-const $$lazy = Symbol('lazy');
 const factories = new Map<Loader, ComponentFactory>();
 
 function lazy<P extends object>(loader: Loader<P>, done?: () => void) {
@@ -23,7 +22,7 @@ function lazy<P extends object>(loader: Loader<P>, done?: () => void) {
 
       return factory ? factory(props) : null;
     },
-    { token: $$lazy, displayName: 'Lazy' },
+    { displayName: 'Lazy' },
   );
 }
 

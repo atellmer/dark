@@ -1,12 +1,16 @@
+import type { KeyProps, SlotProps, DarkElement } from '../shared';
 import { component, detectIsComponent } from '../component';
-import type { KeyProps, SlotProps } from '../shared';
+import { flatten } from '../utils';
 
 type FragmentProps = Required<SlotProps> & KeyProps;
 
 const $$fragment = Symbol('fragment');
 
-const Fragment = component<FragmentProps>(({ slot }) => slot || null, { token: $$fragment, displayName: 'Fragment' });
+const Fragment = component<FragmentProps>(({ slot }) => flatten(slot as Array<DarkElement>), {
+  token: $$fragment,
+  displayName: 'Fragment',
+});
 
-const detectIsFragment = (instance: unknown) => detectIsComponent(instance) && instance.token === $$fragment;
+const detectIsFragment = (x: unknown) => detectIsComponent(x) && x.token === $$fragment;
 
 export { Fragment, detectIsFragment };
