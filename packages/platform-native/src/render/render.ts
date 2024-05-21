@@ -65,8 +65,8 @@ function render(options: RenderOptions): NSElement {
     const emitter = $scope.getEmitter();
 
     $scope.resetMount();
-    $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setWip(fiber);
+    $scope.setNextUnit(fiber);
 
     emitter.on('finish', () => {
       emitter.kill();

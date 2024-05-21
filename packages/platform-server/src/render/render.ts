@@ -66,8 +66,8 @@ function scheduleRender(options: ScheduleRenderOptions) {
 
     $scope.setIsStreamZone(true);
     $scope.resetMount();
-    $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setWip(fiber);
+    $scope.setNextUnit(fiber);
 
     onStart();
     emitter.on('finish', () => {

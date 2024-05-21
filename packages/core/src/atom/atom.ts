@@ -71,7 +71,7 @@ class Atom<T = unknown> {
 
   __connect(fn: ShouldUpdate<T>, key: T) {
     const rootId = getRootId();
-    const fiber = $$scope().getCursorFiber();
+    const fiber = $$scope().getCursor();
     const { hook } = fiber;
 
     !hook.getAtoms() && hook.setAtoms(new Map());

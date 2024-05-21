@@ -64,7 +64,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
   const $scope = $$scope(rootId);
 
   // insertion effect can't schedule renders
-  if ($scope?.getIsInsertionEffectsZone()) return;
+  if ($scope?.getIsInsertionEffect()) return;
 
   const callback = () => {
     setRootId(rootId); // !
@@ -79,9 +79,9 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
     });
 
     $scope.resetMount();
-    $scope.setWorkInProgress(fiber);
+    $scope.setWip(fiber);
     $scope.setIsHydrateZone(isHydration);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setNextUnit(fiber);
     isHydration && hydrate();
   };
 
