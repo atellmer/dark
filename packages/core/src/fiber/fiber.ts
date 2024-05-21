@@ -74,7 +74,7 @@ class Fiber<N = NativeElement> {
 
 class Hook<T = unknown> {
   idx = 0;
-  values: Array<T> = [];
+  values: Array<T> = null;
   owner: Fiber = null;
   mask = 0;
   box?: Box = null;

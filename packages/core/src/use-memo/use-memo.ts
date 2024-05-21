@@ -24,6 +24,7 @@ function detectIsElement<T>(value: T) {
 function useMemo<T>(getValue: () => T, deps: Array<any>): T {
   const cursor = useCursor();
   const { hook } = cursor;
+  !hook.values && (hook.values = []); // !
   const { idx, values } = hook as Hook<HookValue<T>>;
   const state =
     values[idx] ||
