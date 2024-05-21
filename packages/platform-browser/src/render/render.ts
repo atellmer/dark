@@ -80,7 +80,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
 
     $scope.resetMount();
     $scope.setWip(fiber);
-    $scope.setIsHydrateZone(isHydration);
+    $scope.setIsHydration(isHydration);
     $scope.setNextUnit(fiber);
     isHydration && hydrate();
   };

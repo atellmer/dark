@@ -30,9 +30,9 @@ function createEffect(token: Symbol, type: EffectType) {
         }
       };
 
-      isInsertionEffect && $scope.addInsertionEffect(runEffect);
-      isLayoutEffect && $scope.addLayoutEffect(runEffect);
-      isAsyncEffect && $scope.addAsyncEffect(runEffect);
+      isInsertionEffect && $scope.addEffect3(runEffect);
+      isLayoutEffect && $scope.addEffect2(runEffect);
+      isAsyncEffect && $scope.addEffect1(runEffect);
 
       detectIsFunction(scope.cleanup) && scope.cleanup();
 

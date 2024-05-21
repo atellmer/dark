@@ -1,8 +1,8 @@
 import type { Callback, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
 import { type Fiber, Awaiter } from '../fiber';
-import { EventEmitter } from '../emitter';
 import { Reconciler } from '../reconciler';
+import { EventEmitter } from '../emitter';
 
 class Scope {
   private root: Fiber = null;
@@ -120,11 +120,11 @@ class Scope {
     return this.events;
   }
 
-  addEventUnsubscriber(fn: Callback) {
+  addEventUnsub(fn: Callback) {
     this.unsubs.add(fn);
   }
 
-  unsubscribeEvents() {
+  unsubscribe() {
     this.unsubs.forEach(x => x());
     this.unsubs = new Set();
   }
@@ -164,42 +164,42 @@ class Scope {
     this.deletions = new Set();
   }
 
-  addAsyncEffect(fn: Callback) {
+  addEffect1(fn: Callback) {
     this.effects1.add(fn);
   }
 
-  resetAsyncEffects() {
+  resetEffects1() {
     this.effects1 = new Set();
   }
 
-  runAsyncEffects() {
+  runEffects() {
     if (!this.isDynamic) return;
     const effects = this.effects1;
     effects.size > 0 && setTimeout(() => effects.forEach(fn => fn()));
   }
 
-  addLayoutEffect(fn: Callback) {
+  addEffect2(fn: Callback) {
     this.effects2.add(fn);
   }
 
-  resetLayoutEffects() {
+  resetEffects2() {
     this.effects2 = new Set();
   }
 
-  runLayoutEffects() {
+  runEffects2() {
     if (!this.isDynamic) return;
     this.effects2.forEach(fn => fn());
   }
 
-  addInsertionEffect(fn: Callback) {
+  addEffect3(fn: Callback) {
     this.effects3.add(fn);
   }
 
-  resetInsertionEffects() {
+  resetEffects3() {
     this.effects3 = new Set();
   }
 
-  runInsertionEffects() {
+  runEffects3() {
     if (!this.isDynamic) return;
     this.setIsInsertionEffect(true);
     this.effects3.forEach(fn => fn());
@@ -211,9 +211,7 @@ class Scope {
   }
 
   applyCancels() {
-    for (let i = this.cancels.length - 1; i >= 0; i--) {
-      this.cancels[i]();
-    }
+    for (let i = this.cancels.length - 1; i >= 0; i--) this.cancels[i]();
   }
 
   resetCancels() {
@@ -228,51 +226,51 @@ class Scope {
     this.isInsertionEffect = value;
   }
 
-  getIsUpdateZone() {
+  getIsUpdate() {
     return this.isUpdate;
   }
 
-  setIsUpdateZone(value: boolean) {
+  setIsUpdate(value: boolean) {
     this.isUpdate = value;
   }
 
-  getIsBatchZone() {
+  getIsBatch() {
     return this.isBatch;
   }
 
-  setIsBatchZone(value: boolean) {
+  setIsBatch(value: boolean) {
     this.isBatch = value;
   }
 
-  getIsHydrateZone() {
+  getIsHydration() {
     return this.isHydration;
   }
 
-  setIsHydrateZone(value: boolean) {
+  setIsHydration(value: boolean) {
     this.isHydration = value;
   }
 
-  getIsStreamZone() {
+  getIsStream() {
     return this.isStream;
   }
 
-  setIsStreamZone(value: boolean) {
+  setIsStream(value: boolean) {
     this.isStream = value;
   }
 
-  getIsTransitionZone() {
+  getIsTransition() {
     return this.isTransition;
   }
 
-  setIsTransitionZone(value: boolean) {
+  setIsTransition(value: boolean) {
     this.isTransition = value;
   }
 
-  getIsEventZone() {
+  getIsEvent() {
     return this.isEvent;
   }
 
-  setIsEventZone(value: boolean) {
+  setIsEvent(value: boolean) {
     this.isEvent = value;
   }
 
@@ -301,11 +299,11 @@ class Scope {
     this.resetCandidates();
     this.resetDeletions();
     this.resetCancels();
-    this.resetInsertionEffects();
-    this.resetLayoutEffects();
-    this.resetAsyncEffects();
-    this.setIsHydrateZone(false);
-    this.setIsUpdateZone(false);
+    this.resetEffects3();
+    this.resetEffects2();
+    this.resetEffects1();
+    this.setIsHydration(false);
+    this.setIsUpdate(false);
     this.reconciler.reset();
   }
 

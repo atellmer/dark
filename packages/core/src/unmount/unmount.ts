@@ -43,7 +43,7 @@ function unmountRoot(rootId: number, onCompleted: () => void) {
   const $scope = $$scope(rootId);
 
   unmountFiber($scope.getRoot());
-  $scope.unsubscribeEvents();
+  $scope.unsubscribe();
   removeScope(rootId);
   onCompleted();
 }

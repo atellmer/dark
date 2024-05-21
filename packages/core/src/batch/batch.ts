@@ -5,15 +5,15 @@ import { $$scope } from '../scope';
 function batch(callback: () => void) {
   const $scope = $$scope();
 
-  $scope.setIsBatchZone(true);
+  $scope.setIsBatch(true);
   callback();
-  $scope.setIsBatchZone(false);
+  $scope.setIsBatch(false);
 }
 
 function addBatch(hook: Hook, callback: Callback, change: Callback) {
   const $scope = $$scope();
 
-  if ($scope.getIsTransitionZone()) {
+  if ($scope.getIsTransition()) {
     callback();
   } else {
     const batch = hook.getBatch() || { timer: null, changes: [] };

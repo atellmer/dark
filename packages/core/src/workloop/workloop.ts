@@ -91,7 +91,7 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
 function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
   const wipFiber = $scope.getWip();
   const isDeepWalking = $scope.getMountDeep();
-  const isStream = $scope.getIsStreamZone();
+  const isStream = $scope.getIsStream();
   const emitter = $scope.getEmitter();
   const children = (fiber.inst as CanHaveChildren).children;
   const hasChildren = isDeepWalking && children && children.length > 0;
@@ -388,7 +388,7 @@ function commit($scope: Scope) {
   const wip = $scope.getWip();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
-  const isUpdateZone = $scope.getIsUpdateZone();
+  const isUpdateZone = $scope.getIsUpdate();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
   const isTransition = scheduler.detectIsTransition();
@@ -405,7 +405,7 @@ function commit($scope: Scope) {
   }
 
   isUpdateZone && sync(wip);
-  $scope.runInsertionEffects();
+  $scope.runEffects3();
 
   for (const fiber of candidates) {
     const item = fiber.inst as CanHaveChildren;
@@ -419,8 +419,8 @@ function commit($scope: Scope) {
   wip.hook?.setIsWip(false);
   inst.children = null;
   platform.finishCommit(); // !
-  $scope.runLayoutEffects();
-  $scope.runAsyncEffects();
+  $scope.runEffects2();
+  $scope.runEffects();
   awaiter.resolve(onResolve(rootId, isTransition));
   unmounts.length > 0 && platform.raf(onUnmount(unmounts));
   cleanup($scope);
@@ -475,7 +475,7 @@ function fork($scope: Scope) {
   wip.hook.idx = 0;
   wip.hook.owner = wip;
 
-  $scope.runInsertionEffects(); // !
+  $scope.runEffects3(); // !
   $scope.applyCancels();
   cleanup($scope, true);
   scheduler.retain(onRestore);
@@ -536,7 +536,7 @@ function createCallback(options: CreateCallbackOptions) {
     hook.idx = 0; // !
     hook.owner = fiber;
 
-    $scope.setIsUpdateZone(true);
+    $scope.setIsUpdate(true);
     $scope.resetMount();
     $scope.setWip(fiber);
     $scope.setCursor(fiber);
@@ -553,9 +553,9 @@ function createUpdate(rootId: number, hook: Hook) {
     const $scope = $$scope();
     if ($scope.getIsInsertionEffect()) return;
     const hasTools = detectIsFunction(tools);
-    const isTransition = $scope.getIsTransitionZone();
-    const isBatch = $scope.getIsBatchZone();
-    const isEvent = $scope.getIsEventZone();
+    const isTransition = $scope.getIsTransition();
+    const isBatch = $scope.getIsBatch();
+    const isEvent = $scope.getIsEvent();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
     const onTransitionEnd = isTransition ? $scope.getOnTransitionEnd() : null;

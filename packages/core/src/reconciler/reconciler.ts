@@ -13,9 +13,9 @@ import {
 } from '../view';
 
 class Reconciler {
-  private store: Record<number, Store> = {};
+  private store: Record<number, Store>;
 
-  constructor(store: Record<number, Store> = {}) {
+  constructor(store: Reconciler['store'] = {}) {
     this.store = store;
   }
 
