@@ -26,6 +26,8 @@ import {
   INTERLEAVE_COMPONENTS_ATTR_VALUE,
   BLANK_SPACE,
   NULL_MARK,
+  OPENING_CURLY_BRACE_MARK,
+  CLOSING_CURLY_BRACE_MARK,
 } from '../constants';
 import {
   detectIsBrowser,
@@ -109,6 +111,7 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
         }, [...mapRecord(props), theme]);
 
         useInsertionEffect(() => {
+          console.log('styles', styles);
           injectWithHydration(styles, isHydration);
           injectWithHydration(keyframes, isHydration);
         }, [...styles, ...keyframes]);
@@ -210,8 +213,10 @@ function generate<P extends object>(options: GenerateOptions<P>): [string, strin
   if (item) {
     css = item[1];
   } else {
-    css = key.replaceAll(FUNCTION_MARK, className);
-    css = css.replaceAll(`${DOT_MARK}${NULL_MARK}`, `${DOT_MARK}${className}`);
+    css = key
+      .replaceAll(FUNCTION_MARK, className)
+      .replaceAll(`${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}${CLOSING_CURLY_BRACE_MARK}`, '')
+      .replaceAll(`${DOT_MARK}${NULL_MARK}`, `${DOT_MARK}${className}`);
   }
 
   style += css;

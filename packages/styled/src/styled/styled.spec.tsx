@@ -341,7 +341,7 @@ describe('@styled/styled', () => {
 
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-egbggh"></div>');
     expect(head.innerHTML).toBe(
-      style('.dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}'),
+      style('.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}'),
     );
 
     render(<Box $color='orange' />);
@@ -349,7 +349,7 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-biaaih"></div>');
     expect(head.innerHTML).toBe(
       style(
-        '.dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-biaaih{background-color:orange;border:1px solid orange;}',
+        '.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-biaaih{background-color:orange;border:1px solid orange;}',
       ),
     );
   });
@@ -805,7 +805,7 @@ describe('@styled/styled', () => {
       `"<div class="dk-cagiea dk-igjghg dk-bahfjd"></div><div class="dk-cagiea dk-igjghg dk-jbjabb"></div>"`,
     );
     expect(head.querySelector('style').innerHTML).toMatchInlineSnapshot(
-      `".dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
+      `".dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
     );
   });
 
