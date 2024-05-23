@@ -111,7 +111,6 @@ function createStyledComponent<P extends StyledProps>(factory: Factory<P>, displ
         }, [...mapRecord(props), theme]);
 
         useInsertionEffect(() => {
-          console.log('styles', styles);
           injectWithHydration(styles, isHydration);
           injectWithHydration(keyframes, isHydration);
         }, [...styles, ...keyframes]);
@@ -258,9 +257,6 @@ function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<S
       sheet.children.push(token);
     }
   }
-
-  console.log('static', sheet);
-  console.log('dynamic', sheets);
 
   return [sheet, sheets];
 }
