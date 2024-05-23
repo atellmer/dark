@@ -172,7 +172,7 @@ class Scope {
     this.effects1 = new Set();
   }
 
-  runEffects() {
+  runEffects1() {
     if (!this.isDynamic) return;
     const effects = this.effects1;
     effects.size > 0 && setTimeout(() => effects.forEach(fn => fn()));

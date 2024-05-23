@@ -418,7 +418,7 @@ function commit($scope: Scope) {
   inst.children = null;
   platform.finishCommit(); // !
   $scope.runEffects2();
-  $scope.runEffects();
+  $scope.runEffects1();
   awaiter.resolve(onResolve(rootId, isTransition));
   unmounts.length > 0 && platform.raf(onUnmount(unmounts));
   cleanup($scope);
