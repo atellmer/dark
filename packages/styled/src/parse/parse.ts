@@ -14,7 +14,6 @@ import {
   OPENING_PARENTHESIS_MARK,
   CLOSING_PARENTHESIS_MARK,
   URL_FN_MARK,
-  LIB,
 } from '../constants';
 import {
   type Children,
@@ -27,8 +26,7 @@ import {
   FunctionRule,
   detectIsStyleSheet,
   detectIsStyleRule,
-  detectIsMediaQueryRule,
-  detectIsContainerQueryRule,
+  detectIsQueryRule,
   detectIsKeyframesRule,
   detectIsNestingRule,
   detectIsFunctionRule,
@@ -107,15 +105,13 @@ function parse<P extends object>(css: string) {
             : detectHasKeyframesMark(buffer)
             ? new KeyframesRule()
             : new NestingRule();
-          const canNest =
-            detectIsMediaQueryRule(token) || detectIsContainerQueryRule(token) || detectIsKeyframesRule(token)
-              ? detectIsStyleSheet(parent)
-              : detectIsNestingRule(token)
-              ? detectIsStyleSheet(parent) ||
-                detectIsMediaQueryRule(parent) ||
-                detectIsContainerQueryRule(parent) ||
-                detectIsKeyframesRule(parent)
-              : false;
+          const canNest = detectIsQueryRule(token)
+            ? detectIsStyleSheet(parent) || detectIsNestingRule(parent)
+            : detectIsKeyframesRule(token)
+            ? detectIsStyleSheet(parent)
+            : detectIsNestingRule(token)
+            ? detectIsStyleSheet(parent) || detectIsQueryRule(parent) || detectIsKeyframesRule(parent)
+            : false;
 
           if (!canNest) {
             illegal('Illegal style nesting!');

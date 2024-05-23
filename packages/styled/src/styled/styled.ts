@@ -215,8 +215,8 @@ function generate<P extends object>(options: GenerateOptions<P>): [string, strin
   } else {
     css = key
       .replaceAll(FUNCTION_MARK, className)
-      .replaceAll(`${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}${CLOSING_CURLY_BRACE_MARK}`, '')
-      .replaceAll(`${DOT_MARK}${NULL_MARK}`, `${DOT_MARK}${className}`);
+      .replaceAll(EMPTY_STYLES_PATTERN, '')
+      .replaceAll(NULL_CLASS_NAME_PATTERN, `${DOT_MARK}${className}`);
   }
 
   style += css;
@@ -258,6 +258,9 @@ function slice<P extends object>(source: StyleSheet<P>): [StyleSheet<P>, Array<S
       sheet.children.push(token);
     }
   }
+
+  console.log('static', sheet);
+  console.log('dynamic', sheets);
 
   return [sheet, sheets];
 }
@@ -343,6 +346,13 @@ const detectIsStyled = (x: unknown): x is StyledComponentFactory => detectIsFunc
 
 const filterArgs = <P>(args: Args<unknown>) =>
   args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
+
+const EMPTY_STYLES_PATTERN = new RegExp(
+  `\\${DOT_MARK}[^\\${OPENING_CURLY_BRACE_MARK}]*\\${OPENING_CURLY_BRACE_MARK}\\${CLOSING_CURLY_BRACE_MARK}`,
+  'g',
+);
+
+const NULL_CLASS_NAME_PATTERN = `${DOT_MARK}${NULL_MARK}`;
 
 type Factory<P extends object> = ComponentFactory<P> | ((props: P) => TagVirtualNodeFactory);
 

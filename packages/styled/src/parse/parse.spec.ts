@@ -11,190 +11,284 @@ import { FUNCTION_MARK } from '../constants';
 import { parse } from './parse';
 
 describe('@styled/parse', () => {
-  test('throws errors with illegal nesting #1', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-
+  describe('throws errors with illegal nesting', () => {
+    test('case #1', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
           & span {
-            color: red;
+            color: purple;
+  
+            & span {
+              color: red;
+            }
           }
-        }
-    `);
-    };
+      `);
+      };
 
-    expect(make).toThrowError();
-  });
+      expect(make).toThrowError();
+    });
 
-  test('throws errors with illegal nesting #2', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-
+    test('case #2', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
           @media(max-width: 600px) {
-            color: red;
+            color: purple;
+  
+            @media(max-width: 400px) {
+              color: red;
+            }
           }
-        }
-    `);
-    };
+      `);
+      };
 
-    expect(make).toThrowError();
-  });
+      expect(make).toThrowError();
+    });
 
-  test('throws errors with illegal nesting #3', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-
+    test('case #3', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
           @container(max-width: 600px) {
-            color: red;
+            color: purple;
+  
+            @container(max-width: 400px) {
+              color: red;
+            }
           }
-        }
-    `);
-    };
+      `);
+      };
 
-    expect(make).toThrowError();
-  });
+      expect(make).toThrowError();
+    });
 
-  test('throws errors with illegal nesting #4', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @media(max-width: 600px) {
-          color: purple;
-
-          @media(max-width: 400px) {
-            color: red;
+    test('case #4', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          @media(max-width: 600px) {
+            color: purple;
+  
+            @container(max-width: 400px) {
+              color: red;
+            }
           }
-        }
-    `);
-    };
+      `);
+      };
 
-    expect(make).toThrowError();
-  });
+      expect(make).toThrowError();
+    });
 
-  test('throws errors with illegal nesting #5', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @container(max-width: 600px) {
-          color: purple;
-
-          @container(max-width: 400px) {
-            color: red;
+    test('case #5', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          @container(max-width: 600px) {
+            color: purple;
+  
+            @media(max-width: 400px) {
+              color: red;
+            }
           }
-        }
-    `);
-    };
+      `);
+      };
 
-    expect(make).toThrowError();
-  });
+      expect(make).toThrowError();
+    });
 
-  test('throws errors with illegal nesting #6', () => {
-    const make = () => {
-      parse(`
-        color: green;
+    test('case #6', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          @media(max-width: 600px) {
+            color: purple;
+  
+            @keyframes slidein {
+              from {
+                color: red;
+              }
+  
+              to {
+                color: yellow;
+              }
+            }
+          }
+      `);
+      };
 
-        @media(max-width: 600px) {
-          color: purple;
+      expect(make).toThrowError();
+    });
 
+    test('case #7', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          @container(max-width: 600px) {
+            color: purple;
+  
+            @keyframes slidein {
+              from {
+                color: red;
+              }
+  
+              to {
+                color: yellow;
+              }
+            }
+          }
+      `);
+      };
+
+      expect(make).toThrowError();
+    });
+
+    test('case #8', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
           @keyframes slidein {
             from {
               color: red;
             }
-
+  
             to {
               color: yellow;
             }
+  
+            @keyframes slidein {
+              from {
+                color: red;
+              }
+    
+              to {
+                color: yellow;
+              }
+            }
           }
-        }
-    `);
-    };
+      `);
+      };
 
-    expect(make).toThrowError();
+      expect(make).toThrowError();
+    });
   });
 
-  test('does not throw errors with legal nesting #1', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-        }
-
-        @media(max-width: 600px) {
-          color: purple;
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
-  });
-
-  test('does not throw errors with legal nesting #2', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        & span {
-          color: purple;
-        }
-
-        @container(max-width: 600px) {
-          color: purple;
-        }
-    `);
-    };
-
-    expect(make).not.toThrowError();
-  });
-
-  test('does not throw errors with legal nesting #3', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @media(max-width: 600px) {
-          color: purple;
-
+  describe('does not throw errors with legal nesting', () => {
+    test('case #1', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
           & span {
-            color: red;
+            color: purple;
           }
-        }
-    `);
-    };
+  
+          @media(max-width: 600px) {
+            color: purple;
+          }
+      `);
+      };
 
-    expect(make).not.toThrowError();
-  });
+      expect(make).not.toThrowError();
+    });
 
-  test('does not throw errors with legal nesting #4', () => {
-    const make = () => {
-      parse(`
-        color: green;
-
-        @container(max-width: 600px) {
-          color: purple;
-
+    test('case #2', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
           & span {
-            color: red;
+            color: purple;
           }
-        }
-    `);
-    };
+  
+          @container(max-width: 600px) {
+            color: purple;
+          }
+      `);
+      };
 
-    expect(make).not.toThrowError();
+      expect(make).not.toThrowError();
+    });
+
+    test('case #3', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          @media(max-width: 600px) {
+            color: purple;
+  
+            & span {
+              color: red;
+            }
+          }
+      `);
+      };
+
+      expect(make).not.toThrowError();
+    });
+
+    test('case #4', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          @container(max-width: 600px) {
+            color: purple;
+  
+            & span {
+              color: red;
+            }
+          }
+      `);
+      };
+
+      expect(make).not.toThrowError();
+    });
+
+    test('case #5', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          & span {
+            color: purple;
+  
+            @media(max-width: 600px) {
+              color: red;
+            }
+          }
+      `);
+      };
+
+      expect(make).not.toThrowError();
+    });
+
+    test('case #6', () => {
+      const make = () => {
+        parse(`
+          color: green;
+  
+          & span {
+            color: purple;
+  
+            @container(max-width: 600px) {
+              color: red;
+            }
+          }
+      `);
+      };
+
+      expect(make).not.toThrowError();
+    });
   });
 
   test('parses a simple valid css correctly', () => {
@@ -835,5 +929,38 @@ describe('@styled/parse', () => {
     expect(margin.value).toBe('0');
     expect(overflow.name).toBe('overflow-wrap');
     expect(overflow.value).toBe('break-word');
+  });
+
+  test('can nest a media query into the nested rule', () => {
+    // https://github.com/atellmer/dark/issues/72
+    const style = parse(`
+      background-color: pink;
+      color: black;
+
+      & a {
+        color: blue;
+    
+        @media (max-width: 800px) {
+          color: red;
+        }
+      }
+    `);
+    const backgroundColor = style.children[0] as StyleRule;
+    const color = style.children[1] as StyleRule;
+    const nsr = style.children[2] as NestingRule;
+    const linkColor = nsr.children[0] as StyleRule;
+    const mqr = nsr.children[1] as MediaQueryRule;
+
+    expect(backgroundColor.name).toBe('background-color');
+    expect(backgroundColor.value).toBe('pink');
+    expect(color.name).toBe('color');
+    expect(color.value).toBe('black');
+    expect(nsr.value).toBe('& a');
+    expect(nsr.children.length).toBe(2);
+    expect(linkColor.name).toBe('color');
+    expect(linkColor.value).toBe('blue');
+    expect(mqr.value).toBe('@media (max-width: 800px)');
+    expect(mqr.children[0].name).toBe('color');
+    expect(mqr.children[0].value).toBe('red');
   });
 });

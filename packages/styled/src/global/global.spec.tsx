@@ -5,14 +5,11 @@ import { setupGlobal, createGlobalStyle } from '../global';
 import { css } from '../styled';
 
 let { host, render } = createBrowserEnv();
+const { head } = document;
 
 beforeEach(() => {
   ({ host, render } = createBrowserEnv());
   setupGlobal();
-});
-
-afterEach(() => {
-  document.head.innerHTML = '';
 });
 
 describe('@styled/global', () => {
@@ -39,7 +36,7 @@ describe('@styled/global', () => {
     render(<App />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style('*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;}'),
     );
   });
@@ -67,7 +64,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle $backgroundColor='white' />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
@@ -76,7 +73,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle $backgroundColor='black' />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:black;}',
       ),
@@ -85,7 +82,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle $backgroundColor='white' />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
@@ -117,7 +114,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle $backgroundColor='white' />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
@@ -126,7 +123,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle $backgroundColor='black' />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:black;}',
       ),
@@ -135,7 +132,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle $backgroundColor='white' />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
@@ -162,7 +159,7 @@ describe('@styled/global', () => {
     render(<GlobalStyle />);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(
+    expect(head.innerHTML).toBe(
       style(
         '*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}',
       ),
@@ -171,6 +168,42 @@ describe('@styled/global', () => {
     render(null);
 
     expect(host.innerHTML).toBe(replacer);
-    expect(document.head.innerHTML).toBe(style(''));
+    expect(head.innerHTML).toBe(style(''));
+  });
+
+  test('can nest a media query into the nested rule', () => {
+    // https://github.com/atellmer/dark/issues/72
+    const GlobalStyle = createGlobalStyle`
+      *,
+      *::after,
+      *::before {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial;
+        background-color: white;
+      }
+
+      a {
+        color: blue;
+
+        @media (max-width: 800px) {
+          color: red;
+        }
+      }
+    `;
+
+    render(<GlobalStyle />);
+
+    expect(head.innerHTML).toMatchInlineSnapshot(
+      `"<style dark-styled="g">*,*::after,*::before{box-sizing:border-box;}html,body{margin:0;padding:0;}body{font-family:Arial;background-color:white;}a{color:blue;}@media (max-width: 800px){a{color:red;}</style>"`,
+    );
   });
 });
