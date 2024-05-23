@@ -136,10 +136,6 @@ createRoot(document.getElementById('root')).render(content);
 
 ## JSX
 JSX is a syntax extension for JavaScript that lets you write HTML-like markup inside a JavaScript file.
-You can use it:
-
-### via `jsx-runtime`
-
 In your `tsconfig.json`, you must add these rows:
 
 ```json
@@ -151,28 +147,6 @@ In your `tsconfig.json`, you must add these rows:
 }
 ```
 The necessary functions will be automatically imported into your code.
-
-If for some reason you don't want to use auto-imports, then you should use a different approach.
-
-### via `h`
-
-This is the function you need to enable JSX support. In your `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment"
-  }
-}
-```
-
-In this case, you will always have to import the `h` function and the `Fragment` component yourself.
-
-```tsx
-import { h, Fragment } from '@dark-engine/core';
-```
 
 ```tsx
 const content = (

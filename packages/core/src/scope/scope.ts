@@ -1,109 +1,41 @@
-import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
+import type { Callback, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
-import { EventEmitter } from '../emitter';
 import { type Fiber, Awaiter } from '../fiber';
+import { Reconciler } from '../reconciler';
+import { EventEmitter } from '../emitter';
 
 class Scope {
   private root: Fiber = null;
   private wip: Fiber = null;
   private cursor: Fiber = null;
   private unit: Fiber = null;
-  private mountDeep = true;
-  private mountLevel = 0;
-  private mountNav: Record<number, number> = {};
+  private mDeep = true;
+  private mLevel = 0;
+  private mNav: Record<number, number> = {};
   private events = new Map<string, WeakMap<object, Function>>();
-  private unsubs = new Set<Callback>();
-  private actions: Actions = {};
+  private offs = new Set<Callback>();
+  private reconciler = new Reconciler();
   private candidates = new Set<Fiber>();
   private deletions = new Set<Fiber>();
   private cancels: Array<Callback> = [];
-  private asyncEffects = new Set<Callback>();
-  private layoutEffects = new Set<Callback>();
-  private insertionEffects = new Set<Callback>();
-  private resourceId = 0;
+  private effects1 = new Set<Callback>(); // async effects
+  private effects2 = new Set<Callback>(); // layout effects
+  private effects3 = new Set<Callback>(); // insertion effects
+  private resId = 0;
   private resources: AppResources = new Map();
-  private awaiter: Awaiter = new Awaiter();
+  private awaiter = new Awaiter();
   private onTransitionEnd: Callback = null;
-  private isLayoutEffectsZone = false;
-  private isInsertionEffectsZone = false;
-  private isUpdateZone = false;
-  private isBatchZone = false;
-  private isHydrateZone = false;
-  private isStreamZone = false;
-  private isTransitionZone = false;
-  private isEventZone = false;
+  private isEffect3 = false;
+  private isUpdate = false;
+  private isBatch = false;
+  private isHydration = false;
+  private isStream = false;
+  private isTransition = false;
+  private isEvent = false;
   private isHot = false;
   private isDynamic = platform.detectIsDynamic();
   private isServer = detectIsServer();
   private emitter = new EventEmitter();
-
-  private resetActions() {
-    this.actions = {};
-  }
-
-  getActionsById(id: number) {
-    return this.actions[id];
-  }
-
-  addActionMap(id: number, map: Record<ElementKey, Fiber>) {
-    this.actions[id] = {
-      map,
-      replace: null,
-      insert: null,
-      remove: null,
-      move: null,
-      stable: null,
-    };
-  }
-
-  addReplaceAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].replace && (this.actions[id].replace = {});
-    this.actions[id].replace[nextKey] = true;
-  }
-
-  addInsertAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].insert && (this.actions[id].insert = {});
-    this.actions[id].insert[nextKey] = true;
-  }
-
-  addRemoveAction(id: number, prevKey: ElementKey) {
-    !this.actions[id].remove && (this.actions[id].remove = {});
-    this.actions[id].remove[prevKey] = true;
-  }
-
-  addMoveAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].move && (this.actions[id].move = {});
-    this.actions[id].move[nextKey] = true;
-  }
-
-  addStableAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].stable && (this.actions[id].stable = {});
-    this.actions[id].stable[nextKey] = true;
-  }
-
-  fork() {
-    const scope = new Scope();
-
-    scope.root = null;
-    scope.wip = null;
-    scope.cursor = null;
-    scope.unit = this.unit;
-    scope.mountDeep = this.mountDeep;
-    scope.mountLevel = this.mountLevel;
-    scope.mountNav = { ...this.mountNav };
-    scope.events = this.events;
-    scope.unsubs = this.unsubs;
-    scope.actions = { ...this.actions };
-    scope.candidates = new Set([...this.candidates]);
-    scope.deletions = new Set([...this.deletions]);
-    scope.asyncEffects = new Set([...this.asyncEffects]);
-    scope.layoutEffects = new Set([...this.layoutEffects]);
-    scope.isUpdateZone = this.isUpdateZone;
-    scope.emitter = this.emitter;
-    scope.awaiter = this.awaiter;
-
-    return scope;
-  }
 
   getRoot() {
     return this.root;
@@ -114,87 +46,87 @@ class Scope {
   }
 
   keepRoot() {
-    !this.isUpdateZone && this.setRoot(this.wip);
+    !this.isUpdate && this.setRoot(this.wip);
   }
 
-  getWorkInProgress() {
+  getWip() {
     return this.wip;
   }
 
-  setWorkInProgress(fiber: Fiber) {
+  setWip(fiber: Fiber) {
     this.wip = fiber;
   }
 
-  getNextUnitOfWork() {
+  getNextUnit() {
     return this.unit;
   }
 
-  setNextUnitOfWork(fiber: Fiber) {
+  setNextUnit(fiber: Fiber) {
     this.unit = fiber;
   }
 
-  getCursorFiber() {
+  getCursor() {
     return this.cursor;
   }
 
-  setCursorFiber(fiber: Fiber) {
+  setCursor(fiber: Fiber) {
     this.cursor = fiber;
   }
 
   navToChild() {
-    this.mountLevel = this.mountLevel + 1;
-    this.mountNav[this.mountLevel] = 0;
+    this.mLevel = this.mLevel + 1;
+    this.mNav[this.mLevel] = 0;
   }
 
   navToSibling() {
-    this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] + 1;
+    this.mNav[this.mLevel] = this.mNav[this.mLevel] + 1;
   }
 
   navToParent() {
-    this.mountLevel = this.mountLevel - 1;
+    this.mLevel = this.mLevel - 1;
   }
 
   navToPrev() {
-    const idx = this.getMountIndex();
+    const idx = this.getMountIdx();
 
     if (idx === 0) {
       this.navToParent();
       this.setMountDeep(true);
     } else {
-      this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] - 1;
+      this.mNav[this.mLevel] = this.mNav[this.mLevel] - 1;
       this.setMountDeep(false);
     }
   }
 
-  getMountIndex() {
-    return this.mountNav[this.mountLevel];
+  getMountIdx() {
+    return this.mNav[this.mLevel];
   }
 
   getMountDeep() {
-    return this.mountDeep;
+    return this.mDeep;
   }
 
   setMountDeep(value: boolean) {
-    this.mountDeep = value;
+    this.mDeep = value;
   }
 
   resetMount() {
-    this.mountLevel = 0;
-    this.mountNav = {};
-    this.mountDeep = true;
+    this.mLevel = 0;
+    this.mNav = {};
+    this.mDeep = true;
   }
 
   getEvents() {
     return this.events;
   }
 
-  addEventUnsubscriber(fn: Callback) {
-    this.unsubs.add(fn);
+  addOff(fn: Callback) {
+    this.offs.add(fn);
   }
 
-  unsubscribeEvents() {
-    this.unsubs.forEach(x => x());
-    this.unsubs = new Set();
+  off() {
+    this.offs.forEach(x => x());
+    this.offs = new Set();
   }
 
   getCandidates() {
@@ -232,48 +164,46 @@ class Scope {
     this.deletions = new Set();
   }
 
-  addAsyncEffect(fn: Callback) {
-    this.asyncEffects.add(fn);
+  addEffect1(fn: Callback) {
+    this.effects1.add(fn);
   }
 
-  resetAsyncEffects() {
-    this.asyncEffects = new Set();
+  resetEffects1() {
+    this.effects1 = new Set();
   }
 
-  runAsyncEffects() {
+  runEffects1() {
     if (!this.isDynamic) return;
-    const effects = this.asyncEffects;
+    const effects = this.effects1;
     effects.size > 0 && setTimeout(() => effects.forEach(fn => fn()));
   }
 
-  addLayoutEffect(fn: Callback) {
-    this.layoutEffects.add(fn);
+  addEffect2(fn: Callback) {
+    this.effects2.add(fn);
   }
 
-  resetLayoutEffects() {
-    this.layoutEffects = new Set();
+  resetEffects2() {
+    this.effects2 = new Set();
   }
 
-  runLayoutEffects() {
+  runEffects2() {
     if (!this.isDynamic) return;
-    this.setIsLayoutEffectsZone(true);
-    this.layoutEffects.forEach(fn => fn());
-    this.setIsLayoutEffectsZone(false);
+    this.effects2.forEach(fn => fn());
   }
 
-  addInsertionEffect(fn: Callback) {
-    this.insertionEffects.add(fn);
+  addEffect3(fn: Callback) {
+    this.effects3.add(fn);
   }
 
-  resetInsertionEffects() {
-    this.insertionEffects = new Set();
+  resetEffects3() {
+    this.effects3 = new Set();
   }
 
-  runInsertionEffects() {
+  runEffects3() {
     if (!this.isDynamic) return;
-    this.setIsInsertionEffectsZone(true);
-    this.insertionEffects.forEach(fn => fn());
-    this.setIsInsertionEffectsZone(false);
+    this.setIsEffect3(true);
+    this.effects3.forEach(fn => fn());
+    this.setIsEffect3(false);
   }
 
   addCancel(fn: Callback) {
@@ -281,77 +211,67 @@ class Scope {
   }
 
   applyCancels() {
-    for (let i = this.cancels.length - 1; i >= 0; i--) {
-      this.cancels[i]();
-    }
+    for (let i = this.cancels.length - 1; i >= 0; i--) this.cancels[i]();
   }
 
   resetCancels() {
     this.cancels = [];
   }
 
-  getIsLayoutEffectsZone() {
-    return this.isLayoutEffectsZone;
+  getIsEffect3() {
+    return this.isEffect3;
   }
 
-  setIsLayoutEffectsZone(value: boolean) {
-    this.isLayoutEffectsZone = value;
+  setIsEffect3(value: boolean) {
+    this.isEffect3 = value;
   }
 
-  getIsInsertionEffectsZone() {
-    return this.isInsertionEffectsZone;
+  getIsUpdate() {
+    return this.isUpdate;
   }
 
-  setIsInsertionEffectsZone(value: boolean) {
-    this.isInsertionEffectsZone = value;
+  setIsUpdate(value: boolean) {
+    this.isUpdate = value;
   }
 
-  getIsUpdateZone() {
-    return this.isUpdateZone;
+  getIsBatch() {
+    return this.isBatch;
   }
 
-  setIsUpdateZone(value: boolean) {
-    this.isUpdateZone = value;
+  setIsBatch(value: boolean) {
+    this.isBatch = value;
   }
 
-  getIsBatchZone() {
-    return this.isBatchZone;
+  getIsHydration() {
+    return this.isHydration;
   }
 
-  setIsBatchZone(value: boolean) {
-    this.isBatchZone = value;
+  setIsHydration(value: boolean) {
+    this.isHydration = value;
   }
 
-  getIsHydrateZone() {
-    return this.isHydrateZone;
+  getIsStream() {
+    return this.isStream;
   }
 
-  setIsHydrateZone(value: boolean) {
-    this.isHydrateZone = value;
+  setIsStream(value: boolean) {
+    this.isStream = value;
   }
 
-  getIsStreamZone() {
-    return this.isStreamZone;
+  getIsTransition() {
+    return this.isTransition;
   }
 
-  setIsStreamZone(value: boolean) {
-    this.isStreamZone = value;
+  setIsTransition(value: boolean) {
+    this.isTransition = value;
   }
 
-  getIsTransitionZone() {
-    return this.isTransitionZone;
+  getIsEvent() {
+    return this.isEvent;
   }
 
-  setIsTransitionZone(value: boolean) {
-    this.isTransitionZone = value;
-  }
-
-  getIsEventZone() {
-    return this.isEventZone;
-  }
-
-  setIsEventZone(value: boolean) {
-    this.isEventZone = value;
+  setIsEvent(value: boolean) {
+    this.isEvent = value;
   }
 
   getIsHot() {
@@ -372,19 +292,19 @@ class Scope {
 
   cleanup() {
     this.keepRoot(); // !
-    this.setWorkInProgress(null);
-    this.setNextUnitOfWork(null);
-    this.setCursorFiber(null);
+    this.setWip(null);
+    this.setNextUnit(null);
+    this.setCursor(null);
     this.resetMount();
     this.resetCandidates();
     this.resetDeletions();
     this.resetCancels();
-    this.resetInsertionEffects();
-    this.resetLayoutEffects();
-    this.resetAsyncEffects();
-    this.setIsHydrateZone(false);
-    this.setIsUpdateZone(false);
-    this.resetActions();
+    this.resetEffects3();
+    this.resetEffects2();
+    this.resetEffects1();
+    this.setIsHydration(false);
+    this.setIsUpdate(false);
+    this.reconciler.reset();
   }
 
   getEmitter() {
@@ -404,15 +324,15 @@ class Scope {
   }
 
   getResourceId() {
-    return this.resourceId;
+    return this.resId;
   }
 
   setResourceId(id: number) {
-    this.resourceId = id;
+    this.resId = id;
   }
 
   getNextResourceId() {
-    return ++this.resourceId;
+    return ++this.resId;
   }
 
   getAwaiter() {
@@ -421,23 +341,40 @@ class Scope {
 
   runAfterCommit() {
     this.resources = new Map();
-    this.isServer && (this.resourceId = 0);
+    this.isServer && (this.resId = 0);
+  }
+
+  getReconciler() {
+    return this.reconciler;
+  }
+
+  fork() {
+    const scope = new Scope();
+
+    scope.root = null;
+    scope.wip = null;
+    scope.cursor = null;
+    scope.unit = this.unit;
+    scope.mDeep = this.mDeep;
+    scope.mLevel = this.mLevel;
+    scope.mNav = { ...this.mNav };
+    scope.events = this.events;
+    scope.offs = this.offs;
+    scope.reconciler = this.reconciler.fork();
+    scope.candidates = new Set([...this.candidates]);
+    scope.deletions = new Set([...this.deletions]);
+    scope.effects1 = new Set([...this.effects1]);
+    scope.effects2 = new Set([...this.effects2]);
+    scope.isUpdate = this.isUpdate;
+    scope.emitter = this.emitter;
+    scope.awaiter = this.awaiter;
+
+    return scope;
   }
 }
 
-type Actions = Record<
-  number,
-  {
-    map: Record<ElementKey, Fiber>;
-    replace: Record<ElementKey, true>;
-    insert: Record<ElementKey, true>;
-    remove: Record<ElementKey, true>;
-    move: Record<ElementKey, true>;
-    stable: Record<ElementKey, true>;
-  }
->;
-
 let rootId: number = null;
+
 const scopes = new Map<number, Scope>();
 
 const getRootId = () => rootId;
@@ -449,9 +386,7 @@ const setRootId = (id: number) => {
 
 const removeScope = (id: number) => scopes.delete(id);
 
-const replaceScope = (scope: Scope, id: number = rootId) => {
-  Object.assign(scopes.get(id), scope);
-};
+const replaceScope = (scope: Scope, id: number = rootId) => Object.assign(scopes.get(id), scope);
 
 const $$scope = (id: number = rootId) => scopes.get(id);
 

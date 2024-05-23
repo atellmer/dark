@@ -26,6 +26,8 @@ import {
   INTERLEAVE_COMPONENTS_ATTR_VALUE,
   BLANK_SPACE,
   NULL_MARK,
+  OPENING_CURLY_BRACE_MARK,
+  CLOSING_CURLY_BRACE_MARK,
 } from '../constants';
 import {
   detectIsBrowser,
@@ -210,8 +212,10 @@ function generate<P extends object>(options: GenerateOptions<P>): [string, strin
   if (item) {
     css = item[1];
   } else {
-    css = key.replaceAll(FUNCTION_MARK, className);
-    css = css.replaceAll(`${DOT_MARK}${NULL_MARK}`, `${DOT_MARK}${className}`);
+    css = key
+      .replaceAll(FUNCTION_MARK, className)
+      .replaceAll(EMPTY_STYLES_PATTERN, '')
+      .replaceAll(NULL_CLASS_NAME_PATTERN, `${DOT_MARK}${className}`);
   }
 
   style += css;
@@ -338,6 +342,13 @@ const detectIsStyled = (x: unknown): x is StyledComponentFactory => detectIsFunc
 
 const filterArgs = <P>(args: Args<unknown>) =>
   args.filter(x => detectIsFunction(x) && !detectIsStyled(x)) as DynamicArgs<P>;
+
+const EMPTY_STYLES_PATTERN = new RegExp(
+  `\\${DOT_MARK}[^\\${OPENING_CURLY_BRACE_MARK}]*\\${OPENING_CURLY_BRACE_MARK}\\${CLOSING_CURLY_BRACE_MARK}`,
+  'g',
+);
+
+const NULL_CLASS_NAME_PATTERN = `${DOT_MARK}${NULL_MARK}`;
 
 type Factory<P extends object> = ComponentFactory<P> | ((props: P) => TagVirtualNodeFactory);
 

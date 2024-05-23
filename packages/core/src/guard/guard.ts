@@ -1,5 +1,6 @@
 import { type DarkElement } from '../shared';
 import { component } from '../component';
+import { falseFn } from '../utils';
 import { memo } from '../memo';
 
 type GuardProps = {
@@ -8,7 +9,7 @@ type GuardProps = {
 
 const Guard = memo(
   component<GuardProps>(({ slot }) => slot, { displayName: 'Guard' }),
-  () => false,
+  falseFn,
 );
 
 export { Guard };

@@ -11,14 +11,14 @@ import { type Hook } from '../fiber';
 import { batch } from '../batch';
 
 class Atom<T = unknown> {
-  private value: T;
-  private connections1: Map<Hook, Tuple<T>>;
-  private connections2: Map<T, Tuple<T>>;
-  private subjects: Set<ReadableAtom>;
-  private emitter: EventEmitter<'data', EmitterValue<T>>;
+  private v: T; // value
+  private c1: Map<Hook, Tuple<T>>; // connnections 1
+  private c2: Map<T, Tuple<T>>; // connections 2
+  private s: Set<ReadableAtom>; // subjects
+  private e: EventEmitter<'data', EmitterValue<T>>;
 
-  constructor(value: T) {
-    this.value = value;
+  constructor(x: T) {
+    this.v = x;
   }
 
   val(fn?: ShouldUpdate<T>, key?: T) {
@@ -30,92 +30,84 @@ class Atom<T = unknown> {
       }
     }
 
-    return this.value;
+    return this.v;
   }
 
   get() {
-    return this.value;
+    return this.v;
   }
 
   on(fn: SubscriberWithValue<EmitterValue<T>>) {
-    !this.emitter && (this.emitter = new EventEmitter());
-
-    return this.emitter.on('data', fn);
+    !this.e && (this.e = new EventEmitter());
+    return this.e.on('data', fn);
   }
 
   kill() {
-    if (this.connections1) {
-      for (const [hook, [_, __, ___, key]] of this.connections1) {
-        this.off(hook, key);
-      }
+    if (this.c1) {
+      for (const [hook, [_, __, ___, key]] of this.c1) this.off(hook, key);
     }
 
-    if (this.connections2) {
-      for (const [key, [_, hook]] of this.connections2) {
-        this.off(hook, key);
-      }
+    if (this.c2) {
+      for (const [key, [_, hook]] of this.c2) this.off(hook, key);
     }
 
-    this.connections1 = null;
-    this.connections2 = null;
-    this.emitter = null;
-    this.subjects = null;
+    this.c1 = null;
+    this.c2 = null;
+    this.e = null;
+    this.s = null;
   }
 
   toString() {
-    return String(this.value);
+    return String(this.v);
   }
 
   toJSON() {
-    return this.value;
+    return this.v;
   }
 
   valueOf() {
-    return this.value;
+    return this.v;
   }
 
   __connect(fn: ShouldUpdate<T>, key: T) {
     const rootId = getRootId();
-    const fiber = $$scope().getCursorFiber();
+    const fiber = $$scope().getCursor();
     const { hook } = fiber;
-    const disconnect = () => this.off(hook, key);
 
     !hook.atoms && (hook.atoms = new Map());
-    hook.atoms.set(this, disconnect);
+    hook.atoms.set(this, this.off.bind(this, hook, key));
     fiber.markHost(ATOM_HOST_MASK);
 
     if (detectIsEmpty(key)) {
-      !this.connections1 && (this.connections1 = new Map());
-      this.connections1.set(hook, [rootId, hook, fn, key]);
+      !this.c1 && (this.c1 = new Map());
+      this.c1.set(hook, [rootId, hook, fn, key]);
     } else {
-      !this.connections2 && (this.connections2 = new Map());
-      this.connections2.set(key, [rootId, hook, fn, key]);
+      !this.c2 && (this.c2 = new Map());
+      this.c2.set(key, [rootId, hook, fn, key]);
     }
-
-    return disconnect;
   }
 
   __addSubject(atom$: ReadableAtom) {
-    !this.subjects && (this.subjects = new Set());
-    this.subjects.add(atom$);
+    !this.s && (this.s = new Set());
+    this.s.add(atom$);
   }
 
   __removeSubject(atom$: ReadableAtom) {
-    return this.subjects && this.subjects.delete(atom$);
+    return this.s && this.s.delete(atom$);
   }
 
   __getSize() {
-    const size1 = this.connections1 ? this.connections1.size : 0;
-    const size2 = this.connections2 ? this.connections2.size : 0;
-    const size3 = this.subjects ? this.subjects.size : 0;
-    const size4 = this.emitter ? this.emitter.__getSize() : 0;
+    const size1 = this.c1 ? this.c1.size : 0;
+    const size2 = this.c2 ? this.c2.size : 0;
+    const size3 = this.s ? this.s.size : 0;
+    const size4 = this.e ? this.e.__getSize() : 0;
 
     return size1 + size2 + size3 + size4;
   }
 
   protected setValue(value: T | ((prevValue: T) => T)) {
-    const prev = this.value;
-    const next = detectIsFunction(value) ? value(this.value) : value;
+    const prev = this.v;
+    const next = detectIsFunction(value) ? value(this.v) : value;
     const data: EmitterValue<T> = { prev, next };
     const make = (tuple: Tuple<T>, prev: T, next: T) => {
       const [rootId, hook, shouldUpdate, key] = tuple;
@@ -128,8 +120,8 @@ class Atom<T = unknown> {
           const tools = createTools({
             next,
             get: () => prev,
-            set: () => (this.value = next),
-            reset: () => (this.value = prev),
+            set: () => (this.v = next),
+            reset: () => (this.v = prev),
           });
 
           update(tools);
@@ -139,29 +131,27 @@ class Atom<T = unknown> {
       }
     };
 
-    this.value = next;
+    this.v = next;
 
-    if (this.connections1) {
-      for (const [_, tuple] of this.connections1) {
-        make(tuple, prev, next);
+    if (this.c1) {
+      for (const [_, tuple] of this.c1) make(tuple, prev, next);
+    }
+
+    if (this.c2) {
+      if (this.c2.has(next)) {
+        make(this.c2.get(next), prev, next);
+        this.c2.has(prev) && make(this.c2.get(prev), prev, next);
       }
     }
 
-    if (this.connections2) {
-      if (this.connections2.has(next)) {
-        make(this.connections2.get(next), prev, next);
-        this.connections2.has(prev) && make(this.connections2.get(prev), prev, next);
-      }
-    }
-
-    this.emitter && this.emitter.emit('data', data);
-    this.subjects && this.subjects.forEach(x => x.__notify());
+    this.e && this.e.emit('data', data);
+    this.s && this.s.forEach(x => x.__notify());
   }
 
   private off(hook: Hook, key: T) {
     hook.atoms.delete(this);
-    this.connections1 && this.connections1.delete(hook);
-    this.connections2 && this.connections2.delete(key);
+    this.c1 && this.c1.delete(hook);
+    this.c2 && this.c2.delete(key);
   }
 }
 

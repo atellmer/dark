@@ -1,10 +1,12 @@
 import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
 import { getTime, detectIsPromise, detectIsFunction } from '../utils';
-import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
+import { workLoop, detectIsBusy } from '../workloop';
 import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { type Fiber } from '../fiber';
+
+type Loop = typeof workLoop;
 
 class MessageChannel extends EventEmitter<PortEvent> {
   port1: MessagePort = null;
@@ -50,7 +52,7 @@ class Scheduler {
   };
   private deadline = 0;
   private task: Task = null;
-  private scheduledCallback: WorkLoop = null;
+  private scheduledCallback: Loop = null;
   private isMessageLoopRunning = false;
   private channel: MessageChannel = null;
   private port: MessagePort = null;
@@ -161,7 +163,7 @@ class Scheduler {
     }
   }
 
-  private requestCallbackAsync(callback: WorkLoop) {
+  private requestCallbackAsync(callback: Loop) {
     this.scheduledCallback = callback;
 
     if (!this.isMessageLoopRunning) {
@@ -170,7 +172,7 @@ class Scheduler {
     }
   }
 
-  private requestCallback(callback: WorkLoop) {
+  private requestCallback(callback: Loop) {
     const something = callback(false);
 
     if (detectIsPromise(something)) {

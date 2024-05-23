@@ -55,8 +55,8 @@ const Dialog = component<DialogProps>(({ isOpen, width = '600px', height = '300p
       {transition(({ spring }) => (
         <Animated spring={spring} fn={styleFn(false, scope)}>
           <Window $width={width} $height={height}>
-            <CloseButton onClick={onRequestClose} />
             {slot}
+            <CloseButton onClick={onRequestClose} /> {/*should be last for tab focus*/}
           </Window>
         </Animated>
       ))}
@@ -104,8 +104,8 @@ type CloseButtonProps = {
 
 const CloseButton = component<CloseButtonProps>(({ onClick }) => {
   return (
-    <Button onClick={onClick}>
-      <svg width='24' height='24' viewBox='0 0 50 50'>
+    <Button onClick={onClick} aria-label='Close'>
+      <svg aria-hidden='true' width='24' height='24' viewBox='0 0 50 50'>
         <path d='M 9.15625 6.3125 L 6.3125 9.15625 L 22.15625 25 L 6.21875 40.96875 L 9.03125 43.78125 L 25 27.84375 L 40.9375 43.78125 L 43.78125 40.9375 L 27.84375 25 L 43.6875 9.15625 L 40.84375 6.3125 L 25 22.15625 Z' />
       </svg>
     </Button>

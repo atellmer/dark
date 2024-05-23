@@ -341,7 +341,7 @@ describe('@styled/styled', () => {
 
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-egbggh"></div>');
     expect(head.innerHTML).toBe(
-      style('.dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}'),
+      style('.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}'),
     );
 
     render(<Box $color='orange' />);
@@ -349,7 +349,7 @@ describe('@styled/styled', () => {
     expect(host.innerHTML).toBe('<div class="dk-cagiea dk-igjghg dk-biaaih"></div>');
     expect(head.innerHTML).toBe(
       style(
-        '.dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-biaaih{background-color:orange;border:1px solid orange;}',
+        '.dk-igjghg{width:100px;height:100px;}.dk-egbggh{background-color:red;border:1px solid red;}.dk-biaaih{background-color:orange;border:1px solid orange;}',
       ),
     );
   });
@@ -805,7 +805,7 @@ describe('@styled/styled', () => {
       `"<div class="dk-cagiea dk-igjghg dk-bahfjd"></div><div class="dk-cagiea dk-igjghg dk-jbjabb"></div>"`,
     );
     expect(head.querySelector('style').innerHTML).toMatchInlineSnapshot(
-      `".dk-cagiea{}.dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
+      `".dk-igjghg{width:100px;height:100px;}.dk-bahfjd{background-color:green;transition:background-color 0.2s ease-in-out;}.dk-bahfjd:hover{background-color:red;}.dk-jbjabb{background-color:yellow;transition:background-color 0.2s ease-in-out;}.dk-jbjabb:hover{background-color:red;}"`,
     );
   });
 
@@ -851,5 +851,114 @@ describe('@styled/styled', () => {
       `"<style dark-styled="c">.dk-bhhfgb{inset:0 0 auto 0;}.dk-baebeb{inset:0 15px auto 0;}</style>"`,
     );
     expect(body.innerHTML).toMatchInlineSnapshot(`"<div class="dk-baebeb"></div>"`);
+  });
+
+  describe('can nest a media query into the nested rule', () => {
+    // https://github.com/atellmer/dark/issues/72
+
+    test('case #1', () => {
+      const Box = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
+        background-color: pink;
+        color: black;
+
+        & a {
+          font-weight: bold;
+          color: ${p => `${p.$color}`};
+
+          @media (max-width: 800px) {
+            color: red;
+          }
+        }
+      `;
+
+      render(
+        <>
+          <Box $color='blue'>
+            <a>blue</a>
+          </Box>
+          <Box $color='green'>
+            <a>green</a>
+          </Box>
+        </>,
+      );
+
+      expect(host.innerHTML).toMatchInlineSnapshot(
+        `"<div class="dk-bjjdjh dk-ggedee"><a>blue</a></div><div class="dk-bjjdjh dk-bjajid"><a>green</a></div>"`,
+      );
+      expect(head.innerHTML).toMatchInlineSnapshot(
+        `"<style dark-styled="c">.dk-bjjdjh{background-color:pink;color:black;}.dk-ggedee a{font-weight:bold;color:blue;}@media (max-width: 800px){.dk-ggedee a{color:red;}}.dk-bjajid a{font-weight:bold;color:green;}@media (max-width: 800px){.dk-bjajid a{color:red;}}</style>"`,
+      );
+    });
+
+    test('case #2', () => {
+      const Box = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
+        background-color: pink;
+        color: black;
+
+        & a {
+          font-weight: bold;
+          color: ${p => `${p.$color}`};
+
+          @media (max-width: 800px) {
+            color: white;
+            background-color: ${p => `${p.$color}`};
+          }
+        }
+      `;
+
+      render(
+        <>
+          <Box $color='blue'>
+            <a>blue</a>
+          </Box>
+          <Box $color='green'>
+            <a>green</a>
+          </Box>
+        </>,
+      );
+
+      expect(host.innerHTML).toMatchInlineSnapshot(
+        `"<div class="dk-bjjdjh dk-idebbd"><a>blue</a></div><div class="dk-bjjdjh dk-cabhgg"><a>green</a></div>"`,
+      );
+      expect(head.innerHTML).toMatchInlineSnapshot(
+        `"<style dark-styled="c">.dk-bjjdjh{background-color:pink;color:black;}.dk-idebbd a{font-weight:bold;color:blue;}@media (max-width: 800px){.dk-idebbd a{color:white;background-color:blue;}}.dk-cabhgg a{font-weight:bold;color:green;}@media (max-width: 800px){.dk-cabhgg a{color:white;background-color:green;}}</style>"`,
+      );
+    });
+
+    test('case #3', () => {
+      const Box = styled.div<{ $color: string } & DarkJSX.Elements['div']>`
+        background-color: pink;
+        color: black;
+
+        ${p => css`
+          & a {
+            font-weight: bold;
+            color: ${p.$color};
+
+            @media (max-width: 800px) {
+              color: white;
+              background-color: ${p.$color};
+            }
+          }
+        `}
+      `;
+      render(
+        <>
+          <Box $color='blue'>
+            <a>blue</a>
+          </Box>
+          <Box $color='green'>
+            <a>green</a>
+          </Box>
+        </>,
+      );
+
+      expect(host.innerHTML).toMatchInlineSnapshot(
+        `"<div class="dk-bjjdjh dk-idebbd"><a>blue</a></div><div class="dk-bjjdjh dk-cabhgg"><a>green</a></div>"`,
+      );
+      expect(head.innerHTML).toMatchInlineSnapshot(
+        `"<style dark-styled="c">.dk-bjjdjh{background-color:pink;color:black;}.dk-idebbd a{font-weight:bold;color:blue;}@media (max-width: 800px){.dk-idebbd a{color:white;background-color:blue;}}.dk-cabhgg a{font-weight:bold;color:green;}@media (max-width: 800px){.dk-cabhgg a{color:white;background-color:green;}}</style>"`,
+      );
+    });
   });
 });

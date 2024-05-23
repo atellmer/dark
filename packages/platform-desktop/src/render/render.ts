@@ -50,8 +50,8 @@ function render(element: DarkElement) {
     });
 
     $scope.resetMount();
-    $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setWip(fiber);
+    $scope.setNextUnit(fiber);
   };
 
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL });

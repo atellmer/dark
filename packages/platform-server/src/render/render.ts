@@ -64,10 +64,10 @@ function scheduleRender(options: ScheduleRenderOptions) {
     });
     const emitter = $scope.getEmitter();
 
-    $scope.setIsStreamZone(true);
+    $scope.setIsStream(true);
     $scope.resetMount();
-    $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setWip(fiber);
+    $scope.setNextUnit(fiber);
 
     onStart();
     emitter.on('finish', () => {

@@ -21,22 +21,19 @@ function unmountFiber(fiber: Fiber) {
 }
 
 function onWalk(fiber: Fiber, skip: Callback) {
-  const { hook } = fiber;
-
   if (!(fiber.mask & mask)) return skip();
-  if (hook?.values.length > 0) {
-    const $hook = hook as Hook<HookValue<UseEffectValue>>;
+  const hook = fiber.hook as Hook<HookValue<UseEffectValue>>;
+  const values = hook?.values;
+  const atoms = hook?.atoms;
 
-    fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects($hook);
-    fiber.mask & LAYOUT_EFFECT_HOST_MASK && dropLayoutEffects($hook);
-    fiber.mask & ASYNC_EFFECT_HOST_MASK && dropEffects($hook);
+  if (values && values.length > 0) {
+    fiber.mask & INSERTION_EFFECT_HOST_MASK && dropInsertionEffects(hook);
+    fiber.mask & LAYOUT_EFFECT_HOST_MASK && dropLayoutEffects(hook);
+    fiber.mask & ASYNC_EFFECT_HOST_MASK && dropEffects(hook);
   }
 
-  if (hook?.atoms) {
-    for (const [_, cleanup] of hook.atoms) {
-      cleanup();
-    }
-
+  if (atoms) {
+    for (const [_, cleanup] of atoms) cleanup();
     hook.atoms = null;
   }
 }
@@ -46,7 +43,7 @@ function unmountRoot(rootId: number, onCompleted: () => void) {
   const $scope = $$scope(rootId);
 
   unmountFiber($scope.getRoot());
-  $scope.unsubscribeEvents();
+  $scope.off();
   removeScope(rootId);
   onCompleted();
 }

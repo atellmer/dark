@@ -49,9 +49,9 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
       if (detectIsFunction(handler)) {
         $event = new SyntheticEvent({ sourceEvent: event, target });
 
-        $scope.setIsEventZone(true);
+        $scope.setIsEvent(true);
         handler($event);
-        $scope.setIsEventZone(false);
+        $scope.setIsEvent(false);
       }
 
       if (target.parentElement) {
@@ -67,7 +67,7 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
 
     eventsMap.set(eventName, new WeakMap([[target, $handler]]));
     document.addEventListener(eventName, rootHandler, true);
-    $scope.addEventUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
+    $scope.addOff(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
     handlersMap.set(target, $handler);
   }

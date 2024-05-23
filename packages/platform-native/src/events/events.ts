@@ -19,9 +19,9 @@ function createSyntheticEventHandler(handler: Function) {
   const $scope = $$scope();
 
   return (sourceEvent: EventData) => {
-    $scope.setIsEventZone(true);
+    $scope.setIsEvent(true);
     handler(new SyntheticEvent({ sourceEvent, target: sourceEvent.object }));
-    $scope.setIsEventZone(false);
+    $scope.setIsEvent(false);
   };
 }
 

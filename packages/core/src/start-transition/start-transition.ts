@@ -6,9 +6,9 @@ import { $$scope } from '../scope';
 function startTransition(callback: Callback) {
   const $scope = $$scope();
 
-  $scope.setIsTransitionZone(true);
+  $scope.setIsTransition(true);
   callback();
-  $scope.setIsTransitionZone(false);
+  $scope.setIsTransition(false);
 }
 
 function useTransition(): [boolean, typeof startTransition] {

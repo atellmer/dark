@@ -56,82 +56,64 @@ class NestingRule<P extends object = {}> extends Token {
     const className = args[0] as string | null;
     const props = args[1] as P;
     const fns = args[2] as Array<Function>;
-    let styles = `${this.value.replaceAll(SELF_MARK, `${DOT_MARK}${className}`)}${OPENING_CURLY_BRACE_MARK}`;
+    let styles = `${this.value}${OPENING_CURLY_BRACE_MARK}`;
+    let media = '';
     let keyframes = '';
 
     for (const token of this.children) {
-      const [$styles, _, __, ___, $keyframes] = generate({ token, className, props, fns });
+      const [$styles, _, $media, ___, $keyframes] = generate({ token, className, props, fns });
 
       styles += $styles;
+      media += $media;
       keyframes += $keyframes;
     }
 
-    styles += `${CLOSING_CURLY_BRACE_MARK}${keyframes}`;
+    styles += `${CLOSING_CURLY_BRACE_MARK}${media}${keyframes}`;
+    styles = styles.replaceAll(SELF_MARK, `${DOT_MARK}${className}`);
 
     return styles;
   }
 }
 
-class MediaQueryRule<P extends object = {}> extends Token {
+class QueryRule<P extends object = {}> extends Token {
+  children: Children = [];
+
+  override generate(...args: Array<unknown>): string {
+    const className = args[0] as string | null;
+    const props = args[1] as P;
+    const fns = args[2] as Array<Function>;
+    const prefix = `${this.value}${OPENING_CURLY_BRACE_MARK}`;
+    let styles = detectIsNestingRule(this.parent)
+      ? `${prefix}${this.parent.value}${OPENING_CURLY_BRACE_MARK}`
+      : className
+      ? `${prefix}${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}`
+      : prefix;
+    let nesting = '';
+
+    for (const token of this.children) {
+      const [$styles, $nesting] = generate({ token, className, props, fns });
+
+      styles += $styles;
+      nesting += $nesting;
+    }
+
+    if (className) {
+      styles += `${CLOSING_CURLY_BRACE_MARK}${nesting}${CLOSING_CURLY_BRACE_MARK}`;
+    } else {
+      styles += `${nesting}${CLOSING_CURLY_BRACE_MARK}`;
+    }
+
+    return styles;
+  }
+}
+
+class MediaQueryRule<P extends object = {}> extends QueryRule<P> {
   name = MEDIA_QUERY_MARK;
-  children: Children = [];
-
-  override generate(...args: Array<unknown>): string {
-    const className = args[0] as string | null;
-    const props = args[1] as P;
-    const fns = args[2] as Array<Function>;
-    let styles = className
-      ? `${this.value}${OPENING_CURLY_BRACE_MARK}${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}`
-      : `${this.value}${OPENING_CURLY_BRACE_MARK}`;
-    let nesting = '';
-
-    for (const token of this.children) {
-      const [$styles, $nesting] = generate({ token, className, props, fns });
-
-      styles += $styles;
-      nesting += $nesting;
-    }
-
-    if (className) {
-      styles += `${CLOSING_CURLY_BRACE_MARK}${nesting}${CLOSING_CURLY_BRACE_MARK}`;
-    } else {
-      styles += `${nesting}${CLOSING_CURLY_BRACE_MARK}`;
-    }
-
-    return styles;
-  }
 }
 
-class ContainerQueryRule<P extends object = {}> extends Token {
+class ContainerQueryRule<P extends object = {}> extends QueryRule<P> {
   name = CONTAINER_QUERY_MARK;
-  children: Children = [];
-
-  override generate(...args: Array<unknown>): string {
-    const className = args[0] as string | null;
-    const props = args[1] as P;
-    const fns = args[2] as Array<Function>;
-    let styles = className
-      ? `${this.value}${OPENING_CURLY_BRACE_MARK}${DOT_MARK}${className}${OPENING_CURLY_BRACE_MARK}`
-      : `${this.value}${OPENING_CURLY_BRACE_MARK}`;
-    let nesting = '';
-
-    for (const token of this.children) {
-      const [$styles, $nesting] = generate({ token, className, props, fns });
-
-      styles += $styles;
-      nesting += $nesting;
-    }
-
-    if (className) {
-      styles += `${CLOSING_CURLY_BRACE_MARK}${nesting}${CLOSING_CURLY_BRACE_MARK}`;
-    } else {
-      styles += `${nesting}${CLOSING_CURLY_BRACE_MARK}`;
-    }
-
-    return styles;
-  }
 }
-
 class KeyframesRule<P extends object = {}> extends Token {
   name = KEYFRAMES_MARK;
   children: Children = [];
@@ -305,6 +287,8 @@ const detectIsToken = (x: unknown): x is Token => x instanceof Token;
 
 const detectIsStyleRule = (x: unknown): x is StyleRule => x instanceof StyleRule;
 
+const detectIsQueryRule = (x: unknown): x is QueryRule => x instanceof QueryRule;
+
 const detectIsMediaQueryRule = (x: unknown): x is MediaQueryRule => x instanceof MediaQueryRule;
 
 const detectIsContainerQueryRule = (x: unknown): x is ContainerQueryRule => x instanceof ContainerQueryRule;
@@ -329,6 +313,7 @@ export {
   FunctionRule,
   detectIsStyleSheet,
   detectIsStyleRule,
+  detectIsQueryRule,
   detectIsMediaQueryRule,
   detectIsContainerQueryRule,
   detectIsKeyframesRule,
