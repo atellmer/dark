@@ -6,6 +6,8 @@ import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { type Fiber } from '../fiber';
 
+type Loop = typeof workLoop;
+
 class MessageChannel extends EventEmitter<PortEvent> {
   port1: MessagePort = null;
   port2: MessagePort = null;
@@ -50,7 +52,7 @@ class Scheduler {
   };
   private deadline = 0;
   private task: Task = null;
-  private scheduledCallback: typeof workLoop = null;
+  private scheduledCallback: Loop = null;
   private isMessageLoopRunning = false;
   private channel: MessageChannel = null;
   private port: MessagePort = null;
@@ -161,7 +163,7 @@ class Scheduler {
     }
   }
 
-  private requestCallbackAsync(callback: typeof workLoop) {
+  private requestCallbackAsync(callback: Loop) {
     this.scheduledCallback = callback;
 
     if (!this.isMessageLoopRunning) {
@@ -170,7 +172,7 @@ class Scheduler {
     }
   }
 
-  private requestCallback(callback: typeof workLoop) {
+  private requestCallback(callback: Loop) {
     const something = callback(false);
 
     if (detectIsPromise(something)) {

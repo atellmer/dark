@@ -12,10 +12,10 @@ import { batch } from '../batch';
 
 class Atom<T = unknown> {
   private v: T; // value
-  private c1: Map<Hook, Tuple<T>>; // connnections1
+  private c1: Map<Hook, Tuple<T>>; // connnections 1
   private c2: Map<T, Tuple<T>>; // connections 2
   private s: Set<ReadableAtom>; // subjects
-  private e: EventEmitter<'data', EmitterValue<T>>; // emitter
+  private e: EventEmitter<'data', EmitterValue<T>>;
 
   constructor(x: T) {
     this.v = x;

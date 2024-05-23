@@ -13,7 +13,7 @@ class Scope {
   private mLevel = 0;
   private mNav: Record<number, number> = {};
   private events = new Map<string, WeakMap<object, Function>>();
-  private unsubs = new Set<Callback>();
+  private offs = new Set<Callback>();
   private reconciler = new Reconciler();
   private candidates = new Set<Fiber>();
   private deletions = new Set<Fiber>();
@@ -120,13 +120,13 @@ class Scope {
     return this.events;
   }
 
-  addEventUnsub(fn: Callback) {
-    this.unsubs.add(fn);
+  addOff(fn: Callback) {
+    this.offs.add(fn);
   }
 
-  unsubscribe() {
-    this.unsubs.forEach(x => x());
-    this.unsubs = new Set();
+  off() {
+    this.offs.forEach(x => x());
+    this.offs = new Set();
   }
 
   getCandidates() {
@@ -201,9 +201,9 @@ class Scope {
 
   runEffects3() {
     if (!this.isDynamic) return;
-    this.setIsInsertionEffect(true);
+    this.setIsEffect3(true);
     this.effects3.forEach(fn => fn());
-    this.setIsInsertionEffect(false);
+    this.setIsEffect3(false);
   }
 
   addCancel(fn: Callback) {
@@ -218,11 +218,11 @@ class Scope {
     this.cancels = [];
   }
 
-  getIsInsertionEffect() {
+  getIsEffect3() {
     return this.isEffect3;
   }
 
-  setIsInsertionEffect(value: boolean) {
+  setIsEffect3(value: boolean) {
     this.isEffect3 = value;
   }
 
@@ -359,7 +359,7 @@ class Scope {
     scope.mLevel = this.mLevel;
     scope.mNav = { ...this.mNav };
     scope.events = this.events;
-    scope.unsubs = this.unsubs;
+    scope.offs = this.offs;
     scope.reconciler = this.reconciler.fork();
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);

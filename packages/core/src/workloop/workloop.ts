@@ -386,7 +386,7 @@ function commit($scope: Scope) {
   const wip = $scope.getWip();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
-  const isUpdateZone = $scope.getIsUpdate();
+  const isUpdate = $scope.getIsUpdate();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
   const isTransition = scheduler.detectIsTransition();
@@ -402,7 +402,7 @@ function commit($scope: Scope) {
     platform.commit(fiber);
   }
 
-  isUpdateZone && sync(wip);
+  isUpdate && sync(wip);
   $scope.runEffects3();
 
   for (const fiber of candidates) {
@@ -549,7 +549,7 @@ function createUpdate(rootId: number, hook: Hook) {
   const { idx } = hook;
   const update = (tools?: () => Tools) => {
     const $scope = $$scope();
-    if ($scope.getIsInsertionEffect()) return;
+    if ($scope.getIsEffect3()) return;
     const hasTools = detectIsFunction(tools);
     const isTransition = $scope.getIsTransition();
     const isBatch = $scope.getIsBatch();

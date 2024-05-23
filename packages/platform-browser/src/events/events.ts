@@ -67,7 +67,7 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
 
     eventsMap.set(eventName, new WeakMap([[target, $handler]]));
     document.addEventListener(eventName, rootHandler, true);
-    $scope.addEventUnsub(() => document.removeEventListener(eventName, rootHandler, true));
+    $scope.addOff(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
     handlersMap.set(target, $handler);
   }
