@@ -1,17 +1,16 @@
-import type { ElementKey, Instance, DarkElement, RefProps, KeyProps, Prettify } from '../shared';
-import { KEY_ATTR } from '../constants';
+import type { Instance, DarkElement, RefProps, KeyProps, Prettify } from '../shared';
 
 const $$inject = Symbol('inject');
 class Component<P extends StandardComponentProps = {}> {
-  type: CreateElement<P> = null;
+  kind: CreateElement<P> = null;
   props: P = null;
   token?: Symbol = null;
   displayName?: string = null;
   shouldUpdate?: ShouldUpdate<P> = null;
   children: Array<Instance> = [];
 
-  constructor(type: CreateElement<P>, token: Symbol, props: P, shouldUpdate: ShouldUpdate<P>, displayName: string) {
-    this.type = type;
+  constructor(kind: CreateElement<P>, token: Symbol, props: P, shouldUpdate: ShouldUpdate<P>, displayName: string) {
+    this.kind = kind;
     this.props = props;
     token && (this.token = token);
     shouldUpdate && (this.shouldUpdate = shouldUpdate);
@@ -36,10 +35,6 @@ function component<P extends object>(type: CreateElement<P>, options: ComponentO
 const defaultInject: ComponentInject = {};
 
 const detectIsComponent = (x: unknown): x is Component => x instanceof Component;
-
-const getComponentKey = (x: Component): ElementKey => x.props[KEY_ATTR] ?? null;
-
-const hasComponentFlag = (inst: Component, flag: string) => Boolean(inst.props[flag]);
 
 type ComponentOptions = Readonly<{
   displayName?: string;
@@ -68,4 +63,4 @@ export type ComponentFactory<P extends object = {}> = {
   displayName?: string;
 };
 
-export { Component, component, $$inject, detectIsComponent, getComponentKey, hasComponentFlag };
+export { Component, component, $$inject, detectIsComponent };

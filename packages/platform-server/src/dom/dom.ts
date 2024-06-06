@@ -29,7 +29,7 @@ let chunkIds: Record<string, boolean> = {};
 function createNativeElement(vNode: VirtualNode): NativeElement {
   switch (vNode.type) {
     case NodeType.TAG:
-      return new TagNativeElement((vNode as TagVirtualNode).name);
+      return new TagNativeElement((vNode as TagVirtualNode).kind);
     case NodeType.TEXT:
       return new TextNativeElement((vNode as TextVirtualNode).value);
     case NodeType.COMMENT:
@@ -81,7 +81,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   const parentElement = parent.element;
   const vNode = parent.inst as TagVirtualNode;
 
-  !detectIsVoidElement(vNode.name) && appendNativeElement(fiber.element, parentElement);
+  !detectIsVoidElement(vNode.kind) && appendNativeElement(fiber.element, parentElement);
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
 }
 
@@ -104,7 +104,7 @@ function createChunk(fiber: Fiber<NativeElement>) {
   const tagNode = fiber?.inst as TagVirtualNode;
   const tagElement = fiber?.element as TagNativeElement;
 
-  if (!fiber || tagNode.name === ROOT) return;
+  if (!fiber || tagNode.kind === ROOT) return;
 
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {

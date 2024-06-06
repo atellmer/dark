@@ -5,6 +5,7 @@ export const REPLACER = 'dark:matter';
 export const INDEX_KEY = 'dark:idx';
 export const KEY_ATTR = 'key';
 export const REF_ATTR = 'ref';
+export const FLAG_ATTR = 'flag';
 export const CREATE_EFFECT_TAG = 'C';
 export const UPDATE_EFFECT_TAG = 'U';
 export const DELETE_EFFECT_TAG = 'D';
@@ -30,21 +31,13 @@ export enum TaskPriority {
 }
 
 export enum Flag {
-  SKIP_SCAN = '__skipScan',
-  MEMO_SLOT = '__memoSlot',
-  STATIC_SLOT = '__staticSlot',
+  SKIP_SCAN = 1,
+  MEMO_SLOT = 2,
+  STATIC_SLOT = 4,
 }
-
-export const FLAGS = {
-  __skipScan: true,
-  __memoSlot: true,
-  __staticSlot: true,
-};
 
 export const ATTR_BLACK_LIST = {
   [KEY_ATTR]: true,
   [REF_ATTR]: true,
-  [Flag.SKIP_SCAN]: true,
-  [Flag.MEMO_SLOT]: true,
-  [Flag.STATIC_SLOT]: true,
+  [FLAG_ATTR]: true,
 };

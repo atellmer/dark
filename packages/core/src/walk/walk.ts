@@ -118,7 +118,7 @@ function detectIsStableMemoTree(fiber: Fiber, $scope: Scope) {
     const pc = alt.inst as Component;
     const nc = inst as Component;
     const isStable =
-      detectIsMemo(nc) && detectIsMemo(pc) && nc.type === pc.type && !nc.shouldUpdate(pc.props, nc.props);
+      detectIsMemo(nc) && detectIsMemo(pc) && nc.kind === pc.kind && !nc.shouldUpdate(pc.props, nc.props);
 
     if (!isStable) return false;
   }

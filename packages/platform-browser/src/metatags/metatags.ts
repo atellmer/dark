@@ -1,5 +1,5 @@
 import {
-  type TagVirtualNodeFactory,
+  type VirtualNodeFactory,
   type TagVirtualNode,
   type Fiber,
   component,
@@ -21,7 +21,7 @@ import { illegal } from '../utils';
 const $$metatags = Symbol('metatags');
 
 type MetatagsProps = {
-  slot: TagVirtualNodeFactory | Array<TagVirtualNodeFactory>;
+  slot: VirtualNodeFactory | Array<VirtualNodeFactory>;
 };
 
 const Metatags = component<MetatagsProps>(
@@ -74,7 +74,7 @@ function createVNodes(slot: MetatagsProps['slot']) {
 }
 
 function resolveElement(vNode: TagVirtualNode) {
-  if (vNode.name === TITLE_TAG || vNode.name === META_TAG) {
+  if (vNode.kind === TITLE_TAG || vNode.kind === META_TAG) {
     return document.querySelector(`${HEAD_TAG} ${createSelector(vNode)}`);
   }
 
@@ -82,8 +82,8 @@ function resolveElement(vNode: TagVirtualNode) {
 }
 
 function createSelector(vNode: TagVirtualNode) {
-  const attrs = vNode.name === META_TAG ? createAttributeSelector(NAME_ATTR, vNode.attrs[NAME_ATTR]) : '';
-  const selector = `${vNode.name}${attrs}`;
+  const attrs = vNode.kind === META_TAG ? createAttributeSelector(NAME_ATTR, vNode.attrs[NAME_ATTR]) : '';
+  const selector = `${vNode.kind}${attrs}`;
 
   return selector;
 }

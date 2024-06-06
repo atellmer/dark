@@ -66,7 +66,7 @@ let trackUpdate: (nativeElement: NativeElement) => void = null;
 function createNativeElement(vNode: VirtualNode): NativeElement {
   switch (vNode.type) {
     case NodeType.TAG:
-      const name = (vNode as TagVirtualNode).name;
+      const name = (vNode as TagVirtualNode).kind;
       const tag = detectIsSvgElement(name)
         ? document.createElementNS('http://www.w3.org/2000/svg', name)
         : document.createElement(name);
@@ -101,7 +101,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode, isHydratio
     if (detectIsEvent(attrName)) {
       delegateEvent(tagElement, getEventName(attrName), attrValue);
     } else if (!isHydration && !detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
-      !patchAttributes(tagElement, vNode.name, attrName, attrValue) &&
+      !patchAttributes(tagElement, vNode.kind, attrName, attrValue) &&
         m.setAttribute.call(tagElement, attrName, attrValue);
     }
   }
@@ -126,7 +126,7 @@ function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nex
       if (detectIsEvent(attrName)) {
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
       } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
-        !patchAttributes(tagElement, nextVNode.name, attrName, nextAttrValue) &&
+        !patchAttributes(tagElement, nextVNode.kind, attrName, nextAttrValue) &&
           m.setAttribute.call(tagElement, attrName, nextAttrValue);
       }
     } else {
@@ -275,7 +275,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
     }
 
     if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && m.appendElement.call(parentElement, fiber.element);
+      !detectIsVoidElement((parent.inst as TagVirtualNode).kind) && m.appendElement.call(parentElement, fiber.element);
     } else {
       m.insertElement.call(parentElement, fiber.element, parentElement.childNodes[fiber.eidx]);
     }

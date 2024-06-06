@@ -1,6 +1,6 @@
 import {
   type Component,
-  type TagVirtualNodeFactory,
+  type VirtualNodeFactory,
   type Callback,
   type ElementKey,
   Fragment,
@@ -450,7 +450,7 @@ enum Action {
 
 type KeyExtractor<I> = (x: I) => ElementKey;
 
-type TransitionElement = Component | TagVirtualNodeFactory;
+type TransitionElement = Component | VirtualNodeFactory;
 
 type TransitionConfiguratorFn<T extends string = string, I = unknown> = (
   idx: number,

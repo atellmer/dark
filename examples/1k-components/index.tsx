@@ -101,13 +101,13 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
     requestAnimationFrame(next);
   };
 
-  const flag = { [Flag.SKIP_SCAN]: scope.prevCount === count };
+  const flag = scope.prevCount === count ? Flag.SKIP_SCAN : 0;
 
   scope.prevCount = count;
 
   return (
     <svg class='demo'>
-      <g {...flag}>{map(scope.points, renderPoint)}</g>
+      <g flag={flag}>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });

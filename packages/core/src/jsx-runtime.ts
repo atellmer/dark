@@ -1,5 +1,5 @@
 import { detectIsString, detectIsFunction, detectIsEmpty, detectIsArray, detectIsUndefined } from './utils';
-import { type TagVirtualNodeFactory, type ViewOptions, View } from './view';
+import { type VirtualNodeFactory, type ViewOptions, View } from './view';
 import { type ComponentFactory, type Component } from './component';
 import { type DarkElement, type ElementKey } from './shared';
 import { KEY_ATTR } from './constants';
@@ -9,7 +9,7 @@ function jsx(
   element: string | ComponentFactory,
   props: { children?: unknown; slot?: unknown },
   key?: ElementKey,
-): TagVirtualNodeFactory | Component | null {
+): VirtualNodeFactory | Component | null {
   const { children, slot: $slot, ...$props } = props;
   const content = !detectIsUndefined(children) ? children : !detectIsUndefined($slot) ? $slot : [];
   const slot: Array<DarkElement> = detectIsArray(content) ? content : [content];

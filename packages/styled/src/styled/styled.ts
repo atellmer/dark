@@ -1,6 +1,6 @@
 import {
   type ComponentFactory,
-  type TagVirtualNodeFactory,
+  type VirtualNodeFactory,
   type StandardComponentProps,
   type TextBased,
   type DarkElement,
@@ -350,7 +350,7 @@ const EMPTY_STYLES_PATTERN = new RegExp(
 
 const NULL_CLASS_NAME_PATTERN = `${DOT_MARK}${NULL_MARK}`;
 
-type Factory<P extends object> = ComponentFactory<P> | ((props: P) => TagVirtualNodeFactory);
+type Factory<P extends object> = ComponentFactory<P> | ((props: P) => VirtualNodeFactory);
 
 type ClassNameFn = (className: string) => string;
 

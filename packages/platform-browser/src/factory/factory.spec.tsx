@@ -14,6 +14,6 @@ describe('@platform-browser/factory', () => {
     const compiled = div()();
 
     expect(compiled).toBeInstanceOf(TagVirtualNode);
-    expect(compiled.name).toBe('div');
+    expect(compiled.kind).toBe('div');
   });
 });

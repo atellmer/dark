@@ -41,7 +41,7 @@ let callbacks: Array<Callback> = [];
 function createNativeElement(vNode: VirtualNode): NativeElement {
   switch (vNode.type) {
     case NodeType.TAG:
-      return new TagNativeElement((vNode as TagVirtualNode).name);
+      return new TagNativeElement((vNode as TagVirtualNode).kind);
     case NodeType.TEXT:
       return new TextNativeElement((vNode as TextVirtualNode).value);
     case NodeType.COMMENT:

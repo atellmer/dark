@@ -6,7 +6,7 @@ describe('@core/view', () => {
 
     expect(factory).toBeInstanceOf(Function);
     expect(factory()).toBeInstanceOf(TagVirtualNode);
-    expect(factory().name).toBe('div');
+    expect(factory().kind).toBe('div');
   });
 
   test('The Text creates the text virtual node', () => {

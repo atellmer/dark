@@ -1,7 +1,7 @@
-import type { ComponentFactory, Component } from '../component';
 import type { VirtualNode, VirtualNodeFactory } from '../view';
+import type { Component } from '../component';
+import { FLAG_ATTR } from '../constants';
 import { type Ref } from '../ref';
-import { FLAGS } from '../constants';
 
 export type DarkElement = NestedArray<Component | VirtualNode | RenderProps | Nullable | TextBased | boolean>;
 
@@ -11,9 +11,11 @@ export type NestedArray<T> = T | Array<NestedArray<T>>;
 
 export type RenderProps = (...args: Array<any>) => DarkElement;
 
+export type ElementKind = string | Function;
+
 export type ElementKey = string | number;
 
-export type Instance = VirtualNode | VirtualNodeFactory | Component | ComponentFactory | Nullable;
+export type Instance = VirtualNode | VirtualNodeFactory | Component | Nullable;
 
 export type Subscriber = () => void;
 
@@ -35,7 +37,9 @@ export type KeyProps = {
   key?: ElementKey;
 };
 
-export type FlagProps = Partial<Record<keyof typeof FLAGS, boolean>>;
+export type FlagProps = {
+  [FLAG_ATTR]: number;
+};
 
 export type Callback = () => void;
 

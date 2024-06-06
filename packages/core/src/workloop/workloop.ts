@@ -281,7 +281,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   const pc = alt.inst as Component;
   const nc = inst as Component;
 
-  if (nc.type !== pc.type || nc.shouldUpdate(pc.props, nc.props)) return true;
+  if (nc.kind !== pc.kind || nc.shouldUpdate(pc.props, nc.props)) return true;
 
   $scope.setMountDeep(false);
   fiber.tag = SKIP_EFFECT_TAG;
@@ -312,7 +312,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
   if (isComponent) {
     try {
-      let result = component.type(component.props);
+      let result = component.kind(component.props);
 
       if (detectIsArray(result)) {
         !detectIsFragment(component) && (result = Fragment({ slot: result }));

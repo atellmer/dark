@@ -1,11 +1,10 @@
-import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
-import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
-import { detectIsArray, detectIsFunction, detectIsEmpty } from '../utils';
-import { REPLACER, KEY_ATTR } from '../constants';
+import type { ElementKey, ElementKind, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
+import { REPLACER, KEY_ATTR, FLAG_ATTR, Flag } from '../constants';
+import { type Component, detectIsComponent } from '../component';
+import { detectIsArray, detectIsEmpty } from '../utils';
 import { $$scope } from '../scope';
 
 const $$vNode = Symbol('vNode');
-const ATTR_TYPE = 'type';
 
 class VirtualNode {
   type: NodeType = null;
@@ -16,13 +15,13 @@ class VirtualNode {
 }
 
 class TagVirtualNode extends VirtualNode {
-  name: string;
+  kind: string;
   attrs: Record<string, any>;
   children: Array<Instance>;
 
-  constructor(name: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
+  constructor(kind: string, attrs: TagVirtualNode['attrs'], children: TagVirtualNode['children']) {
     super(NodeType.TAG);
-    this.name = name;
+    this.kind = kind;
     this.attrs = attrs;
     this.children = children;
   }
@@ -38,16 +37,16 @@ class TextVirtualNode extends VirtualNode {
 }
 
 class CommentVirtualNode extends VirtualNode {
-  value = '';
+  value: string;
 
-  constructor(text: string) {
+  constructor(source: TextSource) {
     super(NodeType.COMMENT);
-    this.value = text;
+    this.value = String(source);
   }
 }
 
 function View(options: ViewOptions) {
-  const factory: TagVirtualNodeFactory = () => {
+  const factory: VirtualNodeFactory = () => {
     const { as: name, slot, _void = false, ...attrs } = options;
     const children = (
       _void ? [] : detectIsArray(slot) ? slot : !detectIsEmpty(slot) ? [slot] : []
@@ -57,8 +56,9 @@ function View(options: ViewOptions) {
   };
 
   factory[$$vNode] = true;
-  factory[ATTR_TYPE] = options.as;
-  factory[KEY_ATTR] = options.key;
+  factory.kind = options.as;
+  factory.key = options.key;
+  options[FLAG_ATTR] && (factory[FLAG_ATTR] = options[FLAG_ATTR]);
 
   return factory;
 }
@@ -78,16 +78,7 @@ const detectIsCommentVirtualNode = (vNode: unknown): vNode is CommentVirtualNode
 const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vNode instanceof TextVirtualNode;
 
 const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
-  detectIsFunction(factory) && factory[$$vNode] === true;
-
-const getTagVirtualNodeKey = (vNode: TagVirtualNode): ElementKey | null =>
-  vNode.attrs ? vNode.attrs[KEY_ATTR] ?? null : null;
-
-const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs[flag]);
-
-const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): ElementKey | null => factory[KEY_ATTR] ?? null;
-
-const hasVirtualNodeFactoryFlag = (factory: VirtualNodeFactory, flag: string) => Boolean(factory[flag]);
+  factory && factory[$$vNode] === true;
 
 const detectIsPlainVirtualNode = (vNode: unknown): vNode is PlainVirtualNode =>
   detectIsTextVirtualNode(vNode) || detectIsCommentVirtualNode(vNode);
@@ -96,36 +87,22 @@ const createReplacer = () => new CommentVirtualNode(REPLACER);
 
 const detectIsReplacer = (vNode: unknown) => detectIsCommentVirtualNode(vNode) && vNode.value === REPLACER;
 
-function getElementKey(inst: Instance): ElementKey | null {
-  return detectIsComponent(inst)
-    ? getComponentKey(inst)
-    : detectIsVirtualNodeFactory(inst)
-    ? getVirtualNodeFactoryKey(inst)
-    : detectIsTagVirtualNode(inst)
-    ? getTagVirtualNodeKey(inst)
-    : null;
-}
+const getElementType = (inst: Instance): ElementKind | null =>
+  inst ? (inst as Component | TagVirtualNode | VirtualNodeFactory).kind : null;
 
-function hasElementFlag(inst: Instance, flag: string) {
-  return detectIsComponent(inst)
-    ? hasComponentFlag(inst, flag)
-    : detectIsVirtualNodeFactory(inst)
-    ? hasVirtualNodeFactoryFlag(inst, flag)
-    : detectIsTagVirtualNode(inst)
-    ? hasTagVirtualNodeFlag(inst, flag)
-    : false;
-}
-
-function getElementType(inst: Instance): string | Function {
-  return detectIsComponent(inst)
-    ? inst.type
-    : detectIsVirtualNodeFactory(inst)
-    ? inst[ATTR_TYPE]
-    : detectIsTagVirtualNode(inst)
-    ? inst.name
-    : detectIsVirtualNode(inst)
-    ? inst.type
+const getElementKey = (inst: Instance): ElementKey | null =>
+  inst
+    ? inst[KEY_ATTR] ?? (inst as Component).props?.[KEY_ATTR] ?? (inst as TagVirtualNode).attrs?.[KEY_ATTR] ?? null
     : null;
+
+function hasElementFlag(inst: Instance, flag: Flag) {
+  const res = inst
+    ? inst[FLAG_ATTR] & flag ||
+      (inst as Component).props?.[FLAG_ATTR] & flag ||
+      (inst as TagVirtualNode).attrs?.[FLAG_ATTR] & flag
+    : 0;
+
+  return Boolean(res);
 }
 
 function hasChildrenProp(inst: Instance): inst is TagVirtualNode | Component {
@@ -142,14 +119,13 @@ function detectAreSameInstanceTypes(prevInst: Instance, nextInst: Instance, isCo
   }
 
   return isComponentFactories
-    ? (prevInst as Component).type === (nextInst as Component).type
+    ? (prevInst as Component).kind === (nextInst as Component).kind
     : getElementType(prevInst) === getElementType(nextInst);
 }
 
 function detectAreSameComponentTypesWithSameKeys(prevInst: Instance | null, nextInst: Instance | null) {
   return (
     detectIsComponent(prevInst) &&
-    detectIsComponent(nextInst) &&
     detectAreSameInstanceTypes(prevInst, nextInst, true) &&
     getElementKey(prevInst) === getElementKey(nextInst)
   );
@@ -157,9 +133,13 @@ function detectAreSameComponentTypesWithSameKeys(prevInst: Instance | null, next
 
 type TextSource = string | number;
 
-export type VirtualNodeFactory = () => VirtualNode;
-
-export type TagVirtualNodeFactory = () => TagVirtualNode;
+export type VirtualNodeFactory = {
+  (): TagVirtualNode;
+  [$$vNode]: true;
+  kind: string;
+  key: ElementKey;
+  [FLAG_ATTR]: number;
+};
 
 export type PlainVirtualNode = TextVirtualNode | CommentVirtualNode;
 

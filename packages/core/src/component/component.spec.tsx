@@ -2,7 +2,7 @@ import { render } from '@dark-engine/platform-browser';
 
 import { View, detectIsVirtualNode, VirtualNodeFactory } from '../view';
 import { useEffect } from '../use-effect';
-import { component, detectIsComponent, getComponentKey } from './component';
+import { component, detectIsComponent } from './component';
 
 let host: HTMLElement = null;
 const div = (props = {}) => View({ ...props, as: 'div' });
@@ -26,7 +26,7 @@ describe('@core/component', () => {
   test('type call does not throw error', () => {
     const compile = () => {
       const Component = component(() => null);
-      Component().type({});
+      Component().kind({});
     };
 
     expect(compile).not.toThrowError();
@@ -34,7 +34,7 @@ describe('@core/component', () => {
 
   test('type returns virtual node factory', () => {
     const Component = component(() => div());
-    const vNodeFactory = Component().type({}) as VirtualNodeFactory;
+    const vNodeFactory = Component().kind({}) as VirtualNodeFactory;
 
     expect(vNodeFactory).toBeInstanceOf(Function);
     expect(detectIsVirtualNode(vNodeFactory())).toBeTruthy();
@@ -42,7 +42,7 @@ describe('@core/component', () => {
 
   test('type can return null', () => {
     const Component = component(() => null);
-    const element = Component().type({});
+    const element = Component().kind({});
 
     expect(element).toBeNull();
   });
@@ -60,7 +60,7 @@ describe('@core/component', () => {
     });
     const instance = Component({ one: 'hello', two: 'world' });
 
-    instance.type(instance.props);
+    instance.kind(instance.props);
   });
 
   test('provides correct displayName', () => {
@@ -81,13 +81,6 @@ describe('@core/component', () => {
     const Component = component(() => null);
 
     expect(detectIsComponent(Component())).toBeTruthy();
-  });
-
-  test('getComponentKey works correctly', () => {
-    const Component = component(() => null);
-    const key = 'somekey';
-
-    expect(getComponentKey(Component({ key }))).toBe(key);
   });
 
   test('component unmounts when key changed', () => {

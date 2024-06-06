@@ -122,7 +122,7 @@ const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }
     'tr',
     {
       class: selected$.val(null, id) === id ? 'selected' : undefined,
-      [Flag.STATIC_SLOT]: true,
+      flag: Flag.STATIC_SLOT,
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),
@@ -236,7 +236,7 @@ const App = component(() => {
       class: 'table',
       slot: tbody({
         key: items.length > 0 ? 1 : 2,
-        [Flag.MEMO_SLOT]: true,
+        flag: Flag.MEMO_SLOT,
         slot: items.map(item => {
           const { id, name$ } = item;
 

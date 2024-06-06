@@ -1,6 +1,6 @@
 import {
   type Component,
-  type TagVirtualNodeFactory,
+  type VirtualNodeFactory,
   type Callback,
   component,
   useMemo,
@@ -17,7 +17,7 @@ import { type Spring } from '../spring';
 type AnimatedProps<E = unknown, T extends string = string> = {
   spring: Spring<T>;
   fn: StyleFn<E, T>;
-  slot: Component | TagVirtualNodeFactory;
+  slot: Component | VirtualNodeFactory;
 };
 
 const Animated = component<AnimatedProps>(
