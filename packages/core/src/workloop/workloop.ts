@@ -288,7 +288,6 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   fiber.child = alt.child;
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
-  fiber.cc = alt.cc;
   fiber.cec = alt.cec;
   alt.element && (fiber.element = alt.element);
 
@@ -354,7 +353,6 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   if (hasChildrenProp(inst)) {
     inst.children = detectIsArray(inst.children) ? inst.children : [inst.children];
     isComponent && component.children.length === 0 && component.children.push(createReplacer());
-    fiber.cc = inst.children.length;
   }
 
   return inst;
@@ -465,7 +463,6 @@ function fork($scope: Scope) {
   const { alt } = wip;
 
   wip.child = alt.child;
-  wip.cc = alt.cc;
   wip.cec = alt.cec;
   wip.hook?.setIsWip(false);
   wip.alt = null;
@@ -526,7 +523,6 @@ function createCallback(options: CreateCallbackOptions) {
     fiber.alt = null; // !
     fiber.alt = new Fiber().mutate(fiber);
     fiber.tag = UPDATE_EFFECT_TAG;
-    fiber.cc = 0;
     fiber.cec = 0;
     fiber.child = null;
     fiber.hook.setIsWip(true);

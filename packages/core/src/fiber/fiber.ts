@@ -8,7 +8,6 @@ import { type Atom } from '../atom';
 
 class Fiber<N = NativeElement> {
   id = 0;
-  cc = 0; // child fibers count
   cec = 0; // child native elements count
   idx = 0; // idx of fiber in the parent fiber
   eidx = 0; // native element idx
@@ -29,10 +28,7 @@ class Fiber<N = NativeElement> {
   }
 
   mutate(fiber: Partial<Fiber<N>>) {
-    for (const key in fiber) {
-      this[key] = fiber[key];
-    }
-
+    for (const key in fiber) this[key] = fiber[key];
     return this;
   }
 

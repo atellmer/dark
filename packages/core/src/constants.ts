@@ -30,21 +30,21 @@ export enum TaskPriority {
 }
 
 export enum Flag {
-  SKIP_SCAN_OPT = '__skipScanOpt',
-  MEMO_SLOT_OPT = '__memoSlotOpt',
-  STATIC_SLOT_OPT = '__staticSlotOpt',
+  SKIP_SCAN = '__skipScan',
+  MEMO_SLOT = '__memoSlot',
+  STATIC_SLOT = '__staticSlot',
 }
 
 export const FLAGS = {
-  __skipScanOpt: true,
-  __memoSlotOpt: true,
-  __staticSlotOpt: true,
+  __skipScan: true,
+  __memoSlot: true,
+  __staticSlot: true,
 };
 
 export const ATTR_BLACK_LIST = {
   [KEY_ATTR]: true,
   [REF_ATTR]: true,
-  [Flag.SKIP_SCAN_OPT]: true,
-  [Flag.MEMO_SLOT_OPT]: true,
-  [Flag.STATIC_SLOT_OPT]: true,
+  [Flag.SKIP_SCAN]: true,
+  [Flag.MEMO_SLOT]: true,
+  [Flag.STATIC_SLOT]: true,
 };

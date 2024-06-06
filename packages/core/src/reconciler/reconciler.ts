@@ -38,51 +38,46 @@ class Reconciler {
 
     if (!areSameTypes) {
       $scope.addDeletion(alt);
-    } else if (hasChildrenProp(alt.inst) && nextChildren && alt.cc !== 0) {
-      const hasSameCount = alt.cc === nextChildren.length;
-      const check = hasElementFlag(inst, Flag.SKIP_SCAN_OPT) ? !hasSameCount : true;
+    } else if (hasChildrenProp(alt.inst) && nextChildren && !hasElementFlag(inst, Flag.SKIP_SCAN)) {
+      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, nextChildren);
+      const flush = nextKeys.length === 0;
+      let size = Math.max(prevKeys.length, nextKeys.length);
+      let p = 0;
+      let n = 0;
 
-      if (check) {
-        const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, nextChildren);
-        const flush = nextKeys.length === 0;
-        let size = Math.max(prevKeys.length, nextKeys.length);
-        let p = 0;
-        let n = 0;
+      this.createStore(id, keyedFibersMap);
 
-        this.createStore(id, keyedFibersMap);
+      for (let i = 0; i < size; i++) {
+        const nextKey = nextKeys[i - n] ?? null;
+        const prevKey = prevKeys[i - p] ?? null;
+        const prevKeyFiber = keyedFibersMap[prevKey] || null;
 
-        for (let i = 0; i < size; i++) {
-          const nextKey = nextKeys[i - n] ?? null;
-          const prevKey = prevKeys[i - p] ?? null;
-          const prevKeyFiber = keyedFibersMap[prevKey] || null;
-
-          if (nextKey !== prevKey) {
-            if (nextKey !== null && !prevKeysMap[nextKey]) {
-              if (prevKey !== null && !nextKeysMap[prevKey]) {
-                this.replace(id, nextKey);
-                $scope.addDeletion(prevKeyFiber);
-              } else {
-                this.insert(id, nextKey);
-                p++;
-                size++;
-              }
-            } else if (!nextKeysMap[prevKey]) {
-              this.remove(id, prevKey);
+        if (nextKey !== prevKey) {
+          if (nextKey !== null && !prevKeysMap[nextKey]) {
+            if (prevKey !== null && !nextKeysMap[prevKey]) {
+              this.replace(id, nextKey);
               $scope.addDeletion(prevKeyFiber);
-              flush && (prevKeyFiber.mask |= FLUSH_MASK);
-              n++;
+            } else {
+              this.insert(id, nextKey);
+              p++;
               size++;
-            } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-              this.move(id, nextKey);
             }
-          } else if (nextKey !== null) {
-            this.stable(id, nextKey);
+          } else if (!nextKeysMap[prevKey]) {
+            this.remove(id, prevKey);
+            $scope.addDeletion(prevKeyFiber);
+            flush && (prevKeyFiber.mask |= FLUSH_MASK);
+            n++;
+            size++;
+          } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
+            this.move(id, nextKey);
           }
+        } else if (nextKey !== null) {
+          this.stable(id, nextKey);
         }
-
-        hasElementFlag(inst, Flag.STATIC_SLOT_OPT) && tryOptStaticSlot(fiber, alt, $scope);
-        hasElementFlag(inst, Flag.MEMO_SLOT_OPT) && tryOptMemoSlot(fiber, alt, $scope);
       }
+
+      hasElementFlag(inst, Flag.STATIC_SLOT) && tryOptStaticSlot(fiber, alt, $scope);
+      hasElementFlag(inst, Flag.MEMO_SLOT) && tryOptMemoSlot(fiber, alt, $scope);
     }
   }
 

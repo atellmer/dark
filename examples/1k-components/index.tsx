@@ -38,8 +38,6 @@ const Layout = {
 
 const LAYOUT_ORDER = [Layout.PHYLLOTAXIS, Layout.SPIRAL, Layout.PHYLLOTAXIS, Layout.GRID, Layout.WAVE];
 
-const flagProps = { [Flag.SKIP_SCAN_OPT]: true };
-
 type VizDemoProps = {
   count: number;
 };
@@ -48,6 +46,7 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
   const update = useUpdate();
   const scope = useMemo(
     () => ({
+      prevCount: 0,
       layout: 0,
       phyllotaxis: genPhyllotaxis(100),
       grid: genGrid(100),
@@ -60,7 +59,7 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
     [],
   );
 
-  useEffect(() => {
+  useMemo(() => {
     if (count === 0) return;
 
     scope.phyllotaxis = genPhyllotaxis(count);
@@ -99,15 +98,16 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
     }
 
     update();
-
-    requestAnimationFrame(() => {
-      next();
-    });
+    requestAnimationFrame(next);
   };
 
+  const flag = { [Flag.SKIP_SCAN]: scope.prevCount === count };
+
+  scope.prevCount = count;
+
   return (
-    <svg class='demo' {...flagProps}>
-      <g {...flagProps}>{map(scope.points, renderPoint)}</g>
+    <svg class='demo'>
+      <g {...flag}>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });

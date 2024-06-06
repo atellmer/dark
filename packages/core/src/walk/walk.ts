@@ -136,7 +136,6 @@ function tryOptStaticSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
     buildChildNode(inst.children, fiber, store.map, i, fiber.eidx);
   }
 
-  fiber.cc = inst.children.length;
   $scope.setMountDeep(false);
 }
 
@@ -181,7 +180,6 @@ function buildChildNodes(fiber: Fiber, alt: Fiber, $scope: Scope, onNode?: (fibe
     onNode && onNode($fiber, key);
   }
 
-  fiber.cc = children.length;
   $scope.setMountDeep(false);
 }
 
