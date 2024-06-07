@@ -8,7 +8,7 @@ function useError(): Error | null {
   const update = useUpdate();
   const scope = useMemo<ErrorScope>(() => ({ error: null }), []);
 
-  cursor.hook.setCatch((error: Error) => {
+  cursor.hook.setCatcher((error: Error) => {
     scope.error = error;
     update();
   });

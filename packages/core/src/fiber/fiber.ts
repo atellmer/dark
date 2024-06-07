@@ -4,7 +4,6 @@ import { type Instance, type Callback, type TimerId } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
 import { type Context, type ContextProvider } from '../context';
 import { detectIsComponent } from '../component';
-import { type Atom } from '../atom';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -47,7 +46,7 @@ class Fiber<N = NativeElement> {
   }
 
   setError(err: Error) {
-    if (this.hook?.hasCatch()) {
+    if (this.hook?.hasCatcher()) {
       this.hook.catch(err);
       logError(err);
     } else if (this.parent) {
@@ -73,8 +72,6 @@ class Hook<T = unknown> {
   values: Array<T> = null;
   owner: Fiber = null;
   mask = 0;
-  box?: Box = null;
-  atoms?: Map<Atom, Callback> = null;
 
   __getMask(mask: number) {
     return Boolean(this.mask & mask);
@@ -82,10 +79,6 @@ class Hook<T = unknown> {
 
   __mark(mask: number, x: boolean) {
     x ? (this.mask |= mask) : (this.mask &= ~mask);
-  }
-
-  __box() {
-    if (!this.box) this.box = {};
   }
 
   getIsWip() {
@@ -121,44 +114,52 @@ class Hook<T = unknown> {
   }
 
   getProviders() {
-    return this.box?.providers;
+    return this[PROVIDERS] as Map<Context, ContextProvider>;
   }
 
-  setProviders(x: Box['providers']) {
-    this.__box();
-    this.box.providers = x;
+  setProviders(x: Map<Context, ContextProvider>) {
+    this[PROVIDERS] = x;
   }
 
-  getBatch() {
-    return this.box?.batch;
+  getBatcher() {
+    return this[BATCHER] as Batcher;
   }
 
-  setBatch(x: Box['batch']) {
-    this.__box();
-    this.box.batch = x;
+  setBatcher(x: Batcher) {
+    this[BATCHER] = x;
   }
 
-  hasCatch() {
-    return detectIsFunction(this.box?.catch);
+  hasCatcher() {
+    return detectIsFunction(this[CATCHER]);
   }
 
-  setCatch(x: Box['catch']) {
-    this.__box();
-    this.box.catch = x;
+  setCatcher(x: Catcher) {
+    this[CATCHER] = x;
   }
 
   catch(x: Error) {
-    this.box?.catch(x);
+    this?.[CATCHER](x);
   }
 
   incrementPending() {
-    this.__box();
-    detectIsUndefined(this.box.pendings) && (this.box.pendings = 0);
-    this.box.pendings++;
+    detectIsUndefined(this[PENDINGS]) && (this[PENDINGS] = 0);
+    this[PENDINGS]++;
   }
 
   getPendings() {
-    return this.box?.pendings;
+    return this[PENDINGS] as number;
+  }
+
+  setSignals(map: Map<unknown, Callback>) {
+    this[SIGNALS] = map;
+  }
+
+  getSignals() {
+    return this[SIGNALS] as Map<unknown, Callback>;
+  }
+
+  resetSignals() {
+    this[SIGNALS] = null;
   }
 }
 
@@ -200,19 +201,20 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
   return null;
 }
 
-type Box = {
-  providers?: Map<Context, ContextProvider>;
-  batch?: Batch;
-  catch?: (error: Error) => void;
-  pendings?: number;
-};
-
-type Batch = {
+type Batcher = {
   timer: TimerId;
   changes: Array<Callback>;
 };
 
+type Catcher = (error: Error) => void;
+
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };
+
+const SIGNALS = 'signals';
+const PENDINGS = 'pendings';
+const CATCHER = 'catcher';
+const BATCHER = 'batcher';
+const PROVIDERS = 'providers';
 
 export { Fiber, Hook, Awaiter, getHook };

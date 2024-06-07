@@ -16,15 +16,15 @@ function addBatch(hook: Hook, callback: Callback, change: Callback) {
   if ($scope.getIsTransition()) {
     callback();
   } else {
-    const batch = hook.getBatch() || { timer: null, changes: [] };
+    const batcher = hook.getBatcher() || { timer: null, changes: [] };
 
-    hook.setBatch(batch);
-    batch.changes.push(change);
-    batch.timer && clearTimeout(batch.timer);
-    batch.timer = setTimeout(() => {
-      batch.changes.splice(-1);
-      batch.changes.forEach(x => x());
-      hook.setBatch(null);
+    hook.setBatcher(batcher);
+    batcher.changes.push(change);
+    batcher.timer && clearTimeout(batcher.timer);
+    batcher.timer = setTimeout(() => {
+      batcher.changes.splice(-1);
+      batcher.changes.forEach(x => x());
+      hook.setBatcher(null);
       callback();
     });
   }

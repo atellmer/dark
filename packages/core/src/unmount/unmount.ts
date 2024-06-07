@@ -1,12 +1,12 @@
+import { EFFECT_HOST_MASK, SIGNAL_HOST_MASK } from '../constants';
 import { type Fiber, type Hook, type HookValue } from '../fiber';
-import { type Scope, dropEffects } from '../use-effect';
-import { EFFECT_HOST_MASK, ATOM_HOST_MASK } from '../constants';
 import { removeScope, $$scope } from '../scope';
 import { detectIsUndefined } from '../utils';
+import { dropEffects } from '../use-effect';
 import { type Callback } from '../shared';
 import { walk } from '../walk';
 
-const mask = EFFECT_HOST_MASK | ATOM_HOST_MASK;
+const mask = EFFECT_HOST_MASK | SIGNAL_HOST_MASK;
 
 function unmountFiber(fiber: Fiber) {
   if (!(fiber.mask & mask)) return;
@@ -15,17 +15,15 @@ function unmountFiber(fiber: Fiber) {
 
 function onWalk(fiber: Fiber, skip: Callback) {
   if (!(fiber.mask & mask)) return skip();
-  const hook = fiber.hook as Hook<HookValue<Scope>>;
+  const hook = fiber.hook as Hook<HookValue>;
   const values = hook?.values;
-  const atoms = hook?.atoms;
+  const signals = hook?.getSignals();
 
-  if (values && values.length > 0 && fiber.mask & EFFECT_HOST_MASK) {
-    dropEffects(hook);
-  }
+  values && values.length > 0 && fiber.mask & EFFECT_HOST_MASK && dropEffects(hook);
 
-  if (atoms) {
-    for (const [_, cleanup] of atoms) cleanup();
-    hook.atoms = null;
+  if (signals) {
+    for (const [_, dropSignal] of signals) dropSignal();
+    hook.resetSignals();
   }
 }
 

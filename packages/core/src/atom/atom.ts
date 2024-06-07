@@ -2,7 +2,7 @@ import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, logErr
 import { createUpdate, useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
-import { ATOM_HOST_MASK } from '../constants';
+import { SIGNAL_HOST_MASK } from '../constants';
 import { $$scope, getRootId } from '../scope';
 import { createTools } from '../use-state';
 import { EventEmitter } from '../emitter';
@@ -74,9 +74,9 @@ class Atom<T = unknown> {
     const fiber = $$scope().getCursor();
     const { hook } = fiber;
 
-    !hook.atoms && (hook.atoms = new Map());
-    hook.atoms.set(this, this.off.bind(this, hook, key));
-    fiber.markHost(ATOM_HOST_MASK);
+    !hook.getSignals() && hook.setSignals(new Map());
+    hook.getSignals().set(this, this.off.bind(this, hook, key));
+    fiber.markHost(SIGNAL_HOST_MASK);
 
     if (detectIsEmpty(key)) {
       !this.c1 && (this.c1 = new Map());
@@ -149,7 +149,7 @@ class Atom<T = unknown> {
   }
 
   private off(hook: Hook, key: T) {
-    hook.atoms.delete(this);
+    hook.getSignals().delete(this);
     this.c1 && this.c1.delete(hook);
     this.c2 && this.c2.delete(key);
   }
