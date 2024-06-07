@@ -9,9 +9,9 @@ import {
   type Ref,
   REF_ATTR,
   ATTR_BLACK_LIST,
-  CREATE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
-  DELETE_EFFECT_TAG,
+  CREATE_TAG,
+  UPDATE_TAG,
+  DELETE_TAG,
   MOVE_MASK,
   detectIsUndefined,
   detectIsObject,
@@ -193,14 +193,14 @@ function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode)
 
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
-    case CREATE_EFFECT_TAG:
+    case CREATE_TAG:
       fiber.element && commitCreation(fiber);
       break;
-    case UPDATE_EFFECT_TAG:
+    case UPDATE_TAG:
       fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
       fiber.element && commitUpdate(fiber);
       break;
-    case DELETE_EFFECT_TAG:
+    case DELETE_TAG:
       commitDeletion(fiber);
       break;
     default:

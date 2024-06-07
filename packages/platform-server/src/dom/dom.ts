@@ -9,7 +9,7 @@ import {
   ROOT,
   REF_ATTR,
   ATTR_BLACK_LIST,
-  CREATE_EFFECT_TAG,
+  CREATE_TAG,
   detectIsFunction,
   detectIsUndefined,
   NodeType,
@@ -87,7 +87,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
 
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
-    case CREATE_EFFECT_TAG:
+    case CREATE_TAG:
       fiber.element && commitCreation(fiber);
       break;
     default:

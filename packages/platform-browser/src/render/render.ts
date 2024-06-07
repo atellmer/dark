@@ -3,8 +3,8 @@ import {
   type Callback,
   ROOT,
   Fiber,
-  CREATE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
+  CREATE_TAG,
+  UPDATE_TAG,
   platform,
   flatten,
   detectIsUndefined,
@@ -75,7 +75,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
       element: container,
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: rootFiber,
-      tag: isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG,
+      tag: isUpdate ? UPDATE_TAG : CREATE_TAG,
     });
 
     $scope.resetMount();

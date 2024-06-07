@@ -1,9 +1,9 @@
 import { platform, detectIsSSR } from '../platform';
 import {
-  CREATE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
-  DELETE_EFFECT_TAG,
-  SKIP_EFFECT_TAG,
+  CREATE_TAG,
+  UPDATE_TAG,
+  DELETE_TAG,
+  SKIP_TAG,
   EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
   MOVE_MASK,
@@ -204,7 +204,7 @@ function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
     alt && $scope.getReconciler().reconcile(fiber, alt, $scope);
     setup(fiber, alt);
   } else if (fiber.mask & MOVE_MASK) {
-    fiber.tag = UPDATE_EFFECT_TAG;
+    fiber.tag = UPDATE_TAG;
   }
 
   $scope.addCandidate(fiber); // !
@@ -222,7 +222,7 @@ function createFiber(alt: Fiber, next: Instance, idx: number) {
 function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) {
   const isChild = idx === 0;
   const parent = isChild ? fiber : fiber.parent;
-  if (!fiber.hook?.getIsWip() && parent.tag === CREATE_EFFECT_TAG) return null; // !
+  if (!fiber.hook?.getIsWip() && parent.tag === CREATE_TAG) return null; // !
   const parentId = isChild ? fiber.id : fiber.parent.id;
   const key = getElementKey(inst);
   const store = $scope.getReconciler().get(parentId);
@@ -251,13 +251,13 @@ function setup(fiber: Fiber, alt: Fiber) {
   const inst = fiber.inst;
   let isUpdate = false;
 
-  fiber.parent.tag === CREATE_EFFECT_TAG && (fiber.tag = fiber.parent.tag);
+  fiber.parent.tag === CREATE_TAG && (fiber.tag = fiber.parent.tag);
   isUpdate =
     alt &&
-    fiber.tag !== CREATE_EFFECT_TAG &&
+    fiber.tag !== CREATE_TAG &&
     detectAreSameInstanceTypes(alt.inst, inst) &&
     getElementKey(alt.inst) === getElementKey(inst);
-  fiber.tag = isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG;
+  fiber.tag = isUpdate ? UPDATE_TAG : CREATE_TAG;
 
   if (!fiber.element) {
     if (isUpdate && alt.element) {
@@ -282,7 +282,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   if (nc.kind !== pc.kind || nc.shouldUpdate(pc.props, nc.props)) return true;
 
   $scope.setMountDeep(false);
-  fiber.tag = SKIP_EFFECT_TAG;
+  fiber.tag = SKIP_TAG;
   fiber.child = alt.child;
   fiber.child.parent = fiber;
   fiber.hook = alt.hook;
@@ -393,7 +393,7 @@ function commit($scope: Scope) {
     const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
 
     canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
-    fiber.tag = DELETE_EFFECT_TAG;
+    fiber.tag = DELETE_TAG;
     platform.commit(fiber);
   }
 
@@ -403,7 +403,7 @@ function commit($scope: Scope) {
   for (const fiber of candidates) {
     const item = fiber.inst as CanHaveChildren;
 
-    fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
+    fiber.tag !== SKIP_TAG && platform.commit(fiber);
     fiber.alt = null;
     item.children && (item.children = null);
   }
@@ -481,7 +481,7 @@ const createOnRestore = ($fork: Scope, child: Fiber) => (options: OnRestoreOptio
   detectIsFunction(resetValue) && $fork.addCancel(resetValue);
 
   wip.alt = new Fiber().mutate(wip);
-  wip.tag = UPDATE_EFFECT_TAG;
+  wip.tag = UPDATE_TAG;
   wip.child = child;
   wip.hook?.setIsWip(true);
   child.parent = wip;
@@ -519,7 +519,7 @@ function createCallback(options: CreateCallbackOptions) {
 
     fiber.alt = null; // !
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.tag = UPDATE_EFFECT_TAG;
+    fiber.tag = UPDATE_TAG;
     fiber.cec = 0;
     fiber.child = null;
     fiber.hook.setIsWip(true);

@@ -1,7 +1,7 @@
 import {
-  DELETE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
-  SKIP_EFFECT_TAG,
+  DELETE_TAG,
+  UPDATE_TAG,
+  SKIP_TAG,
   EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
   MOVE_MASK,
@@ -66,7 +66,7 @@ function detectIsFiberAlive(fiber: Fiber) {
   let $fiber = fiber;
 
   while ($fiber) {
-    if ($fiber.tag === DELETE_EFFECT_TAG) return false;
+    if ($fiber.tag === DELETE_TAG) return false;
     $fiber = $fiber.parent;
   }
 
@@ -157,7 +157,7 @@ function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
   buildChildNodes(fiber, alt, $scope, (fiber, key) => {
     if (!store.move[key]) return;
     fiber.alt = new Fiber().mutate(fiber);
-    fiber.tag = UPDATE_EFFECT_TAG;
+    fiber.tag = UPDATE_TAG;
     fiber.mask |= MOVE_MASK;
     $scope.addCandidate(fiber);
   });
@@ -202,7 +202,7 @@ function buildChildNode(
   isFirst && (parent.child = fiber);
   fiber.alt = null;
   fiber.parent = parent;
-  fiber.tag = SKIP_EFFECT_TAG;
+  fiber.tag = SKIP_TAG;
   fiber.idx = idx;
   left ? (fiber.eidx = left.eidx + (left.element ? 1 : left.cec)) : (fiber.eidx = startEidx);
   right && (fiber.next = right);

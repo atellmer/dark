@@ -6,7 +6,7 @@ import {
   type AppResource,
   ROOT,
   Fiber,
-  CREATE_EFFECT_TAG,
+  CREATE_TAG,
   STATE_SCRIPT_TYPE,
   TaskPriority,
   platform,
@@ -60,7 +60,7 @@ function scheduleRender(options: ScheduleRenderOptions) {
     const fiber = new Fiber().mutate({
       element: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
-      tag: CREATE_EFFECT_TAG,
+      tag: CREATE_TAG,
     });
     const emitter = $scope.getEmitter();
 

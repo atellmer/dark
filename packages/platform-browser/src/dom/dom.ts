@@ -9,9 +9,9 @@ import {
   type Ref,
   REF_ATTR,
   ATTR_BLACK_LIST,
-  CREATE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
-  DELETE_EFFECT_TAG,
+  CREATE_TAG,
+  UPDATE_TAG,
+  DELETE_TAG,
   MOVE_MASK,
   FLUSH_MASK,
   detectIsUndefined,
@@ -337,18 +337,18 @@ function move(fiber: Fiber<NativeElement>) {
 
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
-    case CREATE_EFFECT_TAG:
+    case CREATE_TAG:
       if (!fiber.element || fiber.hook?.getIsPortal()) return;
       trackUpdate && trackUpdate(fiber.element);
       commitCreation(fiber);
       break;
-    case UPDATE_EFFECT_TAG:
+    case UPDATE_TAG:
       fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
       if (!fiber.element || fiber.hook?.getIsPortal()) return;
       trackUpdate && trackUpdate(fiber.element);
       commitUpdate(fiber);
       break;
-    case DELETE_EFFECT_TAG:
+    case DELETE_TAG:
       commitDeletion(fiber);
       break;
     default:
