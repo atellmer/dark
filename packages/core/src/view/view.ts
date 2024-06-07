@@ -135,7 +135,7 @@ type TextSource = string | number;
 
 export type VirtualNodeFactory = {
   (): TagVirtualNode;
-  [$$vNode]: true;
+  [$$vNode]: boolean;
   kind: string;
   key: ElementKey;
   [FLAG_ATTR]: number;

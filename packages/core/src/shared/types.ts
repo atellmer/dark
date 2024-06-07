@@ -38,7 +38,7 @@ export type KeyProps = {
 };
 
 export type FlagProps = {
-  [FLAG_ATTR]: number;
+  [FLAG_ATTR]?: number;
 };
 
 export type Callback = () => void;
