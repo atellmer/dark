@@ -19,7 +19,7 @@ class Fiber<N = NativeElement> {
   eidx = 0; // native element idx
   mask = 0; // bit mask
   element: N = null; // native element
-  tag: string = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
+  tag: string = null; // effect tag (create, update, delete, skip)
   parent: Fiber<N> = null; // parent fiber
   child: Fiber<N> = null; // child fiber
   next: Fiber<N> = null; // next sibling fiber
@@ -231,6 +231,7 @@ type Catcher = (error: Error) => void;
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };
 
+// It uses a workaround without first initializing the object's properties to save memory and require fewer calls to the garbage collector.
 const SIGNALS = 'signals';
 const PENDINGS = 'pendings';
 const CATCHER = 'catcher';
