@@ -4,9 +4,7 @@ import {
   UPDATE_EFFECT_TAG,
   DELETE_EFFECT_TAG,
   SKIP_EFFECT_TAG,
-  INSERTION_EFFECT_HOST_MASK,
-  LAYOUT_EFFECT_HOST_MASK,
-  ASYNC_EFFECT_HOST_MASK,
+  EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
   MOVE_MASK,
   TaskPriority,
@@ -389,11 +387,10 @@ function commit($scope: Scope) {
   const unmounts: Array<Fiber> = [];
   const isTransition = scheduler.detectIsTransition();
   const inst = wip.inst as Component;
-  const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
 
   // !
   for (const fiber of deletions) {
-    const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & mask);
+    const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
 
     canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
     fiber.tag = DELETE_EFFECT_TAG;

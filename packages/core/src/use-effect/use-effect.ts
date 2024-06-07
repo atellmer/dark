@@ -1,25 +1,23 @@
-import { INSERTION_EFFECT_HOST_MASK, LAYOUT_EFFECT_HOST_MASK, ASYNC_EFFECT_HOST_MASK } from '../constants';
 import { __useCursor as useCursor } from '../internal';
 import { type Hook, type HookValue } from '../fiber';
+import { EFFECT_HOST_MASK } from '../constants';
 import { detectIsFiberAlive } from '../walk';
 import { detectIsFunction } from '../utils';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
 
-const $$useEffect = Symbol('use-effect');
+const $$effect = Symbol('effect');
 
-function createEffect(token: Symbol, type: EffectType) {
-  function useEffect(effect: Effect, deps: Array<any> = [{}]) {
+function createEffect(type: EffectType) {
+  return (effect: Effect, deps: Array<any> = [{}]) => {
     const $scope = $$scope();
     const cursor = useCursor();
-    const scope = useMemo<UseEffectValue>(() => ({ token, cleanup: undefined }), []);
+    const scope = useMemo<Scope>(() => ({ token: $$effect, cleanup: undefined }), []);
     const isInsertionEffect = type === EffectType.INSERTION;
     const isLayoutEffect = type === EffectType.LAYOUT;
     const isAsyncEffect = type === EffectType.ASYNC;
 
-    isInsertionEffect && cursor.markHost(INSERTION_EFFECT_HOST_MASK);
-    isLayoutEffect && cursor.markHost(LAYOUT_EFFECT_HOST_MASK);
-    isAsyncEffect && cursor.markHost(ASYNC_EFFECT_HOST_MASK);
+    cursor.markHost(EFFECT_HOST_MASK);
 
     useMemo(() => {
       const runEffect = () => {
@@ -30,29 +28,15 @@ function createEffect(token: Symbol, type: EffectType) {
         }
       };
 
-      isInsertionEffect && $scope.addEffect3(runEffect);
-      isLayoutEffect && $scope.addEffect2(runEffect);
       isAsyncEffect && $scope.addEffect1(runEffect);
-
+      isLayoutEffect && $scope.addEffect2(runEffect);
+      isInsertionEffect && $scope.addEffect3(runEffect);
       detectIsFunction(scope.cleanup) && scope.cleanup();
-
-      return null;
     }, deps);
-  }
-
-  function dropEffects(hook: Hook<HookValue<UseEffectValue>>) {
-    for (const { value: effect } of hook.values) {
-      effect && effect.token === token && detectIsFunction(effect.cleanup) && effect.cleanup();
-    }
-  }
-
-  return {
-    useEffect,
-    dropEffects,
   };
 }
 
-export type UseEffectValue = {
+export type Scope = {
   token: Symbol;
   cleanup: DropEffect;
 };
@@ -67,6 +51,12 @@ export enum EffectType {
   INSERTION = 'INSERTION',
 }
 
-const { useEffect, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
+function dropEffects(hook: Hook<HookValue<Scope>>) {
+  for (const { value: effect } of hook.values) {
+    effect?.token === $$effect && detectIsFunction(effect.cleanup) && effect.cleanup();
+  }
+}
+
+const useEffect = createEffect(EffectType.ASYNC);
 
 export { useEffect, dropEffects, createEffect };
