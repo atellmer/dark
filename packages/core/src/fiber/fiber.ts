@@ -1,9 +1,16 @@
-import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_MASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
+import {
+  EFFECT_HOST_MASK,
+  IS_WIP_HOOK_MASK,
+  IS_PORTAL_HOOK_MASK,
+  IS_SUSPENSE_HOOK_MASK,
+  IS_PENDING_HOOK_MASK,
+} from '../constants';
 import { detectIsFunction, detectIsUndefined, logError } from '../utils';
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
 import { type Context, type ContextProvider } from '../context';
 import { detectIsComponent } from '../component';
+import { dropEffects } from '../use-effect';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -53,6 +60,19 @@ class Fiber<N = NativeElement> {
       this.parent.setError(err);
     } else {
       throw err;
+    }
+  }
+
+  drop() {
+    const hook = this.hook as Hook<HookValue>;
+    const values = hook?.values;
+    const signals = hook?.getSignals();
+
+    values && values.length > 0 && this.mask & EFFECT_HOST_MASK && dropEffects(hook);
+
+    if (signals) {
+      for (const [_, dropSignal] of signals) dropSignal();
+      hook.resetSignals();
     }
   }
 
