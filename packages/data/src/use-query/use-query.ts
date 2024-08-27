@@ -56,6 +56,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   const initiator = useId();
   const record = cache.read<T>(key, { id: cacheId });
   const pending = getPending<T>(cache, key, cacheId);
+  const hasPending = Boolean(pending);
   const isSuspenseOnly = strategy === 'suspense-only';
   const isHybrid = strategy === 'hybrid';
   const isStateOnly = strategy === 'state-only';
@@ -193,10 +194,16 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   }
 
   useEffect(() => {
-    const shouldSkip = isHydration || lazy || pending || state.isFetching || record?.valid;
+    const shouldSkip = isHydration || lazy || hasPending || state.isFetching || record?.valid;
 
-    if (shouldSkip) return;
-    refetch();
+    if (shouldSkip) {
+      if (record?.valid && state.data !== record.data && !detectIsPromise(record.data)) {
+        state.data = record.data;
+        update();
+      }
+    } else {
+      refetch();
+    }
   }, [...mapRecord(variables)]);
 
   useEffect(() => {
