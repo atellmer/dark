@@ -248,4 +248,46 @@ describe('@data/use-query', () => {
     setMarker('b');
     expect(body.innerHTML).toBe(content('b', 10, 20, true));
   });
+
+  test('uses previous results from cache correctly', async () => {
+    const spy = jest.fn();
+    const App = component<{ id: number }>(({ id }) => {
+      const { isFetching, data, error } = useQuery(Key.GET_DATA, ({ id }) => api.getData(id), {
+        strategy: 'state-only',
+        variables: { id },
+        extractId: x => x.id,
+      });
+
+      spy([isFetching, data, error]);
+
+      return null;
+    });
+
+    render(withProvider(<App id={1} />));
+    expect(spy).toHaveBeenCalledWith([true, null, null]);
+    await waitQuery();
+    expect(spy).toHaveBeenCalledWith([false, 10, null]);
+    spy.mockClear();
+
+    render(withProvider(<App id={2} />));
+    spy.mockClear();
+    await waitUntilEffectsStart();
+    expect(spy).toHaveBeenCalledWith([true, 10, null]);
+    spy.mockClear();
+    await waitQuery();
+    expect(spy).toHaveBeenCalledWith([false, 20, null]);
+    spy.mockClear();
+
+    render(withProvider(<App id={1} />));
+    spy.mockClear();
+    await waitUntilEffectsStart();
+    expect(spy).toHaveBeenCalledWith([false, 10, null]);
+    spy.mockClear();
+
+    render(withProvider(<App id={2} />));
+    spy.mockClear();
+    await waitUntilEffectsStart();
+    expect(spy).toHaveBeenCalledWith([false, 20, null]);
+    spy.mockClear();
+  });
 });
