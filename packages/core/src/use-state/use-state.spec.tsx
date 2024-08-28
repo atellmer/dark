@@ -1,13 +1,14 @@
-import { render } from '@dark-engine/platform-browser';
+import { createBrowserEnv, dom, setInputValue, sleep } from '@test-utils';
+import { type SyntheticEvent } from '@dark-engine/platform-browser';
 
-import { dom } from '@test-utils';
-import { component } from '../component/component';
+import { component } from '../component';
 import { useState } from './use-state';
+import { type MutableRef, useRef } from '../ref';
 
-let host: HTMLElement = null;
+let { render, host } = createBrowserEnv();
 
 beforeEach(() => {
-  host = document.createElement('div');
+  ({ render, host } = createBrowserEnv());
 });
 
 describe('@core/use-state', () => {
@@ -23,7 +24,7 @@ describe('@core/use-state', () => {
       return <div>{count}</div>;
     });
 
-    render(App(), host);
+    render(<App />);
     expect(host.innerHTML).toBe(content(0));
 
     setCount(count + 1);
@@ -50,7 +51,7 @@ describe('@core/use-state', () => {
       return [<div>text</div>, <div>{count}</div>];
     });
 
-    render(App(), host);
+    render(<App />);
     expect(host.innerHTML).toBe(content(0));
 
     setCount(count + 1);
@@ -89,10 +90,6 @@ describe('@core/use-state', () => {
         id: idx + 1,
         count: 0,
       }));
-
-    const $render = (props = {}) => {
-      render(App(props), host);
-    };
 
     let setCountsOne = [];
     let setCountsTwo = [];
@@ -133,7 +130,7 @@ describe('@core/use-state', () => {
       items[items.length - 2] = temp;
     };
 
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne[1](1);
@@ -147,13 +144,13 @@ describe('@core/use-state', () => {
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
 
     setCountsOne = [];
     setCountsTwo = [];
     swap();
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -184,10 +181,6 @@ describe('@core/use-state', () => {
         count: 0,
       }));
 
-    const $render = (props = {}) => {
-      render(App(props), host);
-    };
-
     let setCounts: Array<(value: number) => void> = [];
 
     const Item = component<ItemProps>(({ id }) => {
@@ -213,7 +206,7 @@ describe('@core/use-state', () => {
       items[items.length - 2] = temp;
     };
 
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](1);
@@ -222,7 +215,7 @@ describe('@core/use-state', () => {
     items[items.length - 2].count = 2;
     swap();
     setCounts = [];
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](20);
@@ -231,7 +224,7 @@ describe('@core/use-state', () => {
     items[items.length - 2].count = 30;
     swap();
     setCounts = [];
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -268,10 +261,6 @@ describe('@core/use-state', () => {
         count: 0,
       }));
 
-    const $render = (props = {}) => {
-      render(App(props), host);
-    };
-
     let setCounts: Array<(value: number) => void> = [];
 
     const Item = component<ItemProps>(({ id }) => {
@@ -307,7 +296,7 @@ describe('@core/use-state', () => {
       items[items.length - 2] = temp;
     };
 
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](1);
@@ -316,7 +305,7 @@ describe('@core/use-state', () => {
     items[items.length - 2].count = 2;
     swap();
     setCounts = [];
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
 
     setCounts[1](20);
@@ -325,7 +314,7 @@ describe('@core/use-state', () => {
     items[items.length - 2].count = 30;
     swap();
     setCounts = [];
-    $render();
+    render(<App />);
     expect(host.innerHTML).toBe(content(items));
   });
 
@@ -348,7 +337,7 @@ describe('@core/use-state', () => {
       return [<div>1</div>, <div>2</div>, <div>3</div>];
     });
 
-    render(App(), host);
+    render(<App />);
     expect(host.innerHTML).toBe(content(false));
 
     setFlag(true);
@@ -356,5 +345,37 @@ describe('@core/use-state', () => {
 
     setFlag(false);
     expect(host.innerHTML).toBe(content(false));
+  });
+
+  test('forces direct update for input value', async () => {
+    // https://github.com/atellmer/dark/issues/82
+    let inputRef: MutableRef<HTMLInputElement> = null;
+    const App = component(() => {
+      inputRef = useRef<HTMLInputElement>(null);
+      const [value, setValue] = useState('0');
+      const handleSetValue = (e: SyntheticEvent<InputEvent, HTMLInputElement>) => {
+        const value = e.target.value;
+        const $value = value.replace(/\D/g, '');
+
+        setValue($value);
+      };
+
+      return <input ref={inputRef} value={value} onInput={handleSetValue} />;
+    });
+
+    render(<App />);
+    const input = inputRef.current;
+
+    setInputValue(input, '0rrrr');
+    await sleep(20);
+    expect(input.value).toBe('0');
+
+    setInputValue(input, '0abc');
+    await sleep(20);
+    expect(input.value).toBe('0');
+
+    setInputValue(input, '123abc');
+    await sleep(20);
+    expect(input.value).toBe('123');
   });
 });
