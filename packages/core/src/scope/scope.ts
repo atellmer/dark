@@ -1,4 +1,4 @@
-import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
+import type { Callback, CallbackWithValue, ElementKey, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
 import { EventEmitter } from '../emitter';
 import { type Fiber, Awaiter } from '../fiber';
@@ -36,6 +36,7 @@ class Scope {
   private isDynamic = platform.detectIsDynamic();
   private isServer = detectIsServer();
   private emitter = new EventEmitter();
+  private afterEvent: CallbackWithValue<unknown> = null;
 
   private resetActions() {
     this.actions = {};
@@ -385,6 +386,7 @@ class Scope {
     this.setIsHydrateZone(false);
     this.setIsUpdateZone(false);
     this.resetActions();
+    this.setAfterEvent(null);
   }
 
   getEmitter() {
@@ -422,6 +424,15 @@ class Scope {
   runAfterCommit() {
     this.resources = new Map();
     this.isServer && (this.resourceId = 0);
+  }
+
+  setAfterEvent(fn: CallbackWithValue<unknown>) {
+    this.afterEvent = fn;
+  }
+
+  runAfterEvent(x: unknown) {
+    this.afterEvent && this.afterEvent(x);
+    this.afterEvent = null;
   }
 }
 
