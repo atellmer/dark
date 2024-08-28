@@ -431,8 +431,10 @@ class Scope {
   }
 
   runAfterEvent(x: unknown) {
-    this.afterEvent && this.afterEvent(x);
+    const fn = this.afterEvent;
+
     this.afterEvent = null;
+    fn && platform.raf(() => fn(x));
   }
 }
 

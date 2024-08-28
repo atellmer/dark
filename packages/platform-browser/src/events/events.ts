@@ -49,10 +49,10 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
       if (detectIsFunction(handler)) {
         $event = new SyntheticEvent({ sourceEvent: event, target });
 
+        setAfterEvent(event, $scope); // !
         $scope.setIsEventZone(true);
         handler($event);
         $scope.setIsEventZone(false);
-        setAfterEvent(event, $scope);
       }
 
       if (target.parentElement) {
@@ -75,8 +75,10 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
 }
 
 function setAfterEvent(event: Event, $scope: Scope) {
-  if (event instanceof InputEvent) {
-    $scope.setAfterEvent((x: string) => ((event.target as HTMLInputElement).value = x));
+  switch (event.type) {
+    case 'input':
+      $scope.setAfterEvent((x: string) => ((event.target as HTMLInputElement).value = x));
+      break;
   }
 }
 
