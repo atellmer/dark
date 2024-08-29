@@ -1,12 +1,13 @@
-import { detectIsFunction, $$scope, detectIsArray } from '@dark-engine/core';
+import { type Scope, detectIsFunction, $$scope, detectIsArray } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
+import { PREVENT } from '../constants';
 
 export type EventHandler<E extends Event = Event, T = unknown> =
   | ((e: SyntheticEvent<E, T>) => void)
   | [(...args: Array<any>) => void, ...args: Array<any>];
 
-type BrowserEventConstructor = (type: string, event: Event) => void;
+type BrowserEvent = (type: string, event: Event) => void;
 
 class SyntheticEvent<E extends Event, T = TagNativeElement> {
   type = '';
@@ -46,9 +47,12 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
       const target = event.target as TagNativeElement;
       let $event: SyntheticEvent<Event> = null;
 
+      target[PREVENT] && event.preventDefault();
+
       if (detectIsFunction(handler)) {
         $event = new SyntheticEvent({ sourceEvent: event, target });
 
+        setAfterEvent(event, $scope); // !
         $scope.setIsEventZone(true);
         handler($event);
         $scope.setIsEventZone(false);
@@ -58,9 +62,7 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
         const shouldPropagate = $event ? $event.getPropagation() : true;
 
         if (shouldPropagate) {
-          const constructor = event.constructor as BrowserEventConstructor;
-
-          target.parentElement.dispatchEvent(new constructor(event.type, event));
+          target.parentElement.dispatchEvent(new (event.constructor as BrowserEvent)(event.type, event));
         }
       }
     };
@@ -70,6 +72,14 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
     $scope.addEventUnsubscriber(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
     handlersMap.set(target, $handler);
+  }
+}
+
+function setAfterEvent(event: Event, $scope: Scope) {
+  switch (event.type) {
+    case 'input':
+      $scope.setAfterEvent((x: string) => ((event.target as HTMLInputElement).value = x));
+      break;
   }
 }
 

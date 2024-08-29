@@ -836,4 +836,37 @@ describe('@styled/parse', () => {
     expect(overflow.name).toBe('overflow-wrap');
     expect(overflow.value).toBe('break-word');
   });
+
+  test('parses comments with functions correctly', () => {
+    // https://github.com/atellmer/dark/issues/76
+    const style = parse(`
+      /* color: ${FUNCTION_MARK}; */
+      line-height: 1;
+      font-size: 180%;
+
+      &::selection {
+        background: ${FUNCTION_MARK};
+      }
+    `);
+
+    const lineHeight = style.children[0] as StyleRule;
+    const fontSize = style.children[1] as StyleRule;
+    const nsr = style.children[2] as NestingRule;
+    const fnr = nsr.children[0] as FunctionRule;
+    const background = fnr.style as StyleRule;
+
+    expect(lineHeight.name).toBe('line-height');
+    expect(lineHeight.value).toBe('1');
+    expect(fontSize.name).toBe('font-size');
+    expect(fontSize.value).toBe('180%');
+
+    expect(nsr).toBeInstanceOf(NestingRule);
+    expect(nsr.value).toBe('&::selection');
+
+    expect(fnr).toBeInstanceOf(FunctionRule);
+    expect(fnr.args).toEqual([1]);
+
+    expect(background.name).toBe('background');
+    expect(background.value).toBe('');
+  });
 });

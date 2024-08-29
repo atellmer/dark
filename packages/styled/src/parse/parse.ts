@@ -68,7 +68,10 @@ function parse<P extends object>(css: string) {
       buffer = '';
     }
 
-    if (isSingleLineComment || isMultiLineComment) continue;
+    if (isSingleLineComment || isMultiLineComment) {
+      detectHasFunctionMark(buffer) && ++fnIdx;
+      continue;
+    }
 
     if (detectHasFunctionMark(buffer)) {
       const token = new FunctionRule();

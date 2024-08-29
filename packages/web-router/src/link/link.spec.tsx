@@ -112,7 +112,8 @@ describe('@web-router/link', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(`"<a href="/" class="my-link">first</a>"`);
   });
 
-  test('prevent default click event', () => {
+  test('prevents default click event #1', () => {
+    const spy = jest.fn();
     const routes: Routes = [
       {
         path: '',
@@ -120,12 +121,8 @@ describe('@web-router/link', () => {
       },
     ];
 
-    let defaultPrevented = false;
-
     const App = component(() => {
-      const handleClick = (e: SyntheticEvent<MouseEvent>) => {
-        defaultPrevented = e.sourceEvent.defaultPrevented;
-      };
+      const handleClick = (e: SyntheticEvent<MouseEvent>) => spy(e.sourceEvent.defaultPrevented);
 
       return (
         <Router routes={routes}>
@@ -144,6 +141,54 @@ describe('@web-router/link', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(`"<a href="/">first</a>"`);
 
     click(host.querySelector('a'));
-    expect(defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith(true);
+  });
+
+  test('prevents default click event #2', () => {
+    // https://github.com/atellmer/dark/issues/77
+    const spy = jest.fn();
+    const routes: Routes = [
+      {
+        path: '',
+        component: component(() => <root />),
+      },
+      {
+        path: 'page',
+        component: component(() => <page />),
+      },
+    ];
+    const App = component(() => {
+      const handleClick = (e: SyntheticEvent<MouseEvent>) => spy(e.sourceEvent.defaultPrevented);
+
+      return (
+        <Router routes={routes}>
+          {slot => {
+            return (
+              <>
+                <Link to='/page'>
+                  <div>
+                    <div data-link onClick={handleClick}>
+                      page
+                    </div>
+                  </div>
+                </Link>
+                {slot}
+              </>
+            );
+          }}
+        </Router>
+      );
+    });
+
+    render(<App />);
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/page"><div><div data-link="true">page</div></div></a><root></root>"`,
+    );
+
+    click(host.querySelector('[data-link]'));
+    expect(host.innerHTML).toMatchInlineSnapshot(
+      `"<a href="/page"><div><div data-link="true">page</div></div></a><page></page>"`,
+    );
+    expect(spy).toHaveBeenCalledWith(true);
   });
 });
