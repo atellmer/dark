@@ -1,5 +1,5 @@
 import { type DarkElement, type Ref, component, useEvent, detectIsFunction } from '@dark-engine/core';
-import { type SyntheticEvent, type DarkJSX } from '@dark-engine/platform-browser';
+import { type SyntheticEvent, type DarkJSX, PREVENT } from '@dark-engine/platform-browser';
 
 import { useHistory } from '../use-history';
 
@@ -21,7 +21,7 @@ const Link = component<LinkProps>(
     });
 
     return (
-      <a ref={ref} {...rest} href={to} class={className} onClick={handleClick}>
+      <a ref={ref} {...rest} {...prevent} href={to} class={className} onClick={handleClick}>
         {slot}
       </a>
     );
@@ -30,5 +30,7 @@ const Link = component<LinkProps>(
     displayName: 'Link',
   },
 );
+
+const prevent = { [PREVENT]: true };
 
 export { Link };

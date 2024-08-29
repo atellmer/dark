@@ -48,6 +48,7 @@ import {
   EXCLUDE_ATTR_MARK,
   DANGER_HTML_ATTR,
   DASH_MARK,
+  PREVENT,
 } from '../constants';
 import type {
   NativeElement,
@@ -160,6 +161,11 @@ function performAttribute(
 
   if (attrName === STYLE_ATTR && nextAttrValue && nextAttrValue !== prevAttrValue && detectIsObject(nextAttrValue)) {
     setObjectStyle(tagElement, nextAttrValue as CSSProperties);
+    return null;
+  }
+
+  if (attrName === PREVENT) {
+    tagElement[PREVENT] = true;
     return null;
   }
 
@@ -282,6 +288,7 @@ function commitCreation(fiber: Fiber<NativeElement>) {
   }
 
   detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydration);
+  fiber.element.parentElement?.[PREVENT] && (fiber.element[PREVENT] = true);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
