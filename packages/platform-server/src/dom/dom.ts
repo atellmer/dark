@@ -20,7 +20,13 @@ import {
   createReplacer,
   detectIsTextBased,
 } from '@dark-engine/core';
-import { type AttributeValue, VALUE_ATTR, TEXTAREA_TAG, detectIsVoidElement } from '@dark-engine/platform-browser';
+import {
+  type AttributeValue,
+  VALUE_ATTR,
+  TEXTAREA_TAG,
+  PREVENT,
+  detectIsVoidElement,
+} from '@dark-engine/platform-browser';
 
 import { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
 
@@ -43,7 +49,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode) {
   for (const attrName in vNode.attrs) {
     const attrValue = vNode.attrs[attrName];
 
-    if (attrName === REF_ATTR || detectIsFunction(attrValue)) {
+    if (attrName === REF_ATTR || attrName === PREVENT || detectIsFunction(attrValue)) {
       continue;
     } else if (!detectIsUndefined(attrValue) && !ATTR_BLACK_LIST[attrName]) {
       !patchAttributes(tagElement, attrName, attrValue) && tagElement.setAttribute(attrName, attrValue);
