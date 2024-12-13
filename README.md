@@ -149,11 +149,11 @@ createRoot(document.getElementById('root')).render(App());
 
 ## Benchmark
 
-[js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_123.0.6312.59.html)
+[js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/2024/table_chrome_131.0.6778.85.html)
 
 <img src="./assets/bench.png">
 
-Based on the benchmark results (on the my machine), Dark is approximately 24% slower than the reference `vanillajs implementation`, yet it outperforms both React and Preact.
+Based on the benchmark results, Dark is approximately 28% slower than the reference `vanillajs-lite implementation`, yet it outperforms Angular, React and Preact.
 
 ## Lighthouse
 
