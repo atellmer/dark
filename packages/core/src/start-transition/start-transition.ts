@@ -1,4 +1,5 @@
 import { type Callback } from '../shared';
+import { scheduler } from '../scheduler';
 import { useState } from '../use-state';
 import { useEvent } from '../use-event';
 import { $$scope } from '../scope';
@@ -20,8 +21,9 @@ function useTransition(): [boolean, typeof startTransition] {
     startTransition(callback);
     $scope.setOnTransitionEnd(null);
   });
+  const $isPending = scheduler.detectIsTransition() ? false : isPending;
 
-  return [isPending, $startTransition];
+  return [$isPending, $startTransition];
 }
 
 export { startTransition, useTransition };

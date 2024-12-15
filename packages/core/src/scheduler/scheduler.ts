@@ -250,8 +250,8 @@ class Task {
     return this.forceAsync;
   }
 
-  setIsTransition(value: boolean) {
-    this.isTransition = value;
+  setIsTransition(x: boolean) {
+    this.isTransition = x;
   }
 
   getIsTransition() {

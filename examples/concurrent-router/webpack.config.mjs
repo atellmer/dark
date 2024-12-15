@@ -19,7 +19,7 @@ const config = env => ({
   devServer: {
     static: join(__dirname, './'),
     compress: false,
-    port: 9000,
+    port: 9004,
     historyApiFallback: true,
   },
   module: {
