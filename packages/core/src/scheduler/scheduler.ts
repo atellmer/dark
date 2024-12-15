@@ -84,19 +84,19 @@ class Scheduler {
   }
 
   hasPrimaryTask() {
-    const { high, normal } = this.getQueues();
-    const hasPrimary = high.length > 0 || normal.length > 0;
+    const { high, normal, low } = this.getQueues();
+    const hasPrimary = high.length > 0 || normal.length > 0 || low.length > 0;
 
     return hasPrimary;
   }
 
   retain(fn: OnRestore) {
     const { high, normal, low } = this.getQueues();
-    const priorityTasks = [...high, ...normal];
-    const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, priorityTasks);
+    const tasks = [...high, ...normal, ...low];
+    const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, tasks);
 
     if (hasHostUpdate || hasChildUpdate) {
-      const hasExact = detectHasExact(this.task, [...priorityTasks, ...low]);
+      const hasExact = detectHasExact(this.task, tasks);
 
       if (hasExact) {
         this.complete(this.task); // cancels the task
