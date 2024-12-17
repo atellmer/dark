@@ -17,7 +17,7 @@ function useTransition(): [boolean, typeof startTransition] {
   const $scope = $$scope();
   const $startTransition = useEvent((callback: Callback) => {
     setIsPending(true);
-    $scope.setOnTransitionEnd(() => setIsPending(false));
+    $scope.setOnTransitionEnd(isPending => setIsPending(isPending));
     startTransition(callback);
     $scope.setOnTransitionEnd(null);
   });

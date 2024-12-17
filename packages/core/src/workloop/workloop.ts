@@ -71,7 +71,7 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       shouldYield = isAsync && scheduler.shouldYield();
       $scope.setNextUnitOfWork(unit);
 
-      if (shouldYield && scheduler.detectIsTransition() && scheduler.hasPrimaryTask()) {
+      if (shouldYield && scheduler.detectIsTransition() && scheduler.hasNewTask()) {
         fork($scope);
         return false;
       }

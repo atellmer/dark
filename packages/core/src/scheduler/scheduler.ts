@@ -1,7 +1,7 @@
 import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
 import { getTime, detectIsPromise, detectIsFunction } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
-import { type Callback } from '../shared';
+import { type Callback, type CallbackWithValue } from '../shared';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { type Fiber } from '../fiber';
@@ -83,11 +83,10 @@ class Scheduler {
     return this.task.getIsTransition();
   }
 
-  hasPrimaryTask() {
+  hasNewTask() {
     const { high, normal, low } = this.getQueues();
-    const hasPrimary = high.length > 0 || normal.length > 0 || low.length > 0;
 
-    return hasPrimary;
+    return high.length + normal.length + low.length > 0;
   }
 
   retain(fn: OnRestore) {
@@ -99,7 +98,7 @@ class Scheduler {
       const hasExact = detectHasExact(this.task, tasks);
 
       if (hasExact) {
-        this.complete(this.task); // cancels the task
+        this.complete(this.task, true); // cancels the task
       } else {
         this.defer(this.task); // cancels and restarts the task from the beginning
       }
@@ -111,8 +110,8 @@ class Scheduler {
     }
   }
 
-  private complete(task: Task) {
-    task.complete();
+  private complete(task: Task, isPending: boolean) {
+    task.complete(isPending);
   }
 
   private put(task: Task) {
@@ -195,7 +194,7 @@ class Scheduler {
       } else if (something) {
         this.port.postMessage(null);
       } else {
-        this.complete(this.task);
+        this.complete(this.task, false);
         this.reset();
         this.execute();
       }
@@ -232,7 +231,7 @@ class Task {
   private callback: TaskCallback = null;
   private createLoc?: CreateLoc = null;
   private onRestore?: OnRestore = null;
-  private onTransitionEnd?: Callback = null;
+  private onTransitionEnd?: CallbackWithValue<boolean> = null;
   private static nextTaskId = 0;
 
   constructor(callback: TaskCallback, priority: TaskPriority, forceAsync: boolean) {
@@ -264,8 +263,8 @@ class Task {
     this.onRestore = null;
   }
 
-  complete() {
-    this.isTransition && !this.isObsolete && detectIsFunction(this.onTransitionEnd) && this.onTransitionEnd();
+  complete(isPending: boolean) {
+    this.isTransition && !this.isObsolete && detectIsFunction(this.onTransitionEnd) && this.onTransitionEnd(isPending);
   }
 
   markAsObsolete() {
@@ -294,7 +293,7 @@ class Task {
     return this.createLoc();
   }
 
-  setOnTransitionEnd(fn: Callback) {
+  setOnTransitionEnd(fn: CallbackWithValue<boolean>) {
     this.onTransitionEnd = fn;
   }
 }
@@ -364,7 +363,7 @@ export type ScheduleCallbackOptions = {
   forceAsync?: boolean;
   isTransition?: boolean;
   loc?: () => string;
-  onTransitionEnd?: Callback;
+  onTransitionEnd?: CallbackWithValue<boolean>;
 };
 
 const scheduler = new Scheduler();
