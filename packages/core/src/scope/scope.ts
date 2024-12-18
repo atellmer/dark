@@ -1,5 +1,6 @@
 import type { Callback, CallbackWithValue, ElementKey, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
+import { type OnTransitionEnd } from '../scheduler';
 import { type Fiber, Awaiter } from '../fiber';
 import { EventEmitter } from '../emitter';
 
@@ -23,7 +24,7 @@ class Scope {
   private resourceId = 0;
   private resources: AppResources = new Map();
   private awaiter: Awaiter = new Awaiter();
-  private onTransitionEnd: CallbackWithValue<boolean> = null;
+  private onTransitionEnd: OnTransitionEnd = null;
   private isLayoutEffectsZone = false;
   private isInsertionEffectsZone = false;
   private isUpdateZone = false;
@@ -367,7 +368,7 @@ class Scope {
     return this.onTransitionEnd;
   }
 
-  setOnTransitionEnd(fn: CallbackWithValue<boolean>) {
+  setOnTransitionEnd(fn: OnTransitionEnd) {
     this.onTransitionEnd = fn;
   }
 

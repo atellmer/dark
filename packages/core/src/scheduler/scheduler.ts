@@ -1,7 +1,7 @@
 import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
 import { getTime, detectIsPromise, detectIsFunction } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
-import { type Callback, type CallbackWithValue } from '../shared';
+import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';
 import { platform } from '../platform';
 import { type Fiber } from '../fiber';
@@ -110,16 +110,16 @@ class Scheduler {
     }
   }
 
-  private complete(task: Task, isPending: boolean) {
-    task.complete(isPending);
+  private complete(task: Task, isCanceled: boolean) {
+    task.complete(isCanceled);
   }
 
   private put(task: Task) {
     const queue = this.queue[task.getPriority()];
 
     if (task.getIsTransition()) {
-      const loc = task.loc();
-      const tasks = queue.filter(x => x.loc() !== loc);
+      const base = task.base();
+      const tasks = queue.filter(x => x.base() !== base);
 
       queue.splice(0, queue.length, ...tasks);
     }
@@ -231,7 +231,7 @@ class Task {
   private callback: TaskCallback = null;
   private createLoc?: CreateLoc = null;
   private onRestore?: OnRestore = null;
-  private onTransitionEnd?: CallbackWithValue<boolean> = null;
+  private onTransitionEnd?: OnTransitionEnd = null;
   private static nextTaskId = 0;
 
   constructor(callback: TaskCallback, priority: TaskPriority, forceAsync: boolean) {
@@ -263,8 +263,11 @@ class Task {
     this.onRestore = null;
   }
 
-  complete(isPending: boolean) {
-    this.isTransition && !this.isObsolete && detectIsFunction(this.onTransitionEnd) && this.onTransitionEnd(isPending);
+  complete(isCanceled: boolean) {
+    this.isTransition &&
+      !this.isObsolete &&
+      detectIsFunction(this.onTransitionEnd) &&
+      this.onTransitionEnd(loc => (isCanceled ? this.createBase(loc) === this.base() : false));
   }
 
   markAsObsolete() {
@@ -283,36 +286,40 @@ class Task {
     this.createLoc = fn;
   }
 
-  loc() {
-    const [loc] = this.createLoc().split(HOOK_DELIMETER);
+  createBase(loc: string) {
+    const [base] = loc.split(HOOK_DELIMETER);
 
-    return loc;
+    return base;
   }
 
-  $loc() {
+  base() {
+    return this.createBase(this.loc());
+  }
+
+  loc() {
     return this.createLoc();
   }
 
-  setOnTransitionEnd(fn: CallbackWithValue<boolean>) {
+  setOnTransitionEnd(fn: OnTransitionEnd) {
     this.onTransitionEnd = fn;
   }
 }
 
 function collectFlags(task: Task, tasks: Array<Task>) {
-  const loc = task.loc();
+  const base = task.base();
   let hasTopUpdate = false;
   let hasHostUpdate = false;
   let hasChildUpdate = false;
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
-    const $loc = task.loc();
+    const $base = task.base();
 
-    if ($loc.length < loc.length && loc.indexOf($loc) === 0) {
+    if ($base.length < base.length && base.indexOf($base) === 0) {
       hasTopUpdate = true;
-    } else if ($loc === loc) {
+    } else if ($base === base) {
       hasHostUpdate = true;
-    } else if ($loc.length > loc.length && $loc.indexOf(loc) === 0) {
+    } else if ($base.length > base.length && $base.indexOf(base) === 0) {
       hasChildUpdate = true;
     }
   }
@@ -325,8 +332,8 @@ function collectFlags(task: Task, tasks: Array<Task>) {
 }
 
 function detectHasExact(task: Task, tasks: Array<Task>) {
-  const $loc = task.$loc();
-  const hasExact = tasks.some(x => x.$loc() === $loc);
+  const $loc = task.loc();
+  const hasExact = tasks.some(x => x.loc() === $loc);
 
   return hasExact;
 }
@@ -358,12 +365,14 @@ export type OnRestoreOptions = {
 
 export type OnRestore = (options: OnRestoreOptions) => void;
 
+export type OnTransitionEnd = (fn: (loc: string) => boolean) => void;
+
 export type ScheduleCallbackOptions = {
   priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
   loc?: () => string;
-  onTransitionEnd?: CallbackWithValue<boolean>;
+  onTransitionEnd?: OnTransitionEnd;
 };
 
 const scheduler = new Scheduler();

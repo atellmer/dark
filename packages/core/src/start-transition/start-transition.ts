@@ -1,3 +1,4 @@
+import { __useLoc as useLoc } from '../internal';
 import { type Callback } from '../shared';
 import { scheduler } from '../scheduler';
 import { useState } from '../use-state';
@@ -8,16 +9,20 @@ function startTransition(callback: Callback) {
   const $scope = $$scope();
 
   $scope.setIsTransitionZone(true);
-  callback();
-  $scope.setIsTransitionZone(false);
+  try {
+    callback();
+  } finally {
+    $scope.setIsTransitionZone(false);
+  }
 }
 
 function useTransition(): [boolean, typeof startTransition] {
   const [isPending, setIsPending] = useState(false);
+  const loc = useLoc();
   const $scope = $$scope();
   const $startTransition = useEvent((callback: Callback) => {
     setIsPending(true);
-    $scope.setOnTransitionEnd(isPending => setIsPending(isPending));
+    $scope.setOnTransitionEnd(fn => setIsPending(fn(loc())));
     startTransition(callback);
     $scope.setOnTransitionEnd(null);
   });
