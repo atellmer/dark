@@ -21,6 +21,11 @@ jobs:
       with:
         node-version: '20.13.1'
 
+    - name: Enable Corepack and install correct Yarn version
+      run: |
+        corepack enable
+        corepack prepare yarn@4.5.3 --activate 
+
     - name: Cache dependencies
       uses: actions/cache@v3
       with:
