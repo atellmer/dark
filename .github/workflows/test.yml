@@ -21,8 +21,16 @@ jobs:
       with:
         node-version: '20.13.1'
 
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.yarn/cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
     - name: Install dependencies
-      run: npm install
+      run: yarn install --frozen-lockfile
 
     - name: Run tests
-      run: npm test
+      run: yarn test
