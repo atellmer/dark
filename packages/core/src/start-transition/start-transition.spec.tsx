@@ -197,6 +197,7 @@ describe('@core/start-transition', () => {
     await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
+    await sleep(1);
     setIdx(1);
     await sleep(1);
     expect(host.innerHTML).toBe(content(1));
