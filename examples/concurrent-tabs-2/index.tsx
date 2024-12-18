@@ -9,7 +9,7 @@ const PostsTab = memo(
   component(() => {
     const items = [];
 
-    //console.log('posts');
+    console.log('...posts...');
     for (let i = 0; i < 500; i++) {
       items.push(<SlowPost key={i} index={i} />);
     }
@@ -33,13 +33,13 @@ const SlowPost = component<SlowPostProps>(({ index }) => {
 
 const ContactTab = component(() => {
   return (
-    <>
+    <div class='red'>
       <p>You can find me online here:</p>
       <ul>
         <li>admin@mysite.com</li>
         <li>+123456789</li>
       </ul>
-    </>
+    </div>
   );
 });
 
@@ -50,27 +50,22 @@ type TabButtonProps = {
 };
 
 const TabButton = component<TabButtonProps>(({ slot, isActive, onClick }) => {
-  const [isPending, startTransition] = useTransition();
-
-  const handleClick = () => {
-    startTransition(() => onClick());
-  };
-
   if (isActive) {
     return <b>{slot}</b>;
   }
 
-  if (isPending) {
-    return <b style={`color: red;`}>{slot}</b>;
-  }
-
-  return <button onClick={handleClick}>{slot}</button>;
+  return <button onClick={onClick}>{slot}</button>;
 });
 
 const App = component(() => {
   const [tab, setTab] = useState('about');
+  const [isPending, startTransition] = useTransition();
 
-  const selectTab = (nextTab: string) => setTab(nextTab);
+  const selectTab = (nextTab: string) => {
+    startTransition(() => {
+      setTab(nextTab);
+    });
+  };
 
   return (
     <>
@@ -84,9 +79,15 @@ const App = component(() => {
         Contact
       </TabButton>
       <hr />
-      {tab === 'about' && <AboutTab />}
-      {tab === 'posts' && <PostsTab />}
-      {tab === 'contact' && <ContactTab />}
+      {isPending ? (
+        <div>PENDING...</div>
+      ) : (
+        <>
+          {tab === 'about' && <AboutTab />}
+          {tab === 'posts' && <PostsTab />}
+          {tab === 'contact' && <ContactTab />}
+        </>
+      )}
     </>
   );
 });
