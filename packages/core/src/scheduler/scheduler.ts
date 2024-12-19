@@ -39,6 +39,7 @@ class MessagePort {
 
   unref() {
     this.offs.forEach(x => x());
+    this.offs = [];
   }
 }
 
