@@ -59,12 +59,8 @@ const Router = component<RouterProps>(
 
     const set = (location: RouterLocation) => {
       if (isConcurrent) {
-        startTransition(() => pending$.set(true));
-        $scope.setOnTransitionEnd(() => {
-          if (scope.location === location) {
-            startTransition(() => pending$.set(false));
-          }
-        });
+        pending$.set(true);
+        $scope.setOnTransitionEnd(() => scope.location === location && pending$.set(false));
         startTransition(() => setLocation(location));
         $scope.setOnTransitionEnd(null);
       } else {

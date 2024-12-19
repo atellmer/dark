@@ -104,6 +104,8 @@ function createHookLoc(rootId: number, idx: number, hook: Hook) {
   return loc;
 }
 
+const createLoc = (rootId: number, idx: number, hook: Hook) => () => createHookLoc(rootId, idx, hook);
+
 function detectIsStableMemoTree(fiber: Fiber, $scope: Scope) {
   if (!hasChildrenProp(fiber.inst)) return;
   const actions = $scope.getActionsById(fiber.id);
@@ -234,6 +236,7 @@ export {
   detectIsFiberAlive,
   resolveSuspense,
   createHookLoc,
+  createLoc,
   tryOptStaticSlot,
   tryOptMemoSlot,
   notifyParents,

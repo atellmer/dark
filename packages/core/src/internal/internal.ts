@@ -1,7 +1,7 @@
 import { detectIsServer, detectIsHydration } from '../platform';
-import { resolveSuspense } from '../walk';
+import { resolveSuspense, createLoc } from '../walk';
+import { $$scope, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
-import { $$scope } from '../scope';
 
 function useCursor() {
   return $$scope().getCursorFiber();
@@ -25,4 +25,14 @@ function useInSuspense() {
   return Boolean(suspense);
 }
 
-export { useCursor as __useCursor, useSSR as __useSSR, useInSuspense as __useInSuspense };
+function useLoc() {
+  const rootId = getRootId();
+  const cursor = useCursor();
+  const { hook } = cursor;
+  const { idx } = hook;
+  const loc = createLoc(rootId, idx, hook);
+
+  return loc;
+}
+
+export { useCursor as __useCursor, useSSR as __useSSR, useInSuspense as __useInSuspense, useLoc as __useLoc };

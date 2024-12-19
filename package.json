@@ -32,5 +32,6 @@
     "hooks": {
       "pre-commit": "npm test"
     }
-  }
+  },
+  "packageManager": "yarn@4.5.3"
 }

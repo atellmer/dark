@@ -49,7 +49,7 @@ import {
   notifyParents,
   tryOptStaticSlot,
   tryOptMemoSlot,
-  createHookLoc,
+  createLoc,
 } from '../walk';
 import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
@@ -71,7 +71,7 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
       shouldYield = isAsync && scheduler.shouldYield();
       $scope.setNextUnitOfWork(unit);
 
-      if (shouldYield && scheduler.detectIsTransition() && scheduler.hasPrimaryTask()) {
+      if (shouldYield && scheduler.detectIsTransition() && scheduler.hasNewTask()) {
         fork($scope);
         return false;
       }
@@ -711,8 +711,6 @@ function createUpdate(rootId: number, hook: Hook) {
 
   return update;
 }
-
-const createLoc = (rootId: number, idx: number, hook: Hook) => () => createHookLoc(rootId, idx, hook);
 
 export type Tools = {
   shouldUpdate: () => boolean;

@@ -7,6 +7,8 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 <img alt="github release" src="https://img.shields.io/github/release/atellmer/dark.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="npm downloads" src="https://img.shields.io/npm/dt/%40dark-engine%2Fcore.svg?style=flat&colorA=000063&colorB=673ab7">
 <img alt="bundle size" src="https://img.shields.io/bundlejs/size/%40dark-engine%2Fcore?label=size%20(gzip)&style=flat&colorA=000063&colorB=673ab7">
+<img alt="tests" src="https://github.com/atellmer/dark/actions/workflows/test.yml/badge.svg">
+
 </div>
 
 <div align="center"> 

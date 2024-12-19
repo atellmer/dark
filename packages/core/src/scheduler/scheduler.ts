@@ -39,6 +39,7 @@ class MessagePort {
 
   unref() {
     this.offs.forEach(x => x());
+    this.offs = [];
   }
 }
 
@@ -49,6 +50,7 @@ class Scheduler {
     [TaskPriority.LOW]: [],
   };
   private deadline = 0;
+  private lastId = 0;
   private task: Task = null;
   private scheduledCallback: WorkLoop = null;
   private isMessageLoopRunning = false;
@@ -75,31 +77,35 @@ class Scheduler {
   schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
     const task = createTask(callback, options);
 
+    this.lastId = task.getId();
     this.put(task);
     this.execute();
+  }
+
+  getLastId() {
+    return this.lastId;
   }
 
   detectIsTransition() {
     return this.task.getIsTransition();
   }
 
-  hasPrimaryTask() {
-    const { high, normal } = this.getQueues();
-    const hasPrimary = high.length > 0 || normal.length > 0;
+  hasNewTask() {
+    const { high, normal, low } = this.getQueues();
 
-    return hasPrimary;
+    return high.length + normal.length + low.length > 0;
   }
 
   retain(fn: OnRestore) {
     const { high, normal, low } = this.getQueues();
-    const priorityTasks = [...high, ...normal];
-    const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, priorityTasks);
+    const tasks = [...high, ...normal, ...low];
+    const { hasHostUpdate, hasChildUpdate } = collectFlags(this.task, tasks);
 
     if (hasHostUpdate || hasChildUpdate) {
-      const hasExact = detectHasExact(this.task, [...priorityTasks, ...low]);
+      const hasExact = detectHasExact(this.task, tasks);
 
       if (hasExact) {
-        this.complete(this.task); // cancels the task
+        this.complete(this.task, true); // cancels the task
       } else {
         this.defer(this.task); // cancels and restarts the task from the beginning
       }
@@ -111,16 +117,16 @@ class Scheduler {
     }
   }
 
-  private complete(task: Task) {
-    task.complete();
+  private complete(task: Task, isCanceled: boolean) {
+    task.complete(isCanceled);
   }
 
   private put(task: Task) {
     const queue = this.queue[task.getPriority()];
 
     if (task.getIsTransition()) {
-      const loc = task.loc();
-      const tasks = queue.filter(x => x.loc() !== loc);
+      const base = task.base();
+      const tasks = queue.filter(x => x.base() !== base);
 
       queue.splice(0, queue.length, ...tasks);
     }
@@ -195,7 +201,7 @@ class Scheduler {
       } else if (something) {
         this.port.postMessage(null);
       } else {
-        this.complete(this.task);
+        this.complete(this.task, false);
         this.reset();
         this.execute();
       }
@@ -232,7 +238,7 @@ class Task {
   private callback: TaskCallback = null;
   private createLoc?: CreateLoc = null;
   private onRestore?: OnRestore = null;
-  private onTransitionEnd?: Callback = null;
+  private onTransitionEnd?: OnTransitionEnd = null;
   private static nextTaskId = 0;
 
   constructor(callback: TaskCallback, priority: TaskPriority, forceAsync: boolean) {
@@ -240,6 +246,10 @@ class Task {
     this.callback = callback;
     this.priority = priority;
     this.forceAsync = forceAsync;
+  }
+
+  getId() {
+    return this.__id;
   }
 
   getPriority() {
@@ -250,8 +260,8 @@ class Task {
     return this.forceAsync;
   }
 
-  setIsTransition(value: boolean) {
-    this.isTransition = value;
+  setIsTransition(x: boolean) {
+    this.isTransition = x;
   }
 
   getIsTransition() {
@@ -264,8 +274,11 @@ class Task {
     this.onRestore = null;
   }
 
-  complete() {
-    this.isTransition && !this.isObsolete && detectIsFunction(this.onTransitionEnd) && this.onTransitionEnd();
+  complete(isCanceled: boolean) {
+    this.isTransition &&
+      !this.isObsolete &&
+      detectIsFunction(this.onTransitionEnd) &&
+      this.onTransitionEnd(loc => (isCanceled ? this.createBase(loc) === this.base() : false));
   }
 
   markAsObsolete() {
@@ -284,36 +297,40 @@ class Task {
     this.createLoc = fn;
   }
 
-  loc() {
-    const [loc] = this.createLoc().split(HOOK_DELIMETER);
+  createBase(loc: string) {
+    const [base] = loc.split(HOOK_DELIMETER);
 
-    return loc;
+    return base;
   }
 
-  $loc() {
+  base() {
+    return this.createBase(this.loc());
+  }
+
+  loc() {
     return this.createLoc();
   }
 
-  setOnTransitionEnd(fn: Callback) {
+  setOnTransitionEnd(fn: OnTransitionEnd) {
     this.onTransitionEnd = fn;
   }
 }
 
 function collectFlags(task: Task, tasks: Array<Task>) {
-  const loc = task.loc();
+  const base = task.base();
   let hasTopUpdate = false;
   let hasHostUpdate = false;
   let hasChildUpdate = false;
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
-    const $loc = task.loc();
+    const $base = task.base();
 
-    if ($loc.length < loc.length && loc.indexOf($loc) === 0) {
+    if ($base.length < base.length && base.indexOf($base) === 0) {
       hasTopUpdate = true;
-    } else if ($loc === loc) {
+    } else if ($base === base) {
       hasHostUpdate = true;
-    } else if ($loc.length > loc.length && $loc.indexOf(loc) === 0) {
+    } else if ($base.length > base.length && $base.indexOf(base) === 0) {
       hasChildUpdate = true;
     }
   }
@@ -326,8 +343,8 @@ function collectFlags(task: Task, tasks: Array<Task>) {
 }
 
 function detectHasExact(task: Task, tasks: Array<Task>) {
-  const $loc = task.$loc();
-  const hasExact = tasks.some(x => x.$loc() === $loc);
+  const $loc = task.loc();
+  const hasExact = tasks.some(x => x.loc() === $loc);
 
   return hasExact;
 }
@@ -359,12 +376,14 @@ export type OnRestoreOptions = {
 
 export type OnRestore = (options: OnRestoreOptions) => void;
 
+export type OnTransitionEnd = (fn: (loc: string) => boolean) => void;
+
 export type ScheduleCallbackOptions = {
   priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
   loc?: () => string;
-  onTransitionEnd?: Callback;
+  onTransitionEnd?: OnTransitionEnd;
 };
 
 const scheduler = new Scheduler();
