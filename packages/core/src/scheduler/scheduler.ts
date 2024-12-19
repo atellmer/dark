@@ -50,6 +50,7 @@ class Scheduler {
     [TaskPriority.LOW]: [],
   };
   private deadline = 0;
+  private lastId = 0;
   private task: Task = null;
   private scheduledCallback: WorkLoop = null;
   private isMessageLoopRunning = false;
@@ -76,8 +77,13 @@ class Scheduler {
   schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
     const task = createTask(callback, options);
 
+    this.lastId = task.getId();
     this.put(task);
     this.execute();
+  }
+
+  getLastId() {
+    return this.lastId;
   }
 
   detectIsTransition() {
@@ -240,6 +246,10 @@ class Task {
     this.callback = callback;
     this.priority = priority;
     this.forceAsync = forceAsync;
+  }
+
+  getId() {
+    return this.__id;
   }
 
   getPriority() {

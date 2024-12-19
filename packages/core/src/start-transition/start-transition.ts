@@ -1,3 +1,4 @@
+import { detectIsFunction, illegal } from '../utils';
 import { __useLoc as useLoc } from '../internal';
 import { type Callback } from '../shared';
 import { scheduler } from '../scheduler';
@@ -7,10 +8,17 @@ import { $$scope } from '../scope';
 
 function startTransition(callback: Callback) {
   const $scope = $$scope();
+  const id = scheduler.getLastId();
 
   $scope.setIsTransitionZone(true);
   try {
     callback();
+    if (id === scheduler.getLastId()) {
+      const fn = $scope.getOnTransitionEnd();
+
+      detectIsFunction(fn) && fn(() => false);
+      illegal('startTransition must plan a new render!');
+    }
   } finally {
     $scope.setIsTransitionZone(false);
   }
