@@ -56,7 +56,6 @@ import {
   type DarkElement,
   type Dispatch,
   type ElementKey,
-  type ErrorBoundaryFallbackOptions,
   type FunctionRef,
   type MutableRef,
   type ReadableAtom,
@@ -647,31 +646,31 @@ When you get an error, you can log it and show an alternate user interface.
 #### `useError`
 
 ```tsx
-type BrokenProps = {
-  hasError: boolean;
-};
-
-const Broken = component<BrokenProps>(({ hasError }) => {
-  if (hasError) {
+const Counter = component<{ count: boolean }>(({ count }) => {
+  if (count === 3) {
     throw new Error('oh no!');
   }
 
-  return <div>Hello!</div>;
+  return <div>{count}</div>;
 });
 
 const App = component(() => {
-  const [hasError, setHasError] = useState(false);
-  const error = useError();
+  const [count, setCount] = useState(0);
+  const [error, reset] = useError();
 
-  useEffect(() => {
-    setTimeout(() => setHasError(true), 3000);
-  }, []);
-
-  if (error) return <div>Something went wrong! 🫢</div>;
+  if (error) {
+    return (
+      <>
+        <div>Something went wrong! 🫢</div>
+        <button onClick={() => (setCount(4), reset())}>try again</button>
+      </>
+    )
+  };
 
   return (
     <>
-      <Broken hasError={hasError} />
+      <Counter count={count} />
+      <button onClick={() => setCount(x => x + 1)}>increment</button>
     </>
   );
 });

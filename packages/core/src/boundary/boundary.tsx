@@ -1,9 +1,8 @@
 import type { DarkElement, SlotProps, Callback } from '../shared';
-import { component, detectIsComponent } from '../component';
 import { __useCursor as useCursor } from '../internal';
-import { detectIsVirtualNodeFactory } from '../view';
 import { detectIsFunction } from '../utils';
 import { useEffect } from '../use-effect';
+import { component } from '../component';
 import { useState } from '../use-state';
 import { useEvent } from '../use-event';
 
@@ -18,30 +17,25 @@ function useError(): [Error | null, Callback] {
 }
 
 type ErrorBoundaryProps = {
-  fallback: (x: ErrorBoundaryFallbackOptions) => DarkElement;
+  fallback?: DarkElement;
+  renderFallback?: (x: FallbackOptions) => DarkElement;
   onError?: (e: Error) => void;
 } & Required<SlotProps>;
 
 const ErrorBoundary = component<ErrorBoundaryProps>(
-  ({ fallback, onError, slot }) => {
+  ({ fallback = null, renderFallback, onError, slot }) => {
     const [error, reset] = useError();
 
     useEffect(() => {
       detectIsFunction(onError) && onError(error);
     }, [error]);
 
-    return error
-      ? detectIsComponent(fallback) || detectIsVirtualNodeFactory(fallback)
-        ? fallback
-        : detectIsFunction(fallback)
-        ? fallback({ error, reset })
-        : slot
-      : slot;
+    return error ? (detectIsFunction(renderFallback) ? renderFallback({ error, reset }) : fallback) : slot;
   },
   { displayName: 'ErrorBoundary' },
 );
 
-export type ErrorBoundaryFallbackOptions = {
+type FallbackOptions = {
   error: Error;
   reset: Callback;
 };

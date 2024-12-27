@@ -1,5 +1,5 @@
+import { resolveSuspense, resolveBoundary, createLoc } from '../walk';
 import { detectIsServer, detectIsHydration } from '../platform';
-import { resolveSuspense, createLoc } from '../walk';
 import { $$scope, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
 
@@ -18,11 +18,19 @@ function useSSR() {
     isSSR,
   };
 }
+
 function useInSuspense() {
   const cursor = useCursor();
   const suspense = useMemo(() => resolveSuspense(cursor), [cursor]);
 
   return Boolean(suspense);
+}
+
+function useBoundary() {
+  const cursor = useCursor();
+  const boundary = useMemo(() => resolveBoundary(cursor), [cursor]);
+
+  return boundary;
 }
 
 function useLoc() {
@@ -35,4 +43,10 @@ function useLoc() {
   return loc;
 }
 
-export { useCursor as __useCursor, useSSR as __useSSR, useInSuspense as __useInSuspense, useLoc as __useLoc };
+export {
+  useCursor as __useCursor,
+  useSSR as __useSSR,
+  useInSuspense as __useInSuspense,
+  useBoundary as __useBoundary,
+  useLoc as __useLoc,
+};
