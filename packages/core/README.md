@@ -56,6 +56,7 @@ import {
   type DarkElement,
   type Dispatch,
   type ElementKey,
+  type ErrorBoundaryFallbackOptions,
   type FunctionRef,
   type MutableRef,
   type ReadableAtom,

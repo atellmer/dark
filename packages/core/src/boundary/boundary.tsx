@@ -1,8 +1,9 @@
 import type { DarkElement, SlotProps, Callback } from '../shared';
+import { component, detectIsComponent } from '../component';
 import { __useCursor as useCursor } from '../internal';
+import { detectIsVirtualNodeFactory } from '../view';
 import { detectIsFunction } from '../utils';
 import { useEffect } from '../use-effect';
-import { component } from '../component';
 import { useState } from '../use-state';
 import { useEvent } from '../use-event';
 
@@ -17,7 +18,7 @@ function useError(): [Error | null, Callback] {
 }
 
 type ErrorBoundaryProps = {
-  fallback: (e: Error, reset: Callback) => DarkElement;
+  fallback: (x: ErrorBoundaryFallbackOptions) => DarkElement;
   onError?: (e: Error) => void;
 } & Required<SlotProps>;
 
@@ -29,9 +30,20 @@ const ErrorBoundary = component<ErrorBoundaryProps>(
       detectIsFunction(onError) && onError(error);
     }, [error]);
 
-    return error ? fallback(error, reset) : slot;
+    return error
+      ? detectIsComponent(fallback) || detectIsVirtualNodeFactory(fallback)
+        ? fallback
+        : detectIsFunction(fallback)
+        ? fallback({ error, reset })
+        : slot
+      : slot;
   },
   { displayName: 'ErrorBoundary' },
 );
+
+export type ErrorBoundaryFallbackOptions = {
+  error: Error;
+  reset: Callback;
+};
 
 export { useError, ErrorBoundary };
