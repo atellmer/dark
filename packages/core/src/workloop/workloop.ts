@@ -394,9 +394,10 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
       component.children = result as Array<Instance>;
     } catch (err) {
+      const isSSR = detectIsSSR();
+
       if (detectIsPromise(err)) {
         const promise = err;
-        const isSSR = detectIsSSR();
         const reset = createResetClosure(fiber, prev, $scope);
 
         if (!isSSR) {
@@ -415,7 +416,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
         }
       } else {
         component.children = [];
-        fiber.setError(err);
+        !isSSR && fiber.setError(err);
       }
     }
   } else if (detectIsVirtualNodeFactory(inst)) {
