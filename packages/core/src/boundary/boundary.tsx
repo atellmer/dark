@@ -18,7 +18,7 @@ function useError(): [Error | null, Callback] {
 
 type ErrorBoundaryProps = {
   fallback?: DarkElement;
-  renderFallback?: (x: FallbackOptions) => DarkElement;
+  renderFallback?: (x: RenderFallbackOptions) => DarkElement;
   onError?: (e: Error) => void;
 } & Required<SlotProps>;
 
@@ -35,7 +35,7 @@ const ErrorBoundary = component<ErrorBoundaryProps>(
   { displayName: 'ErrorBoundary' },
 );
 
-type FallbackOptions = {
+type RenderFallbackOptions = {
   error: Error;
   reset: Callback;
 };
