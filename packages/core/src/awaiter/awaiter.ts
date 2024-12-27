@@ -18,7 +18,7 @@ class Awaiter {
         const pendings = hook.getPendings();
         cb(hook);
 
-        Promise.allSettled(promises).then(res => {
+        Promise.allSettled(promises).then(() => {
           if (pendings === hook.getPendings()) {
             hook.setIsPeinding(false);
             cb(hook);
