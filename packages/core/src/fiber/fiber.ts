@@ -216,7 +216,7 @@ type Batch = {
   changes: Array<Callback>;
 };
 
-type Catch = (error: Error) => void;
+type Catch = (e: Error) => void;
 
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };

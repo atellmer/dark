@@ -76,6 +76,7 @@ import {
   detectIsWritableAtom,
   detectIsReadableAtom,
   detectIsServer,
+  ErrorBoundary,
   Fragment,
   Guard,
   h,

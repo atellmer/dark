@@ -30,6 +30,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 🔀 Concurrent rendering
 - 🥱 Lazy loading modules
 - 🎀 Suspense fallbacks
+- 🧲 Error boundaries
 - ☄️ Hot module replacement
 - 💅 Styled components
 - 💃🏼 Spring animations

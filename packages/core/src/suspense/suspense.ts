@@ -5,7 +5,7 @@ import { Fragment } from '../fragment';
 import { Shadow } from '../shadow';
 
 type SuspenseProps = {
-  fallback?: DarkElement;
+  fallback: DarkElement;
 } & Required<SlotProps>;
 
 const Suspense = component<SuspenseProps>(
