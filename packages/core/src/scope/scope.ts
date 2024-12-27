@@ -1,8 +1,9 @@
 import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
 import { type OnTransitionEnd } from '../scheduler';
-import { type Fiber, Awaiter } from '../fiber';
 import { EventEmitter } from '../emitter';
+import { type Fiber } from '../fiber';
+import { Awaiter } from '../awaiter';
 
 class Scope {
   private root: Fiber = null;

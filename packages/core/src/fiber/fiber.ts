@@ -166,37 +166,6 @@ class Hook<T = unknown> {
   }
 }
 
-class Awaiter {
-  store = new Map<Hook, Set<Promise<unknown>>>();
-
-  add(hook: Hook, promise: Promise<unknown>) {
-    !this.store.has(hook) && this.store.set(hook, new Set());
-    this.store.get(hook).add(promise);
-  }
-
-  resolve(cb: (hook: Hook) => void) {
-    for (const [hook, promises] of this.store) {
-      const $promises = Array.from(promises);
-
-      this.store.delete(hook);
-
-      if ($promises.length > 0) {
-        hook.setIsPeinding(true);
-        hook.incrementPending();
-        const pendings = hook.getPendings();
-        cb(hook);
-
-        Promise.allSettled($promises).then(() => {
-          if (pendings === hook.getPendings()) {
-            hook.setIsPeinding(false);
-            cb(hook);
-          }
-        });
-      }
-    }
-  }
-}
-
 function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | null {
   if (alt && detectAreSameComponentTypesWithSameKeys(prevInst, nextInst)) return alt.hook;
   if (detectIsComponent(nextInst)) return new Hook();
@@ -221,4 +190,4 @@ type Catch = (e: Error) => void;
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };
 
-export { Fiber, Hook, Awaiter, getHook };
+export { Fiber, Hook, getHook };
