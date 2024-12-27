@@ -358,6 +358,8 @@ describe('@core/use-state', () => {
         const $value = value.replace(/\D/g, '');
 
         setValue($value);
+
+        return $value;
       };
 
       return <input ref={inputRef} value={value} onInput={handleSetValue} />;
