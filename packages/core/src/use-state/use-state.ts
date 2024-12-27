@@ -47,14 +47,7 @@ function useState<T = unknown>(initialValue: T | (() => T)): [T, (value: Value<T
       get: () => scope.value,
       set: (x: T) => (scope.value = x),
       reset: (x: T) => (scope.value = x),
-      shouldUpdate: (p: T, n: T) => {
-        const $scope = $$scope();
-        const should = !detectIsEqual(p, n);
-
-        !should && $scope.runAfterEvent(n);
-
-        return should;
-      },
+      shouldUpdate: (p: T, n: T) => !detectIsEqual(p, n),
     });
 
     update(tools);
