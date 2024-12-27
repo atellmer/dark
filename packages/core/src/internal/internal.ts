@@ -26,11 +26,11 @@ function useInSuspense() {
   return Boolean(suspense);
 }
 
-function useBoundary() {
+function useInBoundary() {
   const cursor = useCursor();
   const boundary = useMemo(() => resolveBoundary(cursor), [cursor]);
 
-  return boundary;
+  return Boolean(boundary);
 }
 
 function useLoc() {
@@ -47,6 +47,6 @@ export {
   useCursor as __useCursor,
   useSSR as __useSSR,
   useInSuspense as __useInSuspense,
-  useBoundary as __useBoundary,
+  useInBoundary as __useInBoundary,
   useLoc as __useLoc,
 };

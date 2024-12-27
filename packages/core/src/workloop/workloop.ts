@@ -25,7 +25,7 @@ import {
   createIndexKey,
   trueFn,
 } from '../utils';
-import { type Scope, getRootId, setRootId, $$scope, replaceScope } from '../scope';
+import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
 import { type Component, detectIsComponent } from '../component';
 import { type ElementKey, type Instance, type Callback } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
@@ -46,6 +46,7 @@ import {
   getFiberWithElement,
   detectIsFiberAlive,
   resolveSuspense,
+  resolveBoundary,
   notifyParents,
   tryOptStaticSlot,
   tryOptMemoSlot,
@@ -53,7 +54,6 @@ import {
 } from '../walk';
 import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
-import { startTransition } from '../start-transition';
 import { unmountFiber } from '../unmount';
 import { addBatch } from '../batch';
 
@@ -401,10 +401,10 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
         if (!isSSR) {
           const suspense = resolveSuspense(fiber);
+          const boundary = resolveBoundary(fiber);
 
-          if (suspense) {
-            suspense.hook.setIsPeinding(true);
-            $scope.getAwaiter().add(suspense.hook, promise);
+          if (suspense || boundary) {
+            $scope.getAwaiter().add(suspense, boundary, promise);
           } else {
             reset();
             throw err;
@@ -508,14 +508,12 @@ function commit($scope: Scope) {
     process.env.NODE_ENV === 'development' && $scope.setIsHot(false);
   }
 
-  const rootId = getRootId();
   const wip = $scope.getWorkInProgress();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
   const isUpdateZone = $scope.getIsUpdateZone();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
-  const isTransition = scheduler.detectIsTransition();
   const inst = wip.inst as Component;
   const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
 
@@ -545,15 +543,10 @@ function commit($scope: Scope) {
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
-  awaiter.resolve(onResolve(rootId, isTransition));
+  awaiter.resolve();
   unmounts.length > 0 && platform.raf(onUnmount(unmounts));
   cleanup($scope);
 }
-
-const onResolve = (rootId: number, isTransition: boolean) => (hook: Hook) => {
-  const update = createUpdate(rootId, hook);
-  isTransition ? startTransition(update) : update();
-};
 
 const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(unmountFiber);
 

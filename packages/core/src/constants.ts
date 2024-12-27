@@ -22,6 +22,7 @@ export const IS_PENDING_HOOK_MASK = 8;
 export const HOOK_DELIMETER = ':';
 export const YIELD_INTERVAL = 6;
 export const STATE_SCRIPT_TYPE = 'text/dark-state';
+export const REJECTED_STATUS = 'rejected';
 
 export enum TaskPriority {
   LOW = 0,

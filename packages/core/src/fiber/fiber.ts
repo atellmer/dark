@@ -155,6 +155,15 @@ class Hook<T = unknown> {
     this.box?.catch(x);
   }
 
+  setUpdate(x: Callback) {
+    this.__box();
+    this.box.update = x;
+  }
+
+  update() {
+    this.box?.update();
+  }
+
   incrementPending() {
     this.__box();
     detectIsUndefined(this.box.pendings) && (this.box.pendings = 0);
@@ -178,6 +187,7 @@ type Box = {
   batch?: Batch;
   catch?: Catch;
   pendings?: number;
+  update?: Callback;
 };
 
 type Batch = {
