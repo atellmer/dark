@@ -94,7 +94,12 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
       cache.__emit({ type: 'query', phase: 'error', key, id: $cacheId, data: error, initiator });
 
       if (isServer) {
-        logError(error);
+        if (inBoundary) {
+          throwThis(error);
+        } else {
+          logError(error);
+        }
+
         $scope.setResource(id, [null, String(error)]);
       } else {
         if (inBoundary && !isStateOnly) {

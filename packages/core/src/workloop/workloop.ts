@@ -398,21 +398,21 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
       if (detectIsPromise(err)) {
         const promise = err;
-        const reset = createResetClosure(fiber, prev, $scope);
+        const reset = createReset(fiber, prev, $scope);
+        const boundary = resolveBoundary(fiber);
 
         if (!isSSR) {
           const suspense = resolveSuspense(fiber);
-          const boundary = resolveBoundary(fiber);
 
           if (suspense || boundary) {
             $scope.getAwaiter().add(suspense, boundary, promise);
           } else {
             reset();
-            throw err;
+            throw promise;
           }
         } else {
-          reset();
-          throw err;
+          handleAsync(promise, boundary, reset, $scope);
+          throw promise;
         }
       } else {
         component.children = [];
@@ -432,7 +432,20 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   return inst;
 }
 
-const createResetClosure = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
+async function handleAsync(promise: Promise<unknown>, boundary: Fiber, reset: Callback, $scope: Scope) {
+  let isRejected = false;
+
+  try {
+    await promise;
+  } catch (reason) {
+    isRejected = true;
+    boundary && restartFromBoundary(boundary, reason, $scope);
+  } finally {
+    (!isRejected || !boundary) && reset();
+  }
+}
+
+const createReset = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
   if (prev) {
     fiber.hook.owner = null;
     fiber.hook.idx = 0;
@@ -444,6 +457,17 @@ const createResetClosure = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
     fiber.cec = fiber.alt.cec;
   }
 };
+
+function restartFromBoundary(fiber: Fiber, reason: unknown, $scope: Scope) {
+  const resId = fiber.hook.getResId();
+
+  fiber.child = null;
+  fiber.cec = 0;
+  Fiber.setNextId(fiber.id);
+  $scope.setMount(fiber.hook.getLevel());
+  $scope.setNextUnitOfWork(fiber);
+  $scope.setResource(resId, [null, reason instanceof Error ? reason.stack : (reason as string)]);
+}
 
 function extractKeys(alt: Fiber, children: Array<Instance>) {
   let nextFiber = alt;

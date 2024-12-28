@@ -156,6 +156,11 @@ class Scope {
     this.mountLevel = this.mountLevel - 1;
   }
 
+  setMount(level: number) {
+    this.mountLevel = level;
+    this.mountNav[this.mountLevel] = 0;
+  }
+
   navToPrev() {
     const idx = this.getMountIndex();
 
@@ -166,6 +171,10 @@ class Scope {
       this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] - 1;
       this.setMountDeep(false);
     }
+  }
+
+  getMountLevel() {
+    return this.mountLevel;
   }
 
   getMountIndex() {
@@ -403,14 +412,6 @@ class Scope {
 
   getResources() {
     return this.resources;
-  }
-
-  getResourceId() {
-    return this.resourceId;
-  }
-
-  setResourceId(id: number) {
-    this.resourceId = id;
   }
 
   getNextResourceId() {

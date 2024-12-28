@@ -1,4 +1,4 @@
-import { type DarkElement, component, Suspense, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
+import { type DarkElement, component, Suspense, ErrorBoundary, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
 import {
   createBrowserEnv,
   createBrowserHydrateEnv,
@@ -290,4 +290,27 @@ describe('@data/use-query', () => {
     expect(spy).toHaveBeenCalledWith([false, 20, null]);
     spy.mockClear();
   });
+
+  // test.only('xxx', async () => {
+  //   const DataLoader = component(() => {
+  //     const { data } = useQuery(Key.GET_DATA, ({ id }) => api.getData(id, true), {
+  //       variables: { id: 2 },
+  //     });
+
+  //     return <div>{data}</div>;
+  //   });
+  //   const App = component(() => {
+  //     return (
+  //       <ErrorBoundary fallback={<div>ERROR!</div>}>
+  //         <DataLoader />
+  //       </ErrorBoundary>
+  //     );
+  //   });
+  //   const { renderToString } = createServerEnv();
+  //   const result = await renderToString(withProvider(<App />));
+
+  //   expect(result).toMatchInlineSnapshot(
+  //     `"<div>ERROR!</div><script type="text/dark-state">"eyIxIjpbbnVsbCwiRXJyb3I6IG9vcHMhIl19"</script>"`,
+  //   );
+  // });
 });

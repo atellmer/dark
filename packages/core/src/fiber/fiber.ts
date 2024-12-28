@@ -1,4 +1,10 @@
-import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_MASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
+import {
+  IS_WIP_HOOK_MASK,
+  IS_PORTAL_HOOK_MASK,
+  IS_SUSPENSE_HOOK_MASK,
+  IS_BOUNDARY_HOOK_MASK,
+  IS_PENDING_HOOK_MASK,
+} from '../constants';
 import { detectIsFunction, detectIsUndefined, logError } from '../utils';
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
@@ -116,6 +122,14 @@ class Hook<T = unknown> {
     this.__mark(IS_SUSPENSE_HOOK_MASK, x);
   }
 
+  getIsBoundary() {
+    return this.__getMask(IS_BOUNDARY_HOOK_MASK);
+  }
+
+  setIsBoundary(x: boolean) {
+    this.__mark(IS_BOUNDARY_HOOK_MASK, x);
+  }
+
   getIsPending() {
     return this.__getMask(IS_PENDING_HOOK_MASK);
   }
@@ -173,6 +187,24 @@ class Hook<T = unknown> {
   getPendings() {
     return this.box?.pendings;
   }
+
+  setResId(x: number) {
+    this.__box();
+    this.box.resId = x;
+  }
+
+  getResId() {
+    return this.box?.resId;
+  }
+
+  setLevel(x: number) {
+    this.__box();
+    this.box.level = x;
+  }
+
+  getLevel() {
+    return this.box?.level;
+  }
 }
 
 function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | null {
@@ -188,6 +220,8 @@ type Box = {
   catch?: Catch;
   pendings?: number;
   update?: Callback;
+  resId?: number;
+  level?: number;
 };
 
 type Batch = {

@@ -1,11 +1,12 @@
-import { REJECTED_STATUS } from '../constants';
 import { type Fiber, type Hook } from '../fiber';
+import { REJECTED_STATUS } from '../constants';
+import { createError } from '../utils';
 
 class Awaiter {
   store = new Map<Hook, [Hook, Hook, Set<Promise<unknown>>]>();
 
   add(suspense: Fiber, boundary: Fiber, promise: Promise<unknown>) {
-    const key = suspense.hook || boundary.hook;
+    const key = suspense?.hook || boundary?.hook;
     !this.store.has(key) && this.store.set(key, [null, null, new Set()]);
     const data = this.store.get(key);
 
@@ -30,16 +31,24 @@ class Awaiter {
       }
 
       Promise.allSettled(promises).then(res => {
-        const rejected = res.find(x => x.status === REJECTED_STATUS);
+        const hook =
+          boundaryHook && suspenseHook
+            ? boundaryHook.owner.id < suspenseHook.owner.id
+              ? boundaryHook
+              : suspenseHook
+            : boundaryHook || suspenseHook;
 
-        if (rejected && boundaryHook) {
-          boundaryHook.owner.setError(new Error(rejected.reason));
+        if (boundaryHook) {
+          const rejected = res.find(x => x.status === REJECTED_STATUS) as PromiseRejectedResult;
+
+          rejected && boundaryHook.owner.setError(createError(rejected.reason));
         }
 
         if (suspenseHook && pendings === suspenseHook.getPendings()) {
           suspenseHook.setIsPeinding(false);
-          suspenseHook.update();
         }
+
+        hook.update();
       });
     }
   }

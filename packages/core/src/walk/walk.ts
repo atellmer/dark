@@ -94,7 +94,7 @@ function resolveBoundary(fiber: Fiber): Fiber {
   let boundary = fiber;
 
   while (boundary) {
-    if (boundary.hook?.hasCatch()) return boundary;
+    if (boundary.hook?.getIsBoundary()) return boundary;
     boundary = boundary.parent;
   }
 
