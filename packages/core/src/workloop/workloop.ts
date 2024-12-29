@@ -23,6 +23,7 @@ import {
   detectIsPromise,
   formatErrorMsg,
   createIndexKey,
+  createError,
   trueFn,
 } from '../utils';
 import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
@@ -80,19 +81,19 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
     if (!unit && wipFiber) {
       commit($scope);
     }
-  } catch (err) {
-    if (detectIsPromise(err)) {
-      return err;
+  } catch (error) {
+    if (detectIsPromise(error)) {
+      return error;
     } else {
       const emitter = $scope.getEmitter();
 
       $scope.keepRoot(); // !
-      emitter.emit('error', String(err));
+      emitter.emit('error', createError(error));
 
       if (!isAsync) {
-        throw err;
+        throw error;
       } else {
-        logError('err', err);
+        logError(error);
       }
 
       return false;
