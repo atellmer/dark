@@ -99,9 +99,7 @@ const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
 const mapRecord = <T extends object>(record: T) => keys(record).map(x => record[x]);
 
-function createError(reason: unknown) {
-  return reason instanceof Error ? reason : new Error(String(reason).replace('Error: ', ''));
-}
+const createError = (x: unknown) => (x instanceof Error ? x : new Error(String(x)));
 
 export {
   detectIsFunction,

@@ -187,24 +187,6 @@ class Hook<T = unknown> {
   getPendings() {
     return this.box?.pendings;
   }
-
-  setResId(x: number) {
-    this.__box();
-    this.box.resId = x;
-  }
-
-  getResId() {
-    return this.box?.resId;
-  }
-
-  setLevel(x: number) {
-    this.__box();
-    this.box.level = x;
-  }
-
-  getLevel() {
-    return this.box?.level;
-  }
 }
 
 function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | null {
@@ -220,8 +202,6 @@ type Box = {
   catch?: Catch;
   pendings?: number;
   update?: Callback;
-  resId?: number;
-  level?: number;
 };
 
 type Batch = {
