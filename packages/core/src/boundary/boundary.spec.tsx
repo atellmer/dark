@@ -149,6 +149,7 @@ describe('@core/error-boundary', () => {
   });
 
   test('error-boundary works with async errors correctly', async () => {
+    jest.useRealTimers();
     const make = (hasError: boolean) => {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
