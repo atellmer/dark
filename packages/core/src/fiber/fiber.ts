@@ -1,4 +1,10 @@
-import { IS_WIP_HOOK_MASK, IS_PORTAL_HOOK_MASK, IS_SUSPENSE_HOOK_MASK, IS_PENDING_HOOK_MASK } from '../constants';
+import {
+  IS_WIP_HOOK_MASK,
+  IS_PORTAL_HOOK_MASK,
+  IS_SUSPENSE_HOOK_MASK,
+  IS_BOUNDARY_HOOK_MASK,
+  IS_PENDING_HOOK_MASK,
+} from '../constants';
 import { detectIsFunction, detectIsUndefined, logError } from '../utils';
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
@@ -116,6 +122,14 @@ class Hook<T = unknown> {
     this.__mark(IS_SUSPENSE_HOOK_MASK, x);
   }
 
+  getIsBoundary() {
+    return this.__getMask(IS_BOUNDARY_HOOK_MASK);
+  }
+
+  setIsBoundary(x: boolean) {
+    this.__mark(IS_BOUNDARY_HOOK_MASK, x);
+  }
+
   getIsPending() {
     return this.__getMask(IS_PENDING_HOOK_MASK);
   }
@@ -155,6 +169,15 @@ class Hook<T = unknown> {
     this.box?.catch(x);
   }
 
+  setUpdate(x: Callback) {
+    this.__box();
+    this.box.update = x;
+  }
+
+  update() {
+    this.box?.update();
+  }
+
   incrementPending() {
     this.__box();
     detectIsUndefined(this.box.pendings) && (this.box.pendings = 0);
@@ -163,37 +186,6 @@ class Hook<T = unknown> {
 
   getPendings() {
     return this.box?.pendings;
-  }
-}
-
-class Awaiter {
-  store = new Map<Hook, Set<Promise<unknown>>>();
-
-  add(hook: Hook, promise: Promise<unknown>) {
-    !this.store.has(hook) && this.store.set(hook, new Set());
-    this.store.get(hook).add(promise);
-  }
-
-  resolve(cb: (hook: Hook) => void) {
-    for (const [hook, promises] of this.store) {
-      const $promises = Array.from(promises);
-
-      this.store.delete(hook);
-
-      if ($promises.length > 0) {
-        hook.setIsPeinding(true);
-        hook.incrementPending();
-        const pendings = hook.getPendings();
-        cb(hook);
-
-        Promise.allSettled($promises).then(() => {
-          if (pendings === hook.getPendings()) {
-            hook.setIsPeinding(false);
-            cb(hook);
-          }
-        });
-      }
-    }
   }
 }
 
@@ -209,6 +201,7 @@ type Box = {
   batch?: Batch;
   catch?: Catch;
   pendings?: number;
+  update?: Callback;
 };
 
 type Batch = {
@@ -216,9 +209,9 @@ type Batch = {
   changes: Array<Callback>;
 };
 
-type Catch = (error: Error) => void;
+type Catch = (e: Error) => void;
 
 export type NativeElement = unknown;
 export type HookValue<T = any> = { deps: Array<any>; value: T };
 
-export { Fiber, Hook, Awaiter, getHook };
+export { Fiber, Hook, getHook };

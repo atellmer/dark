@@ -76,6 +76,7 @@ import {
   detectIsWritableAtom,
   detectIsReadableAtom,
   detectIsServer,
+  ErrorBoundary,
   Fragment,
   Guard,
   h,
@@ -136,9 +137,8 @@ createRoot(document.getElementById('root')).render(content);
 
 ## JSX
 JSX is a syntax extension for JavaScript that lets you write HTML-like markup inside a JavaScript file.
-You can use it:
 
-### via `jsx-runtime`
+### `jsx-runtime`
 
 In your `tsconfig.json`, you must add these rows:
 
@@ -151,28 +151,6 @@ In your `tsconfig.json`, you must add these rows:
 }
 ```
 The necessary functions will be automatically imported into your code.
-
-If for some reason you don't want to use auto-imports, then you should use a different approach.
-
-### via `h`
-
-This is the function you need to enable JSX support. In your `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment"
-  }
-}
-```
-
-In this case, you will always have to import the `h` function and the `Fragment` component yourself.
-
-```tsx
-import { h, Fragment } from '@dark-engine/core';
-```
 
 ```tsx
 const content = (
@@ -227,7 +205,7 @@ return (
 );
 ```
 
-or just
+or
 
 ```tsx
 return (
@@ -436,7 +414,6 @@ const [albums, setAlbums] = useState<Array<Album>>([]);
 useEffect(() => {
   fetch('https://jsonplaceholder.typicode.com/albums')
     .then(x => x.json())
-    .then(x => x.slice(0, 10))
     .then(x => setAlbums(x));
 }, []);
 
@@ -566,7 +543,7 @@ As the second argument, it takes a function that answers the question of when to
 const Memo = memo(Component, (prevProps, nextProps) => prevProps.color !== nextProps.color);
 ```
 
-#### `Guard`
+#### `<Guard />`
 
 A component that is intended to mark a certain area of the layout as static, which can be skipped during updates. Based on `memo`.
 
@@ -642,34 +619,58 @@ const App = component(() => {
 
 When you get an error, you can log it and show an alternate user interface.
 
-#### `useError`
+#### `<ErrorBoundary />`
+
+Catching errors is only enabled on the client, and is ignored when rendering on the server. This is done intentionally, because on the server, when rendering to a stream, we cannot take back the HTML that has already been sent.
 
 ```tsx
-type BrokenProps = {
-  hasError: boolean;
-};
-
-const Broken = component<BrokenProps>(({ hasError }) => {
-  if (hasError) {
-    throw new Error('oh no!');
-  }
-
-  return <div>Hello!</div>;
+const Broken = component(() => {
+  throw new Error();
 });
 
 const App = component(() => {
-  const [hasError, setHasError] = useState(false);
-  const error = useError();
+  return (
+    <>
+      <div>I'm OK 🙃</div>
+      <ErrorBoundary fallback={<div>Ooops! 😳</div>}>
+        <Broken />
+      </ErrorBoundary>
+      <div>I'm OK too 😘</div>
+    </>
+  );
+});
+```
 
-  useEffect(() => {
-    setTimeout(() => setHasError(true), 3000);
-  }, []);
+`<ErrorBoundary />` also has a `renderFallback` and `onError` prop.
 
-  if (error) return <div>Something went wrong! 🫢</div>;
+#### `useError`
+
+```tsx
+const Counter = component<{ count: number }>(({ count }) => {
+  if (count === 3) {
+    throw new Error('oh no!');
+  }
+
+  return <div>{count}</div>;
+});
+
+const App = component(() => {
+  const [count, setCount] = useState(0);
+  const [error, reset] = useError();
+
+  if (error) {
+    return (
+      <>
+        <div>Something went wrong! 🫢</div>
+        <button onClick={() => (setCount(4), reset())}>try again</button>
+      </>
+    )
+  };
 
   return (
     <>
-      <Broken hasError={hasError} />
+      <Counter count={count} />
+      <button onClick={() => setCount(x => x + 1)}>increment</button>
     </>
   );
 });
@@ -833,7 +834,7 @@ const [a, b] = useStore([a$, b$]);
 
 ## Code splitting
 
-#### `lazy` and `Suspense`
+#### `lazy` and `<Suspense />`
 
 If your application is structured into separate modules, you may wish to employ lazy loading for efficiency. This can be achieved through code splitting. To implement lazy loading for components, dynamic imports of the component must be wrapped in a specific function - `lazy`. Additionally, a `Suspense` component is required to display a loading indicator or skeleton screen until the module has been fully loaded.
 

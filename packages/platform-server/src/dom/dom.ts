@@ -110,7 +110,7 @@ function createChunk(fiber: Fiber<NativeElement>) {
   const tagNode = fiber?.inst as TagVirtualNode;
   const tagElement = fiber?.element as TagNativeElement;
 
-  if (!fiber || tagNode.name === ROOT) return;
+  if (!fiber || !fiber.element || tagNode.name === ROOT) return chunk;
 
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {

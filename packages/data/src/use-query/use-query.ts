@@ -15,6 +15,7 @@ import {
   throwThis,
   __useSSR as useSSR,
   __useInSuspense as useInSuspense,
+  __useInBoundary as useInBoundary,
 } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
@@ -48,6 +49,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
   const cache = useCache();
   checkCache(cache);
   const inSuspense = useInSuspense();
+  const inBoundary = useInBoundary();
   const cacheId = extractId(variables);
   const id = useMemo(() => $scope.getNextResourceId(), []);
   const state = useMemo<State<T>>(() => createState<T>(cache, key, cacheId, lazy), []);
@@ -89,12 +91,18 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
         cache.write(key, data, { id: $cacheId });
       }
     } catch (error) {
-      logError(error);
       cache.__emit({ type: 'query', phase: 'error', key, id: $cacheId, data: error, initiator });
 
       if (isServer) {
+        logError(error);
         $scope.setResource(id, [null, String(error)]);
       } else {
+        if (inBoundary && !isStateOnly) {
+          throwThis(error);
+        } else {
+          logError(error);
+        }
+
         detectIsFunction(onError) && onError(error);
         state.error = String(error);
       }

@@ -23,9 +23,10 @@ import {
   detectIsPromise,
   formatErrorMsg,
   createIndexKey,
+  createError,
   trueFn,
 } from '../utils';
-import { type Scope, getRootId, setRootId, $$scope, replaceScope } from '../scope';
+import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
 import { type Component, detectIsComponent } from '../component';
 import { type ElementKey, type Instance, type Callback } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
@@ -46,6 +47,7 @@ import {
   getFiberWithElement,
   detectIsFiberAlive,
   resolveSuspense,
+  resolveBoundary,
   notifyParents,
   tryOptStaticSlot,
   tryOptMemoSlot,
@@ -53,7 +55,6 @@ import {
 } from '../walk';
 import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
-import { startTransition } from '../start-transition';
 import { unmountFiber } from '../unmount';
 import { addBatch } from '../batch';
 
@@ -80,19 +81,19 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
     if (!unit && wipFiber) {
       commit($scope);
     }
-  } catch (err) {
-    if (detectIsPromise(err)) {
-      return err;
+  } catch (error) {
+    if (detectIsPromise(error)) {
+      return error;
     } else {
       const emitter = $scope.getEmitter();
 
       $scope.keepRoot(); // !
-      emitter.emit('error', String(err));
+      emitter.emit('error', createError(error));
 
       if (!isAsync) {
-        throw err;
+        throw error;
       } else {
-        logError('err', err);
+        logError(error);
       }
 
       return false;
@@ -394,28 +395,29 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
 
       component.children = result as Array<Instance>;
     } catch (err) {
+      const isSSR = detectIsSSR();
+
       if (detectIsPromise(err)) {
         const promise = err;
-        const isSSR = detectIsSSR();
-        const reset = createResetClosure(fiber, prev, $scope);
+        const reset = createReset(fiber, prev, $scope);
+        const boundary = resolveBoundary(fiber);
 
         if (!isSSR) {
           const suspense = resolveSuspense(fiber);
 
-          if (suspense) {
-            suspense.hook.setIsPeinding(true);
-            $scope.getAwaiter().add(suspense.hook, promise);
+          if (suspense || boundary) {
+            $scope.getAwaiter().add(suspense, boundary, promise);
           } else {
             reset();
-            throw err;
+            throw promise;
           }
         } else {
           reset();
-          throw err;
+          throw promise;
         }
       } else {
         component.children = [];
-        fiber.setError(err);
+        !isSSR && fiber.setError(err);
       }
     }
   } else if (detectIsVirtualNodeFactory(inst)) {
@@ -431,7 +433,7 @@ function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
   return inst;
 }
 
-const createResetClosure = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
+const createReset = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
   if (prev) {
     fiber.hook.owner = null;
     fiber.hook.idx = 0;
@@ -508,14 +510,12 @@ function commit($scope: Scope) {
     process.env.NODE_ENV === 'development' && $scope.setIsHot(false);
   }
 
-  const rootId = getRootId();
   const wip = $scope.getWorkInProgress();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
   const isUpdateZone = $scope.getIsUpdateZone();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
-  const isTransition = scheduler.detectIsTransition();
   const inst = wip.inst as Component;
   const mask = INSERTION_EFFECT_HOST_MASK | LAYOUT_EFFECT_HOST_MASK | ASYNC_EFFECT_HOST_MASK;
 
@@ -545,15 +545,10 @@ function commit($scope: Scope) {
   platform.finishCommit(); // !
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
-  awaiter.resolve(onResolve(rootId, isTransition));
+  awaiter.resolve();
   unmounts.length > 0 && platform.raf(onUnmount(unmounts));
   cleanup($scope);
 }
-
-const onResolve = (rootId: number, isTransition: boolean) => (hook: Hook) => {
-  const update = createUpdate(rootId, hook);
-  isTransition ? startTransition(update) : update();
-};
 
 const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(unmountFiber);
 

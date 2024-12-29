@@ -99,6 +99,8 @@ const createIndexKey = (idx: number) => `${INDEX_KEY}:${idx}`;
 
 const mapRecord = <T extends object>(record: T) => keys(record).map(x => record[x]);
 
+const createError = (x: unknown) => (x instanceof Error ? x : new Error(String(x)));
+
 export {
   detectIsFunction,
   detectIsUndefined,
@@ -128,4 +130,5 @@ export {
   nextTick,
   createIndexKey,
   mapRecord,
+  createError,
 };

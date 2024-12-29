@@ -54,8 +54,7 @@ class TagNativeElement extends NativeElement {
     this.attrs[$name] = detectIsString(value) && $name !== DANGER_HTML_ATTR ? escape(value) : value;
   }
 
-  override render(...args: Array<unknown>) {
-    const isOpening = args[0] as boolean;
+  override render(isOpening?: boolean) {
     const content =
       this.name === TEXTAREA_TAG
         ? (this.attrs[VALUE_ATTR] as string) || ''

@@ -72,8 +72,8 @@ function useMutation<M extends Mutation>(
     const promise = make(...args);
 
     scope.promise = promise;
-
     update();
+
     return promise;
   };
 

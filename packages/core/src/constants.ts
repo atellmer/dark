@@ -18,10 +18,12 @@ export const MOVE_MASK = 32;
 export const IS_WIP_HOOK_MASK = 1;
 export const IS_PORTAL_HOOK_MASK = 2;
 export const IS_SUSPENSE_HOOK_MASK = 4;
-export const IS_PENDING_HOOK_MASK = 8;
+export const IS_BOUNDARY_HOOK_MASK = 8;
+export const IS_PENDING_HOOK_MASK = 16;
 export const HOOK_DELIMETER = ':';
 export const YIELD_INTERVAL = 6;
 export const STATE_SCRIPT_TYPE = 'text/dark-state';
+export const REJECTED_STATUS = 'rejected';
 
 export enum TaskPriority {
   LOW = 0,

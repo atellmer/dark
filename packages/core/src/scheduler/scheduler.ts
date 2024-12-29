@@ -1,5 +1,5 @@
+import { getTime, detectIsPromise, detectIsFunction, dummyFn } from '../utils';
 import { HOOK_DELIMETER, YIELD_INTERVAL, TaskPriority } from '../constants';
-import { getTime, detectIsPromise, detectIsFunction } from '../utils';
 import { type WorkLoop, workLoop, detectIsBusy } from '../workloop';
 import { type Callback } from '../shared';
 import { EventEmitter } from '../emitter';
@@ -148,7 +148,7 @@ class Scheduler {
       task.getForceAsync() ? this.requestCallbackAsync(workLoop) : this.requestCallback(workLoop);
     } catch (something) {
       if (detectIsPromise(something)) {
-        something.finally(() => {
+        something.catch(dummyFn).finally(() => {
           this.run(task);
         });
       } else {
@@ -180,7 +180,7 @@ class Scheduler {
     const something = callback(false);
 
     if (detectIsPromise(something)) {
-      something.finally(() => {
+      something.catch(dummyFn).finally(() => {
         this.requestCallback(callback);
       });
     } else {
@@ -195,7 +195,7 @@ class Scheduler {
       const something = this.scheduledCallback(true);
 
       if (detectIsPromise(something)) {
-        something.finally(() => {
+        something.catch(dummyFn).finally(() => {
           this.port.postMessage(null);
         });
       } else if (something) {

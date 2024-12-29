@@ -1,4 +1,4 @@
-import { type DarkElement, component, Suspense, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
+import { type DarkElement, component, Suspense, ErrorBoundary, useState, STATE_SCRIPT_TYPE } from '@dark-engine/core';
 import {
   createBrowserEnv,
   createBrowserHydrateEnv,
@@ -289,5 +289,47 @@ describe('@data/use-query', () => {
     await waitUntilEffectsStart();
     expect(spy).toHaveBeenCalledWith([false, 20, null]);
     spy.mockClear();
+  });
+
+  test('renders with error-boundary in the browser correctly', async () => {
+    const DataLoader = component(() => {
+      const { data } = useQuery(Key.GET_DATA, () => api.getData(2, true));
+
+      return <div>{data}</div>;
+    });
+    const App = component(() => {
+      return (
+        <ErrorBoundary fallback={<div>ERROR!</div>}>
+          <DataLoader />
+        </ErrorBoundary>
+      );
+    });
+
+    render(withProvider(<App />));
+    await waitQuery();
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>ERROR!</div>"`);
+  });
+
+  test('renders with error-boundary on the server correctly', async () => {
+    const DataLoader = component(() => {
+      const { data, error } = useQuery(Key.GET_DATA, () => api.getData(2, true));
+
+      if (error) return <div>{error}</div>;
+
+      return <div>{data}</div>;
+    });
+    const App = component(() => {
+      return (
+        <ErrorBoundary fallback={<div>it renders only on the client</div>}>
+          <DataLoader />
+        </ErrorBoundary>
+      );
+    });
+    const { renderToString } = createServerEnv();
+    const result = await renderToString(withProvider(<App />));
+
+    expect(result).toMatchInlineSnapshot(
+      `"<div>Error: oops!</div><script type="text/dark-state">"eyIxIjpbbnVsbCwiRXJyb3I6IG9vcHMhIl19"</script>"`,
+    );
   });
 });
