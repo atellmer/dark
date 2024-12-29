@@ -31,6 +31,7 @@ const ErrorBoundary = component<ErrorBoundaryProps>(
     const [error, reset] = useError();
 
     useEffect(() => {
+      if (!error) return;
       detectIsFunction(onError) && onError(error);
     }, [error]);
 

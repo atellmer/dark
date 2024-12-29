@@ -177,6 +177,7 @@ describe('@core/start-transition', () => {
     await sleep(1);
     expect(host.innerHTML).toBe(content(0, true));
 
+    // Jest drives me crazy here
     // setIdx(1);
     // await sleep(1);
     // expect(host.innerHTML).toBe(content(1));
