@@ -150,15 +150,11 @@ function performUnitOfWork(
 
 function mountChild(parent: Fiber, $scope: Scope) {
   $scope.navToChild();
-  const $hook = parent.child ? parent.child.hook || null : null; // from previous fiber after throwing promise
-  const $inst = parent.inst;
-  const idx = 0;
-  const children = ($inst as CanHaveChildren).children;
-  const inst = setupInstance(children, idx);
-  const alt = getAlternate(parent, inst, idx, $scope);
-  const fiber = createFiber(alt, inst, idx);
+  const children = (parent.inst as CanHaveChildren)?.children || null;
+  const inst = children ? setupInstance(children, 0) : null;
+  const fiber = createFiber(getAlternate(parent, inst, 0, $scope), inst, 0);
 
-  fiber.hook = $hook || fiber.hook;
+  fiber.hook = parent.child?.hook || fiber.hook; // from previous fiber after throwing promise
   fiber.parent = parent;
   parent.child = fiber;
   fiber.eidx = parent.element ? 0 : parent.eidx;
@@ -170,14 +166,11 @@ function mountChild(parent: Fiber, $scope: Scope) {
 
 function mountSibling(left: Fiber, $scope: Scope) {
   $scope.navToSibling();
-  const $hook = left.next ? left.next.hook || null : null; // from previous fiber after throwing promise
-  const $inst = left.parent.inst;
   const idx = $scope.getMountIndex();
-  const children = ($inst as CanHaveChildren).children;
-  const inst = setupInstance(children, idx);
-  const hasSibling = Boolean(inst);
+  const children = (left.parent.inst as CanHaveChildren).children;
+  const inst = children ? setupInstance(children, idx) : null;
 
-  if (!hasSibling) {
+  if (!inst) {
     $scope.navToParent();
     $scope.setMountDeep(false);
 
@@ -185,10 +178,9 @@ function mountSibling(left: Fiber, $scope: Scope) {
   }
 
   $scope.setMountDeep(true);
-  const alt = getAlternate(left, inst, idx, $scope);
-  const fiber = createFiber(alt, inst, idx);
+  const fiber = createFiber(getAlternate(left, inst, idx, $scope), inst, idx);
 
-  fiber.hook = $hook || fiber.hook;
+  fiber.hook = left.next?.hook || fiber.hook; // from previous fiber after throwing promise
   fiber.parent = left.parent;
   left.next = fiber;
   fiber.eidx = left.eidx + (left.element ? (left.hook?.getIsPortal() ? 0 : 1) : left.cec);
@@ -199,18 +191,16 @@ function mountSibling(left: Fiber, $scope: Scope) {
 }
 
 function setupInstance(children: Array<Instance>, idx: number): Instance {
+  if (!children || idx >= children.length) return null;
+  const child = children[idx];
   let inst: Instance = null;
 
-  if (children && idx < children.length) {
-    const child = children[idx];
-
-    children[idx] = detectIsArray(child)
-      ? Fragment({ slot: child })
-      : detectIsTextBased(child)
-      ? Text(child)
-      : child || supportConditional(child);
-    inst = children[idx];
-  }
+  children[idx] = detectIsArray(child)
+    ? Fragment({ slot: child })
+    : detectIsTextBased(child)
+    ? Text(child)
+    : child || supportConditional(child);
+  inst = children[idx];
 
   return inst;
 }

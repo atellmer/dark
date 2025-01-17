@@ -1,4 +1,3 @@
-import type { NestedArray } from '../shared';
 import { INDEX_KEY, LIB } from '../constants';
 
 const detectIsFunction = (o: any): o is Function => typeof o === 'function';
@@ -15,19 +14,19 @@ const detectIsObject = (o: any): o is object => typeof o === 'object';
 
 const detectIsBoolean = (o: any): o is boolean => typeof o === 'boolean';
 
-const detectIsArray = (o: any): o is Array<any> => Array.isArray(o);
+const detectIsArray = Array.isArray as (o: any) => o is Array<any>;
 
 const detectIsNull = (o: any): o is null => o === null;
 
-const detectIsEmpty = (o: any) => detectIsNull(o) || detectIsUndefined(o);
+const detectIsEmpty = (o: any) => o === null || typeof o === 'undefined';
 
-const detectIsFalsy = (o: any) => detectIsEmpty(o) || o === false;
+const detectIsFalsy = (o: any) => o === null || typeof o === 'undefined' || o === false; // inlines it for optimization
 
 const detectIsPromise = <T = unknown>(o: any): o is Promise<T> => o instanceof Promise;
 
-const detectIsEqual = (a: any, b: any) => Object.is(a, b);
+const detectIsEqual = Object.is as (a: any, b: any) => boolean;
 
-const keys = (o: object) => Object.keys(o);
+const keys = Object.keys as (o: object) => Array<string>;
 
 const hasKeys = (o: object) => keys(o).length > 0;
 
@@ -39,8 +38,6 @@ const trueFn = () => true;
 
 const falseFn = () => false;
 
-const sameFn = <T = any>(x: T) => x;
-
 const logError = (...args: Array<any>) => !detectIsUndefined(console) && console.error(...args);
 
 const formatErrorMsg = (x: string, prefix = LIB) => `[${prefix}]: ${x}`;
@@ -51,36 +48,7 @@ function throwThis(x: Error | Promise<unknown>) {
 
 const illegal = (x: string, prefix = LIB) => throwThis(new Error(formatErrorMsg(x, prefix)));
 
-function flatten<T = any>(source: Array<NestedArray<T>>, transform: (x: T) => any = sameFn): Array<T> {
-  if (detectIsArray(source)) {
-    if (source.length === 0) return [];
-  } else {
-    return [transform(source)];
-  }
-
-  const list: Array<T> = [];
-  const stack = [source[0]];
-  let idx = 0;
-
-  while (stack.length > 0) {
-    const x = stack.pop();
-
-    if (detectIsArray(x)) {
-      for (let i = x.length - 1; i >= 0; i--) {
-        stack.push(x[i]);
-      }
-    } else {
-      list.push(transform(x));
-
-      if (stack.length === 0 && idx < source.length - 1) {
-        idx++;
-        stack.push(source[idx]);
-      }
-    }
-  }
-
-  return list;
-}
+const flatten = <T = any>(x: Array<any>) => x.flat(Infinity) as Array<T>;
 
 function detectAreDepsDifferent(prevDeps: Array<unknown>, nextDeps: Array<unknown>): boolean {
   if (prevDeps === nextDeps || (prevDeps.length === 0 && nextDeps.length === 0)) return false;
