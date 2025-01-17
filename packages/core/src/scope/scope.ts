@@ -131,7 +131,7 @@ class Scope {
     return this.unit;
   }
 
-  setNextUnitOfWork(fiber: Fiber) {
+  setUnitOfWork(fiber: Fiber) {
     this.unit = fiber;
   }
 
@@ -375,7 +375,7 @@ class Scope {
   cleanup() {
     this.keepRoot(); // !
     this.setWorkInProgress(null);
-    this.setNextUnitOfWork(null);
+    this.setUnitOfWork(null);
     this.setCursorFiber(null);
     this.resetMount();
     this.resetCandidates();

@@ -55,6 +55,7 @@ import {
 } from '../walk';
 import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
+import { type EventEmitter } from '../emitter';
 import { unmountFiber } from '../unmount';
 import { addBatch } from '../batch';
 
@@ -63,14 +64,18 @@ export type WorkLoop = (isAsync: boolean) => boolean | Promise<unknown> | null;
 function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
   const $scope = $$scope();
   const wipFiber = $scope.getWorkInProgress();
+  const isStream = $scope.getIsStreamZone();
+  const emitter = $scope.getEmitter();
   let unit = $scope.getNextUnitOfWork();
   let shouldYield = false;
 
   try {
     while (unit && !shouldYield) {
-      unit = performUnitOfWork(unit, $scope);
+      const isDeepWalking = $scope.getMountDeep();
+
+      unit = performUnitOfWork(unit, wipFiber, isDeepWalking, isStream, emitter, $scope);
       shouldYield = isAsync && scheduler.shouldYield();
-      $scope.setNextUnitOfWork(unit);
+      $scope.setUnitOfWork(unit);
 
       if (shouldYield && scheduler.detectIsTransition() && scheduler.hasNewTask()) {
         fork($scope);
@@ -103,35 +108,41 @@ function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
   return Boolean(unit); // has more work
 }
 
-function performUnitOfWork(fiber: Fiber, $scope: Scope): Fiber | null {
-  const wipFiber = $scope.getWorkInProgress();
-  const isDeepWalking = $scope.getMountDeep();
-  const isStream = $scope.getIsStreamZone();
-  const emitter = $scope.getEmitter();
-  const children = (fiber.inst as CanHaveChildren).children;
-  const hasChildren = isDeepWalking && children && children.length > 0;
-
+function performUnitOfWork(
+  fiber: Fiber,
+  wipFiber: Fiber,
+  isDeepWalking: boolean,
+  isStream: boolean,
+  emitter: EventEmitter,
+  $scope: Scope,
+): Fiber | null {
   fiber.hook && (fiber.hook.idx = 0);
 
-  if (hasChildren) {
-    const child = mountChild(fiber, $scope);
+  if (isDeepWalking) {
+    const children = (fiber.inst as CanHaveChildren).children;
 
-    isStream && emitter.emit('chunk', child);
+    if (children && children.length > 0) {
+      const child = mountChild(fiber, $scope);
 
-    return child;
-  } else {
-    while (fiber.parent && fiber !== wipFiber) {
-      const next = mountSibling(fiber, $scope);
+      isStream && emitter.emit('chunk', child);
 
-      isStream && emitter.emit('chunk', fiber);
-
-      if (next) {
-        isStream && emitter.emit('chunk', next);
-        return next;
-      }
-
-      fiber = fiber.parent;
+      return child;
     }
+  }
+
+  let parent = fiber.parent;
+
+  while (parent && fiber !== wipFiber) {
+    const next = mountSibling(fiber, $scope);
+
+    if (isStream) {
+      emitter.emit('chunk', fiber);
+      next && emitter.emit('chunk', next);
+    }
+
+    if (next) return next;
+    fiber = parent;
+    parent = fiber.parent;
   }
 
   return null;
@@ -438,7 +449,7 @@ const createReset = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
     fiber.hook.owner = null;
     fiber.hook.idx = 0;
     $scope.navToPrev();
-    $scope.setNextUnitOfWork(prev);
+    $scope.setUnitOfWork(prev);
     Fiber.setNextId(prev.id);
   } else {
     fiber.id = Fiber.incrementId();
@@ -660,7 +671,7 @@ function createCallback(options: CreateCallbackOptions) {
     $scope.setWorkInProgress(fiber);
     $scope.setCursorFiber(fiber);
     fiber.inst = mount(fiber, null, $scope);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setUnitOfWork(fiber);
   };
 
   return callback;
