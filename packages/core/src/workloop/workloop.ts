@@ -55,7 +55,7 @@ export type WorkLoop = (isAsync: boolean) => boolean | Promise<unknown> | null;
 function workLoop(isAsync: boolean): boolean | Promise<unknown> | null {
   const $scope = $$scope();
   const wipFiber = $scope.getWorkInProgress();
-  const isStream = $scope.getIsStreamZone();
+  const isStream = $scope.getIsStream();
   const emitter = $scope.getEmitter();
   let unit = $scope.getNextUnitOfWork();
   let shouldYield = false;
@@ -200,7 +200,7 @@ function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
   const { alt } = fiber;
   const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, $scope) : true;
 
-  $scope.setCursorFiber(fiber);
+  $scope.setCursor(fiber);
   fiber.inst = inst;
 
   if (alt && alt.mask & MOVE_MASK) {
@@ -395,7 +395,7 @@ function commit($scope: Scope) {
   const wip = $scope.getWorkInProgress();
   const deletions = $scope.getDeletions();
   const candidates = $scope.getCandidates();
-  const isUpdateZone = $scope.getIsUpdateZone();
+  const isUpdate = $scope.getIsUpdate();
   const awaiter = $scope.getAwaiter();
   const unmounts: Array<Fiber> = [];
   const inst = wip.inst as Component;
@@ -409,7 +409,7 @@ function commit($scope: Scope) {
     platform.commit(fiber);
   }
 
-  isUpdateZone && sync(wip);
+  isUpdate && sync(wip);
   $scope.runInsertionEffects();
 
   for (const fiber of candidates) {
@@ -536,10 +536,10 @@ function createCallback(options: CreateCallbackOptions) {
     hook.idx = 0; // !
     hook.owner = fiber;
 
-    $scope.setIsUpdateZone(true);
+    $scope.setIsUpdate(true);
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setCursorFiber(fiber);
+    $scope.setCursor(fiber);
     fiber.inst = mount(fiber, null, $scope);
     $scope.setUnitOfWork(fiber);
   };
@@ -551,11 +551,11 @@ function createUpdate(rootId: number, hook: Hook) {
   const { idx } = hook;
   const update = (tools?: () => Tools) => {
     const $scope = $$scope();
-    if ($scope.getIsInsertionEffectsZone()) return;
+    if ($scope.getIsInsertionEffect()) return;
     const hasTools = detectIsFunction(tools);
-    const isTransition = $scope.getIsTransitionZone();
-    const isBatch = $scope.getIsBatchZone();
-    const isEvent = $scope.getIsEventZone();
+    const isTransition = $scope.getIsTransition();
+    const isBatch = $scope.getIsBatch();
+    const isEvent = $scope.getIsEvent();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
     const onTransitionEnd = isTransition ? $scope.getOnTransitionEnd() : null;

@@ -16,9 +16,9 @@ function createSyntheticEventHandler(eventName: string, handler: Function) {
   const $scope = $$scope();
 
   return (value: NativeRawPointer<'QEvent'>) => {
-    $scope.setIsEventZone(true);
+    $scope.setIsEvent(true);
     handler(new SyntheticEvent({ type: eventName, value }));
-    $scope.setIsEventZone(false);
+    $scope.setIsEvent(false);
   };
 }
 

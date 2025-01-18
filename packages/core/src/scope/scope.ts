@@ -11,11 +11,11 @@ class Scope {
   private wip: Fiber = null;
   private cursor: Fiber = null;
   private unit: Fiber = null;
-  private mountDeep = true;
-  private mountLevel = 0;
-  private mountNav: Record<number, number> = {};
+  private mDeep = true;
+  private mLevel = 0;
+  private mNav: Record<number, number> = {};
   private events = new Map<string, WeakMap<object, Function>>();
-  private unsubs = new Set<Callback>();
+  private offs = new Set<Callback>();
   private reconciler = new Reconciler();
   private candidates = new Set<Fiber>();
   private deletions = new Set<Fiber>();
@@ -23,18 +23,18 @@ class Scope {
   private asyncEffects = new Set<Callback>();
   private layoutEffects = new Set<Callback>();
   private insertionEffects = new Set<Callback>();
-  private resourceId = 0;
+  private resId = 0;
   private resources: AppResources = new Map();
-  private awaiter: Awaiter = new Awaiter();
+  private awaiter = new Awaiter();
   private onTransitionEnd: OnTransitionEnd = null;
-  private isLayoutEffectsZone = false;
-  private isInsertionEffectsZone = false;
-  private isUpdateZone = false;
-  private isBatchZone = false;
-  private isHydrateZone = false;
-  private isStreamZone = false;
-  private isTransitionZone = false;
-  private isEventZone = false;
+  private isLayoutEffect = false;
+  private isInsertionEffect = false;
+  private isUpdate = false;
+  private isBatch = false;
+  private isHydration = false;
+  private isStream = false;
+  private isTransition = false;
+  private isEvent = false;
   private isHot = false;
   private isDynamic = platform.detectIsDynamic();
   private isServer = detectIsServer();
@@ -47,17 +47,17 @@ class Scope {
     scope.wip = null;
     scope.cursor = null;
     scope.unit = this.unit;
-    scope.mountDeep = this.mountDeep;
-    scope.mountLevel = this.mountLevel;
-    scope.mountNav = { ...this.mountNav };
+    scope.mDeep = this.mDeep;
+    scope.mLevel = this.mLevel;
+    scope.mNav = { ...this.mNav };
     scope.events = this.events;
-    scope.unsubs = this.unsubs;
+    scope.offs = this.offs;
     scope.reconciler = this.reconciler.fork();
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);
     scope.layoutEffects = new Set([...this.layoutEffects]);
-    scope.isUpdateZone = this.isUpdateZone;
+    scope.isUpdate = this.isUpdate;
     scope.emitter = this.emitter;
     scope.awaiter = this.awaiter;
 
@@ -73,7 +73,7 @@ class Scope {
   }
 
   keepRoot() {
-    !this.isUpdateZone && this.setRoot(this.wip);
+    !this.isUpdate && this.setRoot(this.wip);
   }
 
   getWorkInProgress() {
@@ -92,25 +92,25 @@ class Scope {
     this.unit = fiber;
   }
 
-  getCursorFiber() {
+  getCursor() {
     return this.cursor;
   }
 
-  setCursorFiber(fiber: Fiber) {
+  setCursor(fiber: Fiber) {
     this.cursor = fiber;
   }
 
   navToChild() {
-    this.mountLevel = this.mountLevel + 1;
-    this.mountNav[this.mountLevel] = 0;
+    this.mLevel = this.mLevel + 1;
+    this.mNav[this.mLevel] = 0;
   }
 
   navToSibling() {
-    this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] + 1;
+    this.mNav[this.mLevel] = this.mNav[this.mLevel] + 1;
   }
 
   navToParent() {
-    this.mountLevel = this.mountLevel - 1;
+    this.mLevel = this.mLevel - 1;
   }
 
   navToPrev() {
@@ -120,40 +120,40 @@ class Scope {
       this.navToParent();
       this.setMountDeep(true);
     } else {
-      this.mountNav[this.mountLevel] = this.mountNav[this.mountLevel] - 1;
+      this.mNav[this.mLevel] = this.mNav[this.mLevel] - 1;
       this.setMountDeep(false);
     }
   }
 
   getMountIndex() {
-    return this.mountNav[this.mountLevel];
+    return this.mNav[this.mLevel];
   }
 
   getMountDeep() {
-    return this.mountDeep;
+    return this.mDeep;
   }
 
   setMountDeep(value: boolean) {
-    this.mountDeep = value;
+    this.mDeep = value;
   }
 
   resetMount() {
-    this.mountLevel = 0;
-    this.mountNav = {};
-    this.mountDeep = true;
+    this.mLevel = 0;
+    this.mNav = {};
+    this.mDeep = true;
   }
 
   getEvents() {
     return this.events;
   }
 
-  addEventUnsubscriber(fn: Callback) {
-    this.unsubs.add(fn);
+  addOff(fn: Callback) {
+    this.offs.add(fn);
   }
 
-  unsubscribeEvents() {
-    this.unsubs.forEach(x => x());
-    this.unsubs = new Set();
+  off() {
+    this.offs.forEach(x => x());
+    this.offs = new Set();
   }
 
   getCandidates() {
@@ -215,9 +215,9 @@ class Scope {
 
   runLayoutEffects() {
     if (!this.isDynamic) return;
-    this.setIsLayoutEffectsZone(true);
+    this.setIsLayoutEffect(true);
     this.layoutEffects.forEach(fn => fn());
-    this.setIsLayoutEffectsZone(false);
+    this.setIsLayoutEffect(false);
   }
 
   addInsertionEffect(fn: Callback) {
@@ -230,9 +230,9 @@ class Scope {
 
   runInsertionEffects() {
     if (!this.isDynamic) return;
-    this.setIsInsertionEffectsZone(true);
+    this.setIsInsertionEffect(true);
     this.insertionEffects.forEach(fn => fn());
-    this.setIsInsertionEffectsZone(false);
+    this.setIsInsertionEffect(false);
   }
 
   addCancel(fn: Callback) {
@@ -249,68 +249,68 @@ class Scope {
     this.cancels = [];
   }
 
-  getIsLayoutEffectsZone() {
-    return this.isLayoutEffectsZone;
+  getIsLayoutEffect() {
+    return this.isLayoutEffect;
   }
 
-  setIsLayoutEffectsZone(value: boolean) {
-    this.isLayoutEffectsZone = value;
+  setIsLayoutEffect(value: boolean) {
+    this.isLayoutEffect = value;
   }
 
-  getIsInsertionEffectsZone() {
-    return this.isInsertionEffectsZone;
+  getIsInsertionEffect() {
+    return this.isInsertionEffect;
   }
 
-  setIsInsertionEffectsZone(value: boolean) {
-    this.isInsertionEffectsZone = value;
+  setIsInsertionEffect(value: boolean) {
+    this.isInsertionEffect = value;
   }
 
-  getIsUpdateZone() {
-    return this.isUpdateZone;
+  getIsUpdate() {
+    return this.isUpdate;
   }
 
-  setIsUpdateZone(value: boolean) {
-    this.isUpdateZone = value;
+  setIsUpdate(value: boolean) {
+    this.isUpdate = value;
   }
 
-  getIsBatchZone() {
-    return this.isBatchZone;
+  getIsBatch() {
+    return this.isBatch;
   }
 
-  setIsBatchZone(value: boolean) {
-    this.isBatchZone = value;
+  setIsBatch(value: boolean) {
+    this.isBatch = value;
   }
 
-  getIsHydrateZone() {
-    return this.isHydrateZone;
+  getIsHydration() {
+    return this.isHydration;
   }
 
-  setIsHydrateZone(value: boolean) {
-    this.isHydrateZone = value;
+  setIsHydration(value: boolean) {
+    this.isHydration = value;
   }
 
-  getIsStreamZone() {
-    return this.isStreamZone;
+  getIsStream() {
+    return this.isStream;
   }
 
-  setIsStreamZone(value: boolean) {
-    this.isStreamZone = value;
+  setIsStream(value: boolean) {
+    this.isStream = value;
   }
 
-  getIsTransitionZone() {
-    return this.isTransitionZone;
+  getIsTransition() {
+    return this.isTransition;
   }
 
-  setIsTransitionZone(value: boolean) {
-    this.isTransitionZone = value;
+  setIsTransition(value: boolean) {
+    this.isTransition = value;
   }
 
-  getIsEventZone() {
-    return this.isEventZone;
+  getIsEvent() {
+    return this.isEvent;
   }
 
-  setIsEventZone(value: boolean) {
-    this.isEventZone = value;
+  setIsEvent(value: boolean) {
+    this.isEvent = value;
   }
 
   getIsHot() {
@@ -337,7 +337,7 @@ class Scope {
     this.keepRoot(); // !
     this.setWorkInProgress(null);
     this.setUnitOfWork(null);
-    this.setCursorFiber(null);
+    this.setCursor(null);
     this.resetMount();
     this.resetCandidates();
     this.resetDeletions();
@@ -345,8 +345,8 @@ class Scope {
     this.resetInsertionEffects();
     this.resetLayoutEffects();
     this.resetAsyncEffects();
-    this.setIsHydrateZone(false);
-    this.setIsUpdateZone(false);
+    this.setIsHydration(false);
+    this.setIsUpdate(false);
     this.reconciler.reset();
   }
 
@@ -367,7 +367,7 @@ class Scope {
   }
 
   getNextResourceId() {
-    return ++this.resourceId;
+    return ++this.resId;
   }
 
   getAwaiter() {
@@ -376,7 +376,7 @@ class Scope {
 
   runAfterCommit() {
     this.resources = new Map();
-    this.isServer && (this.resourceId = 0);
+    this.isServer && (this.resId = 0);
   }
 }
 
@@ -392,9 +392,7 @@ const setRootId = (id: number) => {
 
 const removeScope = (id: number) => scopes.delete(id);
 
-const replaceScope = (scope: Scope, id: number = rootId) => {
-  Object.assign(scopes.get(id), scope);
-};
+const replaceScope = (scope: Scope, id: number = rootId) => Object.assign(scopes.get(id), scope);
 
 const $$scope = (id: number = rootId) => scopes.get(id);
 
