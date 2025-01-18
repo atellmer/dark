@@ -198,7 +198,8 @@ function setupInstance(children: Array<Instance>, idx: number): Instance {
 
 function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
   const { alt } = fiber;
-  const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, $scope) : true;
+  const isMemo = alt && detectIsMemo(inst);
+  const shouldMount = isMemo ? shouldUpdate(fiber, inst, $scope) : true;
 
   $scope.setCursor(fiber);
   fiber.inst = inst;

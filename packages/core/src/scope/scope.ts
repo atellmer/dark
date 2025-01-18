@@ -1,4 +1,4 @@
-import type { Callback, AppResources, AppResource } from '../shared';
+import type { Callback, Resources, Resource } from '../shared';
 import { platform, detectIsServer } from '../platform';
 import { type OnTransitionEnd } from '../scheduler';
 import { Reconciler } from '../reconciler';
@@ -13,7 +13,7 @@ class Scope {
   private unit: Fiber = null;
   private mDeep = true;
   private mLevel = 0;
-  private mNav: Record<number, number> = {};
+  private mNav = new Map<number, number>();
   private events = new Map<string, WeakMap<object, Function>>();
   private offs = new Set<Callback>();
   private reconciler = new Reconciler();
@@ -24,7 +24,7 @@ class Scope {
   private layoutEffects = new Set<Callback>();
   private insertionEffects = new Set<Callback>();
   private resId = 0;
-  private resources: AppResources = new Map();
+  private resources: Resources = new Map();
   private awaiter = new Awaiter();
   private onTransitionEnd: OnTransitionEnd = null;
   private isLayoutEffect = false;
@@ -49,7 +49,7 @@ class Scope {
     scope.unit = this.unit;
     scope.mDeep = this.mDeep;
     scope.mLevel = this.mLevel;
-    scope.mNav = { ...this.mNav };
+    scope.mNav = new Map(this.mNav);
     scope.events = this.events;
     scope.offs = this.offs;
     scope.reconciler = this.reconciler.fork();
@@ -102,11 +102,11 @@ class Scope {
 
   navToChild() {
     this.mLevel = this.mLevel + 1;
-    this.mNav[this.mLevel] = 0;
+    this.mNav.set(this.mLevel, 0);
   }
 
   navToSibling() {
-    this.mNav[this.mLevel] = this.mNav[this.mLevel] + 1;
+    this.mNav.set(this.mLevel, this.mNav.get(this.mLevel) + 1);
   }
 
   navToParent() {
@@ -120,13 +120,13 @@ class Scope {
       this.navToParent();
       this.setMountDeep(true);
     } else {
-      this.mNav[this.mLevel] = this.mNav[this.mLevel] - 1;
+      this.mNav.set(this.mLevel, this.mNav.get(this.mLevel) - 1);
       this.setMountDeep(false);
     }
   }
 
   getMountIndex() {
-    return this.mNav[this.mLevel];
+    return this.mNav.get(this.mLevel);
   }
 
   getMountDeep() {
@@ -139,7 +139,7 @@ class Scope {
 
   resetMount() {
     this.mLevel = 0;
-    this.mNav = {};
+    this.mNav = new Map();
     this.mDeep = true;
   }
 
@@ -358,7 +358,7 @@ class Scope {
     return this.resources.get(id);
   }
 
-  setResource(id: number, res: AppResource) {
+  setResource(id: number, res: Resource) {
     this.resources.set(id, res);
   }
 

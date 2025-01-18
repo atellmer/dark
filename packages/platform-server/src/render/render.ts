@@ -3,7 +3,7 @@ import {
   type DarkElement,
   type Callback,
   type CallbackWithValue,
-  type AppResource,
+  type Resource,
   ROOT,
   Fiber,
   CREATE_EFFECT_TAG,
@@ -202,7 +202,7 @@ function addScripts(scripts: Array<string>, isModule: boolean) {
 function withState(content = '') {
   const $scope = $$scope();
   const state = $scope.getResources();
-  const resources: Record<string, AppResource> = {};
+  const resources: Record<string, Resource> = {};
 
   if (state.size === 0) return content;
   state.forEach((value, key) => (resources[key] = value));

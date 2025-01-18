@@ -43,9 +43,9 @@ export type CallbackWithValue<T> = (x: T) => void;
 
 export type TimerId = undefined | ReturnType<typeof setTimeout>;
 
-export type AppResource<T = unknown> = [T, string];
+export type Resource<T = unknown> = [T, string];
 
-export type AppResources = Map<number, AppResource>;
+export type Resources = Map<number, Resource>;
 
 export type TextBased = number | string;
 

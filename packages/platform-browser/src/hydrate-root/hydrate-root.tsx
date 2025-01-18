@@ -1,4 +1,4 @@
-import { type DarkElement, type AppResource, STATE_SCRIPT_TYPE, $$scope } from '@dark-engine/core';
+import { type DarkElement, type Resource, STATE_SCRIPT_TYPE, $$scope } from '@dark-engine/core';
 
 import { render } from '../render';
 import { unmount } from '../create-root';
@@ -20,7 +20,7 @@ function hydrate() {
 
   if (!element) return;
   try {
-    const resources = parse(element.textContent) as Record<string, AppResource>;
+    const resources = parse(element.textContent) as Record<string, Resource>;
     const $scope = $$scope();
 
     for (const key of Object.keys(resources)) {
