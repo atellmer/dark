@@ -1,6 +1,7 @@
-import type { Callback, ElementKey, AppResources, AppResource } from '../shared';
+import type { Callback, AppResources, AppResource } from '../shared';
 import { platform, detectIsServer } from '../platform';
 import { type OnTransitionEnd } from '../scheduler';
+import { Reconciler } from '../reconciler';
 import { EventEmitter } from '../emitter';
 import { type Fiber } from '../fiber';
 import { Awaiter } from '../awaiter';
@@ -15,7 +16,7 @@ class Scope {
   private mountNav: Record<number, number> = {};
   private events = new Map<string, WeakMap<object, Function>>();
   private unsubs = new Set<Callback>();
-  private actions: Actions = {};
+  private reconciler = new Reconciler();
   private candidates = new Set<Fiber>();
   private deletions = new Set<Fiber>();
   private cancels: Array<Callback> = [];
@@ -39,50 +40,6 @@ class Scope {
   private isServer = detectIsServer();
   private emitter = new EventEmitter();
 
-  private resetActions() {
-    this.actions = {};
-  }
-
-  getActionsById(id: number) {
-    return this.actions[id];
-  }
-
-  addActionMap(id: number, map: Record<ElementKey, Fiber>) {
-    this.actions[id] = {
-      map,
-      replace: null,
-      insert: null,
-      remove: null,
-      move: null,
-      stable: null,
-    };
-  }
-
-  addReplaceAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].replace && (this.actions[id].replace = {});
-    this.actions[id].replace[nextKey] = true;
-  }
-
-  addInsertAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].insert && (this.actions[id].insert = {});
-    this.actions[id].insert[nextKey] = true;
-  }
-
-  addRemoveAction(id: number, prevKey: ElementKey) {
-    !this.actions[id].remove && (this.actions[id].remove = {});
-    this.actions[id].remove[prevKey] = true;
-  }
-
-  addMoveAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].move && (this.actions[id].move = {});
-    this.actions[id].move[nextKey] = true;
-  }
-
-  addStableAction(id: number, nextKey: ElementKey) {
-    !this.actions[id].stable && (this.actions[id].stable = {});
-    this.actions[id].stable[nextKey] = true;
-  }
-
   fork() {
     const scope = new Scope();
 
@@ -95,7 +52,7 @@ class Scope {
     scope.mountNav = { ...this.mountNav };
     scope.events = this.events;
     scope.unsubs = this.unsubs;
-    scope.actions = { ...this.actions };
+    scope.reconciler = this.reconciler.fork();
     scope.candidates = new Set([...this.candidates]);
     scope.deletions = new Set([...this.deletions]);
     scope.asyncEffects = new Set([...this.asyncEffects]);
@@ -372,6 +329,10 @@ class Scope {
     this.onTransitionEnd = fn;
   }
 
+  getReconciler() {
+    return this.reconciler;
+  }
+
   cleanup() {
     this.keepRoot(); // !
     this.setWorkInProgress(null);
@@ -386,7 +347,7 @@ class Scope {
     this.resetAsyncEffects();
     this.setIsHydrateZone(false);
     this.setIsUpdateZone(false);
-    this.resetActions();
+    this.reconciler.reset();
   }
 
   getEmitter() {
@@ -418,18 +379,6 @@ class Scope {
     this.isServer && (this.resourceId = 0);
   }
 }
-
-type Actions = Record<
-  number,
-  {
-    map: Record<ElementKey, Fiber>;
-    replace: Record<ElementKey, true>;
-    insert: Record<ElementKey, true>;
-    remove: Record<ElementKey, true>;
-    move: Record<ElementKey, true>;
-    stable: Record<ElementKey, true>;
-  }
->;
 
 let rootId: number = null;
 const scopes = new Map<number, Scope>();

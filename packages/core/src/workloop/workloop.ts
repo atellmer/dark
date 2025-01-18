@@ -7,26 +7,22 @@ import {
   EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
   MOVE_MASK,
-  FLUSH_MASK,
-  Flag,
   TaskPriority,
 } from '../constants';
 import {
   logError,
-  detectIsEmpty,
   detectIsFalsy,
   detectIsArray,
   detectIsFunction,
   detectIsTextBased,
   detectIsPromise,
-  formatErrorMsg,
   createIndexKey,
   createError,
   trueFn,
 } from '../utils';
 import { type Scope, setRootId, $$scope, replaceScope } from '../scope';
 import { type Component, detectIsComponent } from '../component';
-import { type ElementKey, type Instance, type Callback } from '../shared';
+import { type Instance, type Callback } from '../shared';
 import { Fiber, getHook, Hook } from '../fiber';
 import {
   type CanHaveChildren,
@@ -34,7 +30,6 @@ import {
   detectIsVirtualNode,
   detectIsVirtualNodeFactory,
   getElementKey,
-  hasElementFlag,
   createReplacer,
   detectAreSameInstanceTypes,
   hasChildrenProp,
@@ -47,8 +42,6 @@ import {
   resolveSuspense,
   resolveBoundary,
   notifyParents,
-  tryOptStaticSlot,
-  tryOptMemoSlot,
   createLoc,
 } from '../walk';
 import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
@@ -219,7 +212,7 @@ function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
 
   if (shouldMount) {
     fiber.inst = mount(fiber, prev, $scope);
-    alt && reconcile(fiber, alt, $scope);
+    alt && $scope.getReconciler().reconcile(fiber, alt, $scope);
     setup(fiber, alt);
   } else if (fiber.mask & MOVE_MASK) {
     fiber.tag = UPDATE_EFFECT_TAG;
@@ -243,81 +236,26 @@ function getAlternate(fiber: Fiber, inst: Instance, idx: number, $scope: Scope) 
   if (!fiber.hook?.getIsWip() && parent.tag === CREATE_EFFECT_TAG) return null; // !
   const parentId = isChild ? fiber.id : fiber.parent.id;
   const key = getElementKey(inst);
-  const actions = $scope.getActionsById(parentId);
+  const store = $scope.getReconciler().get(parentId);
   let alt: Fiber = null;
 
-  if (key !== null && actions) {
-    const isMove = actions.move && Boolean(actions.move[key]);
-    const isStable = actions.stable && Boolean(actions.stable[key]);
+  if (key !== null && store) {
+    const isMove = store.move && Boolean(store.move[key]);
+    const isStable = store.stable && Boolean(store.stable[key]);
 
     if (isMove || isStable) {
-      alt = actions.map[key];
+      alt = store.map[key];
       isMove && (alt.mask |= MOVE_MASK);
     }
   } else {
     if (fiber.alt) {
       alt = isChild ? fiber.alt.child : fiber.alt.next;
     } else {
-      alt = actions ? actions.map[createIndexKey(idx)] || null : null;
+      alt = store ? store.map[createIndexKey(idx)] || null : null;
     }
   }
 
   return alt;
-}
-
-function reconcile(fiber: Fiber, alt: Fiber, $scope: Scope) {
-  const { id, inst } = fiber;
-  const areSameTypes = detectAreSameInstanceTypes(alt.inst, inst);
-  const nextChildren = (inst as CanHaveChildren).children;
-
-  if (!areSameTypes) {
-    $scope.addDeletion(alt);
-  } else if (hasChildrenProp(alt.inst) && nextChildren && alt.cc !== 0) {
-    const hasSameCount = alt.cc === nextChildren.length;
-    const check = hasElementFlag(inst, Flag.SKIP_SCAN_OPT) ? !hasSameCount : true;
-
-    if (check) {
-      const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, nextChildren);
-      const flush = nextKeys.length === 0;
-      let size = Math.max(prevKeys.length, nextKeys.length);
-      let p = 0;
-      let n = 0;
-
-      $scope.addActionMap(id, keyedFibersMap);
-
-      for (let i = 0; i < size; i++) {
-        const nextKey = nextKeys[i - n] ?? null;
-        const prevKey = prevKeys[i - p] ?? null;
-        const prevKeyFiber = keyedFibersMap[prevKey] || null;
-
-        if (nextKey !== prevKey) {
-          if (nextKey !== null && !prevKeysMap[nextKey]) {
-            if (prevKey !== null && !nextKeysMap[prevKey]) {
-              $scope.addReplaceAction(id, nextKey);
-              $scope.addDeletion(prevKeyFiber);
-            } else {
-              $scope.addInsertAction(id, nextKey);
-              p++;
-              size++;
-            }
-          } else if (!nextKeysMap[prevKey]) {
-            $scope.addRemoveAction(id, prevKey);
-            $scope.addDeletion(prevKeyFiber);
-            flush && (prevKeyFiber.mask |= FLUSH_MASK);
-            n++;
-            size++;
-          } else if (nextKeysMap[prevKey] && nextKeysMap[nextKey]) {
-            $scope.addMoveAction(id, nextKey);
-          }
-        } else if (nextKey !== null) {
-          $scope.addStableAction(id, nextKey);
-        }
-      }
-
-      hasElementFlag(inst, Flag.STATIC_SLOT_OPT) && tryOptStaticSlot(fiber, alt, $scope);
-      hasElementFlag(inst, Flag.MEMO_SLOT_OPT) && tryOptMemoSlot(fiber, alt, $scope);
-    }
-  }
 }
 
 function setup(fiber: Fiber, alt: Fiber) {
@@ -444,61 +382,6 @@ const createReset = (fiber: Fiber, prev: Fiber, $scope: Scope) => () => {
     fiber.cec = fiber.alt.cec;
   }
 };
-
-function extractKeys(alt: Fiber, children: Array<Instance>) {
-  let nextFiber = alt;
-  let idx = 0;
-  const prevKeys: Array<ElementKey> = [];
-  const nextKeys: Array<ElementKey> = [];
-  const prevKeysMap: Record<ElementKey, boolean> = {};
-  const nextKeysMap: Record<ElementKey, boolean> = {};
-  const keyedFibersMap: Record<ElementKey, Fiber> = {};
-  const usedKeysMap: Record<ElementKey, boolean> = {};
-
-  while (nextFiber || idx < children.length) {
-    if (nextFiber) {
-      const key = getElementKey(nextFiber.inst);
-      const prevKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
-
-      if (!prevKeysMap[prevKey]) {
-        prevKeysMap[prevKey] = true; // !
-        prevKeys.push(prevKey);
-      }
-
-      keyedFibersMap[prevKey] = nextFiber;
-    }
-
-    if (idx < children.length) {
-      const inst = children[idx];
-      const key = getElementKey(inst);
-      const nextKey = detectIsEmpty(key) ? createIndexKey(idx) : key;
-
-      if (process.env.NODE_ENV !== 'production') {
-        if (usedKeysMap[nextKey]) {
-          logError(formatErrorMsg(`The key of node [${nextKey}] already has been used!`), [inst]);
-        }
-      }
-
-      if (!nextKeysMap[nextKey]) {
-        nextKeysMap[nextKey] = true; // !
-        nextKeys.push(nextKey);
-      }
-
-      usedKeysMap[nextKey] = true;
-    }
-
-    nextFiber = nextFiber ? nextFiber.next : null;
-    idx++;
-  }
-
-  return {
-    prevKeys,
-    nextKeys,
-    prevKeysMap,
-    nextKeysMap,
-    keyedFibersMap,
-  };
-}
 
 function supportConditional(inst: Instance) {
   return detectIsFalsy(inst) ? createReplacer() : inst;
