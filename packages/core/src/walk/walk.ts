@@ -2,9 +2,7 @@ import {
   DELETE_EFFECT_TAG,
   UPDATE_EFFECT_TAG,
   SKIP_EFFECT_TAG,
-  INSERTION_EFFECT_HOST_MASK,
-  LAYOUT_EFFECT_HOST_MASK,
-  ASYNC_EFFECT_HOST_MASK,
+  EFFECT_HOST_MASK,
   ATOM_HOST_MASK,
   MOVE_MASK,
   HOOK_DELIMETER,
@@ -235,9 +233,7 @@ function getKey(inst: Instance, idx: number) {
 
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   fiber.increment(alt.element ? 1 : alt.cec);
-  alt.mask & INSERTION_EFFECT_HOST_MASK && fiber.markHost(INSERTION_EFFECT_HOST_MASK);
-  alt.mask & LAYOUT_EFFECT_HOST_MASK && fiber.markHost(LAYOUT_EFFECT_HOST_MASK);
-  alt.mask & ASYNC_EFFECT_HOST_MASK && fiber.markHost(ASYNC_EFFECT_HOST_MASK);
+  alt.mask & EFFECT_HOST_MASK && fiber.markHost(EFFECT_HOST_MASK);
   alt.mask & ATOM_HOST_MASK && fiber.markHost(ATOM_HOST_MASK);
 }
 
