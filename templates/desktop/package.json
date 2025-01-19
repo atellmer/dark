@@ -9,7 +9,7 @@
     "@dark-engine/core": "1.4.2",
     "@dark-engine/data": "1.4.2",
     "@dark-engine/platform-desktop": "1.4.2",
-    "@nodegui/nodegui": "0.66.0"
+    "@nodegui/nodegui": "0.70.0"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.5.0",
