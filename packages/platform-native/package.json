@@ -33,7 +33,7 @@
     "ios"
   ],
   "devDependencies": {
-    "@nativescript/core": "8.7.2"
+    "@nativescript/core": "8.8.6"
   },
   "peerDependencies": {
     "@dark-engine/animations": "*",
