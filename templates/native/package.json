@@ -10,11 +10,11 @@
     "clean": "npx ns clean"
   },
   "dependencies": {
-    "@dark-engine/animations": "1.4.2",
-    "@dark-engine/core": "1.4.2",
-    "@dark-engine/data": "1.4.2",
-    "@dark-engine/native-navigation": "1.4.2",
-    "@dark-engine/platform-native": "1.4.2",
+    "@dark-engine/animations": "1.5.0",
+    "@dark-engine/core": "1.5.0",
+    "@dark-engine/data": "1.5.0",
+    "@dark-engine/native-navigation": "1.5.0",
+    "@dark-engine/platform-native": "1.5.0",
     "@nativescript/core": "8.8.6",
     "@nativescript/theme": "3.1.0"
   },
