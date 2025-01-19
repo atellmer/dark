@@ -6,7 +6,6 @@ import {
   CLASS_NAME_ATTR,
   EXCLUDE_ATTR_MARK,
   TEXTAREA_TAG,
-  VALUE_ATTR,
   DANGER_HTML_ATTR,
   detectIsVoidElement,
 } from '@dark-engine/platform-browser';
@@ -56,9 +55,7 @@ class TagNativeElement extends NativeElement {
 
   override render(isOpening?: boolean) {
     const content =
-      this.name === TEXTAREA_TAG
-        ? (this.attrs[VALUE_ATTR] as string) || this.children[0]?.render() || ''
-        : (this.attrs[DANGER_HTML_ATTR] as string) || '';
+      this.name === TEXTAREA_TAG ? this.children[0]?.render() || '' : (this.attrs[DANGER_HTML_ATTR] as string) || '';
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
     const chunk = isOpening

@@ -24,7 +24,13 @@ const Metadata = component<MetadataProps>(({ marker }) => {
       <meta name='theme-color' content='#fdd835' />
       <meta name='description' content={description} />
       <link rel='manifest' href='/static/assets/manifest.webmanifest' />
-      <link rel='preload' href='/static/assets/fonts/Roboto-Regular.ttf' _as='font' crossorigin='anonymous' />
+      <link
+        rel='preload'
+        href='/static/assets/fonts/Roboto-Regular.woff2'
+        _as='font'
+        type='font/woff2'
+        crossorigin='anonymous'
+      />
       <base href='/' />
       <title>{title}</title>
     </Metatags>

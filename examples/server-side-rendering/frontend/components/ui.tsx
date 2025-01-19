@@ -18,7 +18,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Roboto';
     font-weight: 400;
     font-display: swap;
-    src: url('/static/assets/fonts/Roboto-Regular.ttf');
+    src: url('/static/assets/fonts/Roboto-Regular.woff2');
   }
 
   *, *::before, *::after {

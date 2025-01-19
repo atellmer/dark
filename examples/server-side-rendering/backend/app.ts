@@ -1,5 +1,6 @@
 import 'module-alias/register';
 import { join } from 'node:path';
+import zlib from 'node:zlib';
 import express from 'express';
 import compression from 'compression';
 import { json } from 'body-parser';
@@ -21,12 +22,19 @@ app.use('/service-worker.js.map', express.static(join(__dirname, '../frontend/st
 createRestApi(app);
 
 app.get('*', (req, res) => {
+  const encoding = req.headers['accept-encoding'] || '';
   const { url } = req;
-  console.log('url', url);
   const stream = bootstrap({ props: { url, api } });
 
+  console.log('url', url);
   res.statusCode = 200;
-  stream.pipe(res);
+
+  if (encoding.includes('gzip')) {
+    res.setHeader('Content-Encoding', 'gzip');
+    stream.pipe(zlib.createGzip()).pipe(res);
+  } else {
+    stream.pipe(res);
+  }
 });
 
 const server = app.listen(PORT, () => {
