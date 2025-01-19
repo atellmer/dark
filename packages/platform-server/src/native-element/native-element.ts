@@ -57,7 +57,7 @@ class TagNativeElement extends NativeElement {
   override render(isOpening?: boolean) {
     const content =
       this.name === TEXTAREA_TAG
-        ? (this.attrs[VALUE_ATTR] as string) || ''
+        ? (this.attrs[VALUE_ATTR] as string) || this.children[0]?.render() || ''
         : (this.attrs[DANGER_HTML_ATTR] as string) || '';
     const isVoid = detectIsVoidElement(this.name);
     const attrs = getAttributes(this.attrs);
