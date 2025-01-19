@@ -30,7 +30,7 @@ const platform: Platform = {
 
 const detectIsServer = () => !platform.detectIsDynamic();
 
-const detectIsHydration = () => $$scope().getIsHydrateZone();
+const detectIsHydration = () => $$scope().getIsHydration();
 
 const detectIsSSR = () => detectIsServer() || detectIsHydration();
 

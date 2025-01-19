@@ -1,55 +1,55 @@
-import { INSERTION_EFFECT_HOST_MASK, LAYOUT_EFFECT_HOST_MASK, ASYNC_EFFECT_HOST_MASK } from '../constants';
 import { __useCursor as useCursor } from '../internal';
 import { type Hook, type HookValue } from '../fiber';
+import { EFFECT_HOST_MASK } from '../constants';
 import { detectIsFiberAlive } from '../walk';
 import { detectIsFunction } from '../utils';
 import { useMemo } from '../use-memo';
 import { $$scope } from '../scope';
 
-const $$useEffect = Symbol('use-effect');
+const $$effect = Symbol('effect');
 
-function createEffect(token: Symbol, type: EffectType) {
-  function useEffect(effect: Effect, deps: Array<any> = [{}]) {
+function createEffect(type: EffectType) {
+  return (effect: Effect, deps: Array<any> = [{}]) => {
     const $scope = $$scope();
     const cursor = useCursor();
-    const scope = useMemo<UseEffectValue>(() => ({ token, cleanup: undefined }), []);
-    const isInsertionEffect = type === EffectType.INSERTION;
-    const isLayoutEffect = type === EffectType.LAYOUT;
-    const isAsyncEffect = type === EffectType.ASYNC;
+    const scope = useMemo<UseEffectValue>(() => ({ token: $$effect, cleanup: undefined }), []);
 
-    isInsertionEffect && cursor.markHost(INSERTION_EFFECT_HOST_MASK);
-    isLayoutEffect && cursor.markHost(LAYOUT_EFFECT_HOST_MASK);
-    isAsyncEffect && cursor.markHost(ASYNC_EFFECT_HOST_MASK);
+    cursor.markHost(EFFECT_HOST_MASK);
 
     useMemo(() => {
-      const runEffect = () => {
+      const run = () => {
         scope.cleanup = effect();
 
-        if (isAsyncEffect && detectIsFunction(scope.cleanup) && !detectIsFiberAlive(cursor)) {
+        if (type === EffectType.ASYNC && detectIsFunction(scope.cleanup) && !detectIsFiberAlive(cursor)) {
           scope.cleanup();
         }
       };
 
-      isInsertionEffect && $scope.addInsertionEffect(runEffect);
-      isLayoutEffect && $scope.addLayoutEffect(runEffect);
-      isAsyncEffect && $scope.addAsyncEffect(runEffect);
+      switch (type) {
+        case EffectType.INSERTION:
+          $scope.addInsertionEffect(run);
+          break;
+        case EffectType.LAYOUT:
+          $scope.addLayoutEffect(run);
+          break;
+        case EffectType.ASYNC:
+          $scope.addAsyncEffect(run);
+          break;
+        default:
+          break;
+      }
 
       detectIsFunction(scope.cleanup) && scope.cleanup();
 
       return null;
     }, deps);
-  }
-
-  function dropEffects(hook: Hook<HookValue<UseEffectValue>>) {
-    for (const { value: effect } of hook.values) {
-      effect && effect.token === token && detectIsFunction(effect.cleanup) && effect.cleanup();
-    }
-  }
-
-  return {
-    useEffect,
-    dropEffects,
   };
+}
+
+function dropEffects(hook: Hook<HookValue<UseEffectValue>>) {
+  for (const { value } of hook.values) {
+    value?.token === $$effect && detectIsFunction(value.cleanup) && value.cleanup();
+  }
 }
 
 export type UseEffectValue = {
@@ -67,6 +67,6 @@ export enum EffectType {
   INSERTION = 'INSERTION',
 }
 
-const { useEffect, dropEffects } = createEffect($$useEffect, EffectType.ASYNC);
+const useEffect = createEffect(EffectType.ASYNC);
 
 export { useEffect, dropEffects, createEffect };

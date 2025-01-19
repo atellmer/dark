@@ -3,7 +3,7 @@ import {
   type DarkElement,
   type Callback,
   type CallbackWithValue,
-  type AppResource,
+  type Resource,
   ROOT,
   Fiber,
   CREATE_EFFECT_TAG,
@@ -58,16 +58,16 @@ function scheduleRender(options: ScheduleRenderOptions) {
     setRootId(rootId);
     const $scope = $$scope();
     const fiber = new Fiber().mutate({
-      element: new TagNativeElement(ROOT),
+      el: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       tag: CREATE_EFFECT_TAG,
     });
     const emitter = $scope.getEmitter();
 
-    $scope.setIsStreamZone(true);
+    $scope.setIsStream(true);
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setUnitOfWork(fiber);
 
     onStart();
     emitter.on('finish', () => {
@@ -202,7 +202,7 @@ function addScripts(scripts: Array<string>, isModule: boolean) {
 function withState(content = '') {
   const $scope = $$scope();
   const state = $scope.getResources();
-  const resources: Record<string, AppResource> = {};
+  const resources: Record<string, Resource> = {};
 
   if (state.size === 0) return content;
   state.forEach((value, key) => (resources[key] = value));

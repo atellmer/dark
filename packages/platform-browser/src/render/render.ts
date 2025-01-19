@@ -64,7 +64,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
   const $scope = $$scope(rootId);
 
   // insertion effect can't schedule renders
-  if ($scope?.getIsInsertionEffectsZone()) return;
+  if ($scope?.getIsInsertionEffect()) return;
 
   const callback = () => {
     setRootId(rootId); // !
@@ -72,7 +72,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
     const rootFiber = $scope.getRoot();
     const isUpdate = Boolean(rootFiber);
     const fiber = new Fiber().mutate({
-      element: container,
+      el: container,
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: rootFiber,
       tag: isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG,
@@ -80,8 +80,8 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
 
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setIsHydrateZone(isHydration);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setIsHydration(isHydration);
+    $scope.setUnitOfWork(fiber);
     isHydration && hydrate();
   };
 

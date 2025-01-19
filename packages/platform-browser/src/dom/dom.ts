@@ -251,7 +251,7 @@ const specialCasesMap: Record<
 
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parent.element;
+  const parentElement = parent.el;
   const childNodes = parentElement.childNodes;
   const isHydration = detectIsHydration();
 
@@ -270,29 +270,29 @@ function commitCreation(fiber: Fiber<NativeElement>) {
       nativeElement.splitText(fiber.inst.value.length);
     }
 
-    if (fiber.element.nodeName !== nativeElement.nodeName) {
+    if (fiber.el.nodeName !== nativeElement.nodeName) {
       illegal('Inconsistent element for hydration!');
     }
 
-    fiber.element = nativeElement;
+    fiber.el = nativeElement;
   } else {
     if (detectIsTagVirtualNode(parent.inst) && parent.inst.attrs[DANGER_HTML_ATTR]) {
       illegal(`The element with danger content can't have a children!`);
     }
 
     if (childNodes.length === 0 || fiber.eidx > childNodes.length - 1) {
-      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && m.appendElement.call(parentElement, fiber.element);
+      !detectIsVoidElement((parent.inst as TagVirtualNode).name) && m.appendElement.call(parentElement, fiber.el);
     } else {
-      m.insertElement.call(parentElement, fiber.element, parentElement.childNodes[fiber.eidx]);
+      m.insertElement.call(parentElement, fiber.el, parentElement.childNodes[fiber.eidx]);
     }
   }
 
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst, isHydration);
-  fiber.element.parentElement?.[PREVENT] && (fiber.element[PREVENT] = true);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.el, fiber.inst, isHydration);
+  fiber.el.parentElement?.[PREVENT] && (fiber.el[PREVENT] = true);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
-  const element = fiber.element;
+  const element = fiber.el;
   const prevInst = fiber.alt.inst as VirtualNode;
   const nextInst = fiber.inst as VirtualNode;
 
@@ -305,21 +305,21 @@ function commitDeletion(fiber: Fiber<NativeElement>) {
   const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
   if (fiber.mask & FLUSH_MASK) {
-    parent.element.children.length > 0 && removeContent(parent.element);
+    parent.el.children.length > 0 && removeContent(parent.el);
   } else {
-    walk<NativeElement>(fiber, onWalkInCommitDeletion(parent.element));
+    walk<NativeElement>(fiber, onWalkInCommitDeletion(parent.el));
   }
 }
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
-  if (fiber.element) {
-    !fiber.hook?.getIsPortal() && m.removeElement.call(parentElement, fiber.element);
+  if (fiber.el) {
+    !fiber.hook?.getIsPortal() && m.removeElement.call(parentElement, fiber.el);
     return skip();
   }
 };
 
 function move(fiber: Fiber<NativeElement>) {
-  const sourceNodes = collectElements(fiber, x => x.element);
+  const sourceNodes = collectElements(fiber, x => x.el);
   const sourceNode = sourceNodes[0];
   const parentElement = sourceNode.parentElement;
   const sourceFragment = new DocumentFragment();
@@ -345,14 +345,14 @@ function move(fiber: Fiber<NativeElement>) {
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
     case CREATE_EFFECT_TAG:
-      if (!fiber.element || fiber.hook?.getIsPortal()) return;
-      trackUpdate && trackUpdate(fiber.element);
+      if (!fiber.el || fiber.hook?.getIsPortal()) return;
+      trackUpdate && trackUpdate(fiber.el);
       commitCreation(fiber);
       break;
     case UPDATE_EFFECT_TAG:
       fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-      if (!fiber.element || fiber.hook?.getIsPortal()) return;
-      trackUpdate && trackUpdate(fiber.element);
+      if (!fiber.el || fiber.hook?.getIsPortal()) return;
+      trackUpdate && trackUpdate(fiber.el);
       commitUpdate(fiber);
       break;
     case DELETE_EFFECT_TAG:

@@ -10,7 +10,7 @@ function startTransition(callback: Callback) {
   const $scope = $$scope();
   const id = scheduler.getLastId();
 
-  $scope.setIsTransitionZone(true);
+  $scope.setIsTransition(true);
   try {
     callback();
     if (id === scheduler.getLastId()) {
@@ -20,7 +20,7 @@ function startTransition(callback: Callback) {
       illegal('startTransition must plan a new render!');
     }
   } finally {
-    $scope.setIsTransitionZone(false);
+    $scope.setIsTransition(false);
   }
 }
 

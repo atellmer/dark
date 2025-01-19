@@ -120,20 +120,20 @@ function removeEvents(tagElement: TagNativeElement, value: EventHandlersMap) {
 
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parent.element;
+  const parentElement = parent.el;
   const children = parentElement.children;
 
   if (children.length === 0 || fiber.eidx > children.length - 1) {
-    appendNativeElement(fiber.element, parentElement);
+    appendNativeElement(fiber.el, parentElement);
   } else {
-    insertNativeElement(fiber.element, parentElement.children[fiber.eidx], parentElement);
+    insertNativeElement(fiber.el, parentElement.children[fiber.eidx], parentElement);
   }
 
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.el, fiber.inst as TagVirtualNode);
 }
 
 function commitUpdate(fiber: Fiber<NativeElement>) {
-  const element = fiber.element;
+  const element = fiber.el;
   const prevInst = fiber.alt.inst as VirtualNode;
   const nextInst = fiber.inst as VirtualNode;
 
@@ -146,18 +146,18 @@ function commitUpdate(fiber: Fiber<NativeElement>) {
 function commitDeletion(fiber: Fiber<NativeElement>) {
   const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
 
-  walk<NativeElement>(fiber, onWalkInCommitDeletion(parent.element));
+  walk<NativeElement>(fiber, onWalkInCommitDeletion(parent.el));
 }
 
 const onWalkInCommitDeletion = (parentElement: TagNativeElement) => (fiber: Fiber<NativeElement>, skip: Callback) => {
-  if (fiber.element) {
-    removeNativeElement(fiber.element, parentElement);
+  if (fiber.el) {
+    removeNativeElement(fiber.el, parentElement);
     return skip();
   }
 };
 
 function move(fiber: Fiber<NativeElement>) {
-  const sourceNodes = collectElements(fiber, x => x.element);
+  const sourceNodes = collectElements(fiber, x => x.el);
   const sourceNode = sourceNodes[0];
   const parentElement = sourceNode.parentElement;
   const elementIdx = fiber.eidx;
@@ -194,11 +194,11 @@ function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode)
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
     case CREATE_EFFECT_TAG:
-      fiber.element && commitCreation(fiber);
+      fiber.el && commitCreation(fiber);
       break;
     case UPDATE_EFFECT_TAG:
       fiber.mask & MOVE_MASK && (move(fiber), (fiber.mask &= ~MOVE_MASK));
-      fiber.element && commitUpdate(fiber);
+      fiber.el && commitUpdate(fiber);
       break;
     case DELETE_EFFECT_TAG:
       commitDeletion(fiber);

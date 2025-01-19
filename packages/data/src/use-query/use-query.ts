@@ -1,6 +1,6 @@
 import {
   type TextBased,
-  type AppResource,
+  type Resource,
   logError,
   detectIsFunction,
   detectIsPromise,
@@ -141,7 +141,7 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
 
   // !
   if (isSSR) {
-    const res = $scope.getResource(id) as AppResource<T>;
+    const res = $scope.getResource(id) as Resource<T>;
 
     if (isServer) {
       if (res) {
@@ -288,7 +288,7 @@ function createState<T>(cache: InMemoryCache, key: string, cacheId: TextBased, l
   return state;
 }
 
-function mutate<T>(state: State<T>, res: AppResource<T>) {
+function mutate<T>(state: State<T>, res: Resource<T>) {
   const [data, error] = res;
 
   state.isFetching = false;

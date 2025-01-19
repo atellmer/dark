@@ -43,7 +43,7 @@ function render(element: DarkElement) {
     const root = $scope.getRoot();
     const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
-      element: isUpdate ? root.element : new TagNativeElement(ROOT),
+      el: isUpdate ? root.el : new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: root,
       tag: isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG,
@@ -51,7 +51,7 @@ function render(element: DarkElement) {
 
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setUnitOfWork(fiber);
   };
 
   scheduler.schedule(callback, { priority: TaskPriority.NORMAL });

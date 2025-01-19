@@ -35,8 +35,8 @@ const Animated = component<AnimatedProps>(
         const fiber = cursor.hook.owner;
 
         walk(fiber.child, (fiber, _, stop) => {
-          if (fiber.element) {
-            scope.element = fiber.element;
+          if (fiber.el) {
+            scope.element = fiber.el;
             return stop();
           }
         });

@@ -76,13 +76,12 @@ class Atom<T = unknown> {
 
   __connect(fn: ShouldUpdate<T>, key: T) {
     const rootId = getRootId();
-    const fiber = $$scope().getCursorFiber();
-    const { hook } = fiber;
+    const cursor = $$scope().getCursor();
+    const { hook } = cursor;
     const disconnect = () => this.off(hook, key);
 
-    !hook.atoms && (hook.atoms = new Map());
-    hook.atoms.set(this, disconnect);
-    fiber.markHost(ATOM_HOST_MASK);
+    hook.setAtom(this, disconnect);
+    cursor.markHost(ATOM_HOST_MASK);
 
     if (detectIsEmpty(key)) {
       !this.connections1 && (this.connections1 = new Map());
@@ -159,7 +158,7 @@ class Atom<T = unknown> {
   }
 
   private off(hook: Hook, key: T) {
-    hook.atoms.delete(this);
+    hook.removeAtom(this);
     this.connections1 && this.connections1.delete(hook);
     this.connections2 && this.connections2.delete(key);
   }

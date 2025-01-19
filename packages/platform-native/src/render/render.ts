@@ -57,7 +57,7 @@ function render(options: RenderOptions): NSElement {
     const root = $scope.getRoot();
     const isUpdate = Boolean(root);
     const fiber = new Fiber().mutate({
-      element: isUpdate ? root.element : new TagNativeElement(ROOT),
+      el: isUpdate ? root.el : new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: root,
       tag: isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG,
@@ -66,7 +66,7 @@ function render(options: RenderOptions): NSElement {
 
     $scope.resetMount();
     $scope.setWorkInProgress(fiber);
-    $scope.setNextUnitOfWork(fiber);
+    $scope.setUnitOfWork(fiber);
 
     emitter.on('finish', () => {
       emitter.kill();
@@ -93,7 +93,7 @@ function render(options: RenderOptions): NSElement {
 
 function getRootNativeView() {
   const fiber = $$scope().getRoot() as Fiber<TagNativeElement>;
-  const nativeView = fiber.element.getNativeView();
+  const nativeView = fiber.el.getNativeView();
 
   return nativeView;
 }

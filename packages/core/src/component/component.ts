@@ -8,7 +8,7 @@ class Component<P extends StandardComponentProps = {}> {
   token?: Symbol = null;
   displayName?: string = null;
   shouldUpdate?: ShouldUpdate<P> = null;
-  children: Array<Instance> = [];
+  children: Array<Instance> = null;
 
   constructor(type: CreateElement<P>, token: Symbol, props: P, shouldUpdate: ShouldUpdate<P>, displayName: string) {
     this.type = type;

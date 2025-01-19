@@ -4,7 +4,7 @@ import { $$scope, getRootId } from '../scope';
 import { useMemo } from '../use-memo';
 
 function useCursor() {
-  return $$scope().getCursorFiber();
+  return $$scope().getCursor();
 }
 
 function useSSR() {

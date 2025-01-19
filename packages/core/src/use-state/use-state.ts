@@ -17,7 +17,7 @@ type CreateToolsOptions<T> = {
 function createTools<T>(options: CreateToolsOptions<T>) {
   const { get, set, reset, next, shouldUpdate: $shouldUpdate = trueFn } = options;
   const $scope = $$scope();
-  const isBatch = $scope.getIsBatchZone();
+  const isBatch = $scope.getIsBatch();
   const tools = (): Tools => {
     const prevValue = get();
     const newValue = detectIsFunction(next) ? next(prevValue) : next;
