@@ -30,19 +30,19 @@ type PortalProps = {
 const Portal = component<PortalProps>(
   props => {
     const cursor = useCursor();
-    const element = props.container;
+    const el = props.container;
     const scope = useMemo(() => {
-      removeContent(element);
-      return { element };
+      removeContent(el);
+      return { el };
     }, []);
 
     useLayoutEffect(() => {
-      return () => removeContent(scope.element);
+      return () => removeContent(scope.el);
     }, []);
 
     cursor.hook.setIsPortal(true);
-    cursor.element = element;
-    scope.element = element;
+    cursor.el = el;
+    scope.el = el;
 
     return props.slot;
   },

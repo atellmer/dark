@@ -1,14 +1,16 @@
 import {
+  EFFECT_HOST_MASK,
   IS_WIP_HOOK_MASK,
   IS_PORTAL_HOOK_MASK,
   IS_SUSPENSE_HOOK_MASK,
   IS_BOUNDARY_HOOK_MASK,
   IS_PENDING_HOOK_MASK,
 } from '../constants';
-import { detectIsFunction, detectIsUndefined, logError } from '../utils';
 import { type Instance, type Callback, type TimerId } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
+import { type UseEffectValue, dropEffects } from '../use-effect';
 import { type Context, type ContextProvider } from '../context';
+import { detectIsFunction, logError } from '../utils';
 import { detectIsComponent } from '../component';
 import { type Atom } from '../atom';
 
@@ -19,7 +21,7 @@ class Fiber<N = NativeElement> {
   idx = 0; // idx of fiber in the parent fiber
   eidx = 0; // native element idx
   mask = 0; // bit mask
-  element: N = null; // native element
+  el: N = null; // native element
   tag: string = null; // effect tag (CREATE, UPDATE, DELETE, SKIP)
   parent: Fiber<N> = null; // parent fiber
   child: Fiber<N> = null; // child fiber
@@ -51,7 +53,7 @@ class Fiber<N = NativeElement> {
     if (!this.parent) return;
     this.parent.cec += count;
 
-    if (!this.parent.element && !this.parent.hook?.getIsWip()) {
+    if (!this.parent.el && !this.parent.hook?.getIsWip()) {
       this.parent.increment(count);
     }
   }
@@ -82,9 +84,13 @@ class Hook<T = unknown> {
   idx = 0;
   values: Array<T> = [];
   owner: Fiber = null;
-  atoms: Map<Atom, Callback> = null;
   mask = 0;
-  box?: Box = null;
+  providers: Map<Context, ContextProvider> = null;
+  atoms: Map<Atom, Callback> = null;
+  batch: Batch = null;
+  catch: Catch = null;
+  pendings = 0;
+  update: Callback = null;
 
   __getMask(mask: number) {
     return Boolean(this.mask & mask);
@@ -92,10 +98,6 @@ class Hook<T = unknown> {
 
   __mark(mask: number, x: boolean) {
     x ? (this.mask |= mask) : (this.mask &= ~mask);
-  }
-
-  __box() {
-    if (!this.box) this.box = {};
   }
 
   getIsWip() {
@@ -139,53 +141,66 @@ class Hook<T = unknown> {
   }
 
   getProviders() {
-    return this.box?.providers;
+    return this.providers;
   }
 
   setProviders(x: Map<Context, ContextProvider>) {
-    this.__box();
-    this.box.providers = x;
+    this.providers = x;
+  }
+
+  setAtom(atom: Atom, cb: Callback) {
+    !this.atoms && (this.atoms = new Map());
+    this.atoms.set(atom, cb);
+  }
+
+  removeAtom(atom: Atom) {
+    this.atoms.delete(atom);
   }
 
   getBatch() {
-    return this.box?.batch;
+    return this.batch;
   }
 
   setBatch(x: Batch) {
-    this.__box();
-    this.box.batch = x;
+    this.batch = x;
   }
 
   hasCatch() {
-    return detectIsFunction(this.box?.catch);
+    return detectIsFunction(this.catch);
   }
 
   setCatch(x: Catch) {
-    this.__box();
-    this.box.catch = x;
-  }
-
-  catch(x: Error) {
-    this.box?.catch(x);
+    this.catch = x;
   }
 
   setUpdate(x: Callback) {
-    this.__box();
-    this.box.update = x;
+    this.update = x;
   }
 
-  update() {
-    this.box?.update();
-  }
-
-  incrementPending() {
-    this.__box();
-    detectIsUndefined(this.box.pendings) && (this.box.pendings = 0);
-    this.box.pendings++;
+  incrementPendings() {
+    this.pendings++;
   }
 
   getPendings() {
-    return this.box?.pendings;
+    return this.pendings;
+  }
+
+  drop() {
+    const { atoms } = this;
+
+    if (this.values.length > 0) {
+      const $hook = this as Hook<HookValue<UseEffectValue>>;
+
+      this.owner.mask & EFFECT_HOST_MASK && dropEffects($hook);
+    }
+
+    if (atoms) {
+      for (const [_, cleanup] of atoms) {
+        cleanup();
+      }
+
+      this.atoms = null;
+    }
   }
 }
 
@@ -195,14 +210,6 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
 
   return null;
 }
-
-type Box = {
-  providers?: Map<Context, ContextProvider>;
-  batch?: Batch;
-  catch?: Catch;
-  pendings?: number;
-  update?: Callback;
-};
 
 type Batch = {
   timer: TimerId;

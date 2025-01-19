@@ -58,7 +58,7 @@ function scheduleRender(options: ScheduleRenderOptions) {
     setRootId(rootId);
     const $scope = $$scope();
     const fiber = new Fiber().mutate({
-      element: new TagNativeElement(ROOT),
+      el: new TagNativeElement(ROOT),
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       tag: CREATE_EFFECT_TAG,
     });

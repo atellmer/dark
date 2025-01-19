@@ -84,17 +84,17 @@ const specialCasesMap: Record<
 
 function commitCreation(fiber: Fiber<NativeElement>) {
   const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parent.element;
+  const parentElement = parent.el;
   const vNode = parent.inst as TagVirtualNode;
 
-  !detectIsVoidElement(vNode.name) && appendNativeElement(fiber.element, parentElement);
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.element, fiber.inst as TagVirtualNode);
+  !detectIsVoidElement(vNode.name) && appendNativeElement(fiber.el, parentElement);
+  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.el, fiber.inst as TagVirtualNode);
 }
 
 function commit(fiber: Fiber<NativeElement>) {
   switch (fiber.tag) {
     case CREATE_EFFECT_TAG:
-      fiber.element && commitCreation(fiber);
+      fiber.el && commitCreation(fiber);
       break;
     default:
       break;
@@ -108,16 +108,16 @@ const finishCommit = () => {
 function createChunk(fiber: Fiber<NativeElement>) {
   let chunk = '';
   const tagNode = fiber?.inst as TagVirtualNode;
-  const tagElement = fiber?.element as TagNativeElement;
+  const tagElement = fiber?.el as TagNativeElement;
 
-  if (!fiber || !fiber.element || tagNode.name === ROOT) return chunk;
+  if (!fiber || !fiber.el || tagNode.name === ROOT) return chunk;
 
   if (!chunkIds[fiber.id]) {
     if (detectIsTagVirtualNode(fiber.inst)) {
       addAttributes(tagElement, fiber.inst);
       chunk = tagElement.render(true);
     } else if (detectIsPlainVirtualNode(fiber.inst)) {
-      chunk = fiber.element.render();
+      chunk = fiber.el.render();
     }
   } else if (detectIsTagVirtualNode(fiber.inst)) {
     chunk = tagElement.render(false);

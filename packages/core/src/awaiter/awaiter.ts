@@ -25,7 +25,7 @@ class Awaiter {
 
       if (suspenseHook) {
         suspenseHook.setIsPeinding(true);
-        suspenseHook.incrementPending();
+        suspenseHook.incrementPendings();
         pendings = suspenseHook.getPendings();
         suspenseHook.update();
       }

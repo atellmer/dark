@@ -148,7 +148,7 @@ function mountChild(parent: Fiber, $scope: Scope) {
   fiber.hook = parent.child?.hook || fiber.hook; // from previous fiber after throwing promise
   fiber.parent = parent;
   parent.child = fiber;
-  fiber.eidx = parent.element ? 0 : parent.eidx;
+  fiber.eidx = parent.el ? 0 : parent.eidx;
 
   share(fiber, parent, inst, $scope);
 
@@ -174,7 +174,7 @@ function mountSibling(left: Fiber, $scope: Scope) {
   fiber.hook = left.next?.hook || fiber.hook; // from previous fiber after throwing promise
   fiber.parent = left.parent;
   left.next = fiber;
-  fiber.eidx = left.eidx + (left.element ? (left.hook?.getIsPortal() ? 0 : 1) : left.cec);
+  fiber.eidx = left.eidx + (left.el ? (left.hook?.getIsPortal() ? 0 : 1) : left.cec);
 
   share(fiber, left, inst, $scope);
 
@@ -198,8 +198,7 @@ function setupInstance(children: Array<Instance>, idx: number): Instance {
 
 function share(fiber: Fiber, prev: Fiber, inst: Instance, $scope: Scope) {
   const { alt } = fiber;
-  const isMemo = alt && detectIsMemo(inst);
-  const shouldMount = isMemo ? shouldUpdate(fiber, inst, $scope) : true;
+  const shouldMount = alt && detectIsMemo(inst) ? shouldUpdate(fiber, inst, $scope) : true;
 
   $scope.setCursor(fiber);
   fiber.inst = inst;
@@ -271,15 +270,15 @@ function setup(fiber: Fiber, alt: Fiber) {
     getElementKey(alt.inst) === getElementKey(inst);
   fiber.tag = isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG;
 
-  if (!fiber.element) {
-    if (isUpdate && alt.element) {
-      fiber.element = alt.element;
+  if (!fiber.el) {
+    if (isUpdate && alt.el) {
+      fiber.el = alt.el;
     } else if (detectIsVirtualNode(fiber.inst)) {
-      fiber.element = platform.createElement(fiber.inst);
+      fiber.el = platform.createElement(fiber.inst);
     }
   }
 
-  fiber.element && !fiber.hook?.getIsPortal() && fiber.increment();
+  fiber.el && !fiber.hook?.getIsPortal() && fiber.increment();
 }
 
 function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
@@ -300,7 +299,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
   fiber.hook = alt.hook;
   fiber.cc = alt.cc;
   fiber.cec = alt.cec;
-  alt.element && (fiber.element = alt.element);
+  alt.el && (fiber.el = alt.el);
 
   const diff = fiber.eidx - alt.eidx;
   const deep = diff !== 0;
@@ -313,7 +312,7 @@ function shouldUpdate(fiber: Fiber, inst: Instance, $scope: Scope) {
 
 const onWalkInShouldUpdate = (diff: number) => ($fiber: Fiber, skip: Callback) => {
   $fiber.eidx += diff;
-  if ($fiber.element) return skip();
+  if ($fiber.el) return skip();
 };
 
 function mount(fiber: Fiber, prev: Fiber, $scope: Scope) {
@@ -428,7 +427,7 @@ function commit($scope: Scope) {
   $scope.runLayoutEffects();
   $scope.runAsyncEffects();
   awaiter.resolve();
-  unmounts.length > 0 && platform.raf(onUnmount(unmounts));
+  unmounts.length > 0 && setTimeout(onUnmount(unmounts));
   cleanup($scope);
 }
 
@@ -457,7 +456,7 @@ const onWalkInSync = (diff: number, fiber: Fiber, scope: { isRight: boolean }) =
     return skip();
   }
 
-  $fiber.element && skip();
+  $fiber.el && skip();
   scope.isRight && ($fiber.eidx += diff);
 };
 

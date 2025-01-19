@@ -24,7 +24,7 @@ const Shadow = component<ShadowProps>(
 
       for (const fiber of fibers) {
         if (detectIsTagVirtualNode(fiber.inst)) {
-          platform.toggle(fiber.element, isOpen);
+          platform.toggle(fiber.el, isOpen);
         }
       }
     }, [isOpen]);

@@ -80,8 +80,7 @@ class Atom<T = unknown> {
     const { hook } = cursor;
     const disconnect = () => this.off(hook, key);
 
-    !hook.atoms && (hook.atoms = new Map());
-    hook.atoms.set(this, disconnect);
+    hook.setAtom(this, disconnect);
     cursor.markHost(ATOM_HOST_MASK);
 
     if (detectIsEmpty(key)) {
@@ -159,7 +158,7 @@ class Atom<T = unknown> {
   }
 
   private off(hook: Hook, key: T) {
-    hook.atoms.delete(this);
+    hook.removeAtom(this);
     this.connections1 && this.connections1.delete(hook);
     this.connections2 && this.connections2.delete(key);
   }

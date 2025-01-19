@@ -72,7 +72,7 @@ function render(element: DarkElement, container: TagNativeElement, hydrate?: Cal
     const rootFiber = $scope.getRoot();
     const isUpdate = Boolean(rootFiber);
     const fiber = new Fiber().mutate({
-      element: container,
+      el: container,
       inst: new TagVirtualNode(ROOT, {}, flatten([element || createReplacer()]) as TagVirtualNode['children']),
       alt: rootFiber,
       tag: isUpdate ? UPDATE_EFFECT_TAG : CREATE_EFFECT_TAG,

@@ -44,7 +44,7 @@ function collectElements<T, P = T>(fiber: Fiber<T>, transform: (fiber: Fiber<T>)
 
 function onWalkInCollectElements<T, P = T>(elements: Array<P>, transform: (fiber: Fiber<T>) => P) {
   return (fiber: Fiber<T>, skip: Callback) => {
-    if (fiber.element) {
+    if (fiber.el) {
       !fiber.hook?.getIsPortal() && elements.push(transform(fiber));
       return skip();
     }
@@ -55,7 +55,7 @@ function getFiberWithElement<T1, T2 = T1>(fiber: Fiber<T1>): Fiber<T2> {
   let $fiber = fiber as unknown as Fiber<T2>;
 
   while ($fiber) {
-    if ($fiber.element) return $fiber;
+    if ($fiber.el) return $fiber;
     $fiber = $fiber.parent;
   }
 
@@ -142,7 +142,7 @@ function tryOptStaticSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
   const store = $scope.getReconciler().get(fiber.id);
   const inst = fiber.inst as Component | TagVirtualNode;
 
-  alt.element && (fiber.element = alt.element); //!
+  alt.el && (fiber.el = alt.el); //!
 
   for (let i = 0; i < inst.children.length; i++) {
     buildChildNode(inst.children, fiber, store.map, i, fiber.eidx);
@@ -183,7 +183,7 @@ function buildChildNodes(fiber: Fiber, alt: Fiber, $scope: Scope, onNode?: (fibe
   const inst = fiber.inst as Component | TagVirtualNode;
   const children = inst.children;
 
-  alt.element && (fiber.element = alt.element); //!
+  alt.el && (fiber.el = alt.el); //!
 
   for (let i = 0; i < children.length; i++) {
     const key = getKey(children[i], i);
@@ -220,7 +220,7 @@ function buildChildNode(
   fiber.parent = parent;
   fiber.tag = SKIP_EFFECT_TAG;
   fiber.idx = idx;
-  left ? (fiber.eidx = left.eidx + (left.element ? 1 : left.cec)) : (fiber.eidx = startEidx);
+  left ? (fiber.eidx = left.eidx + (left.el ? 1 : left.cec)) : (fiber.eidx = startEidx);
   right && (fiber.next = right);
   isLast && (fiber.next = null);
   notifyParents(fiber);
@@ -232,7 +232,7 @@ function getKey(inst: Instance, idx: number) {
 }
 
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
-  fiber.increment(alt.element ? 1 : alt.cec);
+  fiber.increment(alt.el ? 1 : alt.cec);
   alt.mask & EFFECT_HOST_MASK && fiber.markHost(EFFECT_HOST_MASK);
   alt.mask & ATOM_HOST_MASK && fiber.markHost(ATOM_HOST_MASK);
 }

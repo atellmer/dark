@@ -35,6 +35,8 @@ function createEffect(type: EffectType) {
         case EffectType.ASYNC:
           $scope.addAsyncEffect(run);
           break;
+        default:
+          break;
       }
 
       detectIsFunction(scope.cleanup) && scope.cleanup();
