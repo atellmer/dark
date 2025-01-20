@@ -9,24 +9,17 @@ import {
   ROOT,
   REF_ATTR,
   ATTR_BLACK_LIST,
-  CREATE_EFFECT_TAG,
   detectIsFunction,
   detectIsUndefined,
   NodeType,
   detectIsTagVirtualNode,
-  getFiberWithElement,
+  dummyFn,
   detectIsPlainVirtualNode,
   detectIsTextVirtualNode,
   createReplacer,
   detectIsTextBased,
 } from '@dark-engine/core';
-import {
-  type AttributeValue,
-  VALUE_ATTR,
-  TEXTAREA_TAG,
-  PREVENT,
-  detectIsVoidElement,
-} from '@dark-engine/platform-browser';
+import { type AttributeValue, VALUE_ATTR, TEXTAREA_TAG, PREVENT } from '@dark-engine/platform-browser';
 
 import { NativeElement, TagNativeElement, TextNativeElement, CommentNativeElement } from '../native-element';
 
@@ -82,28 +75,9 @@ const specialCasesMap: Record<
   },
 };
 
-function commitCreation(fiber: Fiber<NativeElement>) {
-  const parent = getFiberWithElement<NativeElement, TagNativeElement>(fiber.parent);
-  const parentElement = parent.el;
-  const vNode = parent.inst as TagVirtualNode;
+const commit = dummyFn;
 
-  !detectIsVoidElement(vNode.name) && appendNativeElement(fiber.el, parentElement);
-  detectIsTagVirtualNode(fiber.inst) && addAttributes(fiber.el, fiber.inst as TagVirtualNode);
-}
-
-function commit(fiber: Fiber<NativeElement>) {
-  switch (fiber.tag) {
-    case CREATE_EFFECT_TAG:
-      fiber.el && commitCreation(fiber);
-      break;
-    default:
-      break;
-  }
-}
-
-const finishCommit = () => {
-  chunkIds = {};
-};
+const finishCommit = () => (chunkIds = {});
 
 function createChunk(fiber: Fiber<NativeElement>) {
   let chunk = '';

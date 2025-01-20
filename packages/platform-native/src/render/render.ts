@@ -74,7 +74,7 @@ function render(options: RenderOptions): NSElement {
       if (detectIsFunction(onCompleted)) {
         const nativeView = getRootNativeView();
 
-        isSubRoot && unmountRoot(rootId, () => {});
+        isSubRoot && unmountRoot(rootId);
         onCompleted(nativeView);
       }
 

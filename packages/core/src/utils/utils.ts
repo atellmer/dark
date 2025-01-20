@@ -69,6 +69,8 @@ const mapRecord = <T extends object>(record: T) => keys(record).map(x => record[
 
 const createError = (x: unknown) => (x instanceof Error ? x : new Error(String(x)));
 
+const stringify = JSON.stringify as (x: unknown) => string;
+
 export {
   detectIsFunction,
   detectIsUndefined,
@@ -99,4 +101,5 @@ export {
   createIndexKey,
   mapRecord,
   createError,
+  stringify,
 };

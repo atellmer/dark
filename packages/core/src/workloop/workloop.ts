@@ -388,47 +388,54 @@ function supportConditional(inst: Instance) {
 }
 
 function commit($scope: Scope) {
+  const isStream = $scope.getIsStream();
+
   if (process.env.NODE_ENV !== 'production') {
     process.env.NODE_ENV === 'development' && $scope.setIsHot(false);
   }
 
-  const wip = $scope.getWorkInProgress();
-  const deletions = $scope.getDeletions();
-  const candidates = $scope.getCandidates();
-  const isUpdate = $scope.getIsUpdate();
-  const awaiter = $scope.getAwaiter();
-  const unmounts: Array<Fiber> = [];
-  const inst = wip.inst as Component;
+  if (isStream) {
+    platform.finishCommit();
+    cleanup($scope);
+  } else {
+    const wip = $scope.getWorkInProgress();
+    const deletions = $scope.getDeletions();
+    const candidates = $scope.getCandidates();
+    const isUpdate = $scope.getIsUpdate();
+    const awaiter = $scope.getAwaiter();
+    const unmounts: Array<Fiber> = [];
+    const inst = wip.inst as Component;
 
-  // !
-  for (const fiber of deletions) {
-    const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
+    // !
+    for (const fiber of deletions) {
+      const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
 
-    canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
-    fiber.tag = DELETE_EFFECT_TAG;
-    platform.commit(fiber);
+      canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
+      fiber.tag = DELETE_EFFECT_TAG;
+      platform.commit(fiber);
+    }
+
+    isUpdate && sync(wip);
+    $scope.runInsertionEffects();
+
+    for (const fiber of candidates) {
+      const item = fiber.inst as CanHaveChildren;
+
+      fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
+      fiber.alt = null;
+      item.children && (item.children = null);
+    }
+
+    wip.alt = null;
+    wip.hook?.setIsWip(false);
+    inst.children = null;
+    platform.finishCommit(); // !
+    $scope.runLayoutEffects();
+    $scope.runAsyncEffects();
+    awaiter.resolve();
+    unmounts.length > 0 && setTimeout(onUnmount(unmounts));
+    cleanup($scope);
   }
-
-  isUpdate && sync(wip);
-  $scope.runInsertionEffects();
-
-  for (const fiber of candidates) {
-    const item = fiber.inst as CanHaveChildren;
-
-    fiber.tag !== SKIP_EFFECT_TAG && platform.commit(fiber);
-    fiber.alt = null;
-    item.children && (item.children = null);
-  }
-
-  wip.alt = null;
-  wip.hook?.setIsWip(false);
-  inst.children = null;
-  platform.finishCommit(); // !
-  $scope.runLayoutEffects();
-  $scope.runAsyncEffects();
-  awaiter.resolve();
-  unmounts.length > 0 && setTimeout(onUnmount(unmounts));
-  cleanup($scope);
 }
 
 const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(unmountFiber);

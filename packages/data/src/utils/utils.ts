@@ -4,6 +4,4 @@ import { LIB } from '../constants';
 
 const illegal = (x: string) => $illegal(x, LIB);
 
-const stringify = (x: unknown) => JSON.stringify(x);
-
-export { illegal, stringify };
+export { illegal };

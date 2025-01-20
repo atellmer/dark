@@ -152,7 +152,7 @@ function renderToReadableStream(element: DarkElement, options?: RenderToStreamOp
 
     stream.push(withState());
     stream.push(null);
-    unmountRoot(rootId, dummyFn);
+    unmountRoot(rootId);
   };
 
   const onError = (err: string) => {
@@ -160,7 +160,7 @@ function renderToReadableStream(element: DarkElement, options?: RenderToStreamOp
 
     stream.emit('error', new Error(err));
     stream.push(null);
-    unmountRoot(rootId, dummyFn);
+    unmountRoot(rootId);
   };
 
   scheduleRender({ element, onStart, onCompleted, onError });
