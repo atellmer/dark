@@ -13,15 +13,16 @@ import {
   useId,
   $$scope,
   throwThis,
+  stringify,
   __useSSR as useSSR,
   __useInSuspense as useInSuspense,
   __useInBoundary as useInBoundary,
 } from '@dark-engine/core';
 
 import { type InMemoryCache, checkCache } from '../cache';
-import { illegal, stringify } from '../utils';
 import { ROOT_ID } from '../constants';
 import { useCache } from '../client';
+import { illegal } from '../utils';
 
 export type UseQueryOptions<T, V extends Variables> = {
   variables?: V;
