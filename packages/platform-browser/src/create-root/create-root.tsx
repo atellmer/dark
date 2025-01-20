@@ -14,10 +14,9 @@ function createRoot(container: TagNativeElement) {
 function unmount(container: TagNativeElement) {
   const rootId = roots.get(container);
 
-  unmountRoot(rootId, () => {
-    roots.delete(container);
-    removeContent(container);
-  });
+  unmountRoot(rootId);
+  roots.delete(container);
+  removeContent(container);
 }
 
 export { createRoot, unmount };

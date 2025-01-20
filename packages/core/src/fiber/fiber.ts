@@ -186,19 +186,14 @@ class Hook<T = unknown> {
   }
 
   drop() {
-    const { atoms } = this;
+    const { atoms, values, owner } = this;
 
-    if (this.values.length > 0) {
-      const $hook = this as Hook<HookValue<UseEffectValue>>;
-
-      this.owner.mask & EFFECT_HOST_MASK && dropEffects($hook);
+    if (values.length > 0 && owner.mask & EFFECT_HOST_MASK) {
+      dropEffects(this as Hook<HookValue<UseEffectValue>>);
     }
 
     if (atoms) {
-      for (const [_, cleanup] of atoms) {
-        cleanup();
-      }
-
+      for (const [_, cleanup] of atoms) cleanup();
       this.atoms = null;
     }
   }
