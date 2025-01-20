@@ -6,9 +6,9 @@
     "dev": "npx webpack --watch --env development"
   },
   "dependencies": {
-    "@dark-engine/core": "1.5.0",
-    "@dark-engine/data": "1.5.0",
-    "@dark-engine/platform-desktop": "1.5.0",
+    "@dark-engine/core": "1.5.1",
+    "@dark-engine/data": "1.5.1",
+    "@dark-engine/platform-desktop": "1.5.1",
     "@nodegui/nodegui": "0.70.0"
   },
   "devDependencies": {

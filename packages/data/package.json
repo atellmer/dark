@@ -1,6 +1,6 @@
 {
   "name": "@dark-engine/data",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Declarative queries and mutations for Dark",
   "author": "AlexPlex",
   "license": "MIT",
