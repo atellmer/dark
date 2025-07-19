@@ -11,6 +11,7 @@ const alias = {
   '@dark-engine/animations': resolve(__dirname, './packages/animations/src'),
   '@dark-engine/styled': resolve(__dirname, './packages/styled/src'),
   '@dark-engine/data': resolve(__dirname, './packages/data/src'),
+  '@dark-engine/signals': resolve(__dirname, './packages/signals/src'),
 };
 
 module.exports = { alias };
