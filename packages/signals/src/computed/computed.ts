@@ -1,4 +1,4 @@
-import { type Callback, type Subscriber } from '@dark-engine/core';
+import { throwThis, type Callback, type Subscriber } from '@dark-engine/core';
 
 import { type SupportContext, getContext, setContext } from '../context';
 import { AbstractSignal } from '../abstract-signal';
@@ -7,13 +7,17 @@ export type Selector<T> = () => T;
 
 class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext {
   private deps = new Set<AbstractSignal>();
-  private selector: Selector<T>;
   private versions: Map<AbstractSignal, number> = new Map();
+  private selector: Selector<T>;
 
   constructor(selector: Selector<T>) {
     super();
     this.selector = selector;
     this.compute();
+  }
+
+  peek(): T {
+    return this.value;
   }
 
   get() {
@@ -61,11 +65,17 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     const prevContext = getContext();
 
     setContext(this);
-    this.deps = new Set();
-    this.versions = new Map();
-    this.value = this.selector();
-    this.deps.forEach(x => this.versions.set(x, x.__getVersion()));
-    setContext(prevContext);
+
+    try {
+      this.deps.clear();
+      this.versions.clear();
+      this.value = this.selector();
+    } catch (error) {
+      throwThis(error);
+    } finally {
+      this.deps.forEach(x => this.versions.set(x, x.__getVersion()));
+      setContext(prevContext);
+    }
 
     return this.value;
   }
@@ -73,4 +83,4 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
 
 const computed = <T>(selector: Selector<T>) => new Computed(selector);
 
-export { computed, type Computed };
+export { Computed, computed };

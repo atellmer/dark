@@ -1,37 +1,67 @@
-import { Callback, detectIsFunction } from '@dark-engine/core';
+import { Callback, CallbackWithValue, detectIsFunction, throwThis } from '@dark-engine/core';
 
 import { type SupportContext, getContext, setContext } from '../context';
 import { AbstractSignal } from '../abstract-signal';
 
-type CallbackWithPossibleDispose = Callback | (() => Callback);
+type EffectCallback = (fn: CallbackWithValue<Callback>) => void | Promise<void>;
 
 class Effect implements SupportContext {
   private deps = new Set<AbstractSignal>();
-  private dispose: Callback = null;
+  private untrackers: Array<Callback> = [];
+  private cleanup: Callback = null;
 
-  constructor(callback: CallbackWithPossibleDispose) {
-    this.track(callback);
+  constructor(callback: EffectCallback) {
+    this.track(callback, true);
   }
 
   add(x: AbstractSignal<unknown>) {
     this.deps.add(x);
   }
 
-  track(callback: CallbackWithPossibleDispose) {
+  dispose() {
+    this.deps.clear();
+
+    if (this.untrackers) {
+      this.untrackers.forEach(x => x());
+      this.untrackers = [];
+    }
+
+    if (detectIsFunction(this.cleanup)) {
+      this.cleanup();
+      this.cleanup = null;
+    }
+  }
+
+  private track(callback: EffectCallback, fromInit = false) {
     const prevContext = getContext();
 
     setContext(this);
-    this.exec(callback);
-    this.deps.forEach(x => x.__on(() => this.exec(callback)));
-    setContext(prevContext);
+
+    try {
+      !fromInit && this.dispose();
+      this.exec(callback);
+    } catch (error) {
+      throwThis(error);
+    } finally {
+      for (const dep of this.deps) {
+        this.untrackers.push(dep.__on(() => this.track(callback)));
+      }
+
+      setContext(prevContext);
+    }
   }
 
-  exec(callback: CallbackWithPossibleDispose) {
-    if (detectIsFunction(this.dispose)) this.dispose();
-    this.dispose = callback() || null;
+  private exec(callback: EffectCallback) {
+    callback(cleanup => {
+      this.cleanup = cleanup || null;
+    });
   }
 }
 
-const effect = (callback: CallbackWithPossibleDispose) => new Effect(callback);
+const effect = (callback: EffectCallback) => {
+  const instance = new Effect(callback);
 
-export { effect, type Effect };
+  return () => instance.dispose();
+};
+
+export { Effect, effect };
