@@ -19,10 +19,10 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     return this.value;
   }
 
-  set(setter: Setter<T>) {
-    const value = detectIsFunction(setter) ? setter(this.value) : setter;
+  set(x: Setter<T>) {
+    const value = detectIsFunction(x) ? x(this.value) : x;
 
-    if (this.value !== value) {
+    if (!Object.is(this.value, value)) {
       this.value = value;
       this.version = ++this.version;
       this.emitter.emit('set');

@@ -1,17 +1,15 @@
 import { type AbstractSignal } from '../abstract-signal';
 
-type Context = (x: AbstractSignal) => void;
-
 export interface SupportContext {
-  context: Context;
+  add: (x: AbstractSignal) => void;
 }
 
-let context: Context | null = null;
+let context: SupportContext | null = null;
 
-const getContext = (): Context | null => context;
+const getContext = (): SupportContext | null => context;
 
-const setContext = (x: Context | null) => (context = x);
+const setContext = (x: SupportContext | null) => (context = x);
 
-const addToContext = (x: AbstractSignal) => context && context(x);
+const addToContext = (x: AbstractSignal) => context && context.add(x);
 
 export { getContext, setContext, addToContext };

@@ -21,7 +21,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     return this.detectIsDirty() ? this.compute() : this.value;
   }
 
-  context(x: AbstractSignal<unknown>) {
+  add(x: AbstractSignal<unknown>) {
     this.deps.add(x);
   }
 
@@ -60,7 +60,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
   private compute() {
     const prevContext = getContext();
 
-    setContext(this.context.bind(this));
+    setContext(this);
     this.deps = new Set();
     this.versions = new Map();
     this.value = this.selector();

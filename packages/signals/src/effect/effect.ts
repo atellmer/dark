@@ -7,27 +7,28 @@ type CallbackWithPossibleDispose = Callback | (() => Callback);
 
 class Effect implements SupportContext {
   private deps = new Set<AbstractSignal>();
+  private dispose: Callback = null;
 
   constructor(callback: CallbackWithPossibleDispose) {
     this.track(callback);
   }
 
-  context(x: AbstractSignal<unknown>) {
+  add(x: AbstractSignal<unknown>) {
     this.deps.add(x);
   }
 
   track(callback: CallbackWithPossibleDispose) {
     const prevContext = getContext();
 
-    setContext(this.context.bind(this));
+    setContext(this);
     this.exec(callback);
     this.deps.forEach(x => x.__on(() => this.exec(callback)));
     setContext(prevContext);
   }
 
   exec(callback: CallbackWithPossibleDispose) {
-    const dispose = callback();
-    detectIsFunction(dispose) && dispose();
+    if (detectIsFunction(this.dispose)) this.dispose();
+    this.dispose = callback() || null;
   }
 }
 
