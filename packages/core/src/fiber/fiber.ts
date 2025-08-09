@@ -87,7 +87,6 @@ class Hook<T = unknown> {
   mask = 0;
   providers: Map<Context, ContextProvider> = null;
   atoms: Map<Atom, Callback> = null;
-  batch: Batch = null;
   catch: Catch = null;
   pendings = 0;
   update: Callback = null;
@@ -157,14 +156,6 @@ class Hook<T = unknown> {
     this.atoms.delete(atom);
   }
 
-  getBatch() {
-    return this.batch;
-  }
-
-  setBatch(x: Batch) {
-    this.batch = x;
-  }
-
   hasCatch() {
     return detectIsFunction(this.catch);
   }
@@ -205,11 +196,6 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
 
   return null;
 }
-
-type Batch = {
-  timer: TimerId;
-  changes: Array<Callback>;
-};
 
 type Catch = (e: Error) => void;
 

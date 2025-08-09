@@ -49,6 +49,7 @@ class Scheduler {
     [TaskPriority.NORMAL]: [],
     [TaskPriority.LOW]: [],
   };
+  private batched: Array<BatchedUpdate> = [];
   private deadline = 0;
   private lastId = 0;
   private task: Task = null;
@@ -77,9 +78,37 @@ class Scheduler {
   schedule(callback: TaskCallback, options: ScheduleCallbackOptions) {
     const task = createTask(callback, options);
 
+    if (options.isBatch) {
+      const { setupBatch: setup } = options;
+
+      this.batched.push({ task, setup });
+      return;
+    }
+
+    this.putAndExecute(task);
+  }
+
+  putAndExecute(task: Task) {
     this.lastId = task.getId();
     this.put(task);
     this.execute();
+  }
+
+  batch() {
+    const { batched } = this;
+    const size = batched.length;
+
+    for (let i = 0; i < size; i++) {
+      const { task, setup } = batched[i];
+
+      if (i < size - 1) {
+        detectIsFunction(setup) && setup();
+      } else {
+        this.putAndExecute(task);
+      }
+    }
+
+    this.batched = [];
   }
 
   getLastId() {
@@ -367,6 +396,10 @@ type PortListener = (value: unknown) => void;
 
 type TaskCallback = (fn: OnRestore) => void;
 type CreateLoc = () => string;
+type BatchedUpdate = {
+  task: Task;
+  setup?: Callback;
+};
 
 export type OnRestoreOptions = {
   fiber: Fiber;
@@ -382,6 +415,8 @@ export type ScheduleCallbackOptions = {
   priority: TaskPriority;
   forceAsync?: boolean;
   isTransition?: boolean;
+  isBatch?: boolean;
+  setupBatch?: Callback;
   loc?: () => string;
   onTransitionEnd?: OnTransitionEnd;
 };

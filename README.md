@@ -32,6 +32,7 @@ The lightweight and powerful UI rendering engine without dependencies and writte
 - 🎀 Suspense fallbacks
 - 🧲 Error boundaries
 - ☄️ Hot module replacement
+- 🔔 Signals
 - 💅 Styled components
 - 💃🏼 Spring animations
 - 💽 Server-side rendering
@@ -100,8 +101,8 @@ If you liked the project, please rate it with a star ⭐, it gives me inspiratio
 
 ## Ecosystem
 
-| Package                          | Description                                                      | URL                                                                            |
-|----------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| Package                          | Description                                                      | URL                                      |
+|----------------------------------|------------------------------------------------------------------|------------------------------------------|
 | `@dark-engine/core`              | Abstract core with main functionality                            | [Link](https://github.com/atellmer/dark/tree/master/packages/core)             |
 | `@dark-engine/platform-browser`  | Renderer for browser (Single-Page apps)                          | [Link](https://github.com/atellmer/dark/tree/master/packages/platform-browser) |
 | `@dark-engine/platform-server`   | Renderer for Node.js (Multi-Page, Static-Gen and Universal apps) | [Link](https://github.com/atellmer/dark/tree/master/packages/platform-server)  |
@@ -112,6 +113,7 @@ If you liked the project, please rate it with a star ⭐, it gives me inspiratio
 | `@dark-engine/animations`        | Spring based animations                                          | [Link](https://github.com/atellmer/dark/tree/master/packages/animations)       |
 | `@dark-engine/styled`            | Styled components                                                | [Link](https://github.com/atellmer/dark/tree/master/packages/styled)           |
 | `@dark-engine/data`              | Declarative queries and mutations                                | [Link](https://github.com/atellmer/dark/tree/master/packages/data)             |
+| `@dark-engine/signals`           | Signals, computed signals and signal effects                     | [Link](https://github.com/atellmer/dark/tree/master/packages/signals)             |
 
 ## Usage
 

@@ -1,5 +1,5 @@
 import { Direction, QIcon } from '@nodegui/nodegui';
-import { component, useAtom } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import {
   type PushButtonSignals,
   Window,
@@ -16,7 +16,7 @@ import nodeguiIcon from '../assets/nodegui.jpg';
 const winIcon = new QIcon(nodeguiIcon);
 
 const App = component(() => {
-  const count$ = useAtom(0);
+  const [count, setCount] = useState(0);
   const style = useStyle(styled => ({
     root: styled`
       #root {
@@ -45,10 +45,10 @@ const App = component(() => {
     `,
   }));
   const buttonDecreaseEvents = useEvents<PushButtonSignals>({
-    clicked: () => count$.set(x => x - 1),
+    clicked: () => setCount(x => x - 1),
   });
   const buttonIncreaseEvents = useEvents<PushButtonSignals>({
-    clicked: () => count$.set(x => x + 1),
+    clicked: () => setCount(x => x + 1),
   });
 
   return (
@@ -56,7 +56,7 @@ const App = component(() => {
       <Window windowTitle='Dark Desktop App' windowIcon={winIcon} width={400} height={400} styleSheet={style.root}>
         <FlexLayout id='root'>
           <FlexLayout id='text-container'>
-            <Text id='text'>{count$.val()}</Text>
+            <Text id='text'>{count}</Text>
           </FlexLayout>
           <BoxLayout id='buttons-container' direction={Direction.LeftToRight}>
             <PushButton text='decrease' on={buttonDecreaseEvents} />

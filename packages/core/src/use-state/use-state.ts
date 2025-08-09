@@ -12,12 +12,11 @@ type CreateToolsOptions<T> = {
   set: (x: T) => void;
   reset: (x: T) => void;
   shouldUpdate?: (p: T, n: T) => boolean;
+  isBatch: boolean;
 };
 
 function createTools<T>(options: CreateToolsOptions<T>) {
-  const { get, set, reset, next, shouldUpdate: $shouldUpdate = trueFn } = options;
-  const $scope = $$scope();
-  const isBatch = $scope.getIsBatch();
+  const { get, set, reset, next, isBatch, shouldUpdate: $shouldUpdate = trueFn } = options;
   const tools = (): Tools => {
     const prevValue = get();
     const newValue = detectIsFunction(next) ? next(prevValue) : next;
@@ -42,15 +41,21 @@ function useState<T = unknown>(initialValue: T | (() => T)): [T, (value: Value<T
     [],
   );
   const setState = useCallback((next: Value<T>) => {
-    const tools = createTools({
+    const $scope = $$scope();
+    const isBatch = $scope.getIsBatch();
+    const getTools = createTools({
       next,
+      isBatch,
       get: () => scope.value,
       set: (x: T) => (scope.value = x),
       reset: (x: T) => (scope.value = x),
       shouldUpdate: (p: T, n: T) => !detectIsEqual(p, n),
     });
 
-    update(tools);
+    update({
+      getTools,
+      setupBatch: isBatch ? () => getTools().setValue() : undefined,
+    });
   }, []);
 
   return [scope.value, setState];

@@ -11,7 +11,8 @@
     "@dark-engine/data": "1.5.1",
     "@dark-engine/platform-browser": "1.5.1",
     "@dark-engine/styled": "1.5.1",
-    "@dark-engine/web-router": "1.5.1"
+    "@dark-engine/web-router": "1.5.1",
+    "@dark-engine/signals": "1.5.1"
   },
   "devDependencies": {
     "ts-loader": "9.4.2",

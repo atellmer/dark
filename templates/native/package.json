@@ -15,6 +15,7 @@
     "@dark-engine/data": "1.5.1",
     "@dark-engine/native-navigation": "1.5.1",
     "@dark-engine/platform-native": "1.5.1",
+    "@dark-engine/signals": "1.5.1",
     "@nativescript/core": "8.8.6",
     "@nativescript/theme": "3.1.0"
   },
