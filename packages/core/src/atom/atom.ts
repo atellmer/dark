@@ -124,14 +124,14 @@ class Atom<T = unknown> {
         const update = createUpdate(rootId, hook);
 
         if (this.__getSize() === 1) {
-          const tools = createTools({
+          const getTools = createTools({
             next,
             get: () => prev,
             set: () => (this.value = next),
             reset: () => (this.value = prev),
           });
 
-          update(tools);
+          update({ getTools });
         } else {
           update();
         }

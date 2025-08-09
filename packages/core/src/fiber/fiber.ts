@@ -6,7 +6,7 @@ import {
   IS_BOUNDARY_HOOK_MASK,
   IS_PENDING_HOOK_MASK,
 } from '../constants';
-import { type Instance, type Callback, type TimerId } from '../shared';
+import { type Instance, type Callback } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
 import { type UseEffectValue, dropEffects } from '../use-effect';
 import { type Context, type ContextProvider } from '../context';

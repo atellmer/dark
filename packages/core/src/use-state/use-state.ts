@@ -12,7 +12,7 @@ type CreateToolsOptions<T> = {
   set: (x: T) => void;
   reset: (x: T) => void;
   shouldUpdate?: (p: T, n: T) => boolean;
-  isBatch: boolean;
+  isBatch?: boolean;
 };
 
 function createTools<T>(options: CreateToolsOptions<T>) {
