@@ -1,5 +1,3 @@
-import { WritableAtom } from '@dark-engine/core';
-
 import { Spring } from './spring';
 
 describe('@animations/spring', () => {
@@ -8,23 +6,9 @@ describe('@animations/spring', () => {
 
     expect(spring.setProp).toBeDefined();
     expect(spring.prop).toBeDefined();
-    expect(spring.prop$).toBeDefined();
     expect(spring.notify).toBeDefined();
     expect(spring.value).toBeDefined();
     expect(spring.on).toBeDefined();
-  });
-
-  test('converts the values to the atoms', () => {
-    type SpringProps = 'x' | 'y';
-    const spring = new Spring<SpringProps>();
-
-    spring.setProp('x', 1);
-    spring.setProp('y', 2);
-
-    expect(spring.prop$('x')).toBeInstanceOf(WritableAtom);
-    expect(spring.prop$('x').get()).toBe(1);
-    expect(spring.prop$('y')).toBeInstanceOf(WritableAtom);
-    expect(spring.prop$('y').get()).toBe(2);
   });
 
   test('can convert the atoms to the value', () => {

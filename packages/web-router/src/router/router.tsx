@@ -1,7 +1,6 @@
 import {
   type DarkElement,
   type Ref,
-  atom,
   component,
   useMemo,
   useLayoutEffect,
@@ -11,6 +10,7 @@ import {
   detectIsString,
   startTransition,
   $$scope,
+  dummyFn,
 } from '@dark-engine/core';
 
 import { type Routes, createRoutes, resolveRoute, merge, detectIsWildcard } from '../create-routes';
@@ -24,7 +24,6 @@ import {
   RouterHistoryContext,
   ActiveRouteContext,
   useActiveRouteContext,
-  PendingContext,
 } from '../context';
 
 export type RouterProps = {
@@ -33,6 +32,7 @@ export type RouterProps = {
   url?: string; // for server-side rendering
   baseURL?: string;
   mode?: 'sync' | 'concurrent'; // experimental
+  onChangePending?: (isPending: boolean) => void; // allows reacting to the interface during the transition stage
   slot: (slot: DarkElement) => DarkElement;
 };
 
@@ -42,7 +42,7 @@ export type RouterRef = {
 };
 
 const Router = component<RouterProps>(
-  ({ ref, url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, slot }) => {
+  ({ ref, url: fullURL, baseURL = SLASH_MARK, routes: sourceRoutes, mode, onChangePending = dummyFn, slot }) => {
     if (useActiveRouteContext()) illegal(`The parent active route's context detected!`);
     const sourceURL = fullURL || window.location.href;
     const $scope = $$scope();
@@ -51,16 +51,15 @@ const Router = component<RouterProps>(
     const routes = useMemo(() => createRoutes(sourceRoutes, normalizePath(baseURL)), []);
     const { protocol, host, pathname: url, search, hash } = location;
     const { route, slot: content, params } = useMemo(() => resolveRoute(url, routes), [url]);
-    const scope = useMemo(() => ({ location, pending$: atom(false) }), []);
+    const scope = useMemo(() => ({ location }), []);
     const historyContext = useMemo<RouterHistoryContextValue>(() => ({ history }), []);
     const routerContext = useMemo<ActiveRouteContextValue>(() => ({ location, route, params }), [location]);
     const isConcurrent = mode === 'concurrent';
-    const { pending$ } = scope;
 
     const set = (location: RouterLocation) => {
       if (isConcurrent) {
-        pending$.set(true);
-        $scope.setOnTransitionEnd(() => scope.location === location && pending$.set(false));
+        onChangePending(true);
+        $scope.setOnTransitionEnd(() => scope.location === location && onChangePending(false));
         startTransition(() => setLocation(location));
         $scope.setOnTransitionEnd(null);
       } else {
@@ -121,9 +120,7 @@ const Router = component<RouterProps>(
 
     return (
       <RouterHistoryContext value={historyContext}>
-        <ActiveRouteContext value={routerContext}>
-          <PendingContext value={pending$}>{slot(content)}</PendingContext>
-        </ActiveRouteContext>
+        <ActiveRouteContext value={routerContext}>{slot(content)}</ActiveRouteContext>
       </RouterHistoryContext>
     );
   },

@@ -1,38 +1,31 @@
-import { type WritableAtom, type SubscriberWithValue, atom } from '@dark-engine/core';
+import { type SubscriberWithValue, EventEmitter } from '@dark-engine/core';
 
 import { type SpringValue } from '../shared';
 
 class Spring<T extends string = string> {
-  private props: Record<T, WritableAtom<number>> = {} as Record<T, WritableAtom<number>>;
-  private subscribers = new Set<SubscriberWithValue<SpringValue<T>>>();
+  private props: Record<T, number> = {} as Record<T, number>;
+  private emitter = new EventEmitter<'change', SpringValue<T>>();
 
   prop(key: T) {
-    return this.props[key] ? this.props[key].get() : null;
-  }
-
-  prop$(key: T) {
-    return this.props[key] || null;
+    return this.props[key] ?? null;
   }
 
   setProp(key: T, value: number) {
-    !this.props[key] && (this.props[key] = atom(value));
-    this.props[key].set(value);
+    this.props[key] = value;
   }
 
   value(): SpringValue<T> {
-    const value = Object.keys(this.props).reduce((acc, x) => ((acc[x] = this.props[x].get()), acc), {});
+    const value = Object.keys(this.props).reduce((acc, x) => ((acc[x] = this.props[x]), acc), {});
 
     return value as SpringValue<T>;
   }
 
   on(fn: SubscriberWithValue<SpringValue<T>>) {
-    this.subscribers.add(fn);
-
-    return () => this.subscribers.delete(fn);
+    return this.emitter.on('change', fn);
   }
 
   notify() {
-    this.subscribers.forEach(x => x(this.value()));
+    this.emitter.emit('change', this.value());
   }
 }
 
