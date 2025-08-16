@@ -2,7 +2,7 @@ import { detectIsFunction, detectIsEmpty, detectAreDepsDifferent, trueFn, logErr
 import { createUpdate, useUpdate } from '../use-update';
 import { useLayoutEffect } from '../use-layout-effect';
 import { type SubscriberWithValue } from '../shared';
-import { ATOM_HOST_MASK } from '../constants';
+import { SIGNAL_HOST_MASK } from '../constants';
 import { $$scope, getRootId } from '../scope';
 import { createTools } from '../use-state';
 import { EventEmitter } from '../emitter';
@@ -80,8 +80,8 @@ class Atom<T = unknown> {
     const { hook } = cursor;
     const disconnect = () => this.off(hook, key);
 
-    hook.setAtom(this, disconnect);
-    cursor.markHost(ATOM_HOST_MASK);
+    hook.setDisconnect(this, disconnect);
+    cursor.markHost(SIGNAL_HOST_MASK);
 
     if (detectIsEmpty(key)) {
       !this.connections1 && (this.connections1 = new Map());
@@ -158,7 +158,7 @@ class Atom<T = unknown> {
   }
 
   private off(hook: Hook, key: T) {
-    hook.removeAtom(this);
+    hook.removeDisconnect(this);
     this.connections1 && this.connections1.delete(hook);
     this.connections2 && this.connections2.delete(key);
   }

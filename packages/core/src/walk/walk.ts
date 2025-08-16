@@ -3,7 +3,7 @@ import {
   UPDATE_EFFECT_TAG,
   SKIP_EFFECT_TAG,
   EFFECT_HOST_MASK,
-  ATOM_HOST_MASK,
+  SIGNAL_HOST_MASK,
   MOVE_MASK,
   HOOK_DELIMETER,
 } from '../constants';
@@ -234,7 +234,7 @@ function getKey(inst: Instance, idx: number) {
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   fiber.increment(alt.el ? 1 : alt.cec);
   alt.mask & EFFECT_HOST_MASK && fiber.markHost(EFFECT_HOST_MASK);
-  alt.mask & ATOM_HOST_MASK && fiber.markHost(ATOM_HOST_MASK);
+  alt.mask & SIGNAL_HOST_MASK && fiber.markHost(SIGNAL_HOST_MASK);
 }
 
 export {

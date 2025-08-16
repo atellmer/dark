@@ -14,10 +14,6 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     this.value = value;
   }
 
-  peek(): T {
-    return this.value;
-  }
-
   get(): T {
     this.__trackSelf();
     return this.value;

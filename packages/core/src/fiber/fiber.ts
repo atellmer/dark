@@ -12,7 +12,6 @@ import { type UseEffectValue, dropEffects } from '../use-effect';
 import { type Context, type ContextProvider } from '../context';
 import { detectIsFunction, logError } from '../utils';
 import { detectIsComponent } from '../component';
-import { type Atom } from '../atom';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -86,7 +85,7 @@ class Hook<T = unknown> {
   owner: Fiber = null;
   mask = 0;
   providers: Map<Context, ContextProvider> = null;
-  atoms: Map<Atom, Callback> = null;
+  disconnects: Map<unknown, Callback> = null;
   catch: Catch = null;
   pendings = 0;
   update: Callback = null;
@@ -147,13 +146,13 @@ class Hook<T = unknown> {
     this.providers = x;
   }
 
-  setAtom(atom: Atom, cb: Callback) {
-    !this.atoms && (this.atoms = new Map());
-    this.atoms.set(atom, cb);
+  setDisconnect(key: unknown, disconnect: Callback) {
+    !this.disconnects && (this.disconnects = new Map());
+    this.disconnects.set(key, disconnect);
   }
 
-  removeAtom(atom: Atom) {
-    this.atoms.delete(atom);
+  removeDisconnect(key: unknown) {
+    this.disconnects.delete(key);
   }
 
   hasCatch() {
@@ -177,15 +176,15 @@ class Hook<T = unknown> {
   }
 
   drop() {
-    const { atoms, values, owner } = this;
+    const { disconnects, values, owner } = this;
 
     if (values.length > 0 && owner.mask & EFFECT_HOST_MASK) {
       dropEffects(this as Hook<HookValue<UseEffectValue>>);
     }
 
-    if (atoms) {
-      for (const [_, cleanup] of atoms) cleanup();
-      this.atoms = null;
+    if (disconnects) {
+      for (const [_, disconnect] of disconnects) disconnect();
+      this.disconnects = null;
     }
   }
 }

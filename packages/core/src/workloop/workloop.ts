@@ -5,7 +5,7 @@ import {
   DELETE_EFFECT_TAG,
   SKIP_EFFECT_TAG,
   EFFECT_HOST_MASK,
-  ATOM_HOST_MASK,
+  SIGNAL_HOST_MASK,
   MOVE_MASK,
   TaskPriority,
 } from '../constants';
@@ -407,7 +407,7 @@ function commit($scope: Scope) {
 
     // !
     for (const fiber of deletions) {
-      const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
+      const canAsync = fiber.mask & SIGNAL_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
 
       canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
       fiber.tag = DELETE_EFFECT_TAG;

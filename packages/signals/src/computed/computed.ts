@@ -16,10 +16,6 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     this.compute();
   }
 
-  peek(): T {
-    return this.value;
-  }
-
   get() {
     this.__trackSelf();
     return this.detectIsDirty() ? this.compute() : this.value;
