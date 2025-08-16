@@ -1,5 +1,5 @@
-import { computed } from './computed';
 import { signal } from '../signal';
+import { computed } from './computed';
 
 describe('@signals/computed', () => {
   test('computed has required public methods', () => {

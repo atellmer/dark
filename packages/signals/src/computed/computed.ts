@@ -60,17 +60,21 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
   private compute() {
     const prevContext = getContext();
 
-    setContext(this);
-
     try {
+      setContext(this);
       this.deps.clear();
       this.versions.clear();
       this.value = this.selector();
     } catch (error) {
       throwThis(error);
     } finally {
-      this.deps.forEach(x => this.versions.set(x, x.__getVersion()));
-      setContext(prevContext);
+      try {
+        this.deps.forEach(x => this.versions.set(x, x.__getVersion()));
+      } catch (error) {
+        throwThis(error);
+      } finally {
+        setContext(prevContext);
+      }
     }
 
     return this.value;

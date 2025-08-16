@@ -35,19 +35,22 @@ class Effect implements SupportContext {
   private track(callback: EffectCallback, fromInit = false) {
     const prevContext = getContext();
 
-    setContext(this);
-
     try {
+      setContext(this);
       !fromInit && this.dispose();
       this.exec(callback);
     } catch (error) {
       throwThis(error);
     } finally {
-      for (const dep of this.deps) {
-        this.untrackers.push(dep.__on(() => this.track(callback)));
+      try {
+        for (const dep of this.deps) {
+          this.untrackers.push(dep.__on(() => this.track(callback)));
+        }
+      } catch (error) {
+        throwThis(error);
+      } finally {
+        setContext(prevContext);
       }
-
-      setContext(prevContext);
     }
   }
 
