@@ -14,7 +14,7 @@ class Effect implements SupportContext {
     this.track(callback, true);
   }
 
-  add(x: AbstractSignal<unknown>) {
+  __add(x: AbstractSignal<unknown>) {
     this.deps.add(x);
   }
 
