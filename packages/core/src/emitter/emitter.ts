@@ -29,8 +29,8 @@ class EventEmitter<E extends string = EventName, T = unknown> {
     this.subscribers = new Map();
   }
 
-  __getSize() {
-    return this.subscribers.size;
+  __getSize(e?: E) {
+    return e ? this.subscribers.get(e)?.size ?? 0 : this.subscribers.size;
   }
 }
 

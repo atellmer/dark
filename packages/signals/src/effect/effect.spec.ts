@@ -148,11 +148,13 @@ describe('@signals/effect', () => {
     expect(typeof dispose).toBe('function');
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(10);
+    expect(count$.__getSize()).toBe(1);
     count$.set(20);
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy).toHaveBeenLastCalledWith(20);
     spy.mockClear();
     dispose();
+    expect(count$.__getSize()).toBe(0);
     count$.set(30);
     expect(spy).toHaveBeenCalledTimes(0);
     count$.set(40);
@@ -197,5 +199,30 @@ describe('@signals/effect', () => {
     count1$.set(30);
     expect(spy).toHaveBeenCalledTimes(3);
     expect(spy).toHaveBeenLastCalledWith(30);
+  });
+
+  test(`effect doesn't track peeked value`, () => {
+    const name$ = signal('Alex');
+    const age$ = signal(99);
+    const spy = jest.fn();
+
+    effect(() => {
+      spy(`${name$.get()} ${age$.peek()}`);
+    });
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith('Alex 99');
+    name$.set('Jane');
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenLastCalledWith('Jane 99');
+    spy.mockClear();
+    name$.set('Mary');
+    age$.set(27);
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenLastCalledWith('Mary 99');
+    spy.mockClear();
+    name$.set('Alex');
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenLastCalledWith('Alex 27');
   });
 });

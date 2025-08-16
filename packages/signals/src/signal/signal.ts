@@ -40,6 +40,10 @@ class Signal<T = unknown> extends AbstractSignal<T> {
   __getVersion() {
     return this.version;
   }
+
+  __getSize() {
+    return this.emitter.__getSize('set');
+  }
 }
 
 const signal = <T>(value: T) => new Signal(value);
