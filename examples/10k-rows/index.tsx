@@ -1,6 +1,6 @@
 import { Text, TagVirtualNode, TextVirtualNode, Flag, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
-import { type Signal, signal, useWatch } from '@dark-engine/signals';
+import { type Signal, signal, useWatch, useSelector, useSelectorValue, Selector } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -106,17 +106,18 @@ const Name = component<NameProps>(({ name$ }) => {
 type RowProps = {
   id: number;
   name$: Signal<string>;
-  selected$: Signal<number>;
+  selector: Selector<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
-  useWatch([selected$]);
+const Row = component<RowProps>(({ id, selector, name$, onRemove, onHighlight }) => {
+  const selected = useSelectorValue(selector, id);
+
   return new TagVirtualNode(
     'tr',
     {
-      class: selected$.peek() === id ? 'selected' : undefined,
+      class: selected === id ? 'selected' : undefined,
       [Flag.STATIC_SLOT_OPT]: true,
     },
     [
@@ -141,6 +142,7 @@ type State = {
 const App = component(() => {
   const state = useMemo<State>(() => ({ data$: signal([]), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
+  const selector = useSelector(selected$);
   const items = data$.peek();
 
   useWatch([data$]);
@@ -238,7 +240,7 @@ const App = component(() => {
             key: id,
             id,
             name$,
-            selected$,
+            selector,
             onRemove: handleRemove,
             onHighlight: handleHightlight,
           });

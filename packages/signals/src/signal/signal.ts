@@ -3,7 +3,7 @@ import { EventEmitter, detectIsFunction, type Subscriber } from '@dark-engine/co
 import { addToContext } from '../context';
 import { AbstractSignal } from '../abstract-signal';
 
-type Setter<T> = T | ((x: T) => T);
+type Value<T> = T | ((x: T) => T);
 
 class Signal<T = unknown> extends AbstractSignal<T> {
   private emitter = new EventEmitter<'set'>();
@@ -19,7 +19,7 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     return this.value;
   }
 
-  set(x: Setter<T>) {
+  set(x: Value<T>) {
     const value = detectIsFunction(x) ? x(this.value) : x;
 
     if (!Object.is(this.value, value)) {

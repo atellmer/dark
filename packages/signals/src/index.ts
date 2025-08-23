@@ -4,5 +4,6 @@ export { effect } from './effect';
 export { useSignal } from './use-signal';
 export { useComputed } from './use-computed';
 export { useSignalEffect } from './use-signal-effect';
+export { type Selector, useSelector, useSelectorValue } from './use-selector';
 export { useWatch } from './use-watch';
 export { VERSION } from './constants';
