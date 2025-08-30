@@ -3,7 +3,7 @@ import { type AbstractSignal } from '../abstract-signal';
 import { type Signal } from '../signal';
 import { effect } from '@dark-engine/signals/effect';
 
-class Branches<T> {
+class Projection<T> {
   private signal$: AbstractSignal<T>;
   private dispose: Callback;
   private prev: T | undefined;
@@ -13,7 +13,7 @@ class Branches<T> {
     this.signal$ = signal$;
   }
 
-  actual(): T {
+  value(): T {
     return this.signal$.peek();
   }
 
@@ -42,6 +42,6 @@ class Branches<T> {
   }
 }
 
-const branches = <T>(signal$: AbstractSignal<T>) => new Branches(signal$);
+const projection = <T>(signal$: AbstractSignal<T>) => new Projection(signal$);
 
-export { Branches, branches };
+export { Projection, projection };

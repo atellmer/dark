@@ -1,10 +1,10 @@
 export { type Signal, signal } from './signal';
 export { type Computed, computed } from './computed';
-export { type Branches, branches } from './branches';
+export { type Projection, projection } from './projection';
 export { effect } from './effect';
 export { useSignal } from './use-signal';
 export { useComputed } from './use-computed';
 export { useSignalEffect } from './use-signal-effect';
-export { useBranches, useBranch } from './use-branches';
+export { useProjection, useBranch } from './use-projection';
 export { useWatch } from './use-watch';
 export { VERSION } from './constants';
