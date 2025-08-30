@@ -1,6 +1,6 @@
 import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
-import { type Signal, signal, useWatch, useSelector, useSelectorValue, Selector } from '@dark-engine/signals';
+import { type Signal, type Split, signal, useWatch, useSplit, useSplitSignal, useComputed } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -106,18 +106,21 @@ const Name = component<NameProps>(({ name$ }) => {
 type RowProps = {
   id: number;
   name$: Signal<string>;
-  selector: Selector<number>;
+  split$: Split<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ id, selector, name$, onRemove, onHighlight }) => {
-  const selected = useSelectorValue(selector, id);
+const Row = component<RowProps>(({ id, split$, name$, onRemove, onHighlight }) => {
+  const selected$ = useSplitSignal(split$, id);
+  const className$ = useComputed(() => (selected$.get() === id ? 'selected' : undefined));
+
+  useWatch([className$]);
 
   return new TagVirtualNode(
     'tr',
     {
-      class: selected === id ? 'selected' : undefined,
+      class: className$.peek(),
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),
@@ -141,7 +144,7 @@ type State = {
 const App = component(() => {
   const state = useMemo<State>(() => ({ data$: signal([]), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
-  const selector = useSelector(selected$);
+  const split$ = useSplit(selected$);
   const items = data$.peek();
 
   useWatch([data$]);
@@ -238,7 +241,7 @@ const App = component(() => {
             key: id,
             id,
             name$,
-            selector,
+            split$,
             onRemove: handleRemove,
             onHighlight: handleHightlight,
           });
