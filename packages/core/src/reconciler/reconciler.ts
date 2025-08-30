@@ -1,6 +1,5 @@
 import { detectIsEmpty, createIndexKey, logError, formatErrorMsg } from '../utils';
 import { type ElementKey as Key, type Instance } from '../shared';
-import { tryOptStaticSlot, tryOptMemoSlot } from '../walk';
 import { Flag, FLUSH_MASK } from '../constants';
 import { type Fiber } from '../fiber';
 import { type Scope } from '../scope';
@@ -75,9 +74,6 @@ class Reconciler {
           this.stable(id, nextKey);
         }
       }
-
-      hasElementFlag(inst, Flag.STATIC_SLOT_OPT) && tryOptStaticSlot(fiber, alt, $scope);
-      hasElementFlag(inst, Flag.MEMO_SLOT_OPT) && tryOptMemoSlot(fiber, alt, $scope);
     }
   }
 

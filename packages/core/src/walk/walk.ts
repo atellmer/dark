@@ -1,20 +1,6 @@
-import {
-  DELETE_EFFECT_TAG,
-  UPDATE_EFFECT_TAG,
-  SKIP_EFFECT_TAG,
-  EFFECT_HOST_MASK,
-  SIGNAL_HOST_MASK,
-  MOVE_MASK,
-  HOOK_DELIMETER,
-} from '../constants';
-import { type TagVirtualNode, getElementKey, hasChildrenProp } from '../view';
-import { type Instance, type ElementKey } from '../shared';
-import { type Component } from '../component';
+import { DELETE_EFFECT_TAG, EFFECT_HOST_MASK, SIGNAL_HOST_MASK, HOOK_DELIMETER } from '../constants';
 import { type Hook, Fiber } from '../fiber';
-import { createIndexKey } from '../utils';
 import { type Callback } from '../shared';
-import { detectIsMemo } from '../memo';
-import { type Scope } from '../scope';
 
 function walk<T = unknown>(fiber: Fiber<T>, onWalk: (fiber: Fiber<T>, skip: () => void, stop: () => void) => void) {
   let shouldDeep = true;
@@ -116,121 +102,6 @@ function createHookLoc(rootId: number, idx: number, hook: Hook) {
 
 const createLoc = (rootId: number, idx: number, hook: Hook) => () => createHookLoc(rootId, idx, hook);
 
-function detectIsStableMemoTree(fiber: Fiber, $scope: Scope) {
-  if (!hasChildrenProp(fiber.inst)) return;
-  const store = $scope.getReconciler().get(fiber.id);
-  const children = fiber.inst.children;
-
-  for (let i = 0; i < children.length; i++) {
-    const inst = children[i];
-    const key = getElementKey(inst);
-    if (key === null) return false;
-    const alt = store.map[key];
-    if (!alt) return false;
-    const pc = alt.inst as Component;
-    const nc = inst as Component;
-    const isStable =
-      detectIsMemo(nc) && detectIsMemo(pc) && nc.type === pc.type && !nc.shouldUpdate(pc.props, nc.props);
-
-    if (!isStable) return false;
-  }
-
-  return true;
-}
-
-function tryOptStaticSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
-  const store = $scope.getReconciler().get(fiber.id);
-  const inst = fiber.inst as Component | TagVirtualNode;
-
-  alt.el && (fiber.el = alt.el); //!
-
-  for (let i = 0; i < inst.children.length; i++) {
-    buildChildNode(inst.children, fiber, store.map, i, fiber.eidx);
-  }
-
-  fiber.cc = inst.children.length;
-  $scope.setMountDeep(false);
-}
-
-function tryOptMemoSlot(fiber: Fiber, alt: Fiber, $scope: Scope) {
-  const store = $scope.getReconciler().get(fiber.id);
-  const hasMove = Boolean(store.move);
-  const hasRemove = Boolean(store.remove);
-  const hasInsert = Boolean(store.insert);
-  const hasReplace = Boolean(store.replace);
-  const canOptimize = ((hasMove && !hasRemove) || (hasRemove && !hasMove)) && !hasInsert && !hasReplace;
-
-  if (!canOptimize || !detectIsStableMemoTree(fiber, $scope)) return;
-
-  hasMove && tryOptMov(fiber, alt, $scope);
-  hasRemove && buildChildNodes(fiber, alt, $scope);
-}
-
-function tryOptMov(fiber: Fiber, alt: Fiber, $scope: Scope) {
-  const store = $scope.getReconciler().get(fiber.id);
-
-  buildChildNodes(fiber, alt, $scope, (fiber, key) => {
-    if (!store.move[key]) return;
-    fiber.alt = new Fiber().mutate(fiber);
-    fiber.tag = UPDATE_EFFECT_TAG;
-    fiber.mask |= MOVE_MASK;
-    $scope.addCandidate(fiber);
-  });
-}
-
-function buildChildNodes(fiber: Fiber, alt: Fiber, $scope: Scope, onNode?: (fiber: Fiber, key: ElementKey) => void) {
-  const store = $scope.getReconciler().get(fiber.id);
-  const inst = fiber.inst as Component | TagVirtualNode;
-  const children = inst.children;
-
-  alt.el && (fiber.el = alt.el); //!
-
-  for (let i = 0; i < children.length; i++) {
-    const key = getKey(children[i], i);
-    const $fiber = store.map[key];
-
-    buildChildNode(children, fiber, store.map, i, fiber.eidx);
-    onNode && onNode($fiber, key);
-  }
-
-  fiber.cc = children.length;
-  $scope.setMountDeep(false);
-}
-
-function buildChildNode(
-  children: Array<Instance>,
-  parent: Fiber,
-  altMap: Record<string, Fiber>,
-  idx: number,
-  startEidx: number,
-) {
-  const prevIdx = idx - 1;
-  const nextIdx = idx + 1;
-  const key = getKey(children[idx], idx);
-  const prevKey = getKey(children[prevIdx], prevIdx);
-  const nextKey = getKey(children[nextIdx], nextIdx);
-  const fiber = altMap[key];
-  const left = altMap[prevKey];
-  const right = altMap[nextKey];
-  const isFirst = idx === 0;
-  const isLast = idx === children.length - 1;
-
-  isFirst && (parent.child = fiber);
-  fiber.alt = null;
-  fiber.parent = parent;
-  fiber.tag = SKIP_EFFECT_TAG;
-  fiber.idx = idx;
-  left ? (fiber.eidx = left.eidx + (left.el ? 1 : left.cec)) : (fiber.eidx = startEidx);
-  right && (fiber.next = right);
-  isLast && (fiber.next = null);
-  notifyParents(fiber);
-}
-
-function getKey(inst: Instance, idx: number) {
-  const key = getElementKey(inst);
-  return key !== null ? key : createIndexKey(idx);
-}
-
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   fiber.increment(alt.el ? 1 : alt.cec);
   alt.mask & EFFECT_HOST_MASK && fiber.markHost(EFFECT_HOST_MASK);
@@ -246,7 +117,5 @@ export {
   resolveBoundary,
   createHookLoc,
   createLoc,
-  tryOptStaticSlot,
-  tryOptMemoSlot,
   notifyParents,
 };
