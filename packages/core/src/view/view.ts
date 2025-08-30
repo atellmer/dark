@@ -106,16 +106,6 @@ function getElementKey(inst: Instance): ElementKey | null {
     : null;
 }
 
-function hasElementFlag(inst: Instance, flag: string) {
-  return detectIsComponent(inst)
-    ? hasComponentFlag(inst, flag)
-    : detectIsVirtualNodeFactory(inst)
-    ? hasVirtualNodeFactoryFlag(inst, flag)
-    : detectIsTagVirtualNode(inst)
-    ? hasTagVirtualNodeFlag(inst, flag)
-    : false;
-}
-
 function getElementType(inst: Instance): string | Function {
   return detectIsComponent(inst)
     ? inst.type
@@ -190,7 +180,6 @@ export {
   createReplacer,
   detectIsReplacer,
   getElementKey,
-  hasElementFlag,
   getElementType,
   hasChildrenProp,
   detectIsVirtualNode,

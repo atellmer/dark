@@ -1,15 +1,9 @@
 import { detectIsEmpty, createIndexKey, logError, formatErrorMsg } from '../utils';
 import { type ElementKey as Key, type Instance } from '../shared';
-import { Flag, FLUSH_MASK } from '../constants';
+import { FLUSH_MASK } from '../constants';
 import { type Fiber } from '../fiber';
 import { type Scope } from '../scope';
-import {
-  type CanHaveChildren,
-  detectAreSameInstanceTypes,
-  hasChildrenProp,
-  hasElementFlag,
-  getElementKey,
-} from '../view';
+import { type CanHaveChildren, detectAreSameInstanceTypes, hasChildrenProp, getElementKey } from '../view';
 
 class Reconciler {
   private store: Record<number, Store>;
@@ -37,7 +31,7 @@ class Reconciler {
 
     if (!areSameTypes) {
       $scope.addDeletion(alt);
-    } else if (hasChildrenProp(alt.inst) && nextChildren && !hasElementFlag(inst, Flag.SKIP_SCAN_OPT)) {
+    } else if (hasChildrenProp(alt.inst) && nextChildren) {
       const { prevKeys, nextKeys, prevKeysMap, nextKeysMap, keyedFibersMap } = extractKeys(alt.child, nextChildren);
       const flush = nextKeys.length === 0;
       let size = Math.max(prevKeys.length, nextKeys.length);

@@ -1,4 +1,4 @@
-import { Text, TagVirtualNode, TextVirtualNode, Flag, component, memo, useMemo } from '@dark-engine/core';
+import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
 import { type Signal, signal, useWatch } from '@dark-engine/signals';
 
