@@ -1,10 +1,10 @@
 export { type Signal, signal } from './signal';
 export { type Computed, computed } from './computed';
-export { type Split, split } from './split';
+export { type Branches, branches } from './branches';
 export { effect } from './effect';
 export { useSignal } from './use-signal';
 export { useComputed } from './use-computed';
 export { useSignalEffect } from './use-signal-effect';
-export { useSplit, useSplitSignal, useSplitComputed } from './use-split';
+export { useBranches, useBranch } from './use-branches';
 export { useWatch } from './use-watch';
 export { VERSION } from './constants';

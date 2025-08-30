@@ -3,7 +3,7 @@ import { type AbstractSignal } from '../abstract-signal';
 import { type Signal } from '../signal';
 import { effect } from '@dark-engine/signals/effect';
 
-class Split<T> {
+class Branches<T> {
   private signal$: AbstractSignal<T>;
   private dispose: Callback;
   private prev: T | undefined;
@@ -42,6 +42,6 @@ class Split<T> {
   }
 }
 
-const split = <T>(signal$: AbstractSignal<T>) => new Split(signal$);
+const branches = <T>(signal$: AbstractSignal<T>) => new Branches(signal$);
 
-export { Split, split };
+export { Branches, branches };

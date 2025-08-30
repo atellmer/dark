@@ -1,6 +1,6 @@
 import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
-import { type Signal, type Split, signal, useWatch, useSplit, useSplitComputed } from '@dark-engine/signals';
+import { type Signal, type Branches, signal, useWatch, useBranches, useBranch } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -106,19 +106,19 @@ const Name = component<NameProps>(({ name$ }) => {
 type RowProps = {
   id: number;
   name$: Signal<string>;
-  split$: Split<number>;
+  branches$: Branches<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ id, split$, name$, onRemove, onHighlight }) => {
-  const className$ = useSplitComputed(split$, id, x => (x === id ? 'selected' : undefined));
-  const [className] = useWatch([className$]);
+const Row = component<RowProps>(({ id, branches$, name$, onRemove, onHighlight }) => {
+  const branch$ = useBranch(branches$, id);
+  const [selected] = useWatch([branch$]);
 
   return new TagVirtualNode(
     'tr',
     {
-      className,
+      className: selected === id ? 'selected' : undefined,
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),
@@ -143,7 +143,7 @@ const App = component(() => {
   const state = useMemo<State>(() => ({ data$: signal([]), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
   const [data] = useWatch([data$]);
-  const split$ = useSplit(selected$);
+  const branches$ = useBranches(selected$);
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
@@ -237,7 +237,7 @@ const App = component(() => {
             key: id,
             id,
             name$,
-            split$,
+            branches$,
             onRemove: handleRemove,
             onHighlight: handleHightlight,
           });
