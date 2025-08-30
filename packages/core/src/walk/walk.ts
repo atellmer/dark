@@ -1,4 +1,4 @@
-import { DELETE_EFFECT_TAG, EFFECT_HOST_MASK, SIGNAL_HOST_MASK, HOOK_DELIMETER } from '../constants';
+import { DELETE_EFFECT_TAG, EFFECT_HOST_MASK, CLEANUP_HOST_MASK, HOOK_DELIMETER } from '../constants';
 import { type Hook, Fiber } from '../fiber';
 import { type Callback } from '../shared';
 
@@ -105,7 +105,7 @@ const createLoc = (rootId: number, idx: number, hook: Hook) => () => createHookL
 function notifyParents(fiber: Fiber, alt: Fiber = fiber) {
   fiber.increment(alt.el ? 1 : alt.cec);
   alt.mask & EFFECT_HOST_MASK && fiber.markHost(EFFECT_HOST_MASK);
-  alt.mask & SIGNAL_HOST_MASK && fiber.markHost(SIGNAL_HOST_MASK);
+  alt.mask & CLEANUP_HOST_MASK && fiber.markHost(CLEANUP_HOST_MASK);
 }
 
 export {

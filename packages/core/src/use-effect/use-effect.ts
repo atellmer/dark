@@ -47,7 +47,9 @@ function createEffect(type: EffectType) {
 }
 
 function dropEffects(hook: Hook<HookValue<UseEffectValue>>) {
-  for (const { value } of hook.values) {
+  const { values } = hook;
+
+  for (const { value } of values) {
     value?.token === $$effect && detectIsFunction(value.cleanup) && value.cleanup();
   }
 }

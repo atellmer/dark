@@ -10,7 +10,7 @@ export const UPDATE_EFFECT_TAG = 'U';
 export const DELETE_EFFECT_TAG = 'D';
 export const SKIP_EFFECT_TAG = 'S';
 export const EFFECT_HOST_MASK = 1;
-export const SIGNAL_HOST_MASK = 2;
+export const CLEANUP_HOST_MASK = 2;
 export const FLUSH_MASK = 4;
 export const MOVE_MASK = 8;
 export const IS_WIP_HOOK_MASK = 1;
@@ -35,8 +35,6 @@ export enum Flag {
 
 export const FLAGS = {
   __skipScanOpt: true,
-  __memoSlotOpt: true,
-  __staticSlotOpt: true,
 };
 
 export const ATTR_BLACK_LIST = {

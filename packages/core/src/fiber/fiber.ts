@@ -85,7 +85,7 @@ class Hook<T = unknown> {
   owner: Fiber = null;
   mask = 0;
   providers: Map<Context, ContextProvider> = null;
-  disconnects: Map<unknown, Callback> = null;
+  cleanups: Map<unknown, Callback> = null;
   catch: Catch = null;
   pendings = 0;
   update: Callback = null;
@@ -146,13 +146,13 @@ class Hook<T = unknown> {
     this.providers = x;
   }
 
-  setDisconnect(key: unknown, disconnect: Callback) {
-    !this.disconnects && (this.disconnects = new Map());
-    this.disconnects.set(key, disconnect);
+  setCleanup(key: unknown, disconnect: Callback) {
+    !this.cleanups && (this.cleanups = new Map());
+    this.cleanups.set(key, disconnect);
   }
 
-  removeDisconnect(key: unknown) {
-    this.disconnects.delete(key);
+  removeCleanup(key: unknown) {
+    this.cleanups.delete(key);
   }
 
   hasCatch() {
@@ -176,15 +176,15 @@ class Hook<T = unknown> {
   }
 
   drop() {
-    const { disconnects, values, owner } = this;
+    const { cleanups, values, owner } = this;
 
     if (values.length > 0 && owner.mask & EFFECT_HOST_MASK) {
       dropEffects(this as Hook<HookValue<UseEffectValue>>);
     }
 
-    if (disconnects) {
-      for (const [_, disconnect] of disconnects) disconnect();
-      this.disconnects = null;
+    if (cleanups) {
+      for (const [_, cleanup] of cleanups) cleanup();
+      this.cleanups = null;
     }
   }
 }

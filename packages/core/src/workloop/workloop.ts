@@ -4,8 +4,6 @@ import {
   UPDATE_EFFECT_TAG,
   DELETE_EFFECT_TAG,
   SKIP_EFFECT_TAG,
-  EFFECT_HOST_MASK,
-  SIGNAL_HOST_MASK,
   MOVE_MASK,
   TaskPriority,
 } from '../constants';
@@ -402,14 +400,11 @@ function commit($scope: Scope) {
     const candidates = $scope.getCandidates();
     const isUpdate = $scope.getIsUpdate();
     const awaiter = $scope.getAwaiter();
-    const unmounts: Array<Fiber> = [];
     const inst = wip.inst as Component;
 
     // !
     for (const fiber of deletions) {
-      const canAsync = fiber.mask & SIGNAL_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
-
-      canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
+      unmountFiber(fiber);
       fiber.tag = DELETE_EFFECT_TAG;
       platform.commit(fiber);
     }
@@ -432,12 +427,9 @@ function commit($scope: Scope) {
     $scope.runLayoutEffects();
     $scope.runAsyncEffects();
     awaiter.resolve();
-    unmounts.length > 0 && setTimeout(onUnmount(unmounts));
     cleanup($scope);
   }
 }
-
-const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(unmountFiber);
 
 function cleanup($scope: Scope, fromFork = false) {
   $scope.cleanup();
