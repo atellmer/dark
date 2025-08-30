@@ -1,11 +1,4 @@
-import {
-  type ComponentFactory,
-  type StandardComponentProps,
-  type ShouldUpdate,
-  type ComponentInject,
-  $$inject,
-  detectIsComponent,
-} from '../component';
+import { type ComponentFactory, type StandardComponentProps, type ShouldUpdate, detectIsComponent } from '../component';
 import { type SlotProps, type Prettify } from '../shared';
 
 const $$memo = Symbol('memo');
@@ -22,14 +15,11 @@ function memo<P extends object>(
   factory: ComponentFactory<P>,
   shouldUpdate: ShouldUpdate<P & SlotProps> = defaultShouldUpdate,
 ) {
-  type P1 = P & StandardComponentProps;
+  const memoized: ComponentFactory<P> = (props: P) => factory(props).inject(shouldUpdate, $$memo);
 
-  factory[$$inject] = {
-    token: $$memo,
-    shouldUpdate,
-  } as ComponentInject<P1>;
+  memoized.displayName = factory.displayName;
 
-  return factory as ComponentFactory<Prettify<P1>>;
+  return memoized as ComponentFactory<Prettify<P & StandardComponentProps>>;
 }
 
 const detectIsMemo = (instance: unknown) => detectIsComponent(instance) && instance.token === $$memo;

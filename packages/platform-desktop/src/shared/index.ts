@@ -1,9 +1,9 @@
 import { CursorShape, type QWidget, type QLayout } from '@nodegui/nodegui';
-import type { DarkElement, KeyProps, SlotProps, RefProps, FlagProps } from '@dark-engine/core';
+import type { DarkElement, KeyProps, SlotProps, RefProps } from '@dark-engine/core';
 
 import { type EventHandler } from '../events';
 
-export type WithStandardProps<T> = T & KeyProps & RefProps & FlagProps;
+export type WithStandardProps<T> = T & KeyProps & RefProps;
 
 export type WithSlotProps<T, S = DarkElement> = WithStandardProps<T> & SlotProps<S>;
 
