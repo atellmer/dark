@@ -1,6 +1,6 @@
 import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
-import { type Signal, type Split, signal, useWatch, useSplit, useSplitSignal, useComputed } from '@dark-engine/signals';
+import { type Signal, type Split, signal, useWatch, useSplit, useSplitComputed } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -99,8 +99,8 @@ type NameProps = {
 };
 
 const Name = component<NameProps>(({ name$ }) => {
-  useWatch([name$]);
-  return new TextVirtualNode(name$.peek());
+  const [name] = useWatch([name$]);
+  return new TextVirtualNode(name);
 });
 
 type RowProps = {
@@ -112,15 +112,13 @@ type RowProps = {
 };
 
 const Row = component<RowProps>(({ id, split$, name$, onRemove, onHighlight }) => {
-  const selected$ = useSplitSignal(split$, id);
-  const className$ = useComputed(() => (selected$.get() === id ? 'selected' : undefined));
-
-  useWatch([className$]);
+  const className$ = useSplitComputed(split$, id, x => (x === id ? 'selected' : undefined));
+  const [className] = useWatch([className$]);
 
   return new TagVirtualNode(
     'tr',
     {
-      class: className$.peek(),
+      className,
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),
@@ -144,10 +142,8 @@ type State = {
 const App = component(() => {
   const state = useMemo<State>(() => ({ data$: signal([]), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
+  const [data] = useWatch([data$]);
   const split$ = useSplit(selected$);
-  const items = data$.peek();
-
-  useWatch([data$]);
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
@@ -233,8 +229,8 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        key: items.length > 0 ? 1 : 2,
-        slot: items.map(item => {
+        key: data.length > 0 ? 1 : 2,
+        slot: data.map(item => {
           const { id, name$ } = item;
 
           return MemoRow({

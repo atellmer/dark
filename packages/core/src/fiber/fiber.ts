@@ -85,7 +85,6 @@ class Hook<T = unknown> {
   owner: Fiber = null;
   mask = 0;
   providers: Map<Context, ContextProvider> = null;
-  cleanups: Map<unknown, Callback> = null;
   catch: Catch = null;
   pendings = 0;
   update: Callback = null;
@@ -146,15 +145,6 @@ class Hook<T = unknown> {
     this.providers = x;
   }
 
-  setCleanup(key: unknown, disconnect: Callback) {
-    !this.cleanups && (this.cleanups = new Map());
-    this.cleanups.set(key, disconnect);
-  }
-
-  removeCleanup(key: unknown) {
-    this.cleanups.delete(key);
-  }
-
   hasCatch() {
     return detectIsFunction(this.catch);
   }
@@ -176,15 +166,10 @@ class Hook<T = unknown> {
   }
 
   drop() {
-    const { cleanups, values, owner } = this;
+    const { values, owner } = this;
 
     if (values.length > 0 && owner.mask & EFFECT_HOST_MASK) {
       dropEffects(this as Hook<HookValue<UseEffectValue>>);
-    }
-
-    if (cleanups) {
-      for (const [_, cleanup] of cleanups) cleanup();
-      this.cleanups = null;
     }
   }
 }

@@ -5,6 +5,6 @@ export { effect } from './effect';
 export { useSignal } from './use-signal';
 export { useComputed } from './use-computed';
 export { useSignalEffect } from './use-signal-effect';
-export { useSplit, useSplitSignal } from './use-split';
+export { useSplit, useSplitSignal, useSplitComputed } from './use-split';
 export { useWatch } from './use-watch';
 export { VERSION } from './constants';

@@ -4,8 +4,11 @@ import { effect } from '../effect';
 import { AbstractSignal } from '../abstract-signal';
 import { setContext } from '../context';
 
-function useWatch<T extends readonly AbstractSignal[]>(signals: T) {
+type UnwrapSignal<T> = T extends AbstractSignal<infer V> ? V : never;
+
+function useWatch<T extends readonly AbstractSignal<any>[]>(signals: T) {
   const update = useUpdate();
+  const values = signals.map(x => x.peek()) as { [K in keyof T]: UnwrapSignal<T[K]> };
 
   setContext(null);
   useEffect(() => {
@@ -17,6 +20,8 @@ function useWatch<T extends readonly AbstractSignal[]>(signals: T) {
       canUpdate = true;
     });
   }, []);
+
+  return values;
 }
 
 export { useWatch };
