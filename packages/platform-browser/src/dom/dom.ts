@@ -155,7 +155,12 @@ function performAttribute(
   }
 
   if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && nextAttrValue !== prevAttrValue) {
-    toggleAttribute(tagElement, CLASS_ATTR, nextAttrValue as string);
+    if (nextAttrValue) {
+      tagElement.className = nextAttrValue as string;
+    } else {
+      m.removeAttribute.call(tagElement, CLASS_ATTR);
+    }
+
     return null;
   }
 
@@ -174,10 +179,6 @@ function performAttribute(
   }
 
   return attrName;
-}
-
-function toggleAttribute(element: TagNativeElement, name: string, value: string) {
-  value ? m.setAttribute.call(element, name, value) : m.removeAttribute.call(element, name);
 }
 
 function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {

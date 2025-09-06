@@ -118,7 +118,7 @@ const Row = component<RowProps>(({ id, projection$, name$, onRemove, onHighlight
   return new TagVirtualNode(
     'tr',
     {
-      className: selected === id ? 'selected' : undefined,
+      class: selected === id ? 'selected' : undefined,
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),
