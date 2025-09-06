@@ -32,4 +32,20 @@ describe('@signals/signal', () => {
     expect(Number(signal$)).toBe(10);
     expect(JSON.stringify(signal$)).toBe('10');
   });
+
+  test('signal can accept equality function', () => {
+    const signal1$ = signal(10);
+    const signal2$ = signal(10, { equal: () => false });
+    const spy1 = jest.fn();
+    const spy2 = jest.fn();
+
+    signal1$.__on(spy1);
+    signal2$.__on(spy2);
+
+    signal1$.set(10);
+    signal2$.set(10);
+
+    expect(spy1).toHaveBeenCalledTimes(0);
+    expect(spy2).toHaveBeenCalledTimes(1);
+  });
 });

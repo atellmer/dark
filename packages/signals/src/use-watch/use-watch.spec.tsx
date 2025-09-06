@@ -57,6 +57,32 @@ describe('@signals/use-watch', () => {
     expect(host.innerHTML).toMatchInlineSnapshot(`"<div>3</div>"`);
   });
 
+  test('use-watch triggers render and update component correctly #3', () => {
+    const count$ = signal(0);
+    const App = component(() => {
+      const computed$ = useComputed(() => count$.get() + 1);
+      const [count, computed] = useWatch([count$, computed$]);
+
+      return (
+        <div>
+          {count}:{computed}
+        </div>
+      );
+    });
+
+    render(<App />);
+    jest.runAllTimers();
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>0:1</div>"`);
+
+    count$.set(x => x + 1);
+    jest.runAllTimers();
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>1:2</div>"`);
+
+    count$.set(x => x + 1);
+    jest.runAllTimers();
+    expect(host.innerHTML).toMatchInlineSnapshot(`"<div>2:3</div>"`);
+  });
+
   test('use-watch can tracks multiple signals', () => {
     const count1$ = signal(0);
     const count2$ = signal(10);
