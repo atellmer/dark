@@ -156,7 +156,7 @@ function performAttribute(
 
   if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && nextAttrValue !== prevAttrValue) {
     if (nextAttrValue) {
-      tagElement.className = nextAttrValue as string;
+      m.setAttribute.call(tagElement, CLASS_ATTR, nextAttrValue as string);
     } else {
       m.removeAttribute.call(tagElement, CLASS_ATTR);
     }

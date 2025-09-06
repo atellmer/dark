@@ -1,10 +1,12 @@
 import { component } from '@dark-engine/core';
 import { type DarkJSX } from '@dark-engine/platform-browser';
-import { usePending } from '@dark-engine/web-router';
 import { styled } from '@dark-engine/styled';
+import { signal, useWatch } from '@dark-engine/signals';
+
+const isPending$ = signal(false);
 
 const Pending = component(() => {
-  const isPending = usePending();
+  const [isPending] = useWatch([isPending$]);
 
   return (
     <>
@@ -26,4 +28,4 @@ const Overlay = styled.div<{ isPending: boolean } & DarkJSX.Elements['div']>`
   background-color: #fff;
 `;
 
-export { Pending };
+export { isPending$, Pending };
