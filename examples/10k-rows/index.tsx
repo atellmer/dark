@@ -134,13 +134,15 @@ const Row = component<RowProps>(({ id, projection$, name$, onRemove, onHighlight
 
 const MemoRow = memo(Row, () => false);
 
+const equal = () => false;
+
 type State = {
   data$: Signal<Array<DataItem>>;
   selected$: Signal<number>;
 };
 
 const App = component(() => {
-  const state = useMemo<State>(() => ({ data$: signal([]), selected$: signal(undefined) }), []);
+  const state = useMemo<State>(() => ({ data$: signal([], { equal }), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
   const [data] = useWatch([data$]);
   const projection$ = useProjection(selected$);
@@ -154,19 +156,23 @@ const App = component(() => {
   const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    data$.set(data => [...buildData(1000, '^^^'), ...data]);
+    const data = data$.peek();
+    data.unshift(...buildData(1000, '^^^'));
+    data$.set(data);
     measurer.stop();
   };
   const handleAppend = (e: E<MouseEvent>) => {
     measurer.start('append');
     e.stopPropagation();
-    data$.set(data => [...data, ...buildData(1000, '^^^')]);
+    const data = data$.peek();
+    data.push(...buildData(1000, '^^^'));
+    data$.set(data);
     measurer.stop();
   };
   const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    const data = [...data$.peek()];
+    const data = data$.peek();
     data.splice(0, 0, ...buildData(5, '***'));
     data.splice(8, 0, ...buildData(2, '***'));
     data$.set(data);
@@ -189,7 +195,7 @@ const App = component(() => {
     const data = data$.peek();
     const idx = data.findIndex(x => x.id === id);
     idx !== -1 && data.splice(idx, 1);
-    data$.set([...data]);
+    data$.set(data);
     measurer.stop();
   };
   const handleHightlight = (id: number, e: E<MouseEvent>) => {
@@ -206,7 +212,7 @@ const App = component(() => {
     const temp = data[1];
     data[1] = data[data.length - 2];
     data[data.length - 2] = temp;
-    data$.set([...data]);
+    data$.set(data);
     measurer.stop();
   };
   const handleClear = (e: E<MouseEvent>) => {
