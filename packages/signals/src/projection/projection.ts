@@ -1,7 +1,8 @@
 import { Callback } from '@dark-engine/core';
+
 import { type AbstractSignal } from '../abstract-signal';
 import { type Signal } from '../signal';
-import { effect } from '@dark-engine/signals/effect';
+import { effect } from '../effect';
 
 class Projection<T> {
   private signal$: AbstractSignal<T>;
