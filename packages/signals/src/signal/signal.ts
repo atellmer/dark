@@ -1,4 +1,12 @@
-import { EventEmitter, detectIsFunction, type Subscriber } from '@dark-engine/core';
+import {
+  type Subscriber,
+  EventEmitter,
+  detectIsFunction,
+  getRootId,
+  $$scope,
+  createUpdate,
+  CLEANUP_HOST_MASK,
+} from '@dark-engine/core';
 
 import { addToContext } from '../context';
 import { AbstractSignal } from '../abstract-signal';
@@ -42,7 +50,7 @@ class Signal<T = unknown> extends AbstractSignal<T> {
   }
 
   __trackSelf() {
-    addToContext(this);
+    addToContext(this, this.__connectToHost());
   }
 
   __getVersion() {
@@ -51,6 +59,20 @@ class Signal<T = unknown> extends AbstractSignal<T> {
 
   __getSize() {
     return this.emitter.__getSize('set');
+  }
+
+  __connectToHost(): boolean {
+    const cursor = $$scope()?.getCursor();
+    if (!cursor) return false;
+    const { hook } = cursor;
+    const off = this.__on(createUpdate(getRootId(), hook));
+
+    cursor.markHost(CLEANUP_HOST_MASK);
+    if (!hook.cleanups) hook.cleanups = new Map();
+    hook.cleanups.get(this)?.();
+    hook.cleanups.set(this, off);
+
+    return true;
   }
 }
 

@@ -88,12 +88,12 @@ describe('@signals/use-watch', () => {
     const count2$ = signal(10);
     const spy = jest.fn();
     const App = component(() => {
-      useWatch([count1$, count2$]);
+      const [count1, count2] = useWatch([count1$, count2$]);
       spy();
 
       return (
         <div>
-          {count1$.get()}:{count2$.get()}
+          {count1}:{count2}
         </div>
       );
     });
@@ -124,9 +124,9 @@ describe('@signals/use-watch', () => {
   test('use-watch unmounts correctly', () => {
     const count$ = signal(0);
     const App = component(() => {
-      useWatch([count$]);
+      const [count] = useWatch([count$]);
 
-      return <div>{count$.get()}</div>;
+      return <div>{count}</div>;
     });
 
     render(<App />);

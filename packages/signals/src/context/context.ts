@@ -1,4 +1,4 @@
-import { type AbstractSignal } from '../abstract-signal';
+import { AbstractSignal } from '../abstract-signal';
 
 export interface SupportContext {
   __add: (x: AbstractSignal) => void;
@@ -10,6 +10,10 @@ const getContext = (): SupportContext | null => context;
 
 const setContext = (x: SupportContext | null) => (context = x);
 
-const addToContext = (x: AbstractSignal) => context && context.__add(x);
+const addToContext = (x: AbstractSignal, skip = false) => {
+  if (!context) return;
+  const canAdd = !skip || context instanceof AbstractSignal;
+  canAdd && context.__add(x);
+};
 
 export { getContext, setContext, addToContext };

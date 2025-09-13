@@ -85,6 +85,7 @@ class Hook<T = unknown> {
   owner: Fiber = null;
   mask = 0;
   providers: Map<Context, ContextProvider> = null;
+  cleanups: Map<unknown, Callback> = null;
   catch: Catch = null;
   pendings = 0;
   update: Callback = null;
@@ -170,6 +171,11 @@ class Hook<T = unknown> {
 
     if (values.length > 0 && owner.mask & EFFECT_HOST_MASK) {
       dropEffects(this as Hook<HookValue<UseEffectValue>>);
+    }
+
+    if (this.cleanups) {
+      for (const [_, cleanup] of this.cleanups) cleanup();
+      this.cleanups.clear();
     }
   }
 }

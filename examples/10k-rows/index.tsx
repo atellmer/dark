@@ -1,6 +1,6 @@
 import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
-import { type Signal, type Projection, signal, useWatch, useProjection, useBranch } from '@dark-engine/signals';
+import { type Signal, signal } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -98,22 +98,18 @@ type NameProps = {
   name$: Signal<string>;
 };
 
-const Name = component<NameProps>(({ name$ }) => {
-  const [name] = useWatch([name$]);
-  return new TextVirtualNode(name);
-});
+const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.get()));
 
 type RowProps = {
   id: number;
   name$: Signal<string>;
-  projection$: Projection<number>;
+  selected$: Signal<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ id, projection$, name$, onRemove, onHighlight }) => {
-  const selected$ = useBranch(projection$, id);
-  const [selected] = useWatch([selected$]);
+const Row = component<RowProps>(({ id, name$, selected$, onRemove, onHighlight }) => {
+  const selected = selected$.get();
 
   return new TagVirtualNode(
     'tr',
@@ -144,8 +140,7 @@ type State = {
 const App = component(() => {
   const state = useMemo<State>(() => ({ data$: signal([], { equal }), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
-  const [data] = useWatch([data$]);
-  const projection$ = useProjection(selected$);
+  const data = data$.get();
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
@@ -243,7 +238,7 @@ const App = component(() => {
             key: id,
             id,
             name$,
-            projection$,
+            selected$,
             onRemove: handleRemove,
             onHighlight: handleHightlight,
           });
