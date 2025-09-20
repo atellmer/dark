@@ -1,5 +1,6 @@
 import {
   type Subscriber,
+  type Callback,
   EventEmitter,
   detectIsFunction,
   getRootId,
@@ -53,7 +54,7 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     }
   }
 
-  __on(subscriber: Subscriber, key?: T) {
+  __on(subscriber: Subscriber, key?: T): Callback {
     if (!detectIsUndefined(key)) {
       if (!this.map) this.map = new Map();
       this.map.set(key, subscriber);
@@ -68,11 +69,11 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     addToContext(this, this.__connectToHost());
   }
 
-  __getVersion() {
+  __getVersion(): number {
     return this.version;
   }
 
-  __getSize() {
+  __getSize(): number {
     return this.emitter.__getSize('set');
   }
 

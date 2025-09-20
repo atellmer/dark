@@ -16,7 +16,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     this.compute();
   }
 
-  get() {
+  get(): T {
     this.__trackSelf();
     return this.detectIsDirty() ? this.compute() : this.value;
   }
@@ -25,7 +25,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     this.deps.add(x);
   }
 
-  __on(subscriber: Subscriber) {
+  __on(subscriber: Subscriber): Callback {
     const untrackers: Array<Callback> = [];
 
     for (const dep of this.deps) {
@@ -39,7 +39,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     this.deps.forEach(x => x.__trackSelf());
   }
 
-  __getVersion() {
+  __getVersion(): number {
     let version = 0;
 
     for (const dep of this.deps) {
@@ -49,7 +49,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     return version;
   }
 
-  private detectIsDirty() {
+  private detectIsDirty(): boolean {
     for (const dep of this.deps) {
       if (!this.versions.has(dep) || this.versions.get(dep) !== dep.__getVersion()) return true;
     }
@@ -57,7 +57,7 @@ class Computed<T = unknown> extends AbstractSignal<T> implements SupportContext 
     return false;
   }
 
-  private compute() {
+  private compute(): T {
     const prevContext = getContext();
 
     try {

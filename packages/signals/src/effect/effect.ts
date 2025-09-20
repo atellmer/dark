@@ -1,4 +1,4 @@
-import { Callback, CallbackWithValue, detectIsFunction, throwThis } from '@dark-engine/core';
+import { type Callback, type CallbackWithValue, detectIsFunction, throwThis } from '@dark-engine/core';
 
 import { type SupportContext, getContext, setContext } from '../context';
 import { AbstractSignal } from '../abstract-signal';
