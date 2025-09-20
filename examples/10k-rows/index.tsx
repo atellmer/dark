@@ -1,6 +1,6 @@
 import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
-import { type Signal, signal } from '@dark-engine/signals';
+import { type Signal, signal, useSelected } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -109,12 +109,12 @@ type RowProps = {
 };
 
 const Row = component<RowProps>(({ id, name$, selected$, onRemove, onHighlight }) => {
-  const selected = selected$.get();
+  const isSelected = useSelected(selected$, id) === id;
 
   return new TagVirtualNode(
     'tr',
     {
-      class: selected === id ? 'selected' : undefined,
+      class: isSelected ? 'selected' : undefined,
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),

@@ -5,6 +5,7 @@ import {
   IS_SUSPENSE_HOOK_MASK,
   IS_BOUNDARY_HOOK_MASK,
   IS_PENDING_HOOK_MASK,
+  CLEANUP_HOST_MASK,
 } from '../constants';
 import { type Instance, type Callback } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
@@ -156,6 +157,13 @@ class Hook<T = unknown> {
 
   setUpdate(x: Callback) {
     this.update = x;
+  }
+
+  createCleanup(key: unknown, create: () => Callback) {
+    this.owner.markHost(CLEANUP_HOST_MASK);
+    if (!this.cleanups) this.cleanups = new Map();
+    this.cleanups.get(key)?.();
+    this.cleanups.set(key, create());
   }
 
   incrementPendings() {

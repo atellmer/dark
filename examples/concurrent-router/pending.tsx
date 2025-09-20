@@ -1,12 +1,12 @@
 import { component } from '@dark-engine/core';
 import { type DarkJSX } from '@dark-engine/platform-browser';
 import { styled } from '@dark-engine/styled';
-import { signal, useWatch } from '@dark-engine/signals';
+import { signal } from '@dark-engine/signals';
 
 const isPending$ = signal(false);
 
 const Pending = component(() => {
-  const [isPending] = useWatch([isPending$]);
+  const isPending = isPending$.get();
 
   return (
     <>

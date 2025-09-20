@@ -5,7 +5,7 @@ import {
   getRootId,
   $$scope,
   createUpdate,
-  CLEANUP_HOST_MASK,
+  detectIsUndefined,
 } from '@dark-engine/core';
 
 import { addToContext } from '../context';
@@ -23,6 +23,7 @@ class Signal<T = unknown> extends AbstractSignal<T> {
   private emitter = new EventEmitter<'set'>();
   private version = 0;
   private equal: Equal<T>;
+  private map: Map<T, Subscriber>;
 
   constructor(value: T, options?: Options<T>) {
     super();
@@ -39,13 +40,27 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     const value = detectIsFunction(x) ? x(this.value) : x;
 
     if (!this.equal(this.value, value)) {
+      const prevValue = this.value;
+
       this.value = value;
       this.version = ++this.version;
       this.emitter.emit('set');
+
+      if (this.map) {
+        this.map.get(prevValue)?.();
+        this.map.get(value)?.();
+      }
     }
   }
 
-  __on(subscriber: Subscriber) {
+  __on(subscriber: Subscriber, key?: T) {
+    if (!detectIsUndefined(key)) {
+      if (!this.map) this.map = new Map();
+      this.map.set(key, subscriber);
+
+      return () => this.map.delete(key);
+    }
+
     return this.emitter.on('set', subscriber);
   }
 
@@ -65,12 +80,8 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     const cursor = $$scope()?.getCursor();
     if (!cursor) return false;
     const { hook } = cursor;
-    const off = this.__on(createUpdate(getRootId(), hook));
 
-    cursor.markHost(CLEANUP_HOST_MASK);
-    if (!hook.cleanups) hook.cleanups = new Map();
-    hook.cleanups.get(this)?.();
-    hook.cleanups.set(this, off);
+    hook.createCleanup(this, () => this.__on(createUpdate(getRootId(), hook)));
 
     return true;
   }
