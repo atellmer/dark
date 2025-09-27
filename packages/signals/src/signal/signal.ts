@@ -43,8 +43,8 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     if (!this.equal(this.value, value)) {
       const prevValue = this.value;
 
+      ++this.version;
       this.value = value;
-      this.version = ++this.version;
       this.emitter.emit('set');
 
       if (this.map) {

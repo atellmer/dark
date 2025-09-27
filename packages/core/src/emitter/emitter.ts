@@ -14,15 +14,9 @@ class EventEmitter<E extends string = EventName, T = unknown> {
 
   emit(e: E, data?: T) {
     if (!this.subscribers.has(e)) return;
-    const subs = this.subscribers.get(e);
-    const size = subs.size;
-    let idx = 0;
+    const subs = Array.from(this.subscribers.get(e));
 
-    for (const sub of subs) {
-      if (idx >= size) break;
-      sub(data);
-      idx++;
-    }
+    for (const sub of subs) sub(data);
   }
 
   kill() {

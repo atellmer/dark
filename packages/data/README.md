@@ -256,4 +256,3 @@ const query = useQuery('posts', api.fetchPosts, { strategy: 'hybrid' });
 # LICENSE
 
 MIT © [Alex Plex](https://github.com/atellmer)
-
