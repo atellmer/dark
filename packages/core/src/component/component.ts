@@ -37,8 +37,6 @@ const detectIsComponent = (x: unknown): x is Component => x instanceof Component
 
 const getComponentKey = (x: Component): ElementKey => x.props[KEY_ATTR] ?? null;
 
-const hasComponentFlag = (inst: Component, flag: string) => Boolean(inst.props[flag]);
-
 type ComponentOptions = Readonly<{
   displayName?: string;
   token?: Symbol;
@@ -55,4 +53,4 @@ export type ComponentFactory<P extends object = {}> = {
   displayName?: string;
 };
 
-export { Component, component, detectIsComponent, getComponentKey, hasComponentFlag };
+export { Component, component, detectIsComponent, getComponentKey };

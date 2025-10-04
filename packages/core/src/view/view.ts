@@ -1,11 +1,15 @@
-import { type Component, detectIsComponent, getComponentKey, hasComponentFlag } from '../component';
+import { type Component, detectIsComponent } from '../component';
 import type { ElementKey, DarkElement, Instance, SlotProps, RefProps, KeyProps } from '../shared';
-import { detectIsArray, detectIsFunction, detectIsEmpty } from '../utils';
+import { detectIsArray, detectIsEmpty } from '../utils';
 import { REPLACER, KEY_ATTR } from '../constants';
 import { $$scope } from '../scope';
 
 const $$vNode = Symbol('vNode');
-const ATTR_TYPE = 'type';
+const PROP_PROPS = 'props';
+const PROP_ATTRS = 'attrs';
+const PROP_NAME = 'name';
+const PROP_TYPE = 'type';
+const PROP_CHILDREN = 'children';
 
 class VirtualNode {
   type: NodeType = null;
@@ -46,7 +50,7 @@ class CommentVirtualNode extends VirtualNode {
   }
 }
 
-function View(options: ViewOptions) {
+const View = (options: ViewOptions) => {
   const factory: TagVirtualNodeFactory = () => {
     const { as: name, slot, _void = false, ...attrs } = options;
     const children = (
@@ -57,72 +61,49 @@ function View(options: ViewOptions) {
   };
 
   factory[$$vNode] = true;
-  factory[ATTR_TYPE] = options.as;
+  factory[PROP_TYPE] = options.as;
   factory[KEY_ATTR] = options.key;
 
   return factory;
-}
+};
 
 const Text = (source: TextSource) => new TextVirtualNode(source);
 
-Text.from = (source: DarkElement) => (detectIsTextVirtualNode(source) ? source.value : String(source));
+Text.from = (x: unknown) => (detectIsTextVirtualNode(x) ? x.value : String(x));
 
 const Comment = (text: string) => new CommentVirtualNode(text);
 
-const detectIsVirtualNode = (vNode: unknown): vNode is VirtualNode => vNode instanceof VirtualNode;
-
-const detectIsTagVirtualNode = (vNode: unknown): vNode is TagVirtualNode => vNode instanceof TagVirtualNode;
-
-const detectIsCommentVirtualNode = (vNode: unknown): vNode is CommentVirtualNode => vNode instanceof CommentVirtualNode;
-
-const detectIsTextVirtualNode = (vNode: unknown): vNode is TextVirtualNode => vNode instanceof TextVirtualNode;
-
-const detectIsVirtualNodeFactory = (factory: unknown): factory is VirtualNodeFactory =>
-  detectIsFunction(factory) && factory[$$vNode] === true;
-
-const getTagVirtualNodeKey = (vNode: TagVirtualNode): ElementKey | null =>
-  vNode.attrs ? vNode.attrs[KEY_ATTR] ?? null : null;
-
-const hasTagVirtualNodeFlag = (vNode: TagVirtualNode, flag: string) => Boolean(vNode.attrs[flag]);
-
-const getVirtualNodeFactoryKey = (factory: VirtualNodeFactory): ElementKey | null => factory[KEY_ATTR] ?? null;
-
-const hasVirtualNodeFactoryFlag = (factory: VirtualNodeFactory, flag: string) => Boolean(factory[flag]);
-
-const detectIsPlainVirtualNode = (vNode: unknown): vNode is PlainVirtualNode =>
-  detectIsTextVirtualNode(vNode) || detectIsCommentVirtualNode(vNode);
-
 const createReplacer = () => new CommentVirtualNode(REPLACER);
 
-const detectIsReplacer = (vNode: unknown) => detectIsCommentVirtualNode(vNode) && vNode.value === REPLACER;
+const detectIsVirtualNode = (x: unknown): x is VirtualNode => x instanceof VirtualNode;
 
-function getElementKey(inst: Instance): ElementKey | null {
-  return detectIsComponent(inst)
-    ? getComponentKey(inst)
-    : detectIsVirtualNodeFactory(inst)
-    ? getVirtualNodeFactoryKey(inst)
-    : detectIsTagVirtualNode(inst)
-    ? getTagVirtualNodeKey(inst)
+const detectIsTagVirtualNode = (x: unknown): x is TagVirtualNode => x instanceof TagVirtualNode;
+
+const detectIsCommentVirtualNode = (x: unknown): x is CommentVirtualNode => x instanceof CommentVirtualNode;
+
+const detectIsTextVirtualNode = (x: unknown): x is TextVirtualNode => x instanceof TextVirtualNode;
+
+const detectIsVirtualNodeFactory = (x: unknown): x is VirtualNodeFactory => x?.[$$vNode];
+
+const detectIsPlainVirtualNode = (x: unknown): x is PlainVirtualNode => !detectIsTagVirtualNode(x);
+
+const getElementType = (inst: Instance): string | Function => inst[PROP_NAME] ?? inst[PROP_TYPE] ?? null;
+
+const getElementKey = (inst: Instance): ElementKey | null => {
+  return inst
+    ? inst[PROP_PROPS]
+      ? inst[PROP_PROPS][KEY_ATTR] ?? null
+      : inst[PROP_ATTRS]
+      ? inst[PROP_ATTRS][KEY_ATTR] ?? null
+      : inst[KEY_ATTR] ?? null
     : null;
-}
+};
 
-function getElementType(inst: Instance): string | Function {
-  return detectIsComponent(inst)
-    ? inst.type
-    : detectIsVirtualNodeFactory(inst)
-    ? inst[ATTR_TYPE]
-    : detectIsTagVirtualNode(inst)
-    ? inst.name
-    : detectIsVirtualNode(inst)
-    ? inst.type
-    : null;
-}
+const hasChildrenProp = (inst: Instance): inst is TagVirtualNode | Component => {
+  return inst?.[PROP_CHILDREN] !== undefined;
+};
 
-function hasChildrenProp(inst: Instance): inst is TagVirtualNode | Component {
-  return detectIsTagVirtualNode(inst) || detectIsComponent(inst);
-}
-
-function detectAreSameInstanceTypes(prevInst: Instance, nextInst: Instance, isComponentFactories = false) {
+const detectAreSameInstanceTypes = (prevInst: Instance, nextInst: Instance) => {
   if (process.env.NODE_ENV !== 'production') {
     if (process.env.NODE_ENV === 'development' && $$scope().getIsHot()) {
       if (detectIsComponent(prevInst) && detectIsComponent(nextInst)) {
@@ -131,19 +112,17 @@ function detectAreSameInstanceTypes(prevInst: Instance, nextInst: Instance, isCo
     }
   }
 
-  return isComponentFactories
-    ? (prevInst as Component).type === (nextInst as Component).type
-    : getElementType(prevInst) === getElementType(nextInst);
-}
+  return getElementType(prevInst) === getElementType(nextInst);
+};
 
-function detectAreSameComponentTypesWithSameKeys(prevInst: Instance | null, nextInst: Instance | null) {
+const detectAreSameComponentTypesWithSameKeys = (prevInst: Instance | null, nextInst: Instance | null) => {
   return (
     detectIsComponent(prevInst) &&
     detectIsComponent(nextInst) &&
-    detectAreSameInstanceTypes(prevInst, nextInst, true) &&
+    detectAreSameInstanceTypes(prevInst, nextInst) &&
     getElementKey(prevInst) === getElementKey(nextInst)
   );
-}
+};
 
 type TextSource = string | number;
 
@@ -178,7 +157,6 @@ export {
   TextVirtualNode,
   CommentVirtualNode,
   createReplacer,
-  detectIsReplacer,
   getElementKey,
   getElementType,
   hasChildrenProp,
