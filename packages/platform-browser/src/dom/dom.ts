@@ -111,6 +111,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode, isHydratio
 function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
   const attrNames = getAttributeNames(prevVNode, nextVNode);
   const tagElement = element as TagNativeElement;
+  const isInput = nextVNode.name === INPUT_TAG;
 
   for (let attrName of attrNames) {
     const prevAttrValue = prevVNode.attrs[attrName];
@@ -126,7 +127,7 @@ function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nex
     if (!detectIsUndefined(nextAttrValue)) {
       if (detectIsEvent(attrName)) {
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
-      } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
+      } else if (!ATTR_BLACK_LIST[attrName] && (isInput || prevAttrValue !== nextAttrValue)) {
         !patchAttributes(tagElement, nextVNode.name, attrName, nextAttrValue) &&
           m.setAttribute.call(tagElement, attrName, nextAttrValue);
       }

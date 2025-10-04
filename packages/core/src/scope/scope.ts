@@ -31,6 +31,7 @@ class Scope {
   private isInsertionEffect = false;
   private isUpdate = false;
   private isBatch = false;
+  private isForce = false;
   private isHydration = false;
   private isStream = false;
   private isTransition = false;
@@ -309,8 +310,13 @@ class Scope {
     return this.isEvent;
   }
 
-  setIsEvent(value: boolean) {
+  setIsEvent(value: boolean, isForce = false) {
     this.isEvent = value;
+    this.isForce = isForce;
+  }
+
+  getIsForce() {
+    return this.isForce;
   }
 
   getIsHot() {

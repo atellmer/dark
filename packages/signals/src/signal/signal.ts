@@ -7,6 +7,7 @@ import {
   $$scope,
   createUpdate,
   detectIsUndefined,
+  detectIsEqual,
 } from '@dark-engine/core';
 
 import { addToContext } from '../context';
@@ -23,13 +24,13 @@ type Options<T> = {
 class Signal<T = unknown> extends AbstractSignal<T> {
   private emitter = new EventEmitter<'set'>();
   private version = 0;
-  private equal: Equal<T>;
+  private equal: Equal<T> = detectIsEqual;
   private map: Map<T, Subscriber>;
 
   constructor(value: T, options?: Options<T>) {
     super();
     this.value = value;
-    this.equal = options?.equal || defaultEqual;
+    this.equal = options?.equal || this.equal;
   }
 
   get(): T {
@@ -87,8 +88,6 @@ class Signal<T = unknown> extends AbstractSignal<T> {
     return true;
   }
 }
-
-const defaultEqual = <T>(prev: T, next: T) => Object.is(prev, next);
 
 const signal = <T>(value: T, options?: Options<T>) => new Signal(value, options);
 
