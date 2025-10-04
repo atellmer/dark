@@ -122,17 +122,6 @@ describe('@data/cache', () => {
     });
   });
 
-  test('clears all cache correctly', () => {
-    const cache = new InMemoryCache();
-
-    cache.write('x', 10, { id: 1 });
-    cache.write('y', 100, { id: 1 });
-    cache.clear();
-
-    expect(cache.read('x', { id: 1 })).toBe(null);
-    expect(cache.read('y', { id: 1 })).toBe(null);
-  });
-
   test('returns the state correctly', () => {
     const cache = new InMemoryCache();
 

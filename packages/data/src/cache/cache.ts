@@ -68,13 +68,9 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'delete', key, id });
   }
 
-  clear(key?: K) {
-    if (detectIsUndefined(key)) {
-      this.state = {};
-    } else {
-      this.state[key] = {};
-    }
-
+  clear(key: K) {
+    if (!this.state[key]) return;
+    this.state[key] = {};
     this.emitter1.emit('change', { type: 'clear', key });
   }
 
