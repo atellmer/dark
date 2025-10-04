@@ -1,4 +1,11 @@
-import { type TextBased, type SubscriberWithValue, EventEmitter, getTime, nextTick } from '@dark-engine/core';
+import {
+  type TextBased,
+  type SubscriberWithValue,
+  EventEmitter,
+  getTime,
+  nextTick,
+  detectIsUndefined,
+} from '@dark-engine/core';
 
 import { illegal } from '../utils';
 import { ROOT_ID } from '../constants';
@@ -61,6 +68,16 @@ class InMemoryCache<K extends string = string> {
     this.emitter1.emit('change', { type: 'delete', key, id });
   }
 
+  clear(key?: K) {
+    if (detectIsUndefined(key)) {
+      this.state = {};
+    } else {
+      this.state[key] = {};
+    }
+
+    this.emitter1.emit('change', { type: 'clear', key });
+  }
+
   subscribe(subscriber: SubscriberWithValue<CacheEventData<K>>) {
     return this.emitter1.on('change', subscriber);
   }
@@ -88,7 +105,7 @@ type State = Record<string, Record<string, CacheRecord>>;
 type MethodOptions = { id?: TextBased; isPending?: boolean };
 
 type EventName = 'change';
-export type CacheEventType = 'write' | 'optimistic' | 'invalidate' | 'delete';
+export type CacheEventType = 'write' | 'optimistic' | 'invalidate' | 'delete' | 'clear';
 export type CacheEventData<K extends string> = { type: CacheEventType; key: K; id?: TextBased; record?: CacheRecord };
 export type MonitorEventType = 'query' | 'mutation';
 export type MonitorEventPhase = 'promise' | 'start' | 'finish' | 'error';

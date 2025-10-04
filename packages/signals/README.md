@@ -227,7 +227,7 @@ const b$ = computed(() => a$.get() + 1);
 const c$ = computed(() => b$.get() + 1);
 
 effect(() => {
-  a$.set(() => c$.get());
+  a$.set(c$.get());
   console.log('a:', a$.get(), 'b:', b$.get(), 'c:', c$.get());
 });
 ```
