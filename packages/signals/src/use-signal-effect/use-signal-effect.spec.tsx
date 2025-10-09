@@ -1,7 +1,8 @@
 import { component } from '@dark-engine/core';
-import { createBrowserEnv } from '@test-utils';
+import { createBrowserEnv, createServerEnv } from '@test-utils';
 
 import { signal } from '../signal';
+import { useSignal } from '../use-signal';
 import { useSignalEffect } from './use-signal-effect';
 
 let { render } = createBrowserEnv();
@@ -52,5 +53,20 @@ describe('@signals/use-signal-effect', () => {
     count$.set(x => x + 1);
     expect(spy).toHaveBeenCalledTimes(0);
     expect(count$.__getSize()).toBe(0);
+  });
+
+  test('not running on the server', async () => {
+    const spy = jest.fn();
+    const App = component(() => {
+      const count$ = useSignal(1);
+
+      useSignalEffect(() => spy(count$.get()));
+
+      return null;
+    });
+    const { renderToString } = createServerEnv();
+
+    await renderToString(<App />);
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 });

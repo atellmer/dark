@@ -1,7 +1,8 @@
 import { component } from '@dark-engine/core';
-import { createBrowserEnv } from '@test-utils';
+import { createBrowserEnv, createServerEnv } from '@test-utils';
 
 import { signal } from '../signal';
+import { useSignal } from '../use-signal';
 import { useComputed } from './use-computed';
 
 let { render } = createBrowserEnv();
@@ -27,5 +28,18 @@ describe('@signals/use-computed', () => {
     render(<App />);
     expect(spy.mock.calls[0][0] === spy.mock.calls[1][0]).toBe(true);
     expect(spy.mock.calls[1][0] === spy.mock.calls[2][0]).toBe(true);
+  });
+
+  test('renders on the server correctly', async () => {
+    const App = component(() => {
+      const count$ = useSignal(1);
+      const computed$ = useComputed(() => count$.get() + 10);
+
+      return <button onClick={() => count$.set(2)}>{computed$.get()}</button>;
+    });
+    const { renderToString } = createServerEnv();
+    const result = await renderToString(<App />);
+
+    expect(result).toMatchInlineSnapshot(`"<button>11</button>"`);
   });
 });
