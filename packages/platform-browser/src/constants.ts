@@ -1,4 +1,4 @@
-export const VERSION = '1.5.1';
+export const VERSION = '1.6.0';
 export const LIB = '@dark-engine/platform-browser';
 export const HEAD_TAG = 'head';
 export const TITLE_TAG = 'title';

@@ -1,4 +1,4 @@
-export const VERSION = '1.5.1';
+export const VERSION = '1.6.0';
 export const LIB = '@dark-engine/styled';
 export const STYLE_TAG = 'style';
 export const STYLED_ATTR = 'dark-styled';
