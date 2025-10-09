@@ -1,4 +1,4 @@
-import { EFFECT_HOST_MASK, ATOM_HOST_MASK } from '../constants';
+import { CLEANUP_HOST_MASK, EFFECT_HOST_MASK } from '../constants';
 import { removeScope, $$scope } from '../scope';
 import { detectIsUndefined } from '../utils';
 import { type Callback } from '../shared';
@@ -6,7 +6,7 @@ import { platform } from '../platform';
 import { type Fiber } from '../fiber';
 import { walk } from '../walk';
 
-const mask = EFFECT_HOST_MASK | ATOM_HOST_MASK;
+const mask = EFFECT_HOST_MASK | CLEANUP_HOST_MASK;
 
 function unmountFiber(fiber: Fiber) {
   if (!(fiber.mask & mask)) return;

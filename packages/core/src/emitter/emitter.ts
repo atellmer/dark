@@ -13,15 +13,18 @@ class EventEmitter<E extends string = EventName, T = unknown> {
   }
 
   emit(e: E, data?: T) {
-    this.subscribers.has(e) && this.subscribers.get(e).forEach(x => x(data));
+    if (!this.subscribers.has(e)) return;
+    const subs = Array.from(this.subscribers.get(e));
+
+    for (const sub of subs) sub(data);
   }
 
   kill() {
     this.subscribers = new Map();
   }
 
-  __getSize() {
-    return this.subscribers.size;
+  __getSize(e?: E) {
+    return e ? this.subscribers.get(e)?.size ?? 0 : this.subscribers.size;
   }
 }
 

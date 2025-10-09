@@ -4,8 +4,6 @@ import {
   UPDATE_EFFECT_TAG,
   DELETE_EFFECT_TAG,
   SKIP_EFFECT_TAG,
-  EFFECT_HOST_MASK,
-  ATOM_HOST_MASK,
   MOVE_MASK,
   TaskPriority,
 } from '../constants';
@@ -44,11 +42,10 @@ import {
   notifyParents,
   createLoc,
 } from '../walk';
-import { type ScheduleCallbackOptions, type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
+import { type OnRestore, type OnRestoreOptions, scheduler } from '../scheduler';
 import { Fragment, detectIsFragment } from '../fragment';
 import { type EventEmitter } from '../emitter';
 import { unmountFiber } from '../unmount';
-import { addBatch } from '../batch';
 
 export type WorkLoop = (isAsync: boolean) => boolean | Promise<unknown> | null;
 
@@ -403,14 +400,11 @@ function commit($scope: Scope) {
     const candidates = $scope.getCandidates();
     const isUpdate = $scope.getIsUpdate();
     const awaiter = $scope.getAwaiter();
-    const unmounts: Array<Fiber> = [];
     const inst = wip.inst as Component;
 
     // !
     for (const fiber of deletions) {
-      const canAsync = fiber.mask & ATOM_HOST_MASK && !(fiber.mask & EFFECT_HOST_MASK);
-
-      canAsync ? unmounts.push(fiber) : unmountFiber(fiber);
+      unmountFiber(fiber);
       fiber.tag = DELETE_EFFECT_TAG;
       platform.commit(fiber);
     }
@@ -433,12 +427,9 @@ function commit($scope: Scope) {
     $scope.runLayoutEffects();
     $scope.runAsyncEffects();
     awaiter.resolve();
-    unmounts.length > 0 && setTimeout(onUnmount(unmounts));
     cleanup($scope);
   }
 }
-
-const onUnmount = (fibers: Array<Fiber>) => () => fibers.forEach(unmountFiber);
 
 function cleanup($scope: Scope, fromFork = false) {
   $scope.cleanup();
@@ -510,15 +501,15 @@ export type CreateCallbackOptions = {
   rootId: number;
   isTransition?: boolean;
   hook: Hook;
-  tools?: () => Tools;
+  getTools?: () => Tools;
 };
 
 function createCallback(options: CreateCallbackOptions) {
-  const { rootId, hook, isTransition, tools = $tools } = options;
+  const { rootId, hook, isTransition, getTools = $getTools } = options;
   const callback = (onRestore?: OnRestore) => {
     setRootId(rootId); // !
     const isRetain = detectIsFunction(onRestore);
-    const { shouldUpdate, setValue, resetValue } = tools();
+    const { shouldUpdate, setValue, resetValue } = getTools();
     const $scope = $$scope();
     const owner = hook.owner;
     const fiber = owner.alt || owner;
@@ -554,42 +545,35 @@ function createCallback(options: CreateCallbackOptions) {
   return callback;
 }
 
+export type UpdateOptions = {
+  getTools?: () => Tools;
+  setupBatch?: Callback;
+};
+
 function createUpdate(rootId: number, hook: Hook) {
   const { idx } = hook;
-  const update = (tools?: () => Tools) => {
+  const update = (options?: UpdateOptions) => {
+    const { getTools, setupBatch } = options || {};
     const $scope = $$scope();
     if ($scope.getIsInsertionEffect()) return;
-    const hasTools = detectIsFunction(tools);
     const isTransition = $scope.getIsTransition();
-    const isBatch = $scope.getIsBatch();
     const isEvent = $scope.getIsEvent();
     const priority = isTransition ? TaskPriority.LOW : isEvent ? TaskPriority.HIGH : TaskPriority.NORMAL; // !
     const forceAsync = isTransition;
     const onTransitionEnd = isTransition ? $scope.getOnTransitionEnd() : null;
-    const callback = createCallback({
-      rootId,
-      hook,
-      isTransition,
-      tools: hasTools ? tools : undefined,
-    });
+    const isBatch = $scope.getIsBatch();
+    const callback = createCallback({ rootId, hook, isTransition, getTools });
     const loc = createLoc(rootId, idx, hook);
-    const options: ScheduleCallbackOptions = {
+
+    scheduler.schedule(callback, {
       priority,
       forceAsync,
       isTransition,
+      isBatch,
+      setupBatch,
       loc,
       onTransitionEnd,
-    };
-
-    if (isBatch) {
-      addBatch(
-        hook,
-        () => scheduler.schedule(callback, options),
-        () => hasTools && tools().setValue(),
-      );
-    } else {
-      scheduler.schedule(callback, options);
-    }
+    });
   };
 
   return update;
@@ -599,7 +583,7 @@ export type Tools = {
   shouldUpdate: () => boolean;
 } & Pick<OnRestoreOptions, 'setValue' | 'resetValue'>;
 
-const $tools = (): Tools => ({
+const $getTools = (): Tools => ({
   shouldUpdate: trueFn,
   setValue: null,
   resetValue: null,

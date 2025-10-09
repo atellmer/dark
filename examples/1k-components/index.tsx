@@ -1,6 +1,6 @@
 import { interpolateViridis } from 'd3-scale-chromatic';
 
-import { component, useState, useEffect, useMemo, useUpdate, Flag, TagVirtualNode } from '@dark-engine/core';
+import { component, useState, useEffect, useMemo, useUpdate, TagVirtualNode } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 
 const Demo = component(() => {
@@ -37,8 +37,6 @@ const Layout = {
 };
 
 const LAYOUT_ORDER = [Layout.PHYLLOTAXIS, Layout.SPIRAL, Layout.PHYLLOTAXIS, Layout.GRID, Layout.WAVE];
-
-const flagProps = { [Flag.SKIP_SCAN_OPT]: true };
 
 type VizDemoProps = {
   count: number;
@@ -106,8 +104,8 @@ const VizDemo = component<VizDemoProps>(({ count }) => {
   };
 
   return (
-    <svg class='demo' {...flagProps}>
-      <g {...flagProps}>{map(scope.points, renderPoint)}</g>
+    <svg class='demo'>
+      <g>{map(scope.points, renderPoint)}</g>
     </svg>
   );
 });

@@ -348,7 +348,7 @@ describe('@core/use-state', () => {
   });
 
   test('forces direct update for input value', async () => {
-    // https://github.com/atellmer/dark/issues/82
+    // https://github.com/atellmer/dark/issues/108
     let inputRef: MutableRef<HTMLInputElement> = null;
     const App = component(() => {
       inputRef = useRef<HTMLInputElement>(null);
@@ -358,8 +358,6 @@ describe('@core/use-state', () => {
         const $value = value.replace(/\D/g, '');
 
         setValue($value);
-
-        return $value;
       };
 
       return <input ref={inputRef} value={value} onInput={handleSetValue} />;

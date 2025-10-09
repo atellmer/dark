@@ -1,15 +1,6 @@
-import {
-  type WritableAtom,
-  Text,
-  TagVirtualNode,
-  TextVirtualNode,
-  Flag,
-  component,
-  memo,
-  useMemo,
-  atom,
-} from '@dark-engine/core';
+import { Text, TagVirtualNode, TextVirtualNode, component, memo, useMemo } from '@dark-engine/core';
 import { type SyntheticEvent as E, createRoot, table, tbody, div, button } from '@dark-engine/platform-browser';
+import { type Signal, signal, useSelected } from '@dark-engine/signals';
 
 const createMeasurer = () => {
   let startTime: number;
@@ -46,11 +37,11 @@ const buildData = (count, prefix = ''): Array<DataItem> => {
     .fill(0)
     .map(() => ({
       id: ++nextId,
-      name$: atom(`item: ${nextId} ${prefix}`),
+      name$: signal(`item: ${nextId} ${prefix}`),
     }));
 };
 
-type DataItem = { id: number; name$: WritableAtom<string> };
+type DataItem = { id: number; name$: Signal<string> };
 
 type HeaderProps = {
   onCreate: (e: E<MouseEvent>) => void;
@@ -104,25 +95,26 @@ const Header = component<HeaderProps>(
 const MemoHeader = memo(Header, () => false);
 
 type NameProps = {
-  name$: WritableAtom<string>;
+  name$: Signal<string>;
 };
 
-const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.val()));
+const Name = component<NameProps>(({ name$ }) => new TextVirtualNode(name$.get()));
 
 type RowProps = {
   id: number;
-  name$: WritableAtom<string>;
-  selected$: WritableAtom<number>;
+  name$: Signal<string>;
+  selected$: Signal<number>;
   onRemove: (id: number, e: E<MouseEvent>) => void;
   onHighlight: (id: number, e: E<MouseEvent>) => void;
 };
 
-const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }) => {
+const Row = component<RowProps>(({ id, name$, selected$, onRemove, onHighlight }) => {
+  const isSelected = useSelected(selected$, id) === id;
+
   return new TagVirtualNode(
     'tr',
     {
-      class: selected$.val(null, id) === id ? 'selected' : undefined,
-      [Flag.STATIC_SLOT_OPT]: true,
+      class: isSelected ? 'selected' : undefined,
     },
     [
       new TagVirtualNode('td', {}, [Name({ name$ })]),
@@ -138,15 +130,17 @@ const Row = component<RowProps>(({ id, selected$, name$, onRemove, onHighlight }
 
 const MemoRow = memo(Row, () => false);
 
+const equal = () => false;
+
 type State = {
-  data$: WritableAtom<Array<DataItem>>;
-  selected$: WritableAtom<number>;
+  data$: Signal<Array<DataItem>>;
+  selected$: Signal<number>;
 };
 
 const App = component(() => {
-  const state = useMemo<State>(() => ({ data$: atom([]), selected$: atom() }), []);
+  const state = useMemo<State>(() => ({ data$: signal([], { equal }), selected$: signal(undefined) }), []);
   const { data$, selected$ } = state;
-  const items = data$.val();
+  const data = data$.get();
 
   const handleCreate = (e: E<MouseEvent>) => {
     measurer.start('create');
@@ -157,7 +151,7 @@ const App = component(() => {
   const handlePrepend = (e: E<MouseEvent>) => {
     measurer.start('prepend');
     e.stopPropagation();
-    const data = data$.get();
+    const data = data$.peek();
     data.unshift(...buildData(1000, '^^^'));
     data$.set(data);
     measurer.stop();
@@ -165,7 +159,7 @@ const App = component(() => {
   const handleAppend = (e: E<MouseEvent>) => {
     measurer.start('append');
     e.stopPropagation();
-    const data = data$.get();
+    const data = data$.peek();
     data.push(...buildData(1000, '^^^'));
     data$.set(data);
     measurer.stop();
@@ -173,7 +167,7 @@ const App = component(() => {
   const handleInsertDifferent = (e: E<MouseEvent>) => {
     measurer.start('insert different');
     e.stopPropagation();
-    const data = data$.get();
+    const data = data$.peek();
     data.splice(0, 0, ...buildData(5, '***'));
     data.splice(8, 0, ...buildData(2, '***'));
     data$.set(data);
@@ -182,17 +176,18 @@ const App = component(() => {
   const handleUpdateAll = (e: E<MouseEvent>) => {
     measurer.start('update every 10th');
     e.stopPropagation();
-    const data = data$.get();
+    const data = data$.peek();
 
     for (let i = 0; i < data.length; i += 10) {
       data[i].name$.set(x => x + '!!!');
     }
+
     measurer.stop();
   };
   const handleRemove = (id: number, e: E<MouseEvent>) => {
     measurer.start('remove');
     e.stopPropagation();
-    const data = data$.get();
+    const data = data$.peek();
     const idx = data.findIndex(x => x.id === id);
     idx !== -1 && data.splice(idx, 1);
     data$.set(data);
@@ -205,7 +200,7 @@ const App = component(() => {
     measurer.stop();
   };
   const handleSwap = (e: E<MouseEvent>) => {
-    const data = data$.get();
+    const data = data$.peek();
     if (data.length === 0) return;
     measurer.start('swap');
     e.stopPropagation();
@@ -235,9 +230,8 @@ const App = component(() => {
     table({
       class: 'table',
       slot: tbody({
-        key: items.length > 0 ? 1 : 2,
-        [Flag.MEMO_SLOT_OPT]: true,
-        slot: items.map(item => {
+        key: data.length > 0 ? 1 : 2,
+        slot: data.map(item => {
           const { id, name$ } = item;
 
           return MemoRow({

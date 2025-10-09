@@ -3,8 +3,7 @@ import { createRoot } from '@dark-engine/platform-browser';
 import { type Routes, Router, NavLink } from '@dark-engine/web-router';
 import { createGlobalStyle, styled } from '@dark-engine/styled';
 
-import { PageTransition } from '../spring-router/page-transition';
-import { Pending } from './pending';
+import { isPending$, Pending } from './pending';
 
 const Home = lazy(() => import('./home'));
 const About = lazy(() => import('./about'));
@@ -64,7 +63,7 @@ type ShellProps = {
 const Shell = component<ShellProps>(
   ({ slot }) => {
     return (
-      <PageTransition>
+      <>
         <header>
           <NavLink to='/home'>Home</NavLink>
           <NavLink to='/about'>About</NavLink>
@@ -75,7 +74,7 @@ const Shell = component<ShellProps>(
           <Content>{slot}</Content>
         </Suspense>
         <SlowContent />
-      </PageTransition>
+      </>
     );
   },
   { displayName: 'Shell' },
@@ -85,7 +84,7 @@ const App = component(() => {
   return (
     <>
       <GlobalStyle />
-      <Router routes={routes} mode='concurrent'>
+      <Router routes={routes} mode='concurrent' onChangePending={isPending => isPending$.set(isPending)}>
         {slot => <Shell>{slot}</Shell>}
       </Router>
     </>

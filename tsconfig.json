@@ -78,6 +78,12 @@
       "@dark-engine/data/*": [
         "./packages/data/src/*"
       ],
+      "@dark-engine/signals": [
+        "./packages/signals/src/index"
+      ],
+      "@dark-engine/signals/*": [
+        "./packages/signals/src/*"
+      ],
       "@test-utils": [
         "./test/utils"
       ]

@@ -5,14 +5,14 @@ import {
   IS_SUSPENSE_HOOK_MASK,
   IS_BOUNDARY_HOOK_MASK,
   IS_PENDING_HOOK_MASK,
+  CLEANUP_HOST_MASK,
 } from '../constants';
-import { type Instance, type Callback, type TimerId } from '../shared';
+import { type Instance, type Callback } from '../shared';
 import { detectAreSameComponentTypesWithSameKeys } from '../view';
 import { type UseEffectValue, dropEffects } from '../use-effect';
 import { type Context, type ContextProvider } from '../context';
 import { detectIsFunction, logError } from '../utils';
 import { detectIsComponent } from '../component';
-import { type Atom } from '../atom';
 
 class Fiber<N = NativeElement> {
   id = 0;
@@ -86,8 +86,7 @@ class Hook<T = unknown> {
   owner: Fiber = null;
   mask = 0;
   providers: Map<Context, ContextProvider> = null;
-  atoms: Map<Atom, Callback> = null;
-  batch: Batch = null;
+  cleanups: Map<unknown, Callback> = null;
   catch: Catch = null;
   pendings = 0;
   update: Callback = null;
@@ -148,23 +147,6 @@ class Hook<T = unknown> {
     this.providers = x;
   }
 
-  setAtom(atom: Atom, cb: Callback) {
-    !this.atoms && (this.atoms = new Map());
-    this.atoms.set(atom, cb);
-  }
-
-  removeAtom(atom: Atom) {
-    this.atoms.delete(atom);
-  }
-
-  getBatch() {
-    return this.batch;
-  }
-
-  setBatch(x: Batch) {
-    this.batch = x;
-  }
-
   hasCatch() {
     return detectIsFunction(this.catch);
   }
@@ -177,6 +159,13 @@ class Hook<T = unknown> {
     this.update = x;
   }
 
+  createCleanup(key: unknown, create: () => Callback) {
+    this.owner.markHost(CLEANUP_HOST_MASK);
+    if (!this.cleanups) this.cleanups = new Map();
+    this.cleanups.get(key)?.();
+    this.cleanups.set(key, create());
+  }
+
   incrementPendings() {
     this.pendings++;
   }
@@ -186,15 +175,15 @@ class Hook<T = unknown> {
   }
 
   drop() {
-    const { atoms, values, owner } = this;
+    const { values, owner } = this;
 
     if (values.length > 0 && owner.mask & EFFECT_HOST_MASK) {
       dropEffects(this as Hook<HookValue<UseEffectValue>>);
     }
 
-    if (atoms) {
-      for (const [_, cleanup] of atoms) cleanup();
-      this.atoms = null;
+    if (this.cleanups) {
+      for (const [_, cleanup] of this.cleanups) cleanup();
+      this.cleanups.clear();
     }
   }
 }
@@ -205,11 +194,6 @@ function getHook(alt: Fiber, prevInst: Instance, nextInst: Instance): Hook | nul
 
   return null;
 }
-
-type Batch = {
-  timer: TimerId;
-  changes: Array<Callback>;
-};
 
 type Catch = (e: Error) => void;
 

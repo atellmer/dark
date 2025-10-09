@@ -36,7 +36,6 @@ CDN:
 - [Catching errors](#catching-errors)
 - [Context](#context)
 - [Batching](#batching)
-- [Atoms](#atoms)
 - [Code splitting](#code-splitting)
 - [Async rendering](#async-rendering)
 - [Concurrent rendering](#concurrent-rendering)
@@ -49,7 +48,6 @@ CDN:
 
 ```tsx
 import {
-  type Atom,
   type CommentVirtualNode,
   type Component,
   type ComponentFactory,
@@ -58,23 +56,16 @@ import {
   type ElementKey,
   type FunctionRef,
   type MutableRef,
-  type ReadableAtom,
   type Reducer,
   type Ref,
   type StandardComponentProps,
   type TagVirtualNode,
   type TextVirtualNode,
   type VirtualNodeFactory,
-  type WritableAtom,
-  atom,
   batch,
   Comment,
   component,
-  computed,
   createContext,
-  detectIsAtom,
-  detectIsWritableAtom,
-  detectIsReadableAtom,
   detectIsServer,
   ErrorBoundary,
   Fragment,
@@ -86,10 +77,8 @@ import {
   startTransition,
   Suspense,
   Text,
-  useAtom,
   useCallback,
   useContext,
-  useComputed,
   useDeferredValue,
   useEffect,
   useError,
@@ -102,7 +91,6 @@ import {
   useReducer,
   useRef,
   useState,
-  useStore,
   useSyncExternalStore,
   useTransition,
   useUpdate,
@@ -731,103 +719,6 @@ useEffect(() => {
 
   return () => document.removeEventListener('mousemove', handleEvent);
 }, []);
-```
-
-<a id="atoms"></a>
-
-## Atoms
-
-Atoms, sometimes called signals, are fine-grained reactivity elements that are objects with useful data and methods that allow triggering updates in the component-consumer. Atoms can be successfully used as independent units of information storage, replacing the state manager functions. At the same time, they can be used as a tool for optimizing the performance of critical areas in combination with memoization. In this case, we can achieve the same performance as if the data were in the consumer's local state. The main idea is to split a large render into many smaller ones so that we don't have to process the calculation of the whole tree, even if it is memoized, because traversing memoized components is still a traversal, albeit a superficial one.
-
-There are `writableAtom` and `ReadableAtom`. You can write values in `WritableAtom` using the `set` method. You cannot write to `ReadableAtom`; it is intended to be computed by a formula that is calculated based on its dependencies on other atoms.
-
-#### `WritableAtom` and `atom`
-
-```tsx
-const a$ = atom(0); // a$ is instance of WritableAtom
-
-a$.on(({ next }) => console.log(next));
-a$.set(1);
-a$.set(x => x + 1);
-
-// 1
-// 2
-```
-
-#### `ReadableAtom` and `computed`
-
-```tsx
-const a$ = atom(0);
-const b$ = computed([a$], a => a ** 2); // b$ is instance of ReadableAtom
-
-b$.on(({ next }) => console.log(next));
-a$.set(1);
-a$.set(2);
-a$.set(3);
-
-// 1
-// 4
-// 9
-```
-
-#### `useAtom`
-
-When calling the `val` method, the atom automatically subscribes the component to change its value and then re-renders it.
-
-```tsx
-const App = component(() => {
-  const a$ = useAtom(0);
-
-  // <App /> won't render after a$ change cause there is no call a$.val() here
-  return (
-    <>
-      <Child a$={a$} />
-      <button onClick={() => a$.set(x => x + 1)}>increment</button>
-    </>
-  );
-});
-
-type ChildProps = {
-  a$: WritableAtom<number>;
-};
-
-const Child = component<ChildProps>(({ a$ }) => {
-  // Renders only <Child /> through call a$.val()
-  return <div>{a$.val()}</div>;
-});
-```
-
-You can pass function that will control rendering necessity.
-
-```tsx
-const a = a$.val((prev, next) => prev !== next && next >= 5);
-
-<div>{a}</div>
-```
-
-#### `useComputed`
-
-```tsx
-const b$ = useComputed([a$], a => a ** 2);
-
-<div>
-  {a$.get()} ^ 2 = {b$.val()}
-</div>
-
-// 0 ^ 2 = 0
-// 1 ^ 2 = 1
-// 2 ^ 2 = 4
-// 3 ^ 2 = 9
-```
-
-#### `useStore`
-
-Retrieves atom values into an array and updates the component when atom values change. Uses batching to update.
-
-```tsx
-const [a, b] = useStore([a$, b$]);
-
-<div>{a} ^ 2 = {b}</div>;
 ```
 
 <a id="code-splitting"></a>

@@ -62,10 +62,10 @@ export type ViewBase = import('@nativescript/core').ViewBase;
 export type WebViewInterfacesLoadEventData = import('@nativescript/core').LoadEventData;
 export type iOSFrame = import('@nativescript/core/ui/frame').iOSFrame;
 
-import type { KeyProps, SlotProps, RefProps, FlagProps } from '@dark-engine/core';
+import type { KeyProps, SlotProps, RefProps } from '@dark-engine/core';
 import { type SyntheticEvent } from './events';
 
-export type WithStandardElementAttributes<T> = T & KeyProps & SlotProps & RefProps & FlagProps;
+export type WithStandardElementAttributes<T> = T & KeyProps & SlotProps & RefProps;
 
 export type PartialSlot<T extends SlotProps> = Omit<T, 'slot'> & Partial<Pick<T, 'slot'>>;
 

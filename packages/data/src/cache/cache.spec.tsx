@@ -7,6 +7,7 @@ const TIME = 1705647402757;
 enum Key {
   ITEMS = 'ITEMS',
   CURRENT_ITEM = 'CURRENT_ITEM',
+  CURRENT_ITEM_2 = 'CURRENT_ITEM_2',
 }
 
 jest.mock('@dark-engine/core', () => {
@@ -100,6 +101,25 @@ describe('@data/cache', () => {
     cache.write(Key.CURRENT_ITEM, 1, { id: 1 });
     cache.delete(Key.CURRENT_ITEM, { id: 1 });
     expect(cache.read(Key.CURRENT_ITEM, { id: 1 })).toBe(null);
+  });
+
+  test('clears all records by key correctly', () => {
+    // https://github.com/atellmer/dark/issues/107
+    const cache = new InMemoryCache();
+
+    cache.write('x', 10, { id: 1 });
+    cache.write('x', 20, { id: 2 });
+    cache.write('y', 100, { id: 1 });
+    cache.clear('x');
+
+    expect(cache.read('x', { id: 1 })).toBe(null);
+    expect(cache.read('x', { id: 2 })).toBe(null);
+    expect(cache.read('y', { id: 1 })).toEqual({
+      data: 100,
+      id: 1,
+      modifiedAt: TIME,
+      valid: true,
+    });
   });
 
   test('returns the state correctly', () => {

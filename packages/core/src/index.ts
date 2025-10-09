@@ -4,7 +4,6 @@ export * from './view';
 export { createContext, useContext } from './context';
 export * from './fiber';
 export * from './workloop';
-export * from './atom';
 export { Fragment } from './fragment';
 export * from './platform';
 export * from './utils';

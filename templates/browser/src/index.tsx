@@ -1,15 +1,15 @@
-import { component, useAtom } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { createRoot } from '@dark-engine/platform-browser';
 import { createGlobalStyle } from '@dark-engine/styled';
 
 const App = component(() => {
-  const a$ = useAtom(0);
+  const [count, setCount] = useState(0);
 
   return (
     <>
       <GlobalStyle />
-      <h1>Count is {a$.val()}</h1>
-      <button onClick={() => a$.set(x => x + 1)}>increment</button>
+      <h1>Count is {count}</h1>
+      <button onClick={() => setCount(x => x + 1)}>increment</button>
     </>
   );
 });

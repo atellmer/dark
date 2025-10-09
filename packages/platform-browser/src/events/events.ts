@@ -1,4 +1,4 @@
-import { detectIsFunction, detectIsUndefined, $$scope, detectIsArray } from '@dark-engine/core';
+import { detectIsFunction, $$scope, detectIsArray } from '@dark-engine/core';
 
 import type { TagNativeElement } from '../native-element';
 import { PREVENT } from '../constants';
@@ -51,8 +51,8 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
 
       if (detectIsFunction(handler)) {
         $event = new SyntheticEvent({ sourceEvent: event, target });
-        $scope.setIsEvent(true);
-        exec($event, handler);
+        $scope.setIsEvent(true, $event.type === 'input');
+        handler($event);
         $scope.setIsEvent(false);
       }
 
@@ -70,17 +70,6 @@ function delegateEvent(target: Element, eventName: string, handler: EventHandler
     $scope.addOff(() => document.removeEventListener(eventName, rootHandler, true));
   } else {
     handlersMap.set(target, $handler);
-  }
-}
-
-function exec(event: SyntheticEvent<Event>, handler: Function) {
-  const arg = handler(event);
-
-  if (detectIsUndefined(arg)) return;
-  switch (event.type) {
-    case 'input':
-      (event.target as HTMLInputElement).value = String(arg);
-      break;
   }
 }
 

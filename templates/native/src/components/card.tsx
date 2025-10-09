@@ -1,4 +1,4 @@
-import { component, useAtom } from '@dark-engine/core';
+import { component, useState } from '@dark-engine/core';
 import { View, Text } from '@dark-engine/platform-native';
 
 import { Button } from './button';
@@ -8,7 +8,7 @@ type CardProps = {
 };
 
 const Card = component<CardProps>(({ isLast }) => {
-  const count$ = useAtom(0);
+  const [count, setCount] = useState(0);
 
   return (
     <View
@@ -23,9 +23,9 @@ const Card = component<CardProps>(({ isLast }) => {
       alignItems='center'
       marginBottom={isLast ? 66 : 8}>
       <Text fontSize={20} marginBottom={8}>
-        Count is {count$.val()}
+        Count is {count}
       </Text>
-      <Button label='Press me' onPress={() => count$.set(x => x + 1)} />
+      <Button label='Press me' onPress={() => setCount(x => x + 1)} />
     </View>
   );
 });

@@ -220,11 +220,14 @@ function useQuery<T, V extends Variables>(key: string, query: Query<T, V>, optio
     const $initiator = initiator;
     const offs = [
       cache.subscribe(({ type, key, id }) => {
-        if (key === $key && id === state.cacheId) {
-          if (type === 'invalidate' || type === 'optimistic') {
-            if (cache.__canUpdate(key)) {
-              refetch();
-            }
+        if (key === $key) {
+          const shouldRefetch = (type === 'invalidate' || type === 'optimistic') && id === state.cacheId;
+          const shouldForceRefetch = type === 'clear';
+
+          if (shouldRefetch) {
+            cache.__canUpdate(key) && refetch();
+          } else if (shouldForceRefetch) {
+            refetch();
           }
         }
       }),

@@ -10,7 +10,7 @@ export const UPDATE_EFFECT_TAG = 'U';
 export const DELETE_EFFECT_TAG = 'D';
 export const SKIP_EFFECT_TAG = 'S';
 export const EFFECT_HOST_MASK = 1;
-export const ATOM_HOST_MASK = 2;
+export const CLEANUP_HOST_MASK = 2;
 export const FLUSH_MASK = 4;
 export const MOVE_MASK = 8;
 export const IS_WIP_HOOK_MASK = 1;
@@ -29,22 +29,7 @@ export enum TaskPriority {
   HIGH = 2,
 }
 
-export enum Flag {
-  SKIP_SCAN_OPT = '__skipScanOpt',
-  MEMO_SLOT_OPT = '__memoSlotOpt',
-  STATIC_SLOT_OPT = '__staticSlotOpt',
-}
-
-export const FLAGS = {
-  __skipScanOpt: true,
-  __memoSlotOpt: true,
-  __staticSlotOpt: true,
-};
-
 export const ATTR_BLACK_LIST = {
   [KEY_ATTR]: true,
   [REF_ATTR]: true,
-  [Flag.SKIP_SCAN_OPT]: true,
-  [Flag.MEMO_SLOT_OPT]: true,
-  [Flag.STATIC_SLOT_OPT]: true,
 };

@@ -46,7 +46,6 @@ import {
   useHistory,
   useParams,
   useMatch,
-  usePending,
   VERSION,
 } from '@dark-engine/web-router';
 ```
@@ -355,15 +354,6 @@ In this mode, the router will automatically render through non-blocking transiti
 <Router routes={routes} mode='concurrent'>
   {slot => slot}
 </Router>
-```
-
-```tsx
-const Pending = component(() => {
-  const isPending = usePending();
-
-  // Makes the content on the screen a little transparent while the transition is in progress.
-  return <Overlay isPending={isPending} />;
-});
 ```
 
 # LICENSE

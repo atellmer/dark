@@ -111,6 +111,7 @@ function addAttributes(element: NativeElement, vNode: TagVirtualNode, isHydratio
 function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
   const attrNames = getAttributeNames(prevVNode, nextVNode);
   const tagElement = element as TagNativeElement;
+  const isInput = nextVNode.name === INPUT_TAG;
 
   for (let attrName of attrNames) {
     const prevAttrValue = prevVNode.attrs[attrName];
@@ -126,7 +127,7 @@ function updateAttributes(element: NativeElement, prevVNode: TagVirtualNode, nex
     if (!detectIsUndefined(nextAttrValue)) {
       if (detectIsEvent(attrName)) {
         prevAttrValue !== nextAttrValue && delegateEvent(tagElement, getEventName(attrName), nextAttrValue);
-      } else if (!ATTR_BLACK_LIST[attrName] && prevAttrValue !== nextAttrValue) {
+      } else if (!ATTR_BLACK_LIST[attrName] && (isInput || prevAttrValue !== nextAttrValue)) {
         !patchAttributes(tagElement, nextVNode.name, attrName, nextAttrValue) &&
           m.setAttribute.call(tagElement, attrName, nextAttrValue);
       }
@@ -155,7 +156,12 @@ function performAttribute(
   }
 
   if ((attrName === CLASS_ATTR || attrName === CLASS_NAME_ATTR) && nextAttrValue !== prevAttrValue) {
-    toggleAttribute(tagElement, CLASS_ATTR, nextAttrValue as string);
+    if (nextAttrValue) {
+      m.setAttribute.call(tagElement, CLASS_ATTR, nextAttrValue as string);
+    } else {
+      m.removeAttribute.call(tagElement, CLASS_ATTR);
+    }
+
     return null;
   }
 
@@ -174,10 +180,6 @@ function performAttribute(
   }
 
   return attrName;
-}
-
-function toggleAttribute(element: TagNativeElement, name: string, value: string) {
-  value ? m.setAttribute.call(element, name, value) : m.removeAttribute.call(element, name);
 }
 
 function getAttributeNames(prevVNode: TagVirtualNode, nextVNode: TagVirtualNode) {
