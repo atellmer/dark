@@ -730,7 +730,7 @@ describe('@web-router/create-routes', () => {
   });
 
   test('can resolve nested indexed routes', () => {
-    // https://github.com/atellmer/dark/issues/53
+    // https://github.com/trycatch-labs/dark/issues/53
     const routes: Routes = [
       {
         path: '/',
@@ -777,7 +777,7 @@ describe('@web-router/create-routes', () => {
   });
 
   test('can resolve i18n static routes', () => {
-    // https://github.com/atellmer/dark/issues/53
+    // https://github.com/trycatch-labs/dark/issues/53
     const routes: Routes = [
       ...['en', 'it', 'fr'].map(lang => ({
         path: lang,

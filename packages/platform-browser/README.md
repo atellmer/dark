@@ -2,13 +2,13 @@
 
 Dark renderer for browser.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
 ## Installation
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/browser app
+npx degit github:trycatch-labs/dark/templates/browser app
 ```
 
 ```

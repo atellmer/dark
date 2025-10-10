@@ -348,7 +348,7 @@ describe('@core/use-state', () => {
   });
 
   test('forces direct update for input value', async () => {
-    // https://github.com/atellmer/dark/issues/108
+    // https://github.com/trycatch-labs/dark/issues/108
     let inputRef: MutableRef<HTMLInputElement> = null;
     const App = component(() => {
       inputRef = useRef<HTMLInputElement>(null);

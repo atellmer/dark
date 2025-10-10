@@ -162,7 +162,7 @@ describe('@platform-browser/hydrate-root', () => {
   });
 
   test('can hydrate an entire document', () => {
-    // https://github.com/atellmer/dark/issues/44
+    // https://github.com/trycatch-labs/dark/issues/44
     let root: { unmount: () => void } = null;
     const headContent = (x: number) =>
       `<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Test: ${x}</title>`;

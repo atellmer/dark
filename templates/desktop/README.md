@@ -3,7 +3,7 @@
 #### Step 1
 
 ```
-npx degit github:atellmer/dark/templates/desktop app
+npx degit github:trycatch-labs/dark/templates/desktop app
 ```
 
 ```

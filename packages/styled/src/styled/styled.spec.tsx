@@ -773,7 +773,7 @@ describe('@styled/styled', () => {
   });
 
   test(`can call a css function within another a css function's call correctly`, () => {
-    // https://github.com/atellmer/dark/issues/63
+    // https://github.com/trycatch-labs/dark/issues/63
     const size = (s = 100) => css`
       width: ${s}px;
       height: ${s}px;
@@ -810,7 +810,7 @@ describe('@styled/styled', () => {
   });
 
   test(`can hydrate styles without duplicates`, () => {
-    // https://github.com/atellmer/dark/issues/63
+    // https://github.com/trycatch-labs/dark/issues/63
     const Box1 = styled.div`
       color: red;
     `;
@@ -836,7 +836,7 @@ describe('@styled/styled', () => {
   });
 
   test(`can hydrate styles with different platform-specific values`, () => {
-    // https://github.com/atellmer/dark/issues/63
+    // https://github.com/trycatch-labs/dark/issues/63
     const Box = styled.div`
       inset: 0 15px auto 0; // scrollbar width is 0 on the server and 15 in the browser
     `;

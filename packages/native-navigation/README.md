@@ -2,7 +2,7 @@
 
 Dark router for `NativeScript` platform.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
 ## Features
 - 📚 Stack navigation

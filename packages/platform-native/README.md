@@ -4,9 +4,9 @@ Dark renderer to mobile platforms like Android and iOS via [NativeScript](https:
 
 NativeScript is a free and open-source framework for building native mobile apps using JavaScript, or any other language that can transpile to JavaScript, for iOS and Android platforms. It allows developers to write a single codebase for both platforms, resulting in native performance and access to device-specific APIs, while still leveraging familiar web development tools and paradigms.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
-[app.webm](https://github.com/atellmer/dark/assets/16635118/d295001b-3abd-4c62-b985-e4428118645c)
+[app.webm](https://github.com/trycatch-labs/dark/assets/16635118/d295001b-3abd-4c62-b985-e4428118645c)
 
 ## Installation
 
@@ -14,7 +14,7 @@ Install `NativeScript` according to the instructions [here](https://docs.natives
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/native app
+npx degit github:trycatch-labs/dark/templates/native app
 ```
 ```
 cd app
@@ -77,7 +77,7 @@ const App = component(() => {
 
 ## Environment Setup
 
-Full working examples with environment setup you can find [here](https://github.com/atellmer/dark/tree/master/templates/native) or just install it from template.
+Full working examples with environment setup you can find [here](https://github.com/trycatch-labs/dark/tree/master/templates/native) or just install it from template.
 
 ## API
 
@@ -336,7 +336,7 @@ const App = component(() => {
 });
 ```
 
-Full documentation about this package you can find [here](https://github.com/atellmer/dark/tree/master/packages/native-navigation).
+Full documentation about this package you can find [here](https://github.com/trycatch-labs/dark/tree/master/packages/native-navigation).
 
 # LICENSE
 

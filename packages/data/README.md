@@ -7,7 +7,7 @@ When rendering on the server, query will execute server code; when rendering on 
 
 This approach also eliminates the need to parse the request url on the server in order to understand what data needs to be prefetched for our application, because the application directly uses server-side methods on the server.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
 ## Features
 - 📝 Declarative

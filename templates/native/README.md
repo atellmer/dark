@@ -7,7 +7,7 @@ Install `NativeScript` according to the instructions [here](https://docs.natives
 #### Step 2
 
 ```
-npx degit github:atellmer/dark/templates/native app
+npx degit github:trycatch-labs/dark/templates/native app
 ```
 
 ```

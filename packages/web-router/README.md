@@ -2,7 +2,7 @@
 
 The isomorphic Dark router designed for rendering universal web applications that work both on the client and on the server.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
 ## Features
 - 🌳 Nested routes

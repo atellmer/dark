@@ -813,7 +813,7 @@ describe('@styled/parse', () => {
   });
 
   test('minifies a group selector correctly', () => {
-    // https://github.com/atellmer/dark/issues/67
+    // https://github.com/trycatch-labs/dark/issues/67
     const style = parse(`
       p,
       h1,
@@ -838,7 +838,7 @@ describe('@styled/parse', () => {
   });
 
   test('parses comments with functions correctly', () => {
-    // https://github.com/atellmer/dark/issues/76
+    // https://github.com/trycatch-labs/dark/issues/76
     const style = parse(`
       /* color: ${FUNCTION_MARK}; */
       line-height: 1;
