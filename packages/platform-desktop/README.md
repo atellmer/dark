@@ -6,15 +6,15 @@ Qt is a cross-platform framework for developing applications and embedded system
 
 NodeGui is an open source framework for building cross-platform native desktop apps with JavaScript and CSS-like styling. You can run NodeGui applications on macOS , Windows and Linux from the same codebase. NodeGui allows you to build truly native applications without sacrificing user experience by providing a core set of platform-independent native widgets that directly correspond to the platform's UI building blocks. NodeGui widgets are built on top of Qt, are extremely customizable, just like the web, but don't use a web browser under the hood. Applications can be built entirely in JavaScript. With NodeGui, you get the flexibility of web applications and the performance of native desktop applications.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
-[app.webm](https://github.com/atellmer/dark/assets/16635118/f063ca46-4519-47eb-b124-6754035f5492)
+[app.webm](https://github.com/trycatch-labs/dark/assets/16635118/f063ca46-4519-47eb-b124-6754035f5492)
 
 ## Installation
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/desktop app
+npx degit github:trycatch-labs/dark/templates/desktop app
 ```
 ```
 cd app
@@ -88,7 +88,7 @@ const App = component(() => {
 
 ## Environment Setup
 
-Full working example with environment setup you can find [here](https://github.com/atellmer/dark/tree/master/templates/desktop) or just install it from template.
+Full working example with environment setup you can find [here](https://github.com/trycatch-labs/dark/tree/master/templates/desktop) or just install it from template.
 
 ## API
 

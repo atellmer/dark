@@ -2,7 +2,7 @@
 
 Styled components for Dark 🌖
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
 ## Features
 

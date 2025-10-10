@@ -145,7 +145,7 @@ describe('@web-router/link', () => {
   });
 
   test('prevents default click event #2', () => {
-    // https://github.com/atellmer/dark/issues/77
+    // https://github.com/trycatch-labs/dark/issues/77
     const spy = jest.fn();
     const routes: Routes = [
       {

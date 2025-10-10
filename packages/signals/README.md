@@ -1,6 +1,6 @@
 # @dark-engine/signals 🌖
 
-Reactive signals system for [Dark](https://github.com/atellmer/dark).
+Reactive signals system for [Dark](https://github.com/trycatch-labs/dark).
 
 ## Theory
 

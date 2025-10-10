@@ -1,7 +1,7 @@
 ## Dark browser template
 
 ```
-npx degit github:atellmer/dark/templates/browser app
+npx degit github:trycatch-labs/dark/templates/browser app
 ```
 
 ```

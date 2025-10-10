@@ -2,7 +2,7 @@
 
 A core package that abstracts away the specific code running platform. The core is based on the Fiber architecture, implements its own call stack, which makes it possible to flexibly manage rendering: schedule, prioritize, interrupt, resume rendering from the same point, or cancel it altogether. Supports asynchronous and concurrent rendering, works synchronously by default. Breaks the rendering work into two phases: the reconciliation phase and the phase of committing changes to the platform.
 
-[README](https://github.com/atellmer/dark)
+[README](https://github.com/trycatch-labs/dark)
 
 ## Installation
 

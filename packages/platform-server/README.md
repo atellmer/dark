@@ -2,7 +2,7 @@
 
 Dark renderer for Node.js.
 
-[More about Dark](https://github.com/atellmer/dark)
+[More about Dark](https://github.com/trycatch-labs/dark)
 
 A standard Dark application operates in the browser, rendering pages within the DOM in response to user interactions. Alternatively, server-side rendering can be employed to generate static application pages that are subsequently loaded on the client. This typically results in faster rendering, enabling users to preview the app layout prior to it becoming fully interactive.
 
@@ -19,7 +19,7 @@ Additionally, rendering can be performed directly into HTML files via the Node.j
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/server app
+npx degit github:trycatch-labs/dark/templates/server app
 ```
 
 ```

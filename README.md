@@ -55,7 +55,7 @@ const Greeting = component(({ name }) => <h1>Hello {name} 🥰</h1>);
 
 from template:
 ```
-npx degit github:atellmer/dark/templates/browser app
+npx degit github:trycatch-labs/dark/templates/browser app
 ```
 
 ```
@@ -66,20 +66,20 @@ npm start
 
 ## Dark vs React Fiber
 
-- [Concurrent Sierpinski triangle](https://atellmer.github.io/dark/next/sierpinski-triangle/)
+- [Concurrent Sierpinski triangle](https://trycatch-labs.github.io/dark/next/sierpinski-triangle/)
 
 ## Demos
 
-- [1k components](https://atellmer.github.io/dark/next/1k-components/)
-- [10k rows](https://atellmer.github.io/dark/next/10k-rows/)
-- [Animated grid](https://atellmer.github.io/dark/next/animated-grid/)
-- [Concurrent deferred search](https://atellmer.github.io/dark/next/deferred-search/)
-- [Spring draggable list](https://atellmer.github.io/dark/next/spring-draggable-list/)
-- [Spring snake](https://atellmer.github.io/dark/next/spring-snake/)
-- [Spring masonry grid](https://atellmer.github.io/dark/next/spring-masonry-grid/)
-- [Spring slider](https://atellmer.github.io/dark/next/spring-slider/)
-- [Spring menu](https://atellmer.github.io/dark/next/spring-menu/)
-- [Spring dialog window](https://atellmer.github.io/dark/next/spring-dialog/)
+- [1k components](https://trycatch-labs.github.io/dark/next/1k-components/)
+- [10k rows](https://trycatch-labs.github.io/dark/next/10k-rows/)
+- [Animated grid](https://trycatch-labs.github.io/dark/next/animated-grid/)
+- [Concurrent deferred search](https://trycatch-labs.github.io/dark/next/deferred-search/)
+- [Spring draggable list](https://trycatch-labs.github.io/dark/next/spring-draggable-list/)
+- [Spring snake](https://trycatch-labs.github.io/dark/next/spring-snake/)
+- [Spring masonry grid](https://trycatch-labs.github.io/dark/next/spring-masonry-grid/)
+- [Spring slider](https://trycatch-labs.github.io/dark/next/spring-slider/)
+- [Spring menu](https://trycatch-labs.github.io/dark/next/spring-menu/)
+- [Spring dialog window](https://trycatch-labs.github.io/dark/next/spring-dialog/)
 
 ## Stackblitz demos
 
@@ -103,17 +103,17 @@ If you liked the project, please rate it with a star ⭐, it gives me inspiratio
 
 | Package                          | Description                                                      | URL                                      |
 |----------------------------------|------------------------------------------------------------------|------------------------------------------|
-| `@dark-engine/core`              | Abstract core with main functionality                            | [Link](https://github.com/atellmer/dark/tree/master/packages/core)             |
-| `@dark-engine/platform-browser`  | Renderer for browser (Single-Page apps)                          | [Link](https://github.com/atellmer/dark/tree/master/packages/platform-browser) |
-| `@dark-engine/platform-server`   | Renderer for Node.js (Multi-Page, Static-Gen and Universal apps) | [Link](https://github.com/atellmer/dark/tree/master/packages/platform-server)  |
-| `@dark-engine/platform-native`   | Renderer for Android, iOS (Native mobile apps)                   | [Link](https://github.com/atellmer/dark/tree/master/packages/platform-native)  |
-| `@dark-engine/platform-desktop`  | Renderer for Windows, Linux, macOS (Native desktop apps)         | [Link](https://github.com/atellmer/dark/tree/master/packages/platform-desktop) |
-| `@dark-engine/web-router`        | Isomorphic router for browser and server                         | [Link](https://github.com/atellmer/dark/tree/master/packages/web-router)       |
-| `@dark-engine/native-navigation` | Dark NativeScript router                                         | [Link](https://github.com/atellmer/dark/tree/master/packages/native-navigation)|
-| `@dark-engine/animations`        | Spring based animations                                          | [Link](https://github.com/atellmer/dark/tree/master/packages/animations)       |
-| `@dark-engine/styled`            | Styled components                                                | [Link](https://github.com/atellmer/dark/tree/master/packages/styled)           |
-| `@dark-engine/data`              | Declarative queries and mutations                                | [Link](https://github.com/atellmer/dark/tree/master/packages/data)             |
-| `@dark-engine/signals`           | Signals, computed signals and signal effects                     | [Link](https://github.com/atellmer/dark/tree/master/packages/signals)             |
+| `@dark-engine/core`              | Abstract core with main functionality                            | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/core)             |
+| `@dark-engine/platform-browser`  | Renderer for browser (Single-Page apps)                          | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/platform-browser) |
+| `@dark-engine/platform-server`   | Renderer for Node.js (Multi-Page, Static-Gen and Universal apps) | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/platform-server)  |
+| `@dark-engine/platform-native`   | Renderer for Android, iOS (Native mobile apps)                   | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/platform-native)  |
+| `@dark-engine/platform-desktop`  | Renderer for Windows, Linux, macOS (Native desktop apps)         | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/platform-desktop) |
+| `@dark-engine/web-router`        | Isomorphic router for browser and server                         | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/web-router)       |
+| `@dark-engine/native-navigation` | Dark NativeScript router                                         | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/native-navigation)|
+| `@dark-engine/animations`        | Spring based animations                                          | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/animations)       |
+| `@dark-engine/styled`            | Styled components                                                | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/styled)           |
+| `@dark-engine/data`              | Declarative queries and mutations                                | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/data)             |
+| `@dark-engine/signals`           | Signals, computed signals and signal effects                     | [Link](https://github.com/trycatch-labs/dark/tree/master/packages/signals)             |
 
 ## Usage
 
@@ -163,7 +163,7 @@ Based on the benchmark results, Dark is approximately 28% slower than the refere
 
 ## Lighthouse
 
-A [small application](https://github.com/atellmer/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `concurrent rendering`, `caching`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
+A [small application](https://github.com/trycatch-labs/dark/tree/master/examples/server-side-rendering/) demonstrating the capabilities of Dark using `SSR`, `rendering to stream`, `service-worker`, `offline mode`, `concurrent rendering`, `caching`, `suspense`, `router`, `async queries`, `lazy` and `styled` components scores maximum points in Lighthouse.
 
 <img src="./assets/lighthouse.png">
 

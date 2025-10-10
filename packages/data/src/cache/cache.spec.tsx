@@ -104,7 +104,7 @@ describe('@data/cache', () => {
   });
 
   test('clears all records by key correctly', () => {
-    // https://github.com/atellmer/dark/issues/107
+    // https://github.com/trycatch-labs/dark/issues/107
     const cache = new InMemoryCache();
 
     cache.write('x', 10, { id: 1 });
